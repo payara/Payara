@@ -44,57 +44,57 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Checkout cargoTracker Tests') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],//specific to payara4
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [
-                        [$class: 'SubmoduleOption',
-                        disableSubmodules: false,
-                        parentCredentials: true,
-                        recursiveSubmodules: true,
-                        reference: '',
-                        trackingSubmodules: false]],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('setup cargoTracker'){
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                script{
-                    ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
-                }
-                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database --dbtype derby || true"
-            }
-        }
-        stage('Run cargoTracker Tests') {
-            tools {
-                jdk "zulu-${jdkVer}"
-            }
-            environment {
-                MAVEN_OPTS=getMavenOpts()
-            }
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
-                -Dpayara.version.major=${getMajorVersion(pom.version)} """
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
+        // stage('Checkout cargoTracker Tests') {
+        //     steps{
+        //         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+        //             branches: [[name: "*/master"]],
+        //             doGenerateSubmoduleConfigurations: false,
+        //             extensions: [
+        //                 [$class: 'SubmoduleOption',
+        //                 disableSubmodules: false,
+        //                 parentCredentials: true,
+        //                 recursiveSubmodules: true,
+        //                 reference: '',
+        //                 trackingSubmodules: false]],
+        //             submoduleCfg: [],
+        //             userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+        //         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //     }
+        // }
+        // stage('setup cargoTracker'){
+        //     steps {
+        //         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //         script{
+        //             ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+        //         }
+        //         sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+        //         sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+        //         sh "${ASADMIN} start-database --dbtype derby || true"
+        //     }
+        // }
+        // stage('Run cargoTracker Tests') {
+        //     tools {
+        //         jdk "zulu-${jdkVer}"
+        //     }
+        //     environment {
+        //         MAVEN_OPTS=getMavenOpts()
+        //     }
+        //     steps {
+        //         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //         sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+        //         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+        //         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+        //         -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
+        //         -Dpayara.version.major=${getMajorVersion(pom.version)} """
+        //         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //     }
+        //     post {
+        //         always {
+        //             junit '**/target/surefire-reports/*.xml'
+        //         }
+        //     }
+        // }
         stage('Setup for Quicklook Tests') {
             tools {
                 jdk "zulu-${jdkVer}"
