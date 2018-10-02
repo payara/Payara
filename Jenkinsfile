@@ -13,10 +13,6 @@ pipeline {
             choices: '8\n7',
             description: 'Which JDK version you wish to build and test with?',
             name: 'jdkVer')
-        booleanParam(
-            defaultValue: false,
-            description: 'Is this Job being triggered by itself?',
-            name: 'isRecursive')
     }
     agent any
     stages {
@@ -211,19 +207,6 @@ pipeline {
                 always {
                     junit '**/target/surefire-reports/*.xml'
                 }
-            }
-        }
-        stage('Run JDK7 Too'){
-            when{
-                expression{ getMajorVersion(pom.version) == '4'  && !isRecursive}
-            }
-            steps{
-                //Not sure if this is going to work. Trying anayway.
-                build( job: "${env.JOB_NAME}",
-                    propagate: false, //whether to propogate errors. Note UNSTABLE propogates as FAILURE
-                    wait: true,  //wait for this job to finish before proceeding
-                    parameters: [[$class: 'StringParameterValue', name: 'jdkVer', value: jdkVer],
-                                [$class: 'BooleanParameterValue', name: 'isRecursive', value: true]])
             }
         }
     }
