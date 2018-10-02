@@ -44,7 +44,7 @@ pipeline {
             }
             post{
                 success{
-                    archiveArtifacts artifacts: './appserver/distributions/payara/target/stage/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/stage/payara.zip', fingerprint: true
                 }
             }
         }
