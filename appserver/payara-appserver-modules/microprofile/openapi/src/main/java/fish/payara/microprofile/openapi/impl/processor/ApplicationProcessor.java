@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.impl.processor;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.SEVERE;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -427,7 +428,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
-        Field field = null;
         SchemaImpl schema;
         if (element instanceof java.lang.reflect.Parameter) {
             schema = new SchemaImpl();
@@ -443,7 +443,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             newParameter.setSchema(schema);
         } else {
             schema = new SchemaImpl();
-            field = Field.class.cast(element);
+            Field field = Field.class.cast(element);
             schema.setType(ModelUtils.getSchemaType(field.getType()));
             if (schema.getType() == SchemaType.ARRAY) {
                 SchemaImpl arraySchema = new SchemaImpl();
@@ -457,12 +457,23 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
         } else {
-            ApiContext apiContext;
-            OpenAPI api = context.getApi();
-            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
-                apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method,
-                        api, generateResourceMapping(classes)));
-                apiContext.getWorkingOperation().addParameter(newParameter);
+            if (element instanceof Field) {
+                Field field = Field.class.cast(element);
+                ApiContext apiContext;
+                OpenAPI api = context.getApi();
+                for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
+                    apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method,
+                            api, generateResourceMapping(classes)));
+                    if (apiContext.getWorkingOperation() != null) {
+                        apiContext.getWorkingOperation().addParameter(newParameter);
+                    } else {
+                        LOGGER.log(SEVERE, "Method \"" + method.getName() + "\" has an unsupported annotation.");
+                    }
+                }
+            } else {
+                LOGGER.log(SEVERE, "Couldn't add " + newParameter.getIn() + " parameter, \"" + newParameter.getName()
+                        + "\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with "
+                        + "an unsupported annotation.");
             }
         }
     }
