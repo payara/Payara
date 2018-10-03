@@ -40,10 +40,11 @@
 package fish.payara.micro.boot.runtime;
 
 import com.hazelcast.logging.Logger;
-import java.util.logging.Level;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandResult.ExitStatus;
 import org.glassfish.embeddable.CommandRunner;
+
+import java.util.logging.Level;
 
 /**
  * Simple class for holding an asadmin command representation for using during
@@ -64,8 +65,10 @@ public class BootCommand {
         boolean result = true;
         CommandResult asadminResult = runner.run(command, arguments);
         if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
-            Logger.getLogger(BootCommand.class).log(Level.WARNING, "Boot Command " + command + " failed " + asadminResult.getOutput());
+            Logger.getLogger(BootCommand.class).log(Level.WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()));
             result = false;
+        } else {
+            Logger.getLogger(BootCommand.class).log(Level.INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));
         }
         return result;
     }
