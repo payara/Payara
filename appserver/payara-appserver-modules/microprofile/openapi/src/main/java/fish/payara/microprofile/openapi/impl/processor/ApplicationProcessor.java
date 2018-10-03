@@ -124,6 +124,7 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
@@ -426,22 +427,40 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        Field field = null;
+        SchemaImpl schema;
         if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
+            schema = new SchemaImpl();
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
+
+            if (schema.getType() == SchemaType.ARRAY) {
+                SchemaImpl arraySchema = new SchemaImpl();
+                ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+                arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+                schema.setItems(arraySchema);
+            }
+            newParameter.setSchema(schema);
         } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
+            schema = new SchemaImpl();
+            field = Field.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(field.getType()));
+            if (schema.getType() == SchemaType.ARRAY) {
+                SchemaImpl arraySchema = new SchemaImpl();
+                ParameterizedType parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+                arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+                schema.setItems(arraySchema);
+            }
+            newParameter.setSchema(schema);
         }
 
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
         } else {
-            Field field = Field.class.cast(element);
             ApiContext apiContext;
             OpenAPI api = context.getApi();
-            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {             
-                apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method, 
+            for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
+                apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method,
                         api, generateResourceMapping(classes)));
                 apiContext.getWorkingOperation().addParameter(newParameter);
             }
