@@ -54,11 +54,35 @@ import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
  * @author Byron Nevins
  */
 public class PlatformServicesInfo {
+    
+    // set at construction-time
+    final ServerDirs serverDirs;
+    final AppserverServiceType type;
+    // accessed by classes in this package
+    String fqsn;
+    String serviceName;
+    boolean dryRun;
+    String osUser;
+    boolean trace;
+    File libDir;
+    String smfFullServiceName;
+    File asadminScript;
+    boolean force;
+    String serviceUser;
+    Date date = null;
+    File passwordFile;
+    String appserverUser;
+    // private to this implementation
+    private File installRootDir;
+    int sPriority;
+    int kPriority;
+    
     public PlatformServicesInfo(ServerDirs sDirs, AppserverServiceType theType) {
         serverDirs = sDirs;
 
-        if (serverDirs == null || serverDirs.getServerDir() == null)
-            throw new RuntimeException(Strings.get("bad.server.dirs"));
+        if (serverDirs == null || serverDirs.getServerDir() == null) {
+            throw new PlatformServiceException(Strings.get("bad.server.dirs"));
+        }
 
         type = theType;
         kPriority = 20;
@@ -128,59 +152,42 @@ public class PlatformServicesInfo {
     private void setLibDir() {
         libDir = SmartFile.sanitize(new File(installRootDir, "lib"));
 
-        if (!libDir.isDirectory())
-            throw new RuntimeException(Strings.get("internal.error",
-                    "Not a directory: " + libDir));
+        if (!libDir.isDirectory()) {
+            throw new PlatformServiceException(Strings.get("internal.error", "Not a directory: " + libDir));
+        }
     }
 
     private void setInstallRootDir() {
         String ir = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
 
-        if (!StringUtils.ok(ir))
-            throw new RuntimeException(Strings.get("internal.error", "System Property not set: "
-                    + SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-
+        if (!StringUtils.ok(ir)) {
+            throw new PlatformServiceException(Strings.get("internal.error", "System Property not set: " + SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        }
         installRootDir = SmartFile.sanitize(new File(ir));
 
-        if (!installRootDir.isDirectory())
-            throw new RuntimeException(Strings.get("internal.error",
-                    "Not a directory: " + installRootDir));
+        if (!installRootDir.isDirectory()) {
+            throw new PlatformServiceException(Strings.get("internal.error", "Not a directory: " + installRootDir));
+        }
     }
 
     private void setAsadmin() {
         String s = SystemPropertyConstants.getAsAdminScriptLocation();
 
-        if (!StringUtils.ok(s))
-            throw new RuntimeException(
-                    Strings.get("internal.error",
-                    "Can't get Asadmin script location"));
-
+        if (!StringUtils.ok(s)) {
+            throw new PlatformServiceException(Strings.get("internal.error", "Can't get Asadmin script location"));
+        }
         asadminScript = SmartFile.sanitize(new File(s));
 
         if (!asadminScript.isFile()) {
-            throw new RuntimeException(
-                    Strings.get("noAsadminScript", asadminScript));
+            throw new PlatformServiceException(Strings.get("noAsadminScript", asadminScript));
         }
     }
-    // set at construction-time
-    final ServerDirs serverDirs;
-    final AppserverServiceType type;
-    // accessed by classes in this package
-    String fqsn;
-    String serviceName;
-    boolean dryRun;
-    String osUser;
-    boolean trace;
-    File libDir;
-    String smfFullServiceName;
-    File asadminScript;
-    boolean force;
-    String serviceUser;
-    Date date = null;
-    File passwordFile;
-    String appserverUser;
-    // private to this implementation
-    private File installRootDir;
-    int sPriority;
-    int kPriority;
+    
+    public class PlatformServiceException extends RuntimeException {
+        
+        public PlatformServiceException(String message){
+            super(message);
+        }
+    }
+   
 }

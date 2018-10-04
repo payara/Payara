@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -58,49 +59,49 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public abstract class FileSubstitutionHandler implements Substitutable {
 
-    protected static final Logger _logger = SLogger.getLogger(); 
+    protected static final Logger LOGGER = SLogger.getLogger(); 
             
-    protected static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
+    protected static final LocalStringsImpl STRINGS = new LocalStringsImpl(FileLister.class);
 
     /** A {@link Reader} to read the character stream from input file. */
-    protected Reader _reader;
+    protected Reader reader;
 
     /** A {@link Writer} to write the character stream to the output file. */
-    protected Writer _writer;
+    protected Writer writer;
 
     /** Input file. */
-    protected File _inputFile;
+    protected File inputFile;
 
     public FileSubstitutionHandler(File file) throws FileNotFoundException {
         if (file.exists()) {
-            _inputFile = file;
+            inputFile = file;
         } else {
-            throw new FileNotFoundException(_strings.get("invalidFileLocation", file.getAbsolutePath()));
+            throw new FileNotFoundException(STRINGS.get("invalidFileLocation", file.getAbsolutePath()));
         }
     }
 
     @Override
     public String getName() {
-        return _inputFile.getAbsolutePath();
+        return inputFile.getAbsolutePath();
     }
 
     @Override
     public void finish() {
-        if (_reader != null) {
+        if (reader != null) {
             try {
-                _reader.close();
+                reader.close();
             } catch (Exception e) {
-            	if (_logger.isLoggable(Level.FINER)) {
-            		_logger.log(Level.FINER, _strings.get("errorInClosingStream", _inputFile.getAbsolutePath() ), e);
+            	if (LOGGER.isLoggable(Level.FINER)) {
+            		LOGGER.log(Level.FINER, STRINGS.get("errorInClosingStream", inputFile.getAbsolutePath() ), e);
             	}
             }
         }
-        if (_writer != null) {
+        if (writer != null) {
             try {
-                _writer.close();
+                writer.close();
             } catch (Exception e) {
-            	if (_logger.isLoggable(Level.FINER)) {
-            		_logger.log(Level.FINER, _strings.get("errorInClosingStream"), e);
+            	if (LOGGER.isLoggable(Level.FINER)) {
+            		LOGGER.log(Level.FINER, STRINGS.get("errorInClosingStream"), e);
             	}
             }
         }

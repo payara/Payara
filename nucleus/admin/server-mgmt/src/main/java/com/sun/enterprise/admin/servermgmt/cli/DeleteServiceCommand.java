@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -44,7 +45,6 @@ import com.sun.enterprise.admin.util.ServerDirsSelector;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-import java.util.*;
 import java.util.logging.*;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -57,10 +57,8 @@ import com.sun.enterprise.admin.servermgmt.services.AppserverServiceType;
 import com.sun.enterprise.admin.servermgmt.services.PlatformServicesInfo;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.ServerDirs;
 
-import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
  * Delete a "service" in the operating system.
@@ -86,13 +84,10 @@ public final class DeleteServiceCommand extends CLICommand {
     private String userSpecifiedNodeDir;           // nodeDirRoot
     @Param(name = "node", optional = true, alias = "nodeagent")
     private String userSpecifiedNode;
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(DeleteServiceCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(DeleteServiceCommand.class);
     private ServerDirs dirs;
     private ServerDirsSelector selector = null;
 
-    /**
-     */
     @Override
     protected void validate() throws CommandException {
         try {
@@ -159,10 +154,10 @@ public final class DeleteServiceCommand extends CLICommand {
 
         // On Windows we need a legal filename for the service name.
         if(OS.isWindowsForSure() && !FileUtils.isFriendlyFilename(serviceName)) {
-            throw new CommandException(strings.get("create.service.badServiceName", serviceName));
+            throw new CommandException(STRINGS.get("create.service.badServiceName", serviceName));
         }
 
-        logger.finer("service name = " + serviceName);
+        logger.log(Level.FINER, "service name = {0}", serviceName);
     }
 
     private AppserverServiceType getType() {

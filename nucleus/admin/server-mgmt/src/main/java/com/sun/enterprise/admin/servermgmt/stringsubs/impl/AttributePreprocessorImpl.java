@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -49,13 +50,13 @@ import com.sun.enterprise.admin.servermgmt.stringsubs.AttributePreprocessor;
  */
 public class AttributePreprocessorImpl implements AttributePreprocessor
 {
-    private Map<String, String> _lookUpMap = null;
+    private Map<String, String> lookUpMap = null;
     private static final String DELIMITER = "$";
 
     AttributePreprocessorImpl() {}
 
     public AttributePreprocessorImpl(Map<String, String> lookUpMap) {
-        _lookUpMap = lookUpMap;
+        this.lookUpMap = lookUpMap;
     }
 
     @Override
@@ -84,12 +85,12 @@ public class AttributePreprocessorImpl implements AttributePreprocessor
             return var;
         }
         StringBuilder stringStart = new StringBuilder(var.substring(0, firstIndex));
-        String sub = _lookUpMap.get(var.substring(firstIndex + startDelim.length(), secondIndex));
+        String sub = lookUpMap.get(var.substring(firstIndex + startDelim.length(), secondIndex));
         String stringEnd = var.substring(secondIndex + endDelim.length(), var.length());
         if (sub != null) {
           stringStart.append(sub);
         }
-        stringStart.append((stringEnd.indexOf(startDelim) == -1) ? stringEnd : substitute(stringEnd, startDelim, endDelim));
+        stringStart.append((!stringEnd.contains(startDelim)) ? stringEnd : substitute(stringEnd, startDelim, endDelim));
         return stringStart.toString();
     }
 }

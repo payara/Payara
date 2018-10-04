@@ -53,10 +53,10 @@ import com.sun.enterprise.admin.servermgmt.SLogger;
  */
 public class StringSubstitutionProperties {
 
-    private static final Logger _logger = SLogger.getLogger();
+    private static final Logger LOGGER = SLogger.getLogger();
     
     private static final String STRINGSUBS_PROPERTIES = "/com/sun/enterprise/admin/servermgmt/stringsubs/stringsubs.properties";
-    private static Properties _properties = null;
+    private static Properties properties = null;
 
     /**
      * Loads the string substitution properties i.e {@link StringSubstitutionProperties#STRINGSUBS_PROPERTIES} file
@@ -65,10 +65,10 @@ public class StringSubstitutionProperties {
         InputStream in = null;
         try {
             in = StringSubstitutionProperties.class.getResourceAsStream(STRINGSUBS_PROPERTIES);
-            _properties = new Properties();
-            _properties.load(in);
+            properties = new Properties();
+            properties.load(in);
         } catch (IOException e) {
-            _logger.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, STRINGSUBS_PROPERTIES);
+            LOGGER.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, STRINGSUBS_PROPERTIES);
         } finally {
             if (in != null) {
                 try {
@@ -87,9 +87,9 @@ public class StringSubstitutionProperties {
      * @return  the value in this property list with the specified key value.
      */
     public static String getProperty(String key) {
-        if (_properties == null) {
+        if (properties == null) {
             load();
         }
-        return _properties.getProperty(key);
+        return properties.getProperty(key);
     }
 }

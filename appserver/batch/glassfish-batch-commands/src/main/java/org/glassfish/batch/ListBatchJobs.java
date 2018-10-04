@@ -521,8 +521,8 @@ public class ListBatchJobs extends AbstractLongListCommand {
         String columnID = "jobinstanceid";
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, parameter1);
-                preparedStatement.setString(2, parameter2);
+                preparedStatement.setInt(1, Integer.parseInt(parameter1));
+                preparedStatement.setInt(2, Integer.parseInt(parameter2));
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {

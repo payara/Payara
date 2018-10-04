@@ -279,7 +279,7 @@ public final class ModelUtils {
                 || type == float.class || type == Float.class || type == double.class || type == Double.class) {
             return SchemaType.NUMBER;
         }
-        if (type.isArray()) {
+        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
             return SchemaType.ARRAY;
         }
         if (String.class.isAssignableFrom(type)) {
@@ -513,14 +513,14 @@ public final class ModelUtils {
                                 }
                             }
                         }
-                        if (newValue instanceof Collection) {
+                        else if (newValue instanceof Collection) {
                             for (Object o : Collection.class.cast(newValue)) {
                                 if (!Collection.class.cast(currentValue).contains(o)) {
                                     Collection.class.cast(currentValue).add(o);
                                 }
                             }
                         }
-                        if (newValue instanceof Constructible) {
+                       else if (newValue instanceof Constructible) {
                             if (currentValue == null) {
                                 f.set(to, newValue.getClass().newInstance());
                                 currentValue = f.get(to);

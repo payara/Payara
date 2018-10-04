@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
-import java.util.Map;
 import java.util.Properties;
 
 /**
+ * @deprecated since 184 as there are no known references to it
  */
+@Deprecated
 public interface InstancesManager
 {    
     /**
@@ -61,15 +63,15 @@ public interface InstancesManager
      * Deletes an instance identified by the given name.
      * (Should we stop the instance before deleting the instance?)
      * @throws InstanceException  This exception is thrown if 
-     * - the instance doesnot exist.
+     * - the instance does not exist.
      * - an exception occurred while deleting the instance.
      */
     public void deleteInstance() 
         throws InstanceException;
 
     /**
-     * Starts the instance.
-     * @param startParams 
+     * Starts the instance. 
+     * @return 
      * @throws InstanceException
      */
     public Process startInstance() 
@@ -77,8 +79,9 @@ public interface InstancesManager
 
     /**
      * Starts the instance.
-     * @param interativeOptions which may be used for security, these paramters
+     * @param interativeOptions which may be used for security, these parameters
      * are passed in on the standard input stream of the executing process
+     * @return 
      * @throws InstanceException
      */
     public Process startInstance(String[] interativeOptions) 
@@ -86,10 +89,11 @@ public interface InstancesManager
 
     /**
      * Starts the instance.
-     * @param interativeOptions which may be used for security, these paramters
+     * @param interativeOptions which may be used for security, these parameters
      *        are passed in on the standard input stream of the executing process
      * @param commandLineArgs is additional commandline arguments that are to be appended
      *        to the processes commandline when it starts
+     * @return 
      * @throws InstanceException
      */
     public Process startInstance(String[] interativeOptions, String[] commandLineArgs) 
@@ -97,7 +101,7 @@ public interface InstancesManager
   
     /**
      * Starts the instance.
-     * @param interativeOptions which may be used for security, these paramters
+     * @param interativeOptions which may be used for security, these parameters
      *        are passed in on the standard input stream of the executing process
      * @param commandLineArgs is additional commandline arguments that are to be appended
      *        to the processes commandline when it starts
@@ -116,12 +120,14 @@ public interface InstancesManager
 
     /**
      * Lists all the instances.
+     * @throws InstanceException 
      */
     public String[] listInstances() 
         throws InstanceException;
 
     /**
      * Returns status of an instance.
+     * @throws InstanceException
      */
     public int getInstanceStatus()
         throws InstanceException;
@@ -129,14 +135,15 @@ public interface InstancesManager
     /**
      * @return true if the instance requires a restart for some config changes
      * to take effect, false otherwise.
+     * @throws InstanceException
      */
     boolean isRestartNeeded() throws InstanceException;
 
     public String getNativeName();
     
     /**
-     * Trys to stop the instance with the specified timeout.
-     * Returns true if success; false if failure  
+     * Tries to stop the instance with the specified timeout.Returns true if success; false if failure
+     * @param timeout   
      * @throws InstanceException  
      */    
     public boolean stopInstanceWithinTime(int timeout) 

@@ -44,8 +44,8 @@ package com.sun.gjc.util;
 import com.sun.gjc.monitoring.JdbcRAConstants;
 import com.sun.gjc.monitoring.SQLTraceProbeProvider;
 import com.sun.logging.LogDomains;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -101,7 +101,7 @@ public class SQLTraceDelegator implements SQLTraceListener {
      */
     public void registerSQLTraceListener(SQLTraceListener listener) {
         if (sqlTraceListeners == null) {
-            sqlTraceListeners = new HashMap<>();
+            sqlTraceListeners = new ConcurrentHashMap<>();
         }
         // check there isn't already a listener of the specified type
         if (sqlTraceListeners.get(listener.getClass()) == null) {

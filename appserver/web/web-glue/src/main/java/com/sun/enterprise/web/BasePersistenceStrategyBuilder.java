@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -52,10 +52,12 @@ import org.glassfish.web.deployment.runtime.WebProperty;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jvnet.hk2.config.types.Property;
 
 public abstract class BasePersistenceStrategyBuilder
         implements PersistenceStrategyBuilder {
@@ -81,14 +83,21 @@ public abstract class BasePersistenceStrategyBuilder
     protected int reapInterval = DEFAULT_REAP_INTERVAL;
     protected int storeReapInterval = DEFAULT_REAP_INTERVAL;
     protected static final int DEFAULT_MAX_IDLE_BACKUP = -1;   // never save
-    //protected int maxIdleBackup = DEFAULT_MAX_IDLE_BACKUP;
+    protected int maxIdleBackup = DEFAULT_MAX_IDLE_BACKUP;
+    protected static final int DEFAULT_MIN_IDLE_SWAP = -1;
+    protected int minIdleSwap = DEFAULT_MIN_IDLE_SWAP;
+    protected static final int DEFAULT_MAX_IDLE_SWAP = -1;
+    protected int maxIdleSwap = DEFAULT_MAX_IDLE_SWAP;
     protected static final int DEFAULT_SESSION_TIMEOUT = 1800;   // 30 minute
     protected int sessionMaxInactiveInterval = DEFAULT_SESSION_TIMEOUT;
     protected String persistentCookieName = "GLASSFISHCOOKIE";
     protected boolean relaxCacheVersionSemantics = true;
 
     // Special constant for Java Server Faces
-    protected static final String JSF_HA_ENABLED = "com.sun.appserver.enableHighAvailability";    
+    protected static final String JSF_HA_ENABLED = "com.sun.appserver.enableHighAvailability";
+    
+    protected static final String MIN_IDLE_SWAP_PROPERTY = "minIdleSwap";
+    protected static final String MAX_IDLE_SWAP_PROPERTY = "maxIdleSwap";
 
     public void initializePersistenceStrategy(
             Context ctx,
@@ -205,7 +214,7 @@ public abstract class BasePersistenceStrategyBuilder
                 }
                 // END CR 6275709
 
-                /*
+                
                 // Now do properties under <manager-properties> element
                 List<Property> props = mgrBean.getProperty();
                 if (props != null) {
@@ -219,9 +228,21 @@ public abstract class BasePersistenceStrategyBuilder
                             } catch (NumberFormatException e) {
                                 // XXX need error message
                             }
+                        } else if (name.equalsIgnoreCase(MIN_IDLE_SWAP_PROPERTY)) {
+                            try {
+                                minIdleSwap = Integer.parseInt(value);
+                            } catch (NumberFormatException e) {
+                                // XXX need error message
+                            }
+                        } else if (name.equalsIgnoreCase(MAX_IDLE_SWAP_PROPERTY)) {
+                            try {
+                                maxIdleSwap = Integer.parseInt(value);
+                            } catch (NumberFormatException e) {
+                                // XXX need error message
+                            }
                         }
                     }
-                }*/
+                }
             }
             
             org.glassfish.web.config.serverbeans.StoreProperties storeBean =
@@ -295,13 +316,25 @@ public abstract class BasePersistenceStrategyBuilder
                         } catch (NumberFormatException e) {
                             // XXX need error message
                         }
-                    } /*else if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
+                    } else if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
                         try {
                             maxIdleBackup = Integer.parseInt(value);
                         } catch (NumberFormatException e) {
                             // XXX need error message
-                        }                        
-                    } */else if (name.equalsIgnoreCase("relaxCacheVersionSemantics")) {
+                        }
+                    } else if (name.equalsIgnoreCase(MIN_IDLE_SWAP_PROPERTY)) {
+                        try {
+                            minIdleSwap = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            // XXX need error message
+                        }
+                    } else if (name.equalsIgnoreCase(MAX_IDLE_SWAP_PROPERTY)) {
+                        try {
+                            maxIdleSwap = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            // XXX need error message
+                        }
+                    } else if (name.equalsIgnoreCase("relaxCacheVersionSemantics")) {
                         relaxCacheVersionSemantics = Boolean.parseBoolean(value);
                     } else if (name.equalsIgnoreCase("sessionFilename")) {
                         sessionFilename = value;                        

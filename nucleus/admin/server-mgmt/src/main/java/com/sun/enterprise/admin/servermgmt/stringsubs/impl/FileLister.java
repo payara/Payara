@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -56,11 +57,11 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * It also handles the processing of wild-card in the given path.
  */
 final class FileLister {
-    private static final Logger _log = SLogger.getLogger(); 
+    private static final Logger LOGGER = SLogger.getLogger(); 
             
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(FileLister.class);
 
-    final static String ASTERISK = "*";
+    private static final String ASTERISK = "*";
 
     /**
      * Recursively find all files represented by path with wild-card character 
@@ -89,8 +90,8 @@ final class FileLister {
             // get parent file of the head, add "temp" to handle input like /path/to/parent/* 
             File parent = (new File(head + "temp")).getParentFile();
             if (parent == null) {
-            	if (_log.isLoggable(Level.FINEST)){
-            		_log.log(Level.FINEST, _strings.get("parentFileNotSpecified"));
+            	if (LOGGER.isLoggable(Level.FINEST)){
+            		LOGGER.log(Level.FINEST, STRINGS.get("parentFileNotSpecified"));
             	}
                 parent = (new File(head + "temp").getAbsoluteFile()).getParentFile();
             }
@@ -154,8 +155,8 @@ final class FileLister {
             }
             else if (File.separator.equals("\\") && pathPattern.contains("/")) {
                 pathPattern = pathPattern.replace("/", File.separator);
-                if (_log.isLoggable(Level.FINEST)) {
-                	_log.log(Level.FINEST, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                	LOGGER.log(Level.FINEST, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
                 }
                 numTries++;
             } else {
@@ -175,7 +176,7 @@ final class FileLister {
         List<File> retFiles = new LinkedList<File>();
         if (!rootfile.exists()) {
             // No operation, return empty list
-            _log.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, rootfile.getAbsolutePath());
+            LOGGER.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, rootfile.getAbsolutePath());
         }
         else if (!rootfile.isDirectory()) {
             retFiles.add(rootfile);
@@ -193,18 +194,18 @@ final class FileLister {
      * Custom filename filter to deal with wild-card character
      */
    private static class WildCardFilenameFilter implements FilenameFilter {
-        private String _pattern;
-        private boolean _endsWithWc;
+        private final String pattern;
+        private final boolean endsWithWc;
 
         public WildCardFilenameFilter(String pattern) {
-            _pattern = pattern;
-            _endsWithWc = _pattern.endsWith(ASTERISK);
+            this.pattern = pattern;
+            endsWithWc = pattern.endsWith(ASTERISK);
         }
 
         @Override
         public boolean accept(File dir, String name) {
             String fullpath = dir + File.separator + name;
-            StringTokenizer tokenizedPattern = new StringTokenizer(_pattern, ASTERISK);
+            StringTokenizer tokenizedPattern = new StringTokenizer(pattern, ASTERISK);
             while (tokenizedPattern.hasMoreTokens()) {
                 String subpattern = tokenizedPattern.nextToken();
                 int start = fullpath.indexOf(subpattern);
@@ -213,7 +214,7 @@ final class FileLister {
                 }
                 fullpath = fullpath.substring(start + subpattern.length());
             }
-            return fullpath.length() == 0 || _endsWithWc;
+            return fullpath.length() == 0 || endsWithWc;
         }
     }
 }

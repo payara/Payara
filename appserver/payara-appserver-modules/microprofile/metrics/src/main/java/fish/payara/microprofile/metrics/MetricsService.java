@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
@@ -107,7 +108,16 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        initMetadataConfig(getConfig(), false);
+        // Only start if metrics are enabled
+        if (isMetricsEnabled()) {
+            Executors.newSingleThreadExecutor().submit(new Runnable(){ 
+                @Override
+                public void run(){
+                initMetadataConfig(getConfig(), false);
+                }
+            });
+            
+        }
     }
 
     @Override
