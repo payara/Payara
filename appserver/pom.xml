@@ -42,8 +42,8 @@
 -->
 <!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
-    
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -142,7 +142,7 @@
         <jms-api.version>2.0.1</jms-api.version>
 
         <!-- 5.1.1-b02.payara-p1 -->
-        <mq.version>5.1.1.final.payara-p4</mq.version>
+        <mq.version>5.1.2-SNAPSHOT</mq.version>
 
         <!-- Batch -->
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
@@ -692,7 +692,7 @@
                 <artifactId>javax.security.enterprise</artifactId>
                 <version>${javax.security.enterprise.version}</version>
             </dependency>
-            
+
             <!-- JACC -->
             <dependency>
                 <groupId>javax.security.jacc</groupId>
