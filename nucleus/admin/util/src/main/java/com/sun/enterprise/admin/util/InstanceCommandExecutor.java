@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -59,16 +60,15 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements Runnable, InstanceCommand {
 
-    private Server server;
-    private ParameterMap params;
-    private ActionReport aReport;
-    private String commandName;
-    private FailurePolicy offlinePolicy;
-    private FailurePolicy failPolicy;
-    private InstanceCommandResult result;
+    private final Server server;
+    private final ParameterMap params;
+    private final ActionReport aReport;
+    private final String commandName;
+    private final FailurePolicy offlinePolicy;
+    private final FailurePolicy failPolicy;
+    private final InstanceCommandResult result;
 
-    private static final LocalStringManagerImpl strings =
-                        new LocalStringManagerImpl(InstanceCommandExecutor.class);
+    private static final LocalStringManagerImpl STRINGS = new LocalStringManagerImpl(InstanceCommandExecutor.class);
 
     public InstanceCommandExecutor(ServiceLocator habitat,
                                    String name, FailurePolicy fail, FailurePolicy offline, Server server,
@@ -96,9 +96,10 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
         try {
             executeCommand(params);
             aReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            if(StringUtils.ok(getCommandOutput()))
-                aReport.setMessage(strings.getLocalString("ice.successmessage", 
+            if(StringUtils.ok(getCommandOutput())) {
+                aReport.setMessage(STRINGS.getLocalString("ice.successmessage", 
                         "{0}:\n{1}\n", getServer().getName(), getCommandOutput()));
+            }
             Map<String, String> attributes = this.getAttributes();
             for(Map.Entry<String, String> ae : attributes.entrySet()) {
                 String key = ae.getKey();
@@ -113,31 +114,27 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
                 String keyWithoutSuffix = key.substring(0, key.lastIndexOf("_name"));
                 aReport.getTopMessagePart().addProperty(keyWithoutSuffix, attributes.get(keyWithoutSuffix+"_value"));
             }
-            /*
-            else
-                aReport.setMessage(strings.getLocalString("glassfish.clusterexecutor.commandSuccessful",
-                    "Command {0} executed successfully on server instance {1}", commandName, getServer().getName()));
-                    */
+
         } catch (CommandException cmdEx) {
             ActionReport.ExitCode finalResult;
             if(cmdEx.getCause() instanceof java.net.ConnectException) {
                 finalResult = FailurePolicy.applyFailurePolicy(offlinePolicy, ActionReport.ExitCode.FAILURE);
                 if(!finalResult.equals(ActionReport.ExitCode.FAILURE))
-                    aReport.setMessage(strings.getLocalString("clusterutil.warnoffline",
+                    aReport.setMessage(STRINGS.getLocalString("clusterutil.warnoffline",
                         "WARNING: Instance {0} seems to be offline; command {1} was not replicated to that instance",
                             getServer().getName(), commandName));
                 else
-                    aReport.setMessage(strings.getLocalString("clusterutil.failoffline",
+                    aReport.setMessage(STRINGS.getLocalString("clusterutil.failoffline",
                             "FAILURE: Instance {0} seems to be offline; command {1} was not replicated to that instance",
                             getServer().getName(), commandName));
             } else {
                 finalResult = FailurePolicy.applyFailurePolicy(failPolicy, ActionReport.ExitCode.FAILURE);
                 if(finalResult.equals(ActionReport.ExitCode.FAILURE))
-                    aReport.setMessage(strings.getLocalString("clusterutil.commandFailed",
+                    aReport.setMessage(STRINGS.getLocalString("clusterutil.commandFailed",
                         "FAILURE: Command {0} failed on server instance {1}: {2}", commandName, getServer().getName(),
                             cmdEx.getMessage()));
                 else
-                    aReport.setMessage(strings.getLocalString("clusterutil.commandWarning",
+                    aReport.setMessage(STRINGS.getLocalString("clusterutil.commandWarning",
                         "WARNING: Command {0} did not complete successfully on server instance {1}: {2}",
                             commandName, getServer().getName(), cmdEx.getMessage()));
             }

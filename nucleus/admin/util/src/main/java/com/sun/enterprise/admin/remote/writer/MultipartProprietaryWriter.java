@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.writer;
 
 import com.sun.enterprise.admin.remote.ParamsWithPayload;
@@ -111,11 +113,11 @@ public class MultipartProprietaryWriter implements ProprietaryWriter {
                         getDelegate().write(b);
                     }
                     @Override
-                    public void write(byte b[]) throws IOException {
+                    public void write(byte[] b) throws IOException {
                         getDelegate().write(b);
                     }
                     @Override
-                    public void write(byte b[], int off, int len) throws IOException {
+                    public void write(byte[] b, int off, int len) throws IOException {
                         getDelegate().write(b, off, len);
                     }
                     @Override

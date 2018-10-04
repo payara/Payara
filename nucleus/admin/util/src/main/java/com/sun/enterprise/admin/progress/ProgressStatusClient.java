@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundatin and/or affiliates
+
 package com.sun.enterprise.admin.progress;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -58,8 +60,7 @@ import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
  */
 public class ProgressStatusClient {
     
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ProgressStatusClient.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ProgressStatusClient.class);
     
     private ProgressStatus status;
     private final Map<String, ProgressStatus> map = new HashMap<String, ProgressStatus>();
@@ -128,7 +129,7 @@ public class ProgressStatusClient {
         }
     }
     
-    /** Applies event on existing structures. If not appliable do nothing.
+    /** Applies event on existing structures. If not applicable do nothing.
      */
     public synchronized void mirror(ProgressStatusEvent event) {
         if (event == null) {
@@ -173,7 +174,7 @@ public class ProgressStatusClient {
             //Message
             String message = cp.getLastMessage();
             if (!StringUtils.ok(message) && StringUtils.ok(cp.getName())) {
-                message = strings.getString("progressstatus.message.starting", "Starting");
+                message = STRINGS.getString("progressstatus.message.starting", "Starting");
             }
             if (StringUtils.ok(message)) {
                 result.append(": ");

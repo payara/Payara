@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.commands;
 
@@ -115,8 +116,9 @@ import javax.inject.Named;
         })
 })
 public class CreateSsl implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateSsl.class);
+    
+     private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(CreateSsl.class);
+    
     @Param(name = "certname", alias="certNickname")
     String certName;
     @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
@@ -162,14 +164,12 @@ public class CreateSsl implements AdminCommand {
         if (newConfig!=null) {
             config = newConfig;
         }
-        if (!"iiop-service".equals(type)) {
-            if (listenerId == null) {
-                report.setMessage(localStrings.getLocalString("create.ssl.listenerid.missing",
-                    "Listener id needs to be specified"));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
+        if (!"iiop-service".equals(type) && (listenerId == null)) {
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.ssl.listenerid.missing", "Listener id needs to be specified"));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
+        
         SslConfigHandler configHandler = habitat.getService(SslConfigHandler.class, type);
         if (configHandler!=null) {
             configHandler.create(this, report);
@@ -179,7 +179,7 @@ public class CreateSsl implements AdminCommand {
     }
 
     public void reportError(ActionReport report, TransactionFailure e) {
-        report.setMessage(localStrings.getLocalString("create.ssl.fail",
+        report.setMessage(LOCAL_STRINGS.getLocalString("create.ssl.fail",
             "Creation of Ssl in {0} failed", listenerId));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setFailureCause(e);
@@ -235,7 +235,7 @@ public class CreateSsl implements AdminCommand {
         }
         if (jmxConnector == null) {
             report.setMessage(
-                localStrings.getLocalString("create.ssl.jmx.notfound",
+                LOCAL_STRINGS.getLocalString("create.ssl.jmx.notfound",
                     "JMX Connector named {0} to which this ssl element is " +
                         "being added does not exist.", listenerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -243,7 +243,7 @@ public class CreateSsl implements AdminCommand {
         }
         if (jmxConnector.getSsl() != null) {
             report.setMessage(
-                localStrings.getLocalString("create.ssl.jmx.alreadyExists",
+                LOCAL_STRINGS.getLocalString("create.ssl.jmx.alreadyExists",
                     "IIOP Listener named {0} to which this ssl element is " +
                         "being added already has an ssl element.", listenerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

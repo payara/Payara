@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.cli.resources;
 
@@ -50,25 +51,16 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 /**
- * Created with IntelliJ IDEA.
- * User: naman
- * Date: 2/8/12
- * Time: 4:11 PM
- * To change this template use File | Settings | File Templates.
+ * 
+ * @author naman
+ * @since 4.0
  */
 public class UniqueResourceNameValidator implements ConstraintValidator<UniqueResourceNameConstraint, Resource> {
 
     Domain domain = null;
 
+    @Override
     public void initialize(final UniqueResourceNameConstraint constraint) {
-
-        /*ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");
-        if (locator == null) return;
-
-        ConfigBeansUtilities cbu = locator.getService(ConfigBeansUtilities.class);
-        if (cbu == null) return;
-
-        domain = cbu.getDomain();*/
 
         ServiceLocator habitat = Globals.getDefaultHabitat();
         if (habitat == null) return; // due to: http://java.net/jira/browse/GLASSFISH-19043
@@ -89,7 +81,7 @@ public class UniqueResourceNameValidator implements ConstraintValidator<UniqueRe
 
                         for (Class resourceClass : resourceInterfaces) {
                             for (Class resClass : resInterfaces) {
-                                if (resClass.getName().equals(resourceClass.getName())) {
+                                if (resClass.isAssignableFrom(resourceClass)) {
                                     return true;
                                 }
                             }
