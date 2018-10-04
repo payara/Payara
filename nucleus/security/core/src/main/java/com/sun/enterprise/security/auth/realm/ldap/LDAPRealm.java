@@ -448,8 +448,7 @@ public final class LDAPRealm extends BaseRealm {
      * See bugs 4646133,4646270 on why this is here.
      *
      */
-    private void setGroupNames(String username, String[] groups)
-    {
+    private void setGroupNames(String username, String[] groups) {
         LinkedList groupsList = new LinkedList();
         groupsList.addAll(Arrays.asList(groups));
         groupCache.put(username, groupsList);
