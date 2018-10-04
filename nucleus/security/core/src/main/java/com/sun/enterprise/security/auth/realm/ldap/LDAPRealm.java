@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -63,10 +64,17 @@ import com.sun.jndi.ldap.obj.GroupOfURLs;
 import javax.security.auth.x500.X500Principal;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Vector;
+import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
+import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 
+import com.sun.enterprise.security.auth.realm.IASRealm;
+import java.util.Arrays;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import org.glassfish.internal.api.RelativePathResolver;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Realm wrapper for supporting LDAP authentication.

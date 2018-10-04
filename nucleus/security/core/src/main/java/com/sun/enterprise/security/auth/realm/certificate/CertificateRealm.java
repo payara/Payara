@@ -38,6 +38,8 @@
  * holder.
  */
 
+package com.sun.enterprise.security.auth.realm.certificate;
+
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Set;
@@ -46,7 +48,6 @@ import javax.security.auth.Subject;
 
 import org.glassfish.security.common.Group;
 
-import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
@@ -55,16 +56,13 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 
 import com.sun.enterprise.security.auth.realm.IASRealm;
+
 import java.security.Principal;
 import javax.security.auth.callback.Callback;
-
-
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.logging.Level;
-import javax.security.auth.callback.Callback;
 
 
 import org.jvnet.hk2.annotations.Service;

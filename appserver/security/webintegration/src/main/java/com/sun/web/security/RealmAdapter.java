@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
@@ -164,6 +164,7 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import javax.security.auth.x500.X500Principal;
 
 /**
  * This is the realm adapter used to authenticate users and authorize access to web resources. The authenticate method
@@ -653,8 +654,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             if (certs != null) {
                 Subject subject = new Subject();
                 X509Certificate certificate = certs[0];
-                X500Name x500Name = (X500Name) certificate.getSubjectDN();
-                subject.getPublicCredentials().add(x500Name);
+                X500Principal x500principal = (X500Principal) certificate.getSubjectDN();
+                subject.getPublicCredentials().add(x500principal);
                 // Put the certificate chain as an List in the subject, to be accessed by user's LoginModule.
                 final List<X509Certificate> certificateCred = Arrays.asList(certs);
                 subject.getPublicCredentials().add(certificateCred);
@@ -1832,8 +1833,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             this.request = request;
         }
 
-        subject.getPublicCredentials().add(certificates[0].getSubjectX500Principal());
-        subject.getPublicCredentials().add(asList(certificates));
+        @Override
+        public void setResponseMessage(Object response) {
+            this.response = response;
+        }
 
         @Override
         public Map getMap() {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.auth.login;
 
@@ -50,7 +51,6 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.x500.X500Principal;
-import sun.security.x509.X500Name;
 import com.sun.logging.*;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
@@ -249,7 +249,7 @@ public class LoginContextDriver  {
         } else if (cls.equals(GSSUPName.class)) {
             doGSSUPLogin(subject);
             
-        } else if (cls.equals(X500Name.class)) {
+        } else if (cls.equals(X500Principal.class)) {
             doX500Login(subject, null);
             
         } else {
@@ -501,13 +501,13 @@ public class LoginContextDriver  {
 
         String userName = "";
         try {
-            final X500Name x500Name = new X500Name(
+            final X500Principal x500principl = new X500Principal(
                 x500Principal.getName(X500Principal.RFC1779));
-            userName = x500Name.toString();
+            userName = x500principl.toString();
 
             AppservAccessController.doPrivileged(new PrivilegedAction(){
                 public java.lang.Object run(){
-                    fs.getPublicCredentials().add(x500Name);
+                    fs.getPublicCredentials().add(x500principl);
                     return fs;
                 }
             });
@@ -520,7 +520,7 @@ public class LoginContextDriver  {
                 LoginContext lg = new LoginContext(jaasCtx, fs, dummyCallback);
                 lg.login();
             }
-            certRealm.authenticate(fs, x500Name);
+            certRealm.authenticate(fs, x500principl);
         } catch(Exception ex) {
             if (_logger.isLoggable(Level.INFO)) {
                 _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError,
@@ -683,8 +683,8 @@ public class LoginContextDriver  {
        String user = null;
        String realm_name = null;
        try{
-            X500Name x500name = (X500Name)getPublicCredentials(s, X500Name.class);
-            user = x500name.getName();
+            X500Principal x500principal = (X500Principal)getPublicCredentials(s, X500Principal.class);
+            user = x500principal.getName();
         
             // In the RI-inherited implementation this directly creates
             // some credentials and sets the security context. This means
@@ -706,7 +706,7 @@ public class LoginContextDriver  {
                     LoginContext lg = new LoginContext(jaasCtx, s, new ServerLoginCallbackHandler(user, null, appModuleID));
                     lg.login();
                 }
-                certRealm.authenticate(s, x500name);
+                certRealm.authenticate(s, x500principal);
                 realm_name = CertificateRealm.AUTH_TYPE;
                 if(getAuditManager().isAuditOn()){
                     getAuditManager().authentication(user, realm_name, true);

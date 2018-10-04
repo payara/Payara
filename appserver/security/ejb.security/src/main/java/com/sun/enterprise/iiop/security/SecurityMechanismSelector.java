@@ -65,7 +65,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 // GSS Related Functionality
 
-import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 import org.omg.CORBA.ORB;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
@@ -76,16 +75,20 @@ import com.sun.corba.ee.spi.ior.iiop.IIOPAddress;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate;
 import com.sun.corba.ee.spi.transport.SocketInfo;
 import com.sun.corba.ee.org.omg.CSIIOP.*;
-import org.ietf.jgss.Oid;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import java.util.Enumeration;
-import sun.security.x509.X500Name;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.common.ClientSecurityContext;
+import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
+import java.util.Arrays;
+import java.util.logging.Level;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
@@ -169,6 +172,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
     public SecurityMechanismSelector() {
     }
     
+    @Override
     public void postConstruct() {
         try {
             orbHelper = Lookups.getGlassFishORBHelper();
@@ -181,12 +185,9 @@ public final class SecurityMechanismSelector implements PostConstruct {
 
 	    // initialize corbaIORDescSet with security config for CORBA objects
 	    corbaIORDescSet = new HashSet<EjbIORConfigurationDescriptor>();
-	    EjbIORConfigurationDescriptor iorDesc = 
-					    new EjbIORConfigurationDescriptor();
-	    EjbIORConfigurationDescriptor iorDesc2 = 
-					    new EjbIORConfigurationDescriptor();
-	    String serverSslReqd =
-                    (orbHelper.getCSIv2Props()).getProperty(GlassFishORBHelper.ORB_SSL_SERVER_REQUIRED);
+	    EjbIORConfigurationDescriptor iorDesc = new EjbIORConfigurationDescriptor();
+	    EjbIORConfigurationDescriptor iorDesc2 = new EjbIORConfigurationDescriptor();
+	    String serverSslReqd = (orbHelper.getCSIv2Props()).getProperty(GlassFishORBHelper.ORB_SSL_SERVER_REQUIRED);
 	    if ( serverSslReqd != null && serverSslReqd.equals("true") ) {
 		iorDesc.setIntegrity(EjbIORConfigurationDescriptor.REQUIRED);
 		iorDesc.setConfidentiality(
@@ -1554,7 +1555,7 @@ as_context_mech
             } else {
                 // Set the transport principal in subject and
                 // return the X500Principal class
-                securityContext = new SecurityContext();
+                SecurityContext securityContext = new SecurityContext();
                 X500Principal x500principal = certChain[0].getSubjectX500Principal();
                 securityContext.subject = new Subject();
                 securityContext.subject.getPublicCredentials().add(x500principal);
