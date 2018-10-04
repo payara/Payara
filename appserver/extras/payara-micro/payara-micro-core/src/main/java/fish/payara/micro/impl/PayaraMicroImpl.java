@@ -987,6 +987,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
         resetLogging();
+        runtimeDir.processDirectoryInformation();
 
         // build the runtime
         BootstrapProperties bprops = new BootstrapProperties();
