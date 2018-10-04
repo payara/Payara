@@ -279,7 +279,7 @@ public final class ModelUtils {
                 || type == float.class || type == Float.class || type == double.class || type == Double.class) {
             return SchemaType.NUMBER;
         }
-        if (type.isArray()) {
+        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
             return SchemaType.ARRAY;
         }
         if (String.class.isAssignableFrom(type)) {
