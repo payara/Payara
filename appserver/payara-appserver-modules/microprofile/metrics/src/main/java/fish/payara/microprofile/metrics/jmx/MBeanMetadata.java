@@ -49,8 +49,11 @@ import org.eclipse.microprofile.metrics.MetricType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MBeanMetadata extends Metadata {
 
-    @XmlElement(name="mbean")
+    @XmlElement(name = "mbean")
     private String mBean;
+
+    @XmlElement
+    private boolean dynamic = true;
 
     public MBeanMetadata() {
         super(null, MetricType.INVALID);
@@ -68,5 +71,14 @@ public class MBeanMetadata extends Metadata {
     public void setMBean(String mBean) {
         this.mBean = mBean;
     }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
+
 
 }

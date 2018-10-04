@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,8 @@
  */
 package fish.payara.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.cli.RestartDomainCommand;
+import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
@@ -69,14 +69,14 @@ public class RestartDomainsCommand extends RestartDomainCommand {
     
     @Override
     protected int executeCommand() throws CommandException {
-        try{
-        String[] domains = userArgDomainName.split(",");
-        for (String domainName : domains){
-            setDomainName(domainName);
-            super.executeCommand();
-            logger.fine("Restarted domain " + domainName);
-        }
-        return 0;
+        try {
+            String[] domains = userArgDomainName.split(",");
+            for (String domainName : domains) {
+                setDomainName(domainName);
+                super.executeCommand();
+                logger.log(Level.FINE, "Restarted domain {0}", domainName);
+            }
+            return 0;
         } catch (Exception ex){
             throw new CommandException(ex.getLocalizedMessage());
         }

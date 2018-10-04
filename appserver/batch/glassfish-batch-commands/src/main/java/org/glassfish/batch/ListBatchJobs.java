@@ -121,11 +121,11 @@ public class ListBatchJobs extends AbstractLongListCommand {
     @Param(primary = true, optional = true)
     String jobName;
     
-    @Min(value = 0, message = "Offset value needs to be greter than 0")
+    @Min(value = 0, message = "Offset value needs to be greater than 0")
     @Param(name = "offset", optional = true, defaultValue = "0")
     String offSetValue;
 
-    @Min(value = 0, message = "Limit value needs to be greter than 0")
+    @Min(value = 0, message = "Limit value needs to be greater than 0")
     @Param(name = "limit", optional = true, defaultValue = "2000")
     String limitValue;
 
@@ -521,8 +521,8 @@ public class ListBatchJobs extends AbstractLongListCommand {
         String columnID = "jobinstanceid";
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, parameter1);
-                preparedStatement.setString(2, parameter2);
+                preparedStatement.setInt(1, Integer.parseInt(parameter1));
+                preparedStatement.setInt(2, Integer.parseInt(parameter2));
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {

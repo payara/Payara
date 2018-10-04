@@ -113,7 +113,7 @@ public class BulkheadInterceptor implements Serializable {
                     && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Bulkhead.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
-                if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+                if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
                     // Only increment the invocations metric if the Retry annotation isn't present
                     if (FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
                         faultToleranceService.incrementCounterMetric(metricRegistry, 
@@ -205,10 +205,10 @@ public class BulkheadInterceptor implements Serializable {
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
                 Bulkhead.class);
         
-        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(appName,
-                invocationContext.getMethod(), value);
+        Semaphore bulkheadExecutionSemaphore = faultToleranceService.getBulkheadExecutionSemaphore(appName, 
+                invocationContext.getTarget(), invocationContext.getMethod(), value);
         
-        if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+        if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
             Gauge<Long> concurrentExecutionsGauge = metricRegistry.getGauges()
                     .get("ft." + fullMethodSignature + ".bulkhead.concurrentExecutions");
 
@@ -223,10 +223,10 @@ public class BulkheadInterceptor implements Serializable {
                
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (FaultToleranceCdiUtils.getAnnotation(beanManager, Asynchronous.class, invocationContext) != null) {
-            Semaphore bulkheadExecutionQueueSemaphore = faultToleranceService.getBulkheadExecutionQueueSemaphore(
-                    appName, invocationContext.getMethod(), waitingTaskQueue);
+            Semaphore bulkheadExecutionQueueSemaphore = faultToleranceService.getBulkheadExecutionQueueSemaphore(appName,
+                    invocationContext.getTarget(), invocationContext.getMethod(), waitingTaskQueue);
 
-            if (faultToleranceService.isFaultToleranceMetricsEnabled(appName, config)) {
+            if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
                 Gauge<Long> waitingQueueGauge = metricRegistry.getGauges()
                         .get("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population");
         

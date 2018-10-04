@@ -55,7 +55,10 @@ public final class OpenIdUtil {
 
     public static final String DEFAULT_JWT_SIGNED_ALGORITHM = "RS256";
 
-    public final static String DEFAULT_HASH_ALGORITHM = "SHA-256";
+    public static final String DEFAULT_HASH_ALGORITHM = "SHA-256";
+
+    private OpenIdUtil() {
+    }
 
     public static <T> T getConfiguredValue(Class<T> type, T value, Config provider, String mpConfigKey) {
         T result = value;

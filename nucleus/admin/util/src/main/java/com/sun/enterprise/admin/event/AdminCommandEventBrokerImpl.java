@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.event;
 
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
@@ -87,10 +89,7 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
     }
     
     private final List<ListenerGroup> listenerGroups = new ArrayList<ListenerGroup>();
-    private static final Logger logger = AdminLoggerInfo.getLogger();
-
-    public AdminCommandEventBrokerImpl() {
-    }
+    private static final Logger LOGGER = AdminLoggerInfo.getLogger();
     
     @Override
     public void fireEvent(String name, Object event) {
@@ -115,7 +114,7 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
             try {
                 listener.onAdminCommandEvent(name, event);
             } catch (Exception ex) {
-                logger.log(Level.WARNING, AdminLoggerInfo.mExceptionFromEventListener, ex);
+                LOGGER.log(Level.WARNING, AdminLoggerInfo.mExceptionFromEventListener, ex);
             }
         }
     }

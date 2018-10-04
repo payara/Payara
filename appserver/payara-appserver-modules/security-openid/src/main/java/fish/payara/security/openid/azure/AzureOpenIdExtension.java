@@ -120,7 +120,7 @@ public class AzureOpenIdExtension extends OpenIdExtension {
 
     static OpenIdAuthenticationDefinition toOpenIdAuthDefinition(AzureAuthenticationDefinition azureDefinition) {
 
-        OpenIdAuthenticationDefinition definition = new OpenIdAuthenticationDefinition() {
+        return new OpenIdAuthenticationDefinition() {
 
             @Override
             public String providerURI() {
@@ -208,7 +208,6 @@ public class AzureOpenIdExtension extends OpenIdExtension {
                 return azureDefinition.jwksReadTimeout();
             }
         };
-        return definition;
     }
 
 }

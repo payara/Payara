@@ -190,28 +190,6 @@ public class CliActionReport extends ActionReport {
         throw new UnsupportedOperationException();
     }
 
-//    public static void getCombinedMessages(CliActionReport aReport, StringBuilder sb) {
-//        if (aReport == null || sb == null)
-//            return;
-//        String mainMsg = ""; //this is the message related to the topMessage
-//        String failMsg; //this is the message related to failure cause
-//        // Other code in the server may write something like report.setMessage(exception.getMessage())
-//        // and also set report.setFailureCause(exception). We need to avoid the duplicate message.
-//        if (aReport.getMessage() != null && aReport.getMessage().length() != 0) {
-//            if (sb.length() > 0) sb.append(EOL);
-//            sb.append(aReport.getMessage());
-//        }
-//        if (aReport.getFailureCause() != null && aReport.getFailureCause().getMessage() != null && aReport.getFailureCause().getMessage().length() != 0) {
-//            failMsg = aReport.getFailureCause().getMessage();
-//            if (!failMsg.equals(mainMsg))
-//                if (sb.length() > 0) sb.append(EOL);
-//                sb.append(failMsg);
-//        }
-//        for (CliActionReport sub : aReport.subActions) {
-//            getCombinedMessages(sub, sb);
-//        }
-//    }
-
     @Override
     public boolean hasSuccesses() {
         return has(this,ExitCode.SUCCESS);

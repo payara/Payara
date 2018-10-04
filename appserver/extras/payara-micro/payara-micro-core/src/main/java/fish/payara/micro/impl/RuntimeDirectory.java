@@ -64,6 +64,8 @@ import java.util.logging.Logger;
  */
 class RuntimeDirectory {
 
+    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
+
     private final File directory;
     private boolean isTempDir = true;
 
@@ -80,6 +82,9 @@ class RuntimeDirectory {
      */
     RuntimeDirectory() throws IOException, URISyntaxException {
         // check if we have exploded our runtime
+        // TODO This logic is not entirely correct in regard the isTempDir.
+        // fish.payara.micro.tmpdir is also set by ExplodedURLClassloader, possibly based on the --rootdir.
+        // And then it is not a temporary directory.
         String runTimeDir = System.getProperty("fish.payara.micro.tmpdir");
         if (runTimeDir == null) {
             String tmpDir = System.getProperty("glassfish.embedded.tmpdir");
@@ -112,6 +117,13 @@ class RuntimeDirectory {
 
     public File getDirectory() {
         return directory;
+    }
+
+    public void processDirectoryInformation() {
+        if (isTempDir) {
+            LOGGER.warning("Payara Micro Runtime directory is located in a temporary file location which can be cleaned by system processes.");
+        }
+        LOGGER.info(String.format("Payara Micro Runtime directory is located at %s", directory.getAbsolutePath()));
     }
 
     private void unpackRuntime() throws URISyntaxException, IOException {

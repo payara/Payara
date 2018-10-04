@@ -521,7 +521,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
                 sqlTraceDelegator.deregisterSQLTraceListener(RequestTracingListener.class);
             }
 
-            sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
+            if (!isSlowQueryLoggingEnabled()) {
+                sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
+            }
             if (connectionPool != null && isSlowQueryLoggingEnabled()) {
                 double threshold = Double.valueOf(connectionPool.getSlowQueryThresholdInSeconds());
                 if (threshold > 0) {
@@ -1358,6 +1360,10 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     }
 
     private boolean isSlowQueryLoggingEnabled() {
-        return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
+        if (connectionPool == null) {
+            return false;
+        } else {
+            return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
+        }
     }
 }

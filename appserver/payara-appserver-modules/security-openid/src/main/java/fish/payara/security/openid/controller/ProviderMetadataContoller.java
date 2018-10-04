@@ -46,6 +46,7 @@ import static java.util.Objects.isNull;
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -96,8 +97,10 @@ public class ProviderMetadataContoller {
             if (response.getStatus() == Status.OK.getStatusCode()) {
                 // Get back the result of the REST request
                 String responseBody = response.readEntity(String.class);
-                JsonObject responseObject = Json.createReader(new StringReader(responseBody)).readObject();
-                providerDocuments.put(providerURI, responseObject);
+                try (JsonReader reader = Json.createReader(new StringReader(responseBody))) {
+                    JsonObject responseObject = reader.readObject();
+                    providerDocuments.put(providerURI, responseObject);
+                }
             } else {
                 throw new IllegalStateException(String.format(
                         "Unable to retrieve OpenID Provider's [%s] configuration document, HTTP respons code : [%s] ",

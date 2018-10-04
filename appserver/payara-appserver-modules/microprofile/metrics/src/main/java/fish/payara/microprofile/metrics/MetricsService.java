@@ -44,14 +44,18 @@ import fish.payara.microprofile.metrics.cdi.MetricsHelper;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,6 +101,10 @@ public class MetricsService implements EventListener {
     
     private Boolean metricsSecure;
 
+    private List<MBeanMetadata> unresolvedBaseMetadataList;
+
+    private List<MBeanMetadata> unresolvedVendorMetadataList;
+
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
     public MetricsService() {
@@ -107,7 +115,14 @@ public class MetricsService implements EventListener {
     public void init() {
         events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
-        initMetadataConfig(getConfig(), false);
+        // Only start if metrics are enabled
+        if (isMetricsEnabled()) {
+            PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
+            payaraExecutor.submit(() -> {
+                MBeanMetadataConfig metadataConfig = getConfig();
+                initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+            });
+        }
     }
 
     @Override
@@ -121,32 +136,36 @@ public class MetricsService implements EventListener {
         }
     }
 
-     /**
-     * Initialise metrics from the
-     * metrics.xml containing the base & vendor metrics metadata.
+    /**
+     * Initialize metrics from the metrics.xml containing the base & vendor
+     * metrics metadata.
      *
      * @param metadataConfig
      */
-    private void initMetadataConfig(MBeanMetadataConfig metadataConfig, boolean isRetry) {
+    private void initMetadataConfig(List<MBeanMetadata> baseMetadataList, List<MBeanMetadata> vendorMetadataList, boolean isRetry) {
         Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
-        helper.registerMetadata(
-                getOrAddRegistry(BASE.getName()),
-                metadataConfig.getBaseMetadata(),
-                globalTags, isRetry);
-        helper.registerMetadata(
-                getOrAddRegistry(VENDOR.getName()),
-                metadataConfig.getVendorMetadata(),
-                globalTags, isRetry);
+        if (!baseMetadataList.isEmpty()) {
+            unresolvedBaseMetadataList = helper.registerMetadata(
+                    getOrAddRegistry(BASE.getName()),
+                    baseMetadataList,
+                    globalTags, isRetry);
+        }
+        if (!vendorMetadataList.isEmpty()) {
+            unresolvedVendorMetadataList = helper.registerMetadata(
+                    getOrAddRegistry(VENDOR.getName()),
+                    vendorMetadataList,
+                    globalTags, isRetry);
+        }
     }
-    
+
     /**
-     * Rereads the domain.xml and registers MBeans if they have been started after
-     * the metrics service.
+     * Registers unresolved MBeans if they have been started after the metrics
+     * service.
      */
-    public void reregisterMetadataConfig(){
-        initMetadataConfig(getConfig(), true);
+    public void reregisterMetadataConfig() {
+        initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
     }
-    
+
     private MBeanMetadataConfig getConfig() {
         
         InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");

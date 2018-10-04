@@ -39,16 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.visitor;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOperation;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -89,8 +87,6 @@ import org.eclipse.microprofile.openapi.annotations.servers.Servers;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.openapi.annotations.tags.Tags;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.PathItem;
-import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
@@ -181,7 +177,7 @@ public class OpenApiWalker implements ApiWalker {
         for (Class<?> clazz : classes) {
 
             processAnnotation(clazz, annotationClass, annotationFunction, altClass, altFunction,
-                    new OpenApiContext(api, getResourcePath(clazz)));
+                    new OpenApiContext(api, getResourcePath(clazz, resourceMapping)));
 
             for (Field field : clazz.getDeclaredFields()) {
                 processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
@@ -191,11 +187,11 @@ public class OpenApiWalker implements ApiWalker {
             for (Method method : clazz.getDeclaredMethods()) {
 
                 processAnnotation(method, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, getResourcePath(method), getOperation(method)));
+                        new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
 
                 for (java.lang.reflect.Parameter parameter : method.getParameters()) {
                     processAnnotation(parameter, annotationClass, annotationFunction, altClass, altFunction,
-                            new OpenApiContext(api, getResourcePath(method), getOperation(method)));
+                            new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
                 }
             }
         }
@@ -245,50 +241,4 @@ public class OpenApiWalker implements ApiWalker {
             }
         }
     }
-
-    private org.eclipse.microprofile.openapi.models.Operation getOperation(Method method) {
-        String path = getResourcePath(method);
-        if (path != null) {
-            PathItem pathItem = api.getPaths().get(path);
-            if (pathItem != null) {
-                HttpMethod httpMethod = getHttpMethod(method);
-                return pathItem.readOperationsMap().get(httpMethod);
-            }
-        }
-        return null;
-    }
-
-    private String getResourcePath(GenericDeclaration declaration) {
-        String path = null;
-        if (declaration instanceof Method) {
-            Method method = (Method) declaration;
-
-            // If the method is a valid resource
-            if (method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(POST.class)
-                    || method.isAnnotationPresent(PUT.class) || method.isAnnotationPresent(DELETE.class)
-                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)
-                    || method.isAnnotationPresent(PATCH.class)) {
-                if (method.isAnnotationPresent(Path.class)) {
-                    path = getResourcePath(method.getDeclaringClass()) + "/"
-                            + method.getDeclaredAnnotation(Path.class).value();
-                } else {
-                    path = getResourcePath(method.getDeclaringClass());
-                }
-            }
-        }
-        if (declaration instanceof Class) {
-            Class<?> clazz = (Class<?>) declaration;
-
-            // If the class is a resource and contains a mapping
-            if (clazz.isAnnotationPresent(Path.class)) {
-                for (Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
-                    if (entry.getValue() != null && entry.getValue().contains(clazz)) {
-                        path = entry.getKey() + "/" + clazz.getDeclaredAnnotation(Path.class).value();
-                    }
-                }
-            }
-        }
-        return normaliseUrl(path);
-    }
-
 }

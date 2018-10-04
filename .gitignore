@@ -5,6 +5,7 @@ appserver/packager/pkg_conf.py
 .classpath
 .project
 .settings/
+.factorypath
 target/
 *~
 *.iml
@@ -24,3 +25,4 @@ nb-configuration.xml
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 /nucleus/payara-modules/service-exemplar/nbproject/
 /nucleus/admin/server-mgmt/nbproject/
+appserver/tests/quicklook/quicklook_summary.txt

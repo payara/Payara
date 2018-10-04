@@ -64,6 +64,7 @@ public final class HttpConnectorAddress {
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
+    private static final String DEFAULT_PROTOCOL = "TLSv1.2";
 
     private String host;
     private int    port;
@@ -148,7 +149,7 @@ public final class HttpConnectorAddress {
         httpsCnx.setSSLSocketFactory(getOrCreateSSLSocketFactory());
     }
 
-    private synchronized SSLSocketFactory getOrCreateSSLSocketFactory() throws IOException {
+    private synchronized SSLSocketFactory getOrCreateSSLSocketFactory() {
         /*
          * The SSL socket factory will have been assigned a value if this
          * connection was made from the DAS or an instance...that code would have
@@ -176,8 +177,9 @@ public final class HttpConnectorAddress {
                  * this value if it has. If it hasn't, or an unrecognised 
                  * protocol is entered, log a message and use TLSv1.2
                  */
-                if (System.getProperty("fish.payara.clientHttpsProtocol") != null) {
-                    switch (System.getProperty("fish.payara.clientHttpsProtocol")) {
+                String clientHttpsProtocol = System.getProperty("fish.payara.clientHttpsProtocol");
+                if (clientHttpsProtocol != null) {
+                    switch (clientHttpsProtocol) {
                         case "TLSv1": protocol = "TLSV1";
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
@@ -196,9 +198,8 @@ public final class HttpConnectorAddress {
                                                 protocol);
                                         break;
                         
-                        default:        protocol = "TLSv1.2";
-                                        String[] logParams = {protocol, 
-                                                System.getProperty("fish.payara.clientHttpsProtocol")};
+                        default:        protocol = DEFAULT_PROTOCOL;
+                                        String[] logParams = {protocol, clientHttpsProtocol};
                                         
                                         logger.log(Level.INFO, 
                                                 AdminLoggerInfo.unrecognisedHttpsProtocol, 
@@ -206,7 +207,7 @@ public final class HttpConnectorAddress {
                                         break;
                     }
                 } else {
-                    protocol = "TLSv1.2";
+                    protocol = DEFAULT_PROTOCOL;
                     logger.log(Level.FINE, AdminLoggerInfo.usingDefaultHttpsProtocol, protocol);
                 }
             }
@@ -343,7 +344,9 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null, user = this.getUser(), pass = this.getPassword() != null ? new String(this.getPassword()) : null;
+        String cs = null;
+        String user = this.getUser();
+        String pass = this.getPassword() != null ? new String(this.getPassword()) : null;
         String up = (user == null) ? "" : user;
         String pp = (pass == null) ? "" : pass;
         cs = up + ":" + pp;

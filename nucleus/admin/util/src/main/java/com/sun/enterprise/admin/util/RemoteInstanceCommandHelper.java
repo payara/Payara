@@ -42,12 +42,9 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.*;
-import org.glassfish.config.support.GlassFishConfigBean;
-import org.glassfish.config.support.PropertyResolver;
 
 /**
  * @author Byron Nevins

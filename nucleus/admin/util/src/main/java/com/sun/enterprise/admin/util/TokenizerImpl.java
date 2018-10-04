@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import java.text.StringCharacterIterator;
@@ -78,7 +80,6 @@ public final class TokenizerImpl implements Tokenizer {
             throws TokenizerException {
         this(input, delimiters, true, escapeChar, escapableChars);
     }
-    private static final char QUOTE_CHAR = '\"';
 
     public TokenizerImpl(
             String input,
@@ -170,6 +171,9 @@ final class TokenizerInternal {
     final char mEscapeChar;
     final String mEscapableChars;
     final StringCharacterIterator mIter;
+    
+    static final Delim DELIM = Delim.getInstance();
+    private static final char QUOTE_CHAR = '\"';
 
     // a distinct object used to denote a delimiter
     private static class Delim {
@@ -186,7 +190,7 @@ final class TokenizerInternal {
             return ("<DELIM>");
         }
     }
-    final static Delim DELIM = Delim.getInstance();
+    
 
     public TokenizerInternal(
             String input,
@@ -217,7 +221,7 @@ final class TokenizerInternal {
     }
 
     static boolean isDigit(char theChar) {
-        return ((theChar >= '0' && theChar <= '9'));
+        return theChar >= '0' && theChar <= '9';
     }
 
     static boolean isHexDigit(char theChar) {
@@ -238,8 +242,6 @@ final class TokenizerInternal {
 
         return (theChar);
     }
-    private static final char QUOTE_CHAR = '\"';
-    private static final char TAB_CHAR = '\t';
 
     char decodeUnicodeSequence()
             throws MalformedUnicodeSequenceException {
@@ -307,7 +309,7 @@ final class TokenizerInternal {
     ArrayList parseTokens()
             throws UnterminatedLiteralStringException,
             MalformedUnicodeSequenceException, IllegalEscapeSequenceException {
-        final StringBuffer tok = new StringBuffer();
+        final StringBuilder tok = new StringBuilder();
         final ArrayList tokens = new ArrayList();
         boolean insideStringLiteral = false;
 

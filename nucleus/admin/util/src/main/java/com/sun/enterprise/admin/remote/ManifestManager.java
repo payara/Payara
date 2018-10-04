@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
@@ -47,7 +48,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.universal.NameValue;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 
 /**
@@ -55,6 +55,13 @@ import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
  * @author bnevins
  */
 class ManifestManager implements ResponseManager {
+    
+    private final Logger logger;
+    private final AdminCommandResponse response;
+    
+    private static final String EOL = StringUtils.NEWLINE;
+    private static final String TAB = "    ";
+    
     ManifestManager(InputStream inStream, Logger logger)
                                 throws RemoteException, IOException  {
         this.logger = logger;
@@ -65,6 +72,7 @@ class ManifestManager implements ResponseManager {
         return response.getMainAtts();
     }
 
+    @Override
     public void process() throws RemoteException {
         logger.finer("PROCESSING MANIFEST...");
 
@@ -102,7 +110,7 @@ class ManifestManager implements ResponseManager {
             sb.append(msg);
         }
 
-        boolean useMainChildrenAttr = Boolean.valueOf(response.getMainAtts().get("use-main-children-attribute"));
+        boolean useMainChildrenAttr = Boolean.parseBoolean(response.getMainAtts().get("use-main-children-attribute"));
 
         if (useMainChildrenAttr) {
             sb = processMainChildrenAttribute(response.getMainAtts(), sb);
@@ -186,16 +194,9 @@ class ManifestManager implements ResponseManager {
     private String decode(String value) {
         try {
             return URLDecoder.decode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return value;
-        } catch (IllegalArgumentException e1) {
+        } catch (UnsupportedEncodingException | IllegalArgumentException e) {
             return value;
         }
     }
-
-    private Logger logger;
-    private AdminCommandResponse response;
-    private static final String EOL = StringUtils.NEWLINE;
-    private static final String TAB = "    ";
+    
 }
-

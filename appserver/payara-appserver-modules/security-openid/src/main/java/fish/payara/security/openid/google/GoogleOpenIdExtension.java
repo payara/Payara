@@ -115,7 +115,7 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
 
     static OpenIdAuthenticationDefinition toOpenIdAuthDefinition(GoogleAuthenticationDefinition googleDefinition) {
 
-        OpenIdAuthenticationDefinition definition = new OpenIdAuthenticationDefinition() {
+        return new OpenIdAuthenticationDefinition() {
 
             @Override
             public String providerURI() {
@@ -197,7 +197,6 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
                 return googleDefinition.jwksReadTimeout();
             }
         };
-        return definition;
     }
 
 }
