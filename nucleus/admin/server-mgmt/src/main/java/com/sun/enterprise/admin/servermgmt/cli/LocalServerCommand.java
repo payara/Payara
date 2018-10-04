@@ -292,6 +292,7 @@ public abstract class LocalServerCommand extends CLICommand {
         logger.log(Level.FINER, "Check if server is at location {0}", ourDir);
 
         try {
+            programOpts.setHostAndPort(getAdminAddress());
             RemoteCLICommand cmd = new RemoteCLICommand("__locations", programOpts, env);
             ActionReport report = cmd.executeAndReturnActionReport("__locations");
             String theirDirPath = report.findProperty(directoryKey);

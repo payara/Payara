@@ -18,7 +18,7 @@
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
  * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
- * file that accompanied this code.
+ * file that accompanied ex.getCause()this code.
  *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
@@ -99,8 +99,6 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     @PostConstruct
     void postConstruct() {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        ExtendedDeploymentContext dc = Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext();
-        ctxUtil.setInstanceComponentId(DOLUtils.getComponentEnvId((JndiNameEnvironment)DOLUtils.getCurrentBundleForContext(dc)));
         try {
             InitialContext ctx = new InitialContext();
             managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
