@@ -38,17 +38,17 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.realm.certificate;
-
-import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 
 import org.glassfish.security.common.Group;
-//import com.sun.enterprise.security.SecurityContext;
+
+import com.sun.enterprise.security.BaseRealm;
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
@@ -59,8 +59,16 @@ import java.security.Principal;
 import javax.security.auth.callback.Callback;
 
 
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import javax.security.auth.callback.Callback;
+
+
 import org.jvnet.hk2.annotations.Service;
-import sun.security.x509.X500Name;
+import javax.security.auth.x500.X500Principal;
 
 
 /**
@@ -98,7 +106,7 @@ public final class CertificateRealm extends IASRealm
 {
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
-    private Vector<String> defaultGroups = new Vector<String>();
+    private LinkedList<String> defaultGroups = new LinkedList<>();
 
     // Optional link to a realm to verify group (possibly user, later)
     // public static final String PARAM_USEREALM = "use-realm";
@@ -127,9 +135,7 @@ public final class CertificateRealm extends IASRealm
         super.init(props);
         String[] groups = addAssignGroups(null);
         if (groups != null && groups.length > 0) {
-            for (String gp : groups) {
-                defaultGroups.add(gp);
-            }
+            defaultGroups.addAll(Arrays.asList(groups));
         }
 
         String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
@@ -192,8 +198,10 @@ public final class CertificateRealm extends IASRealm
      * @exception InvalidOperationException thrown if the realm does not
      *     support this operation - e.g. Certificate realm does not support
      *     this operation.
+     * @throws com.sun.enterprise.security.auth.realm.NoSuchUserException
      *
      */
+    @Override
     public Enumeration getGroupNames(String username)
         throws NoSuchUserException, InvalidOperationException
     {
@@ -202,128 +210,45 @@ public final class CertificateRealm extends IASRealm
 
         // Groups for cert users is empty by default unless some assign-groups
         // property has been specified (see init()).
-        return defaultGroups.elements();
+        return Collections.enumeration(defaultGroups);
     }
-    
 
     /**
-     * Returns name of JAAS context used by this realm. Overrides default
-     * Realm behavior of this method. The certificate realm does not
-     * require (or support) a LoginModule. This method should never get
-     * called unless there is a configuration error, so this overloading
-     * is provided to log an error message.  See class documentation.
-     *
-     * @return null
-     *
-     */
-    /*public String getJAASContext()
-    {
-    _logger.warning("certrealm.nojaas");
-    return null;
-    }*/
-
-    /**
-     * Complete authentication of certificate user.
-     *
-     * <P>As noted, the certificate realm does not do the actual
-     * authentication (signature and cert chain validation) for
-     * the user certificate, this is done earlier in NSS. This method
-     * simply sets up the security context for the user in order to
-     * properly complete the authentication processing.
-     *
-     * <P>If any groups have been assigned to cert-authenticated users
-     * through the assign-groups property these groups are added to
-     * the security context for the current user.
+     * Returns the name of all the groups that this user belongs to.
      *
      * @param subject The Subject object for the authentication request.
-     * @param x500name The X500Name object from the user certificate.
+     * @param x500principal The X500Name object from the user certificate.
      *
-     
-    public void authenticate(Subject subject, X500Name x500name)
-    {
+     */
+    public void authenticate(Subject subject, X500Principal x500principal) {
         // It is important to use x500name.getName() in order to be
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
-        
-        String name = x500name.getName();
+        String name = x500principal.getName();
 
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest(
-                "Certificate realm setting up security context for: "+ name);
-        }
-
-        if (defaultGroups != null) {
-	    Set principalSet = subject.getPrincipals();
-	    Enumeration e = defaultGroups.elements();
-	    while (e.hasMoreElements()) {
-		principalSet.add(new Group((String) e.nextElement()));
-	    }
-	}
-        
-        SecurityContext securityContext =
-	    new SecurityContext(name, subject);
-        
-	SecurityContext.setCurrent(securityContext);
-    }*/
-
-    /**
-     * Complete authentication of certificate user.
-     *
-     * <P>As noted, the certificate realm does not do the actual
-     * authentication (signature and cert chain validation) for
-     * the user certificate, this is done earlier in NSS. This method
-     * simply sets up the security context for the user in order to
-     * properly complete the authentication processing.
-     *
-     * <P>If any groups have been assigned to cert-authenticated users
-     * through the assign-groups property these groups are added to
-     * the security context for the current user.
-     *
-     * @param subject The Subject object for the authentication request.
-     * @param x500name The X500Name object from the user certificate.
-     *
-     */
-    public void authenticate(Subject subject, X500Name x500name)
-    {
-        // It is important to use x500name.getName() in order to be
-        // consistent with web containers view of the name - see bug
-        // 4646134 for reasons why this matters.
-        
-        String name = x500name.getName();
-
-        if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest(
-                "Certificate realm setting up security context for: "+ name);
+            _logger.log(Level.FINEST, "Certificate realm setting up security context for: {0}", name);
         }
 
         if (defaultGroups != null) {
 	    Set<Principal> principalSet = subject.getPrincipals();
-	    Enumeration<String> e = defaultGroups.elements();
-	    while (e.hasMoreElements()) {
-		principalSet.add(new Group(e.nextElement()));
+	    for (String groupName : defaultGroups) {
+		principalSet.add(new Group(groupName));
 	    }
 	}
+
         if (!subject.getPrincipals().isEmpty()) {
-            DistinguishedPrincipalCredential dpc = new DistinguishedPrincipalCredential(x500name);
-            subject.getPublicCredentials().add(dpc);
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500principal));
         }
         
-        SecurityContext securityContext =
-	    new SecurityContext(name, subject);
-
-	SecurityContext.setCurrent(securityContext);
-        /*AppServSecurityContext secContext = Util.getDefaultHabitat().getByContract(AppServSecurityContext.class);
-        AppServSecurityContext securityContext = secContext.newInstance(name, subject);
-        securityContext.setCurrentSecurityContext(securityContext);*/
-        
+        SecurityContext.setCurrent(new SecurityContext(name, subject));
     }
 
     /**
-     * <p> A <code>LoginModule</code> for <code>CertificateRealm</code>
-     * can instantiate and pass a <code>AppContextCallback</code>
-     * to <code>handle</code> method of the passed
-     * <code>CallbackHandler</code> to retrieve the application
-     * name information.
+     * <p>
+     * A <code>LoginModule</code> for <code>CertificateRealm</code> can instantiate and pass a
+     * <code>AppContextCallback</code> to <code>handle</code> method of the passed <code>CallbackHandler</code> to retrieve
+     * the application name information.
      */
     public final static class AppContextCallback implements Callback {
         private String moduleID;
@@ -346,6 +271,7 @@ public final class CertificateRealm extends IASRealm
          * of the application name (if not a singleton) followed by a '#'
          * and the name of the module.
          * 
+         * @param moduleID
          */
         public void setModuleID(String moduleID) {
             this.moduleID = moduleID;

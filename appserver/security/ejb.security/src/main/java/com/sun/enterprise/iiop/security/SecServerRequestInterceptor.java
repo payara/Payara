@@ -75,11 +75,10 @@ import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import com.sun.logging.LogDomains;
-import java.net.Socket;
-import java.util.Hashtable;
-import java.util.logging.*;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import sun.security.util.DerInputStream;
+import sun.security.util.DerValue;
+import javax.security.auth.x500.X500Principal;
+import sun.security.x509.X509CertImpl;
 
 /*
  * Security server request interceptor 
@@ -165,9 +164,8 @@ public class SecServerRequestInterceptor
     /* create a context error with the specified major and minor status
      */
     private SASContextBody createContextError(int major, int minor) {
-        
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"Creating ContextError message: major code = "+ major+ "minor code= "+ minor);
+        if (logger.isLoggable(FINE)) {
+            logger.log(FINE, "Creating ContextError message: major code = {0}minor code= {1}", new Object[]{major, minor});
         }
         byte error_token[] = {} ;
         ContextError ce = new ContextError(0,      /* stateless client id */
@@ -209,10 +207,8 @@ public class SecServerRequestInterceptor
      */
     private ServiceContext createSvcContext(SASContextBody sasctxtbody, ORB orb) {
 
-        ServiceContext sc = null;
-
-        Any a = orb.create_any();
-        SASContextBodyHelper.insert(a, sasctxtbody);
+        Any any = orb.create_any();
+        SASContextBodyHelper.insert(any, sasContextBody);
 
         byte[] cdr_encoded_saselm = {};
         try {
@@ -225,6 +221,11 @@ public class SecServerRequestInterceptor
         sc.context_data  = cdr_encoded_saselm;
         return sc;
 
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.context_id = SECURITY_ATTRIBUTE_SERVICE_ID;
+        serviceContext.context_data = cdr_encoded_saselm;
+
+        return serviceContext;
     }
 
     /**
@@ -259,7 +260,9 @@ public class SecServerRequestInterceptor
             break;
 
         case ITTDistinguishedName.value:
-            /* Construct a X500Name */
+            // Construct a X500Principal
+
+            derEncoding = identityToken.dn();
 
             derenc = idtok.dn();
             /* Issue 5766: Decode CDR encoding if necessary */
@@ -269,16 +272,20 @@ public class SecServerRequestInterceptor
                 /* Extract CDR encoding */
                 derenc = X501DistinguishedNameHelper.extract(any);
             }
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Create an X500Name object from identity token");
+
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, "Create an X500Principal object from identity token");
             }
-            X500Name xname = new X500Name(derenc);
-	    if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"Identity to be asserted is " + xname.toString());
-		_logger.log(Level.FINE,"Adding X500Name to subject's PublicCredentials");
-	    }
-            sc.subject.getPublicCredentials().add(xname);
-            sc.identcls = X500Name.class;
+
+            X500Principal xname = new X500Principal(derEncoding);
+
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, "Identity to be asserted is {0}", xname.toString());
+                logger.log(FINE, "Adding X500Principal to subject's PublicCredentials");
+            }
+
+            securityContext.subject.getPublicCredentials().add(xname);
+            securityContext.identcls = X500Principal.class;
             break;
             
         case ITTX509CertChain.value:

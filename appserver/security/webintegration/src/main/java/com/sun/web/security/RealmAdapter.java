@@ -163,7 +163,7 @@ import com.sun.logging.LogDomains;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import sun.security.x509.X500Name;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
  * This is the realm adapter used to authenticate users and authorize access to web resources. The authenticate method
@@ -1832,10 +1832,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             this.request = request;
         }
 
-        @Override
-        public void setResponseMessage(Object response) {
-            this.response = response;
-        }
+        subject.getPublicCredentials().add(certificates[0].getSubjectX500Principal());
+        subject.getPublicCredentials().add(asList(certificates));
 
         @Override
         public Map getMap() {

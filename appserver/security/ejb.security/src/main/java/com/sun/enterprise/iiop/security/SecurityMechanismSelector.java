@@ -65,8 +65,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 // GSS Related Functionality
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
+import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 import org.omg.CORBA.ORB;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
@@ -85,18 +84,24 @@ import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.common.ClientSecurityContext;
-import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import java.util.logging.*;
-import com.sun.logging.*;
-import java.util.Arrays;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.api.ProtocolManager;
+
+import org.jvnet.hk2.annotations.Service;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.ORBLocator;
+
+import javax.inject.Singleton;
+
+import javax.inject.Inject;
+import javax.security.auth.x500.X500Principal;
+import org.ietf.jgss.Oid;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -965,8 +970,8 @@ localStrings.getLocalString("securitymechansimselector.runas_cannot_propagate_us
                 Object o = credIter.next();
                 if(o instanceof GSSUPName) {
                     ctx.identcls = GSSUPName.class;
-                } else if(o instanceof X500Name) {
-                    ctx.identcls = X500Name.class;
+                } else if (o instanceof X500Principal) {
+                    ctx.identcls = X500Principal.class;
                 } else {
                     ctx.identcls = X509CertificateCredential.class;
                 }
@@ -1546,16 +1551,16 @@ as_context_mech
                 // Note: if the target object is not an EJB, 
                 // no security ctx is needed.
                 return null;
-            }  else {
+            } else {
                 // Set the transport principal in subject and
-                // return the X500Name class
-                ssc = new SecurityContext();
-                X500Name x500Name = (X500Name) certChain[0].getSubjectDN();
-                ssc.subject = new Subject();
-                ssc.subject.getPublicCredentials().add(x500Name);
-                ssc.identcls = X500Name.class;
-                ssc.authcls = null;
-                return ssc;
+                // return the X500Principal class
+                securityContext = new SecurityContext();
+                X500Principal x500principal = certChain[0].getSubjectX500Principal();
+                securityContext.subject = new Subject();
+                securityContext.subject.getPublicCredentials().add(x500principal);
+                securityContext.identcls = X500Principal.class;
+                securityContext.authcls = null;
+                return securityContext;
             }
         } else {
             ssc = ctx;
