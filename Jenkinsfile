@@ -10,9 +10,9 @@ pipeline {
     }
     parameters{
         choice(
+            name: 'jdkVer',
             choices: '8\n7',
-            description: 'Which JDK version you wish to build and test with?',
-            name: 'jdkVer')
+            description: 'Which JDK version you wish to build and test with?')
     }
     agent any
     stages {
