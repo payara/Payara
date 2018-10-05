@@ -15,35 +15,35 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  -->
-<sun:table id="serverInstancesTable" title="Payara Server Instances" style="padding: 10pt"
+<sun:table id="serverInstancesTable" title="$resource{i18nhc.hazelcast.serverInstancesTableTitle}" style="padding: 10pt"
            rendered="#{pageSession.hazelcastConfiguration['enabled'] == true}">
 <sun:tableRowGroup id="serverInstancesRowGroup" data={"$attribute{serverInstances}"} sourceVar="td" 
-                   emptyDataMsg="No Payara Server instances in cluster">
-    <sun:tableColumn headerText="Instance Name" sort="instanceName" rowHeader="$boolean{true}" id="col1">
+                   emptyDataMsg="$resource{i18nhc.hazelcast.serverInstancesTable.emptyDataMsg}">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.instanceName}" sort="instanceName" rowHeader="$boolean{true}" id="col1">
         <staticText id="instanceName" value="#{td.value.instanceName}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Group" sort="instanceGroup" rowHeader="$boolean{false}" id="col2">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.instanceGroup}" sort="instanceGroup" rowHeader="$boolean{false}" id="col2">
         <staticText id="instanceGroup" value="#{td.value.instanceGroup}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Host Name" sort="hostName" rowHeader="$boolean{true}" id="col3">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.hostName}" sort="hostName" rowHeader="$boolean{true}" id="col3">
         <staticText id="hostName" value="#{td.value.hostName}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="HTTP Ports" sort="httpPorts" rowHeader="$boolean{false}" id="col4">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.httpPorts}" sort="httpPorts" rowHeader="$boolean{false}" id="col4">
         <staticText id="httpPorts" value="#{td.value.httpPorts}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="HTTPS Ports" sort="httpsPorts" rowHeader="$boolean{false}" id="col5">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.httpsPorts}" sort="httpsPorts" rowHeader="$boolean{false}" id="col5">
         <staticText id="httpsPorts" value="#{td.value.httpsPorts}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Admin Port" sort="adminPort" rowHeader="$boolean{false}" id="col6">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.adminPort}" sort="adminPort" rowHeader="$boolean{false}" id="col6">
         <staticText id="adminPort" value="#{td.value.adminPort}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Hazelcast Port" sort="hazelcastPort" rowHeader="$boolean{true}" id="col7">
+    <sun:tableColumn headerText="Hazelcast Port" sort="$resource{i18nhc.hazelcast.serverInstancesTable.hazelcastPort}" rowHeader="$boolean{true}" id="col7">
         <staticText id="hazelcastPort" value="#{td.value.hazelcastPort}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Lite Member" sort="liteMember" rowHeader="$boolean{false}" id="col8">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.liteMember}" sort="liteMember" rowHeader="$boolean{false}" id="col8">
         <staticText id="liteMember" value="#{td.value.liteMember}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="Applications" sort="applications" rowHeader="$boolean{false}" id="col9">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.serverInstancesTable.applications}" sort="applications" rowHeader="$boolean{false}" id="col9">
         <staticText id="applications" value="#{td.value.applications}" />
     </sun:tableColumn>
 </sun:tableRowGroup>
