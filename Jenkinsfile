@@ -11,7 +11,7 @@ pipeline {
     parameters{
         choice(
             name: 'jdkVer',
-            choices: '8\n7',
+            choices: ['8', '7'],
             description: 'Which JDK version you wish to build and test with?')
     }
     agent any
