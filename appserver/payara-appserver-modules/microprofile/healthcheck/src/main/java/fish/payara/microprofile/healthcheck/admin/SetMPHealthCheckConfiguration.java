@@ -43,6 +43,7 @@ package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -63,6 +64,7 @@ import org.glassfish.internal.api.Target;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -114,18 +116,21 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
         try {
-            ConfigSupport.apply(configProxy -> {
-                if (enabled != null) {
-                    configProxy.setEnabled(enabled.toString());
+            ConfigSupport.apply(new SingleConfigCode<MetricsHealthCheckConfiguration>() {
+                @Override
+                public Object run(MetricsHealthCheckConfiguration configProxy) throws PropertyVetoException, TransactionFailure {
+                    if (enabled != null) {
+                        configProxy.setEnabled(enabled.toString());
+                    }
+                    if (endpoint != null) {
+                        configProxy.setEndpoint(endpoint);
+                    }
+                    if (virtualServers != null) {
+                        configProxy.setVirtualServers(virtualServers);
+                    }
+                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return configProxy;
                 }
-                if (endpoint != null) {
-                    configProxy.setEndpoint(endpoint);
-                }
-                if (virtualServers != null) {
-                    configProxy.setVirtualServers(virtualServers);
-                }
-                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                return configProxy;
             }, config);
 
             actionReport.setMessage("Restart server for change to take effect");
