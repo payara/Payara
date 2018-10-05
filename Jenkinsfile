@@ -4,15 +4,10 @@ def pom
 def DOMAIN_NAME='test-domain'
 def ASADMIN
 def payaraBuildNumber
+def jdkVer = '8'
 pipeline {
     options {
         disableConcurrentBuilds()
-    }
-    parameters{
-        choice(
-            name: 'jdkVer',
-            choices: ['8', '7'],
-            description: 'Which JDK version you wish to build and test with?')
     }
     agent any
     stages {
