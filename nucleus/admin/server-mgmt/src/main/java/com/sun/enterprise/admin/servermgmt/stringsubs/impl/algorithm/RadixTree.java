@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
@@ -50,22 +51,22 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * This class implements the operation of a radix tree. A radix tree
  * is a specialized set data structure based on the tree/trie that is
  * used to store a set of strings. The key for nodes of a radix tree
- * are labeled with one or more characters rather than only a single
+ * are labelled with one or more characters rather than only a single
  * characters.
  */
 class RadixTree {
 
-    private static final Logger _logger = SLogger.getLogger();
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTree.class);
+    private static final Logger LOGGER = SLogger.getLogger();
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RadixTree.class);
     // Reference to root node.
-    private RadixTreeNode _rootNode;
+    private final RadixTreeNode rootNode;
 
     /**
      * Construct {@link RadixTree} with default root node.
      */
     public RadixTree() {
         // Creating root node.
-        _rootNode = new RadixTreeNode("", null);
+        rootNode = new RadixTreeNode("", null);
     }
 
     /**
@@ -89,11 +90,11 @@ class RadixTree {
      */
     public void insert(String key, String value) {
         if (key == null || key.isEmpty()) {
-            throw new IllegalArgumentException(_strings.get("errorInEmptyNullKeyInstertion"));
+            throw new IllegalArgumentException(STRINGS.get("errorInEmptyNullKeyInstertion"));
         }
         char[] inputChars = key.toCharArray();
         int noOfMatchedChars = 0;
-        RadixTreeNode node = _rootNode;
+        RadixTreeNode node = rootNode;
         RadixTreeNode newNode = null;
         int keyLength = inputChars.length;
         OUTER_LOOP : while (noOfMatchedChars < keyLength) {
@@ -120,7 +121,7 @@ class RadixTree {
                     newNode.addChildNode(node);
                     newNode.addChildNode(new RadixTreeNode(key.substring(noOfMatchedChars), value));
                     break OUTER_LOOP;
-                }
+            }
                 noOfMatchedChars++;
             }
 
@@ -145,7 +146,7 @@ class RadixTree {
 
             if (noOfMatchedChars == keyLength) {
                 if (node.getValue() != null && !node.getValue().isEmpty()) {
-                    _logger.log(Level.INFO, SLogger.CHANGE_IN_VALUE, new Object[] {node.getValue(), value});
+                    LOGGER.log(Level.INFO, SLogger.CHANGE_IN_VALUE, new Object[] {node.getValue(), value});
                 }
                 node.setValue(value);
                 break;
@@ -160,13 +161,13 @@ class RadixTree {
             node = matchedNode;
         } 
     }
-
+    
     /**
-     * Return's the root node helps to traverse the tree.
+     * Returns the root node helps to traverse the tree.
      * 
      * @return Root node of tree.
      */
     RadixTreeNode getRootNode() {
-        return _rootNode;
+        return rootNode;
     }
 }

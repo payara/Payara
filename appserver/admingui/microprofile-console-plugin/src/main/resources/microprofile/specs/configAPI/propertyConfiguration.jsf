@@ -175,7 +175,8 @@
 <sun:propertySheet id="propertySheet">
 <sun:propertySheetSection id="source">
         <sun:property id="sourceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                      label="Source">
+                      label="$resource{i18n_microprofile.config.property.configuration.source}"
+                      helpText="$resource{i18n_microprofile.config.property.configuration.sourceHelp}">
             <sun:dropDown id="sourceDropDown"
                           labels={"domain","application","config","module","server"}
                           selected="#{pageSession.sourceMap['source']}"
@@ -193,7 +194,9 @@
         </sun:property>
 
         <sun:property id="sourceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                      label="Source Name" rendered="#{pageSession.showSourceName}">
+                      label="$resource{i18n_microprofile.config.property.configuration.sourceName}" 
+                      rendered="#{pageSession.showSourceName}"
+                      helpText="$resource{i18n_microprofile.config.property.configuration.sourceNameHelp}">
             <sun:dropDown id="sourceNameDropDown"
                           labels="$pageSession{sourceNameList}"
                           selected="#{pageSession.sourceNameMap['sourceName']}"
@@ -211,7 +214,9 @@
         </sun:property>
 
           <sun:property id="moduleNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                      label="Module Name" rendered="#{pageSession.showModuleName}">
+                      label="$resource{i18n_microprofile.config.property.configuration.moduleName}" 
+                      rendered="#{pageSession.showModuleName}"
+                      helpText="$resource{i18n_microprofile.config.property.configuration.moduleNameHelp}">
             <sun:dropDown id="moduleNameDropDown"
                           labels="$pageSession{moduleNameList}"
                           selected="#{pageSession.moduleNameMap['moduleName']}"

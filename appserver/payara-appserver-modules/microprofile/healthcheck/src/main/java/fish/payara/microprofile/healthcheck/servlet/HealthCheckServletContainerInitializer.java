@@ -41,6 +41,7 @@ package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import static java.util.Arrays.asList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,11 +57,13 @@ import javax.servlet.ServletRegistration;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
+import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
 /**
- * Servlet Container Initialiser that registers the HealthCheckServlet, 
- * as well as the HealthChecks of a deployed application.
+ * Servlet Container Initializer that registers the HealthCheckServlet, as well
+ * as the HealthChecks of a deployed application.
+ *
  * @author Andrew Pielage
  */
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
@@ -81,6 +84,12 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                 if (reg.getClass().equals(HealthCheckServlet.class) || reg.getMappings().contains("/" + configuration.getEndpoint())) {
                     return;
                 }
+            }
+
+            String virtualServers = configuration.getVirtualServers();
+            if (!isEmpty(virtualServers)
+                    && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
+                return;
             }
             
             // Register servlet

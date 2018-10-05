@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util.proxy;
 
@@ -61,11 +62,10 @@ public class ProxyFactory {
             throw new IllegalArgumentException("Handler object " + handler
                     + " is not an instance of " + intfc.getName());
         }
-        Object obj = Proxy.newProxyInstance(
+        return Proxy.newProxyInstance(
                 handler.getClass().getClassLoader(),
                 new Class[] {intfc},
                 new ProxyClass(handler, interceptor));
-        return obj;
     }
 
     private static boolean isImplementing(Class intfc, Object obj) {

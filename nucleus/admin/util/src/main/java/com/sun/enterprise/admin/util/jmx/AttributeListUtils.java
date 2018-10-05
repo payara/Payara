@@ -37,18 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-/*
- * Indentation Information:
- * 0. Please (try to) preserve these settings.
- * 1. Tabs are preferred over spaces.
- * 2. In vi/vim -
- *		:set tabstop=4 :set shiftwidth=4 :set softtabstop=4
- * 3. In S1 Studio -
- *		1. Tools->Options->Editor Settings->Java Editor->Tab Size = 4
- *		2. Tools->Options->Indentation Engines->Java Indentation Engine->Expand Tabs to Spaces = False.
- *		3. Tools->Options->Indentation Engines->Java Indentation Engine->Number of Spaces per Tab = 4.
- */
 package com.sun.enterprise.admin.util.jmx;
 
 import java.util.*;
@@ -140,7 +130,7 @@ public class AttributeListUtils {
 
     /**
      * JMX 1.2 specification had a weird limitation that a Dynamic MBean may not
-     * have an attribute whose name is <b> not a valid Java identifier <b>. This
+     * have an attribute whose name is <b> not a valid Java identifier </b>. This
      * method is a utility method to convert the any arbitrary name into a
      * String that can be a valid JMX 1.2 attribute. Every character in the
      * string passed that is neither a Character.isJavaIdentifierStart nor a
@@ -181,7 +171,7 @@ public class AttributeListUtils {
      * @return a String representing the parameter passed
      */
     public static String toString(final AttributeList al) {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         final char SEP = ',';
         final char NL = '\n';
         if (al != null) {
@@ -220,7 +210,7 @@ public class AttributeListUtils {
     private static String[] getCamelCaseArray(final String[] from) {
         final String[] humps = new String[from.length];
         for (int i = 0; i < from.length; i++) {
-            final StringBuffer sb = new StringBuffer(from[i]);
+            final StringBuilder sb = new StringBuilder(from[i]);
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
             humps[i] = sb.toString();
         }
@@ -228,9 +218,9 @@ public class AttributeListUtils {
     }
 
     private static String strings2String(final String[] a) {
-        final StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < a.length; i++) {
-            sb.append(a[i]);
+        final StringBuilder sb = new StringBuilder();
+        for (String a1 : a) {
+            sb.append(a1);
         }
         return (sb.toString());
     }

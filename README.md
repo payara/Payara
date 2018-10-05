@@ -26,7 +26,7 @@ In summary Payara Server provides:
 
 * Fully Supported Server derived from GlassFish 5.x Open Source Edition
 * Drop in Replacement for GlassFish Open Source Edition
-* Microprofile 1.3 api support
+* Microprofile 2.0/1.4 api support
 * Supports deployment of JavaEE 8 applications
 * Production Enhancements including JCache, JBatch, and Hazelcast session clustering
 * Payara Micro for cloud and microservice deployments

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -84,7 +84,7 @@ public class AdminLoggerInfo {
     @LogMessageInfo(
             message = "unable to read instance state file {0}, recreating",
             level = "FINE")
-    final static String mISScannotread = LOGMSG_PREFIX + "-00003";
+    static final String mISScannotread = LOGMSG_PREFIX + "-00003";
     
     @LogMessageInfo(
             message = "unable to create instance state file: {0}, exception: {1}",
@@ -93,7 +93,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    final static String mISScannotcreate = LOGMSG_PREFIX + "-00004";
+    static final String mISScannotcreate = LOGMSG_PREFIX + "-00004";
     
     @LogMessageInfo(
             message = "error while adding new server state to instance state: {0}",
@@ -101,7 +101,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    final static String mISSaddstateerror = LOGMSG_PREFIX + "-00005";
+    static final String mISSaddstateerror = LOGMSG_PREFIX + "-00005";
     
     @LogMessageInfo(
             message = "error while adding failed command to instance state: {0}",
@@ -109,7 +109,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    final static String mISSaddcmderror = LOGMSG_PREFIX + "-00006";
+    static final String mISSaddcmderror = LOGMSG_PREFIX + "-00006";
     
     @LogMessageInfo(
             message = "error while removing failed commands from instance state: {0}",
@@ -117,7 +117,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    final static String mISSremcmderror = LOGMSG_PREFIX + "-00007";
+    static final String mISSremcmderror = LOGMSG_PREFIX + "-00007";
     
     @LogMessageInfo(
             message = "error while setting instance state: {0}",
@@ -133,7 +133,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    final static String mISSremstateerror = LOGMSG_PREFIX + "-00009";
+    static final String mISSremstateerror = LOGMSG_PREFIX + "-00009";
 
     @LogMessageInfo(
             message = "It appears that server [{0}:{1}] does not accept secure connections. Retry with --secure=false.",
@@ -141,7 +141,7 @@ public class AdminLoggerInfo {
             action = "Check that the server is configured to accept secure connections.",
             publish = true,
             level = "SEVERE")
-    public final static String mServerIsNotSecure = LOGMSG_PREFIX + "-00010";
+    public static final String mServerIsNotSecure = LOGMSG_PREFIX + "-00010";
     
     @LogMessageInfo(
             message = "An unexpected exception occurred.",
@@ -149,7 +149,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
-    public final static String mUnexpectedException = LOGMSG_PREFIX + "-00011";
+    public static final String mUnexpectedException = LOGMSG_PREFIX + "-00011";
     
     @LogMessageInfo(
             message = "The server requires a valid admin password to be set before it can start. Please set a password using the change-admin-password command.",
@@ -157,7 +157,7 @@ public class AdminLoggerInfo {
             action = "Set a password using the change-admin-password command.",
             publish = true,
             level = "SEVERE")
-    public final static String mSecureAdminEmptyPassword = LOGMSG_PREFIX + "-00012";
+    public static final String mSecureAdminEmptyPassword = LOGMSG_PREFIX + "-00012";
    
     @LogMessageInfo(
             message = "Can not put data to cache under key {0}",
@@ -166,7 +166,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mCantPutToCache = LOGMSG_PREFIX + "-00013";
+    public static final String mCantPutToCache = LOGMSG_PREFIX + "-00013";
      
     @LogMessageInfo(
             message = "An admin request arrived from {0} with the domain identifier {1} "
@@ -176,7 +176,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mForeignDomainID = LOGMSG_PREFIX + "-00014";
+    public static final String mForeignDomainID = LOGMSG_PREFIX + "-00014";
 
     @LogMessageInfo(
             message = "Error searching for a default admin user",
@@ -184,7 +184,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mAdminUserSearchError = LOGMSG_PREFIX + "-00015";
+    public static final String mAdminUserSearchError = LOGMSG_PREFIX + "-00015";
     
     @LogMessageInfo(
             message = "Cannot read admin cache file for {0}",
@@ -192,7 +192,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mCannotReadCache = LOGMSG_PREFIX + "-00016";
+    public static final String mCannotReadCache = LOGMSG_PREFIX + "-00016";
     
     @LogMessageInfo(
             message = "Cannot write data to cache file for {0}",
@@ -200,7 +200,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mCannotWriteCache = LOGMSG_PREFIX + "-00017";
+    public static final String mCannotWriteCache = LOGMSG_PREFIX + "-00017";
     
     @LogMessageInfo(
             message = "Unexpected exception from command event listener.",
@@ -208,14 +208,14 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "WARNING")
-    public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-00018";
+    public static final String mExceptionFromEventListener = LOGMSG_PREFIX + "-00018";
 
     @LogMessageInfo(
             message = "Unrecognised HTTPS protocol provided, reverting to default: {0}",
             cause = "Unrecognised protocol provided by system property fish.payara.clientHttpsProtocol: {1}",
             action = "Edit the system property to use a supported protocol.",
             level = "INFO")
-    public final static String unrecognisedHttpsProtocol = LOGMSG_PREFIX + "-00019";
+    public static final String unrecognisedHttpsProtocol = LOGMSG_PREFIX + "-00019";
     
     @LogMessageInfo(
             message = "Using default HTTPS protocol: {0}",
@@ -223,12 +223,12 @@ public class AdminLoggerInfo {
             action = "Use the fish.payara.clientHttpsProtocol system property "
                     + "to set an alternative protocol to use.",
             level = "FINE")
-    public final static String usingDefaultHttpsProtocol = LOGMSG_PREFIX + "-00020";
+    public static final String usingDefaultHttpsProtocol = LOGMSG_PREFIX + "-00020";
     
     @LogMessageInfo(
             message = "Setting HTTPS protocol to: {0}",
             cause = "Protocol set using fish.payara.clientHttpsProtocol system property.",
             level = "FINE"
             )
-    public final static String settingHttpsProtocol = LOGMSG_PREFIX + "-00021";
+    public static final String settingHttpsProtocol = LOGMSG_PREFIX + "-00021";
 }

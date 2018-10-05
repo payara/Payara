@@ -40,25 +40,26 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.ENDPOINT_PATTERN;
-import java.util.ArrayList;
-import java.util.List;
+import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
+import static java.util.Arrays.asList;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import static org.glassfish.common.util.StringHelper.isEmpty;
+import org.glassfish.internal.api.Globals;
 
 public class MetricsServletContainerInitializer implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {  
         
-        if(!"".equals(ctx.getContextPath())){
+        if (!"".equals(ctx.getContextPath())) {
             return;
         }
-        
+
         // Check if there is already a servlet for metrics
         Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
         for (ServletRegistration reg : registrations.values()) {
@@ -67,14 +68,17 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
             }
         }
 
-        // Collect the url pattern for metrics handlers
-        List<String> urlPatternList = new ArrayList<>();
-        urlPatternList.add(ENDPOINT_PATTERN);
+        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
+                .getService(MetricsServiceConfiguration.class);
+
+        String virtualServers = configuration.getVirtualServers();
+        if (!isEmpty(virtualServers)
+                && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
+            return;
+        }
 
         // Register a servlet with url patterns of metrics handlers
-        if (!urlPatternList.isEmpty()) {
-            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
-            reg.addMapping(urlPatternList.toArray(new String[urlPatternList.size()]));
-        }
+        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
+        reg.addMapping("/" + configuration.getEndpoint() + "/*");
     }
 }

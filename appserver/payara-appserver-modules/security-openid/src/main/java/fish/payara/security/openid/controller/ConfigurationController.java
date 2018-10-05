@@ -238,8 +238,17 @@ public class ConfigurationController {
      */
     private void validateConfiguration(OpenIdConfiguration configuration) {
         List<String> errorMessages = new ArrayList<>();
+        errorMessages.addAll(validateProviderMetadata(configuration));
+        errorMessages.addAll(validateClientConfiguration(configuration));
 
-        //validate provider metadata
+        if (!errorMessages.isEmpty()) {
+            throw new IllegalStateException(errorMessages.toString());
+        }
+    }
+
+    private List<String> validateProviderMetadata(OpenIdConfiguration configuration) {
+        List<String> errorMessages = new ArrayList<>();
+
         if (isEmpty(configuration.getProviderMetadata().getIssuerURI())) {
             errorMessages.add("issuer metadata is mandatory");
         }
@@ -261,8 +270,12 @@ public class ConfigurationController {
         if (configuration.getProviderMetadata().getIdTokenSigningAlgorithmsSupported().isEmpty()) {
             errorMessages.add("id_token_signing_alg_values_supported metadata is mandatory");
         }
+        return errorMessages;
+    }
 
-        //validate client configuration
+    private List<String> validateClientConfiguration(OpenIdConfiguration configuration) {
+        List<String> errorMessages = new ArrayList<>();
+
         if (isEmpty(configuration.getClientId())) {
             errorMessages.add("client_id request parameter is mandatory");
         }
@@ -298,9 +311,7 @@ public class ConfigurationController {
             }
         }
 
-        if (!errorMessages.isEmpty()) {
-            throw new IllegalStateException(errorMessages.toString());
-        }
+        return errorMessages;
     }
 
 }

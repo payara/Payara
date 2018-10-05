@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.Console;
@@ -83,7 +84,7 @@ import com.sun.enterprise.util.net.NetUtils;
 @I18n("change.admin.password")
 public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
-    private static final LocalStringsImpl strings = new LocalStringsImpl(ChangeAdminPasswordCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeAdminPasswordCommand.class);
 
     @Param(name = "domain_name", optional = true)
     private String userArgDomainName;
@@ -98,6 +99,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
     /**
      * Require the user to actually type the passwords unless they are in the file specified by the --passwordfile option.
+     * @throws CommandException {@inheritDoc}
+     * @throws CommandValidationException {@inheritDoc}
      */
     @Override
     protected void validate() throws CommandException, CommandValidationException {
@@ -112,25 +115,25 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
             // prompt for it (if interactive)
             Console cons = System.console();
             if (cons != null && programOpts.isInteractive()) {
-                cons.printf("%s", strings.get("AdminUserDefaultPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
+                cons.printf("%s", STRINGS.get("AdminUserDefaultPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
                 String val = cons.readLine();
                 if (ok(val))
                     programOpts.setUser(val);
                 else
                     programOpts.setUser(SystemPropertyConstants.DEFAULT_ADMIN_USER);
             } else {
-                throw new CommandValidationException(strings.get("AdminUserRequired"));
+                throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
             }
         }
 
         if (password == null) {
 
             // Prompt for it (if interactive)
-            char[] pwdChar = getPassword("password", strings.get("AdminPassword"), null, false);
+            char[] pwdChar = getPassword("password", STRINGS.get("AdminPassword"), null, false);
 
             password = pwdChar != null ? new String(pwdChar) : null;
             if (password == null) {
-                throw new CommandValidationException(strings.get("AdminPwRequired"));
+                throw new CommandValidationException(STRINGS.get("AdminPwRequired"));
             }
 
             programOpts.setPassword(password.toCharArray(), ProgramOptions.PasswordLocation.USER);
@@ -138,12 +141,12 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
         if (newpassword == null) {
             // Prompt for it (if interactive)
-            char[] pwdChar = getPassword("newpassword", strings.get("change.admin.password.newpassword"),
-                    strings.get("change.admin.password.newpassword.again"), true);
+            char[] pwdChar = getPassword("newpassword", STRINGS.get("change.admin.password.newpassword"),
+                    STRINGS.get("change.admin.password.newpassword.again"), true);
 
             newpassword = pwdChar != null ? new String(pwdChar) : null;
             if (newpassword == null) {
-                throw new CommandValidationException(strings.get("AdminNewPwRequired"));
+                throw new CommandValidationException(STRINGS.get("AdminNewPwRequired"));
             }
         }
 
@@ -158,6 +161,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
     /**
      * Execute the remote command using the parameters we've collected.
+     * @return 0 for success
+     * @throws CommandException if the remote command failed
      */
     @Override
     protected int executeCommand() throws CommandException {
@@ -196,7 +201,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private int changeAdminPasswordLocally(String domainDir, String domainName) throws CommandException {
 
         if (!isLocalHost(programOpts.getHost())) {
-            throw new CommandException(strings.get("CannotExecuteLocally"));
+            throw new CommandException(STRINGS.get("CannotExecuteLocally"));
         }
 
         GFLauncher launcher = null;
@@ -209,10 +214,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
             // If secure admin is enabled and if new password is null
             // throw new exception
-            if (launcher.isSecureAdminEnabled()) {
-                if ((newpassword == null) || (newpassword.isEmpty())) {
-                    throw new CommandException(strings.get("NullNewPassword"));
-                }
+            if (launcher.isSecureAdminEnabled() && (newpassword == null || newpassword.isEmpty())) {
+                    throw new CommandException(STRINGS.get("NullNewPassword"));
             }
 
             String adminKeyFile = launcher.getAdminRealmKeyFile();
@@ -224,7 +227,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
                 // Authenticate the old password
                 String[] groups = fileStorageManager.authenticate(programOpts.getUser(), password.toCharArray());
                 if (groups == null) {
-                    throw new CommandException(strings.get("InvalidCredentials", programOpts.getUser()));
+                    throw new CommandException(STRINGS.get("InvalidCredentials", programOpts.getUser()));
                 }
                 
                 fileStorageManager.updateUser(programOpts.getUser(), programOpts.getUser(), newpassword.toCharArray(), null);
@@ -234,7 +237,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
             } else {
                 // Cannot change password locally for non file realms
-                throw new CommandException(strings.get("NotFileRealmCannotChangeLocally"));
+                throw new CommandException(STRINGS.get("NotFileRealmCannotChangeLocally"));
 
             }
 
@@ -244,10 +247,6 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     }
 
     private static boolean isLocalHost(String host) {
-        if (host != null && (NetUtils.isThisHostLocal(host) || NetUtils.isLocal(host))) {
-            return true;
-        }
-
-        return false;
+        return host != null && (NetUtils.isThisHostLocal(host) || NetUtils.isLocal(host));
     }
 }

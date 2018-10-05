@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import java.io.File;
@@ -114,16 +116,13 @@ public final class LineTokenReplacer {
 
     }
 
-    public void replace(File inputFile, File outputFile) {
-        //Edge-cases
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-        // @todo Java SE 7 - use try with resources
-        try {
-            reader = new BufferedReader(new FileReader(inputFile));
+    public void replace(File inputFile, File outputFile) {        
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
+            BufferedWriter writer = null;
+            FileOutputStream outputStream = null;
             try {
                 if (charsetName != null) {
-                    FileOutputStream outputStream = new FileOutputStream(outputFile);
+                    outputStream = new FileOutputStream(outputFile);
                     Charset charset = Charset.forName(charsetName);
                     writer = new BufferedWriter(new OutputStreamWriter(outputStream, charset));
                 } else {
@@ -139,17 +138,13 @@ public final class LineTokenReplacer {
                 if (writer != null) {
                     writer.close();
                 }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
+                if (outputStream != null) {
+                    outputStream.close();
                 }
             }
+        } catch (Exception e) {
+            Logger.getLogger(LineTokenReplacer.class.getPackage().getName()).log(Level.SEVERE, null, e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -160,12 +155,8 @@ public final class LineTokenReplacer {
     private String replaceLine(String lineWithTokens) {
         String tokenFreeString = lineWithTokens;
 
-        for (int i = 0; i < tokenArray.length; i++) {
-            TokenValue aPair = tokenArray[i];
-            //System.out.println("To replace: " + aPair.delimitedToken);
-            //System.out.println("Value replace: " + aPair.value);
-            tokenFreeString = tokenFreeString.replace(aPair.delimitedToken,
-                    aPair.value);
+        for (TokenValue aPair : tokenArray) {
+            tokenFreeString = tokenFreeString.replace(aPair.delimitedToken, aPair.value);
         }
         return (tokenFreeString);
     }

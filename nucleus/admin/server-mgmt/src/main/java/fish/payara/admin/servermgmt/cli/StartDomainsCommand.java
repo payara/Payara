@@ -39,13 +39,11 @@
  */
 package fish.payara.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
-import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.admin.servermgmt.cli.StartDomainCommand;
 import java.io.File;
+import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -99,15 +97,15 @@ public class StartDomainsCommand extends StartDomainCommand {
     @Override
     protected int executeCommand() throws CommandException {
         try{
-        String[] domains = domainName0.split(",");
-        for (String domainName : domains){
-            setDomainName(domainName);
-            super.initDomain();
-            programOpts.setHostAndPort(getAdminAddress());
-            super.executeCommand();
-            logger.fine("Started domain " + domainName);
-        }
-        return 0;
+            String[] domains = domainName0.split(",");
+            for (String domainName : domains) {
+                setDomainName(domainName);
+                super.initDomain();
+                programOpts.setHostAndPort(getAdminAddress());
+                super.executeCommand();
+                logger.log(Level.FINE, "Started domain {0}", domainName);
+            }
+            return 0;
         } catch (Exception ex){
             throw new CommandException(ex.getLocalizedMessage());
         }

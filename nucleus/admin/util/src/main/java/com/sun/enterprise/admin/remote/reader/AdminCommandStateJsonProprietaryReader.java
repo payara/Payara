@@ -82,8 +82,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtils.copy(is, baos, 0);
         String str = baos.toString("UTF-8");
-        try {
-            JsonParser parser = Json.createParser(new StringReader(str));
+        try (JsonParser parser = Json.createParser(new StringReader(str))) {
             parser.next();
             JsonObject json = parser.getObject();
             return readAdminCommandState(json);

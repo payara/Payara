@@ -91,7 +91,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 public class ListResourceRefs implements AdminCommand, AdminCommandSecurity.Preauthorization,
             AdminCommandSecurity.AccessCheckProvider {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceRefs.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(ListResourceRefs.class);
 
     @Param(optional=true, primary=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -141,7 +141,7 @@ public class ListResourceRefs implements AdminCommand, AdminCommandSecurity.Prea
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("list.resource.refs.failed",
+            report.setMessage(LOCAL_STRINGS.getLocalString("list.resource.refs.failed",
                     "list-resource-refs failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
@@ -152,7 +152,7 @@ public class ListResourceRefs implements AdminCommand, AdminCommandSecurity.Prea
     private void processResourceRefs(ActionReport report, List<ResourceRef> resourceRefs) {
         if (resourceRefs.isEmpty()) {
             final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-            part.setMessage(localStrings.getLocalString(
+            part.setMessage(LOCAL_STRINGS.getLocalString(
                     "NothingToList", "Nothing to List."));
         } else {
             for (ResourceRef ref : resourceRefs) {
