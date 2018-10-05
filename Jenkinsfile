@@ -19,7 +19,6 @@ pipeline {
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "jdkVer = ${jdkVer}"
-                    echo "Recursive = ${isRecursive}"
                 }
             }
         }
