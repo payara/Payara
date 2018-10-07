@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -143,26 +143,27 @@ class RuntimeDirectory {
             String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
             File file = new File(jars[0]);
 
-            JarFile jar = new JarFile(file);
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
-                    String fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
-                    File outputFile = new File(configDir, fileName);
+            try (JarFile jar = new JarFile(file)) {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
+                        String fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
+                        File outputFile = new File(configDir, fileName);
 
-                    if (isTempDir) {
-                        outputFile.deleteOnExit();
-                    }
+                        if (isTempDir) {
+                            outputFile.deleteOnExit();
+                        }
 
-                    // only unpack if an existing file is not there
-                    if (!outputFile.exists()) {
-                        if (entry.isDirectory()) {
-                            outputFile.mkdirs();
-                        } else {
-                            // write out the conifugration file
-                            try (InputStream is = jar.getInputStream(entry)) {
-                                Files.copy(is, outputFile.toPath());
+                        // only unpack if an existing file is not there
+                        if (!outputFile.exists()) {
+                            if (entry.isDirectory()) {
+                                outputFile.mkdirs();
+                            } else {
+                                // write out the conifugration file
+                                try (InputStream is = jar.getInputStream(entry)) {
+                                    Files.copy(is, outputFile.toPath());
+                                }
                             }
                         }
                     }
@@ -174,7 +175,7 @@ class RuntimeDirectory {
 
         // sort out the security properties
         configureSecurity();
-        
+
         JarUtil.extractRars(directory.getAbsolutePath());
         JarUtil.setEnv(directory.getAbsolutePath());
     }
@@ -264,19 +265,19 @@ class RuntimeDirectory {
     void setDomainXML(File alternateDomainXML) throws IOException {
         Files.copy(alternateDomainXML.toPath(), configDir.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
     }
-    
+
     void setDomainXML(InputStream alternateDomainXML) throws IOException {
         Files.copy(alternateDomainXML, configDir.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
     }
-    
+
     void setLoggingProperties(File alternativeFile) throws IOException {
         Files.copy(alternativeFile.toPath(), configDir.toPath().resolve("logging.properties"),StandardCopyOption.REPLACE_EXISTING);
     }
-    
+
     File getLoggingProperties() {
-        return configDir.toPath().resolve("logging.properties").toFile();        
+        return configDir.toPath().resolve("logging.properties").toFile();
     }
-    
+
     File getConfigDirectory() {
         return configDir;
     }
