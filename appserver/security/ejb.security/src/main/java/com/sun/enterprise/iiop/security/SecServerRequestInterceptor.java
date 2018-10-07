@@ -50,6 +50,7 @@ package com.sun.enterprise.iiop.security;
  * @author: Nithya Subramanian
  */
 
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.common.iiop.security.SecurityContext;
 import org.omg.CORBA.*;
 import org.omg.PortableInterceptor.*;
@@ -65,21 +66,22 @@ import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
-
-import sun.security.x509.X509CertImpl;
-import sun.security.x509.X500Name;
 import javax.security.auth.*;  
 
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import com.sun.logging.LogDomains;
 import java.net.Socket;
 import java.util.Hashtable;
-import java.util.logging.*;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+
+import sun.security.util.DerInputStream;
+import sun.security.util.DerValue;
+import javax.security.auth.x500.X500Principal;
+import sun.security.x509.X509CertImpl;
 
 /*
  * Security server request interceptor 
@@ -90,9 +92,9 @@ public class SecServerRequestInterceptor
     implements ServerRequestInterceptor
 {
 
-    private static java.util.logging.Logger _logger=null;
+    private static java.util.logging.Logger logger=null;
     static{
-       _logger=LogDomains.getLogger(SecServerRequestInterceptor.class,LogDomains.SECURITY_LOGGER);
+       logger = LogDomains.getLogger( SecServerRequestInterceptor.class, LogDomains.SECURITY_LOGGER);
         }
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(SecServerRequestInterceptor.class);
@@ -141,6 +143,7 @@ public class SecServerRequestInterceptor
         smSelector = Lookups.getSecurityMechanismSelector();
     }
 
+    @Override
     public String name() {
         return name;
     }
@@ -166,8 +169,8 @@ public class SecServerRequestInterceptor
      */
     private SASContextBody createContextError(int major, int minor) {
         
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"Creating ContextError message: major code = "+ major+ "minor code= "+ minor);
+        if(logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE,"Creating ContextError message: major code = "+ major+ "minor code= "+ minor);
         }
         byte error_token[] = {} ;
         ContextError ce = new ContextError(0,      /* stateless client id */
@@ -190,8 +193,8 @@ public class SecServerRequestInterceptor
          * Check CSIV2 spec to make sure that there is no 
          * final_context_token for GSSUP mechanism
          */
-        if(_logger.isLoggable(Level.FINE)){
-            _logger.log(Level.FINE,"Creating CompleteEstablishContext message");
+        if(logger.isLoggable(Level.FINE)){
+            logger.log(Level.FINE,"Creating CompleteEstablishContext message");
         }
         byte[] final_context_token  = {} ;
         CompleteEstablishContext cec = new CompleteEstablishContext(
@@ -207,24 +210,23 @@ public class SecServerRequestInterceptor
      *  CDR encode a SAS Context body and then construct a service context
      *  element.
      */
-    private ServiceContext createSvcContext(SASContextBody sasctxtbody, ORB orb) {
+    private ServiceContext createSvcContext(SASContextBody sasContextBody, ORB orb) {
 
-        ServiceContext sc = null;
-
-        Any a = orb.create_any();
-        SASContextBodyHelper.insert(a, sasctxtbody);
+        Any any = orb.create_any();
+        SASContextBodyHelper.insert(any, sasContextBody);
 
         byte[] cdr_encoded_saselm = {};
         try {
-            cdr_encoded_saselm = codec.encode_value(a);
+            cdr_encoded_saselm = codec.encode_value(any);
         } catch (Exception e) {
-                _logger.log(Level.SEVERE,"iiop.encode_exception",e);
+                logger.log(Level.SEVERE,"iiop.encode_exception",e);
         }
-        sc               = new ServiceContext();
-        sc.context_id    = SECURITY_ATTRIBUTE_SERVICE_ID;
-        sc.context_data  = cdr_encoded_saselm;
-        return sc;
 
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.context_id = SECURITY_ATTRIBUTE_SERVICE_ID;
+        serviceContext.context_data = cdr_encoded_saselm;
+
+        return serviceContext;
     }
 
     /**
@@ -234,94 +236,99 @@ public class SecServerRequestInterceptor
      * Set the identcls field in the security context.
      * 
      */
-    private void createIdCred(SecurityContext sc, IdentityToken idtok)
+    private void createIdCred(SecurityContext securityContext, IdentityToken identityToken)
         throws Exception {
 
-        byte[] derenc ; // used to hold DER encodings
+        byte[] derEncoding ; // used to hold DER encodings
         Any    any;     // Any object returned from codec.decode_value()
 
-        switch (idtok.discriminator()) {
+        switch (identityToken.discriminator()) {
 
         case ITTAbsent.value:
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Identity token type is Absent");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"Identity token type is Absent");
             }
-            sc.identcls = null;
+            securityContext.identcls = null;
             break;
 
         case ITTAnonymous.value:
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Identity token type is Anonymous");
-		_logger.log(Level.FINE,"Adding AnonyCredential to subject's PublicCredentials");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"Identity token type is Anonymous");
+		logger.log(Level.FINE,"Adding AnonyCredential to subject's PublicCredentials");
             }
-            sc.subject.getPublicCredentials().add(new AnonCredential());
-            sc.identcls = AnonCredential.class;
+            securityContext.subject.getPublicCredentials().add(new AnonCredential());
+            securityContext.identcls = AnonCredential.class;
             break;
 
         case ITTDistinguishedName.value:
-            /* Construct a X500Name */
+            // Construct a X500Principal
 
-            derenc = idtok.dn();
+            derEncoding = identityToken.dn();
+
+            derEncoding = identityToken.dn();
             /* Issue 5766: Decode CDR encoding if necessary */
-            if (isCDR(derenc)) {
-                any = codec.decode_value(derenc, X501DistinguishedNameHelper.type());
+            if (isCDR(derEncoding)) {
+                any = codec.decode_value(derEncoding, X501DistinguishedNameHelper.type());
 
                 /* Extract CDR encoding */
-                derenc = X501DistinguishedNameHelper.extract(any);
+                derEncoding = X501DistinguishedNameHelper.extract(any);
             }
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Create an X500Name object from identity token");
+
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, "Create an X500Principal object from identity token");
             }
-            X500Name xname = new X500Name(derenc);
-	    if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"Identity to be asserted is " + xname.toString());
-		_logger.log(Level.FINE,"Adding X500Name to subject's PublicCredentials");
-	    }
-            sc.subject.getPublicCredentials().add(xname);
-            sc.identcls = X500Name.class;
+
+            X500Principal xname = new X500Principal(derEncoding);
+
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, "Identity to be asserted is {0}", xname.toString());
+                logger.log(FINE, "Adding X500Principal to subject's PublicCredentials");
+            }
+
+            securityContext.subject.getPublicCredentials().add(xname);
+            securityContext.identcls = X500Principal.class;
             break;
             
         case ITTX509CertChain.value:
             /*  Construct a X509CertificateChain */
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Identity token type is a X509 Certificate Chain");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"Identity token type is a X509 Certificate Chain");
             }
-            derenc = idtok.certificate_chain();
+            derEncoding = identityToken.certificate_chain();
             /* Issue 5766: Decode CDR encoding if necessary */
-            if (isCDR(derenc)) {
+            if (isCDR(derEncoding)) {
                 /* Decode CDR encoding */
-                any = codec.decode_value(derenc, X509CertificateChainHelper.type());
+                any = codec.decode_value(derEncoding, X509CertificateChainHelper.type());
 
                 /* Extract DER encoding */
-                derenc = X509CertificateChainHelper.extract(any);
+                derEncoding = X509CertificateChainHelper.extract(any);
             }
 
-            DerInputStream din = new DerInputStream(derenc);
+            DerInputStream din = new DerInputStream(derEncoding);
 
             /** 
              * Size specified for getSequence() is 1 and is just 
              * used as a guess by the method getSequence().
              */
             DerValue[] derval = din.getSequence(1);
-            X509Certificate[] certchain = 
-                        new X509CertImpl[derval.length];
+            X509Certificate[] certchain = new X509CertImpl[derval.length];
             /**
              * X509Certificate does not have a constructor which can
              * be used to instantiate objects from DER encodings. So
              * use X509CertImpl extends X509Cerificate and also implements
              * DerEncoder interface. 
              */
-            if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Contents of X509 Certificate chain:");
+            if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Contents of X509 Certificate chain:");
             }
             for (int i = 0; i < certchain.length; i++) {
                 certchain[i] = new X509CertImpl(derval[i]);
-                if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"    " + certchain[i].getSubjectDN().getName());
+                if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"    " + certchain[i].getSubjectDN().getName());
                 }
             }
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Creating a X509CertificateCredential object from certchain");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"Creating a X509CertificateCredential object from certchain");
             }
             /**
              * The alias field in the X509CertificateCredential is currently ignored
@@ -330,18 +337,18 @@ public class SecServerRequestInterceptor
              */
             X509CertificateCredential cred = 
                 new X509CertificateCredential(certchain, certchain[0].getSubjectDN().getName(), "default");
-            if(_logger.isLoggable(Level.FINE)){
-                _logger.log(Level.FINE,"Adding X509CertificateCredential to subject's PublicCredentials");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE,"Adding X509CertificateCredential to subject's PublicCredentials");
             }
-            sc.subject.getPublicCredentials().add(cred);
-            sc.identcls = X509CertificateCredential.class;
+            securityContext.subject.getPublicCredentials().add(cred);
+            securityContext.identcls = X509CertificateCredential.class;
             break;
  
         case ITTPrincipalName.value:
-            if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Identity token type is GSS Exported Name");
+            if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Identity token type is GSS Exported Name");
             }
-            byte[] expname = idtok.principal_name();
+            byte[] expname = identityToken.principal_name();
             /* Issue 5766: Decode CDR encoding if necessary */
             if (isCDR(expname)) {
                 /* Decode CDR encoding */
@@ -357,13 +364,13 @@ public class SecServerRequestInterceptor
 
             GSSUPName gssname = new GSSUPName(expname);
 
-            sc.subject.getPublicCredentials().add(gssname);
-            sc.identcls  = GSSUPName.class;
-            _logger.log(Level.FINE,"Adding GSSUPName credential to subject");
+            securityContext.subject.getPublicCredentials().add(gssname);
+            securityContext.identcls  = GSSUPName.class;
+            logger.log(Level.FINE,"Adding GSSUPName credential to subject");
             break;
 
         default:
-		_logger.log(Level.SEVERE,"iiop.unknown_identity");              
+		logger.log(Level.SEVERE,"iiop.unknown_identity");              
             throw new SecurityException(
                 localStrings.getLocalString("secserverreqinterceptor.err_unknown_idassert_type",
                                             "Unknown identity assertion type."));
@@ -391,15 +398,15 @@ public class SecServerRequestInterceptor
      */
     private void createAuthCred(SecurityContext sc, byte[] authtok, ORB orb) throws Exception
     {
-		_logger.log(Level.FINE,"Constructing a PasswordCredential from client authentication token");
+		logger.log(Level.FINE,"Constructing a PasswordCredential from client authentication token");
         /* create a GSSUPToken from the authentication token */
         GSSUPToken tok  = GSSUPToken.getServerSideInstance(orb, codec, authtok);
 
         final PasswordCredential pwdcred = tok.getPwdcred();
         final SecurityContext fsc = sc;
-	    if(_logger.isLoggable(Level.FINE)) {
-		_logger.log(Level.FINE,"Password credential = " + pwdcred.toString());
-		_logger.log(Level.FINE,"Adding PasswordCredential to subject's PrivateCredentials");
+	    if(logger.isLoggable(Level.FINE)) {
+		logger.log(Level.FINE,"Password credential = " + pwdcred.toString());
+		logger.log(Level.FINE,"Adding PasswordCredential to subject's PrivateCredentials");
 	}
         java.security.AccessController.doPrivileged(new java.security.PrivilegedAction() {
             public java.lang.Object run() {
@@ -412,8 +419,8 @@ public class SecServerRequestInterceptor
     }     
     
     private void handle_null_service_context(ServerRequestInfo ri, ORB orb) {
-        if(_logger.isLoggable(Level.FINE)){
-            _logger.log(Level.FINE,"No SAS context element found in service context list for operation: " + ri.operation());
+        if(logger.isLoggable(Level.FINE)){
+            logger.log(Level.FINE,"No SAS context element found in service context list for operation: " + ri.operation());
         }
 	ServiceContext sc = null;
         int secStatus = secContextUtil.setSecurityContext(null, ri.object_id(),
@@ -424,8 +431,8 @@ public class SecServerRequestInterceptor
                     INVALID_MECHANISM_MINOR);
             sc = createSvcContext(sasctxbody, orb);
             ri.add_reply_service_context(sc, NO_REPLACE);
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
+            if(logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE,
                         "SecServerRequestInterceptor.receive_request: NO_PERMISSION");
             }
             throw new NO_PERMISSION();
@@ -440,8 +447,8 @@ public class SecServerRequestInterceptor
         int status = 0;
         boolean  raise_no_perm = false;
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "++++ Entered " + prname + "receive_request");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "++++ Entered " + prname + "receive_request");
         }
         
        // secsvc  = Csiv2Manager.getSecurityService();
@@ -458,28 +465,28 @@ public class SecServerRequestInterceptor
             return;
         }
 
-        if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Received a non null SAS context element");
+        if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Received a non null SAS context element");
         }
         /* Decode the service context field */
         Any SasAny;
         try {        
             SasAny = codec.decode_value(sc.context_data, SASContextBodyHelper.type());
         } catch (Exception e) {
-        _logger.log(Level.SEVERE,"iiop.decode_exception",e);
+        logger.log(Level.SEVERE,"iiop.decode_exception",e);
             throw new SecurityException(
                 localStrings.getLocalString("secserverreqinterceptor.err_cdr_decode",
                                             "CDR Decoding error for SAS context element."));
         }
 
-        if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Successfully decoded CDR encoded SAS context element.");
+        if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Successfully decoded CDR encoded SAS context element.");
         }
         SASContextBody sasctxbody = SASContextBodyHelper.extract(SasAny);
 
         short sasdiscr = sasctxbody.discriminator();
-        if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"SAS context element is a/an " + SvcContextUtils.getMsgname(sasdiscr)+ " message");
+        if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"SAS context element is a/an " + SvcContextUtils.getMsgname(sasdiscr)+ " message");
         }
         /* Check message type received */
 
@@ -499,9 +506,9 @@ public class SecServerRequestInterceptor
         if (sasdiscr == MTMessageInContext.value) {
              sasctxbody = createContextError(SvcContextUtils.MessageInContextMinor);
              sc = createSvcContext(sasctxbody, orb);
-        if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Adding ContextError message to service context list");
-		_logger.log(Level.FINE,"SecurityContext set to null");
+        if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Adding ContextError message to service context list");
+		logger.log(Level.FINE,"SecurityContext set to null");
         }
              ri.add_reply_service_context(sc, NO_REPLACE);
              // no need to set the security context
@@ -522,7 +529,7 @@ public class SecServerRequestInterceptor
          */
 
         if (sasdiscr != MTEstablishContext.value) {
-            _logger.log(Level.SEVERE,"iiop.not_establishcontext_msg");
+            logger.log(Level.SEVERE,"iiop.not_establishcontext_msg");
             throw new SecurityException(
                 localStrings.getLocalString("secserverreqinterceptor.err_not_ec_msg",
                                             "Received message not an EstablishContext message."));
@@ -535,13 +542,13 @@ public class SecServerRequestInterceptor
         
         try {
             if (ec.client_authentication_token.length != 0) {
-                if(_logger.isLoggable(Level.FINE)){
-                    _logger.log(Level.FINE,"Message contains Client Authentication Token");
+                if(logger.isLoggable(Level.FINE)){
+                    logger.log(Level.FINE,"Message contains Client Authentication Token");
                 }
                 createAuthCred(seccontext, ec.client_authentication_token, orb);
             }
         } catch (Exception e) {
-            _logger.log(Level.SEVERE,"iiop.authentication_exception",e);
+            logger.log(Level.SEVERE,"iiop.authentication_exception",e);
             throw new SecurityException(
                 localStrings.getLocalString("secsercverreqinterceptor.err_cred_create",
                                             "Error while creating a JAAS subject credential."));
@@ -551,32 +558,32 @@ public class SecServerRequestInterceptor
 
         try{
             if (ec.identity_token != null) {
-                if(_logger.isLoggable(Level.FINE)){
-                    _logger.log(Level.FINE,"Message contains an Identity Token");
+                if(logger.isLoggable(Level.FINE)){
+                    logger.log(Level.FINE,"Message contains an Identity Token");
                 }
                 createIdCred(seccontext, ec.identity_token);
             }
         } catch (SecurityException secex){
-            _logger.log(Level.SEVERE,"iiop.security_exception",secex);
+            logger.log(Level.SEVERE,"iiop.security_exception",secex);
             sasctxbody = createContextError(INVALID_MECHANISM_MAJOR,
                                             INVALID_MECHANISM_MINOR);
             sc = createSvcContext(sasctxbody, orb);
             ri.add_reply_service_context(sc, NO_REPLACE);
             throw new NO_PERMISSION();
         } catch (Exception e) {
-            _logger.log(Level.SEVERE,"iiop.generic_exception",e);
+            logger.log(Level.SEVERE,"iiop.generic_exception",e);
             throw new SecurityException(
                                         localStrings.getLocalString("secsercverreqinterceptor.err_cred_create",
                                                                     "Error while creating a JAAS subject credential."));
             
         }
 
-        if(_logger.isLoggable(Level.FINE)){
-            _logger.log(Level.FINE,"Invoking setSecurityContext() to set security context");
+        if(logger.isLoggable(Level.FINE)){
+            logger.log(Level.FINE,"Invoking setSecurityContext() to set security context");
         }
         status = secContextUtil.setSecurityContext(seccontext, ri.object_id(), ri.operation(), getServerSocket());
-	if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"setSecurityContext() returned status code " + status);
+	if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"setSecurityContext() returned status code " + status);
         }
         /**
          * CSIV2 SPEC NOTE:
@@ -588,25 +595,25 @@ public class SecServerRequestInterceptor
          * is sent back. If validation fails, a ContextError must be sent back.
          */
         if (status == SecurityContextUtil.STATUS_FAILED) {
-            if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"setSecurityContext() returned STATUS_FAILED");
+            if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"setSecurityContext() returned STATUS_FAILED");
             }
             sasctxbody = createContextError(status);
             sc = createSvcContext(sasctxbody, orb);
-            if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"Adding ContextError message to service context list");
+            if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"Adding ContextError message to service context list");
             }
             ri.add_reply_service_context(sc, NO_REPLACE);
             throw new NO_PERMISSION();
         }
 
-        if(_logger.isLoggable(Level.FINE)){
-		_logger.log(Level.FINE,"setSecurityContext() returned SUCCESS");
+        if(logger.isLoggable(Level.FINE)){
+		logger.log(Level.FINE,"setSecurityContext() returned SUCCESS");
         }
         sasctxbody = createCompleteEstablishContext(status);
         sc = createSvcContext(sasctxbody, orb);
-        if(_logger.isLoggable(Level.FINE)){
-            _logger.log(Level.FINE,"Adding CompleteEstablisContext message to service context list");
+        if(logger.isLoggable(Level.FINE)){
+            logger.log(Level.FINE,"Adding CompleteEstablisContext message to service context list");
         }
         ri.add_reply_service_context(sc, NO_REPLACE);
     }
@@ -631,27 +638,27 @@ public class SecServerRequestInterceptor
         }
         cntr.increment();
 
-        Socket s = null;
-	Connection c = null;
+        Socket socket = null;
+	Connection connection = null;
 	if (ri instanceof RequestInfoExt) {
-            c = ((RequestInfoExt)ri).connection();
+            connection = ((RequestInfoExt)ri).connection();
         }
         ServerConnectionContext scc = null;
-        if (c != null) {
-            s = c.getSocket();
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"RECEIVED request on connection: " + c);
-                _logger.log(Level.FINE,"Socket =" + s);
+        if (connection != null) {
+            socket = connection.getSocket();
+            if(logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE,"RECEIVED request on connection: " + connection);
+                logger.log(Level.FINE,"Socket =" + socket);
             }
-            scc = new ServerConnectionContext(s);
+            scc = new ServerConnectionContext(socket);
         } else {
             scc = new ServerConnectionContext();
         }
         setServerConnectionContext(scc);
     }
 
-    public void send_reply(ServerRequestInfo ri)
-    {
+    @Override
+    public void send_reply(ServerRequestInfo ri) {
         unsetSecurityContext();
     }
  
