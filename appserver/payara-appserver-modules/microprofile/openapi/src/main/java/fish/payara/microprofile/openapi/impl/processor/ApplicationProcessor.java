@@ -428,31 +428,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
-        SchemaImpl schema;
+        SchemaImpl schema = new SchemaImpl();
+
         if (element instanceof java.lang.reflect.Parameter) {
-            schema = new SchemaImpl();
             java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
             schema.setType(ModelUtils.getSchemaType(parameter.getType()));
-
-            if (schema.getType() == SchemaType.ARRAY) {
-                SchemaImpl arraySchema = new SchemaImpl();
-                ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
-                arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
-                schema.setItems(arraySchema);
-            }
-            newParameter.setSchema(schema);
         } else {
-            schema = new SchemaImpl();
             Field field = Field.class.cast(element);
             schema.setType(ModelUtils.getSchemaType(field.getType()));
-            if (schema.getType() == SchemaType.ARRAY) {
-                SchemaImpl arraySchema = new SchemaImpl();
-                ParameterizedType parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
-                arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
-                schema.setItems(arraySchema);
-            }
-            newParameter.setSchema(schema);
         }
+
+        if (schema.getType() == SchemaType.ARRAY) {
+            schema.setItems(getArraySchema(element));
+        }
+        newParameter.setSchema(schema);
 
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
@@ -476,6 +465,22 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         + "an unsupported annotation.");
             }
         }
+    }
+    
+    private SchemaImpl getArraySchema(AnnotatedElement element) {
+        SchemaImpl arraySchema = new SchemaImpl();
+        ParameterizedType parameterizedType;
+
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        } else {
+            Field field = Field.class.cast(element);
+            parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+        }
+
+        arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+        return arraySchema;
     }
 
     @Override
