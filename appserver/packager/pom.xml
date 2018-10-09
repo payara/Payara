@@ -160,26 +160,37 @@
         <module>hazelcast</module>
         <module>hazelcast-l10n</module>
         <module>healthcheck</module>
+        <module>healthcheck-l10n</module>
         <module>phonehome</module>
         <module>requesttracing</module>
         <module>notification</module>
+        <module>notification-l10n</module>
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
+        <module>JMX-Monitoring-l10n</module>
         <module>payara-micro</module>
         <module>notification-email</module>
+        <module>notification-email-l10n</module>
         <module>notification-hipchat</module>
+        <module>notification-hipchat-l10n</module>
         <module>notification-jms</module>
+        <module>notification-jms-l10n</module>
         <module>notification-slack</module>
+        <module>notification-slack-l10n</module>
         <module>notification-snmp</module>
+        <module>notification-snmp-l10n</module>
         <module>notification-xmpp</module>
+        <module>notification-xmpp-l10n</module>
         <module>notification-newrelic</module>
+        <module>notification-newrelic-l10n</module>
         <module>notification-datadog</module>
+        <module>notification-datadog-l10n</module>
         <module>zendesk-support</module>
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-	<module>rest-monitoring</module>
-	<module>payara-executor-service</module>
+        <module>rest-monitoring</module>
+        <module>payara-executor-service</module>
         <module>cdi-auth-roles</module>
         <module>yubikey-authentication</module>
     </modules>
@@ -192,6 +203,7 @@
             </activation>
             <modules>
                 <module>microprofile-package</module>
+                <module>microprofile-package-l10n</module>
             </modules>
         </profile>
     </profiles>
