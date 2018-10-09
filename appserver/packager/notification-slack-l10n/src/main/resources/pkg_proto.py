@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-slack-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification Slack Integration",
-                        "pkg.description" : "Notification Slack module",
+                        "pkg.summary" : "Notification Slack Integration Localization",
+                        "pkg.description" : "Notification Slack localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

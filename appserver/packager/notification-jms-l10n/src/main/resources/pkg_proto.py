@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-jms-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification JMS Integration",
-                        "pkg.description" : "Notification JMS module",
+                        "pkg.summary" : "Notification JMS Integration Localization",
+                        "pkg.description" : "Notification JMS localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

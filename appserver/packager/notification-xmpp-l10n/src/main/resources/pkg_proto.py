@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-xmpp-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification XMPP Integration",
-                        "pkg.description" : "Notification XMPP module",
+                        "pkg.summary" : "Notification XMPP Integration Localization",
+                        "pkg.description" : "Notification XMPP localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

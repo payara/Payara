@@ -21,8 +21,8 @@ pkg = {
     "name"          : "healthcheck-l10",
     "version"       : conf.healthcheck_version,
     "attributes"    : {
-                        "pkg.summary" : "HealthCheck Services Integration",
-                        "pkg.description" : "HealthCheck Core module",
+                        "pkg.summary" : "HealthCheck Services Integration Localization",
+                        "pkg.description" : "HealthCheck Core localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

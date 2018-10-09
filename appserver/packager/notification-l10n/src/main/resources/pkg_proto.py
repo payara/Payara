@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-l10",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification Services Integration",
-                        "pkg.description" : "Notification Core module",
+                        "pkg.summary" : "Notification Services Integration Localization",
+                        "pkg.description" : "Notification Core localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

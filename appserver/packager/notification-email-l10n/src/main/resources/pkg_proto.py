@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-email-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification eMail Integration",
-                        "pkg.description" : "Notification eMail module",
+                        "pkg.summary" : "Notification eMail Integration Localization",
+                        "pkg.description" : "Notification eMail localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

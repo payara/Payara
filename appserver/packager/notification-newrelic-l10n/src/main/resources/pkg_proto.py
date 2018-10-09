@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-newrelic-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification New Relic Integration",
-                        "pkg.description" : "Notification New Relic module",
+                        "pkg.summary" : "Notification New Relic Integration Localization",
+                        "pkg.description" : "Notification New Relic localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

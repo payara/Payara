@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-hipchat-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Hipchat Notification Services Integration",
-                        "pkg.description" : "Notification HipChat module",
+                        "pkg.summary" : "Hipchat Notification Services Integration Localization",
+                        "pkg.description" : "Notification HipChat localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

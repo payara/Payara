@@ -21,8 +21,8 @@ pkg = {
     "name"          : "jmx-monitoring-package-l10n",
     "version"       : conf.healthcheck_version,
     "attributes"    : {
-                        "pkg.summary" : "Monitoring Services Integration",
-                        "pkg.description" : "Monitoring Core module",
+                        "pkg.summary" : "Monitoring Services Integration Localization",
+                        "pkg.description" : "Monitoring Core localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

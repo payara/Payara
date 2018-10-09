@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-datadog-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification Datadog Integration",
-                        "pkg.description" : "Notification Datadog module",
+                        "pkg.summary" : "Notification Datadog Integration Localization",
+                        "pkg.description" : "Notification Datadog localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

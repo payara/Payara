@@ -46,8 +46,8 @@ pkg = {
     "name"          : "notification-snmp-l10n",
     "version"       : conf.notification_version,
     "attributes"    : {
-                        "pkg.summary" : "Notification SNMP Integration",
-                        "pkg.description" : "Notification SNMP module",
+                        "pkg.summary" : "Notification SNMP Integration Localization",
+                        "pkg.description" : "Notification SNMP localization module",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 

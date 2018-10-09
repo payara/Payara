@@ -23,8 +23,8 @@ pkg = {
     "name"          : "microprofile-package-l10n",
     "version"       : conf.glassfish_version,
     "attributes"    : {
-                        "pkg.summary" : "Microprofile Support",
-                        "pkg.description" : "Modules to support Microprofile",
+                        "pkg.summary" : "Microprofile Support Localization",
+                        "pkg.description" : "Localization Modules to support Microprofile",
                         "info.classification" : "OSGi Service Platform Release 4",
                       },
     "depends"       : { 
