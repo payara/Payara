@@ -206,7 +206,6 @@
         <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
         <jvm-options>-XX:+UseZGC</jvm-options>
         <jvm-options>-client</jvm-options>
-        <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -412,7 +411,6 @@
              <jvm-options>--illegal-access=permit</jvm-options>
              <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
              <jvm-options>-XX:+UseZGC</jvm-options>
-             <jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
