@@ -251,7 +251,7 @@ public class ClassDesc
 
         if (!(c = model.validate(className, classLoader, null)).isEmpty()) {
             Iterator iter = c.iterator();
-            StringBuffer validationMsgs = new StringBuffer();
+            StringBuilder validationMsgs = new StringBuilder();
 
             while (iter.hasNext()) {
                 Exception ex = (Exception) iter.next();
@@ -314,7 +314,7 @@ public class ClassDesc
         // If so, we need to convert it '.' to '$' because is it
         // an inner class.
         if (suffix.compareToIgnoreCase(".oid") == 0) { // NOI18N
-            StringBuffer buf = new StringBuffer(keyClassName);
+            StringBuilder buf = new StringBuilder(keyClassName);
 
             buf.setCharAt(buf.length() - 4, '$');
             keyClassName = buf.toString();
@@ -1396,7 +1396,7 @@ public class ClassDesc
      */
     private String generateRDCacheKey(FieldDesc additionalField)
     {
-        StringBuffer key = new StringBuffer();
+        StringBuilder key = new StringBuilder();
 
         key.append(pcClass.getName());
 
