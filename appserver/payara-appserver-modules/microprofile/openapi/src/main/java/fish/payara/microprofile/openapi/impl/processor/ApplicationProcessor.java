@@ -124,6 +124,7 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
@@ -405,13 +406,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        SchemaImpl schema = new SchemaImpl();
+
         if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
         } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
+            Field field = Field.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(field.getType()));
         }
+
+        if (schema.getType() == SchemaType.ARRAY) {
+            schema.setItems(getArraySchema(element));
+        }
+        newParameter.setSchema(schema);
 
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
@@ -435,6 +443,22 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         + "an unsupported annotation.");
             }
         }
+    }
+    
+    private SchemaImpl getArraySchema(AnnotatedElement element) {
+        SchemaImpl arraySchema = new SchemaImpl();
+        ParameterizedType parameterizedType;
+
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        } else {
+            Field field = Field.class.cast(element);
+            parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+        }
+
+        arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+        return arraySchema;
     }
 
     @Override
