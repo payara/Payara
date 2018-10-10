@@ -1,0 +1,1 @@
+-exportcontents: fish.payara.admingui.eventbus-notifier-console-plugin; version=${project.osgi.version}

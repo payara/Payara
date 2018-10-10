@@ -1,0 +1,1 @@
+-exportcontents: fish.payara.admingui.newrelic-notifier-console-plugin; version=${project.osgi.version}
