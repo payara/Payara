@@ -468,7 +468,7 @@ public class RequestTracingService implements EventListener, ConfigListener {
                             notifierExecutionOptions.getNotifierType());
                     String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
                     NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(
-                            subject, requestTrace.toString());
+                            subject, requestTrace);
                     notificationService.notify(EventSource.REQUESTTRACING, notificationEvent);
                 }
             }
