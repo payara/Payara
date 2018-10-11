@@ -156,7 +156,6 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                     boolean securityEnabled = Boolean.valueOf(listener.getSecurityEnabled());
                    
                     if (securityEnabled) {
-                        ArrayList<String> supportedProtocol = new ArrayList<>(4);
                         if (ssl != null) {
                             boolean ssl2Enabled = Boolean.valueOf(ssl.getSsl2Enabled());
                             boolean tlsEnabled = Boolean.valueOf(ssl.getTlsEnabled());
@@ -241,7 +240,6 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             boolean tlsEnabled, boolean tlsEnabled11,boolean tlsEnabled12) throws Exception {
 
         String protocol;
-        ArrayList<String> selectedProtocols = new ArrayList<>();
         if (tlsEnabled12) {
             protocol = TLS12;
         } else if (tlsEnabled11) {
