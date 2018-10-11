@@ -47,7 +47,6 @@ import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -119,7 +118,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
      *
      */
     @Override
-    final protected void populateBaseClass() {
+    protected final void populateBaseClass() {
         remotePort = "135";
         remoteUser = windowsuser;
         remotePassword = windowspassword;

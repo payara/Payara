@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import com.sun.enterprise.v3.admin.cluster.PingNodeRemoteCommand;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
