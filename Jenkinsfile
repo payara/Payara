@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script{
                     pom = readMavenPom file: 'pom.xml'
-                    payaraBuildNumber = "PR${env.CHANGE_ID}#${currentBuild.number}"
+                    payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "jdkVer = ${jdkVer}"
