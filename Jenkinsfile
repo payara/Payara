@@ -1,55 +1,233 @@
+#!groovy
+//in repo Jenkinsfile
+def pom
+def DOMAIN_NAME='test-domain'
+def ASADMIN
+def payaraBuildNumber
+def jdkVer = '8'
 pipeline {
-    agent none
+    options {
+        disableConcurrentBuilds()
+    }
+    agent any
     stages {
-        stage("Analyse") {
-            agent {
-                label "sonar"
+        stage('report') {
+            steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                    echo "jdkVer = ${jdkVer}"
+                }
             }
+        }
+        stage('Build') {
             tools {
-                jdk "zulu-8"
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
             }
             steps {
-                echo "Analysing"
-                checkoutAndBuildSource()
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                }
             }
         }
-    }     
-}
-
-def checkoutAndBuildSource(){
-    echo 'JAVA_HOME = ' + JAVA_HOME
-    prNo = env.BRANCH_NAME
-    script{
-        dir('src'){
-            deleteDir()
+        stage('Setup for Quicklook Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
+        stage('Run Quicklook Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean test \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/${getPayaraDirectoryName(pom.version)}/glassfish\" \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all \
+                -f appserver/tests/quicklook/pom.xml"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout EE8 Tests') {
+            when{
+                expression{ getMajorVersion(pom.version) != '4' }
+            }
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run EE8 Tests') {
+            when{
+                expression{ getMajorVersion(pom.version) != '4' }
+            }
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout cargoTracker Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run cargoTracker Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
+                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout EE7 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/JenkinsTest"]],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'SubmoduleOption',
+                        disableSubmodules: false,
+                        parentCredentials: true,
+                        recursiveSubmodules: true,
+                        reference: '',
+                        trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run EE7 Tests') {
+            tools {
+                jdk "zulu-${jdkVer}"
+            }
+            environment {
+                MAVEN_OPTS=getMavenOpts()
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara.directory.name=${getPayaraDirectoryName(pom.version)} \
+                -Dpayara.version.major=${getMajorVersion(pom.version)} -Ppayara-ci-managed,stable"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
         }
     }
-    checkout changelog: false, 
-      poll: false, 
-      scm: [$class: 'GitSCM', 
-      branches: [[name: "*/master"]], 
-      doGenerateSubmoduleConfigurations: false, 
-      extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'src']], 
-    submoduleCfg: [], 
-    userRemoteConfigs: [[url: 'https://github.com/payara/Payara.git']]]
-
-    withCredentials([[$class: 'StringBinding', credentialsId: 'jenkins-held-github-api-token-secret', variable: 'githubToken']
-                    [$class: 'StringBinding', credentialsId: 'jenkins-held-sonarcloud-token-secret', variable: 'sonarToken']]) {
-        dir('src') {
-            sh """mvn clean package \
-            -DskipTests \
-            -Dsonar.organization=payara \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.pullrequest.provider=github \
-            -Dsonar.analysis.mode=preview \
-            -Dsonar.pullrequest.github.repository=payara/Payara \
-            -Dsonar.pullrequest.github.endpoint=https://api.github.com/ \
-            -Dsonar.pullrequest.branch=${env.BRANCH_NAME} \
-            -Dsonar.pullrequest.key=${prNo} \
-            -Dsonar.pullrequest.base=master \
-            -Dsonar.github.oauth=${githubToken} \
-            -Dsonar.login=${sonarToken} \
-            sonar:sonar"""
-        }
+}
+def String getMavenOpts() {
+    def mavenOpts = '';
+    if('7'.equalsIgnoreCase(params.jdkVer)){
+      mavenOpts= mavenOpts + ' -Xmx1024M -XX:MaxPermSize=512m';
+    }
+    return mavenOpts;
+}
+def String getMajorVersion(fullVersion) {
+    if (fullVersion.startsWith("4")) {
+        return "4"
+    }else if (fullVersion.startsWith("5")) {
+        return "5"
+    }else{
+        error("unknown major version. Please check pom version")
+    }
+}
+def String getPayaraDirectoryName(fullVersion) {
+    if (fullVersion.startsWith("4")) {
+        return "payara41"
+    }else if (fullVersion.startsWith("5")) {
+        return "payara5"
+    }else{
+        error("unknown major version. Please check pom version")
     }
 }
