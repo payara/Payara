@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.sse;
 
 import java.io.ByteArrayOutputStream;
@@ -89,7 +91,6 @@ public final class GfSseEventReceiver implements Closeable {
                             baos.write(data);
                             currentState = State.FIELD_NAME;
                         } else if(data == '\n') {
-//                            System.out.println(sbr);
                             if(!inboundEvent.isEmpty()) {
                                 return inboundEvent;
                             }
@@ -155,21 +156,26 @@ public final class GfSseEventReceiver implements Closeable {
     }
 
     private void processField(GfSseInboundEvent inboundEvent, String name, byte[] value) {
-        if(name.equals("event")) {
-            inboundEvent.setName(new String(value));
-        } else if(name.equals("data")) {
-            inboundEvent.addData(value);
-            inboundEvent.addData(new byte[]{'\n'});
-        } else if(name.equals("id")) {
-            String s = "";
-            if (value != null) {
-                s = new String(value);
-                s = s.trim();
-                if (!s.matches("\\-?\\d+")) {
-                    s = "";
-                }
-            }
-            inboundEvent.setId(s);
+        switch (name) {
+            case "event":
+                inboundEvent.setName(new String(value));
+                break;
+            case "data":
+                inboundEvent.addData(value);
+                inboundEvent.addData(new byte[]{'\n'});
+                break;
+            case "id":
+                String s = "";
+                if (value != null) {
+                    s = new String(value);
+                    s = s.trim();
+                    if (!s.matches("\\-?\\d+")) {
+                        s = "";
+                    }
+                }   inboundEvent.setId(s);
+                break;
+            default:
+                break;
         }
     }
 

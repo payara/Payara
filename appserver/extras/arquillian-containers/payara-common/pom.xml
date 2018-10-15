@@ -66,7 +66,7 @@
     <parent>
         <groupId>fish.payara.arquillian</groupId>
         <artifactId>parent-payara-containers</artifactId>
-        <version>1.0.Beta3</version>
+        <version>1.0.Beta4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-container-4-common</artifactId>

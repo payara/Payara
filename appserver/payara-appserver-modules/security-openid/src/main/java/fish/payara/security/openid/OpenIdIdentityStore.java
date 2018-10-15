@@ -56,6 +56,8 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.enterprise.inject.Typed;
+import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import net.minidev.json.JSONArray;
@@ -66,6 +68,7 @@ import net.minidev.json.JSONArray;
  *
  * @author Gaurav Gupta
  */
+@Typed(OpenIdIdentityStore.class)
 public class OpenIdIdentityStore implements IdentityStore {
 
     @Inject

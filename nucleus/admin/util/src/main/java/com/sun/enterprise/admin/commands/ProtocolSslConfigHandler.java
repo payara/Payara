@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.commands;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -52,8 +54,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="protocol")
 public class ProtocolSslConfigHandler implements SslConfigHandler {
 
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ProtocolSslConfigHandler.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(ProtocolSslConfigHandler.class);
 
 
     // ------------------------------------------- Methods from SslConfigHandler
@@ -66,7 +67,7 @@ public class ProtocolSslConfigHandler implements SslConfigHandler {
                     command.findOrCreateProtocol(command.listenerId, false);
             if (protocol == null) {
                 report.setMessage(
-                        localStrings.getLocalString(
+                        LOCAL_STRINGS.getLocalString(
                                 "create.ssl.protocol.notfound.fail",
                                 "Unable to find protocol {0}.",
                                 command.listenerId));
@@ -74,6 +75,7 @@ public class ProtocolSslConfigHandler implements SslConfigHandler {
                 return;
             } else {
                 ConfigSupport.apply(new SingleConfigCode<Protocol>() {
+                                    @Override
                                     public Object run(Protocol param) throws TransactionFailure {
                                         Ssl newSsl = param.createChild(Ssl.class);
                                         param.setSecurityEnabled("true");
@@ -98,6 +100,7 @@ public class ProtocolSslConfigHandler implements SslConfigHandler {
             if (protocol != null) {
 
                 ConfigSupport.apply(new SingleConfigCode<Protocol>() {
+                    @Override
                     public Object run(Protocol param) {
                         param.setSecurityEnabled("false");
                         param.setSsl(null);

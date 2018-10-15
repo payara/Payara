@@ -512,6 +512,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected InterceptorManager interceptorManager;
 
+    private Set<Object> pendingInterceptors = new HashSet<>();
+
     // the order must be the same as CallbackType and getPre30LifecycleMethodNames
     private static final Class[] lifecycleCallbackAnnotationClasses = {
         AroundConstruct.class, 
@@ -3446,16 +3448,25 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         };
     };
     
-    private void initializeInterceptorManager() throws Exception {
+    private synchronized void initializeInterceptorManager() throws Exception {
         this.interceptorManager = new InterceptorManager(_logger, this,
                 lifecycleCallbackAnnotationClasses,
                 getPre30LifecycleMethodNames());
+        if (!pendingInterceptors.isEmpty()) {
+            pendingInterceptors.forEach(this::registerSystemInterceptor);
+            pendingInterceptors.clear();
+        }
     }
 
-    void registerSystemInterceptor(Object o) {
-
+    void registerSystemInterceptor(Object interceptor) {
         if (needSystemInterceptorProxy()) {
-            interceptorManager.registerRuntimeInterceptor(o);
+            synchronized (this) {
+                if (interceptorManager == null) {
+                    pendingInterceptors.add(interceptor);
+                } else {
+                    interceptorManager.registerRuntimeInterceptor(interceptor);
+                }
+            }
         }
     }
 

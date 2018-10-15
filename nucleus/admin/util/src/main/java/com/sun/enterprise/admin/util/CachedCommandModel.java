@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.util.StringUtils;
@@ -48,7 +50,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 
-/** Stores ETeg with command model.
+/** Stores ETag with command model.
  *
  * @author mmares
  */
@@ -67,6 +69,11 @@ public class CachedCommandModel extends CommandModelData {
         this.eTag = eTag;
     }
 
+    /**
+     * Returns the eTag.
+     * If it is null then the value is computed and returned
+     * @return the etag
+     */
     public String getETag() {
         if (eTag == null) {
             eTag = computeETag(this);
@@ -78,6 +85,10 @@ public class CachedCommandModel extends CommandModelData {
         this.eTag = eTag;
     }
 
+    /**
+     * Returns the etag
+     * @return the etag, which may be null if not set
+     */
     public String geteTag() {
         return eTag;
     }

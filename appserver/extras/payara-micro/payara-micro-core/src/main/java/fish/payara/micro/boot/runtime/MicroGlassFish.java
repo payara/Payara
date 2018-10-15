@@ -46,6 +46,7 @@ import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 /**
  *
@@ -67,6 +68,9 @@ public class MicroGlassFish implements GlassFish {
         status = Status.STARTING;
         kernel.start();
         status = Status.STARTED;
+        
+        //Add to service locator so other places can inject it
+        ServiceLocatorUtilities.addOneConstant(habitat, this, "micro", GlassFish.class);
     }
 
     @Override

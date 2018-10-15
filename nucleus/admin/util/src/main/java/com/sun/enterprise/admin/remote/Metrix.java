@@ -52,20 +52,20 @@ import java.util.List;
 public class Metrix {
     
     public static class Stat {
-        public final long timestamp;
+        public final long TIMESTAMP;
         public final String message;
         public final String param;
 
         public Stat(String message, String param) {
-            this.timestamp = System.currentTimeMillis();
+            this.TIMESTAMP = System.currentTimeMillis();
             this.message = message;
             this.param = param;
         }
         
     }
     
-    private static final Metrix instance = new Metrix();
-    private static final long timestamp = System.currentTimeMillis();
+    private static final Metrix INSTANCE = new Metrix();
+    private static final long TIMESTAMP = System.currentTimeMillis();
     
     private List<Stat> list = new ArrayList<Metrix.Stat>(64);
 
@@ -76,16 +76,16 @@ public class Metrix {
     public String toString() {
         StringBuilder res = new StringBuilder();
         res.append("duration, delta, event\n");
-        long lastTS = timestamp;
+        long lastTS = TIMESTAMP;
         for (Stat stat : list) {
-            res.append(stat.timestamp - timestamp).append(", ");
-            res.append(stat.timestamp - lastTS).append(", ");
+            res.append(stat.TIMESTAMP - TIMESTAMP).append(", ");
+            res.append(stat.TIMESTAMP - lastTS).append(", ");
             res.append(stat.message);
             if (stat.param != null) {
                 res.append(" - ").append(stat.param);
             }
             res.append('\n');
-            lastTS = stat.timestamp;
+            lastTS = stat.TIMESTAMP;
         }
         return res.toString();
     }
@@ -93,15 +93,15 @@ public class Metrix {
     // ---------- Static API
     
     public static void event(String message) {
-        instance.list.add(new Stat(message, null));
+        INSTANCE.list.add(new Stat(message, null));
     }
     
     public static void event(String message, String param) {
-        instance.list.add(new Stat(message, null));
+        INSTANCE.list.add(new Stat(message, null));
     }
     
     public static Metrix getInstance() {
-        return instance;
+        return INSTANCE;
     }
     
 }

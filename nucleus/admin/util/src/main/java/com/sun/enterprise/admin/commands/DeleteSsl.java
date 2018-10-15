@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.commands;
 
@@ -81,7 +82,7 @@ import java.beans.PropertyVetoException;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteSsl implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DeleteSsl.class);
 
     @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     public String type;
@@ -111,6 +112,7 @@ public class DeleteSsl implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Target targetUtil = habitat.getService(Target.class);
@@ -119,15 +121,11 @@ public class DeleteSsl implements AdminCommand {
             config = newConfig;
         }
 
-        if (!type.equals("iiop-service")) {
-            if (listenerId == null) {
-                report.setMessage(
-                    localStrings.getLocalString(
-                        "create.ssl.listenerid.missing",
-                        "Listener id needs to be specified"));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
+        if ((!type.equals("iiop-service")) && (listenerId == null)) {
+            report.setMessage(
+                    LOCAL_STRINGS.getLocalString("create.ssl.listenerid.missing", "Listener id needs to be specified"));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
         
         try {
@@ -143,7 +141,7 @@ public class DeleteSsl implements AdminCommand {
                 }
 
                 if (jmxConnector == null) {
-                    report.setMessage(localStrings.getLocalString(
+                    report.setMessage(LOCAL_STRINGS.getLocalString(
                         "delete.ssl.jmx.connector.notfound",
                         "Iiop Listener named {0} not found", listenerId));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -151,7 +149,7 @@ public class DeleteSsl implements AdminCommand {
                 }
 
                 if (jmxConnector.getSsl() == null) {
-                    report.setMessage(localStrings.getLocalString(
+                    report.setMessage(LOCAL_STRINGS.getLocalString(
                         "delete.ssl.element.doesnotexist", "Ssl element does " +
                         "not exist for Listener named {0}", listenerId));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -159,6 +157,7 @@ public class DeleteSsl implements AdminCommand {
                 }
 
                 ConfigSupport.apply(new SingleConfigCode<JmxConnector>() {
+                    @Override
                     public Object run(JmxConnector param)
                     throws PropertyVetoException {
                         param.setSsl(null);
@@ -174,7 +173,7 @@ public class DeleteSsl implements AdminCommand {
     }
 
     public void reportError(ActionReport report, Exception e) {
-        report.setMessage(localStrings.getLocalString("delete.ssl.fail", "Deletion of Ssl in {0} failed", listenerId));
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.ssl.fail", "Deletion of Ssl in {0} failed", listenerId));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setFailureCause(e);
     }
