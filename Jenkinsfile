@@ -1,5 +1,5 @@
 #!groovy
-//in repo Jenkinsfile
+// Jenkinsfile for building a PR and running a subset of tests against it
 def pom
 def DOMAIN_NAME='test-domain'
 def ASADMIN
