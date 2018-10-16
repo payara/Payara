@@ -154,7 +154,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS=mavenOpts
+                MAVEN_OPTS="${mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC JDK7  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -169,7 +169,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS=mavenOpts
+                MAVEN_OPTS"${=mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -186,7 +186,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS=mavenOpts
+                MAVEN_OPTS="${mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -229,7 +229,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS=mavenOpts
+                MAVEN_OPTS="${mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -269,7 +269,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS=mavenOpts
+                MAVEN_OPTS="${mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
