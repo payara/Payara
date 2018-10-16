@@ -72,6 +72,7 @@ pipeline {
                     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                     sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -130,6 +131,20 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Setup for EE7 Tests') {
+            tools {
+                jdk "zulu-8"
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
         stage('Run EE7 Tests') {
             tools {
                 jdk "zulu-8"
@@ -140,12 +155,16 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-ci-managed,stable"""
+                -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -203,6 +222,7 @@ pipeline {
                     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                     sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -264,6 +284,20 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Setup for EE7 Tests JDK7') {
+            tools {
+                jdk "zulu-8"
+            }
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
         stage('Run EE7 Tests JDK7') {
             tools {
                 jdk "zulu-7"
@@ -277,12 +311,16 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-ci-managed,stable"""
+                -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
