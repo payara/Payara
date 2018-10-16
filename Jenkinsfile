@@ -90,7 +90,9 @@ pipeline {
                         reference: '',
                         trackingSubmodules: false]],
                     submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]],
+                    [$class: 'RelativeTargetDirectory', 
+                        relativeTargetDir: 'cargotracker']]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
@@ -99,13 +101,15 @@ pipeline {
                 jdk "zulu-8"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-ci-managed"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                dir('cargotracker') {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dpayara.directory.name=payara41 \
+                    -Dpayara.version.major=4 -Ppayara-ci-managed"""
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 always {
@@ -127,7 +131,9 @@ pipeline {
                         reference: '',
                         trackingSubmodules: false]],
                     submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]],
+                    [$class: 'RelativeTargetDirectory', 
+                        relativeTargetDir: 'EE7-Samples']]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
@@ -150,13 +156,15 @@ pipeline {
                 jdk "zulu-8"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                dir('EE7-Samples') {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dpayara.directory.name=payara41 \
+                    -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 always {
@@ -226,24 +234,6 @@ pipeline {
                 }
             }
         }
-        stage('Checkout cargoTracker Tests JDK7') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [
-                        [$class: 'SubmoduleOption',
-                        disableSubmodules: false,
-                        parentCredentials: true,
-                        recursiveSubmodules: true,
-                        reference: '',
-                        trackingSubmodules: false]],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
         stage('Run cargoTracker Tests JDK7') {
             tools {
                 jdk "zulu-7"
@@ -252,36 +242,20 @@ pipeline {
                 MAVEN_OPTS="${mavenOpts}"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-ci-managed"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                dir('cargotracker') {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dpayara.directory.name=payara41 \
+                    -Dpayara.version.major=4 -Ppayara-ci-managed"""
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
                 }
-            }
-        }
-        stage('Checkout EE7 Tests JDK7') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/JenkinsTest"]],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [
-                        [$class: 'SubmoduleOption',
-                        disableSubmodules: false,
-                        parentCredentials: true,
-                        recursiveSubmodules: true,
-                        reference: '',
-                        trackingSubmodules: false]],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
         stage('Setup for EE7 Tests JDK7') {
@@ -306,13 +280,15 @@ pipeline {
                 MAVEN_OPTS="${mavenOpts}"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara.directory.name=payara41 \
-                -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                dir('EE7-Samples') {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                    -Dpayara.directory.name=payara41 \
+                    -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 always {
