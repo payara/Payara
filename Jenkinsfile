@@ -169,7 +169,7 @@ pipeline {
                 jdk "zulu-7"
             }
             environment {
-                MAVEN_OPTS"${=mavenOpts}"
+                MAVEN_OPTS="${mavenOpts}"
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
