@@ -206,7 +206,7 @@ pipeline {
                 }
             }
         }
-        stage('Checkout cargoTracker Tests') {
+        stage('Checkout cargoTracker Tests JDK7') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -246,7 +246,7 @@ pipeline {
                 }
             }
         }
-        stage('Checkout EE7 Tests') {
+        stage('Checkout EE7 Tests JDK7') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
