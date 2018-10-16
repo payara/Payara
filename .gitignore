@@ -5,6 +5,7 @@ appserver/packager/pkg_conf.py
 .classpath
 .project
 .settings/
+.factorypath
 target/
 *~
 *.iml

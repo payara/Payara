@@ -79,6 +79,6 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
 
         // Register a servlet with url patterns of metrics handlers
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
-        reg.addMapping("/" + configuration.getEndpoint());
+        reg.addMapping("/" + configuration.getEndpoint() + "/*");
     }
 }

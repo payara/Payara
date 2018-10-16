@@ -41,6 +41,7 @@ package fish.payara.security.openid;
 
 import static java.util.Collections.singleton;
 import java.util.Set;
+import javax.enterprise.inject.Typed;
 import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
@@ -51,6 +52,7 @@ import static javax.security.enterprise.identitystore.IdentityStore.ValidationTy
  *
  * @author Gaurav Gupta
  */
+@Typed(OpenIdIdentityStore.class)
 public class OpenIdIdentityStore implements IdentityStore {
 
     public CredentialValidationResult validate(CallerOnlyCredential credential) {

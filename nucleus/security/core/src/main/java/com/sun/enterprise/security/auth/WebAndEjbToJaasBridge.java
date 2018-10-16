@@ -86,8 +86,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
-
-import sun.security.x509.X500Name;
+import javax.security.auth.x500.X500Principal;
 
 /**
  * This class contains a collection of methods that are used by the Web and EJB containers
@@ -187,7 +186,7 @@ public class WebAndEjbToJaasBridge {
         } else if (cls.equals(GSSUPName.class)) {
             doGSSUPLogin(subject);
 
-        } else if (cls.equals(X500Name.class)) {
+        } else if (cls.equals(X500Principal.class)) {
             doX500Login(subject, null);
 
         } else {
@@ -207,8 +206,8 @@ public class WebAndEjbToJaasBridge {
         String user = null;
         String realmName = null;
         try {
-            X500Name x500name = getPublicCredentials(subject, X500Name.class);
-            user = x500name.getName();
+            X500Principal x500principal = getPublicCredentials(subject, X500Principal.class);
+            user = x500principal.getName();
 
             // In the RI-inherited implementation this directly creates
             // some credentials and sets the security context. This means
@@ -230,7 +229,7 @@ public class WebAndEjbToJaasBridge {
                     LoginContext lg = new LoginContext(jaasCtx, subject, new ServerLoginCallbackHandler(user, null, appModuleID));
                     lg.login();
                 }
-                certRealm.authenticate(subject, x500name);
+                certRealm.authenticate(subject, x500principal);
                 realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);

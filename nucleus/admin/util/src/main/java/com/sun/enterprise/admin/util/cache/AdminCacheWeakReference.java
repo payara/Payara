@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util.cache;
 
 import java.lang.ref.WeakReference;
@@ -54,7 +56,7 @@ import java.util.Map;
  */
 public class AdminCacheWeakReference implements AdminCache {
 
-    private final static class CachedItem {
+    private static final class CachedItem {
 
         private WeakReference item;
         private long updated = -1;
@@ -123,10 +125,8 @@ public class AdminCacheWeakReference implements AdminCache {
         CachedItem cachedItem = cache.get(key);
         if (cachedItem != null) {
             Object obj = cachedItem.getItem();
-            if (obj != null) {
-                if (clazz.isAssignableFrom(obj.getClass())) {
+            if (obj != null && clazz.isAssignableFrom(obj.getClass())) {
                     return (A) obj;
-                }
             }
         }
         //Not in local cache => load from underliing

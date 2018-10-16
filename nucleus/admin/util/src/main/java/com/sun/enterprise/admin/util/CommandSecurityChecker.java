@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.util;
 
 import java.io.UnsupportedEncodingException;
@@ -44,7 +46,6 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.logging.Level;
@@ -100,7 +101,7 @@ public class CommandSecurityChecker implements PostConstruct {
     private static final String RESOURCE_NAME_URL_ENCODING = "UTF-8";
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
-    private static final String LINE_SEP = System.getProperty("line.separator");
+    private static final String LINE_SEP = System.lineSeparator();
     private static final String ADMIN_RESOURCE_SCHEME = "admin";
     
     @Inject
@@ -125,6 +126,11 @@ public class CommandSecurityChecker implements PostConstruct {
     private EmbeddedSystemAdministrator embeddedSystemAdministrator;
     
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
+    
+    /**
+     * Group 1 contains the token from $token; group 2 contains the token from ${token}
+     */
+    private static final Pattern TOKEN_PATTERN = Pattern.compile("(?:\\$(\\w+))|(?:\\$\\{(\\w+)\\})");
 
     @Override
     public void postConstruct() {
@@ -151,11 +157,6 @@ public class CommandSecurityChecker implements PostConstruct {
         result.put(RestEndpoint.OpType.PUT, "create"); // insert
         return result;
     }
-    
-    /*
-     * Group 1 contains the token from $token; group 2 contains the token from ${token}
-     */
-    private final static Pattern TOKEN_PATTERN = Pattern.compile("(?:\\$(\\w+))|(?:\\$\\{(\\w+)\\})");
     
     /**
      * Reports whether the Subject is allowed to perform the specified admin command.

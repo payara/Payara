@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -54,8 +55,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-
-import javax.inject.Singleton;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -85,8 +84,6 @@ public class CommandThreadPool implements PostConstruct {
 
     private ExecutorService svc = null;
 
-    public CommandThreadPool() {}
-
     /**
      * Process the instance file if this is DAS and there are instances configured already in this domain
      */
@@ -106,10 +103,8 @@ public class CommandThreadPool implements PostConstruct {
                 List<NetworkListener> lss = nwc.getNetworkListeners().getNetworkListener();
                 if ( (lss != null) && (!lss.isEmpty()) ) {
                     for (NetworkListener ls : lss) {
-                        if (ServerTags.ADMIN_LISTENER_ID.equals(ls.getName())) {
-                            if(ls.findThreadPool() != null) {
-                                poolSize = Integer.parseInt(ls.findThreadPool().getMaxThreadPoolSize());
-                            }
+                        if (ServerTags.ADMIN_LISTENER_ID.equals(ls.getName()) && ls.findThreadPool() != null) {
+                            poolSize = Integer.parseInt(ls.findThreadPool().getMaxThreadPoolSize());
                         }
                     }
                 }

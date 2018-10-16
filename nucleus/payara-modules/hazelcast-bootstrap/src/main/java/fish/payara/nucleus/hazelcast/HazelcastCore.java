@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -424,7 +424,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
             TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
             tConfig.setEnabled(true);
             tConfig.addMember(configuration.getTcpipMembers());
-            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);   
+        } else if (discoveryMode.startsWith("dns")) {
+            config.setProperty("hazelcast.discovery.enabled", "true");
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DnsDiscoveryServiceProvider(configuration.getDnsMembers()));
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false); 
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
