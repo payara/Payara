@@ -65,6 +65,7 @@ pipeline {
                     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                     sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -86,15 +87,30 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Setup for EE8 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
         stage('Run EE8 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=payara5 -Dpayara.version.major=5 -Ppayara-ci-managed"
+                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Dpayara.directory.name=payara5 -Dpayara.version.major=5 -Ppayara-remote"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -150,6 +166,17 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Setup for EE7 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
         stage('Run EE7 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -157,12 +184,16 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara.directory.name=payara5 \
-                -Dpayara.version.major=5 -Ppayara-ci-managed,stable"""
+                -Dpayara.version.major=5 -Ppayara-server-remote,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
                     junit '**/target/surefire-reports/*.xml'
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
