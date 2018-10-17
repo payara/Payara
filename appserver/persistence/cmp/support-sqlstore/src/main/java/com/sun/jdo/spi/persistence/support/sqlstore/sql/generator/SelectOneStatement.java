@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.jdo.spi.persistence.support.sqlstore.sql.generator;
 
@@ -50,14 +51,14 @@ import com.sun.jdo.spi.persistence.support.sqlstore.database.DBVendorType;
  */
 public class SelectOneStatement extends SelectStatement {
 
-    private static final StringBuffer ONE = new StringBuffer("1"); // NOI18N
+    private static final StringBuilder ONE = new StringBuilder("1"); // NOI18N
 
     public SelectOneStatement(DBVendorType vendorType,
             SelectQueryPlan selectPlan) {
         super(vendorType, selectPlan);
     }
 
-    protected StringBuffer generateColumnText() {
+    protected StringBuilder generateColumnText() {
         // No columns selected.
         return ONE;
     }
