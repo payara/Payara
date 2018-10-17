@@ -78,7 +78,7 @@
             </modules>
         </profile>
         
-        <!-- Profile to build Embedded and Micro distributions, and the Arquillian Containers -->
+        <!-- Profile to build Embedded distributions -->
         <profile>
             <id>BuildExtras</id>
             <activation>
@@ -87,7 +87,6 @@
                 </property>
             </activation>
             <modules>
-                <module>arquillian-containers</module>
                 <module>embedded</module>
             </modules>
         </profile>
