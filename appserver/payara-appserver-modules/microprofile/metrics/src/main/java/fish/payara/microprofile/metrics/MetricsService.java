@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
@@ -81,6 +82,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
 public class MetricsService implements EventListener {
+
+    private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
     @Inject
     Events events;
@@ -120,10 +123,32 @@ public class MetricsService implements EventListener {
                 @Override
                 public void run() {
                     MBeanMetadataConfig metadataConfig = getConfig();
+                    checkSystemCpuLoadIssue(metadataConfig);// PAYARA 2938
                     initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
                 }
             });
-            
+        }
+    }
+
+    private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
+        // Could be constant but placed it in method as it is a workaround until fixed in JVM.
+        // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made?
+        String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
+
+        long count = 0;
+        for (MBeanMetadata metadata : metadataConfig.getBaseMetadata()) {
+            if (mbeanSystemCPULoad.equals(metadata.getMBean())) {
+                count++;
+            }
+        }
+        for (MBeanMetadata metadata : metadataConfig.getVendorMetadata()) {
+            if (mbeanSystemCPULoad.equals(metadata.getMBean())) {
+                count++;
+            }
+        }
+        if (count > 1) {
+
+            LOGGER.warning(String.format("Referencing the MBean value %s multiple times possibly leads to inconsistent values for the MBean value.", mbeanSystemCPULoad));
         }
     }
 
