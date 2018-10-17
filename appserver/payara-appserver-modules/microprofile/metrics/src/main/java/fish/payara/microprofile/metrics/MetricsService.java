@@ -130,7 +130,7 @@ public class MetricsService implements EventListener {
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
         // Could be constant but placed it in method as it is a workaround until fixed in JVM.
-        // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made?
+        // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
         String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
         long count = metadataConfig.getBaseMetadata().stream()
                 .map(MBeanMetadata::getMBean)
@@ -143,8 +143,7 @@ public class MetricsService implements EventListener {
                 .count();
 
         if (count > 1) {
-            // TODO Link to some KB Article ?
-            LOGGER.warning(String.format("Referencing the MBean value %s multiple times leads to inconsistent values for the MBean value.", mbeanSystemCPULoad));
+            LOGGER.warning(String.format("Referencing the MBean value %s multiple times possibly leads to inconsistent values for the MBean value.", mbeanSystemCPULoad));
         }
     }
 
