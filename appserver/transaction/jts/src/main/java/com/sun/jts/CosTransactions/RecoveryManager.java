@@ -1643,7 +1643,7 @@ public class RecoveryManager {
                                                 commitRetriesLeft--;
                                             }
                                             try {
-                                                inCompleteTxMap.wait(Configuration.COMMIT_RETRY_WAIT);
+                                                Thread.sleep(Configuration.COMMIT_RETRY_WAIT);
                                             } catch( Throwable iex ) {}
                                         }
                                         else {
