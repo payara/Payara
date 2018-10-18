@@ -306,7 +306,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
                 // it its startup method. Reference Payara GitHub issue 204
-                if(applicationRegistry.get(appId) != null){
+                if (applicationRegistry.get(appId) != null) {
                     logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
                     result = true;
                 }
