@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.pluggable;
 
 import com.sun.enterprise.security.ssl.impl.SecuritySupportImpl;
 import java.io.IOException;
 import java.security.KeyStore;
-//V3:Commented import com.sun.enterprise.config.ConfigContext;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -54,8 +53,8 @@ import javax.net.ssl.TrustManager;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * SecuritySupport is part of PluggableFeature that provides access to
- * internal services managed by application server.
+ * SecuritySupport is part of PluggableFeature that provides access to internal services managed by application server.
+ * 
  * @author Shing Wai Chan
  */
 @Contract
@@ -77,10 +76,8 @@ public abstract class SecuritySupport {
         return defaultInstance;
     }
 
-
     /**
-     * This method returns an array of keystores containing keys and
-     * certificates.
+     * This method returns an array of keystores containing keys and certificates.
      */
     abstract public KeyStore[] getKeyStores();
 
@@ -90,30 +87,16 @@ public abstract class SecuritySupport {
     abstract public KeyStore[] getTrustStores();
 
     /**
-     * @param  token 
+     * @param token
      * @return a keystore. If token is null, return the the first keystore.
      */
     abstract public KeyStore getKeyStore(String token);
 
     /**
-     * @param  token 
+     * @param token
      * @return a truststore. If token is null, return the first truststore.
      */
     abstract public KeyStore getTrustStore(String token);
-
-    /**
-     * @param type
-     * @param index
-     * @return load a null keystore of given type.
-     */
-    abstract public KeyStore loadNullStore(String type, int index) throws KeyStoreException,
-            IOException, NoSuchAlgorithmException, CertificateException;
-
-    /**
-     * @param masterPass
-     * @return result whether the given master password is correct.
-     */
-    abstract public boolean verifyMasterPassword(final char[] masterPass);
 
     /**
      * @param algorithm
@@ -123,8 +106,7 @@ public abstract class SecuritySupport {
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableKeyException
      */
-    abstract public KeyManager[] getKeyManagers(String algorithm) throws IOException,
-            KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
+    abstract public KeyManager[] getKeyManagers(String algorithm) throws IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
 
     /**
      * @param algorithm
@@ -133,12 +115,34 @@ public abstract class SecuritySupport {
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      */
-    abstract public TrustManager[] getTrustManagers(String algorithm) throws IOException,
-            KeyStoreException, NoSuchAlgorithmException;
+    abstract public TrustManager[] getTrustManagers(String algorithm) throws IOException, KeyStoreException, NoSuchAlgorithmException;
+    
+    /**
+     * Resets the security instance by effectively re-initializing it.
+     * 
+     * <p>
+     * This means the default keystores and truststores will be reloaded from their default locations (which may be configured
+     * by system properties, such as with the default SecuritySupport instance).
+     */
+    public void reset() {
+        // Do nothing by default
+    }
+    
+    /**
+     * @param type
+     * @param index
+     * @return load a null keystore of given type.
+     */
+    abstract public KeyStore loadNullStore(String type, int index) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException;
 
     /**
-     * Gets the PrivateKey for specified alias from the corresponding keystore
-     * indicated by the index.
+     * @param masterPass
+     * @return result whether the given master password is correct.
+     */
+    abstract public boolean verifyMasterPassword(final char[] masterPass);
+
+    /**
+     * Gets the PrivateKey for specified alias from the corresponding keystore indicated by the index.
      *
      * @param alias Alias for which the PrivateKey is desired.
      * @param keystoreIndex Index of the keystore.
@@ -147,31 +151,29 @@ public abstract class SecuritySupport {
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableKeyException
      */
-    abstract public PrivateKey getPrivateKeyForAlias(String alias, int keystoreIndex)
-            throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
+    abstract public PrivateKey getPrivateKeyForAlias(String alias, int keystoreIndex) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException;
 
     /**
-     * This method returns an array of token names in order corresponding to
-     * array of keystores.
+     * This method returns an array of token names in order corresponding to array of keystores.
      */
     abstract public String[] getTokenNames();
 
     /**
      * This method synchronize key file for given realm.
+     * 
      * @param config the ConfigContextx
      * @param fileRealmName
      * @exception if fail to synchronize, a known exception is
-     *            com.sun.enterprise.ee.synchronization.SynchronizationException
+     * com.sun.enterprise.ee.synchronization.SynchronizationException
      */
     /** TODO:V3:Cluster ConfigContext is no longer present so find out what this needs to be */
-    //public void synchronizeKeyFile(ConfigContext config, String fileRealmName)
-    abstract public void synchronizeKeyFile(Object configContext, String fileRealmName)
-        throws Exception;
+    abstract public void synchronizeKeyFile(Object configContext, String fileRealmName) throws Exception;
 
     /**
      * Check permission for the given key.
+     * 
      * @param key
      */
     abstract public void checkPermission(String key);
-    
+
 }
