@@ -69,6 +69,7 @@ import org.eclipse.microprofile.jwt.Claims;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import java.util.Optional;
 
 /**
  * Parses a JWT bearer token and validates it according to the MP-JWT rules.
@@ -77,7 +78,17 @@ import com.nimbusds.jwt.SignedJWT;
  */
 public class JwtTokenParser {
     
+    private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
+    
     private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
+    
+    private final boolean enableNamespacedClaims;
+    private final Optional<String> customNamespace;
+
+    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
+        this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
+        this.customNamespace = customNamespace;
+    }
     
     public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(bearerToken);
@@ -96,6 +107,9 @@ public class JwtTokenParser {
                 new HashMap<>(
                         Json.createReader(new StringReader(signedJWT.getPayload().toString()))
                             .readObject());
+        
+        // Vendor - Process namespaced claims
+        rawClaims = handleNamespacedClaims(rawClaims);
         
         // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
         if (!checkRequiredClaimsPresent(rawClaims)) {
@@ -128,6 +142,23 @@ public class JwtTokenParser {
         
         return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
     }
+    
+    private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
+        if(this.enableNamespacedClaims){
+            final String namespace = customNamespace.orElse(DEFAULT_NAMESPACE);
+            Map<String, JsonValue> processedClaims = new HashMap<>(currentClaims.size());
+            for(String claimName : currentClaims.keySet()){
+                JsonValue value = currentClaims.get(claimName);
+                if(claimName.startsWith(namespace)){
+                    claimName = claimName.substring(namespace.length());
+                }
+                processedClaims.put(claimName, value);
+            }
+            return processedClaims;
+        }else{
+            return currentClaims;
+        }
+    }
         
     private boolean checkRequiredClaimsPresent(Map<String, JsonValue> presentedClaims) {
         for (Claims requiredClaim : requiredClaims) {
@@ -135,7 +166,6 @@ public class JwtTokenParser {
                 return false;
             }
         }
-
         return true;
     }
 

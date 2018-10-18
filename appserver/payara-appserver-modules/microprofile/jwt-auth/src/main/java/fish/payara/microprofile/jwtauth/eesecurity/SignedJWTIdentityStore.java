@@ -86,7 +86,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private static final String RSA_ALGORITHM = "RSA";
 
-    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
+    private final JwtTokenParser jwtTokenParser;
 
     private final String acceptedIssuer;
 
@@ -94,9 +94,13 @@ public class SignedJWTIdentityStore implements IdentityStore {
     
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
-        acceptedIssuer = readVendorIssuer()
+        
+        Optional<Properties> properties = readVendorProperties();
+        acceptedIssuer = readVendorIssuer(properties)
                 .orElseGet(() -> config.getOptionalValue(ISSUER, String.class)
                 .orElseThrow(() -> new IllegalStateException("No issuer found")));
+        
+        jwtTokenParser = new JwtTokenParser(readEnabledNamespace(properties), readCustomNamespace(properties));
     }
     
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
@@ -133,20 +137,31 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         return INVALID_RESULT;
     }
-
-    private Optional<String> readVendorIssuer() {
-        String issuer = null;
+    
+    private Optional<Properties> readVendorProperties() {
         URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
+        Properties properties = null;
         if (mpJwtResource != null) {
             try {
-                Properties properties = new Properties();
+                properties = new Properties();
                 properties.load(mpJwtResource.openStream());
-                issuer = properties.getProperty("accepted.issuer");
             } catch (IOException e) {
-                throw new IllegalStateException("Failed to load properties", e);
+                throw new IllegalStateException("Failed to load Vendor properties from resource file", e);
             }
         }
-        return Optional.ofNullable(issuer);
+        return Optional.ofNullable(properties);
+    }
+    
+    private Optional<String> readVendorIssuer(Optional<Properties> properties) {
+        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("accepted.issuer")) : Optional.empty();
+    }
+    
+    private Optional<Boolean> readEnabledNamespace(Optional<Properties> properties){
+        return properties.isPresent() ? Optional.ofNullable(Boolean.valueOf(properties.get().getProperty("enable.namespace", "false"))) : Optional.empty();
+    }
+    
+    private Optional<String> readCustomNamespace(Optional<Properties> properties){
+        return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("custom.namespace", null)) : Optional.empty();
     }
 
     private Optional<PublicKey> readMPEmbeddedPublicKey() throws Exception {
