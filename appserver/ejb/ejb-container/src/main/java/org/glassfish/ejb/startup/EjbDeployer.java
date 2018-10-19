@@ -351,23 +351,41 @@ public class EjbDeployer
                             target = targets.get(0);
                         }
                     }
-                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(target, false);
+                    EJBTimerService persistentTimerService = null;
+                    EJBTimerService nonPersistentTimerService = null;
+                    if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+                        persistentTimerService = EJBTimerService.getPersistentTimerService();
+                    }
+                    if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
+                        nonPersistentTimerService = EJBTimerService.getNonPersistentTimerService();
+                    }
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log( Level.FINE, "EjbDeployer APP ID of a Timeout App? " + uniqueAppId);
-                        _logger.log( Level.FINE, "EjbDeployer TimerService: " + timerService);
+                        _logger.log(Level.FINE, "EjbDeployer APP ID of a Timeout App? {0}", uniqueAppId);
+                        _logger.log(Level.FINE, "EjbDeployer Persistent TimerService: {0}", persistentTimerService);
+                        _logger.log(Level.FINE, "EjbDeployer Non-Persistent TimerService: {0}", nonPersistentTimerService);
                     }
 
-                    if(timerService == null) {
-                        _logger.log( Level.WARNING, "EJB Timer Service is not available. Timers for application with id " +
-                                uniqueAppId + " will not be deleted");
+                    if (persistentTimerService == null) {
+                        _logger.log(Level.WARNING, "EJB Persistent Timer Service is not available. Persistent Timers for application with id {0} will not be deleted",
+                                uniqueAppId
+                        );
                     } else {
                         if (getKeepStateFromApplicationInfo(params.name())) {
                             _logger.log(Level.INFO,
-                                     "Timers will not be destroyed since keepstate is true for application {0}",
-                                     params.name());
+                                    "Persistent Timers will not be destroyed since keepstate is true for application {0}",
+                                    params.name()
+                            );
                         } else {
-                            timerService.destroyAllTimers(Long.parseLong(uniqueAppId));
+                            persistentTimerService.destroyAllTimers(Long.parseLong(uniqueAppId));
                         }
+                    }
+                    if (nonPersistentTimerService == null) {
+                        _logger.log(Level.WARNING,
+                                "EJB Non-Persistent Timer Service is not available. Non-Persistent Timers for application with id {0} will not be deleted",
+                                uniqueAppId
+                        );
+                    } else {
+                        nonPersistentTimerService.destroyAllTimers(Long.parseLong(uniqueAppId));
                     }
                 }
             } catch (Exception e) {

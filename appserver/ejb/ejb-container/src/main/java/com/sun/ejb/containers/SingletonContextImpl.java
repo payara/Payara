@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import org.glassfish.api.invocation.ComponentInvocation;
-
 import javax.ejb.TimerService;
-import javax.ejb.EJBException;
 import javax.transaction.TransactionManager;
 import javax.transaction.Status;
 import javax.naming.InitialContext;
@@ -79,9 +77,7 @@ public final class SingletonContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
-        return new EJBTimerServiceWrapper(timerService, this);
-        
+        return EJBTimerService.getEJBTimerServiceWrapper(this);
     }
 
     @Override
