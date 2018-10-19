@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.timers;
 
@@ -55,6 +51,7 @@ import javax.servlet.http.*;
 
 import org.glassfish.ejb.persistent.timer.TimerLocal;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.NonPersistentEJBTimerService;
 
 /**
  *
@@ -88,7 +85,15 @@ public class TimerWelcomeServlet extends HttpServlet {
             Set persistenttimers = timer.findActiveTimersOwnedByThisServer();
             // Non-persistent timers get directly from the service
 
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+            NonPersistentEJBTimerService ejbTimerService = null;
+            if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+                ejbTimerService = (NonPersistentEJBTimerService) EJBTimerService.getPersistentTimerService();
+            } else if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+                ejbTimerService = (NonPersistentEJBTimerService) EJBTimerService.getNonPersistentTimerService();
+            }
+            if(ejbTimerService == null) {
+                throw new IllegalStateException("EJBTimer Service is not available");
+            }
             Set nonpersistenttimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
             int persistentsize = persistenttimers.size();
             int nonpersistentsize = nonpersistenttimers.size();
