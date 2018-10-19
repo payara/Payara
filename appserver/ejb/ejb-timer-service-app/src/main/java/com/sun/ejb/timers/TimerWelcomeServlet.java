@@ -88,7 +88,7 @@ public class TimerWelcomeServlet extends HttpServlet {
             NonPersistentEJBTimerService ejbTimerService = null;
             if (EJBTimerService.isPersistentTimerServiceLoaded()) {
                 ejbTimerService = (NonPersistentEJBTimerService) EJBTimerService.getPersistentTimerService();
-            } else if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+            } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
                 ejbTimerService = (NonPersistentEJBTimerService) EJBTimerService.getNonPersistentTimerService();
             }
             if(ejbTimerService == null) {
