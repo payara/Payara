@@ -529,6 +529,8 @@ public class SecuritySupportImpl extends SecuritySupport {
 
                 keyStore.load(stream, keyStorePass);
             }
+        } else {
+            keyStore.load(null, keyStorePass);
         }
 
         return keyStore;
