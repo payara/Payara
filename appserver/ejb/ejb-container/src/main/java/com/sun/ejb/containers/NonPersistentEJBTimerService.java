@@ -41,11 +41,13 @@
 
 package com.sun.ejb.containers;
 
+import static com.sun.ejb.containers.EJBTimerService.logger;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import static java.util.logging.Level.WARNING;
 import javax.ejb.FinderException;
 
 public class NonPersistentEJBTimerService extends EJBTimerService {
@@ -65,11 +67,6 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
     }
 
     @Override
-    protected void resetEJBTimers(String target) {
-        // Nothing to do
-    }
-
-    @Override
     protected void cancelTimer(TimerPrimaryKey timerId)
             throws FinderException, Exception {
         cancelNonPersistentTimer(timerId);
@@ -77,11 +74,18 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
 
     @Override
     protected void cancelTimersByKey(long containerId, Object primaryKey) {
-        //Do nothing or throw an exception ?
+         Collection<TimerPrimaryKey> timerIds = getTimerIds(containerId, primaryKey);
+         for(TimerPrimaryKey timerId : timerIds) {
+             try {
+                 cancelTimer(timerId);
+             } catch (Exception ex) {
+                 logger.log(WARNING, "Cannot cancel non-persistent timer " + timerId, ex);
+             }
+         }
     }
 
     @Override
-      protected Date getNextTimeout(TimerPrimaryKey timerId) throws FinderException {
+    protected Date getNextTimeout(TimerPrimaryKey timerId) throws FinderException {
 
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
@@ -89,14 +93,6 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
         }
 
         throw new FinderException("Timer does not exist");
-    }
-
-      
-    @Override
-    protected void resetLastExpiration(
-            TimerPrimaryKey timerId,
-            RuntimeTimerState timerState) {
-        // Do nothing
     }
 
     @Override
@@ -129,6 +125,7 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
     }
 
     // Returns a Set of active non-persistent timer ids for this server
+    @Override
     public Set<TimerPrimaryKey> getNonPersistentActiveTimerIdsByThisServer() {
         return timerCache_.getNonPersistentActiveTimerIdsByThisServer();
     }
@@ -147,6 +144,7 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
         return rt;
     }
 
+    @Override
      protected EJBTimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
@@ -219,6 +217,18 @@ public class NonPersistentEJBTimerService extends EJBTimerService {
     @Override
     protected void stopTimers(long containerId) {
         stopTimers(timerCache_.getNonPersistentTimerIdsForContainer(containerId));
+    }
+
+    @Override
+    protected void resetEJBTimers(String target) {
+        // Do nothing
+    }
+
+    @Override
+    protected void resetLastExpiration(
+            TimerPrimaryKey timerId,
+            RuntimeTimerState timerState) {
+        // Do nothing
     }
 
 }

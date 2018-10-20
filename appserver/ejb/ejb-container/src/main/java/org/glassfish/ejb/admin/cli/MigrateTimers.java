@@ -184,14 +184,11 @@ public class MigrateTimers implements AdminCommand {
             if (ejbTimerService != null) {
                 result = ejbTimerService.migrateTimers( serverId );
             }
-        } else {
-            //throw new IllegalStateException("EJB Timer service is null. "
-                    //+ "Cannot migrate timers for: " + serverId);
         }
 
         return result;
     }
-    
+
     private String validateCluster() {
         //verify fromServer is clusteredInstance
         Cluster fromServerCluster = targetUtil.getClusterForInstance(fromServer);

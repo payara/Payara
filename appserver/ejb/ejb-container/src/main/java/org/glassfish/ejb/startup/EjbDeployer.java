@@ -375,7 +375,7 @@ public class EjbDeployer
 
                     if (tsInitialized) {
                         if (persistentTimerService == null) {
-                            _logger.log(Level.WARNING,
+                            _logger.log(Level.FINE,
                                     "EJB Persistent Timer Service is not available. Persistent Timers for application with id {0} will not be deleted",
                                     uniqueAppId
                             );
@@ -390,7 +390,7 @@ public class EjbDeployer
                             }
                         }
                         if (nonPersistentTimerService == null) {
-                            _logger.log(Level.WARNING,
+                            _logger.log(Level.FINE,
                                     "EJB Non-Persistent Timer Service is not available. Non-Persistent Timers for application with id {0} will not be deleted",
                                     uniqueAppId
                             );
