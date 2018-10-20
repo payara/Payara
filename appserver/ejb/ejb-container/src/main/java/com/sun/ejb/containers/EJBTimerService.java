@@ -375,6 +375,9 @@ public abstract class EJBTimerService {
             RuntimeTimerState timerState
     );
 
+
+    public abstract Set<TimerPrimaryKey> getNonPersistentActiveTimerIdsByThisServer();
+
     private static synchronized void initNonPersistentTimerService(String target, boolean force) {
         if(nonPersistentTimerService == null) {
             try {

@@ -299,6 +299,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
 
     } //migrateTimers()
 
+    @Override
     public boolean isPersistent() {
         return true;
     }

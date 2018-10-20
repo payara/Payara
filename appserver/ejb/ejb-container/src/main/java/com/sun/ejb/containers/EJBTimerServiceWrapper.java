@@ -227,7 +227,7 @@ public class EJBTimerServiceWrapper implements TimerService {
             throws IllegalStateException, EJBException {
         Collection<Timer> timerWrappers = new HashSet();
 
-        Collection timerIds = new HashSet();
+        Collection<TimerPrimaryKey> timerIds = new HashSet<>();
         if (timerService_ != null && ejbContext_.isTimedObject()) {
             try {
                 timerIds = timerService_.getTimerIds(
@@ -240,8 +240,8 @@ public class EJBTimerServiceWrapper implements TimerService {
                 throw ejbEx;
             }
         }
-        for (Iterator iter = timerIds.iterator(); iter.hasNext();) {
-            TimerPrimaryKey next = (TimerPrimaryKey) iter.next();
+        for (Iterator<TimerPrimaryKey> iter = timerIds.iterator(); iter.hasNext();) {
+            TimerPrimaryKey next = iter.next();
             timerWrappers.add(new TimerWrapper(next, timerService_));
         }
 
