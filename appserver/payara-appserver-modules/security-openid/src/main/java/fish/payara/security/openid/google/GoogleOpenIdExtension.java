@@ -39,6 +39,7 @@
  */
 package fish.payara.security.openid.google;
 
+import fish.payara.security.annotations.ClaimsDefinition;
 import fish.payara.security.annotations.GoogleAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdProviderMetadata;
@@ -125,6 +126,11 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
             @Override
             public OpenIdProviderMetadata providerMetadata() {
                 return googleDefinition.providerMetadata();
+            }
+
+            @Override
+            public ClaimsDefinition claimsDefinition() {
+                return googleDefinition.claimsDefinition();
             }
 
             @Override
