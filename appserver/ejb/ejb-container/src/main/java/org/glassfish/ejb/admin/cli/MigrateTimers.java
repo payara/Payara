@@ -175,23 +175,20 @@ public class MigrateTimers implements AdminCommand {
 
     private int migrateTimers( String serverId ) {
         if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, "[MigrateTimers] migrating timers from " + serverId);
+            logger.log(Level.INFO, "[MigrateTimers] migrating timers from {0}", serverId);
         }
 
         int result = 0;
-        if (EJBTimerService.isEJBTimerServiceLoaded()) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+        if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+            EJBTimerService ejbTimerService = EJBTimerService.getPersistentTimerService();
             if (ejbTimerService != null) {
                 result = ejbTimerService.migrateTimers( serverId );
             }
-        } else {
-            //throw new IllegalStateException("EJB Timer service is null. "
-                    //+ "Cannot migrate timers for: " + serverId);
         }
 
         return result;
     }
-    
+
     private String validateCluster() {
         //verify fromServer is clusteredInstance
         Cluster fromServerCluster = targetUtil.getClusterForInstance(fromServer);

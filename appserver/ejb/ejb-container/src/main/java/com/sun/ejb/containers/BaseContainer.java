@@ -289,6 +289,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected boolean isWebServiceEndpoint = false;
 
     private boolean isTimedObject_ = false;
+    private boolean isPersistenceTimer;
 
     /*****************************************
      *    Data members for Local views       *
@@ -770,6 +771,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // ignore.  Will happen for EJB 3.0 session beans
             }
 
+            isPersistenceTimer = false;
             if ( ejbDescriptor.isTimedObject() ) {
 
                 warnIfNotFullProfile("use of persistent EJB Timer Service");
@@ -779,6 +781,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // Can be a @Timeout or @Schedule or TimedObject
                 if (ejbTimeoutMethodDesc != null) {
                     Method method = ejbTimeoutMethodDesc.getMethod(ejbDescriptor);
+                    isPersistenceTimer = true; // timers defined in runtime
                     processEjbTimeoutMethod(method);
 
                     ejbTimeoutMethod = method;
@@ -795,14 +798,17 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                                 ejbClass.getName(), schd.getTimeoutMethod().getFormattedString()));
                     }
 
-                    if ( _logger.isLoggable(Level.FINE) ) {
-	                _logger.log(Level.FINE, "... processing " + method );
+                    if (_logger.isLoggable(Level.FINE)) {
+                        _logger.log(Level.FINE, "... processing {0}", method);
+                    }
+                    if (!isPersistenceTimer) {
+                        isPersistenceTimer = schd.getPersistent();
                     }
                     processEjbTimeoutMethod(method);
 
                     List<ScheduledTimerDescriptor> list = schedules.get(method);
                     if (list == null) {
-                        list = new ArrayList<ScheduledTimerDescriptor>();
+                        list = new ArrayList<>();
                         schedules.put(method, list);
                     }
                     list.add(schd);
@@ -850,7 +856,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             if (!isStatefulSession) {
                 // EJBTimerService should be accessed only if needed
                 // not to cause it to be loaded if it's not used.
-                EJBTimerService timerService = EJBTimerService.getEJBTimerService();
+                EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
                 if (timerService != null) {
                     timerService.timedObjectCount();
                     timersStarted = true;
@@ -2265,7 +2271,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     /**
-     * Check timeout method and set it accessable
+     * Check timeout method and set it accessible
      */
     private void processEjbTimeoutMethod(Method method) throws Exception {
         Class[] params = method.getParameterTypes();
@@ -2521,7 +2527,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if ( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = EJBTimerService.getEJBTimerService();
+            EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
             if ( timerService != null ) {
                 timerService.cancelTimersByKey(getContainerId(), key);
             }
@@ -2530,7 +2536,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void stopTimers() {
         if ( isTimedObject() && timersStarted ) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
             if ( ejbTimerService != null ) {
                 ejbTimerService.stopTimers(getContainerId());
             }
@@ -4061,7 +4067,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if ( isTimedObject_ ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = EJBTimerService.getEJBTimerService();
+            EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
             if (timerService != null) {
                 boolean deploy0 = deploy;  //avoid modifying param
                 if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
