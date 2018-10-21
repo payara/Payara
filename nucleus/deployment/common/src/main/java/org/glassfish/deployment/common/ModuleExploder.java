@@ -36,12 +36,13 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.deployment.common;
 
 
-import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.api.deployment.archive.Archive;
 import java.io.*;
 import java.util.Enumeration;
@@ -82,10 +83,8 @@ public class ModuleExploder {
 
 
     public static void explodeJar(File source, File destination) throws IOException {
-        JarFile jarFile = null;
         String fileSystemName = null; // declared outside the try block so it's available in the catch block
-        try {
-            jarFile = new JarFile(source);
+        try (JarFile jarFile = new JarFile(source)) {
             Enumeration<JarEntry> e = jarFile.entries();
             while (e.hasMoreElements()) {
                 JarEntry entry = e.nextElement();
@@ -100,9 +99,10 @@ public class ModuleExploder {
                     if (!out.getParentFile().exists()) {
                         out.getParentFile().mkdirs();
                     }
-                    InputStream is = new BufferedInputStream(jarFile.getInputStream(entry));
-                    FileOutputStream fos = FileUtils.openFileOutputStream(out);
-                    FileUtils.copy(is, fos, entry.getSize());
+                    try (InputStream is = new BufferedInputStream(jarFile.getInputStream(entry));
+                         FileOutputStream fos = FileUtils.openFileOutputStream(out)) {
+                        FileUtils.copy(is, fos, entry.getSize());
+                    }
                 }
             }
         } catch(Throwable e) {
@@ -126,13 +126,9 @@ public class ModuleExploder {
             lr.setThrown(ioe);
             deplLogger.log(lr);
             throw ioe;
-        } finally {
-            if (jarFile != null) {
-                jarFile.close();
-            }
         }
     }
-    
+
 
     public static void explodeModule(Archive source, File directory, boolean preserveManifest)
     throws IOException, DeploymentException {
@@ -174,8 +170,8 @@ public class ModuleExploder {
              /*
               *Expand the file only if it is a jar and only if it does not lie in WEB-INF/lib.
               */
-            if (fileName.toLowerCase(Locale.US).endsWith(".jar") && 
-                ( ! fileName.replace('\\', '/').toUpperCase(Locale.getDefault()).startsWith(WEB_INF_PREFIX)) ) { 
+            if (fileName.toLowerCase(Locale.US).endsWith(".jar") &&
+                ( ! fileName.replace('\\', '/').toUpperCase(Locale.getDefault()).startsWith(WEB_INF_PREFIX)) ) {
 
                 try {
                     File f = new File(directory, fileName);
