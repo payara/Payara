@@ -150,19 +150,19 @@ pipeline {
             }
         }
     }
-    def void setupDomain() {
-        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-        script{
-            ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
-        }
-        sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-        sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-        sh "${ASADMIN} start-database --dbtype derby || true"
+}
+def void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    script{
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
     }
-    def void teardownDomain() {
-        echo 'tidying up after tests:'
-        sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-        sh "${ASADMIN} stop-database --dbtype derby || true"
-        sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
-    }
+    sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-database --dbtype derby || true"
+}
+def void teardownDomain() {
+    echo 'tidying up after tests:'
+    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} stop-database --dbtype derby || true"
+    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }
