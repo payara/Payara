@@ -41,7 +41,6 @@
 
 package com.sun.enterprise.admin.cli;
 
-import static com.sun.enterprise.admin.cli.CLICommand.logger;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
@@ -62,6 +61,8 @@ public class CLIUtil {
     private static final int MAX_COMMANDS_TO_DISPLAY = 75;
 
     private static final LocalStringsImpl strings = new LocalStringsImpl(CLIUtil.class);
+
+    protected static final Logger LOGGER = Logger.getLogger(CLIUtil.class.getPackage().getName());
 
     /**
      *   Read passwords from the password file and save them in a java.util.Map.
@@ -207,7 +208,7 @@ public class CLIUtil {
         try {
             remoteCommands = getRemoteCommands(container, options, env);
         } catch (CommandException ex) {
-            logger.log(SEVERE, "Remote commands not fetched : {0}", ex.getMessage());
+            LOGGER.log(SEVERE, "Remote commands not fetched : {0}", ex.getMessage());
             remoteCommands = new String[]{};
         }
         localCommands = getLocalCommands(container);
