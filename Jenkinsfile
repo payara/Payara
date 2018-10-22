@@ -44,13 +44,7 @@ pipeline {
                 jdk "zulu-8"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                script{
-                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
-                }
-                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database --dbtype derby || true"
+                setupDomain()
             }
         }
         stage('Run Quicklook Tests') {
@@ -68,11 +62,10 @@ pipeline {
             }
             post {
                 always {
-                    echo 'tidying up after tests:'
-                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    teardownDomain()
+                }
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
-                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -102,7 +95,7 @@ pipeline {
                 }
             }
             post {
-                always {
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -122,13 +115,7 @@ pipeline {
                 jdk "zulu-8"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                script{
-                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
-                }
-                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database --dbtype derby || true"
+                setupDomain()
             }
         }
         stage('Run EE7 Tests') {
@@ -148,11 +135,10 @@ pipeline {
             }
             post {
                 always {
-                    echo 'tidying up after tests:'
-                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    teardownDomain()
+                }
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
-                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -179,13 +165,7 @@ pipeline {
                 MAVEN_OPTS="${mavenOpts}"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                script{
-                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
-                }
-                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database --dbtype derby || true"
+                setupDomain()
             }
         }
         stage('Run Quicklook Tests JDK7') {
@@ -206,11 +186,9 @@ pipeline {
             }
             post {
                 always {
-                    echo 'tidying up after tests:'
-                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    teardownDomain()
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
-                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
@@ -233,7 +211,7 @@ pipeline {
                 }
             }
             post {
-                always {
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -243,13 +221,7 @@ pipeline {
                 jdk "zulu-8"
             }
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                script{
-                    ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
-                }
-                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-                sh "${ASADMIN} start-database --dbtype derby || true"
+                setupDomain()
             }
         }
         stage('Run EE7 Tests JDK7') {
@@ -272,13 +244,27 @@ pipeline {
             }
             post {
                 always {
-                    echo 'tidying up after tests:'
-                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    teardownDomain()
+                }
+                unstable {
                     junit '**/target/surefire-reports/*.xml'
-                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
                 }
             }
         }
+    }
+    def void setupDomain() {
+        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        script{
+            ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
+        }
+        sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+        sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+        sh "${ASADMIN} start-database --dbtype derby || true"
+    }
+    def void teardownDomain() {
+        echo 'tidying up after tests:'
+        sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+        sh "${ASADMIN} stop-database --dbtype derby || true"
+        sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
     }
 }
