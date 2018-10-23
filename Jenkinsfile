@@ -1,7 +1,7 @@
 #!groovy
 // Jenkinsfile for building a PR and running a subset of tests against it
 def pom
-def DOMAIN_NAME='test-domain'
+def DOMAIN_NAME
 def ASADMIN
 def payaraBuildNumber
 def mavenOpts='-Xmx1024M -XX:MaxPermSize=512m'
@@ -257,6 +257,7 @@ def void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
+        DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
