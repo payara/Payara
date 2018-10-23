@@ -55,6 +55,13 @@ import org.jvnet.hk2.annotations.Contract;
 /**
  * SecuritySupport is part of PluggableFeature that provides access to internal services managed by application server.
  * 
+ * <p>
+ * SecuritySupport deals with loading, caching and providing access to key stores and trust stores, including their managers.
+ * 
+ * <p>
+ * This is mainly used via the <code>com.sun.enterprise.security.ssl.SSLUtils</code> facade, though various other classes
+ * such as the <code>BaseContainerCallbackHandler</code> use this directly.
+ * 
  * @author Shing Wai Chan
  */
 @Contract

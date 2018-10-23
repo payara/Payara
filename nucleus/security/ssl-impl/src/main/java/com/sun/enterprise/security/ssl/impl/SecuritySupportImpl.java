@@ -221,38 +221,14 @@ public class SecuritySupportImpl extends SecuritySupport {
     
     @Override
     public void reset() {
-        
-        // Get store file names
-        String keyStoreFileName = System.getProperty(keyStoreProp);
-        String trustStoreFileName = System.getProperty(trustStoreProp);
-        
-        // Get store passwords
+        // Get store passwords from the master helper first
         char[] keyStorePass = masterPasswordHelper.getMasterPassword();
         char[] trustStorePass = keyStorePass;
         
-        if (keyStorePass == null || isACC() || (serverEnvironment != null && serverEnvironment.isMicro())) {
-            String keyStorePassOverride = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS);
-            if (keyStorePassOverride != null) {
-                keyStorePass = keyStorePassOverride.toCharArray();
-            }
-            
-            String trustStorePassOverride = System.getProperty(TRUSTSTORE_PASS_PROP, DEFAULT_TRUSTSTORE_PASS);
-            if (trustStorePassOverride != null) {
-                trustStorePass = trustStorePassOverride.toCharArray();
-            }
-        }
-        
-        // re-load stores
-        initStores(
-            keyStoreFileName,
-            keyStorePass,
-            trustStoreFileName,
-            trustStorePass);
-        
-        Arrays.fill(keyStorePass, ' ');
-        Arrays.fill(trustStorePass, ' ');
+        // Re-load stores (which looks at the system properties for the file names and potentially passwords)
+        initStores(keyStorePass, trustStorePass);
     }
-
+    
     @Override
     public KeyStore loadNullStore(String type, int index) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         KeyStore keyStore = KeyStore.getInstance(type);
@@ -380,11 +356,9 @@ public class SecuritySupportImpl extends SecuritySupport {
     }
     
     private void initJKS() {
-        String keyStoreFileName = System.getProperty(keyStoreProp);
-        String trustStoreFileName = System.getProperty(trustStoreProp);
-
         char[] keyStorePass = null;
         char[] trustStorePass = null;
+        
         if (!isInstantiated()) {
             if (serviceLocator == null) {
                 serviceLocator = Globals.getDefaultHabitat();
@@ -408,32 +382,34 @@ public class SecuritySupportImpl extends SecuritySupport {
             serverEnvironment = serviceLocator.getService(ServerEnvironment.class);
         }
 
-        /*
-         * If we don't have a keystore password yet check the properties. Always do so for the app client case whether the
-         * passwords have been found from master password helper or not.
-         */
-        if (keyStorePass == null || isACC() || (serverEnvironment != null && serverEnvironment.isMicro())) {
-            String keyStorePassOverride = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS);
-            if (keyStorePassOverride != null) {
-                keyStorePass = keyStorePassOverride.toCharArray();
-            }
-            String trustStorePassOverride = System.getProperty(TRUSTSTORE_PASS_PROP, DEFAULT_TRUSTSTORE_PASS);
-            if (trustStorePassOverride != null) {
-                trustStorePass = trustStorePassOverride.toCharArray();
-            }
-        }
-
         if (!initialized) {
-            initStores(
-                keyStoreFileName,
-                keyStorePass,
-                trustStoreFileName,
-                trustStorePass);
-            
-            Arrays.fill(keyStorePass, ' ');
-            Arrays.fill(trustStorePass, ' ');
+            initStores(keyStorePass, trustStorePass);
             initialized = true;
         }
+    }
+    
+    /**
+     * This method will get the keystore and trust store files and optionally the passwords from system properties, 
+     * and then load both the keystore and truststore and add them into their corresponding list.
+     * 
+     * @param keyStorePass the password for the keystore, may be null, may be ignored.
+     * @param trustStorePass the password for the truststore, may be null, may be ignored.
+     */
+    private void initStores(char[] keyStorePassIn, char[] trustStorePassIn) {
+        String keyStoreFileName = System.getProperty(keyStoreProp);
+        String trustStoreFileName = System.getProperty(trustStoreProp);
+        
+        // Initially consider the passwords that are passed-in
+        char[] keyStorePass = keyStorePassIn;
+        char[] trustStorePass = trustStorePassIn;
+        
+        // Under certain conditions, try get passwords from system properties instead
+        if (shouldGetPassFromProperty(keyStorePass)) {
+            keyStorePass = getKeyStorePass(keyStorePass);
+            trustStorePass = getTrustStorePass(trustStorePass);
+        }
+        
+        initStores(keyStoreFileName, keyStorePass, trustStoreFileName, trustStorePass);
     }
     
     /**
@@ -443,37 +419,45 @@ public class SecuritySupportImpl extends SecuritySupport {
      * @param keyStorePass
      * @param trustStoreFileName
      * @param trustStorePass
-     *
      */
     private static void initStores(String keyStoreFileName, char[] keyStorePass, String trustStoreFileName, char[] trustStorePass) {
         try {
             
             // Create the initial lists to store the various data items
+            
             List<KeyStore> keyStoresList = new ArrayList<KeyStore>();
             List<KeyStore> trustStoresList = new ArrayList<KeyStore>();
             List<char[]> keyStorePasswordsList = new ArrayList<char[]>();
             List<String> tokenNamesList = new ArrayList<String>();
             
             // Add the first item to each list 
-            keyStoresList.add(loadKS(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, keyStoreFileName, keyStorePass));
-            trustStoresList.add(loadKS(getProperty(TRUSTSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreFileName, trustStorePass));
+            
+            keyStoresList.add(loadStore(getProperty(KEYSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, keyStoreFileName, keyStorePass));
+            trustStoresList.add(loadStore(getProperty(TRUSTSTORE_TYPE_PROP, KeyStore.getDefaultType()), null, trustStoreFileName, trustStorePass));
             keyStorePasswordsList.add(copyOf(keyStorePass, keyStorePass.length));
             tokenNamesList.add(null); // This is slightly weird, but the original code did this too.
             
             // Atomically put each list in the concurrent maps holding that list
             // Note: this can either be the first insert for when this service is first initialized, or can
             // refresh existing ones.
+            
             keyStores.put(DEFAULT_MAP_KEY, keyStoresList);
             trustStores.put(DEFAULT_MAP_KEY, trustStoresList);
             keyStorePasswords.put(DEFAULT_MAP_KEY, keyStorePasswordsList);
             tokenNames.put(DEFAULT_MAP_KEY, tokenNamesList);
+            
         } catch (Exception ex) {
             _logger.severe("Failed to load key stores " + ex.getMessage());
             throw new IllegalStateException(ex);
+        } finally {
+            
+            // Clear out the passwords (and ignore they already have been assigned many times to various strings)
+            
+            Arrays.fill(keyStorePass, ' ');
+            Arrays.fill(trustStorePass, ' ');
         }
         
     }
-   
 
     /**
      * This method will load keystore and truststore and add into corresponding list.
@@ -489,8 +473,8 @@ public class SecuritySupportImpl extends SecuritySupport {
      */
     protected synchronized static void loadStores(String tokenName, Provider provider, String keyStoreFile, char[] keyStorePass, String keyStoreType, String trustStoreFile, char[] trustStorePass, String trustStoreType) {
         try {
-            keyStores.get(DEFAULT_MAP_KEY).add(loadKS(keyStoreType, provider, keyStoreFile, keyStorePass));
-            trustStores.get(DEFAULT_MAP_KEY).add(loadKS(trustStoreType, provider, trustStoreFile, trustStorePass));
+            keyStores.get(DEFAULT_MAP_KEY).add(loadStore(keyStoreType, provider, keyStoreFile, keyStorePass));
+            trustStores.get(DEFAULT_MAP_KEY).add(loadStore(trustStoreType, provider, trustStoreFile, trustStorePass));
             keyStorePasswords.get(DEFAULT_MAP_KEY).add(Arrays.copyOf(keyStorePass, keyStorePass.length));
             tokenNames.get(DEFAULT_MAP_KEY).add(tokenName);
         } catch (Exception ex) {
@@ -501,7 +485,7 @@ public class SecuritySupportImpl extends SecuritySupport {
 
     
     /**
-     * This method load keystore with given keystore file and keystore password for a given keystore type and provider. It
+     * This method loads a single keystore with given keystore file and keystore password for a given keystore type and provider. It
      * always return a non-null keystore.
      *
      * @param keyStoreType
@@ -511,7 +495,7 @@ public class SecuritySupportImpl extends SecuritySupport {
      *
      * @retun keystore loaded
      */
-    private static KeyStore loadKS(String keyStoreType, Provider provider, String keyStoreFile, char[] keyStorePass) throws Exception {
+    private static KeyStore loadStore(String keyStoreType, Provider provider, String keyStoreFile, char[] keyStorePass) throws Exception {
         KeyStore keyStore = null;
 
         if (provider != null) {
@@ -538,6 +522,32 @@ public class SecuritySupportImpl extends SecuritySupport {
     
     private boolean isEmbeddedServer() {
         return !Server.getServerNames().isEmpty();
+    }
+    
+    /*
+     * If we don't have a keystore password yet check the properties. Always do so for the app client case whether the
+     * passwords have been found from master password helper or not.
+     */
+    private boolean shouldGetPassFromProperty(char[] keyStorePass) {
+        return keyStorePass == null || isACC() || (serverEnvironment != null && serverEnvironment.isMicro());
+    }
+    
+    private char[] getKeyStorePass(char[] keyStorePass) {
+        String keyStorePassOverride = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS);
+        if (keyStorePassOverride == null) {
+            return keyStorePass;
+        }
+        
+        return keyStorePassOverride.toCharArray();
+    }
+    
+    private char[] getTrustStorePass(char[] trustStorePass) {
+        String trustStorePassOverride = System.getProperty(TRUSTSTORE_PASS_PROP, DEFAULT_TRUSTSTORE_PASS);
+        if (trustStorePassOverride == null) {
+            return trustStorePass;
+        }
+        
+        return trustStorePassOverride.toCharArray();
     }
 
     private static synchronized boolean isInstantiated() {
