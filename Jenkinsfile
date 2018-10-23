@@ -1,7 +1,7 @@
 #!groovy
 // Jenkinsfile for building a PR and running a subset of tests against it
 def pom
-def DOMAIN_NAME='test-domain'
+def DOMAIN_NAME
 def ASADMIN
 def payaraBuildNumber
 pipeline {
@@ -155,6 +155,7 @@ def void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+        DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
