@@ -43,6 +43,7 @@
 package com.sun.common.util.logging;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
+import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
