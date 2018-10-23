@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] Payara Foundation and/or affiliates
 -->
 
 <!--
@@ -85,6 +86,7 @@
         <attribute name="tls-enabled" property="TlsEnabled" convert="boolean"/>
         <attribute name="tls11-enabled" property="Tls11Enabled" convert="boolean"/>
         <attribute name="tls12-enabled" property="Tls12Enabled" convert="boolean"/>
+        <attribute name="tls13-enabled" property="Tls13Enabled" convert="boolean"/>
         <attribute name="tls-rollback-enabled" property="TlsRollbackEnabled" convert="boolean"/>
     </element>
 
