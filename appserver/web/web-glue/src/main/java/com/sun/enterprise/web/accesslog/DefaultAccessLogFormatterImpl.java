@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation]
 package com.sun.enterprise.web.accesslog;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
@@ -156,38 +156,26 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
         this.container = container;
 
         final TimeZone timeZone = tz;
-        dayFormatter = new ThreadLocal<SimpleDateFormat>() {
-            @Override
-            protected SimpleDateFormat initialValue() {
-                SimpleDateFormat f = new SimpleDateFormat("dd");
-                f.setTimeZone(timeZone);
-                return f;
-            }
-        };
-        monthFormatter =  new ThreadLocal<SimpleDateFormat>() {
-            @Override
-            protected SimpleDateFormat initialValue() {
-                SimpleDateFormat f = new SimpleDateFormat("MM");
-                f.setTimeZone(timeZone);
-                return f;
-            }
-        };
-        yearFormatter = new ThreadLocal<SimpleDateFormat>() {
-            @Override
-            protected SimpleDateFormat initialValue() {
-                SimpleDateFormat f = new SimpleDateFormat("yyyy");
-                f.setTimeZone(timeZone);
-                return f;
-            }
-        };
-        timeFormatter = new ThreadLocal<SimpleDateFormat>() {
-            @Override
-            protected SimpleDateFormat initialValue() {
-                SimpleDateFormat f = new SimpleDateFormat("HH:mm:ss");
-                f.setTimeZone(timeZone);
-                return f;
-            }
-        };
+        dayFormatter = ThreadLocal.withInitial(() -> {
+            SimpleDateFormat f = new SimpleDateFormat("dd");
+            f.setTimeZone(timeZone);
+            return f;
+        });
+        monthFormatter = ThreadLocal.withInitial(() -> {
+            SimpleDateFormat f = new SimpleDateFormat("MM");
+            f.setTimeZone(timeZone);
+            return f;
+        });
+        yearFormatter = ThreadLocal.withInitial(() -> {
+            SimpleDateFormat f = new SimpleDateFormat("yyyy");
+            f.setTimeZone(timeZone);
+            return f;
+        });
+        timeFormatter = ThreadLocal.withInitial(() -> {
+            SimpleDateFormat f = new SimpleDateFormat("HH:mm:ss");
+            f.setTimeZone(timeZone);
+            return f;
+        });
     }
 
     /**
@@ -202,69 +190,66 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                                Response response,
                                CharBuffer charBuffer) {
 
-        HttpServletRequest hreq = (HttpServletRequest)
-            request.getRequest();
-        HttpServletResponse hres = (HttpServletResponse)
-            response.getResponse();
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response.getResponse();
 
-        for (int i=0; i<patternComponents.size(); i++) {
-            String pc = patternComponents.get(i);
+        for (String pc : patternComponents) {
             if (pc.startsWith(ATTRIBUTE_BY_NAME_PREFIX)) {
                 appendAttributeByName(
-                    charBuffer,
-                    pc.substring(ATTRIBUTE_BY_NAME_PREFIX_LEN),
-                    hreq);
+                        charBuffer,
+                        pc.substring(ATTRIBUTE_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (pc.startsWith(SESSION_ATTRIBUTE_BY_NAME_PREFIX)) {
                 appendSessionAttributeByName(
-                    charBuffer,
-                    pc.substring(SESSION_ATTRIBUTE_BY_NAME_PREFIX_LEN),
-                    hreq);
+                        charBuffer,
+                        pc.substring(SESSION_ATTRIBUTE_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (AUTH_USER_NAME.equals(pc)) {
-                appendAuthUserName(charBuffer, hreq);
+                appendAuthUserName(charBuffer, httpServletRequest);
             } else if (CLIENT_DNS.equals(pc)) {
-                appendClientDNS(charBuffer, hreq);
+                appendClientDNS(charBuffer, httpServletRequest);
             } else if (CLIENT_NAME.equals(pc)) {
-                appendClientName(charBuffer, hreq);
+                appendClientName(charBuffer, httpServletRequest);
             } else if (COOKIE.equals(pc)) {
-                appendCookie(charBuffer, hreq);
+                appendCookie(charBuffer, httpServletRequest);
             } else if (COOKIES.equals(pc)) {
-                appendCookies(charBuffer, hreq);
+                appendCookies(charBuffer, httpServletRequest);
             } else if (COOKIE_VALUE.equals(pc)) {
-                appendCookieValue(charBuffer, hreq);
+                appendCookieValue(charBuffer, httpServletRequest);
             } else if (pc.startsWith(COOKIE_BY_NAME_PREFIX)) {
                 appendCookieByName(charBuffer,
-                                   pc.substring(COOKIE_BY_NAME_PREFIX_LEN),
-                                   hreq);
+                        pc.substring(COOKIE_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (pc.startsWith(COOKIES_BY_NAME_PREFIX)) {
                 appendCookiesByName(charBuffer,
-                                   pc.substring(COOKIES_BY_NAME_PREFIX_LEN),
-                                   hreq);
+                        pc.substring(COOKIES_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (DATE_TIME.equals(pc)) {
-                appendCurrentDate(charBuffer);       
+                appendCurrentDate(charBuffer);
             } else if (HEADER_ACCEPT.equals(pc)) {
-                appendHeaderAccept(charBuffer, hreq);
+                appendHeaderAccept(charBuffer, httpServletRequest);
             } else if (HEADER_AUTH.equals(pc)) {
-                appendHeaderAuth(charBuffer, hreq);
+                appendHeaderAuth(charBuffer, httpServletRequest);
             } else if (HEADER_DATE.equals(pc)) {
-                appendHeaderDate(charBuffer, hreq);
+                appendHeaderDate(charBuffer, httpServletRequest);
             } else if (HEADER_IF_MOD_SINCE.equals(pc)) {
-                appendHeaderIfModSince(charBuffer, hreq);
+                appendHeaderIfModSince(charBuffer, httpServletRequest);
             } else if (HEADER_USER_AGENT.equals(pc)) {
-                appendUserAgent(charBuffer, hreq);
+                appendUserAgent(charBuffer, httpServletRequest);
             } else if (HEADER_REFERER.equals(pc)) {
-                appendReferer(charBuffer, hreq);
+                appendReferer(charBuffer, httpServletRequest);
             } else if (HTTP_METHOD.equals(pc)) {
-                appendHTTPMethod(charBuffer, hreq);
+                appendHTTPMethod(charBuffer, httpServletRequest);
             } else if (HTTP_URI.equals(pc)) {
-                appendHTTPUri(charBuffer, hreq);
+                appendHTTPUri(charBuffer, httpServletRequest);
             } else if (HTTP_VERSION.equals(pc)) {
-                appendHTTPVersion(charBuffer, hreq);
+                appendHTTPVersion(charBuffer, httpServletRequest);
             } else if (QUERY_STR.equals(pc)) {
-                appendQueryString(charBuffer, hreq);
+                appendQueryString(charBuffer, httpServletRequest);
             } else if (REFERER.equals(pc)) {
-                appendReferer(charBuffer, hreq);
+                appendReferer(charBuffer, httpServletRequest);
             } else if (REQUEST.equals(pc)) {
-                appendRequestInfo(charBuffer, hreq);
+                appendRequestInfo(charBuffer, httpServletRequest);
             } else if (RESPONSE_LENGTH.equals(pc)) {
                 appendResponseLength(charBuffer, response);
             } else if (RESPONSE_CONTENT_TYPE.equals(pc)) {
@@ -274,23 +259,23 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             } else if (TIME_TAKEN.equals(pc)) {
                 appendTimeTaken(charBuffer, request);
             } else if (USER_AGENT.equals(pc)) {
-                appendUserAgent(charBuffer, hreq);
+                appendUserAgent(charBuffer, httpServletRequest);
             } else if (VS_ID.equals(pc)) {
                 appendVirtualServerId(charBuffer);
             } else if (pc.startsWith(HEADER_BY_NAME_PREFIX)) {
                 appendHeaderByName(charBuffer,
-                                   pc.substring(HEADER_BY_NAME_PREFIX_LEN),
-                                   hreq);
+                        pc.substring(HEADER_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (pc.startsWith(HEADERS_BY_NAME_PREFIX)) {
                 appendHeadersByName(charBuffer,
-                                    pc.substring(HEADERS_BY_NAME_PREFIX_LEN),
-                                    hreq);
+                        pc.substring(HEADERS_BY_NAME_PREFIX_LEN),
+                        httpServletRequest);
             } else if (pc.startsWith(RESPONSE_HEADER_BY_NAME_PREFIX)) {
                 appendResponseHeaderByName(charBuffer,
-                    pc.substring(RESPONSE_HEADER_BY_NAME_PREFIX_LEN), hres, response);
+                        pc.substring(RESPONSE_HEADER_BY_NAME_PREFIX_LEN), httpServletResponse, response);
             } else if (pc.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)) {
                 appendResponseHeadersByName(charBuffer,
-                    pc.substring(RESPONSE_HEADERS_BY_NAME_PREFIX_LEN), hres, response);
+                        pc.substring(RESPONSE_HEADERS_BY_NAME_PREFIX_LEN), httpServletResponse, response);
             }
 
             charBuffer.put(SPACE);
@@ -307,7 +292,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      */
     private LinkedList<String> parsePattern(String pattern) {
 
-        LinkedList<String> list = new LinkedList<String>();
+        LinkedList<String> list = new LinkedList<>();
 
         int from = 0;
         int end = -1;
@@ -319,67 +304,67 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                         LogFacade.ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN,
                         pattern);
             errorInPattern = true;
-        }
+        } else {
+            while ((index = pattern.indexOf('%', from)) >= 0) {
+                end = pattern.indexOf('%', index+1);
+                if (end < 0) {
+                    _logger.log(
+                        Level.SEVERE,
+                        LogFacade.MISSING_ACCESS_LOG_PATTERN_END_DELIMITER,
+                        pattern);
+                    errorInPattern = true;
+                    break;
 
-        while ((index = pattern.indexOf('%', from)) >= 0) {
-            end = pattern.indexOf('%', index+1);
-            if (end < 0) {
-                _logger.log(
-                    Level.SEVERE,
-                    LogFacade.MISSING_ACCESS_LOG_PATTERN_END_DELIMITER,
-                    pattern);
-                errorInPattern = true;
-                break;
+                }
+                String component = pattern.substring(index+1, end);
 
+                if (!component.startsWith(ATTRIBUTE_BY_NAME_PREFIX)
+                        && !AUTH_USER_NAME.equals(component)
+                        && !CLIENT_DNS.equals(component)
+                        && !CLIENT_NAME.equals(component)
+                        && !COOKIE.equals(component)
+                        && !COOKIES.equals(component)
+                        && !COOKIE_VALUE.equals(component)
+                        && !component.startsWith(COOKIE_BY_NAME_PREFIX)
+                        && !component.startsWith(COOKIES_BY_NAME_PREFIX)
+                        && !DATE_TIME.equals(component)
+                        && !HEADER_ACCEPT.equals(component)
+                        && !HEADER_AUTH.equals(component)
+                        && !HEADER_DATE.equals(component)
+                        && !HEADER_IF_MOD_SINCE.equals(component)
+                        && !HEADER_USER_AGENT.equals(component)
+                        && !HEADER_REFERER.equals(component)
+                        && !HTTP_METHOD.equals(component)
+                        && !HTTP_URI.equals(component)
+                        && !HTTP_VERSION.equals(component)
+                        && !QUERY_STR.equals(component)
+                        && !REFERER.equals(component)
+                        && !REQUEST.equals(component)
+                        && !RESPONSE_LENGTH.equals(component)
+                        && !RESPONSE_CONTENT_TYPE.equals(component)
+                        && !STATUS.equals(component)
+                        && !TIME_TAKEN.equals(component)
+                        && !USER_AGENT.equals(component)
+                        && !VS_ID.equals(component)
+                        && !component.startsWith(HEADER_BY_NAME_PREFIX)
+                        && !component.startsWith(HEADERS_BY_NAME_PREFIX)
+                        && !component.startsWith(RESPONSE_HEADER_BY_NAME_PREFIX)
+                        && !component.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)
+                        && !component.startsWith(SESSION_ATTRIBUTE_BY_NAME_PREFIX)) {
+                    _logger.log(
+                        Level.SEVERE,
+                        LogFacade.INVALID_ACCESS_LOG_PATTERN_COMPONENT,
+                        new Object[] { component, pattern });
+                    errorInPattern = true;
+                }
+
+                if (TIME_TAKEN.equals(component)) {
+                    needTimeTaken = true;
+                }
+
+                list.add(component);
+                from = end + 1;
             }
-            String component = pattern.substring(index+1, end);
-
-            if (!component.startsWith(ATTRIBUTE_BY_NAME_PREFIX)
-                    && !AUTH_USER_NAME.equals(component) 
-                    && !CLIENT_DNS.equals(component) 
-                    && !CLIENT_NAME.equals(component) 
-                    && !COOKIE.equals(component) 
-                    && !COOKIES.equals(component) 
-                    && !COOKIE_VALUE.equals(component)
-                    && !component.startsWith(COOKIE_BY_NAME_PREFIX)
-                    && !component.startsWith(COOKIES_BY_NAME_PREFIX)
-                    && !DATE_TIME.equals(component) 
-                    && !HEADER_ACCEPT.equals(component) 
-                    && !HEADER_AUTH.equals(component) 
-                    && !HEADER_DATE.equals(component) 
-                    && !HEADER_IF_MOD_SINCE.equals(component) 
-                    && !HEADER_USER_AGENT.equals(component) 
-                    && !HEADER_REFERER.equals(component) 
-                    && !HTTP_METHOD.equals(component) 
-                    && !HTTP_URI.equals(component) 
-                    && !HTTP_VERSION.equals(component) 
-                    && !QUERY_STR.equals(component) 
-                    && !REFERER.equals(component) 
-                    && !REQUEST.equals(component) 
-                    && !RESPONSE_LENGTH.equals(component)
-                    && !RESPONSE_CONTENT_TYPE.equals(component)
-                    && !STATUS.equals(component) 
-                    && !TIME_TAKEN.equals(component) 
-                    && !USER_AGENT.equals(component) 
-                    && !VS_ID.equals(component)
-                    && !component.startsWith(HEADER_BY_NAME_PREFIX)
-                    && !component.startsWith(HEADERS_BY_NAME_PREFIX)
-                    && !component.startsWith(RESPONSE_HEADER_BY_NAME_PREFIX)
-                    && !component.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)
-                    && !component.startsWith(SESSION_ATTRIBUTE_BY_NAME_PREFIX)) {
-                _logger.log(
-                    Level.SEVERE,
-                    LogFacade.INVALID_ACCESS_LOG_PATTERN_COMPONENT,
-                    new Object[] { component, pattern });
-                errorInPattern = true;
-            }
-
-            if (TIME_TAKEN.equals(component)) {
-                needTimeTaken = true;
-            }
-
-            list.add(component);
-            from = end + 1;    
         }
 
         if (errorInPattern) {
@@ -574,7 +559,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             long startTime = startTimeObj.longValue();
             long endTime = System.currentTimeMillis();
             timeTaken = String.valueOf(endTime - startTime);
-        } 
+        }
         cb.put(timeTaken);
         cb.put(QUOTE);
     }
@@ -701,7 +686,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the values (separated by ";") of all headers with the
      * specified name in the given request to the given char buffer, or
-     * NULL-HEADERS-<headerName> if no headers with the given name are 
+     * NULL-HEADERS-<headerName> if no headers with the given name are
      * present in the request..
      */
     private void appendHeadersByName(CharBuffer cb,

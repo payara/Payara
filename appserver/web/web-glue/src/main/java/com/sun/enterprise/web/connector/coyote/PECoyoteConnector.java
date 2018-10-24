@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector.coyote;
 
@@ -84,60 +85,60 @@ public class PECoyoteConnector extends Connector {
      * Are we recycling objects
      */
     protected boolean recycleObjects;
-    
-    
+
+
      /**
      * The number of acceptor threads.
-     */   
+     */
     protected int maxAcceptWorkerThreads;
-    
-    
+
+
     /**
      * The number of reader threads.
      */
     protected int maxReadWorkerThreads;
-    
-    
+
+
     /**
      * The request timeout value used by the processor threads.
      */
     protected int processorWorkerThreadsTimeout;
-    
-    
+
+
     /**
      * The increment number used by the processor threads.
      *
     protected int minProcessorWorkerThreadsIncrement;
      */
-    
-    
+
+
     /**
      * The size of the accept queue.
      */
     protected int minAcceptQueueLength;
-    
-    
+
+
     /**
      * The size of the read queue
      */
     protected int minReadQueueLength;
-    
-    
+
+
     /**
      * The size of the processor queue.
-     */ 
-    protected int minProcessorQueueLength;   
-    
-    
+     */
+    protected int minProcessorQueueLength;
+
+
     /**
      * Use direct or non direct byte buffer.
      */
     protected boolean useDirectByteBuffer;
-    
-    
+
+
     // Are we using the NIO Connector or the CoyoteConnector
     //private boolean coyoteOn = false;
-    
+
     /*
      * Number of seconds before idle keep-alive connections expire
      */
@@ -152,17 +153,17 @@ public class PECoyoteConnector extends Connector {
      * Maximum pending connection before refusing requests.
      */
     private int queueSizeInBytes = 4096;
-  
+
     /**
      * Server socket backlog.
      */
-    protected int ssBackLog = 4096;    
-    
+    protected int ssBackLog = 4096;
+
     /**
      * Set the number of <code>Selector</code> used by Grizzly.
      */
     private int selectorReadThreadsCount = 0;
-    
+
     /**
      * The monitoring classes used to gather stats.
      */
@@ -177,59 +178,59 @@ public class PECoyoteConnector extends Connector {
      * Mapper listener.
      */
     protected MapperListener mapperListener;
-    
+
 
     // --------------------------------------------- FileCache support --//
-    
+
     /**
      * Timeout before remove the static resource from the cache.
      */
     private int secondsMaxAge = -1;
-    
+
     /**
      * The maximum entries in the <code>fileCache</code>
      */
     private int maxCacheEntries = 1024;
- 
+
     /**
      * The maximum size of a cached resources.
      */
     private long minEntrySize = 2048;
-            
+
     /**
      * The maximum size of a cached resources.
      */
     private long maxEntrySize = 537600;
-    
+
     /**
      * The maximum cached bytes
      */
     private long maxLargeFileCacheSize = 10485760;
-    
+
     /**
      * The maximum cached bytes
      */
     private long maxSmallFileCacheSize = 1048576;
-    
+
     /**
      * Is the FileCache enabled.
      */
     private boolean fileCacheEnabled = true;
-    
+
     /**
      * Is the large FileCache enabled.
      */
-    private boolean isLargeFileCacheEnabled = true;    
-    
+    private boolean isLargeFileCacheEnabled = true;
+
     /**
      * Location of the CRL file
      */
-    private String crlFile;    
+    private String crlFile;
 
     /**
      * The trust management algorithm
      */
-    private String trustAlgorithm;    
+    private String trustAlgorithm;
 
     /**
      * The maximum number of non-self-issued intermediate
@@ -244,7 +245,7 @@ public class PECoyoteConnector extends Connector {
 
     /**
      * Constructor
-     */   
+     */
     public PECoyoteConnector(WebContainer webContainer) {
         this.webContainer = webContainer;
         requestProbeProvider = webContainer.getRequestProbeProvider();
@@ -252,13 +253,12 @@ public class PECoyoteConnector extends Connector {
     }
 
 
-    /** 
+    /**
      * Create (or allocate) and return a Request object suitable for
      * specifying the contents of a Request to the responsible ContractProvider.
      */
     @Override
     public Request createRequest() {
-        
         PwcCoyoteRequest request = new PwcCoyoteRequest();
         request.setConnector(this);
         return request;
@@ -269,10 +269,9 @@ public class PECoyoteConnector extends Connector {
      * Creates and returns Response object.
      *
      * @return Response object
-     */ 
+     */
     @Override
     public Response createResponse() {
-
         PECoyoteResponse response = new PECoyoteResponse();
         response.setConnector(this);
         return response;
@@ -339,7 +338,7 @@ public class PECoyoteConnector extends Connector {
         return queueSizeInBytes;
     }
 
- 
+
     /**
      * Set the <code>SocketServer</code> backlog.
      */
@@ -356,73 +355,73 @@ public class PECoyoteConnector extends Connector {
         return ssBackLog;
     }
 
-    
+
     /**
      * Set the <code>recycle-tasks</code> used by this <code>Selector</code>
-     */   
+     */
     public void setRecycleObjects(boolean recycleObjects){
         this.recycleObjects= recycleObjects;
-        setProperty("recycleObjects", 
+        setProperty("recycleObjects",
                     String.valueOf(recycleObjects));
     }
-    
-    
+
+
     /**
-     * Return the <code>recycle-tasks</code> used by this 
+     * Return the <code>recycle-tasks</code> used by this
      * <code>Selector</code>
-     */      
+     */
     public boolean getRecycleObjects(){
         return recycleObjects;
     }
-   
-   
+
+
     /**
      * Set the <code>reader-thread</code> from domian.xml.
-     */    
+     */
     public void setMaxReadWorkerThreads(int maxReadWorkerThreads){
         this.maxReadWorkerThreads = maxReadWorkerThreads;
-        setProperty("maxReadWorkerThreads", 
+        setProperty("maxReadWorkerThreads",
                     String.valueOf(maxReadWorkerThreads));
     }
-    
-    
+
+
     /**
      * Return the <code>read-thread</code> used by this <code>Selector</code>
-     */  
+     */
     public int getMaxReadWorkerThreads(){
         return maxReadWorkerThreads;
     }
 
-    
+
     /**
      * Set the <code>reader-thread</code> from domian.xml.
-     */    
+     */
     public void setMaxAcceptWorkerThreads(int maxAcceptWorkerThreads){
         this.maxAcceptWorkerThreads = maxAcceptWorkerThreads;
-        setProperty("maxAcceptWorkerThreads", 
+        setProperty("maxAcceptWorkerThreads",
                     String.valueOf(maxAcceptWorkerThreads));
     }
-    
-    
+
+
     /**
      * Return the <code>read-thread</code> used by this <code>Selector</code>
-     */  
+     */
     public int getMaxAcceptWorkerThreads(){
         return maxAcceptWorkerThreads;
     }
-    
-    
+
+
     /**
-     * Set the <code>acceptor-queue-length</code> value 
+     * Set the <code>acceptor-queue-length</code> value
      * on this <code>Selector</code>
      */
     public void setMinAcceptQueueLength(int minAcceptQueueLength){
         this.minAcceptQueueLength = minAcceptQueueLength;
-        setProperty("minAcceptQueueLength", 
+        setProperty("minAcceptQueueLength",
                     String.valueOf(minAcceptQueueLength));
     }
- 
-    
+
+
     /**
      * Return the <code>acceptor-queue-length</code> value
      * on this <code>Selector</code>
@@ -430,19 +429,19 @@ public class PECoyoteConnector extends Connector {
     public int getMinAcceptQueueLength(){
         return minAcceptQueueLength;
     }
-    
-    
+
+
     /**
-     * Set the <code>reader-queue-length</code> value 
+     * Set the <code>reader-queue-length</code> value
      * on this <code>Selector</code>
      */
     public void setMinReadQueueLength(int minReadQueueLength){
         this.minReadQueueLength = minReadQueueLength;
-        setProperty("minReadQueueLength", 
+        setProperty("minReadQueueLength",
                     String.valueOf(minReadQueueLength));
     }
-    
-    
+
+
     /**
      * Return the <code>reader-queue-length</code> value
      * on this <code>Selector</code>
@@ -450,52 +449,52 @@ public class PECoyoteConnector extends Connector {
     public int getMinReadQueueLength(){
         return minReadQueueLength;
     }
-    
-    
+
+
     /**
-     * Set the <code>processor-queue-length</code> value 
+     * Set the <code>processor-queue-length</code> value
      * on this <code>Selector</code>
      */
     public void setMinProcessorQueueLength(int minProcessorQueueLength){
         this.minProcessorQueueLength = minProcessorQueueLength;
-        setProperty("minProcessorQueueLength", 
+        setProperty("minProcessorQueueLength",
                     String.valueOf(minProcessorQueueLength));
     }
-    
-    
+
+
     /**
      * Return the <code>processor-queue-length</code> value
      * on this <code>Selector</code>
-     */  
+     */
     public int getMinProcessorQueueLength(){
         return minProcessorQueueLength;
     }
-    
-    
+
+
     /**
      * Set the <code>use-nio-non-blocking</code> by this <code>Selector</code>
-     */  
+     */
     public void setUseDirectByteBuffer(boolean useDirectByteBuffer){
         this.useDirectByteBuffer = useDirectByteBuffer;
-        setProperty("useDirectByteBuffer", 
+        setProperty("useDirectByteBuffer",
                     String.valueOf(useDirectByteBuffer));
     }
-    
-    
+
+
     /**
-     * Return the <code>use-nio-non-blocking</code> used by this 
+     * Return the <code>use-nio-non-blocking</code> used by this
      * <code>Selector</code>
-     */    
+     */
     public boolean getUseDirectByteBuffer(){
         return useDirectByteBuffer;
     }
 
     public void setProcessorWorkerThreadsTimeout(int timeout){
         processorWorkerThreadsTimeout = timeout;
-        setProperty("processorWorkerThreadsTimeout", 
-                    String.valueOf(timeout));        
+        setProperty("processorWorkerThreadsTimeout",
+                    String.valueOf(timeout));
     }
-        
+
     public int getProcessorWorkerThreadsTimeout(){
         return processorWorkerThreadsTimeout;
     }
@@ -503,17 +502,17 @@ public class PECoyoteConnector extends Connector {
     /*public int getMinProcessorWorkerThreadsIncrement(){
         return minProcessorWorkerThreadsIncrement;
     }*/
- 
+
     public void setSelectorReadThreadsCount(int selectorReadThreadsCount) {
         this.selectorReadThreadsCount = selectorReadThreadsCount;
-        setProperty("selectorReadThreadsCount", 
-                    String.valueOf(selectorReadThreadsCount)); 
+        setProperty("selectorReadThreadsCount",
+                    String.valueOf(selectorReadThreadsCount));
     }
-    
+
     public int getSelectorReadThreadsCount() {
         return selectorReadThreadsCount;
     }
-    
+
     @Override
     public void start() throws LifecycleException {
         super.start();
@@ -542,10 +541,10 @@ public class PECoyoteConnector extends Connector {
             grizzlyMonitor.registerMonitoringLevelEvents();
         }
     }
-        
+
     @Override
     public void stop() throws LifecycleException {
-        super.stop(); 
+        super.stop();
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.destroy();
             grizzlyMonitor=null;
@@ -560,13 +559,13 @@ public class PECoyoteConnector extends Connector {
      */
     public void setSecondsMaxAge(int sMaxAges) {
         secondsMaxAge = sMaxAges;
-        setProperty("secondsMaxAge", String.valueOf(secondsMaxAge));        
+        setProperty("secondsMaxAge", String.valueOf(secondsMaxAge));
     }
-    
+
     public int getSecondsMaxAge() {
         return secondsMaxAge;
     }
-    
+
     /**
      * Set the maximum entries this cache can contains.
      */
@@ -574,85 +573,85 @@ public class PECoyoteConnector extends Connector {
         maxCacheEntries = mEntries;
         setProperty("maxCacheEntries", String.valueOf(maxCacheEntries));
     }
-    
+
     /**
      * Return the maximum entries this cache can contains.
-     */    
+     */
     public int getMaxCacheEntries(){
         return maxCacheEntries;
     }
-    
-    
+
+
     /**
      * Set the maximum size a <code>FileCacheEntry</code> can have.
      */
     public void setMinEntrySize(long mSize){
         minEntrySize = mSize;
-        setProperty("minEntrySize", String.valueOf(minEntrySize));         
+        setProperty("minEntrySize", String.valueOf(minEntrySize));
     }
-    
-    
+
+
     /**
      * Get the maximum size a <code>FileCacheEntry</code> can have.
      */
     public long getMinEntrySize(){
         return minEntrySize;
     }
-     
-    
+
+
     /**
      * Set the maximum size a <code>FileCacheEntry</code> can have.
      */
     public void setMaxEntrySize(long mEntrySize){
         maxEntrySize = mEntrySize;
-        setProperty("maxEntrySize", String.valueOf(maxEntrySize));        
+        setProperty("maxEntrySize", String.valueOf(maxEntrySize));
     }
-    
-    
+
+
     /**
      * Get the maximum size a <code>FileCacheEntry</code> can have.
      */
     public long getMaxEntrySize(){
         return maxEntrySize;
     }
-    
-    
+
+
     /**
      * Set the maximum cache size
-     */ 
+     */
     public void setMaxLargeCacheSize(long mCacheSize){
         maxLargeFileCacheSize = mCacheSize;
-        setProperty("maxLargeFileCacheSize", 
-                String.valueOf(maxLargeFileCacheSize));          
+        setProperty("maxLargeFileCacheSize",
+                String.valueOf(maxLargeFileCacheSize));
     }
 
-    
+
     /**
      * Get the maximum cache size
-     */ 
+     */
     public long getMaxLargeCacheSize(){
         return maxLargeFileCacheSize;
     }
-    
-    
+
+
     /**
      * Set the maximum cache size
-     */ 
+     */
     public void setMaxSmallCacheSize(long mCacheSize){
         maxSmallFileCacheSize = mCacheSize;
-        setProperty("maxSmallFileCacheSize", 
-                String.valueOf(maxSmallFileCacheSize));         
+        setProperty("maxSmallFileCacheSize",
+                String.valueOf(maxSmallFileCacheSize));
     }
-    
-    
+
+
     /**
      * Get the maximum cache size
-     */ 
+     */
     public long getMaxSmallCacheSize(){
         return maxSmallFileCacheSize;
-    }    
+    }
 
-    
+
     /**
      * Is the fileCache enabled.
      */
@@ -660,7 +659,7 @@ public class PECoyoteConnector extends Connector {
         return fileCacheEnabled;
     }
 
-    
+
     /**
      * Is the file caching mechanism enabled.
      */
@@ -668,45 +667,45 @@ public class PECoyoteConnector extends Connector {
         this.fileCacheEnabled = fileCacheEnabled;
         setProperty("fileCacheEnabled",String.valueOf(fileCacheEnabled));
     }
-   
-    
+
+
     /**
      * Is the large file cache support enabled.
      */
     public void setLargeFileCacheEnabled(boolean isLargeEnabled){
         isLargeFileCacheEnabled = isLargeEnabled;
         setProperty("largeFileCacheEnabled",
-                String.valueOf(isLargeFileCacheEnabled));                 
+                String.valueOf(isLargeFileCacheEnabled));
     }
-   
-    
+
+
     /**
      * Is the large file cache support enabled.
      */
     public boolean getLargeFileCacheEnabled(){
         return isLargeFileCacheEnabled;
-    } 
+    }
 
     // --------------------------------------------------------------------//
-         
-    
+
+
     /**
      * Set the documenr root folder
      */
     public void setWebAppRootPath(String rootFolder){
         this.rootFolder = rootFolder;
-        setProperty("webAppRootPath",rootFolder);     
+        setProperty("webAppRootPath",rootFolder);
     }
-    
-    
+
+
     /**
      * Return the folder's root where application are deployed.
      */
     public String getWebAppRootPath(){
         return rootFolder;
     }
-    
-    
+
+
     /**
      * Initialize this connector.
      */
@@ -782,13 +781,13 @@ public class PECoyoteConnector extends Connector {
     /**
      * Gets the location of the CRL file
      *
-     * @return The location of the CRL file 
+     * @return The location of the CRL file
      */
     public String getCrlFile() {
          return crlFile;
     }
-    
-    
+
+
     /**
      * Sets the location of the CRL file.
      *
@@ -796,8 +795,8 @@ public class PECoyoteConnector extends Connector {
      */
     public void setCrlFile(String crlFile) {
         this.crlFile = crlFile;
-        setProperty("crlFile", crlFile);                     
-    }  
+        setProperty("crlFile", crlFile);
+    }
 
 
     /**
@@ -808,8 +807,8 @@ public class PECoyoteConnector extends Connector {
     public String getTrustAlgorithm() {
          return trustAlgorithm;
     }
-    
-    
+
+
     /**
      * Sets the trust management algorithm
      *
@@ -818,7 +817,7 @@ public class PECoyoteConnector extends Connector {
     public void setTrustAlgorithm(String trustAlgorithm) {
         this.trustAlgorithm = trustAlgorithm;
         setProperty("truststoreAlgorithm", trustAlgorithm);
-    }  
+    }
 
 
     /**
@@ -831,8 +830,8 @@ public class PECoyoteConnector extends Connector {
     public String getTrustMaxCertLength() {
          return trustMaxCertLength;
     }
-    
-    
+
+
     /**
      * Sets the maximum number of non-self-issued intermediate
      * certificates that may exist in a certification path
@@ -879,30 +878,30 @@ public class PECoyoteConnector extends Connector {
         }
         /* TODO
         //WebContainerFeatureFactory wcFeatureFactory = _serverContext.getDefaultHabitat().getService(WebContainerFeatureFactory.class);
-        String sslImplementationName = 
+        String sslImplementationName =
             webFeatureFactory.getSSLImplementationName();
-        
+
         if (sslImplementationName != null) {
             connector.setProperty("sSLImplementation",sslImplementationName);
         }*/
-        
+
         setDomain(webContainer.getServerContext().getDefaultDomainName());
-        
+
         configureSSL(listener);
         configureThreadPool(listener.findThreadPool());
-        
+
         final Http http = listener.findHttpProtocol().getHttp();
 
         configureFileCache(http.getFileCache());
         setMaxHttpHeaderSize(Integer.parseInt(http.getSendBufferSizeBytes()));
         setDefaultHost(http.getDefaultVirtualServer());
         setEnableLookups(ConfigBeansUtilities.toBoolean(http.getDnsLookupEnabled()));
-        
+
         setXpoweredBy(Boolean.valueOf(http.getXpoweredBy()));
-        
+
         // Application root
         setWebAppRootPath(webContainer.getModulesRoot().getAbsolutePath());
-        
+
         // server-name (may contain scheme and colon-separated port number)
         String serverName = http.getServerName();
         if (serverName != null && serverName.length() > 0) {
@@ -943,7 +942,7 @@ public class PECoyoteConnector extends Connector {
                         redirectPort,
                         listener.getName(),
                         Integer.toString(getRedirectPort()) });
-            }  
+            }
         } else {
             setRedirectPort(-1);
         }
@@ -961,15 +960,15 @@ public class PECoyoteConnector extends Connector {
                         acceptorThreads,
                         listener.getName(),
                         Integer.toString(getMaxProcessors()) });
-            }  
+            }
         }
-        
+
         // Configure Connector with keystore password and location
         if (isSecure) {
             configureKeysAndCerts();
         }
-        
-        webContainer.configureHttpServiceProperties(httpService, this);      
+
+        webContainer.configureHttpServiceProperties(httpService, this);
 
         // Overrided http-service property if defined.
         configureHttpListenerProperties(listener);
@@ -1002,38 +1001,27 @@ public class PECoyoteConnector extends Connector {
                             propertiesFile.getAbsolutePath()));
             return;
         }
-        
+
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST,
                     MessageFormat.format(_rb.getString(LogFacade.LOADING_JK_PROPERTIED),
                             propertiesFile.getAbsolutePath()));
         }
 
-        Properties properties = null;
-
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(propertiesFile));
-            properties = new Properties();
+        try (InputStream is = new BufferedInputStream(new FileInputStream(propertiesFile))) {
+            Properties properties = new Properties();
             properties.load(is);
+            Enumeration enumeration = properties.keys();
+            while (enumeration.hasMoreElements()) {
+                String propName = (String) enumeration.nextElement();
+                String value = properties.getProperty(propName);
+                if (value != null) {
+                    IntrospectionUtils.setProperty(this, propName, value);
+                }
+            }
         } catch (Exception ex) {
-            String msg = MessageFormat.format(_rb.getString(LogFacade.UNABLE_TO_CONFIGURE_JK), new Object[]{propertiesFile, getPort()});
+            String msg = MessageFormat.format(_rb.getString(LogFacade.UNABLE_TO_CONFIGURE_JK), propertiesFile, getPort());
             _logger.log(Level.SEVERE, msg, ex);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) {}
-            }
-        }
-
-        Enumeration enumeration = properties.keys();
-        while (enumeration.hasMoreElements()) {
-            String propName = (String) enumeration.nextElement();
-            String value = properties.getProperty(propName);
-            if (value != null) {
-                IntrospectionUtils.setProperty(this, propName, value);
-            }
         }
     }
 
@@ -1146,7 +1134,7 @@ public class PECoyoteConnector extends Connector {
 
     /*
      * Loads and instantiates the ProxyHandler implementation
-     * class with the specified name, and sets the instantiated 
+     * class with the specified name, and sets the instantiated
      * ProxyHandler on this connector.
      *
      * @param className The ProxyHandler implementation class name
@@ -1169,8 +1157,8 @@ public class PECoyoteConnector extends Connector {
                     className);
             } else {
                 setProxyHandler((ProxyHandler) handler);
-            }                
-        } 
+            }
+        }
     }
 
 
@@ -1200,7 +1188,7 @@ public class PECoyoteConnector extends Connector {
             }
             requestProbeProvider.requestStartEvent(
                 appName, hostName,
-                request.getServerName(), request.getServerPort(), 
+                request.getServerName(), request.getServerPort(),
                 request.getContextPath(), request.getServletPath());
         }
     };
@@ -1228,7 +1216,7 @@ public class PECoyoteConnector extends Connector {
             }
             requestProbeProvider.requestEndEvent(
                 appName, hostName,
-                request.getServerName(), request.getServerPort(), 
+                request.getServerName(), request.getServerPort(),
                 request.getContextPath(), request.getServletPath(),
                 statusCode, request.getMethod(), request.getRequestURI());
         }
@@ -1318,7 +1306,7 @@ public class PECoyoteConnector extends Connector {
             } else {
                 setCiphers(jsseCiphers);
             }
-        }            
+        }
     }
 
 
@@ -1382,7 +1370,7 @@ public class PECoyoteConnector extends Connector {
         // Configure Connector with <http-service> properties
         configHttpProperties(listener.findHttpProtocol().getHttp(),
             listener.findTransport(), listener.findHttpProtocol().getSsl());
-    }          
+    }
 
 
     /*
