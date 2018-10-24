@@ -235,18 +235,7 @@ public class GlassFishMain {
             }
             
             System.out.println("Running command: " + line);
-            List<String> tokenList = new ArrayList<>();
-            Matcher matcher = COMMAND_PATTERN.matcher(line);
-            while (matcher.find()) {
-                String token = matcher.group(1);
-                if ((token.startsWith("\"") && token.endsWith("\""))
-                        || token.startsWith("'") && token.endsWith("'")) {
-                    token = token.substring(1, token.length() - 1);
-                }
-                tokenList.add(token);
-            }
-            String[] tokens = tokenList.toArray(new String[0]);
-
+            String[] tokens = parseCommand(line);
             CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
             System.out.println(result.getOutput());
             if(result.getFailureCause() != null) {
@@ -268,6 +257,24 @@ public class GlassFishMain {
                 return null;
             }
             return line;
+        }
+        
+        /**
+         * Parse a command read from a string
+         * @param line
+         */
+        private String[] parseCommand(String line) {
+            List<String> tokenList = new ArrayList<>();
+            Matcher matcher = COMMAND_PATTERN.matcher(line);
+            while (matcher.find()) {
+                String token = matcher.group(1);
+                if ((token.startsWith("\"") && token.endsWith("\""))
+                        || token.startsWith("'") && token.endsWith("'")) {
+                    token = token.substring(1, token.length() - 1);
+                }
+                tokenList.add(token);
+            }
+            return tokenList.toArray(new String[0]);
         }
  
         /**
@@ -298,7 +305,6 @@ public class GlassFishMain {
         
         
         private String getEnvironmentSubstitution(String value){
-             String origValue = value;
             int i = 0;            // Perform Environment variable substitution
             Matcher m2 = p.matcher(value);
 
