@@ -75,8 +75,7 @@ import org.glassfish.api.admin.RestEndpoints;
 })
 public final class CopyConfigCommand extends CopyConfig {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CopyConfigCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CopyConfigCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {

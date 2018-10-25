@@ -88,7 +88,8 @@ import javax.inject.Inject;
         description="Create Instance")
 })
 public class CreateInstanceCommand implements AdminCommand {
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NL = System.lineSeparator();
+    
     @Inject
     private CommandRunner cr;
     @Inject
@@ -226,13 +227,13 @@ public class CreateInstanceCommand implements AdminCommand {
             }
         }
 
-        if (!validateDasOptions(context)) {
+        if (!validateDasOptions()) {
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
             return;
         }
 
         // Then go create the instance filesystem on the node
-        createInstanceFilesystem(context);
+        createInstanceFilesystem();
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
@@ -325,11 +326,7 @@ public class CreateInstanceCommand implements AdminCommand {
             bootHelper.bootstrapInstance();
             bootHelper.close();
             return 0;
-        }
-        catch (IOException ex) {
-            return reportFailure(ex, report);
-        }
-        catch (SecureAdminBootstrapHelper.BootstrapException ex) {
+        } catch (IOException | SecureAdminBootstrapHelper.BootstrapException ex) {
             return reportFailure(ex, report);
         }
     }
@@ -395,7 +392,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
     }
 
-    private void createInstanceFilesystem(AdminCommandContext context) {
+    private void createInstanceFilesystem() {
         ActionReport report = ctx.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
@@ -483,7 +480,7 @@ public class CreateInstanceCommand implements AdminCommand {
      * This ensures we don't step on another domain's node files on a remote
      * instance. See bug GLASSFISH-14985.
      */
-    private boolean validateDasOptions(AdminCommandContext context) {
+    private boolean validateDasOptions() {
         boolean isDasOptionsValid = true;
         if (theNode.isLocal() || (!theNode.isLocal() && theNode.getType().equals("SSH"))) {
             ActionReport report = ctx.getActionReport();
@@ -552,17 +549,7 @@ public class CreateInstanceCommand implements AdminCommand {
         return fullCommand.toString();
     }
 
-    // verbose but very readable...
     private boolean userManagedNodeType() {
-        if(theNode.isLocal())
-            return false;
-
-        if(theNode.getType().equals("SSH"))
-            return false;
-
-        if(theNode.getType().equals("DCOM"))
-            return false;
-
-        return true;
+        return !(theNode.isLocal() || theNode.getType().equals("SSH") || theNode.getType().equals("DCOM"));
     }
 }

@@ -85,7 +85,7 @@ import org.glassfish.api.admin.*;
 })
 public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCommandParameters implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
 
     @Inject
     Domain domain;
@@ -210,6 +210,7 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                 if (thisCluster != null) {
                     ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                        @Override
                         public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
 
                             ServerRef newServerRef = param.createChild(ServerRef.class);
@@ -229,16 +230,12 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                     "Instance {0} registration failed on {1}", instanceName, server.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
-            return;
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("register.instance.failed",
                     "Instance {0} registration failed on {1}", instanceName, server.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-            return;
         }
-
-
 
     }
 
