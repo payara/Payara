@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
 public class GlassFishMain {
 
     private static final Pattern COMMAND_PATTERN = Pattern.compile("([^\"']\\S*|\".*?\"|'.*?')\\s*");
+    private static final String[] COMMAND_TYPE = new String[0];
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
@@ -235,8 +236,11 @@ public class GlassFishMain {
             }
             
             System.out.println("Running command: " + line);
-            String[] tokens = parseCommand(line);
-            CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
+            List<String> tokens = parseCommand(line);
+            CommandResult result = cmdRunner.run(
+                    tokens.get(0),
+                    tokens.subList(1, tokens.size()).toArray(COMMAND_TYPE)
+            );
             System.out.println(result.getOutput());
             if(result.getFailureCause() != null) {
                 result.getFailureCause().printStackTrace();
@@ -263,8 +267,8 @@ public class GlassFishMain {
          * Parse a command read from a string
          * @param line
          */
-        private String[] parseCommand(String line) {
-            List<String> tokenList = new ArrayList<>();
+        private List<String> parseCommand(String line) {
+            List<String> tokens = new ArrayList<>();
             Matcher matcher = COMMAND_PATTERN.matcher(line);
             while (matcher.find()) {
                 String token = matcher.group(1);
@@ -272,9 +276,9 @@ public class GlassFishMain {
                         || token.startsWith("'") && token.endsWith("'")) {
                     token = token.substring(1, token.length() - 1);
                 }
-                tokenList.add(token);
+                tokens.add(token);
             }
-            return tokenList.toArray(new String[0]);
+            return tokens;
         }
  
         /**
