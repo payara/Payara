@@ -189,10 +189,9 @@ public class MetricsService implements EventListener {
     }
 
     private MBeanMetadataConfig getConfig() {
-        
-        InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
-        MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
-        
+        MBeanMetadataConfig config = JAXB.unmarshal(
+                MetricsHelper.class.getResourceAsStream("/metrics.xml"), 
+                MBeanMetadataConfig.class);
         
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
