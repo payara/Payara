@@ -37,9 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers.interceptors;
 
 import java.lang.reflect.Method;
@@ -53,26 +51,25 @@ import java.util.HashSet;
  */
 public class InterceptorUtil {
 
-    private static Map<Class, Set<Class>> compatiblePrimitiveWrapper
-         = new HashMap<Class, Set<Class>>();
+    private static Map<Class, Set<Class>> compatiblePrimitiveWrapper = new HashMap<>();
 
      static {
 
-         Set<Class> smallerPrimitiveWrappers = null;
+         Set<Class> smallerPrimitiveWrappers;
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          compatiblePrimitiveWrapper.put(byte.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Boolean.class);
          compatiblePrimitiveWrapper.put(boolean.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Character.class);
          compatiblePrimitiveWrapper.put(char.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          smallerPrimitiveWrappers.add(Short.class);
          smallerPrimitiveWrappers.add(Integer.class);
@@ -80,27 +77,27 @@ public class InterceptorUtil {
          smallerPrimitiveWrappers.add(Double.class);
          compatiblePrimitiveWrapper.put(double.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          smallerPrimitiveWrappers.add(Short.class);
          smallerPrimitiveWrappers.add(Integer.class);
          smallerPrimitiveWrappers.add(Float.class);
          compatiblePrimitiveWrapper.put(float.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          smallerPrimitiveWrappers.add(Short.class);
          smallerPrimitiveWrappers.add(Integer.class);
          compatiblePrimitiveWrapper.put(int.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          smallerPrimitiveWrappers.add(Short.class);
          smallerPrimitiveWrappers.add(Integer.class);
          smallerPrimitiveWrappers.add(Long.class);
          compatiblePrimitiveWrapper.put(long.class, smallerPrimitiveWrappers);
 
-         smallerPrimitiveWrappers = new HashSet<Class>();
+         smallerPrimitiveWrappers = new HashSet<>();
          smallerPrimitiveWrappers.add(Byte.class);
          smallerPrimitiveWrappers.add(Short.class);
          compatiblePrimitiveWrapper.put(short.class, smallerPrimitiveWrappers);
@@ -120,7 +117,7 @@ public class InterceptorUtil {
                 throw new IllegalArgumentException("Wrong number of parameters for "
                         + " method: " + method);
             }
-            if (paramTypes.length != params.length) {
+            if (paramTypes.length != (params != null ? params.length : 0)) {
                 throw new IllegalArgumentException("Wrong number of parameters for "
                         + " method: " + method);
             }

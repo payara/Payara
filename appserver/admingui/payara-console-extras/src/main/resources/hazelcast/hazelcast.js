@@ -46,32 +46,49 @@
             var multicastPortComponent = document.getElementById("#{pageSession.multicastPortTextId}");
             var multicastGroupComponent = document.getElementById("#{pageSession.multicastGroupTextId}");
             var tcpipMembersComponent = document.getElementById("#{pageSession.tcpipMembersTextId}");
+            var dnsMembersComponent = document.getElementById("#{pageSession.dnsMembersTextId}");
             
             var multicastPortProperty = document.getElementById("propertyForm:propertySheet:discovery:multicastPortProp");
             var multicastGroupProperty = document.getElementById("propertyForm:propertySheet:discovery:multicastGroupProp");
             var tcpipMembersProperty = document.getElementById("propertyForm:propertySheet:discovery:tcpipMembersProp");
+            var dnsMembersProperty = document.getElementById("propertyForm:propertySheet:discovery:dnsMembersProp");
           
             if (selected === "tcpip") {
                 multicastPortProperty.style.display = "none";
                 multicastGroupProperty.style.display = "none";
+                dnsMembersProperty.style.display = "none";
                 tcpipMembersProperty.style.display = "table-row";
                 multicastPortComponent.value = "";
                 multicastGroupComponent.value = "";
+                dnsMembersComponent.value = "";
                 tcpipMembersComponent.value = "#{pageSession.valueMap['tcpipMembers']}";
             } else if (selected === "domain") {
                 multicastPortProperty.style.display = "none";
                 multicastGroupProperty.style.display = "none";
                 tcpipMembersProperty.style.display = "none";
+                dnsMembersProperty.style.display = "none";
                 multicastPortComponent.value = "";
                 multicastGroupComponent.value = "";
-                tcpipMembersComponent.value = "";          
-            } else {               
+                tcpipMembersComponent.value = "";
+                dnsMembersComponent.value = "";
+            } else if (selected === "dns") {
+                multicastPortProperty.style.display = "none";
+                multicastGroupProperty.style.display = "none";
+                tcpipMembersProperty.style.display = "none";
+                dnsMembersProperty.style.display = "table-row";
+                multicastPortComponent.value = "";
+                multicastGroupComponent.value = "";
+                tcpipMembersComponent.value = "";
+                dnsMembersComponent.value = "#{pageSession.valueMap['dnsMembers']}";
+            } else {
                 multicastPortProperty.style.display = "table-row";
                 multicastGroupProperty.style.display = "table-row";
                 tcpipMembersProperty.style.display = "none";
+                dnsMembersProperty.style.display = "none";
                 multicastPortComponent.value = "#{pageSession.valueMap['multicastPort']}";
                 multicastGroupComponent.value = "#{pageSession.valueMap['multicastGroup']}";
                 tcpipMembersComponent.value = "";
+                dnsMembersComponent.value = "";
             }
         }
     </script>

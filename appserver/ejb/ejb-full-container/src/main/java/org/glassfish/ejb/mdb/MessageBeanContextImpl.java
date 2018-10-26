@@ -37,23 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.mdb;
 
 import javax.ejb.*;
-
 import javax.transaction.UserTransaction;
-import java.util.logging.*;
-import com.sun.logging.*;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.ejb.containers.EJBTimerService;
-import com.sun.ejb.containers.EJBTimerServiceWrapper;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 /**
@@ -165,11 +160,10 @@ public final class MessageBeanContextImpl
             throw new java.lang.IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
-        return new EJBTimerServiceWrapper(timerService, this);
+        return EJBTimerService.getEJBTimerServiceWrapper(this);
     }
 
-    public void checkTimerServiceMethodAccess() 
+    public void checkTimerServiceMethodAccess()
         throws java.lang.IllegalStateException {
 
         // A message-driven ejb's state transitions past UNINITIALIZED

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * SqlQueryTable.java
@@ -62,7 +63,7 @@ public class QueryTable extends Object {
     //
     public ArrayList nextTable;
 
-    public StringBuffer onClause;
+    public StringBuilder onClause;
 
     public QueryTable prevTable;
 
@@ -73,7 +74,7 @@ public class QueryTable extends Object {
 	public QueryTable(TableDesc tableDesc) {
 		this.tableDesc = tableDesc;
 	}
-	
+
 	public TableDesc getTableDesc() {
 		return tableDesc;
 	}

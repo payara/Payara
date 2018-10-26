@@ -74,12 +74,14 @@ import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
     private transient ComponentEnvManager compEnvMgr;
+    private transient ApplicationRegistry applicationRegistry;
     private transient Applications applications;
     // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
@@ -99,12 +101,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
                                     ComponentEnvManager compEnvMgr,
+                                    ApplicationRegistry applicationRegistry,
                                     Applications applications,
                                     JavaEETransactionManager transactionManager,
                                     CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.deployment = deployment;
         this.compEnvMgr = compEnvMgr;
+        this.applicationRegistry = applicationRegistry;
         this.applications = applications;
         this.transactionManager = transactionManager;
         
@@ -332,12 +336,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 // and its enabled status has not been written to the domain.xml yet
                 // this can happen for example with a Startup EJB submitting something
                 // it its startup method. Reference Payara GitHub issue 204
-                if(applications.getApplications().stream().filter(it -> it.getName().startsWith(appId))
-                        .noneMatch(versionedApp -> deployment.isAppEnabled(versionedApp))) {
-                    // if any version application is enabled, don't print this message
+                if(applicationRegistry.get(appId) != null){
                     logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
+                    result = true;
                 }
-                result = true;
             }
         }
         return result;

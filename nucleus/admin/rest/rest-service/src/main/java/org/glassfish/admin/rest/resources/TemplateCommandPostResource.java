@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources;
 
@@ -192,12 +192,9 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         return data;
     }
 
-    private static ParameterMap createDataBasedOnForm(FormDataMultiPart formData) {
+    private static ParameterMap createDataBasedOnForm(FormDataMultiPart paramForm) {
         ParameterMap data = new ParameterMap();
-        if (formData == null) {
-            formData = new FormDataMultiPart();
-        }
-        try {
+        try (FormDataMultiPart formData = assureExistence(paramForm)) {
             /* data passed to the generic command running
              *
              * */
@@ -235,12 +232,15 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
             }
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (formData != null) {
-                formData.cleanup();
-            }
         }
         return data;
 
+    }
+
+    private static FormDataMultiPart assureExistence(FormDataMultiPart formData) {
+        if (formData == null) {
+            return new FormDataMultiPart();
+        }
+        return formData;
     }
 }

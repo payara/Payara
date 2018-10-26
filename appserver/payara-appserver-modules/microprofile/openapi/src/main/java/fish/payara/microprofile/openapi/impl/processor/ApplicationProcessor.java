@@ -125,6 +125,8 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
@@ -427,13 +429,27 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        SchemaImpl schema = new SchemaImpl();
+        String defaultValue = getDefaultValueIfPresent(element);
+
         if (element instanceof java.lang.reflect.Parameter) {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(java.lang.reflect.Parameter.class.cast(element).getType())));
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
         } else {
-            newParameter.setSchema(new SchemaImpl().type(ModelUtils
-                    .getSchemaType(Field.class.cast(element).getType())));
+            Field field = Field.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(field.getType()));
         }
+
+        if (schema.getType() == SchemaType.ARRAY) {
+            schema.setItems(getArraySchema(element));
+            if (defaultValue != null) {
+                schema.getItems().setDefaultValue(defaultValue);
+            }
+        } else if (defaultValue != null) {
+            schema.setDefaultValue(defaultValue);
+        }
+
+        newParameter.setSchema(schema);
 
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
@@ -458,7 +474,37 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
         }
     }
+    
+    private SchemaImpl getArraySchema(AnnotatedElement element) {
+        SchemaImpl arraySchema = new SchemaImpl();
+        ParameterizedType parameterizedType;
 
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        } else {
+            Field field = Field.class.cast(element);
+            parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+        }
+
+        arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+        return arraySchema;
+    }
+    
+    private String getDefaultValueIfPresent(AnnotatedElement element) {
+        Annotation[] annotations = element.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if ("javax.ws.rs.DefaultValue".equals(annotation.annotationType().getName())) {
+                try {
+                    return (String) annotation.annotationType().getMethod("value").invoke(annotation);
+                } catch (Exception ex) {
+                    LOGGER.log(WARNING, "Couldn't get the default value", ex);
+                }
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context) {
         OpenAPIImpl.merge(definition, context.getApi(), true);

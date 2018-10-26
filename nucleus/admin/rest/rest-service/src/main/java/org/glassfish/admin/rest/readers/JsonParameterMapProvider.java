@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -78,18 +78,15 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
     public ParameterMap readFrom(Class<ParameterMap> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers,
             InputStream in) throws IOException {
-
-
         JsonObject obj;
-        try {
-            JsonParser parser = Json.createParser(in);
+        try (JsonParser parser = Json.createParser(in)) {
             if (parser.hasNext()){
                 parser.next();
                 obj = parser.getObject();
             } else {
                 obj = JsonValue.EMPTY_JSON_OBJECT;
             }
-            
+
             ParameterMap map = new ParameterMap();
             for (String k : obj.keySet()) {
                 Object value = obj.get(k);
