@@ -46,7 +46,6 @@ import java.net.*;
 import java.security.SecureRandom;
 import java.util.*;
 import java.io.*;
-import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +57,7 @@ public class NetUtils {
     private final static Logger logger = CULoggerInfo.getLogger();
     private static Boolean badHostErrorWasReportedAlready = Boolean.FALSE;
     private final static Object SYNC_OBJECT = new Object();
+
     private static void printd(String string) {
         if (asDebug) {
             System.out.println(string);
@@ -66,7 +66,7 @@ public class NetUtils {
 
     public enum PortAvailability {
         illegalNumber, noPermission, inUse, unknown, OK
-    };
+    }
 
     private NetUtils() {
     }
@@ -429,8 +429,8 @@ public class NetUtils {
             return false;
         }
 
-        for (int i = 0; i < myIPs.length; i++) {
-            if (ip.equals(myIPs[i])) {
+        for (String myIP : myIPs) {
+            if (ip.equals(myIP)) {
                 return true;
             }
         }

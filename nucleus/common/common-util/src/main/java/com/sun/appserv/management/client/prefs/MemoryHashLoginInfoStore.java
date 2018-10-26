@@ -41,27 +41,14 @@
 package com.sun.appserv.management.client.prefs;
 
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.util.Utility;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.glassfish.security.common.FileProtectionUtility;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /** A {@link LoginInfoStore} that reads the information from the default file ".gfclient/pass"
  * and stores it as a map in the memory. It is not guaranteed that the concurrent
@@ -71,7 +58,7 @@ import com.sun.enterprise.security.store.AsadminSecurityUtil;
  */
 public class MemoryHashLoginInfoStore implements LoginInfoStore {
 
-    public static final String DEFAULT_STORE_NAME = "pass";
+    private static final String DEFAULT_STORE_NAME = "pass";
 
     private static final Base64.Encoder encoder = Base64.getMimeEncoder();
     private static final Base64.Decoder decoder = Base64.getMimeDecoder();
@@ -84,36 +71,23 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
      * This does not pose any harm or surprises.
      */
     public MemoryHashLoginInfoStore() throws StoreException {
-        BufferedReader br = null;
-        BufferedWriter bw = null;
         try {
             final File dir = AsadminSecurityUtil.getDefaultClientDir();
             store = new File(dir, DEFAULT_STORE_NAME);
 
             if (store.createNewFile()) {
-                bw = new BufferedWriter(new FileWriter(store));
-                FileMapTransform.writePreamble(bw);
-                state = new HashMap<HostPortKey, LoginInfo> ();
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(store))) {
+                    FileMapTransform.writePreamble(bw);
+                }
+                state = new HashMap<> ();
             }
             else {
-                br = new BufferedReader(new FileReader(store));
-                state = FileMapTransform.readAll(br);
+                try (BufferedReader br = new BufferedReader(new FileReader(store))) {
+                    state = FileMapTransform.readAll(br);
+                }
             }
-        }
-        catch(final Exception e) {
+        } catch(final Exception e) {
             throw new StoreException(e);
-        }
-        finally {
-            try {
-                if (br != null)
-                    br.close();
-            }
-            catch(final Exception ee) {} //ignore
-            try {
-                if (bw != null)
-                    bw.close();
-            }
-            catch(final Exception ee) {} //ignore
         }
         protect();
     }
@@ -135,7 +109,6 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         final HostPortKey key = new HostPortKey(host, port);
         final LoginInfo old   = state.get(key);
         state.put(key, login);
-        //System.out.println("committing: " + login);
         commit(key, old);
         protect();
     }
@@ -150,39 +123,35 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
     @Override
     public LoginInfo read(String host, int port) {
         final HostPortKey key = new HostPortKey(host, port);
-        final LoginInfo login = state.get(key); //no need to access disk
-        return ( login );
+        return state.get(key);
     }
 
     @Override
     public boolean exists(String host, int port) {
         final HostPortKey key = new HostPortKey(host, port);
-        final boolean exists  = state.containsKey(key); //no need to access disk
-        return ( exists );
+        return state.containsKey(key);
     }
 
     @Override
     public int size() {
-        return ( state.size() ); // no need to access disk
+        return state.size(); // no need to access disk
     }
 
     @Override
     public Collection<LoginInfo> list() {
-        final Collection<LoginInfo> logins = state.values(); // no need to access disk
-        return (Collections.unmodifiableCollection(logins) );
+        return (Collections.unmodifiableCollection(state.values())); // no need to access disk
     }
 
     @Override
     public String getName() {
-        return ( store.getAbsoluteFile().getAbsolutePath() );
+        return store.getAbsoluteFile().getAbsolutePath();
     }
 
     ///// PRIVATE METHODS /////
     private void commit(final HostPortKey key, LoginInfo old) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(store))) {
             FileMapTransform.writeAll(state.values(), writer);
-        }
-        catch(final Exception e) {
+        } catch(final Exception e) {
             state.put(key, old); //try to roll back, first memory
             if (old != null) {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(store))) { // then disk, if the old value is not null
@@ -220,7 +189,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         private FileMapTransform() {} //disallow
         static Map<HostPortKey, LoginInfo> readAll(final BufferedReader reader) throws IOException, URISyntaxException {
             String line;
-            final Map<HostPortKey, LoginInfo> map = new HashMap<HostPortKey, LoginInfo> ();
+            final Map<HostPortKey, LoginInfo> map = new HashMap<> ();
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#"))
                     continue; //ignore comments
@@ -228,7 +197,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
                 if (si == -1)
                     throw new IOException("Error: invalid record: " + line);
                 final URI uri         = new URI(line.substring(0, si));
-                final String encp     = line.substring(si+1, line.length());
+                final String encp     = line.substring(si+1);
                 final HostPortKey key = uri2Key(uri);
                 final LoginInfo value = line2LoginInfo(uri, encp);
                 map.put(key, value);
@@ -238,12 +207,9 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         static void writeAll(final Collection<LoginInfo> logins, final BufferedWriter writer) throws IOException, URISyntaxException {
             writePreamble(writer);
             //write out sorted, because not more than 100 logins are expected to be there
-            final List<LoginInfo> list = new ArrayList<LoginInfo>(logins);
+            final List<LoginInfo> list = new ArrayList<>(logins);
             Collections.sort(list);
-            final Iterator<LoginInfo> it = list.iterator();
-            while (it.hasNext()) {
-                final LoginInfo login = it.next();
-                //System.out.println("wrote: " + login);
+            for (LoginInfo login : list) {
                 writeOne(login, writer);
             }
         }
@@ -272,9 +238,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final URI uri         = new URI(scheme, user, host, port, null, null, null);
             final char[] password = login.getPassword();
             final String encp     = encoder.encodeToString(Utility.convertCharArrayToByteArray(password,null));
-            final String line     = uri.toString() + ' ' + encp;
-
-            return line;
+            return uri.toString() + ' ' + encp;
         }
 
         static void writePreamble(final BufferedWriter bw) throws IOException {
@@ -302,7 +266,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         }
         @Override
         public int hashCode() {
-            return ( (int) (53 * host.hashCode() + 31 * port) );
+            return 53 * host.hashCode() + 31 * port;
         }
     }
 }
