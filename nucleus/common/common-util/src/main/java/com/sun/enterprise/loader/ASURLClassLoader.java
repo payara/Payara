@@ -57,6 +57,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -119,7 +120,7 @@ public class ASURLClassLoader
     private volatile String doneSnapshot;
 
     /** streams opened by this loader */
-    private final List<SentinelInputStream> streams = new ArrayList<>();
+    private final List<SentinelInputStream> streams = new CopyOnWriteArrayList<>();
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
