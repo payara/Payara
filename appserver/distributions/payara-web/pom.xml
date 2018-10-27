@@ -87,12 +87,7 @@
                             <goal>exec</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>create-jdk11-domain</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
+
                 </executions>
             </plugin>
         </plugins>
