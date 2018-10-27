@@ -132,6 +132,10 @@ public class InstalledLibrariesResolver {
         initializeInstalledLibRegistryForApplibs(libDir);
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private static void initializeInstalledLibRegistryForExtDirs() {
         String ext_dirStr = System.getProperty("java.ext.dirs");
         // GLASSFISH-21317 bug fix.Null checking as JDK 9 will not have system
@@ -211,10 +215,12 @@ public class InstalledLibrariesResolver {
      * Adds all the jar files in all of the ext dirs into a single string
      * in classpath format.  Returns the empty string if there are no
      * jar files in any ext dirs.
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
      */
+    @Deprecated
     public static String getExtDirFilesAsClasspath() {
        
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
 
         for(Iterator iter = extDirJars.iterator(); iter.hasNext();) {
             String next = (String) iter.next();
