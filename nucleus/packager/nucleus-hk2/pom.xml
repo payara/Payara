@@ -139,7 +139,7 @@
             <artifactId>javassist</artifactId>
             <version>${javassist.version}</version>
         </dependency>
-       
+        
    </dependencies>
 </project>
 
