@@ -82,30 +82,6 @@ public class Archive {
         synchronized (Archive.class) {
             if (allOptPkgsInstalledInJRE == null) {//double if check to avoid race condition
                 final ArrayList<Archive> allPkgs = new ArrayList<Archive>();
-                List ext_dirs = listAllExtDirs();
-                for (Iterator iter = ext_dirs.iterator(); iter.hasNext();) {
-                    File ext_dir = new File((String) iter.next());
-                    ext_dir.listFiles(new FileFilter() {
-                        public boolean accept(File f) {
-                            if (!f.isDirectory()) {
-                                try (JarFile jf = new JarFile(f)) {
-                                    allPkgs.add(new Archive(jf));
-                                    logger.logp(Level.FINE, myClassName,
-                                            "getAllOptPkgsInstalledInJRE", // NOI18N
-                                            "Found an installed opt pkg " + // NOI18N
-                                            f.getAbsolutePath());
-                                    return true;
-                                } catch (Exception e) {
-                                    logger.logp(Level.INFO, myClassName,
-                                            "getAllOptPkgsInstalledInJRE", // NOI18N
-                                            thisClassName + ".exception1", new Object[]{f.toString()});
-                                    logger.log(Level.INFO, "", e);
-                                }
-                            }
-                            return false;
-                        }//accept()
-                    });
-                }
                 // Store in a tmp and update allOptPkgsInstalledInJre in a single instruction.
                 final Archive[] tmp = new Archive[allPkgs.size()];
                 allPkgs.toArray(tmp);
@@ -113,19 +89,6 @@ public class Archive {
             }//if null
         }//synchronized
         return allOptPkgsInstalledInJRE;
-    }
-
-    private static List listAllExtDirs() {
-        String ext_dirStr = new String(System.getProperty("java.ext.dirs"));
-        logger.fine("Extension Dir Path is " + ext_dirStr); // NOI18N
-        ArrayList<String> ext_dirs = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(ext_dirStr,
-                File.pathSeparator);
-        while (st.hasMoreTokens()) {
-            String next = st.nextToken();
-            ext_dirs.add(next);
-        }
-        return ext_dirs;
     }
 
     /**
