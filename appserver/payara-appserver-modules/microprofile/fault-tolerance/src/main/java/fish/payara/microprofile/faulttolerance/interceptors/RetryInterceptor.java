@@ -47,6 +47,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,35 +76,35 @@ import org.glassfish.internal.api.Globals;
 @Retry
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 5)
 public class RetryInterceptor {
-    
+
     private static final Logger logger = Logger.getLogger(RetryInterceptor.class.getName());
-    
+
     @Inject
     private BeanManager beanManager;
-    
+
     @AroundInvoke
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
-        
-        FaultToleranceService faultToleranceService = 
+
+        FaultToleranceService faultToleranceService =
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
-        
+
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext,
                 Retry.class);
-        
+
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException iae) {
             logger.log(Level.INFO, "No config could be found", iae);
         }
-        
+
         try {
             String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-            
+
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
@@ -111,20 +112,20 @@ public class RetryInterceptor {
                             config, Retry.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 // Increment the invocations metric
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                faultToleranceService.incrementCounterMetric(metricRegistry,
                         "ft." + fullMethodSignature + ".invocations.total", appName, config);
-                
+
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 proceededInvocationContext = retry(invocationContext);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal
-                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without retry.", 
+                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without retry.",
                         faultToleranceService.getApplicationName(invocationManager, invocationContext));
                 proceededInvocationContext = invocationContext.proceed();
             }
         } catch (Exception ex) {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
-            
+
             // Only fall back if the annotation hasn't been disabled
             if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
                     config, Fallback.class, invocationContext)
@@ -134,86 +135,92 @@ public class RetryInterceptor {
                 proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
             } else {
                 // Increment the failure counter metric
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".invocations.failed.total", 
-                        faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                faultToleranceService.incrementCounterMetric(metricRegistry,
+                        "ft." + fullMethodSignature + ".invocations.failed.total",
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext),
                         config);
-                
+
                 throw ex;
             }
         }
-        
+
         return proceededInvocationContext;
     }
-    
+
     /**
      * Proceeds the given invocation context with Retry semantics.
      * @param invocationContext The invocation context to proceed
      * @return The proceeded invocation context
-     * @throws Exception If the invocation throws an exception that shouldn't be retried, or if all retry attempts are 
+     * @throws Exception If the invocation throws an exception that shouldn't be retried, or if all retry attempts are
      * expended
      */
     private Object retry(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
-        
-        FaultToleranceService faultToleranceService = 
+
+        FaultToleranceService faultToleranceService =
                 Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
         InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
                 .getService(InvocationManager.class);
-        
+
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
+        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext,
                 Retry.class);
         String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-        
+
         Config config = null;
         try {
             config = ConfigProvider.getConfig();
         } catch (IllegalArgumentException iae) {
             logger.log(Level.INFO, "No config could be found", iae);
         }
-        
+
         try {
             proceededInvocationContext = invocationContext.proceed();
-            faultToleranceService.incrementCounterMetric(metricRegistry, 
+            faultToleranceService.incrementCounterMetric(metricRegistry,
                     "ft." + fullMethodSignature + ".retry.callsSucceededNotRetried.total", appName, config);
         } catch (Exception ex) {
             Class<? extends Throwable>[] retryOn = retry.retryOn();
             try {
-                String retryOnString = ((String) FaultToleranceCdiUtils.getOverrideValue(
-                        config, Retry.class, "retryOn", invocationContext, String.class).get());
-                
-                List<Class> classList = new ArrayList<>();
-            
-                // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
-                for (String className : retryOnString.replaceAll("[\\{\\[ \\]\\}]", "")
-                        .replaceAll("\\.class", "").split(",")) {
-                    classList.add(Class.forName(className));
+                Optional optionalRetryOn = FaultToleranceCdiUtils.getOverrideValue(
+                        config, Retry.class, "retryOn", invocationContext, String.class);
+                if (optionalRetryOn.isPresent()) {
+                    String retryOnString = ((String) optionalRetryOn.get());
+
+                    List<Class> classList = new ArrayList<>();
+
+                    // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
+                    for (String className : retryOnString.replaceAll("[\\{\\[ \\]\\}]", "")
+                            .replaceAll("\\.class", "").split(",")) {
+                        classList.add(Class.forName(className));
+                    }
+
+                    retryOn = classList.toArray(retryOn);
                 }
-                
-                retryOn = classList.toArray(retryOn);
             } catch (NoSuchElementException nsee) {
                 logger.log(Level.FINER, "Could not find element in config", nsee);
             } catch (ClassNotFoundException cnfe) {
                 logger.log(Level.INFO, "Could not find class from retryOn config, defaulting to annotation. "
                         + "Make sure you give the full canonical class name.", cnfe);
             }
-            
+
             Class<? extends Throwable>[] abortOn = retry.abortOn();
             try {
-                String abortOnString = (String) FaultToleranceCdiUtils.getOverrideValue(
-                        config, Retry.class, "abortOn", invocationContext, String.class).get();
+                Optional optionalAbortOn = FaultToleranceCdiUtils.getOverrideValue(
+                        config, Retry.class, "abortOn", invocationContext, String.class);
+                if (optionalAbortOn.isPresent()) {
+                    String abortOnString = (String) optionalAbortOn.get();
 
-                List<Class> classList = new ArrayList<>();
+                    List<Class> classList = new ArrayList<>();
 
-                // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
-                for (String className : abortOnString.replaceAll("[\\{\\[ \\]\\}]", "")
-                        .replaceAll("\\.class", "").split(",")) {
-                    classList.add(Class.forName(className));
+                    // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
+                    for (String className : abortOnString.replaceAll("[\\{\\[ \\]\\}]", "")
+                            .replaceAll("\\.class", "").split(",")) {
+                        classList.add(Class.forName(className));
+                    }
+
+                    abortOn = classList.toArray(abortOn);
                 }
-                
-                abortOn = classList.toArray(abortOn);
             } catch (NoSuchElementException nsee) {
                 logger.log(Level.FINER, "Could not find element in config", nsee);
             } catch (ClassNotFoundException cnfe) {
@@ -225,7 +232,7 @@ public class RetryInterceptor {
                 logger.log(Level.FINE, "Exception is contained in retryOn or abortOn, not retrying.", ex);
                 throw ex;
             }
-            
+
             int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxRetries", invocationContext, Integer.class)
                 .orElse(retry.maxRetries());
@@ -250,29 +257,29 @@ public class RetryInterceptor {
             ChronoUnit jitterDelayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitterDelayUnit", invocationContext, String.class)
                 .orElse(retry.jitterDelayUnit());
-            
+
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
             long jitterMillis = Duration.of(jitter, jitterDelayUnit).toMillis();
             long timeoutTime = System.currentTimeMillis() + Duration.of(maxDuration, durationUnit).toMillis();
-            
+
             Exception retryException = ex;
-            
+
             faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("retryMethod"), invocationManager,
                     invocationContext);
-            
+
             boolean succeeded = false;
-            
+
             try {
                 if (maxRetries == -1 && maxDuration > 0) {
                     logger.log(Level.FINER, "Retrying until maxDuration is breached.");
 
                     while (System.currentTimeMillis() < timeoutTime) {
-                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        faultToleranceService.incrementCounterMetric(metricRegistry,
                                 "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
                             succeeded = true;
-                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            faultToleranceService.incrementCounterMetric(metricRegistry,
                                     "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
                             break;
                         } catch (Exception caughtException) {
@@ -282,7 +289,7 @@ public class RetryInterceptor {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"),
                                         invocationManager, invocationContext);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
@@ -295,11 +302,11 @@ public class RetryInterceptor {
                 } else if (maxRetries == -1 && maxDuration == 0) {
                     logger.log(Level.INFO, "Retrying potentially forever!");
                     while (true) {
-                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        faultToleranceService.incrementCounterMetric(metricRegistry,
                                 "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
-                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            faultToleranceService.incrementCounterMetric(metricRegistry,
                                     "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
                             succeeded = true;
                             break;
@@ -310,7 +317,7 @@ public class RetryInterceptor {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"),
                                         invocationManager, invocationContext);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
@@ -321,15 +328,15 @@ public class RetryInterceptor {
                         }
                     }
                 } else if (maxRetries != -1 && maxDuration > 0) {
-                    logger.log(Level.INFO, 
-                            "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times", 
+                    logger.log(Level.INFO,
+                            "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times",
                             new Object[]{Duration.of(maxDuration, durationUnit).toMillis(), maxRetries});
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
-                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        faultToleranceService.incrementCounterMetric(metricRegistry,
                                 "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
-                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            faultToleranceService.incrementCounterMetric(metricRegistry,
                                     "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
                             succeeded = true;
                             break;
@@ -340,7 +347,7 @@ public class RetryInterceptor {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"),
                                         invocationManager, invocationContext);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
@@ -355,11 +362,11 @@ public class RetryInterceptor {
                 } else {
                     logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
                     while (maxRetries > 0) {
-                        faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        faultToleranceService.incrementCounterMetric(metricRegistry,
                                 "ft." + fullMethodSignature + ".retry.retries.total", appName, config);
                         try {
                             proceededInvocationContext = invocationContext.proceed();
-                            faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            faultToleranceService.incrementCounterMetric(metricRegistry,
                                     "ft." + fullMethodSignature + ".retry.callsSucceededRetried.total", appName, config);
                             succeeded = true;
                             break;
@@ -370,7 +377,7 @@ public class RetryInterceptor {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"), 
+                                faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("delayRetry"),
                                         invocationManager, invocationContext);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
@@ -388,15 +395,15 @@ public class RetryInterceptor {
             }
 
             if (!succeeded) {
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                faultToleranceService.incrementCounterMetric(metricRegistry,
                         "ft." + fullMethodSignature + ".retry.callsFailed.total", appName, config);
                 throw retryException;
             }
         }
-        
+
         return proceededInvocationContext;
     }
-    
+
     /**
      * Helper method that determines whether or not a retry should be attempted for the given exception.
      * @param retryOn The exceptions to retry on.
@@ -404,15 +411,15 @@ public class RetryInterceptor {
      * @param ex The caught exception
      * @return True if retry should be attempted.
      */
-    private boolean shouldRetry(Class<? extends Throwable>[] retryOn, Class<? extends Throwable>[] abortOn, 
+    private boolean shouldRetry(Class<? extends Throwable>[] retryOn, Class<? extends Throwable>[] abortOn,
             Exception ex) {
         boolean shouldRetry = false;
-            
+
         // If the first value in the array is just "Exception", just set retry to true, otherwise check the exceptions
         if (retryOn[0] != Exception.class) {
             for (Class<? extends Throwable> throwable : retryOn) {
                 if (ex.getClass() == throwable) {
-                    logger.log(Level.FINER, "Exception {0} matches a Throwable in retryOn", 
+                    logger.log(Level.FINER, "Exception {0} matches a Throwable in retryOn",
                             ex.getClass().getSimpleName());
                     shouldRetry = true;
                     break;
@@ -421,8 +428,8 @@ public class RetryInterceptor {
                         // If we there isn't a direct match, check if the exception is a subclass
                         ex.getClass().asSubclass(throwable);
                         shouldRetry = true;
-                        
-                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in retryOn: {1}", 
+
+                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in retryOn: {1}",
                                 new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
                         break;
                     } catch (ClassCastException cce) {
@@ -438,7 +445,7 @@ public class RetryInterceptor {
         if (shouldRetry && abortOn != null) {
             for (Class<? extends Throwable> throwable : abortOn) {
                 if (ex.getClass() == throwable) {
-                    logger.log(Level.FINER, "Exception {0} matches a Throwable in abortOn", 
+                    logger.log(Level.FINER, "Exception {0} matches a Throwable in abortOn",
                             ex.getClass().getSimpleName());
                     shouldRetry = false;
                     break;
@@ -447,8 +454,8 @@ public class RetryInterceptor {
                         // If we there isn't a direct match, check if the exception is a subclass
                         ex.getClass().asSubclass(throwable);
                         shouldRetry = false;
-                        
-                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in abortOn: {1}", 
+
+                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in abortOn: {1}",
                                 new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
                         break;
                     } catch (ClassCastException cce) {
