@@ -1231,7 +1231,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         synchronized (instancePool) {
             countAllocated.decrementAndGet();
             instancePool.push(servlet);
-            instancePool.notify();
+            instancePool.notifyAll();
         }
     }
 

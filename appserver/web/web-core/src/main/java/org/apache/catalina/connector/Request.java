@@ -55,74 +55,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2018] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
-import static java.lang.Integer.parseInt;
-
-import java.io.BufferedReader;
-import java.io.CharConversionException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.net.UnknownHostException;
-import java.nio.charset.UnsupportedCharsetException;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.security.auth.Subject;
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestAttributeEvent;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletResponse;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
-import javax.servlet.http.PushBuilder;
-import javax.servlet.http.WebConnection;
-import javax.servlet.http.MappingMatch;
-import javax.servlet.http.HttpServletMapping;
-
 import com.sun.appserv.ProxyHandler;
-import org.apache.catalina.Context;
-import org.apache.catalina.LogFacade;
-import org.apache.catalina.Globals;
-import org.apache.catalina.Host;
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.HttpResponse;
-import org.apache.catalina.Manager;
-import org.apache.catalina.Pipeline;
-import org.apache.catalina.Realm;
-import org.apache.catalina.Session;
-import org.apache.catalina.Wrapper;
+import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
-import org.apache.catalina.core.ApplicationPushBuilder;
 import org.apache.catalina.authenticator.SingleSignOn;
+import org.apache.catalina.core.ApplicationPushBuilder;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardWrapper;
@@ -133,7 +74,6 @@ import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ParameterMap;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringParser;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.CompletionHandler;
 import org.glassfish.grizzly.EmptyCompletionHandler;
@@ -141,16 +81,31 @@ import org.glassfish.grizzly.http.server.Response.SuspendedContextImpl;
 import org.glassfish.grizzly.http.server.TimeoutHandler;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.server.util.RequestUtils;
-import org.glassfish.grizzly.http.util.B2CConverter;
-import org.glassfish.grizzly.http.util.ByteChunk;
-import org.glassfish.grizzly.http.util.CharChunk;
-import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.grizzly.http.util.FastHttpDateFormat;
-import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.grizzly.http.util.*;
 import org.glassfish.grizzly.http2.Http2Stream;
 import org.glassfish.grizzly.memory.Buffers;
 import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.web.valve.GlassFishValve;
+
+import javax.security.auth.Subject;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.net.UnknownHostException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.security.*;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.lang.Integer.parseInt;
 
 /**
  * Wrapper object for the Coyote request.
@@ -514,9 +469,10 @@ public class Request
     public Request() {
         // START OF SJSAS 6231069
         formats = (SimpleDateFormat[]) staticDateFormats.get();
-        formats[0].setTimeZone(TimeZone.getTimeZone("GMT"));
-        formats[1].setTimeZone(TimeZone.getTimeZone("GMT"));
-        formats[2].setTimeZone(TimeZone.getTimeZone("GMT"));
+        TimeZone gmtTZ = TimeZone.getTimeZone("GMT");
+        formats[0].setTimeZone(gmtTZ);
+        formats[1].setTimeZone(gmtTZ);
+        formats[2].setTimeZone(gmtTZ);
         // END OF SJSAS 6231069
     }
 
@@ -1187,17 +1143,18 @@ public class Request
     @Override
     public Object getAttribute(String name) {
 
-        if (name.equals(Globals.DISPATCHER_TYPE_ATTR)) {
-            return dispatcherTypeAttr == null
-                    ? DispatcherType.REQUEST
-                    : dispatcherTypeAttr;
-        } else if (name.equals(Globals.DISPATCHER_REQUEST_PATH_ATTR)) {
-            return requestDispatcherPath == null
-                    ? getRequestPathMB().toString()
-                    : requestDispatcherPath.toString();
-        } else if (name.equals(Globals.CONSTRAINT_URI)) {
-            return getRequestPathMB() != null
-                    ? getRequestPathMB().toString() : null;
+        switch (name) {
+            case Globals.DISPATCHER_TYPE_ATTR:
+                return dispatcherTypeAttr == null
+                        ? DispatcherType.REQUEST
+                        : dispatcherTypeAttr;
+            case Globals.DISPATCHER_REQUEST_PATH_ATTR:
+                return requestDispatcherPath == null
+                        ? getRequestPathMB().toString()
+                        : requestDispatcherPath.toString();
+            case Globals.CONSTRAINT_URI:
+                return getRequestPathMB() != null
+                        ? getRequestPathMB().toString() : null;
         }
 
         Object attr = attributes.get(name);
@@ -1246,7 +1203,7 @@ public class Request
         if (isSecure()) {
             populateSSLAttributes();
         }
-        return new Enumerator<String>(attributes.keySet(), true);
+        return new Enumerator<>(attributes.keySet(), true);
     }
 
     /**
@@ -1392,7 +1349,7 @@ public class Request
     public Enumeration<String> getParameterNames() {
         processParameters();
 
-        return new Enumerator<String>(coyoteRequest.getParameterNames());
+        return new Enumerator<>(coyoteRequest.getParameterNames());
     }
 
     /**
@@ -1631,21 +1588,14 @@ public class Request
 
         // Add the path info, if there is any
         String pInfo = getPathInfo();
-        String requestPath = null;
-
-        if (pInfo == null) {
-            requestPath = servPath;
-        } else {
-            requestPath = servPath + pInfo;
-        }
+        String requestPath = pInfo == null
+            ? servPath
+            : servPath + pInfo;
 
         int pos = requestPath.lastIndexOf('/');
-        String relative = null;
-        if (pos >= 0) {
-            relative = requestPath.substring(0, pos + 1) + path;
-        } else {
-            relative = requestPath + path;
-        }
+        String relative = pos >= 0
+            ? requestPath.substring(0, pos + 1) + path
+            : requestPath + path;
 
         return servletContext.getRequestDispatcher(relative);
 
@@ -1731,9 +1681,7 @@ public class Request
         ServletRequestAttributeEvent event =
                 new ServletRequestAttributeEvent(servletContext, getRequest(),
                 name, value);
-        Iterator<EventListener> iter = listeners.iterator();
-        while (iter.hasNext()) {
-            EventListener eventListener = iter.next();
+        for (EventListener eventListener : listeners) {
             if (!(eventListener instanceof ServletRequestAttributeListener)) {
                 continue;
             }
@@ -1816,20 +1764,15 @@ public class Request
         if (listeners.isEmpty()) {
             return;
         }
-        ServletRequestAttributeEvent event = null;
-        if (replaced) {
-            event = new ServletRequestAttributeEvent(servletContext,
+        ServletRequestAttributeEvent event = replaced
+            ? new ServletRequestAttributeEvent(servletContext,
                     getRequest(), name,
-                    oldValue);
-        } else {
-            event = new ServletRequestAttributeEvent(servletContext,
+                    oldValue)
+            : new ServletRequestAttributeEvent(servletContext,
                     getRequest(), name,
                     value);
-        }
 
-        Iterator<EventListener> iter = listeners.iterator();
-        while (iter.hasNext()) {
-            EventListener eventListener = iter.next();
+        for (EventListener eventListener : listeners) {
             if (!(eventListener instanceof ServletRequestAttributeListener)) {
                 continue;
             }
@@ -1894,13 +1837,10 @@ public class Request
         final String finalEnc = enc;
         if (Globals.IS_SECURITY_ENABLED) {
             try {
-                AccessController.doPrivileged(new PrivilegedExceptionAction<String>() {
-
-                    @Override
-                    public String run() throws UnsupportedEncodingException {
-                        return new String(finalBuffer, RequestUtil.lookupCharset(finalEnc));
-                    }
-                });
+                AccessController.doPrivileged(
+                    (PrivilegedExceptionAction<String>) () ->
+                            new String(finalBuffer, RequestUtil.lookupCharset(finalEnc))
+                );
             } catch (PrivilegedActionException pae) {
                 throw (UnsupportedEncodingException) pae.getCause();
             }
@@ -1991,17 +1931,16 @@ public class Request
                 }
                 try {
                     if (Globals.IS_SECURITY_ENABLED) {
-                        Boolean ret = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
                             @Override
                             public Boolean run() {
                                 try {
-                                    return Boolean.valueOf(realm.invokeAuthenticateDelegate(req, (HttpResponse) getResponse(), context, (AuthenticatorBase) authBase, true));
+                                    return realm.invokeAuthenticateDelegate(req, (HttpResponse) getResponse(), context, (AuthenticatorBase) authBase, true);
                                 } catch (IOException ex) {
                                     throw new RuntimeException("Exception thrown while attempting to authenticate", ex);
                                 }
                             }
                         });
-                        return ret.booleanValue();
                     } else {
                         return realm.invokeAuthenticateDelegate(req, (HttpResponse) getResponse(), context, (AuthenticatorBase) authBase, true);
                     }
@@ -2400,7 +2339,7 @@ public class Request
             return null;
         }
 
-        return cookies.toArray(new Cookie[cookies.size()]);
+        return cookies.toArray(new Cookie[0]);
     }
 
     /**
@@ -2410,9 +2349,7 @@ public class Request
 
         this.cookies.clear();
         if (cookies != null) {
-            for (int i = 0; i < cookies.length; i++) {
-                this.cookies.add(cookies[i]);
-            }
+            Collections.addAll(this.cookies, cookies);
         }
     }
 
@@ -2461,7 +2398,7 @@ public class Request
      */
     @Override
     public Enumeration<String> getHeaders(String name) {
-        return new Enumerator<String>(coyoteRequest.getHeaders(name).iterator());
+        return new Enumerator<>(coyoteRequest.getHeaders(name).iterator());
     }
 
     /**
@@ -2469,14 +2406,14 @@ public class Request
      */
     @Override
     public Enumeration<String> getHeaderNames() {
-        return new Enumerator<String>(coyoteRequest.getHeaderNames().iterator());
+        return new Enumerator<>(coyoteRequest.getHeaderNames().iterator());
     }
 
     /**
      * Return the value of the specified header as an integer, or -1 if there
      * is no such header for this request.
      *
-     * @param name Name of the requested header
+     * @param headerName Name of the requested header
      *
      * @exception IllegalArgumentException if the specified header value
      *  cannot be converted to an integer
@@ -2814,11 +2751,7 @@ public class Request
         } catch (IOException e) {
             localSession = null;
         }
-        if (localSession != null && localSession.isValid()) {
-            return true;
-        } else {
-            return false;
-        }
+        return localSession != null && localSession.isValid();
 
     }
 
@@ -3094,11 +3027,9 @@ public class Request
             // a session ID. Fallback to the default session ID generator if
             // the connector does not implement one.
             String id = generateSessionId();
-            if (id != null) {
-                session = manager.createSession(id);
-            } else {
-                session = manager.createSession();
-            }
+            session = id != null
+                ? manager.createSession(id)
+                : manager.createSession();
             // START S1AS8PE 4817642
         }
         // END S1AS8PE 4817642
@@ -3114,7 +3045,7 @@ public class Request
                     Long ssoVersionObj = (Long)getNote(
                             org.apache.catalina.authenticator.Constants.REQ_SSO_VERSION_NOTE);
                     if (ssoVersionObj != null) {
-                        ssoVersion = ssoVersionObj.longValue();
+                        ssoVersion = ssoVersionObj;
                     }
                     sso.associate(ssoId, ssoVersion, session);
                     removeNote(
@@ -3219,8 +3150,7 @@ public class Request
 
         cookies.clear();
 
-        for (int i = 0; i < count; i++) {
-            org.glassfish.grizzly.http.Cookie scookie = serverCookies[i];
+        for (org.glassfish.grizzly.http.Cookie scookie : serverCookies) {
             try {
                 // START GlassFish 898
                 Cookie cookie = makeCookie(scookie);
@@ -3311,7 +3241,7 @@ public class Request
      * @return true if the given string is composed of upper- or lowercase
      * letters only, false otherwise.
      */
-    protected static final boolean isAlpha(String value) {
+    protected static boolean isAlpha(String value) {
 
         if (value == null) {
             return false;
@@ -3535,8 +3465,7 @@ public class Request
             return;
         }
 
-        for (int i = 0; i < count; i++) {
-            org.glassfish.grizzly.http.Cookie scookie = serverCookies[i];
+        for (org.glassfish.grizzly.http.Cookie scookie : serverCookies) {
             if (scookie.getName().equals(Constants.JROUTE_COOKIE)) {
                 setJrouteId(scookie.getValue());
                 break;
@@ -3593,8 +3522,7 @@ public class Request
         if (context != null) {
             sessionCookieName = context.getSessionCookieName();
         }
-        for (int i = 0; i < count; i++) {
-            org.glassfish.grizzly.http.Cookie scookie = serverCookies[i];
+        for (org.glassfish.grizzly.http.Cookie scookie : serverCookies) {
             if (scookie.getName().equals(sessionCookieName)) {
                 // Override anything requested in the URL
                 if (!isRequestedSessionIdFromCookie()) {
@@ -3616,7 +3544,7 @@ public class Request
                         // TODO: Pass cookie path into
                         // getSessionVersionFromCookie()
                         String sessionVersionString =
-                            getSessionVersionFromCookie();
+                                getSessionVersionFromCookie();
                         parseSessionVersionString(sessionVersionString);
                     }
                 }
@@ -3643,10 +3571,9 @@ public class Request
             return null;
         }
 
-        for (int i = 0; i < count; i++) {
-            org.glassfish.grizzly.http.Cookie scookie = serverCookies[i];
+        for (org.glassfish.grizzly.http.Cookie scookie : serverCookies) {
             if (scookie.getName().equals(
-                                Globals.SESSION_VERSION_COOKIE_NAME)) {
+                    Globals.SESSION_VERSION_COOKIE_NAME)) {
                 return scookie.getValue();
             }
         }
@@ -3804,13 +3731,7 @@ public class Request
                         }
                     };
 
-            final TimeoutHandler timeoutHandler = new TimeoutHandler() {
-
-                @Override
-                public boolean onTimeout(final org.glassfish.grizzly.http.server.Response response) {
-                    return processTimeout();
-                }
-            };
+            final TimeoutHandler timeoutHandler = response -> processTimeout();
 
             coyoteRequest.getResponse().suspend(-1, TimeUnit.MILLISECONDS,
                     requestCompletionHandler, timeoutHandler);
@@ -4035,26 +3956,6 @@ public class Request
      * Log a message on the Logger associated with our Container (if any).
      *
      * @param message Message to be logged
-     *
-    private void log(String message) {
-        org.apache.catalina.Logger logger = null;
-        if (connector != null && connector.getContainer() != null) {
-            logger = connector.getContainer().getLogger();
-        }
-        String localName = "Request";
-        if (logger != null) {
-            logger.log(localName + " " + message);
-        } else {
-            if (log.isLoggable(Level.INFO)) {
-                log.info(localName + " " + message);
-            }
-        }
-    }*/
-
-    /**
-     * Log a message on the Logger associated with our Container (if any).
-     *
-     * @param message Message to be logged
      * @param t Associated exception
      */
     private void log(String message, Throwable t) {
@@ -4117,18 +4018,11 @@ public class Request
             long pollTime = 200L;
             int maxNumberOfRetries = 7;
             int tryNumber = 0;
-            boolean keepTrying = true;
-            boolean lockResult = false;
             // Try to lock up to maxNumberOfRetries times.
             // Poll and wait starting with 200 ms.
-            while(keepTrying) {
-                lockResult = sess.lockForeground();
-                if(lockResult) {
-                    keepTrying = false;
-                    break;
-                }
+            while (!sess.lockForeground()) {
                 tryNumber++;
-                if(tryNumber < maxNumberOfRetries) {
+                if (tryNumber < maxNumberOfRetries) {
                     pollTime = pollTime * 2L;
                     threadSleep(pollTime);
                 } else {
@@ -4136,7 +4030,7 @@ public class Request
                     // Unlock the background so we can take over.
                     log.log(Level.WARNING, LogFacade.BREAKING_BACKGROUND_LOCK_EXCEPTION, sess);
                     if (sess instanceof StandardSession) {
-                        ((StandardSession)sess).unlockBackground();
+                        ((StandardSession) sess).unlockBackground();
                     }
                 }
             }
