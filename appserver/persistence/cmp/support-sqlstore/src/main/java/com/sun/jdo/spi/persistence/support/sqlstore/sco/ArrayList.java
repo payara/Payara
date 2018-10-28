@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * sco.ArrayList.java
@@ -72,7 +73,7 @@ public class ArrayList
     private transient String fieldName;
 
     private transient 	Class elementType;
- 
+
     private transient boolean allowNulls;
 
     private transient java.util.Vector added = new java.util.Vector();
@@ -81,7 +82,7 @@ public class ArrayList
 
     /**
      * I18N message handlers
-     */  
+     */
     private final static ResourceBundle messages = I18NHelper.loadBundle(
                              "com.sun.jdo.spi.persistence.support.sqlstore.impl.Bundle",  // NOI18N
                              ArrayList.class.getClassLoader());
@@ -118,8 +119,8 @@ public class ArrayList
      *
      * @param owner 		the owning object
      * @param fieldName 	the owning field name
-     * @param elementType 	the element types allowed 
-     * @param allowNulls 	true if nulls are allowed 
+     * @param elementType 	the element types allowed
+     * @param allowNulls 	true if nulls are allowed
      * @param initialCapacity   the initial capacity of the vector.
      * @exception IllegalArgumentException if the specified initial capacity
      *               is negative
@@ -142,15 +143,15 @@ public class ArrayList
     /**
      * Replaces the element at the specified position in this ArrayList with the
      * specified element.
-     *   
+     *
      * @param index index of element to replace.
      * @param element element to be stored at the specified position.
      * @return the element previously at the specified position.
      * @exception IndexOutOfBoundsException index out of range
      *            (index &lt; 0 || index &gt;= size()).
      * @exception IllegalArgumentException fromIndex &gt; toIndex.
-     * @see java.util.ArrayList 
-     */  
+     * @see java.util.ArrayList
+     */
     public Object set(int index, Object element) {
 
 	throwUnsupportedOption();
@@ -167,10 +168,10 @@ public class ArrayList
         }
 
         if (elementType == null || elementType.isAssignableFrom(element.getClass()))
-        { 
+        {
 		// Mark the field as dirty
 		StateManager stateManager = this.makeDirty();
-        
+
 		Object o = super.set(index, element);
 
                 if (added.remove(o) == false)
@@ -181,7 +182,7 @@ public class ArrayList
 
 		// Apply updates
 		this.applyUpdates(stateManager, true);
-        
+
         	return o;
 	} else {
 		throw new JDOUserException(I18NHelper.getMessage(messages,
@@ -189,16 +190,16 @@ public class ArrayList
 				 new ClassCastException(), new Object[] {element});
 	}
 
-    } 
+    }
 
 
     /**
      * Appends the specified element to the end of this ArrayList.
-     *   
+     *
      * @param o element to be appended to this ArrayList.
      * @return true (as per the general contract of Collection.add).
      * @see java.util.ArrayList
-     */  
+     */
     public boolean add(Object o) {
 	if (allowNulls == false && o == null)
         {
@@ -210,7 +211,7 @@ public class ArrayList
         {
 		// Mark the field as dirty
 		StateManager stateManager = this.makeDirty();
-        
+
                 if (removed.remove(o) == false)
 			added.add(o);
 
@@ -226,16 +227,16 @@ public class ArrayList
                                 "sco.classcastexception", elementType.getName()), // NOI18N
 				 new ClassCastException(), new Object[] {o});
 	}
-    }    
+    }
 
     /**
      * Removes the first occurrence of the specified element in this ArrayList
-     * If the ArrayList does not contain the element, it is unchanged.  
+     * If the ArrayList does not contain the element, it is unchanged.
      *
      * @param o element to be removed from this ArrayList, if present.
      * @return true if the ArrayList contained the specified element.
-     * @see java.util.ArrayList 
-     */   
+     * @see java.util.ArrayList
+     */
     public boolean remove(Object o) {
 
 	// Because java.util.AbstractCollection.remove(Object) delegates remove() to remove(int)
@@ -261,13 +262,13 @@ public class ArrayList
 
     /**
      * Inserts the specified element at the specified position in this ArrayList.
-     *   
+     *
      * @param index index at which the specified element is to be inserted.
      * @param element element to be inserted.
      * @exception IndexOutOfBoundsException index is out of range
      *            (index &lt; 0 || index &gt; size()).
      * @see java.util.ArrayList
-     */  
+     */
     public void add(int index, Object element) {
 	if (allowNulls == false && element == null)
         {
@@ -279,14 +280,14 @@ public class ArrayList
         {
 		// Mark the field as dirty
 		StateManager stateManager = this.makeDirty();
-        
+
                 super.add(index, element);
                 if (removed.remove(element) == false)
                         added.add(element);
 
 		// Apply updates
 		this.applyUpdates(stateManager, true);
-	
+
         } else {
                 throw new JDOUserException(I18NHelper.getMessage(messages,
                                 "sco.classcastexception", elementType.getName()), // NOI18N
@@ -299,19 +300,19 @@ public class ArrayList
      * Removes the element at the specified position in this ArrayList.
      * shifts any subsequent elements to the left (subtracts one from their
      * indices).  Returns the element that was removed from the ArrayList.
-     *   
+     *
      * @param index the index of the element to removed.
      * @exception IndexOutOfBoundsException index out of range (index
      *            &lt; 0 || index &gt;= size()).
-     * @see java.util.ArrayList 
-     */   
+     * @see java.util.ArrayList
+     */
     public Object remove(int index) {
 
 	throwUnsupportedOption();
 
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
+
         Object obj = super.remove(index);
 
         if (added.remove(obj) == false)
@@ -321,18 +322,18 @@ public class ArrayList
 	this.applyUpdates(stateManager, true);
 
         return obj;
-    } 
+    }
 
     /**
      * Removes all of the elements from this ArrayList.  The ArrayList will
      * be empty after this call returns (unless it throws an exception).
-     *   
+     *
      * @see java.util.ArrayList
-     */ 
+     */
     public void clear() {
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
+
         for (Iterator iter = super.iterator(); iter.hasNext();) {
                 Object o = iter.next();
                 if (added.remove(o) == false)
@@ -348,15 +349,15 @@ public class ArrayList
     /**
      * Appends all of the elements in the specified Collection to the end of
      * this ArrayList, in the order that they are returned by the specified
-     * Collection's Iterator.  
-     *   
+     * Collection's Iterator.
+     *
      * @param c elements to be inserted into this ArrayList.
      * @exception IndexOutOfBoundsException index out of range (index
      *            &lt; 0 || index &gt; size()).
      * @see java.util.ArrayList
-     */  
+     */
     public boolean addAll(Collection c) {
-	if (allowNulls == false && c.contains(null))
+	if (!allowNulls && c.contains(null))
         {
                 throw new JDOUserException(I18NHelper.getMessage(messages,
                         "sco.nulls_not_allowed")); // NOI18N
@@ -374,17 +375,17 @@ public class ArrayList
 				errc.add(o);
 		}
 	}
-	if (errc != null && errc.size() > 0) 
+	if (!errc.isEmpty())
 	{
 		throw new JDOUserException(I18NHelper.getMessage(messages,
-                                "sco.classcastexception", elementType.getName()), // NOI18N
+                "sco.classcastexception", (elementType != null ? elementType.getName() : "")), // NOI18N
 				 new ClassCastException(), errc.toArray());
 	}
 
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
-        removed.removeAll(c);
+
+	removed.removeAll(c);
 	added.addAll(c);
 
 	boolean modified = super.addAll(c);
@@ -400,13 +401,13 @@ public class ArrayList
      * specified Collection.
      *
      * @return true if this ArrayList changed as a result of the call.
-     * @see java.util.ArrayList 
-     */   
+     * @see java.util.ArrayList
+     */
     public boolean removeAll(Collection c) {
 	boolean modified = false;
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
+
         Iterator e = c.iterator();
         while (e.hasNext()) {
 		Object o = e.next();
@@ -422,7 +423,7 @@ public class ArrayList
 	this.applyUpdates(stateManager, modified);
 
         return modified;
-    } 
+    }
 
     /**
      * Inserts all of the elements in in the specified Collection into this
@@ -431,45 +432,45 @@ public class ArrayList
      * (increases their indices).  The new elements will appear in the ArrayList
      * in the order that they are returned by the specified Collection's
      * iterator.
-     *   
+     *
      * @param index index at which to insert first element
      *              from the specified collection.
      * @param c elements to be inserted into this ArrayList.
      * @exception IndexOutOfBoundsException index out of range (index
      *            &lt; 0 || index &gt; size()).
-     * @see java.util.ArrayList  
-     */   
+     * @see java.util.ArrayList
+     */
     public boolean addAll(int index, Collection c) {
-	if (allowNulls == false && c.contains(null))
+	if (!allowNulls && c.contains(null))
         {
                 throw new JDOUserException(I18NHelper.getMessage(messages,
                         "sco.nulls_not_allowed")); // NOI18N
         }
 
-	java.util.Vector errc = new java.util.Vector();  
+	java.util.Vector errc = new java.util.Vector();
         if (elementType != null)
         {
                 // iterate the collection and make a list of wrong elements.
                 Iterator i = c.iterator();
                 while (i.hasNext())
                 {
-                        Object o = i.next(); 
-                        if (!elementType.isAssignableFrom(o.getClass()))   
-                                errc.add(o); 
+                        Object o = i.next();
+                        if (!elementType.isAssignableFrom(o.getClass()))
+                                errc.add(o);
                 }
         }
-        if (errc != null && errc.size() > 0)
+        if (!errc.isEmpty())
         {
                 throw new JDOUserException(I18NHelper.getMessage(messages,
-                                "sco.classcastexception", elementType.getName()), // NOI18N
-				 new ClassCastException(), errc.toArray());
+                    "sco.classcastexception", (elementType != null ? elementType.getName() : "")), // NOI18N
+				    new ClassCastException(), errc.toArray());
         }
 
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
-        removed.removeAll(c); 
-        added.addAll(c); 
+
+        removed.removeAll(c);
+        added.addAll(c);
 
         boolean modified = super.addAll(index, c);
 
@@ -477,35 +478,35 @@ public class ArrayList
 	this.applyUpdates(stateManager, modified);
 
         return modified;
-    }    
+    }
 
     /**
      * Retains only the elements in this ArrayList that are contained in the
-     * specified Collection.  
-     *   
+     * specified Collection.
+     *
      * @return true if this ArrayList changed as a result of the call.
-     * @see java.util.ArrayList   
-     */    
-    public boolean retainAll(Collection c) 
+     * @see java.util.ArrayList
+     */
+    public boolean retainAll(Collection c)
     {
 	boolean modified = false;
 	java.util.Vector v = new java.util.Vector();
 
 	// Mark the field as dirty
 	StateManager stateManager = this.makeDirty();
-        
-        for (Iterator iter = super.iterator(); iter.hasNext();) 
-        { 
-                Object o = iter.next(); 
-                if (!c.contains(o))  
-                {   
+
+        for (Iterator iter = super.iterator(); iter.hasNext();)
+        {
+                Object o = iter.next();
+                if (!c.contains(o))
+                {
 			v.add(o);
                  	if (added.remove(o) == false)
-				removed.add(o);  
+				removed.add(o);
 
 			modified = true;
-		} 
-        } 
+		}
+        }
 
 	// Now remove the rest (stored in "v")
 	for (Iterator iter = v.iterator(); iter.hasNext();)
@@ -545,8 +546,8 @@ public class ArrayList
     }
 
     /**
-     * Cleans removed and added lists     
-     */  
+     * Cleans removed and added lists
+     */
     public void reset()
     {
         added.clear();
@@ -575,12 +576,12 @@ public class ArrayList
         super.add(o);
     }
 
-    /** 
-     * Adds a Collection to the list without recording changes 
-     */ 
-    public void addAllInternal(Collection c) 
-    { 
-        super.addAll(c); 
+    /**
+     * Adds a Collection to the list without recording changes
+     */
+    public void addAllInternal(Collection c)
+    {
+        super.addAll(c);
     }
 
     /**
@@ -593,50 +594,50 @@ public class ArrayList
 
     /**
      * Removes from this collection without recording changes
-     */ 
-    public void removeAllInternal(Collection c) 
-    { 
-        super.removeAll(c); 
-    } 
- 
+     */
+    public void removeAllInternal(Collection c)
+    {
+        super.removeAll(c);
+    }
+
     /**
      * Returns added collection
-     * 
+     *
      * @return added	collection of added elements
-     */ 
+     */
     public Collection getAdded()
     {
         return (Collection)added;
-    }    
+    }
 
-    /** 
-     * Returns removed collection 
-     *  
-     * @return removed	collection of removed elements 
-     */ 
-    public Collection getRemoved() 
-    { 
-        return (Collection)removed; 
-    }     
+    /**
+     * Returns removed collection
+     *
+     * @return removed	collection of removed elements
+     */
+    public Collection getRemoved()
+    {
+        return (Collection)removed;
+    }
 
 
-    /** 
-     * Clears Collection without notifing the owner 
-     */   
-    public void clearInternal() 
-    {    
-        super.clear(); 
-        this.reset(); 
-    }  
+    /**
+     * Clears Collection without notifing the owner
+     */
+    public void clearInternal()
+    {
+        super.clear();
+        this.reset();
+    }
 
-    /** 
-     * Removes an element without notifing the owner 
-     */   
-    public void removeInternal(Object o) 
-    {    
+    /**
+     * Removes an element without notifing the owner
+     */
+    public void removeInternal(Object o)
+    {
 	int i = super.indexOf(o);
-        super.remove(i); 
-    }  
+        super.remove(i);
+    }
 
     /**
      * Nullifies references to the owner Object and Field
@@ -675,16 +676,16 @@ public class ArrayList
      */
     public StateManager makeDirty()
     {
-	if (owner != null) 
+	if (owner != null)
         {
-                StateManager stateManager = owner.jdoGetStateManager(); 
-                if (stateManager != null) 
-                { 
-                        stateManager.makeDirty(fieldName); 
-                } 
-                  
-                return stateManager; 
-	} 
+                StateManager stateManager = owner.jdoGetStateManager();
+                if (stateManager != null)
+                {
+                        stateManager.makeDirty(fieldName);
+                }
+
+                return stateManager;
+	}
         return null;
      }
     /**
@@ -700,7 +701,7 @@ public class ArrayList
     }
 
     /**
-     * Throw JDOUnsupportedOptionException 
+     * Throw JDOUnsupportedOptionException
      */
     private void throwUnsupportedOption()
     {
@@ -709,7 +710,7 @@ public class ArrayList
 	throw new JDOUnsupportedOptionException(I18NHelper.getMessage(messages,
                                 "sco.not_supported")); //NOI18N
     }
-    
+
     /**
      * Set the owner if this instance is not owned.
      * @see SCOCollection#setOwner

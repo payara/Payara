@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -298,16 +298,34 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, String contextInfo,
-                                                    String contextInfoEnabled, boolean cleanupTransaction) {
+    private ContextServiceImpl createContextService(
+            String jndiName,
+            String contextInfo,
+            String contextInfoEnabled,
+            boolean cleanupTransaction) {
+
         boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
-        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo, isContextInfoEnabled);
-        ContextSetupProviderImpl contextSetupProvider =
-                new ContextSetupProviderImpl(invocationManager, deployment, compEnvMgr, applications,
-                                             cleanupTransaction? transactionManager: null, contextTypes);
-        ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
-                new TransactionSetupProviderImpl(transactionManager));
-        return obj;
+
+        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes
+                = parseContextInfo(contextInfo, isContextInfoEnabled);
+
+        ContextSetupProviderImpl contextSetupProvider
+                = new ContextSetupProviderImpl(
+                        invocationManager,
+                        deployment,
+                        compEnvMgr,
+                        applicationRegistry,
+                        applications,
+                        cleanupTransaction ? transactionManager : null, contextTypes
+                );
+
+        ContextServiceImpl contextService
+                = new ContextServiceImpl(
+                        jndiName,
+                        contextSetupProvider,
+                        new TransactionSetupProviderImpl(transactionManager)
+                );
+        return contextService;
     }
 
     private ContextSetupProviderImpl.CONTEXT_TYPE[] parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {

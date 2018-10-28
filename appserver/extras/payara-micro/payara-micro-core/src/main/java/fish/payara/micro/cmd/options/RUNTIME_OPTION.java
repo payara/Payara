@@ -98,7 +98,7 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
-    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    clustermode(true, new PrefixStringListValidator("tcpip","domain","multicast","dns")),
     interfaces(true),
     sslcert(true),
     help(false),

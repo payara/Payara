@@ -39,13 +39,15 @@
  */
 package fish.payara.security.openid.domain;
 
+import fish.payara.security.openid.api.AccessToken;
+import fish.payara.security.openid.api.IdentityToken;
 import fish.payara.security.openid.api.OpenIdClaims;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import fish.payara.security.openid.api.OpenIdContext;
-import static java.util.Collections.emptyMap;
-import java.util.Map;
+import fish.payara.security.openid.api.RefreshToken;
 import java.util.Optional;
 import javax.enterprise.context.SessionScoped;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 /**
@@ -57,23 +59,37 @@ import javax.json.JsonObject;
 @SessionScoped
 public class OpenIdContextImpl implements OpenIdContext {
 
+    private String callerName;
+    private String callerGroups;
     private String tokenType;
-    private String accessToken;
-    private String identityToken;
-    private Map<String, Object> identityTokenClaims;
-    private Optional<String> refreshToken;
-    private Optional<Integer> expiresIn;
+    private AccessToken accessToken;
+    private IdentityToken identityToken;
+    private RefreshToken refreshToken;
+    private Integer expiresIn;
     private JsonObject claims;
     private JsonObject providerMetadata;
 
-    public OpenIdContextImpl() {
-        refreshToken = Optional.empty();
-        expiresIn = Optional.empty();
+    @Override
+    public String getCallerName() {
+        return callerName;
+    }
+
+    public void setCallerName(String callerName) {
+        this.callerName = callerName;
+    }
+
+    @Override
+    public String getCallerGroups() {
+        return callerGroups;
+    }
+
+    public void setCallerGroups(String callerGroups) {
+        this.callerGroups = callerGroups;
     }
 
     @Override
     public String getSubject() {
-        return (String) getIdentityTokenClaims().get(SUBJECT_IDENTIFIER);
+        return (String) getIdentityToken().getClaim(SUBJECT_IDENTIFIER);
     }
 
     @Override
@@ -86,64 +102,52 @@ public class OpenIdContextImpl implements OpenIdContext {
     }
 
     @Override
-    public String getAccessToken() {
+    public AccessToken getAccessToken() {
         return accessToken;
     }
 
-    public void setAccessToken(String token) {
+    public void setAccessToken(AccessToken token) {
         this.accessToken = token;
     }
 
     @Override
-    public String getIdentityToken() {
+    public IdentityToken getIdentityToken() {
         return identityToken;
     }
 
-    public void setIdentityToken(String identityToken) {
+    public void setIdentityToken(IdentityToken identityToken) {
         this.identityToken = identityToken;
     }
 
     @Override
-    public Map<String, Object> getIdentityTokenClaims() {
-        if (identityTokenClaims == null) {
-            return emptyMap();
-        }
-        return identityTokenClaims;
+    public Optional<RefreshToken> getRefreshToken() {
+        return Optional.ofNullable(refreshToken);
     }
 
-    public void setIdentityTokenClaims(Map<String, Object> identityTokenClaims) {
-        this.identityTokenClaims = identityTokenClaims;
-    }
-
-    @Override
-    public Optional<String> getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = Optional.ofNullable(refreshToken);
+    public void setRefreshToken(RefreshToken refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     @Override
     public Optional<Integer> getExpiresIn() {
-        return expiresIn;
+        return Optional.ofNullable(expiresIn);
     }
 
     public void setExpiresIn(Integer expiresIn) {
-        this.expiresIn = Optional.ofNullable(expiresIn);
+        this.expiresIn = expiresIn;
     }
 
     @Override
     public JsonObject getClaimsJson() {
+        if (claims == null) {
+            return Json.createObjectBuilder().build();
+        }
         return claims;
     }
 
     @Override
     public OpenIdClaims getClaims() {
-        if (claims == null) {
-            return null;
-        }
-        return new OpenIdClaims(claims);
+        return new OpenIdClaims(getClaimsJson());
     }
 
     public void setClaims(JsonObject claims) {

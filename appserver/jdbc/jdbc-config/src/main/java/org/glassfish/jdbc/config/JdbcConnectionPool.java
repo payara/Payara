@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
@@ -298,7 +298,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute
-    @Pattern(regexp="(read-uncommitted||read-committed|repeatable-read|serializable)")
+    @Pattern(regexp="(read-uncommitted||read-committed|repeatable-read|serializable|snapshot)")
     String getTransactionIsolationLevel();
 
     /**

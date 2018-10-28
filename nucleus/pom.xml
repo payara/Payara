@@ -261,7 +261,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p11</jersey.version>
+        <jersey.version>2.27.payara-p12</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -306,7 +306,7 @@
         <antlr.version>2.7.7</antlr.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.5</jackson.version>
+        <jackson.version>2.9.6</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.18</snakeyaml.version>
 

@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.impl.processor;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.SEVERE;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -99,7 +100,6 @@ import org.eclipse.microprofile.openapi.models.Reference;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
@@ -123,7 +123,11 @@ import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -356,68 +360,151 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitQueryParam(QueryParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.QUERY);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
-
+        
     @Override
-    public void visitPathParam(PathParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setRequired(true);
         newParameter.setIn(In.PATH);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
-
+    
     @Override
-    public void visitFormParam(FormParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context) {
         // Find the aggregate schema type of all the parameters
         SchemaType formSchemaType = null;
-        for (java.lang.reflect.Parameter methodParam : element.getDeclaringExecutable().getParameters()) {
-            if (methodParam.isAnnotationPresent(FormParam.class)) {
-                formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                        ModelUtils.getSchemaType(methodParam.getType()));
+
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter[] parameters = java.lang.reflect.Parameter.class.cast(element)
+                    .getDeclaringExecutable().getParameters();
+            for (java.lang.reflect.Parameter methodParam : parameters) {
+                if (methodParam.isAnnotationPresent(FormParam.class)) {
+                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
+                            ModelUtils.getSchemaType(methodParam.getType()));
+                }
             }
-        }
+        } 
 
-        // If there's no request body, fill out a new one right down to the schema
-        if (context.getWorkingOperation().getRequestBody() == null) {
-            context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
-                    .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl().schema(new SchemaImpl()))));
-        }
+        if (context.getWorkingOperation() != null) {
+            // If there's no request body, fill out a new one right down to the schema
+            if (context.getWorkingOperation().getRequestBody() == null) {
+                context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
+                        .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
+                                .schema(new SchemaImpl()))));
+            }
 
-        // Set the request body type accordingly.
-        context.getWorkingOperation().getRequestBody().getContent().get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                .setType(formSchemaType);
+            // Set the request body type accordingly.
+            context.getWorkingOperation().getRequestBody().getContent()
+                    .get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                    .setType(formSchemaType);
+        }
     }
 
     @Override
-    public void visitHeaderParam(HeaderParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.HEADER);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
 
     @Override
-    public void visitCookieParam(CookieParam param, java.lang.reflect.Parameter element, ApiContext context) {
+    public void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
         newParameter.setName(param.value());
         newParameter.setIn(In.COOKIE);
         newParameter.setStyle(Style.SIMPLE);
-        newParameter.setSchema(new SchemaImpl().type(ModelUtils.getSchemaType(element.getType())));
-        context.getWorkingOperation().addParameter(newParameter);
+        addParameter(element, context, newParameter);
     }
+    
+    private void addParameter(AnnotatedElement element, ApiContext context,
+            org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
+        SchemaImpl schema = new SchemaImpl();
+        String defaultValue = getDefaultValueIfPresent(element);
 
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
+        } else {
+            Field field = Field.class.cast(element);
+            schema.setType(ModelUtils.getSchemaType(field.getType()));
+        }
+
+        if (schema.getType() == SchemaType.ARRAY) {
+            schema.setItems(getArraySchema(element));
+            if (defaultValue != null) {
+                schema.getItems().setDefaultValue(defaultValue);
+            }
+        } else if (defaultValue != null) {
+            schema.setDefaultValue(defaultValue);
+        }
+
+        newParameter.setSchema(schema);
+
+        if (context.getWorkingOperation() != null) {
+            context.getWorkingOperation().addParameter(newParameter);
+        } else {
+            if (element instanceof Field) {
+                Field field = Field.class.cast(element);
+                ApiContext apiContext;
+                OpenAPI api = context.getApi();
+                for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
+                    apiContext = new OpenApiContext(api, null, ModelUtils.getOperation(method,
+                            api, generateResourceMapping(classes)));
+                    if (apiContext.getWorkingOperation() != null) {
+                        apiContext.getWorkingOperation().addParameter(newParameter);
+                    } else {
+                        LOGGER.log(SEVERE, "Method \"" + method.getName() + "\" has an unsupported annotation.");
+                    }
+                }
+            } else {
+                LOGGER.log(SEVERE, "Couldn't add " + newParameter.getIn() + " parameter, \"" + newParameter.getName()
+                        + "\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with "
+                        + "an unsupported annotation.");
+            }
+        }
+    }
+    
+    private SchemaImpl getArraySchema(AnnotatedElement element) {
+        SchemaImpl arraySchema = new SchemaImpl();
+        ParameterizedType parameterizedType;
+
+        if (element instanceof java.lang.reflect.Parameter) {
+            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        } else {
+            Field field = Field.class.cast(element);
+            parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+        }
+
+        arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+        return arraySchema;
+    }
+    
+    private String getDefaultValueIfPresent(AnnotatedElement element) {
+        Annotation[] annotations = element.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if ("javax.ws.rs.DefaultValue".equals(annotation.annotationType().getName())) {
+                try {
+                    return (String) annotation.annotationType().getMethod("value").invoke(annotation);
+                } catch (Exception ex) {
+                    LOGGER.log(WARNING, "Couldn't get the default value", ex);
+                }
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context) {
         OpenAPIImpl.merge(definition, context.getApi(), true);

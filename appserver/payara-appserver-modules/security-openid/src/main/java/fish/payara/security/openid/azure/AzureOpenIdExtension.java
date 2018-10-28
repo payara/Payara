@@ -41,6 +41,7 @@ package fish.payara.security.openid.azure;
 
 import fish.payara.security.annotations.AzureAuthenticationDefinition;
 import static fish.payara.security.annotations.AzureAuthenticationDefinition.OPENID_MP_AZURE_TENANT_ID;
+import fish.payara.security.annotations.ClaimsDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdProviderMetadata;
 import fish.payara.security.openid.OpenIdExtension;
@@ -136,6 +137,11 @@ public class AzureOpenIdExtension extends OpenIdExtension {
             @Override
             public OpenIdProviderMetadata providerMetadata() {
                 return azureDefinition.providerMetadata();
+            }
+
+            @Override
+            public ClaimsDefinition claimsDefinition() {
+                return azureDefinition.claimsDefinition();
             }
 
             @Override

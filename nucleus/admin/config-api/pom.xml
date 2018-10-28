@@ -38,7 +38,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
+Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -179,6 +179,12 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile-config.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     

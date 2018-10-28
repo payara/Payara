@@ -205,29 +205,13 @@ public class UberJarCreator {
                         }
                     }
                     jos.putNextEntry(newEntry);
-                    InputStream is = jFile.getInputStream(entry);
-                    if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
-                        is = new FileInputStream(loggingPropertiesFile);
-                    } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
-                        is = new FileInputStream(postBootCommands);
-                    } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
-                        is = new FileInputStream(preBootCommands);
-                    } else if (entry.toString().contains("MICRO-INF/post-deploy-commands.txt") && (postDeployCommands != null)) {
-                        is = new FileInputStream(postDeployCommands);
-                    }else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
-                        is = new FileInputStream(domainXML);
-                    }else if (entry.toString().contains("MICRO-INF/domain/keystore.jks") && (System.getProperty("javax.net.ssl.keyStore") != null)) {
-                        is = new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
-                    }else if (entry.toString().contains("MICRO-INF/domain/cacerts.jks") && (System.getProperty("javax.net.ssl.trustStore") != null)) {
-                        is = new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
+                    try (InputStream is = getInputStream(jFile, entry)) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead = 0;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            jos.write(buffer, 0, bytesRead);
+                        }
                     }
-
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    is.close();
                 }
                 jos.flush();
                 jos.closeEntry();
@@ -235,21 +219,21 @@ public class UberJarCreator {
 
             if (!libs.isEmpty()) {
                 for (File lib : libs){
-                    JarFile f = new JarFile(lib);
                     JarEntry libEntry = new JarEntry("MICRO-INF/lib/" + lib.getName());
                     libEntry.setMethod(JarEntry.STORED);
                     libEntry.setSize(lib.length());
 
-                    CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
-                    BufferedInputStream in = new BufferedInputStream(check);
-                    while (in.read(new byte[3000]) != -1){
-                        //read in file completly
+                    try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(lib), new CRC32());
+                         BufferedInputStream in = new BufferedInputStream(check)) {
+                        while (in.read(new byte[3000]) != -1){
+                            //read in file completly
+                        }
+                        libEntry.setCrc(check.getChecksum().getValue());
+                        jos.putNextEntry(libEntry);
+                        Files.copy(lib, jos);
+                        jos.flush();
+                        jos.closeEntry();
                     }
-                    libEntry.setCrc(check.getChecksum().getValue());
-                    jos.putNextEntry(libEntry);
-                    Files.copy(lib, jos);
-                    jos.flush();
-                    jos.closeEntry();
                 }
             }
 
@@ -368,16 +352,17 @@ public class UberJarCreator {
                         if (path.endsWith(".war") || path.endsWith(".jar") || path.endsWith(".rar") || path.endsWith(".ear")){
                             JarEntry appEntry = new JarEntry("MICRO-INF/deploy/" + app.getName());
                             appEntry.setSize(app.length());
-                            CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
-                            BufferedInputStream in = new BufferedInputStream(check);
-                            while (in.read(new byte[300]) != -1){
-                            //read in file completly
+                            try (CheckedInputStream check = new CheckedInputStream(new FileInputStream(app), new CRC32());
+                                 BufferedInputStream in = new BufferedInputStream(check)) {
+                                while (in.read(new byte[300]) != -1){
+                                //read in file completly
+                                }
+                                appEntry.setCrc(check.getChecksum().getValue());
+                                jos.putNextEntry(appEntry);
+                                Files.copy(app, jos);
+                                jos.flush();
+                                jos.closeEntry();
                             }
-                            appEntry.setCrc(check.getChecksum().getValue());
-                            jos.putNextEntry(appEntry);
-                            Files.copy(app, jos);
-                            jos.flush();
-                            jos.closeEntry();
                         }
                     }
                 }
@@ -388,6 +373,26 @@ public class UberJarCreator {
             LOGGER.log(Level.SEVERE, "Error creating Uber Jar " + outputFile.getAbsolutePath(), ex);
         }
 
+    }
+
+    private InputStream getInputStream(JarFile jFile, JarEntry entry) throws IOException {
+        if (entry.toString().contains("MICRO-INF/domain/logging.properties") && (loggingPropertiesFile != null)) {
+            return new FileInputStream(loggingPropertiesFile);
+        } else if (entry.toString().contains("MICRO-INF/post-boot-commands.txt") && (postBootCommands != null)) {
+            return new FileInputStream(postBootCommands);
+        } else if (entry.toString().contains("MICRO-INF/pre-boot-commands.txt") && (preBootCommands != null)) {
+            return new FileInputStream(preBootCommands);
+        } else if (entry.toString().contains("MICRO-INF/post-deploy-commands.txt") && (postDeployCommands != null)) {
+            return new FileInputStream(postDeployCommands);
+        } else if (entry.toString().contains("MICRO-INF/domain/domain.xml") && (domainXML != null)) {
+            return new FileInputStream(domainXML);
+        } else if (entry.toString().contains("MICRO-INF/domain/keystore.jks") && (System.getProperty("javax.net.ssl.keyStore") != null)) {
+            return new FileInputStream(System.getProperty("javax.net.ssl.keyStore"));
+        } else if (entry.toString().contains("MICRO-INF/domain/cacerts.jks") && (System.getProperty("javax.net.ssl.trustStore") != null)) {
+            return new FileInputStream(System.getProperty("javax.net.ssl.trustStore"));
+        } else {
+            return jFile.getInputStream(entry);
+        }
     }
 
     /**

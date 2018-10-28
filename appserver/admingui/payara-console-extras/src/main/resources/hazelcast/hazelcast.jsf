@@ -83,6 +83,7 @@
                     setPageSessionAttribute(key="isMulticastPortEmpty", value="#{empty pageSession.valueMap['multicastPort']}");   
                     setPageSessionAttribute(key="isMulticastGroupEmpty", value="#{empty pageSession.valueMap['multicastGroup']}"); 
                     setPageSessionAttribute(key="isTcpipMembersEmpty", value="#{empty pageSession.valueMap['tcpipMembers']}"); 
+                    setPageSessionAttribute(key="isTcpipMembersEmpty", value="#{empty pageSession.valueMap['dnsMembers']}");
                         
                     if ('#{pageSession.isMulticastPortEmpty} = true') {
                         mapRemove(map="#{pageSession.valueMap}" key="multicastPort");
@@ -94,6 +95,10 @@
                     
                     if ('#{pageSession.isTcpipMembersEmpty} = true') {
                         mapRemove(map="#{pageSession.valueMap}" key="tcpipMembers");
+                    }
+                    
+                    if ('#{pageSession.isDnsMembersEmpty} = true') {
+                        mapRemove(map="#{pageSession.valueMap}" key="dnsMembers");
                     }
 
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -141,8 +146,10 @@
         </sun:property>
     </sun:propertySheetSection>
     <sun:propertySheetSection id="discovery">
-        <sun:property id="discoveryModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.discoveryMode}"  helpText="$resource{i18nhc.hazelcast.configuration.discoveryModeHelp}" visible="#{true}" >
-            <sun:dropDown id="clusterMode" value="#{pageSession.clusterMode}" labels={"domain","tcpip","multicast"} values={"domain","tcpip","multicast"} selected="#{pageSession.clusterMode}" required="#{false}"  onChange="updateClusterDiscoveryMode(this.value);">
+        <sun:property id="discoveryModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.discoveryMode}"  
+                      helpText="$resource{i18nhc.hazelcast.configuration.discoveryModeHelp}" visible="#{true}" >
+            <sun:dropDown id="clusterMode" value="#{pageSession.clusterMode}" labels={"domain","tcpip","multicast","dns"} values={"domain","tcpip","multicast", "dns"} 
+                          selected="#{pageSession.clusterMode}" required="#{false}"  onChange="updateClusterDiscoveryMode(this.value);">
             </sun:dropDown>
         </sun:property>
         <sun:property id="multicastPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastPort}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastPortHelp}">
@@ -163,6 +170,14 @@
             <sun:textField id="tcpipMembers" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['tcpipMembers']}">
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{tcpipMembersTextId});
+                />  
+            </sun:textField>
+        </sun:property>
+        <sun:property id="dnsMembersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dnsMembers}"
+                      helpText="$resource{i18nhc.hazelcast.configuration.dnsMembersHelp}">
+            <sun:textField id="dnsMembers" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['dnsMembers']}">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{dnsMembersTextId});
                 />  
             </sun:textField>
         </sun:property> 

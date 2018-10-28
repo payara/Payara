@@ -40,24 +40,36 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE_SEPARATOR;
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE_SEPARATOR;
 import java.lang.management.ManagementFactory;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
 
 public class MBeanExpression {
 
-    private String mbean;
+    private String mBean;
 
-    private String attrName;
+    private String attributeName;
 
-    private String subAttrName;
+    private String subAttributeName;
 
     private ObjectName objectName;
 
@@ -69,37 +81,37 @@ public class MBeanExpression {
         if (expression == null || expression.trim().isEmpty()) {
             throw new IllegalArgumentException("MBean Expression is null");
         }
-        int slashIndex = expression.lastIndexOf('/');
+        int slashIndex = expression.lastIndexOf(ATTRIBUTE_SEPARATOR);
         if (slashIndex < 0) {
             throw new IllegalArgumentException("MBean Expression is invalid : " + expression);
         }
-        mbean = expression.substring(0, slashIndex);
-        attrName = expression.substring(slashIndex + 1);
-        if (attrName.contains("#")) {
-            int hashIndex = attrName.indexOf('#');
-            subAttrName = attrName.substring(hashIndex + 1);
-            attrName = attrName.substring(0, hashIndex);
+        mBean = expression.substring(0, slashIndex);
+        attributeName = expression.substring(slashIndex + 1);
+        if (attributeName.contains(SUB_ATTRIBUTE_SEPARATOR)) {
+            int hashIndex = attributeName.indexOf(SUB_ATTRIBUTE_SEPARATOR);
+            subAttributeName = attributeName.substring(hashIndex + 1);
+            attributeName = attributeName.substring(0, hashIndex);
         }
         try {
-            objectName = new ObjectName(mbean);
+            objectName = new ObjectName(mBean);
         } catch (MalformedObjectNameException ex) {
             throw new IllegalArgumentException("MBean Expression is invalid : " + expression);
         }
     }
 
-    public String getMbean() {
-        return mbean;
+    public String getMBean() {
+        return mBean;
     }
 
     public String getAttributeName() {
-        return attrName;
+        return attributeName;
     }
 
     public String getSubAttributeName() {
-        return subAttrName;
+        return subAttributeName;
     }
 
-    public ObjectName getObjectName() throws MalformedObjectNameException {
+    public ObjectName getObjectName() {
         return objectName;
     }
 
@@ -125,7 +137,7 @@ public class MBeanExpression {
                 CompositeData compositeData = (CompositeData) attribute;
                 return (Number) compositeData.get(getSubAttributeName());
             } else {
-                throw new IllegalArgumentException(getMbean());
+                throw new IllegalArgumentException(getMBean());
             }
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, ex.getMessage());
@@ -136,4 +148,35 @@ public class MBeanExpression {
     public Set<ObjectName> queryNames(QueryExp query) {
         return mBeanServer.queryNames(objectName, query);
     }
+
+    public List<MBeanAttributeInfo> queryAttributes(ObjectName objectName) {
+        try {
+            return asList(mBeanServer.getMBeanInfo(objectName).getAttributes());
+        } catch (InstanceNotFoundException | IntrospectionException | ReflectionException ex) {
+            LOGGER.log(
+                    WARNING,
+                    String.format("Error in queryAttributes operation where objectName [%s]", objectName),
+                    ex
+            );
+        }
+        return emptyList();
+    }
+
+    public Object querySubAttributes(ObjectName objectName, String attribute){
+        Object subAttributes = null;
+        try {
+            subAttributes = mBeanServer.getAttribute(objectName, attribute);
+        } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException ex) {
+            LOGGER.log(
+                    WARNING,
+                    String.format(
+                            "Error in querySubAttributes operation where objectName [%s] and attribute [%s]",
+                            objectName,
+                            attribute
+                    ), ex
+            );
+        }
+        return subAttributes;
+    }
+
 }
