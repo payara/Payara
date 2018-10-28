@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -91,9 +91,8 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
     @Override
     public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt,
         MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-            JsonParser parser = Json.createParser(in);
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
+             JsonParser parser = Json.createParser(in)) {
 
             final Locale locale = CompositeUtil.instance().getLocale(mm);
             JsonObject o;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * Archive.java
@@ -115,6 +116,10 @@ public class Archive {
         return allOptPkgsInstalledInJRE;
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private static List listAllExtDirs() {
         String ext_dirStr = new String(System.getProperty("java.ext.dirs"));
         logger.fine("Extension Dir Path is " + ext_dirStr); // NOI18N

@@ -51,78 +51,88 @@ import javax.json.JsonObject;
  * @author Gaurav Gupta
  */
 public interface OpenIdContext extends Serializable {
- 
+
     /**
-     * Subject Identifier. A locally unique and never reassigned identifier 
-     * within the Issuer for the End-User, which is intended to be consumed 
-     * by the Client
-     * 
-     * @return 
+     * Gets the caller name of the validated caller
+     *
+     * @return
      */
-    public String getSubject();
-    
-     /**
+    String getCallerName();
+
+    /**
+     * Gets the groups associated with the caller
+     *
+     * @return
+     */
+    String getCallerGroups();
+
+    /**
+     * Subject Identifier. A locally unique and never reassigned identifier
+     * within the Issuer for the End-User, which is intended to be consumed by
+     * the Client
+     *
+     * @return
+     */
+    String getSubject();
+
+    /**
      * Gets the token type value. The value MUST be Bearer or another token_type
      * value that the Client has negotiated with the Authorization Server.
      *
      * @return
      */
-    public String getTokenType();
-    
+    String getTokenType();
+
     /**
-     * Gets the authorization token that was received from the OpenId Connect provider
+     * Gets the authorization token that was received from the OpenId Connect
+     * provider
      *
      * @return
      */
-    public String getAccessToken();
-    
+    AccessToken getAccessToken();
+
     /**
-     * Gets the identity token that was received from the OpenId Connect provider
-     * @return 
+     * Gets the identity token that was received from the OpenId Connect
+     * provider
+     *
+     * @return
      */
-    public String getIdentityToken();
-    
-    /**
-     * Gets the identity token's claims that was received from the OpenId Connect provider
-     * @return 
-     */
-    public Map<String, Object> getIdentityTokenClaims();
+    IdentityToken getIdentityToken();
 
     /**
      * Returns the refresh token that can be used to get a new access token
      *
      * @return
      */
-    public Optional<String> getRefreshToken();
+    Optional<RefreshToken> getRefreshToken();
 
     /**
-     * Return the time that the access token is granted for, if it is set to expire
+     * Return the time that the access token is granted for, if it is set to
+     * expire
      *
      * @return
      */
-    public Optional<Integer> getExpiresIn();
+    Optional<Integer> getExpiresIn();
 
     /**
      * Gets the User Claims that was received from the userinfo endpoint
-     * 
+     *
      * @return the claims json
      */
-    public JsonObject getClaimsJson();
+    JsonObject getClaimsJson();
 
     /**
      * Gets the User Claims that was received from the userinfo endpoint
      *
      * @return the {@link OpenIdClaims} instance
      */
-    public OpenIdClaims getClaims();
+    OpenIdClaims getClaims();
 
     /**
      * The OpenId Connect Provider's metadata document fetched via provider URI.
      *
      * @return
      */
-    public JsonObject getProviderMetadata();
-   
-    
-    
+    JsonObject getProviderMetadata();
+
 }

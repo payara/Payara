@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -145,25 +145,15 @@ public class LogFilterForInstance {
 
             // if differ both size then downloading
             if (instanceLogFileSize != fileSizeOnNode) {
-                BufferedInputStream in = null;
-                FileOutputStream file = null;
-                BufferedOutputStream out = null;
-                try {
-                InputStream inputStream = sftpClient.read(loggingFile);
-                in = new BufferedInputStream(inputStream);
-                file = new FileOutputStream(instanceLogFile);
-                out = new BufferedOutputStream(file);
-                int i;
-                while ((i = in.read()) != -1) {
-                    out.write(i);
-                }
-                out.flush();
-                } finally {
-                    if (out != null) try { out.close(); } catch (IOException ex) {}
-                    if (in != null) try { in.close(); } catch (IOException ex) {}
+                try (BufferedInputStream in = new BufferedInputStream(sftpClient.read(loggingFile));
+                     BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(instanceLogFile))) {
+                    int i;
+                    while ((i = in.read()) != -1) {
+                        out.write(i);
+                    }
+                    out.flush();
                 }
             }
-
             sftpClient.close();
         } else if (node.getType().equals("DCOM")) {
 
@@ -283,7 +273,7 @@ public class LogFilterForInstance {
         String sNode = targetServer.getNodeRef();
         Node node = domain.getNodes().getNode(sNode);
         List instanceLogFileNames = null;
-        List<String> instanceLogFileNamesAsString = new ArrayList();
+        List<String> instanceLogFileNamesAsString = new ArrayList<>();
 
         // this code is used when DAS and instances are running on the same machine
         if (node.isLocal()) {
@@ -311,13 +301,14 @@ public class LogFilterForInstance {
                 loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDetails, node, sNode, instanceName);
                 logsDir = new File(loggingDir);
                 allLogFileNames = logsDir.listFiles();
-
-                for (File file: allLogFileNames) {
-                    String fileName = file.getName();
-                    // code to remove . and .. file which is return
-                    if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
-                            && !fileName.contains(".log.")) {
-                        instanceLogFileNamesAsString.add(fileName);
+                if (allLogFileNames != null) {
+                    for (File file: allLogFileNames) {
+                        String fileName = file.getName();
+                        // code to remove . and .. file which is return
+                        if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
+                                && !fileName.contains(".log.")) {
+                            instanceLogFileNamesAsString.add(fileName);
+                        }
                     }
                 }
             }

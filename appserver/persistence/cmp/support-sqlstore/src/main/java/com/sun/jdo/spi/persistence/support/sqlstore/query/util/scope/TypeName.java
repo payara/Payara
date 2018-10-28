@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * TypeName.java
@@ -73,7 +74,7 @@ public class TypeName
         super(type);
         this.qualifiedName = qualifiedName;
     }
-	
+
     /**
      *
      */
@@ -95,7 +96,7 @@ public class TypeName
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("TypeName("); //NOI18N
         buf.append(scope);
         buf.append(", "); //NOI18N
