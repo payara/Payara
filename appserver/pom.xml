@@ -194,9 +194,9 @@
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
 
-        <dbschema.version>3.1.1</dbschema.version>
+        <dbschema.version>3.2-b06</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <schema2beans.version>3.1.1</schema2beans.version>
+        <schema2beans.version>3.2-b06</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
 
         <javadb.version>10.13.1.1</javadb.version>
