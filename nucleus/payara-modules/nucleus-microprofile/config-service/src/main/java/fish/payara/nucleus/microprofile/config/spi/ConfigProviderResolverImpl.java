@@ -199,7 +199,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         // fast check fails search the app registry 
         for (String name : applicationRegistry.getAllApplicationNames()) {
             ApplicationInfo testInfo = applicationRegistry.get(name);
-            if (testInfo.getClassLoaders().contains(loader) || testInfo.getAppClassLoader().equals(loader)) {
+            if (testInfo.getClassLoaders().contains(loader) ||
+                    // when loading an application, no class loader is assigned
+                    (testInfo.getAppClassLoader() != null && testInfo.getAppClassLoader().equals(loader))) {
                 return testInfo;
             }
         }
