@@ -468,19 +468,34 @@ public class DeploymentImpl implements CDI11Deployment {
 
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<>();
+        
+        // some problems with this code that impact performance
+        // we need to not load extensions from the same classloader multiple times.
+        // also the ear classloader will see all as it can use web classloaders
+        HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
+        
+        // ensure we don't add the same extension twice
+        HashMap<Class,Metadata<Extension>> loadedExtensions = new HashMap<>();
         for ( BeanDeploymentArchive bda : bdas ) {
             if ( ! ( bda instanceof RootBeanDeploymentArchive ) ) {
                 ClassLoader moduleClassLoader = ( ( BeanDeploymentArchiveImpl ) bda ).getModuleClassLoaderForBDA();
+                if (!scannedClassLoaders.contains(moduleClassLoader)) {
+                    scannedClassLoaders.add(moduleClassLoader);
                 extensions = context.getTransientAppMetaData( WeldDeployer.WELD_BOOTSTRAP,
                                                               WeldBootstrap.class).loadExtensions( moduleClassLoader );
                 if ( extensions != null ) {
                     for ( Metadata<Extension> bdaExtn : extensions ) {
+                            if (loadedExtensions.get(bdaExtn.getValue().getClass()) == null) {
                         extnList.add(bdaExtn);
+                                loadedExtensions.put(bdaExtn.getValue().getClass(), bdaExtn);
                     }
                 }
             }
         }
+            }
+        }
         extnList.addAll(dynamicExtensions);
+        extensions = extnList;
         return extnList;
     }
 
