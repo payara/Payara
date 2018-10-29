@@ -11,7 +11,7 @@ pipeline {
     }
     agent any
     stages {
-        stage('report') {
+        stage('Report') {
             steps {
                 script{
                     pom = readMavenPom file: 'pom.xml'
