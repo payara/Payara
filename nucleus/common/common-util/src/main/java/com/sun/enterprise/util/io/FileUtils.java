@@ -1004,35 +1004,41 @@ public class FileUtils  {
         outChannel.transferFrom(inChannel, 0, size);
     }
 
+    /**
+     * Copies from InputStream to OutputStream and does not close the streams intentionally.
+     * @param in Stream to read from.
+     * @param os Stream to write to.
+     * @param size Buffersize for copying
+     * @throws IOException Problem when copying
+     */
     public static void copy(InputStream in, OutputStream os, long size) throws IOException {
         if (os instanceof FileOutputStream) {
             copy(in, (FileOutputStream) os, size);
         } else {
-            try(ReadableByteChannel inChannel = Channels.newChannel(in);
-                WritableByteChannel outChannel = Channels.newChannel(os)) {
-                if (size==0) {
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
-                    int read;
-                    do {
-                        read = inChannel.read(byteBuffer);
-                        if (read>0) {
-                            byteBuffer.limit(byteBuffer.position());
-                            byteBuffer.rewind();
-                            outChannel.write(byteBuffer);
-                            byteBuffer.clear();
-                        }
-                    } while (read!=-1);
-                } else {
-                    ByteBuffer byteBuffer;
-                    try{
-                        byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
-                    }catch(Throwable err){
-                        throw new IOException(messages.get("allocate.more.than.java.heap.space", err));
+            ReadableByteChannel inChannel = Channels.newChannel(in);
+            WritableByteChannel outChannel = Channels.newChannel(os);
+            if (size==0) {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
+                int read;
+                do {
+                    read = inChannel.read(byteBuffer);
+                    if (read>0) {
+                        byteBuffer.limit(byteBuffer.position());
+                        byteBuffer.rewind();
+                        outChannel.write(byteBuffer);
+                        byteBuffer.clear();
                     }
-                    inChannel.read(byteBuffer);
-                    byteBuffer.rewind();
-                    outChannel.write(byteBuffer);
+                } while (read!=-1);
+            } else {
+                ByteBuffer byteBuffer;
+                try{
+                    byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
+                }catch(Throwable err){
+                    throw new IOException(messages.get("allocate.more.than.java.heap.space", err));
                 }
+                inChannel.read(byteBuffer);
+                byteBuffer.rewind();
+                outChannel.write(byteBuffer);
             }
         }
     }
