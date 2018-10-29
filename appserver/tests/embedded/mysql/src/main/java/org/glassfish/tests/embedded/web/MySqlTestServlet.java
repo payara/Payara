@@ -61,7 +61,7 @@ import java.sql.Connection;
  */
 @DataSourceDefinitions({
 @DataSourceDefinition(name = "java:app/mysql/MySQLDataSource",
-        className = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource",
+        className = "com.mysql.cj.jdbc.MysqlDataSource",
         portNumber = 3306,
         serverName = "localhost",
         databaseName = "testDB",
