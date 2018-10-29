@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
+import javax.annotation.Priority;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.StatusType;
@@ -50,6 +51,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * 
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
+@Priority(Integer.MAX_VALUE)
 public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
     
     @Override
