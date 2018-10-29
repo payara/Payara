@@ -68,7 +68,7 @@ public final class HttpConnectorAddress {
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
-    private static final String DEFAULT_PROTOCOL = TLS12;
+    private static final String DEFAULT_PROTOCOL = TLS13;
 
     private String host;
     private int    port;
