@@ -309,7 +309,7 @@
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.9.6</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
-        <snakeyaml.version>1.18</snakeyaml.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
 
         <jsonp.version>1.1</jsonp.version>
 
