@@ -45,11 +45,29 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
+        stage('Setup for MicroProfile Config TCK') {
+            steps {
+                setupDomain()
+            }
+        }
         stage('Run MicroProfile Config TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile Fault Tolerance TCK') {
+            steps {
+                setupDomain()
             }
         }
         stage('Run MicroProfile Fault Tolerance TCK') {
@@ -57,6 +75,19 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile Health TCK') {
+            steps {
+                setupDomain()
             }
         }
         stage('Run MicroProfile Health TCK') {
@@ -69,6 +100,19 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile JWT-Auth TCK') {
+            steps {
+                setupDomain()
+            }
         }
         stage('Run MicroProfile JWT-Auth TCK') {
             steps {
@@ -80,12 +124,44 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml -Ppayara-micro-managed,full -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile Metrics TCK') {
+            environment {
+                MP_METRICS_TAGS="tier=integration"
+            }
+            steps {
+                setupDomain()
+            }
         }
         stage('Run MicroProfile Metrics TCK') {
+            environment {
+                MP_METRICS_TAGS="tier=integration"
+            }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile OpenAPI TCK') {
+            steps {
+                setupDomain()
             }
         }
         stage('Run MicroProfile OpenAPI TCK') {
@@ -94,12 +170,43 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile OpenTracing TCK') {
+            steps {
+                setupDomain()
+                sh "${ASADMIN} set-requesttracing-configuration --enabled=true --target=server-config --dynamic=true"
+                sh "${ASADMIN} create-system-properties --target=server-config USE_OPENTRACING_MOCK_TRACER=true"
+                sh "${ASADMIN} set configs.config.server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size=200"
+                sh "${ASADMIN} set-payara-executor-service-configuration --threadpoolexecutorcorepoolsize=20 --threadpoolexecutormaxpoolsize=100 --threadpoolexecutorqueuesize=200 --scheduledthreadpoolexecutorcorepoolsize=20"
+                sh "${ASADMIN} restart-domain $DOMAIN_NAME"
+            }
         }
         stage('Run MicroProfile OpenTracing TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Setup for MicroProfile Rest Client TCK') {
+            steps {
+                setupDomain()
             }
         }
         stage('Run MicroProfile Rest Client TCK') {
@@ -108,6 +215,30 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
         }
     }
+}
+def void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    script{
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara41/bin/asadmin"
+        DOMAIN_NAME = "test-domain"
+    }
+    sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-database --dbtype derby || true"
+}
+def void teardownDomain() {
+    echo 'tidying up after tests:'
+    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} stop-database --dbtype derby || true"
+    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }
