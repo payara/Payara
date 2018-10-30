@@ -2,7 +2,8 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) [2018] Payara Foundation and/or its affiliates. 
+  All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -17,9 +18,9 @@
   file and include the License file at glassfish/legal/LICENSE.txt.
 
   GPL Classpath Exception:
-  The Payara Foundation designates this particular file as subject to the "Classpath"
-  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
-  file that accompanied this code.
+  The Payara Foundation designates this particular file as subject to the 
+  "Classpath" exception as provided by the Payara Foundation in the GPL 
+  Version 2 section of the License file that accompanied this code.
 
   Modifications:
   If applicable, add the following below the License Header, with the fields
@@ -38,28 +39,55 @@
   only if the new code is made subject to such option by the copyright
   holder.
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>5.184-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>cdieventbus-notifier-console-plugin-l10n</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>CDI Event Bus Notifier Console Plugin Localization</name>
+    
+    <artifactId>cdieventbus-notifier-console-plugin-l10n</artifactId>  
+    <name>Admin Console CDI Event Bus Notifier Plugin l10n</name>
+    <description>CDI Event Bus Notifier Plugin bundle for Admin Console Localization</description>
+    
+    <properties>
+        <javadoc.skip>true</javadoc.skip>
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
     
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>osgiversion-maven-plugin</artifactId>            
                 <executions>
                     <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
+                        <id>compute-osgi-version</id>
                         <goals>
-                            <goal>clean</goal>
+                            <goal>compute-osgi-version</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package />
+                            </instructions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -73,13 +101,4 @@
             </resource>
         </resources>
     </build>
-    
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
-            <artifactId>console-plugin-service</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 </project>

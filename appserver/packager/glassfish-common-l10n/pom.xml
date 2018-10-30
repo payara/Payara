@@ -140,11 +140,6 @@
             <artifactId>cluster-ssh-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
-            <artifactId>console-concurrent-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>
 

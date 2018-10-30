@@ -1,1 +1,0 @@
--exportcontents: fish.payara.admingui.extras; version=${project.osgi.version}
