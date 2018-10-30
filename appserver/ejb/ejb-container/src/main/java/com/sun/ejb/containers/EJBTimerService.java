@@ -79,7 +79,6 @@ import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import static java.util.Objects.isNull;
 import static java.util.logging.Level.INFO;
 import org.glassfish.internal.api.Globals;
 
@@ -190,7 +189,7 @@ public abstract class EJBTimerService {
     }
 
     public static EJBTimerServiceWrapper getEJBTimerServiceWrapper(EJBContextImpl ejbContext) {
-        if (isNull(persistentTimerService) && isNull(nonPersistentTimerService)) {
+        if (persistentTimerService == null && nonPersistentTimerService == null) {
             throw new IllegalStateException("EJB Timer Service not available");
         }
         return new EJBTimerServiceWrapper(

@@ -48,7 +48,6 @@ import java.util.List;
 
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
-import static java.util.Objects.nonNull;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -137,7 +136,7 @@ public class ListTimers implements AdminCommand {
         } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
             ejbTimerService = EJBTimerService.getNonPersistentTimerService();
         }
-        if (nonNull(ejbTimerService)) {
+        if (ejbTimerService != null) {
             result = ejbTimerService.listTimers(serverIds);
         }
 
