@@ -291,7 +291,7 @@
                                 <version>${mail.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
-                            <specVersion>1.6</specVersion>
+                            <specVersion>${mail.version}</specVersion>
                             <implVersion>${mail.version}</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
@@ -422,8 +422,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.0</specVersion>
-			                <specImplVersion>${javax.batch-api.version}</specImplVersion>
+                            <specVersion>${javax.batch-api.version}</specVersion>
+			    <specImplVersion>${javax.batch-api.version}</specImplVersion>
                             <apiPackage>javax.batch</apiPackage>
                         </spec>
 
@@ -464,7 +464,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>3.1</specVersion>
+                            <specVersion>${servlet-api.version}</specVersion>
                             <specImplVersion>${servlet-api.version}</specImplVersion>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
@@ -492,8 +492,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.0</specVersion>
-                            <specImplVersion>${websocket-api.version}</specImplVersion>
+                            <specVersion>${websocket-api.version}</specVersion>
+                            <specImplVersion>${tyrus.version}</specImplVersion>
                             <apiPackage>javax.websocket</apiPackage>
                         </spec>
 
@@ -521,7 +521,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${javax.ejb-api.version}</specVersion>
-			                <specImplVersion>${javax.ejb-api.version}</specImplVersion>
+			    <specImplVersion>${javax.ejb-api.version}</specImplVersion>
                             <apiPackage>javax.ejb</apiPackage>
                         </spec>
 
@@ -535,7 +535,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${javax.interceptor-api.version}</specVersion>
-			                <specImplVersion>${javax.interceptor-api.version}</specImplVersion>
+			    <specImplVersion>${javax.interceptor-api.version}</specImplVersion>
                             <apiPackage>javax.interceptor</apiPackage>
                         </spec>
                         <spec>
@@ -547,7 +547,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${javax.resource-api.version}</specVersion>
-			                <specImplVersion>${javax.resource-api.version}</specImplVersion>
+			    <specImplVersion>${javax.resource-api.version}</specImplVersion>
                             <apiPackage>javax.resource</apiPackage>
                         </spec>
                         <spec>
@@ -558,7 +558,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.0</specVersion>
+                            <specVersion>${javax.xml.registry-api.version}</specVersion>
                             <specImplVersion>${javax.xml.registry-api.version}</specImplVersion>
                             <apiPackage>javax.xml.registry</apiPackage>
                         </spec>
@@ -570,7 +570,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
+                            <specVersion>${javax.xml.rpc-api.version}</specVersion>
                             <specImplVersion>${javax.xml.rpc-api.version}</specImplVersion>
                             <apiPackage>javax.xml.rpc</apiPackage>
                         </spec>
@@ -582,8 +582,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.6</specVersion>
-                            <specImplVersion>1.6</specImplVersion>
+                            <specVersion>${javax.enterprise.deploy-api.version}</specVersion>
+                            <specImplVersion>${javax.enterprise.deploy-api.version}</specImplVersion>
                             <apiPackage>javax.enterprise.deploy</apiPackage>
                         </spec>
                         <spec>
@@ -594,7 +594,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
+                            <specVersion>${javax.management.j2ee-api.version}</specVersion>
                             <specImplVersion>${javax.management.j2ee-api.version}</specImplVersion>
                             <apiPackage>javax.management.j2ee</apiPackage>
                         </spec>
@@ -606,8 +606,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>2.3.3</specVersion>
-                            <specImplVersion>2.3.4</specImplVersion>
+                            <specVersion>${jsp-api.version}</specVersion>
+                            <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp</apiPackage>
                         </spec>
                         <spec>
@@ -617,8 +617,8 @@
                                 <version>${javax.el.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
-                            <specVersion>3.0</specVersion>
-                            <implVersion>3.0.0</implVersion>
+                            <specVersion>${javax.el-api.version}</specVersion>
+                            <implVersion>${javax.el.version}</implVersion>
                             <apiPackage>javax.el</apiPackage>
                             <implNamespace>com.sun.el</implNamespace>
                         </spec>
