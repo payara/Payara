@@ -37,38 +37,51 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.jaxrs;
+package fish.payara.microprofile.faulttolerance;
 
-import javax.annotation.Priority;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.StatusType;
-import javax.ws.rs.ext.ExceptionMapper;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
- * ExceptionMapper that catches all Exceptions. We need this because we need to add details about any exceptions to the
- * active span - if this isn't here, we don't go back through the container filter.
- * 
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ *
+ * @author Andrew Pielage andrew.pielage@payara.fish
  */
-@Priority(Integer.MAX_VALUE)
-public class JaxrsContainerRequestTracingExceptionMapper implements ExceptionMapper<Throwable> {
-
-    @Override
-    public Response toResponse(Throwable exception) {      
-        StatusType status = Response.Status.INTERNAL_SERVER_ERROR;
-        
-        // Get the status if available
-        if (exception instanceof WebApplicationException) {
-            status = ((WebApplicationException) exception).getResponse().getStatusInfo();
-        }    
-        
-        // If the status is a server error, attach it as an entity, otherwise just return a response
-        if (status.getFamily() == Response.Status.Family.SERVER_ERROR) {
-            return Response.status(status).entity(exception).build();
-        } else {
-            return Response.status(status).build();
-        }
+public class FaultToleranceObject {
+    
+    private final boolean enabled;
+    private final boolean metricsEnabled;
+    private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates;
+    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionSemaphores;
+    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
+    
+    public FaultToleranceObject(Boolean enabled, Boolean metricsEnabled) {
+        this.enabled = enabled;
+        this.metricsEnabled = metricsEnabled;
+        circuitBreakerStates = new ConcurrentHashMap<>();
+        bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
+        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public boolean areMetricsEnabled() {
+        return metricsEnabled;
+    }
+
+    public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
+        return circuitBreakerStates;
+    }
+
+    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionSemaphores() {
+        return bulkheadExecutionSemaphores;
+    }
+
+    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionQueueSemaphores() {
+        return bulkheadExecutionQueueSemaphores;
+    }
+    
 }

@@ -48,8 +48,8 @@ import java.util.logging.Logger;
  * Class that represents the state of a CircuitBreaker.
  * @author Andrew Pielage
  */
-public class CircuitBreakerState {  
-        
+public class CircuitBreakerState {
+    
     private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
     
     public enum CircuitState {
