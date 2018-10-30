@@ -51,7 +51,6 @@ import javax.servlet.http.*;
 import org.glassfish.ejb.persistent.timer.TimerLocal;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.TimerPrimaryKey;
-import static java.util.Objects.isNull;
 
 /**
  *
@@ -91,7 +90,7 @@ public class TimerWelcomeServlet extends HttpServlet {
             } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
                 ejbTimerService = EJBTimerService.getNonPersistentTimerService();
             }
-            if(isNull(ejbTimerService)) {
+            if(ejbTimerService == null) {
                 throw new IllegalStateException("EJB Timer Service is not available");
             }
             Set<TimerPrimaryKey> nonPersistentTimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
