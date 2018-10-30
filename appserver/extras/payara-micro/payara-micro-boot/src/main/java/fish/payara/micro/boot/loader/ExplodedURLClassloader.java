@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,8 @@ package fish.payara.micro.boot.loader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
@@ -95,14 +93,14 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         if (deleteOnExit) {
             runtimeDir.deleteOnExit();
         }
-        
+
         // create a lib directory
         File libDir = new File(explodedDir,"lib");
         libDir.mkdirs();
         if (deleteOnExit) {
             libDir.deleteOnExit();
         }
-        
+
         // sets the system property used in the server.policy file for permissions
         System.setProperty("fish.payara.micro.UnpackDir", explodedDir.getAbsolutePath());
 
@@ -115,31 +113,32 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                 String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
-                JarFile jar = new JarFile(file);
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    String fileName = null;
-                    if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
-                        fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
-                    } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
-                        fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
-                    }
-                    
-                    if (fileName != null) {
-                        File outputFile = new File(runtimeDir, fileName);
-                        if (deleteOnExit) {
-                            outputFile.deleteOnExit();
+                try (JarFile jar = new JarFile(file)) {
+                    Enumeration<JarEntry> entries = jar.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String fileName = null;
+                        if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
+                            fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
+                        } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
+                            fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
                         }
-                        super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
+
+                        if (fileName != null) {
+                            File outputFile = new File(runtimeDir, fileName);
+                            if (deleteOnExit) {
+                                outputFile.deleteOnExit();
+                            }
+                            super.addURL(outputFile.getAbsoluteFile().toURI().toURL());
 
 
-                        if (entry.isDirectory()) {
-                            outputFile.mkdirs();
-                        } else {
-                            // write out the jar file
-                            try (InputStream is = jar.getInputStream(entry)) {
-                                Files.copy(is, outputFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+                            if (entry.isDirectory()) {
+                                outputFile.mkdirs();
+                            } else {
+                                // write out the jar file
+                                try (InputStream is = jar.getInputStream(entry)) {
+                                    Files.copy(is, outputFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+                                }
                             }
                         }
                     }
@@ -150,5 +149,5 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
         }
 
     }
-     
+
 }

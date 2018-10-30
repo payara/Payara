@@ -1,6 +1,6 @@
-# Payara Support
+# About the Payara Foundation and Payara Services Limited
 
-The [Payara Foundation](http://www.payara.org) is a non-profit foundation behind the development of Payara Server and Payara Micro (the Payara Platform). The Payara Foundation continues to develop the Payara Platform based on the needs of our support customers.
+The [Payara Foundation](http://www.payara.org) is a non-profit foundation behind the development of Payara Server and Payara Micro (the Payara Platform). Payara Services Limited continues to develop the Payara Platform based on the needs of our commercial support customers.
 
 - - - -
 
@@ -9,6 +9,9 @@ The [Payara Foundation](http://www.payara.org) is a non-profit foundation behind
 For questions regarding Payara Server or Payara Micro, including configuration, visit the [Payara Forum](http://www.payara.org/forum)
 
 For issues and bug reports with the Payara Platform, raise a new issue with a reproducer on [GitHub](https://github.com/payara/payara/issues).
+
+Payara Enterprise support services are provided by Payara Services Limited. To learn more about our migration and project support, 
+commercial support and consultancy servces visit [Payara Support](https://www.payara.fish)
 
 - - - -
 
@@ -42,6 +45,9 @@ Both support levels give you full access to all the features listed below:
 For more information on support, including pricing, visit [payara.fish/support](http://www.payara.fish/support).
 
 ### Payara Migration & Project Support
+Migration & Project Support assists customers with Payara Server or Payara Micro during development projects before going to production, or to assist customers migrating from another application server.
+
+Payara Platform experts accelerate your project delivery while reducing risks and costs, helping you deliver your project on time and within budget.
 
 Migration & Project Support includes the following features:
 

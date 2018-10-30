@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * ProcessManager.java
@@ -64,7 +65,7 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     public ProcessManager(List<String> Cmdline) {
         cmdline = new String[Cmdline.size()];
-        cmdline = (String[]) Cmdline.toArray(cmdline);
+        cmdline = Cmdline.toArray(cmdline);
         sb_out = new StringBuffer();
         sb_err = new StringBuffer();
     }
@@ -75,16 +76,15 @@ public class ProcessManager {
             timeout = num;
         }
     }
-    
+
     public final void setEnvironment(String[] env) {
         this.env = env;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     public final void setStdinLines(List<String> list) {
-        if (list != null && list.size() > 0) {
-            stdinLines = new String[list.size()];
-            stdinLines = (String[]) list.toArray(stdinLines);
+        if (list != null && !list.isEmpty()) {
+            stdinLines = list.toArray(new String[0]);
         }
     }
 
@@ -167,30 +167,20 @@ public class ProcessManager {
             return;
         }
 
-        PrintWriter pipe = null;
 
         if(process == null) {
             throw new ProcessManagerException(Strings.get("null.process"));
         }
 
-        try {
-            pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())));
-
-            for (int i = 0; i < stdinLines.length; i++) {
-                debug("InputLine ->" + stdinLines[i] + "<-");
-                pipe.println(stdinLines[i]);
+        try (PrintWriter pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())))) {
+            for (String stdinLine : stdinLines) {
+                debug("InputLine ->" + stdinLine + "<-");
+                pipe.println(stdinLine);
             }
             pipe.flush();
         }
         catch (Exception e) {
             throw new ProcessManagerException(e);
-        }
-        finally {
-            try {
-                pipe.close();
-            }
-            catch (Throwable t) {
-            }
         }
     }
 
@@ -260,8 +250,7 @@ public class ProcessManager {
                 System.exit(1);
             }
 
-            List<String> cmds = new ArrayList<String>();
-            cmds.addAll(Arrays.asList(args));
+            List<String> cmds = new ArrayList<>(Arrays.asList(args));
 
             ProcessManager pm = new ProcessManager(cmds);
             pm.execute();
@@ -285,7 +274,7 @@ public class ProcessManager {
     private boolean echo = true;
     private static final boolean debugOn = false;
     private String[] stdinLines;
-    private List<Thread> threads = new ArrayList<Thread>(2);
+    private List<Thread> threads = new ArrayList<>(2);
     private boolean waitForReaderThreads = true;
     ////////////////////////////////////////////////////////////////////////////
 
@@ -297,8 +286,7 @@ public class ProcessManager {
         }
 
         @Override
-        public void run
-                () {
+        public void run() {
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     sb.append(line).append('\n');
