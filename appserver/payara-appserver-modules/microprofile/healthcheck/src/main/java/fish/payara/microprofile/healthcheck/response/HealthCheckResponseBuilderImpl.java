@@ -45,7 +45,6 @@ import java.util.Optional;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponse.State;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
-import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
  * Base Implementation of HealthCheckResponseBuilder.
@@ -60,7 +59,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder name(String name) {
         // If the provided string isn't empty or null, set it as the name, otherwise throw an exception.
-        if (!isEmpty(name)) {
+        if (!stringEmptyOrNull(name)) {
             this.name = name;
             return this;
         } else {
@@ -71,7 +70,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, String value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!isEmpty(key)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -82,7 +81,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, long value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!isEmpty(key)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -93,7 +92,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, boolean value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!isEmpty(key)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -133,12 +132,21 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     }
     
     private void validate() {
-        if (isEmpty(name)) {
+        if (stringEmptyOrNull(name)) {
             throw new IllegalArgumentException("Healthcheck name is not defined");
         }
         if (state == null) {
             throw new IllegalArgumentException(String.format("Healthcheck [%s] state is not defined", name));
         }
     }
-    
+
+    /**
+     * Helper method that checks whether or not the provided String is empty or null
+     *
+     * @param string The String to evaluate
+     * @return True if the String is empty or null
+     */
+    private boolean stringEmptyOrNull(String string) {
+        return (string == null || string.isEmpty());
+    }
 }
