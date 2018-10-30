@@ -215,11 +215,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.admingui</groupId>
-            <artifactId>jms-notifier-console-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
             <artifactId>jmx-monitoring-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
