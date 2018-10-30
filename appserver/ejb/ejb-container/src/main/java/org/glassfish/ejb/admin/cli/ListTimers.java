@@ -51,6 +51,7 @@ import com.sun.ejb.containers.EjbContainerUtil;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import static java.util.Objects.nonNull;
 import java.util.Properties;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -143,13 +144,19 @@ public class ListTimers implements AdminCommand {
         }
     }
 
-    private String[] listTimers( String[] serverIds ) {
+    private String[] listTimers(String[] serverIds) {
         String[] result = new String[serverIds.length];
 
-        EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-        if (ejbTimerService != null) {
-            result = ejbTimerService.listTimers( serverIds );
+        EJBTimerService ejbTimerService = null;
+        if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+            ejbTimerService = EJBTimerService.getPersistentTimerService();
+        } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
+            ejbTimerService = EJBTimerService.getNonPersistentTimerService();
         }
+        if (nonNull(ejbTimerService)) {
+            result = ejbTimerService.listTimers(serverIds);
+        }
+
         return result;
     }
 

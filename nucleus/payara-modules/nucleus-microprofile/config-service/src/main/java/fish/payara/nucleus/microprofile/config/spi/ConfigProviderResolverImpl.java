@@ -124,7 +124,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     // Gives access to deployed applications
     @Inject
     ApplicationRegistry applicationRegistry;
-
+    
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
     @Inject

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -46,42 +46,26 @@ import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.i18n.StringManager;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.glassfish.api.deployment.InstrumentableClassLoader;
+import org.glassfish.hk2.api.PreDestroy;
+
+import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.security.AccessController;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.security.ProtectionDomain;
-import java.security.SecureClassLoader;
+import java.net.*;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import org.glassfish.api.deployment.InstrumentableClassLoader;
-import org.glassfish.hk2.api.PreDestroy;
 
 /**
  * Class loader used by the ejbs of an application or stand alone module.
@@ -107,19 +91,19 @@ public class ASURLClassLoader
     */
 
     /** logger for this class */
-    private static final Logger _logger=CULoggerInfo.getLogger();
+    private static final Logger _logger = CULoggerInfo.getLogger();
 
     /*
        list of url entries of this class loader. Using LinkedHashSet instead of original ArrayList
        for faster search.
     */
-    private final Set<URLEntry> urlSet = Collections.synchronizedSet(new LinkedHashSet<URLEntry>());
+    private final Set<URLEntry> urlSet = Collections.synchronizedSet(new LinkedHashSet<>());
 
     /** cache of not found resources */
-    private final Map<String,String> notFoundResources   = new ConcurrentHashMap<String,String>();
+    private final Map<String,String> notFoundResources   = new ConcurrentHashMap<>();
 
     /** cache of not found classes */
-    private final Map<String,String> notFoundClasses     = new ConcurrentHashMap<String,String>();
+    private final Map<String,String> notFoundClasses     = new ConcurrentHashMap<>();
 
     /**
         State flag to track whether this instance has been shut off.
@@ -136,16 +120,15 @@ public class ASURLClassLoader
     private volatile String doneSnapshot;
 
     /** streams opened by this loader */
-    private final Vector<SentinelInputStream> streams = new Vector<SentinelInputStream>();
+    private final List<SentinelInputStream> streams = new CopyOnWriteArrayList<>();
 
-    private final ArrayList<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>(1);
+    private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
-    private final static StringManager sm =
-        StringManager.getManager(ASURLClassLoader.class);
+    private final static StringManager sm = StringManager.getManager(ASURLClassLoader.class);
 
     //holder for declared and ee permissions
     private PermsHolder permissionsHolder;
-    
+
     /**
      * Constructor.
      */
@@ -153,7 +136,7 @@ public class ASURLClassLoader
         super(new URL[0]);
 
         permissionsHolder = new PermsHolder();
-        
+
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE,
                         "ClassLoader: " + this + " is getting created.");
@@ -214,12 +197,11 @@ public class ASURLClassLoader
                 + "\n AT " + new Date() +
                 " \n BY :" + Arrays.toString(Thread.currentThread().getStackTrace());
 
-            // Presumably OK to set this flag now while the rest of the cleanup proceeeds,
+            // Presumably OK to set this flag now while the rest of the cleanup proceeds,
             // because we've taken the snapshot.
             doneCalled = true;
 
             // closes the jar handles and sets the url entries to null
-            int i = 0;
             for (URLEntry u : this.urlSet) {
                 if (u.zip != null) {
                     try {
@@ -234,8 +216,6 @@ public class ASURLClassLoader
                     u.table.clear();
                     u.table = null;
                 }
-                u = null;
-                i++;
             }
 
             closeOpenStreams();
@@ -243,8 +223,8 @@ public class ASURLClassLoader
             // clears out the tables
             // Clear all values.  Because fields are 'final' (for thread safety), cannot null them
             this.urlSet.clear();
-            if (this.notFoundResources != null) { this.notFoundResources.clear(); }
-            if (this.notFoundClasses != null)   { this.notFoundClasses.clear();   }
+            this.notFoundResources.clear();
+            this.notFoundClasses.clear();
         }
     }
 
@@ -345,21 +325,7 @@ public class ASURLClassLoader
      * @return    the urls of this class loader or an empty array
      */
     public synchronized URL[] getURLs() {
-
-        URL[] url  = null;
-
-        int i=0;
-        if (this.urlSet != null) {
-            url  = new URL[this.urlSet.size()];
-
-            for (URLEntry urlEntry : urlSet) {
-                url[i++] = (urlEntry).source;
-            }
-        } else {
-            url = new URL[0];
-        }
-
-        return url;
+        return this.urlSet.stream().map(u -> u.source).toArray(URL[]::new);
     }
 
     /**
@@ -374,25 +340,17 @@ public class ASURLClassLoader
      * of this ASURLClassLoader
      */
     public String getClasspath() {
-
-        StringBuffer strBuf = null;
-
         URL[] urls = getURLs();
         if (urls != null) {
-            for (int i=0; i<urls.length; i++) {
-                if (urls[i].getProtocol().equals("file")) {
-                    if (strBuf == null) {
-                        strBuf = new StringBuffer();
-                    }
-                    if (i > 0) {
-                        strBuf.append(File.pathSeparator);
-                    }
-                    strBuf.append(urls[i].getFile());
-                }
+            List<String> files = Arrays.stream(urls)
+                .filter(url -> url.getProtocol().equals("file"))
+                .map(URL::getFile)
+                .collect(Collectors.toList());
+            if (!files.isEmpty()) {
+                return String.join(File.pathSeparator, files);
             }
         }
-
-        return (strBuf != null) ? strBuf.toString() : null;
+        return null;
     }
 
     /**
@@ -404,13 +362,9 @@ public class ASURLClassLoader
      *that is in the loader's classpath should invoke this method after the new
      *file(s) have been added in order to update the class loader's data
      *structures which optimize class and resource searches.
-     *@throws IOException in case of errors refreshing the cache
      */
-    public synchronized void refresh() throws IOException {
+    public synchronized void refresh() {
         clearNotFoundCaches();
-//        for (URLEntry entry : urlSet) {
-//            entry.cacheItems();
-//        }
     }
 
     public void addTransformer(ClassFileTransformer transformer) {
@@ -424,13 +378,10 @@ public class ASURLClassLoader
      */
     public ClassLoader copy() {
         final ASURLClassLoader copyFrom = this;
-        DelegatingClassLoader newCl = (DelegatingClassLoader)AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                // privileged code goes here, for example:
-                return new DelegatingClassLoader(copyFrom);
-            }
+        return AccessController.doPrivileged((PrivilegedAction<DelegatingClassLoader>) () -> {
+            // privileged code goes here, for example:
+            return new DelegatingClassLoader(copyFrom);
         });
-        return newCl;
     }
 
     /**
@@ -451,58 +402,54 @@ public class ASURLClassLoader
     private URL findResource0(final URLEntry res,
                               final String name) {
 
-        Object result =
-        AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
+        // End for -- each URL in classpath.
+        return AccessController.doPrivileged((PrivilegedAction<URL>) () -> {
 
-                if (res.isJar) {
+            if (res.isJar) {
 
-                    try {
-                        JarEntry jarEntry = res.zip.getJarEntry(name);
-                        if (jarEntry != null) {
-                            /*
-                             *Use a custom URL with a special stream handler to
-                             *prevent the JDK's JarURLConnection caching from
-                             *locking the jar file until JVM exit.
-                             */
-                            InternalURLStreamHandler handler = new InternalURLStreamHandler(res, name);
+                try {
+                    JarEntry jarEntry = res.zip.getJarEntry(name);
+                    if (jarEntry != null) {
+                        /*
+                         *Use a custom URL with a special stream handler to
+                         *prevent the JDK's JarURLConnection caching from
+                         *locking the jar file until JVM exit.
+                         */
+                        InternalURLStreamHandler handler = new InternalURLStreamHandler(res, name);
 
-                            // Create a new sub URL from the resource URL (i.e. res.source). To avoid double encoding
-                            // (see https://glassfish.dev.java.net/issues/show_bug.cgi?id=13045)
-                            // use URL constructor instead of first creating a URI and then calling toURL().
-                            // If the resource URL is not properly encoded, that's not our problem.
-                            // Whoever has supplied the resource URL is at fault.
-                            URL ret = new URL("jar", null /* host */, -1 /* port */, res.source + "!/" + name, handler);
-                            handler.tieUrl(ret);
-                            return ret;
-                        }
-
-                    } catch (Throwable thr) {
-                        _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, thr);
+                        // Create a new sub URL from the resource URL (i.e. res.source). To avoid double encoding
+                        // (see https://glassfish.dev.java.net/issues/show_bug.cgi?id=13045)
+                        // use URL constructor instead of first creating a URI and then calling toURL().
+                        // If the resource URL is not properly encoded, that's not our problem.
+                        // Whoever has supplied the resource URL is at fault.
+                        URL ret = new URL("jar", null /* host */, -1 /* port */, res.source + "!/" + name, handler);
+                        handler.tieUrl(ret);
+                        return ret;
                     }
-                } else { // directory
-                    try {
-                        File resourceFile =
-                            new File(res.file.getCanonicalPath()
-                                        + File.separator + name);
 
-                        if (resourceFile.exists()) {
-                            // If we make it this far,
-                            // the resource is in the directory.
-                            return  resourceFile.toURL();
-                        }
-
-                    } catch (IOException e) {
-                        _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, e);
-                    }
+                } catch (Throwable thr) {
+                    _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, thr);
                 }
+            } else { // directory
+                try {
+                    File resourceFile =
+                        new File(res.file.getCanonicalPath()
+                                    + File.separator + name);
 
-                return null;
+                    if (resourceFile.exists()) {
+                        // If we make it this far,
+                        // the resource is in the directory.
+                        return  resourceFile.toURL();
+                    }
 
-            } // End for -- each URL in classpath.
+                } catch (IOException e) {
+                    _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, e);
+                }
+            }
+
+            return null;
+
         });
-
-        return (URL) result;
     }
 
     public URL findResource(String name) {
@@ -525,23 +472,18 @@ public class ASURLClassLoader
         // excpetion for 'urlSet', should the set be cleared while looping.
 
         // resource is in the not found list
-        String nf = (String) notFoundResources.get(name);
+        String nf = notFoundResources.get(name);
         if (nf != null && nf.equals(name) ) {
             return null;
         }
 
-        int i = 0;
         synchronized(this) {
             for (final URLEntry u : this.urlSet) {
-
                 if (!u.hasItem(name)) {
-                    i++;
                     continue;
                 }
-
                 final URL url = findResource0(u, name);
                 if (url != null) return url;
-                i++;
             }
         }
 
@@ -560,44 +502,42 @@ public class ASURLClassLoader
      * over them, (c) thread visibility to all of the above.
      */
     private boolean warnedOnce = false;
-    public synchronized Enumeration<URL>
-    findResources(String name) throws IOException {
+
+    public synchronized Enumeration<URL> findResources(String name) {
         if( doneCalled ) {
             //PAYARA-588
             if ( warnedOnce ) {
                   _logger.log(Level.FINE, CULoggerInfo.doneAlreadyCalled,
                         new Object[] { name, doneSnapshot });
-            
-            }else{
+
+            } else {
                    _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
-                        new Object[] { name, doneSnapshot }); 
+                        new Object[] { name, doneSnapshot });
                    warnedOnce = true;
             }
             // return an empty enumeration instead of null. See issue #13096
-            return Collections.enumeration(Collections.EMPTY_LIST);
+            return Collections.emptyEnumeration();
         }
-        List<URL> resourcesList = new ArrayList<URL>();
-
+        List<URL> resourcesList = new ArrayList<>();
         // resource is in the not found list
-        final String nf = (String) notFoundResources.get(name);
+        final String nf = notFoundResources.get(name);
         if (nf != null && nf.equals(name) ) {
-            return (new Vector(resourcesList)).elements();
+            return Collections.enumeration (resourcesList);
         }
 
-        for (Iterator<URLEntry> iter = this.urlSet.iterator(); iter.hasNext();) {
-            final URLEntry urlEntry = iter.next();
+        for (final URLEntry urlEntry : this.urlSet) {
             final URL url = findResource0(urlEntry, name);
             if (url != null) {
                 resourcesList.add(url);
             }
         }
 
-        if (resourcesList.size() == 0) {
+        if (resourcesList.isEmpty()) {
             // add resource to the not found list
             notFoundResources.put(name, name);
         }
 
-        return (new Vector(resourcesList)).elements();
+        return Collections.enumeration(resourcesList);
     }
 
 
@@ -647,59 +587,38 @@ public class ASURLClassLoader
      */
     private byte[] loadClassData0(final URLEntry res, final String entryName) {
 
-        Object result =
-        AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
-                InputStream classStream = null;
-                try {
-
-                    if (res.isJar) { // It is a jarfile..
-                        JarFile zip = res.zip;
-                        JarEntry entry = zip.getJarEntry(entryName);
-                        if (entry != null) {
-                            classStream = zip.getInputStream(entry);
+        return AccessController.doPrivileged((PrivilegedAction<byte[]>) () -> {
+            try {
+                if (res.isJar) { // It is a jarfile..
+                    JarFile zip = res.zip;
+                    JarEntry entry = zip.getJarEntry(entryName);
+                    if (entry != null) {
+                        InputStream classStream = zip.getInputStream(entry);
+                        byte[] classData = getClassData(classStream);
+                        res.setProtectionDomain(ASURLClassLoader.this, entry.getCertificates());
+                        return classData;
+                    }
+                } else { // Its a directory....
+                    File classFile = new File (res.file,
+                                entryName.replace('/', File.separatorChar));
+                    if (classFile.exists()) {
+                        try (InputStream classStream = new FileInputStream(classFile)) {
                             byte[] classData = getClassData(classStream);
-                            res.setProtectionDomain(ASURLClassLoader.this, entry.getCertificates());
+                            res.setProtectionDomain(ASURLClassLoader.this, null);
                             return classData;
                         }
-                    } else { // Its a directory....
-                        File classFile = new File (res.file,
-                                    entryName.replace('/', File.separatorChar));
-
-                        if (classFile.exists()) {
-                            try {
-                                classStream = new FileInputStream(classFile);
-                                byte[] classData = getClassData(classStream);
-                                res.setProtectionDomain(ASURLClassLoader.this, null);
-                                return classData;
-                            } finally {
-                                /*
-                                 *Close the stream only if this is a directory.  The stream for
-                                 *a jar/zip file was opened elsewhere and should remain open after this
-                                 *method completes.
-                                 */
-                                if (classStream != null) {
-                                    try {
-                                        classStream.close();
-                                    } catch (IOException closeIOE) {
-                                        _logger.log(Level.INFO, "loader.excep_in_asurlclassloader", closeIOE);
-                                    }
-                                }
-                            }
-                        }
                     }
-                } catch (IOException ioe) {
-                    _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, ioe);
                 }
-                return null;
+            } catch (IOException ioe) {
+                _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, ioe);
             }
+            return null;
         });
-        return (byte[]) result;
     }
-    
+
     @Override
-    public void addEEPermissions(PermissionCollection eePc) 
-        throws SecurityException {        
+    public void addEEPermissions(PermissionCollection eePc)
+        throws SecurityException {
         // sm on
         if (System.getSecurityManager() != null) {
             System.getSecurityManager().checkSecurityAccess(
@@ -709,34 +628,33 @@ public class ASURLClassLoader
         }
     }
 
-    @Override    
-    public void addDeclaredPermissions(PermissionCollection declaredPc 
-            ) throws SecurityException {
-        
+    @Override
+    public void addDeclaredPermissions(PermissionCollection declaredPc) throws SecurityException {
+
         if (System.getSecurityManager() != null) {
             System.getSecurityManager().checkSecurityAccess(
                     DDPermissionsLoader.SET_EE_POLICY);
-        
+
             permissionsHolder.setDeclaredPermissions(declaredPc);
         }
-        
+
     }
 
-    
-    
+
+
     @Override
     protected PermissionCollection getPermissions(CodeSource codeSource) {
-        
-        PermissionCollection cachedPc = 
+
+        PermissionCollection cachedPc =
             permissionsHolder.getCachedPerms(codeSource);
         if (cachedPc != null)
             return cachedPc;
-        
+
         return permissionsHolder.getPermissions(
                 codeSource, super.getPermissions(codeSource));
     }
-    
-    
+
+
 
     /** THREAD SAFETY: what happens when more than one thread requests the same class
         and thus works on the same classData?  Or defines the same package?  Maybe
@@ -801,14 +719,12 @@ public class ASURLClassLoader
         } catch (IllegalClassFormatException icfEx) {
             throw new ClassNotFoundException(icfEx.toString(), icfEx);
         }
-        Class clazz = null;
         try {
             byte[] bytes = classData.getClassBytes();
-            clazz = defineClass(name, bytes, 0, bytes.length, classData.pd);
-            return clazz;
+            return defineClass(name, bytes, 0, bytes.length, classData.pd);
         } catch (UnsupportedClassVersionError ucve) {
- 	    throw new UnsupportedClassVersionError(
- 	        sm.getString("ejbClassLoader.unsupportedVersion", name,
+            throw new UnsupportedClassVersionError(
+                sm.getString("ejbClassLoader.unsupportedVersion", name,
  	                     System.getProperty("java.version")));
         }
     }
@@ -834,7 +750,7 @@ public class ASURLClassLoader
             throw new ClassNotFoundException(name);
         }
 
-        String nf = (String) notFoundClasses.get(name);
+        String nf = notFoundClasses.get(name);
         if (nf != null && nf.equals(name) ) {
             throw new ClassNotFoundException(name);
         }
@@ -842,10 +758,8 @@ public class ASURLClassLoader
         // search thru the JARs for a file of the form java/lang/Object.class
         String entryName = name.replace('.', '/') + ".class";
 
-        int i = 0;
         for (URLEntry u : this.urlSet) {
             if (!u.hasItem(entryName)) {
-                i++;
                 continue;
             }
 
@@ -857,12 +771,11 @@ public class ASURLClassLoader
                     //recreate the pd to include the declared permissions
                     CodeSource cs = u.pd.getCodeSource();
                     PermissionCollection pc = this.getPermissions(cs);
-                    ProtectionDomain pdWithPemissions = 
+                    ProtectionDomain pdWithPemissions =
                         new ProtectionDomain(u.pd.getCodeSource(), pc, u.pd.getClassLoader(), u.pd.getPrincipals());
                     return new ClassData(result, pdWithPemissions);
                 }
             }
-            i++;
         }
 
         // add to the not found classes list
@@ -879,26 +792,14 @@ public class ASURLClassLoader
      * @throws   IOException  if an i/o error
      */
     private byte[] getClassData(InputStream istream) throws IOException {
-
-        BufferedInputStream bstream = new BufferedInputStream(istream);;
         byte[] buf = new byte[4096];
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        int num = 0;
-        try {
+        try (BufferedInputStream bstream = new BufferedInputStream(istream)) {
+            int num;
             while( (num = bstream.read(buf)) != -1) {
                 bout.write(buf, 0, num);
             }
-        } finally {
-            if (bstream != null) {
-                try {
-                    bstream.close();
-                } catch (IOException closeIOE) {
-                    ASURLClassLoader._logger.log(Level.INFO,
-                            CULoggerInfo.exceptionInASURLClassLoader, closeIOE);
-                }
-            }
         }
-
         return bout.toByteArray();
     }
 
@@ -913,22 +814,19 @@ public class ASURLClassLoader
      * @return   a string representation of this class loader
      */
     public String toString() {
-
-        StringBuffer buffer = new StringBuffer();
-
-        buffer.append(getClassLoaderName() + " : \n");
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(getClassLoaderName()).append(" : \n");
         if( doneCalled ) {
             buffer.append("doneCalled = true" + "\n");
             String snapshot = doneSnapshot; // MUST use temp for thread safety; could go null after checking
             if( snapshot != null ) {
-                buffer.append("doneSnapshot = " + snapshot);
+                buffer.append("doneSnapshot = ").append(snapshot);
             }
         } else {
-            buffer.append("urlSet = " + this.urlSet + "\n");
-            buffer.append("doneCalled = false " + "\n");
+            buffer.append("urlSet = ").append(this.urlSet).append("\n");
+            buffer.append("doneCalled = false \n");
         }
-        buffer.append(" Parent -> " + getParent() + "\n");
-
+        buffer.append(" Parent -> ").append(getParent()).append("\n");
         return buffer.toString();
     }
 
@@ -1001,8 +899,8 @@ public class ASURLClassLoader
          * @see java.lang.Object#finalize()
          */
         protected void finalize() throws IOException {
-            super.finalize();
             reallyClose();
+            super.finalize();
         }
     }
 
@@ -1046,8 +944,7 @@ public class ASURLClassLoader
                     zip = new ProtectedJarFile(file);
                 }
 
-                table = new Hashtable<String,String>();
-//                cacheItems();
+                table = new Hashtable<>();
             } catch (URISyntaxException use) {
                 IOException ioe= new IOException();
                 ioe.initCause(use);
@@ -1056,12 +953,12 @@ public class ASURLClassLoader
         }
 
         private void fillTable(File f, Hashtable t, String parent) throws IOException {
-
             String localName = (parent.equals("")) ? "" : parent + "/";
-
             File[] children = f.listFiles();
-            for (int i = 0; i < children.length; i++) {
-                processFile(children[i],  t, localName);
+            if (children != null) {
+                for (File aChildren : children) {
+                    processFile(aChildren, t, localName);
+                }
             }
         }
 
@@ -1090,7 +987,7 @@ public class ASURLClassLoader
         boolean hasItem(String item) {
             // in the case of ejbc stub compilation, asurlclassloader is created before stubs
             // gets generated, thus we need to return true for this case.
-            if (table.size() == 0) {
+            if (table.isEmpty()) {
                 return true;
             }
 
@@ -1102,14 +999,13 @@ public class ASURLClassLoader
              *the file.  If the file is now present but was not when the loader
              *was created, add an entry for the file in the table.
              */
-            boolean result = false;
             String target = item;
             // special handling
             if (item.startsWith("./")) {
-                target = item.substring(2, item.length());
+                target = item.substring(2);
             }
 
-            result = table.containsKey(target);
+            boolean result = table.containsKey(target);
             if ( ! result && ! isJar) {
                 /*
                  *If the file exists now then it has been added to the directory since the
@@ -1148,19 +1044,13 @@ public class ASURLClassLoader
              *to the directories of interest.
              */
             try {
-                File result = (File) AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                        public Object run() throws Exception {
-
-                            File targetFile = new File(file, targetPath);
-                            if ( ! targetFile.exists()) {
-                                targetFile = null;
-                            }
-                            return targetFile;
-                        }
-                    });
-
-                return result;
-
+                return AccessController.doPrivileged((PrivilegedExceptionAction<File>) () -> {
+                    File targetFile = new File(file, targetPath);
+                    if ( ! targetFile.exists()) {
+                        targetFile = null;
+                    }
+                    return targetFile;
+                });
             } catch (PrivilegedActionException pae) {
                 /*
                  *Log any exception and return false.
@@ -1235,7 +1125,7 @@ public class ASURLClassLoader
      *Returns the vector of open streams; creates it if needed.
      *@return Vector<SentinelInputStream> holding open streams
      */
-    private Vector<SentinelInputStream> getStreams() {
+    private List<SentinelInputStream> getStreams() {
         return streams;
     }
 
@@ -1247,18 +1137,15 @@ public class ASURLClassLoader
      * Must be synchnronized to (a) avoid race condition checking 'streams'.
      */
     private synchronized void closeOpenStreams() {
-        if (streams != null) {
-
-            SentinelInputStream[] toClose = streams.toArray(new SentinelInputStream[streams.size()]);
-            for (SentinelInputStream s : toClose) {
-                try {
-                    s.closeWithWarning();
-                } catch (IOException ioe) {
-                    _logger.log(Level.WARNING, CULoggerInfo.exceptionClosingStream, ioe);
-                }
+        SentinelInputStream[] toClose = streams.toArray(new SentinelInputStream[0]);
+        for (SentinelInputStream s : toClose) {
+            try {
+                s.closeWithWarning();
+            } catch (IOException ioe) {
+                _logger.log(Level.WARNING, CULoggerInfo.exceptionClosingStream, ioe);
             }
-            streams.clear();
         }
+        streams.clear();
     }
 
     /**

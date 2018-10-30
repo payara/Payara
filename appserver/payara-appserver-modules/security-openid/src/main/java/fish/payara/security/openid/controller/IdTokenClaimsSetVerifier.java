@@ -39,30 +39,23 @@
  */
 package fish.payara.security.openid.controller;
 
-import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.BadJWTException;
-import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
-import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZED_PARTY;
 import static fish.payara.security.openid.api.OpenIdConstant.NONCE;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
-import java.util.Date;
-import java.util.List;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 /**
  * Validates the ID token
  *
  * @author Gaurav Gupta
  */
-public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
+public class IdTokenClaimsSetVerifier extends TokenClaimsSetVerifier {
 
-    private final OpenIdConfiguration configuration;
     private final String expectedNonceHash;
 
-    public IdTokenClaimsSetVerifier(OpenIdConfiguration configuration, String expectedNonceHash) {
-        this.configuration = configuration;
+    public IdTokenClaimsSetVerifier(String expectedNonceHash, OpenIdConfiguration configuration) {
+        super(configuration);
         this.expectedNonceHash = expectedNonceHash;
     }
 
@@ -70,89 +63,10 @@ public class IdTokenClaimsSetVerifier implements JWTClaimsSetVerifier {
      * Validate ID Token's claims
      *
      * @param claims
-     * @param context
      * @throws com.nimbusds.jwt.proc.BadJWTException
      */
     @Override
-    public void verify(JWTClaimsSet claims, SecurityContext context) throws BadJWTException {
-
-        int clockSkewInSeconds = 60;
-        int clockSkewInMillis = clockSkewInSeconds * 1000;
-
-        /**
-         * The Issuer Identifier for the OpenID Provider (which is typically
-         * obtained during Discovery) must exactly match the value of the iss
-         * (issuer) Claim.
-         */
-        if (isNull(claims.getIssuer())) {
-            throw new IllegalStateException("Missing issuer (iss) claim");
-        }
-        if (!claims.getIssuer().equals(configuration.getProviderMetadata().getIssuerURI())) {
-            throw new IllegalStateException("Invalid issuer : " + configuration.getProviderMetadata().getIssuerURI());
-        }
-
-        /**
-         * Subject Identifier is locally unique and never reassigned identifier
-         * within the Issuer for the End-User.
-         */
-        if (isNull(claims.getSubject())) {
-            throw new IllegalStateException("Missing subject (sub) claim");
-        }
-
-        /**
-         * Audience(s) claim (that this ID Token is intended for) must contains
-         * the client_id of the Client (Relying Party) as an audience value.
-         */
-        final List<String> audience = claims.getAudience();
-        if (isNull(audience) || audience.isEmpty()) {
-            throw new IllegalStateException("Missing audience (aud) claim");
-        }
-        if (!audience.contains(configuration.getClientId())) {
-            throw new IllegalStateException("Invalid audience (aud) claim " + audience);
-        }
-
-        /**
-         * If the ID Token contains multiple audiences, the Client should verify
-         * that an azp (authorized party) claim is present.
-         */
-        Object authorizedParty = claims.getClaim(AUTHORIZED_PARTY);
-        if (audience.size() > 1 && isNull(authorizedParty)) {
-            throw new IllegalStateException("Missing authorized party (azp) claim");
-        }
-
-        /**
-         * If an azp (authorized party) claim is present, the Client should
-         * verify that its client_id is the claim Value
-         */
-        if (audience.size() > 1
-                && nonNull(authorizedParty)
-                && !authorizedParty.equals(configuration.getClientId())) {
-            throw new IllegalStateException("Invalid authorized party (azp) claim " + configuration.getClientId());
-        }
-
-        /**
-         * The current time must be before the time represented by the exp
-         * Claim.
-         */
-        long currentTime = System.currentTimeMillis();
-        Date exp = claims.getExpirationTime();
-        if (isNull(exp)) {
-            throw new IllegalStateException("Missing expiration time (exp) claim");
-        }
-        if ((exp.getTime() + clockSkewInMillis) < currentTime) {
-            throw new IllegalStateException("ID token is expired " + exp);
-        }
-
-        /**
-         * The current time must be after the time represented by the iat Claim.
-         */
-        Date iat = claims.getIssueTime();
-        if (isNull(iat)) {
-            throw new IllegalStateException("Missing issue time (iat) claim");
-        }
-        if ((iat.getTime() - clockSkewInMillis) > currentTime) {
-            throw new IllegalStateException("Issue time must be after current time " + iat);
-        }
+    public void verify(JWTClaimsSet claims) throws BadJWTException {
 
         /**
          * If a nonce was sent in the authentication request, a nonce claim must

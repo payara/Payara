@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * Field.java
@@ -48,7 +49,6 @@ package com.sun.jdo.spi.persistence.support.sqlstore.query.util.scope;
 
 import org.glassfish.persistence.common.I18NHelper;
 
-import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.Type;
 import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.FieldInfo;
 
 /**
@@ -74,7 +74,7 @@ public class Field
         super(fieldInfo.getType());
         this.fieldInfo = fieldInfo;
     }
-	
+
     /**
      *
      */
@@ -96,7 +96,7 @@ public class Field
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("Field("); //NOI18N
         buf.append(scope);
         buf.append(", "); //NOI18N

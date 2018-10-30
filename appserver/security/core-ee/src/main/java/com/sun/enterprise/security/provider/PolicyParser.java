@@ -585,6 +585,10 @@ public class PolicyParser {
     }
 
     // package-private: used by PolicyFile for static policy
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     static String[] parseExtDirs(String codebase, int start) {
 
         String s = System.getProperty(EXTDIRS_PROPERTY);
