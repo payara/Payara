@@ -348,6 +348,7 @@
         <ant.version>1.10.1</ant.version>
         <ant-launcher.version>1.10.1</ant-launcher.version>
 
+        <maven-processor-plugin.version>3.3.3</maven-processor-plugin.version>
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
@@ -1295,7 +1296,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.4</version>
+                <version>${maven-processor-plugin.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>

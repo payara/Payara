@@ -1099,7 +1099,7 @@
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>3.3.3</version>
+                <version>${maven-processor-plugin.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.docs.help</groupId>
