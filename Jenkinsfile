@@ -218,7 +218,7 @@ pipeline {
         }
         stage('Setup for EE7 Tests JDK7') {
             tools {
-                jdk "zulu-8"
+                jdk "zulu-7"
             }
             steps {
                 setupDomain()
