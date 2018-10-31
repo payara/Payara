@@ -175,10 +175,5 @@
             <artifactId>opentracing-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.opentracing</groupId>
-            <artifactId>microprofile-opentracing-api</artifactId>
-            <version>${microprofile-opentracing.version}</version>
-        </dependency>
     </dependencies>
 </project>
