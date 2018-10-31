@@ -131,6 +131,9 @@ pipeline {
             }
         }
         stage('Run EE7 Tests') {
+            environment {
+                DOMAIN_NAME="test-domain"
+            }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
