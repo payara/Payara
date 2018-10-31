@@ -129,6 +129,7 @@ pipeline {
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                     -Dpayara.directory.name=payara41 \
+                    -Dpayara_domain=${DOMAIN_NAME} \
                     -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
@@ -238,6 +239,7 @@ pipeline {
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                     -Dpayara.directory.name=payara41 \
+                    -Dpayara_domain=${DOMAIN_NAME} \
                     -Dpayara.version.major=4 -Ppayara-server-remote,stable"""
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
