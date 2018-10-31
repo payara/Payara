@@ -58,6 +58,7 @@ import javax.persistence.EntityManagerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * I am an abstract class representing all the deployment information common
@@ -87,29 +88,29 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     private Application application;
     private Set<Role> roles;
-    private Set<MessageDestinationDescriptor> messageDestinations = new HashSet<MessageDestinationDescriptor>();
+    private Set<MessageDestinationDescriptor> messageDestinations = new HashSet<>();
     private WebServicesDescriptor webServices = new WebServicesDescriptor();
 
-    private Set<ManagedBeanDescriptor> managedBeans = new HashSet<ManagedBeanDescriptor>();
+    private Set<ManagedBeanDescriptor> managedBeans = new HashSet<>();
 
-    // Physical entity manager factory corresponding to the unit name of 
+    // Physical entity manager factory corresponding to the unit name of
     // each module-level persistence unit.  Only available at runtime.
     private Map<String, EntityManagerFactory> entityManagerFactories =
-            new HashMap<String, EntityManagerFactory>();
+            new HashMap<>();
 
 
     // table for caching InjectionInfo with the class name as index
-    private Hashtable<InjectionInfoCacheKey, InjectionInfo> injectionInfos =
-            new Hashtable<InjectionInfoCacheKey, InjectionInfo>();
+    private Map<InjectionInfoCacheKey, InjectionInfo> injectionInfos =
+            new ConcurrentHashMap<>();
 
     private boolean policyModified = false;
 
     private String compatValue;
 
-    private boolean keepState = false; 
+    private boolean keepState = false;
     private boolean defaultGroupPrincipalMapping = true;
 
-    protected HashMap<String, RootXMLNode> rootNodes = new HashMap<String, RootXMLNode>();
+    protected Map<String, RootXMLNode> rootNodes = new HashMap<>();
 
     /**
      * Construct a new BundleDescriptor
@@ -396,7 +397,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      * Utility method for iterating the set of named descriptors in the supplied nameEnvironment
      */
     protected Collection getNamedDescriptorsFrom(JndiNameEnvironment nameEnvironment) {
-        Collection namedDescriptors = new Vector();
+        Collection namedDescriptors = new ArrayList();
         for (Iterator itr = nameEnvironment.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
             ResourceReferenceDescriptor resourceReference = (ResourceReferenceDescriptor) itr.next();
             namedDescriptors.add(resourceReference);
@@ -654,7 +655,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
             return moduleID;
         }
         if (application != null && !application.isVirtual()) {
-            return application.getRegistrationName() + "#" + 
+            return application.getRegistrationName() + "#" +
                 getModuleDescriptor().getArchiveUri();
         } else {
             return moduleID;
@@ -1001,7 +1002,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     public void setDefaultGroupPrincipalMapping(boolean defaultGroupPrincipalMapping) {
         this.defaultGroupPrincipalMapping = defaultGroupPrincipalMapping;
     }
-    
+
     /**
      * Sets the full flag of the bundle descriptor. Once set, the annotations
      * of the classes contained in the archive described by this bundle

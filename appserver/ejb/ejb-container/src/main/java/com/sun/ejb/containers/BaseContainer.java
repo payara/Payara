@@ -90,7 +90,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Vector;
 import javax.ejb.AccessLocalException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBAccessException;
@@ -4954,19 +4953,19 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected String[] getMonitoringMethodsArray(boolean hasGeneratedClasses) {
         String[] method_sigs = null;
         if (hasGeneratedClasses) {
-            List<String> methodList = new ArrayList<String>();
+            List<String> methodList = new ArrayList<>();
             for (Class clz : monitoredGeneratedClasses) {
                 for (Method m : clz.getDeclaredMethods()) {
                     methodList.add(EjbMonitoringUtils.stringify(m));
                 }
             }
-            method_sigs = methodList.toArray(new String[methodList.size()]);
+            method_sigs = methodList.toArray(new String[0]);
         } else {
-            Vector methodVec = ejbDescriptor.getMethods();
+            List<Method> methodVec = ejbDescriptor.getMethods();
             int sz = methodVec.size();
             method_sigs = new String[sz];
             for (int i = 0; i < sz; i++) {
-                method_sigs[i] = EjbMonitoringUtils.stringify((Method) methodVec.get(i));
+                method_sigs[i] = EjbMonitoringUtils.stringify(methodVec.get(i));
             }
         }
 

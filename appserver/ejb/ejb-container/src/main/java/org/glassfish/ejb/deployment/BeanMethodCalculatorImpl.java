@@ -42,20 +42,13 @@ package org.glassfish.ejb.deployment;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.logging.LogDomains;
-import java.util.Locale;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
@@ -64,54 +57,53 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 /**
  * Utility class to calculate the list of methods required  to have transaction
  * attributes
- * 
+ *
  * @author  Jerome Dochez
  */
 final public class BeanMethodCalculatorImpl {
-    
+
     // TODO - change logger if/when other EJB deployment classes are changed
     static final private Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
 
-    public Vector getPossibleCmpCmrFields(ClassLoader cl,
+    public List<FieldDescriptor> getPossibleCmpCmrFields(ClassLoader cl,
                                                  String className)
         throws ClassNotFoundException {
 
-        Vector fieldDescriptors = new Vector();
+        List<FieldDescriptor> fieldDescriptors = new ArrayList<>();
         Class theClass = cl.loadClass(className);
 
         // Start with all *public* methods
         Method[] methods = theClass.getMethods();
 
-        // Find all accessors that could be cmp fields. This list 
+        // Find all accessors that could be cmp fields. This list
         // will contain all cmr field accessors as well, since there
         // is no good way to distinguish between the two purely based
         // on method signature.
-        for(int mIndex = 0; mIndex < methods.length; mIndex++) {
-            Method next = methods[mIndex];
+        for (Method next : methods) {
             String nextName = next.getName();
             int nextModifiers = next.getModifiers();
-            if( Modifier.isAbstract(nextModifiers) ) {
-                if( nextName.startsWith("get") &&
-                    nextName.length() > 3 ) {
-                    String field = 
-                        nextName.substring(3,4).toLowerCase(Locale.US) +
-                        nextName.substring(4);
+            if (Modifier.isAbstract(nextModifiers)) {
+                if (nextName.startsWith("get") &&
+                        nextName.length() > 3) {
+                    String field =
+                            nextName.substring(3, 4).toLowerCase(Locale.US) +
+                                    nextName.substring(4);
                     fieldDescriptors.add(new FieldDescriptor(field));
                 }
             }
         }
         return fieldDescriptors;
     }
-      
-    public Vector getMethodsFor(com.sun.enterprise.deployment.EjbDescriptor ejbDescriptor, ClassLoader classLoader)
+
+    public List<Method> getMethodsFor(com.sun.enterprise.deployment.EjbDescriptor ejbDescriptor, ClassLoader classLoader)
             throws ClassNotFoundException
     {
-        Vector methods = new Vector();
-        
+        List<Method> methods = new ArrayList<>();
+
         if (ejbDescriptor.isRemoteInterfacesSupported()) {
             addAllInterfaceMethodsIn(methods, classLoader.loadClass(ejbDescriptor.getHomeClassName()));
             addAllInterfaceMethodsIn(methods, classLoader.loadClass(ejbDescriptor.getRemoteClassName()));
-        } 
+        }
 
         if (ejbDescriptor.isRemoteBusinessInterfacesSupported()) {
             for(String intf : ejbDescriptor.getRemoteBusinessClassNames()) {
@@ -136,46 +128,45 @@ final public class BeanMethodCalculatorImpl {
 
         if (ejbDescriptor.hasWebServiceEndpointInterface()) {
             addAllInterfaceMethodsIn(methods, classLoader.loadClass(ejbDescriptor.getWebServiceEndpointInterfaceName()));
-                                                                    
+
         }
         return methods;
     }
-    
-    private static void addAllInterfaceMethodsIn(Collection methods, Class c) {
-        
+
+    private static void addAllInterfaceMethodsIn(Collection<Method> methods, Class c) {
         methods.addAll(Arrays.asList(c.getMethods()));
     }
-    
+
     /**
-     * @return a collection of MethodDescriptor for all the methods of my 
+     * @return a collection of MethodDescriptor for all the methods of my
      * ejb which are elligible to have a particular transaction setting.
      */
-    public Collection getTransactionalMethodsFor(com.sun.enterprise.deployment.EjbDescriptor desc, ClassLoader loader)
+    public List<MethodDescriptor> getTransactionalMethodsFor(com.sun.enterprise.deployment.EjbDescriptor desc, ClassLoader loader)
         throws ClassNotFoundException, NoSuchMethodException
     {
         EjbDescriptor ejbDescriptor = (EjbDescriptor) desc;
-        // only set if desc is a stateful session bean.  NOTE that 
+        // only set if desc is a stateful session bean.  NOTE that
         // !statefulSessionBean does not imply stateless session bean
         boolean statefulSessionBean = false;
 
-        Vector methods = new Vector();
+        List<MethodDescriptor> methods = new ArrayList<>();
         if (ejbDescriptor instanceof EjbSessionDescriptor) {
-            statefulSessionBean = 
+            statefulSessionBean =
                 ((EjbSessionDescriptor) ejbDescriptor).isStateful();
-            
-            boolean singletonSessionBean = 
+
+            boolean singletonSessionBean =
                 ((EjbSessionDescriptor) ejbDescriptor).isSingleton();
-            
+
 	    // Session Beans
-            if (ejbDescriptor.isRemoteInterfacesSupported()) {                
-                Collection disallowedMethods = extractDisallowedMethodsFor(javax.ejb.EJBObject.class, sessionBeanMethodsDisallowed);
-                Collection potentials = getTransactionMethodsFor(loader, ejbDescriptor.getRemoteClassName() , disallowedMethods);
+            if (ejbDescriptor.isRemoteInterfacesSupported()) {
+                Collection<Method> disallowedMethods = extractDisallowedMethodsFor(javax.ejb.EJBObject.class, sessionBeanMethodsDisallowed);
+                Collection<Method> potentials = getTransactionMethodsFor(loader, ejbDescriptor.getRemoteClassName() , disallowedMethods);
                 transformAndAdd(potentials, MethodDescriptor.EJB_REMOTE, methods);
             }
-            
+
             if( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
-                
-                for(String intfName : 
+
+                for(String intfName :
                         ejbDescriptor.getRemoteBusinessClassNames() ) {
 
                     Class businessIntf = loader.loadClass(intfName);
@@ -188,10 +179,10 @@ final public class BeanMethodCalculatorImpl {
             }
 
             if (ejbDescriptor.isLocalInterfacesSupported()) {
-                Collection disallowedMethods = extractDisallowedMethodsFor(javax.ejb.EJBLocalObject.class, sessionLocalBeanMethodsDisallowed);
-                Collection potentials = getTransactionMethodsFor(loader, ejbDescriptor.getLocalClassName() , disallowedMethods);
+                Collection<Method> disallowedMethods = extractDisallowedMethodsFor(javax.ejb.EJBLocalObject.class, sessionLocalBeanMethodsDisallowed);
+                Collection<Method> potentials = getTransactionMethodsFor(loader, ejbDescriptor.getLocalClassName() , disallowedMethods);
                 transformAndAdd(potentials, MethodDescriptor.EJB_LOCAL, methods);
-                
+
             }
 
             if( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
@@ -221,12 +212,12 @@ final public class BeanMethodCalculatorImpl {
             if (ejbDescriptor.hasWebServiceEndpointInterface()) {
                 Class webServiceClass = loader.loadClass
                     (ejbDescriptor.getWebServiceEndpointInterfaceName());
-                
-                Method[] webMethods = webServiceClass.getMethods();                
-                for (int i=0;i<webMethods.length;i++) {
-                    methods.add(new MethodDescriptor(webMethods[i],  
-                                MethodDescriptor.EJB_WEB_SERVICE));
-                    
+
+                Method[] webMethods = webServiceClass.getMethods();
+                for (Method webMethod : webMethods) {
+                    methods.add(new MethodDescriptor(webMethod,
+                            MethodDescriptor.EJB_WEB_SERVICE));
+
                 }
             }
 
@@ -251,29 +242,29 @@ final public class BeanMethodCalculatorImpl {
         } else {
             // entity beans local interfaces
             String homeIntf = ejbDescriptor.getHomeClassName();
-            if (homeIntf!=null) {                
- 
+            if (homeIntf!=null) {
+
                 Class home = loader.loadClass(homeIntf);
                 Collection potentials = getTransactionMethodsFor(javax.ejb.EJBHome.class, home);
                 transformAndAdd(potentials, MethodDescriptor.EJB_HOME, methods);
-                
-                String remoteIntf = ejbDescriptor.getRemoteClassName();                
+
+                String remoteIntf = ejbDescriptor.getRemoteClassName();
                 Class remote = loader.loadClass(remoteIntf);
                 potentials = getTransactionMethodsFor(javax.ejb.EJBObject.class, remote);
                 transformAndAdd(potentials, MethodDescriptor.EJB_REMOTE, methods);
-            } 
-            
+            }
+
             // enity beans remote interfaces
             String localHomeIntf = ejbDescriptor.getLocalHomeClassName();
-            if (localHomeIntf!=null) { 
+            if (localHomeIntf!=null) {
                 Class home = loader.loadClass(localHomeIntf);
                 Collection potentials = getTransactionMethodsFor(javax.ejb.EJBLocalHome.class, home);
                 transformAndAdd(potentials, MethodDescriptor.EJB_LOCALHOME, methods);
-                
-                String remoteIntf = ejbDescriptor.getLocalClassName();                
+
+                String remoteIntf = ejbDescriptor.getLocalClassName();
                 Class remote = loader.loadClass(remoteIntf);
                 potentials = getTransactionMethodsFor(javax.ejb.EJBLocalObject.class, remote);
-                transformAndAdd(potentials, MethodDescriptor.EJB_LOCAL, methods);                
+                transformAndAdd(potentials, MethodDescriptor.EJB_LOCAL, methods);
             }
         }
 
@@ -289,109 +280,108 @@ final public class BeanMethodCalculatorImpl {
         }
 
         return methods;
-     }     
-     
-     private Collection getTransactionMethodsFor(ClassLoader loader, String interfaceName, Collection disallowedMethods)
+     }
+
+     private Collection<Method> getTransactionMethodsFor(ClassLoader loader, String interfaceName, Collection<Method> disallowedMethods)
         throws ClassNotFoundException
      {
          Class clazz = loader.loadClass(interfaceName);
          return getTransactionMethodsFor(clazz, disallowedMethods);
      }
-     
-     private Collection getTransactionMethodsFor(Class interfaceImpl, Collection disallowedMethods) {
-         Vector v = new Vector(Arrays.asList(interfaceImpl.getMethods()));
+
+     private Collection<Method> getTransactionMethodsFor(Class interfaceImpl, Collection<Method> disallowedMethods) {
+         List<Method> v = new ArrayList<>(Arrays.asList(interfaceImpl.getMethods()));
          v.removeAll(disallowedMethods);
          return v;
-     }         
-     
-     private Collection getTransactionMethodsFor(Class interfaceType, Class interfaceImpl) {
-         Collection disallowedTransactionMethods = getDisallowedTransactionMethodsFor(interfaceType);
+     }
+
+     private Collection<Method> getTransactionMethodsFor(Class interfaceType, Class interfaceImpl) {
+         Collection<Method> disallowedTransactionMethods = getDisallowedTransactionMethodsFor(interfaceType);
          return getTransactionMethodsFor(interfaceImpl, disallowedTransactionMethods);
      }
-     
-     private Collection getDisallowedTransactionMethodsFor(Class interfaceType) {
+
+     private Collection<Method> getDisallowedTransactionMethodsFor(Class interfaceType) {
          return extractDisallowedMethodsFor(interfaceType, getDisallowedMethodsNamesFor(interfaceType));
      }
-     
+
      // from EJB 2.0 spec section 17.4.1
-     private Collection extractDisallowedMethodsFor(Class interfaceType, String[] methodNames) {
-         
-         Vector v = new Vector();
-         // no disallowed methods for this interface 
+     private Collection<Method> extractDisallowedMethodsFor(Class interfaceType, String[] methodNames) {
+
+         List<Method> v = new ArrayList<>();
+         // no disallowed methods for this interface
          if (methodNames.length==0)
              return v;
-         
+
          Method methods[] = interfaceType.getMethods();
-         
-         for (int i=0; i<methods.length; i++) {
-            // all methods of the interface are disallowed
-            if (methodNames[0].equals("*"))
-                 v.addElement(methods[i]);             
-            else if (Arrays.binarySearch(methodNames, methods[i].getName())>=0) 
-                 v.addElement(methods[i]);
+
+         for (Method method : methods) {
+             // all methods of the interface are disallowed
+             if (methodNames[0].equals("*"))
+                 v.add(method);
+             else if (Arrays.binarySearch(methodNames, method.getName()) >= 0)
+                 v.add(method);
          }
          return v;
      }
-     
+
      /**
-      * utiliy method to transform our collection of Method objects into 
-      * MethodDescriptor objects and add them to our global list of 
+      * utiliy method to transform our collection of Method objects into
+      * MethodDescriptor objects and add them to our global list of
       * elligible methods
-      * @param the collection of acceptable method objects
-      * @param the method-intf identifier for those methods
-      * @param the global list of MethodDescriptors objects 
+      * @param methods collection of acceptable method objects
+      * @param methodIntf method-intf identifier for those methods
+      * @param globalList global list of MethodDescriptors objects
       */
-     private void transformAndAdd(Collection methods, String methodIntf, Vector globalList) {
-         
-         for (Iterator itr = methods.iterator();itr.hasNext();) {
-             Method m = (Method) itr.next();                                                 
+     private void transformAndAdd(Collection<Method> methods, String methodIntf, List<MethodDescriptor> globalList) {
+         for (Object method : methods) {
+             Method m = (Method) method;
              MethodDescriptor md = new MethodDescriptor(m, methodIntf);
              globalList.add(md);
          }
      }
-     
+
      /**
       * @return the list of disallowed methods for a particular interface
       */
      private String[] getDisallowedMethodsNamesFor(Class interfaceType) {
-         return (String[]) getDisallowedMethodsNames().get(interfaceType);
+         return getDisallowedMethodsNames().get(interfaceType);
      }
-     
+
      /**
-      * @return a Map of disallowed methods per interface type. The key to the 
+      * @return a Map of disallowed methods per interface type. The key to the
       * map is the interface type (e.g. EJBHome, EJBObject), the value
       * is an array of methods names disallowed to have transaction attributes
       */
-     protected Map getDisallowedMethodsNames() {
+     protected Map<Class, String[]> getDisallowedMethodsNames() {
          if (disallowedMethodsPerInterface==null) {
-            disallowedMethodsPerInterface = new Hashtable();
+            disallowedMethodsPerInterface = new HashMap<>();
             disallowedMethodsPerInterface.put(javax.ejb.EJBHome.class, entityBeanHomeMethodsDisallowed);
             disallowedMethodsPerInterface.put(javax.ejb.EJBObject.class, entityBeanRemoteMethodsDisallowed);
             disallowedMethodsPerInterface.put(javax.ejb.EJBLocalHome.class, entityBeanLocalHomeMethodsDisallowed);
             disallowedMethodsPerInterface.put(javax.ejb.EJBLocalObject.class, entityBeanLocalInterfaceMethodsDisallowed);
-         } 
+         }
          return disallowedMethodsPerInterface;
      }
-     
+
      private final String entityBeanHomeMethodsDisallowed[] = {
-         "getEJBMetaData", "getHomeHandle" 
+         "getEJBMetaData", "getHomeHandle"
      };
      private final String entityBeanRemoteMethodsDisallowed[] = {
          "getEJBHome", "getHandle", "getPrimaryKey", "isIdentical"
-     }; 
+     };
      private final String entityBeanLocalHomeMethodsDisallowed[] = {};
      private final String entityBeanLocalInterfaceMethodsDisallowed[] = {
         "getEJBLocalHome", "getPrimaryKey", "isIdentical"
      };
-     
+
      private final String sessionBeanMethodsDisallowed[] = {
          "*"
      };
-     
+
      private final String sessionLocalBeanMethodsDisallowed[] = {
          "*"
      };
-     
-     private Map disallowedMethodsPerInterface;
-     
+
+     private Map<Class, String[]> disallowedMethodsPerInterface;
+
 }

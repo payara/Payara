@@ -83,19 +83,15 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.Synchronization;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Vector;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
@@ -112,13 +108,13 @@ public class EjbContainerUtilImpl
     private static Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
 
     private ThreadPoolExecutor defaultThreadPoolExecutor;
-    
+
     @Inject
     private ServiceLocator services;
 
     @Inject
     private ServerContext serverContext;
-    
+
     @Inject
     JavaEEIOUtils javaEEIOUtils;
 
@@ -195,10 +191,10 @@ public class EjbContainerUtilImpl
         }
 
         defaultThreadPoolExecutor = createThreadPoolExecutor(DEFAULT_THREAD_POOL_NAME);
-        
+
         //avoid starting JDK timer in application class loader.  The life of _timer
         //field is longer than deployed apps, and any reference to app class loader
-        //in JDK timer thread will cause class loader leak.  Issue 17468 
+        //in JDK timer thread will cause class loader leak.  Issue 17468
         ClassLoader originalClassLoader = null;
         try {
             originalClassLoader = Utility.setContextClassLoader(ejbImplClassLoader);
@@ -236,16 +232,16 @@ public class EjbContainerUtilImpl
     }
 
     public static boolean isInitialized() {
-        return (_me != null);        
+        return (_me != null);
     }
 
     public static EjbContainerUtil getInstance() {
         if (_me == null) {
-            // This situation shouldn't happen. Print the error message 
+            // This situation shouldn't happen. Print the error message
             // and the stack trace to know how did we get here.
 
             // Create the instance first to access the logger.
-            _logger.log(Level.WARNING, 
+            _logger.log(Level.WARNING,
                     "Internal error: EJBContainerUtilImpl is null, creating ...",
                     new Throwable());
             _me = Globals.getDefaultHabitat().getService(
@@ -365,10 +361,10 @@ public class EjbContainerUtilImpl
             txData = new TxData();
             tx.setContainerData(txData);
         }
-        
+
         return txData;
     }
-    
+
     @Override
     public  ContainerSynchronization getContainerSync(Transaction jtx)
         throws RollbackException, SystemException
@@ -407,12 +403,12 @@ public class EjbContainerUtilImpl
     }
 
     @Override
-    public  Vector getBeans(Transaction jtx) {
+    public  List getBeans(Transaction jtx) {
         JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
 
         if( txData.beans == null ) {
-            txData.beans = new Vector();
+            txData.beans = new CopyOnWriteArrayList();
         }
 
         return txData.beans;
@@ -423,7 +419,7 @@ public class EjbContainerUtilImpl
     public Object getActiveTxCache(Transaction jtx) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
-        
+
         return txData.activeTxCache;
     }
 
@@ -431,10 +427,10 @@ public class EjbContainerUtilImpl
     public void setActiveTxCache(Transaction jtx, Object cache) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
-        
+
         txData.activeTxCache = cache;
     }
-    
+
     @Override
     public Agent getCallFlowAgent() {
         return callFlowAgent;
@@ -471,10 +467,10 @@ public class EjbContainerUtilImpl
     // in J2EETransaction to avoid repeated Map<tx, data> lookups.
     private static class TxData {
         ContainerSynchronization sync;
-        Vector beans;
+        List beans;
         Object activeTxCache;
     }
-    
+
     @Override
     public EjbTimerService getEjbTimerService(String target) {
         EjbTimerService ejbt = null;
@@ -546,27 +542,27 @@ public class EjbContainerUtilImpl
                 ? new LinkedBlockingQueue<Runnable>(queueCapacity)
                 : new SynchronousQueue(true);
 
-        // PAYARA-405 validates attributes of the thread pool to ensure no problems      
+        // PAYARA-405 validates attributes of the thread pool to ensure no problems
         if (corePoolSize < 0) {
             _logger.log(Level.WARNING, "Core Pool Size configured to be less than 0. Resetting to 0");
             corePoolSize = 0;
         }
-        
+
         if (maxPoolSize < 1) {
             _logger.log(Level.WARNING, "Max Pool Size configured to be less than 1. Resetting to 1");
             maxPoolSize = 1;
         }
-                
+
         if (corePoolSize > maxPoolSize) {
             _logger.log(Level.WARNING, "Core Pool Size configured to be greater than maxPoolSize. Resetting to maxPoolSize {0}", maxPoolSize);
             corePoolSize = maxPoolSize;
         }
-        
+
         if (keepAliveSeconds < 0) {
             _logger.log(Level.WARNING, "Keep Alive Seconds configured to be less than 0. Resetting to 0");
-            keepAliveSeconds = 0;            
+            keepAliveSeconds = 0;
         }
-        
+
         result = new EjbThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, workQueue, poolName);
 
         if(allowCoreThreadTimeout) {
@@ -582,12 +578,12 @@ public class EjbContainerUtilImpl
         }
         return result;
     }
-    
+
     @Override
     public ThreadPoolExecutor getThreadPoolExecutor(String poolName) {
         if(poolName == null) {
             return defaultThreadPoolExecutor;
-        } 
+        }
         return null;
 //        TODO retrieve the named ThreadPoolExecutor
     }

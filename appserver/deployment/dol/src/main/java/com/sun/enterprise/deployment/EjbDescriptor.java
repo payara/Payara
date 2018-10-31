@@ -83,7 +83,7 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     /**
      * Returns true if the EJB can be accessed remotely
-     * @return 
+     * @return
      */
     boolean isRemoteBusinessInterfacesSupported();
 
@@ -111,7 +111,7 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     String getLocalClassName();
 
-    Set getMethodDescriptors();
+    Set<MethodDescriptor> getMethodDescriptors();
 
     Map getMethodPermissionsFromDD();
 
@@ -121,7 +121,7 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     /**
      * Gets the application which the EJB is in
-     * @return 
+     * @return
      */
     Application getApplication();
 

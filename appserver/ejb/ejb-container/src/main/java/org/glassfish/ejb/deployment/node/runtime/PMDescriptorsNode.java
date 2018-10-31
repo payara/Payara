@@ -40,9 +40,6 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Iterator;
-import java.util.Vector;
-
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -51,48 +48,50 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASPersistenceManagerDesc
 import org.glassfish.ejb.deployment.descriptor.runtime.PersistenceManagerInUse;
 import org.w3c.dom.Node;
 
+import java.util.List;
+
 /**
  * This node handles the pm-descriptors runtime xml element
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 
 public class PMDescriptorsNode extends RuntimeDescriptorNode {
 
     public PMDescriptorsNode() {
-        registerElementHandler(new XMLElement(RuntimeTagNames.PM_DESCRIPTOR), 
+        registerElementHandler(new XMLElement(RuntimeTagNames.PM_DESCRIPTOR),
                                PMDescriptorNode.class, "addPersistenceManager");
-        registerElementHandler(new XMLElement(RuntimeTagNames.PM_INUSE), 
-                               PMInUseNode.class, "setPersistenceManagerInUse");        
+        registerElementHandler(new XMLElement(RuntimeTagNames.PM_INUSE),
+                               PMInUseNode.class, "setPersistenceManagerInUse");
     }
 
     /**
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName name
+     * @param descriptor descriptor to write
      * @return the DOM tree top node
-     */    
+     */
     public Node writeDescriptor(Node parent, String nodeName, EjbBundleDescriptorImpl descriptor) {
-		
+
 	Node pms = null;
-	Vector pmDescriptors = descriptor.getPersistenceManagers();
+	List pmDescriptors = descriptor.getPersistenceManagers();
 	if (pmDescriptors!=null && !pmDescriptors.isEmpty()) {
-            pms = super.writeDescriptor(parent, nodeName, descriptor);
-            PMDescriptorNode pmNode = new PMDescriptorNode();
-            
-            for (Iterator pmIterator = pmDescriptors.iterator();pmIterator.hasNext();) {
-                IASPersistenceManagerDescriptor pmDescriptor = (IASPersistenceManagerDescriptor) pmIterator.next();
-                pmNode.writeDescriptor(pms, RuntimeTagNames.PM_DESCRIPTOR, pmDescriptor);
-            }
-            PersistenceManagerInUse inUse = descriptor.getPersistenceManagerInUse();
-            if (inUse!=null) {
-		PMInUseNode inUseNode = new PMInUseNode();
-		inUseNode.writeDescriptor(pms, RuntimeTagNames.PM_INUSE, inUse);
-            }
+        pms = super.writeDescriptor(parent, nodeName, descriptor);
+        PMDescriptorNode pmNode = new PMDescriptorNode();
+
+        for (Object pmDescriptor1 : pmDescriptors) {
+            IASPersistenceManagerDescriptor pmDescriptor = (IASPersistenceManagerDescriptor) pmDescriptor1;
+            pmNode.writeDescriptor(pms, RuntimeTagNames.PM_DESCRIPTOR, pmDescriptor);
         }
+        PersistenceManagerInUse inUse = descriptor.getPersistenceManagerInUse();
+        if (inUse!=null) {
+            PMInUseNode inUseNode = new PMInUseNode();
+            inUseNode.writeDescriptor(pms, RuntimeTagNames.PM_INUSE, inUse);
+        }
+    }
 	return pms;
     }
 }

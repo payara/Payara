@@ -40,13 +40,13 @@
 
 package com.sun.ejb.containers;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -67,7 +67,7 @@ import com.sun.logging.LogDomains;
  * the beans can be called during before/afterCompletion.
  *
  * This class also provides special methods for PersistenceManager Sync and
- * Timer objects which must be called AFTER the containers during 
+ * Timer objects which must be called AFTER the containers during
  * before/afterCompletion.
  *
  */
@@ -77,10 +77,10 @@ final class ContainerSynchronization implements Synchronization
     private static final Logger _logger =
         LogDomains.getLogger(ContainerSynchronization.class, LogDomains.EJB_LOGGER);
 
-    private ArrayList beans = new ArrayList();
-    private Vector pmSyncs = new Vector();
+    private List<EJBContextImpl> beans = new CopyOnWriteArrayList<>();
+    private List<Synchronization> pmSyncs = new CopyOnWriteArrayList<>();
 
-    private Hashtable timerSyncs = new Hashtable();
+    private Map<TimerPrimaryKey, Synchronization> timerSyncs = new ConcurrentHashMap<>();
 
     private Transaction tx; // the tx with which this Sync was registered
     private EjbContainerUtil ejbContainerUtilImpl;
@@ -88,37 +88,33 @@ final class ContainerSynchronization implements Synchronization
     SFSBTxCheckpointCoordinator sfsbTxCoordinator;
 
     // Note: this must be called only after a Tx is begun.
-    ContainerSynchronization(Transaction tx, 
+    ContainerSynchronization(Transaction tx,
 			     EjbContainerUtil ejbContainerUtilImpl)
     {
         this.tx = tx;
         this.ejbContainerUtilImpl = ejbContainerUtilImpl;
     }
-    
-    Vector  getBeanList(){
-        Vector vec = new Vector();
-        for (Iterator iter = beans.iterator(); iter.hasNext(); ) {
-            vec.add(iter.next());
-        }
-        return vec;
+
+    List<EJBContextImpl> getBeanList(){
+        return new ArrayList<>(beans);
     }
-    
+
     void addBean(EJBContextImpl bean)
     {
         beans.add(bean);
     }
-    
+
     void removeBean(EJBContextImpl bean)
     {
         beans.remove(bean);
     }
-    
+
     void addPMSynchronization(Synchronization sync)
     {
         pmSyncs.add(sync);
     }
 
-    // Set synchronization object for a particular timer.  
+    // Set synchronization object for a particular timer.
     void addTimerSynchronization(TimerPrimaryKey timerId, Synchronization sync)
     {
         timerSyncs.put(timerId, sync);
@@ -136,42 +132,41 @@ final class ContainerSynchronization implements Synchronization
     public void beforeCompletion()
     {
         // first call beforeCompletion for each bean instance
-        for ( int i=0; i<beans.size(); i++ ) {
-            EJBContextImpl context = (EJBContextImpl)beans.get(i);
-            BaseContainer container = (BaseContainer)context.getContainer();
+        for (EJBContextImpl context : beans) {
+            BaseContainer container = (BaseContainer) context.getContainer();
             try {
-                if( container != null ) {
+                if (container != null) {
                     boolean allowTxCompletion = true;
-		    if (container.isUndeployed()) {
+                    if (container.isUndeployed()) {
                         if (context instanceof SessionContextImpl) {
                             allowTxCompletion = ((SessionContextImpl) context).getInLifeCycleCallback();
                         } else {
                             allowTxCompletion = false;
-		            _logger.log(Level.WARNING, "Marking Tx for rollback "
-        		        + " because container for " + container
-        		        + " is undeployed");
+                            _logger.log(Level.WARNING, "Marking Tx for rollback "
+                                    + " because container for " + container
+                                    + " is undeployed");
                         }
                     }
 
                     if (!allowTxCompletion) {
-			try {
-			    tx.setRollbackOnly();
-			} catch (SystemException sysEx) {
-			    _logger.log(Level.FINE, "Error while trying to "
-				+ "mark for rollback", sysEx);
-			}
-		    } else {
-			container.beforeCompletion(context);
-		    }
+                        try {
+                            tx.setRollbackOnly();
+                        } catch (SystemException sysEx) {
+                            _logger.log(Level.FINE, "Error while trying to "
+                                    + "mark for rollback", sysEx);
+                        }
+                    } else {
+                        container.beforeCompletion(context);
+                    }
                 } else {
                     // Might be null if bean was removed.  Just skip it.
                     _logger.log(Level.FINE, "context with empty container in " +
-                                " ContainerSynchronization.beforeCompletion");
+                            " ContainerSynchronization.beforeCompletion");
                 }
-            } catch ( RuntimeException ex ) {
+            } catch (RuntimeException ex) {
                 logAndRollbackTransaction(ex);
                 throw ex;
-            } catch ( Exception ex ) {
+            } catch (Exception ex) {
                 logAndRollbackTransaction(ex);
                 // no need to call remaining beforeCompletions
                 throw new EJBException("Error during beforeCompletion.", ex);
@@ -179,14 +174,13 @@ final class ContainerSynchronization implements Synchronization
         }
 
         // now call beforeCompletion for all pmSyncs
-        for ( int i=0; i<pmSyncs.size(); i++ ) {
-            Synchronization sync = (Synchronization)pmSyncs.elementAt(i);
+        for (Synchronization sync : pmSyncs) {
             try {
                 sync.beforeCompletion();
-            } catch ( RuntimeException ex ) {
+            } catch (RuntimeException ex) {
                 logAndRollbackTransaction(ex);
                 throw ex;
-            } catch ( Exception ex ) {
+            } catch (Exception ex) {
                 logAndRollbackTransaction(ex);
                 // no need to call remaining beforeCompletions
                 throw new EJBException("Error during beforeCompletion.", ex);
@@ -207,30 +201,28 @@ final class ContainerSynchronization implements Synchronization
     }
 
     public void afterCompletion(int status)
-    {	
-        for ( int i=0; i<pmSyncs.size(); i++ ) {
-            Synchronization sync = (Synchronization)pmSyncs.elementAt(i);
+    {
+        for (Synchronization sync : pmSyncs) {
             try {
                 sync.afterCompletion(status);
-            } catch ( Exception ex ) {
+            } catch (Exception ex) {
                 _logger.log(Level.SEVERE, "ejb.after_completion_error", ex);
             }
         }
 
         // call afterCompletion for each bean instance
-        for ( int i=0; i<beans.size();i++  ) {
-            EJBContextImpl context = (EJBContextImpl)beans.get(i);
-            BaseContainer container = (BaseContainer)context.getContainer();
+        for (EJBContextImpl context : beans) {
+            BaseContainer container = (BaseContainer) context.getContainer();
             try {
-                if( container != null ) {
+                if (container != null) {
                     container.afterCompletion(context, status);
                 } else {
                     // Might be null if bean was removed.  Just skip it.
                     _logger.log(Level.FINE, "context with empty container in "
-                                +
-                                " ContainerSynchronization.afterCompletion");
+                            +
+                            " ContainerSynchronization.afterCompletion");
                 }
-            } catch ( Exception ex ) {
+            } catch (Exception ex) {
                 _logger.log(Level.SEVERE, "ejb.after_completion_error", ex);
             }
         }
@@ -239,12 +231,10 @@ final class ContainerSynchronization implements Synchronization
             sfsbTxCoordinator.doTxCheckpoint();
         }
 
-        for ( Iterator iter = timerSyncs.values().iterator(); 
-              iter.hasNext(); ) {
-            Synchronization timerSync = (Synchronization) iter.next();
+        for (Synchronization timerSync : timerSyncs.values()) {
             try {
                 timerSync.afterCompletion(status);
-            } catch ( Exception ex ) { 
+            } catch (Exception ex) {
                 _logger.log(Level.SEVERE, "ejb.after_completion_error", ex);
             }
         }

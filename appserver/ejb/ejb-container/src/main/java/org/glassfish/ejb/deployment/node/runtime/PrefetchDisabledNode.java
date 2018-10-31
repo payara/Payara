@@ -42,6 +42,7 @@ package org.glassfish.ejb.deployment.node.runtime;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -53,7 +54,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.PrefetchDisabledDescripto
 import org.w3c.dom.Node;
 
 /**
- * This node handles the prefetch-disabled runtime deployment descriptors 
+ * This node handles the prefetch-disabled runtime deployment descriptors
  *
  */
 public class PrefetchDisabledNode extends DeploymentDescriptorNode<PrefetchDisabledDescriptor> {
@@ -85,19 +86,19 @@ public class PrefetchDisabledNode extends DeploymentDescriptorNode<PrefetchDisab
     }
 
     @Override
-    public Node writeDescriptor(Node parent, String nodeName, 
-        PrefetchDisabledDescriptor prefetchDisabledDescriptor) {    
-	Node prefetchDisabledNode = super.writeDescriptor(parent, nodeName, 
+    public Node writeDescriptor(Node parent, String nodeName,
+        PrefetchDisabledDescriptor prefetchDisabledDescriptor) {
+	Node prefetchDisabledNode = super.writeDescriptor(parent, nodeName,
             prefetchDisabledDescriptor);
-        ArrayList methodDescs = 
+        List<MethodDescriptor> methodDescs =
             prefetchDisabledDescriptor.getConvertedMethodDescs();
         if (!methodDescs.isEmpty()) {
             MethodNode methodNode = new MethodNode();
             for (Iterator methodIterator = methodDescs.iterator();
                 methodIterator.hasNext();) {
-                MethodDescriptor methodDesc = 
+                MethodDescriptor methodDesc =
                     (MethodDescriptor) methodIterator.next();
-                methodNode.writeQueryMethodDescriptor(prefetchDisabledNode, 
+                methodNode.writeQueryMethodDescriptor(prefetchDisabledNode,
                     RuntimeTagNames.QUERY_METHOD, methodDesc);
             }
         }

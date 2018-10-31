@@ -54,26 +54,16 @@ import com.sun.ejb.EJBUtils;
 
 public class RemoteBusinessObjectFactory implements ObjectFactory {
 
-
-
-    public Object getObjectInstance(Object obj, 
-				    Name name, 
+    public Object getObjectInstance(Object obj,
+				    Name name,
 				    Context nameCtx,
-				    Hashtable env) throws Exception 
-    {
-
-	InitialContext ic = new InitialContext(env);
-
-	Reference ref = (Reference) obj;
-
-	RefAddr refAddr = ref.get("url");
-
-	Object genericRemoteHomeObj = ic.lookup((String) refAddr.getContent());
-
-    String busInterface = ref.getClassName();
-        
-	return EJBUtils.lookupRemote30BusinessObject(genericRemoteHomeObj,
-                                                     busInterface);
+				    Hashtable env) throws Exception {
+		InitialContext ic = new InitialContext(env);
+		Reference ref = (Reference) obj;
+		RefAddr refAddr = ref.get("url");
+		Object genericRemoteHomeObj = ic.lookup((String) refAddr.getContent());
+		String busInterface = ref.getClassName();
+		return EJBUtils.lookupRemote30BusinessObject(genericRemoteHomeObj, busInterface);
     }
 
 }

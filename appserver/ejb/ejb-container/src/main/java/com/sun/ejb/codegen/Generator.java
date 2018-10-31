@@ -41,10 +41,8 @@
 package com.sun.ejb.codegen;
 
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,38 +103,35 @@ public abstract class Generator {
         // throws clauses of the methods may be different (note Java
         // requires that the superclass/intf method have a superset of the
         // exceptions in the derived method).
-        Vector nodups = new Vector();
-        for ( int i=0; i<orig.length; i++ ) {
-            Method m1 = orig[i];
+        List<Method> nodups = new CopyOnWriteArrayList<>();
+        for (Method m1 : orig) {
             boolean dup = false;
-            for ( Enumeration e=nodups.elements(); e.hasMoreElements(); ) {
-                Method m2 = (Method)e.nextElement();
-
+            for (Method m2 : nodups) {
                 // m1 and m2 are duplicates if they have the same signature
-                // (name and same parameters). 
-                if ( !m1.getName().equals(m2.getName()) )
+                // (name and same parameters).
+                if (!m1.getName().equals(m2.getName()))
                     continue;
 
                 Class[] m1parms = m1.getParameterTypes();
                 Class[] m2parms = m2.getParameterTypes();
-                if ( m1parms.length != m2parms.length )
+                if (m1parms.length != m2parms.length)
                     continue;
 
                 boolean parmsDup = true;
-                for ( int j=0; j<m2parms.length; j++ ) {
-                    if ( m1parms[j] != m2parms[j] ) {
+                for (int j = 0; j < m2parms.length; j++) {
+                    if (m1parms[j] != m2parms[j]) {
                         parmsDup = false;
                         break;
                     }
                 }
-                if ( parmsDup ) {
+                if (parmsDup) {
                     dup = true;
-                    // Select which of the duplicate methods to generate 
+                    // Select which of the duplicate methods to generate
                     // code for: choose the one that is lower in the
                     // inheritance hierarchy: this ensures that the generated
                     // method will compile.
-                    if ( m2.getDeclaringClass().isAssignableFrom(
-                                                    m1.getDeclaringClass()) ) {
+                    if (m2.getDeclaringClass().isAssignableFrom(
+                            m1.getDeclaringClass())) {
                         // m2 is a superclass/intf of m1, so replace m2 with m1
                         nodups.remove(m2);
                         nodups.add(m1);
@@ -145,10 +140,10 @@ public abstract class Generator {
                 }
             }
 
-            if ( !dup )
+            if (!dup)
                 nodups.add(m1);
         }
-        return (Method[])nodups.toArray(new Method[nodups.size()]);
+        return nodups.toArray(new Method[0]);
     }
 
     /**
@@ -167,9 +162,9 @@ public abstract class Generator {
                 String ejbIntfClzName  = ejbIntfClz.getName();
                 Class methodToCheckClz = methodToCheck.getDeclaringClass();
                 if( !methodToCheckClz.getName().equals(ejbIntfClzName) ) {
-                    String[] logParams = { next.toString(), 
+                    String[] logParams = { next.toString(),
                                            methodToCheck.toString() };
-                    _logger.log(Level.WARNING, 
+                    _logger.log(Level.WARNING,
                                 "ejb.illegal_ejb_interface_override",
                                 logParams);
                 }
@@ -207,7 +202,7 @@ public abstract class Generator {
 
     protected String getUniqueClassName(DeploymentContext context, String origName,
                                         String origSuffix,
-					Vector existingClassNames)
+					List<String> existingClassNames)
     {
 	String newClassName = null;
 	boolean foundUniqueName = false;
@@ -232,7 +227,7 @@ public abstract class Generator {
 
     protected String getTxAttribute(EjbDescriptor dd, Method method)
     {
-	// The TX_* strings returned MUST match the TX_* constants in 
+	// The TX_* strings returned MUST match the TX_* constants in
 	// com.sun.ejb.Container.
         if ( dd instanceof EjbSessionDescriptor
 	     && ((EjbSessionDescriptor)dd).getTransactionType().equals("Bean") )
@@ -261,11 +256,11 @@ public abstract class Generator {
             throw new RuntimeException("Transaction Attribute not found for method "+method);
         }
 	return txAttr;
-    } 
+    }
 
     protected String getSecurityAttribute(EjbDescriptor dd, Method m)
     {
-	// The SEC_* strings returned MUST match the SEC_* constants in 
+	// The SEC_* strings returned MUST match the SEC_* constants in
 	// com.sun.ejb.Container.
 
 	MethodDescriptor thisMethodDesc = new MethodDescriptor(m, ejbClassSymbol);
@@ -291,6 +286,6 @@ public abstract class Generator {
 	}
 
 	return "SEC_CHECKED";
-    } 
+    }
 
 }

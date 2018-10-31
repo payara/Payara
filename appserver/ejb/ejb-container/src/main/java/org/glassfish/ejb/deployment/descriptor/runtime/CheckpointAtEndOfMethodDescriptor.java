@@ -42,8 +42,8 @@ package org.glassfish.ejb.deployment.descriptor.runtime;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -51,8 +51,8 @@ import org.glassfish.deployment.common.Descriptor;
 
 public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
 
-    private ArrayList methodDescs = new ArrayList();
-    private ArrayList convertedMethodDescs = new ArrayList();
+    private List<MethodDescriptor> methodDescs = new ArrayList<>();
+    private List<MethodDescriptor> convertedMethodDescs = new ArrayList<>();
     private EjbDescriptor ejbDescriptor = null;
 
     /** Default constructor. */
@@ -63,7 +63,7 @@ public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
       * Getter for method
       * @return Value of MethodDescriptor list
       */
-    public ArrayList getMethodDescriptors() {
+    public List<MethodDescriptor> getMethodDescriptors() {
         return methodDescs;
     }
 
@@ -71,10 +71,10 @@ public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
       * Getter for converted method
       * @return Value of style converted MethodDescriptor list
       */
-    public ArrayList getConvertedMethodDescs() {
+    public List<MethodDescriptor> getConvertedMethodDescs() {
        if (convertedMethodDescs.isEmpty()) {
            convertStyleCheckpointedMethods();
-       } 
+       }
        return convertedMethodDescs;
     }
 
@@ -89,7 +89,7 @@ public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
 
     /**
      * Setter for ejbDescriptors
-     * @param ejbDescriptors New value of ejbDescriptor.
+     * @param ejbDescriptor New value of ejbDescriptor.
      */
     public void setEjbDescriptor(
         EjbDescriptor ejbDescriptor) {
@@ -99,7 +99,7 @@ public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
 
     /**
      * Setter for method
-     * @param MethodDescriptor New value of MethodDescriptor to add.
+     * @param methodDesc New value of MethodDescriptor to add.
      */
     public void addMethodDescriptor(MethodDescriptor methodDesc) {
         methodDescs.add(methodDesc);
@@ -111,14 +111,14 @@ public class CheckpointAtEndOfMethodDescriptor extends Descriptor {
             MethodDescriptor methodDesc = (MethodDescriptor) mdItr.next();
 
             // the ejb-name element defined in the method element will
-            // be always ignored and overriden by the one defined in 
+            // be always ignored and overriden by the one defined in
             // ejb element
             methodDesc.setEjbName(ejbDescriptor.getName());
 
             // Convert to style 3 method descriptors
-            Vector mds = 
+            List<MethodDescriptor> mds =
                 methodDesc.doStyleConversion(ejbDescriptor, allMethods);
-            convertedMethodDescs.addAll(mds); 
+            convertedMethodDescs.addAll(mds);
         }
     }
 

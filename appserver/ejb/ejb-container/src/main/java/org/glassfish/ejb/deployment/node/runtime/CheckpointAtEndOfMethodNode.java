@@ -42,6 +42,7 @@ package org.glassfish.ejb.deployment.node.runtime;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -53,7 +54,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDe
 import org.w3c.dom.Node;
 
 /**
- * This node handles the checkpoint-at-end-of-method runtime deployment descriptors 
+ * This node handles the checkpoint-at-end-of-method runtime deployment descriptors
  *
  */
 public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode<CheckpointAtEndOfMethodDescriptor> {
@@ -61,7 +62,7 @@ public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode<Checkp
     private CheckpointAtEndOfMethodDescriptor descriptor;
 
     public CheckpointAtEndOfMethodNode() {
-        registerElementHandler(new XMLElement(RuntimeTagNames.METHOD), MethodNode.class);   
+        registerElementHandler(new XMLElement(RuntimeTagNames.METHOD), MethodNode.class);
     }
 
     @Override
@@ -84,16 +85,16 @@ public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode<Checkp
     }
 
     @Override
-    public Node writeDescriptor(Node parent, String nodeName, 
+    public Node writeDescriptor(Node parent, String nodeName,
         CheckpointAtEndOfMethodDescriptor checkpointMethodDescriptor) {
-        Node checkpointMethodNode = super.writeDescriptor(parent, nodeName, 
+        Node checkpointMethodNode = super.writeDescriptor(parent, nodeName,
             checkpointMethodDescriptor);
-        ArrayList methodDescs = checkpointMethodDescriptor.getConvertedMethodDescs();
+        List<MethodDescriptor> methodDescs = checkpointMethodDescriptor.getConvertedMethodDescs();
         if (!methodDescs.isEmpty()) {
             MethodNode methodNode = new MethodNode();
             for (Iterator<MethodDescriptor> it = methodDescs.iterator(); it.hasNext();) {
                 // do not write out ejb-name element for the method
-                methodNode.writeDescriptor(checkpointMethodNode, 
+                methodNode.writeDescriptor(checkpointMethodNode,
                     RuntimeTagNames.METHOD, it.next(), null);
             }
         }
