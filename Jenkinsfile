@@ -131,10 +131,10 @@ pipeline {
             }
         }
         stage('Run EE7 Tests') {
-            environment {
-                DOMAIN_NAME="test-domain"
-            }
             steps {
+                script{
+                    DOMAIN_NAME="test-domain"
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
