@@ -137,6 +137,7 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara.directory.name=payara5 \
+                -Dpayara_domain=${DOMAIN_NAME} \
                 -Dpayara.version.major=5 -Ppayara-server-remote,stable"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
