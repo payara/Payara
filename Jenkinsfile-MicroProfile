@@ -53,7 +53,7 @@ pipeline {
         stage('Run MicroProfile Config TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -73,7 +73,7 @@ pipeline {
         stage('Run MicroProfile Fault Tolerance TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -97,7 +97,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -121,7 +121,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml -Ppayara-micro-managed,full -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml -Ppayara-server-remote,full -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -147,7 +147,7 @@ pipeline {
             }
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -167,7 +167,7 @@ pipeline {
         stage('Run MicroProfile OpenAPI TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -192,7 +192,7 @@ pipeline {
         stage('Run MicroProfile OpenTracing TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
@@ -212,7 +212,7 @@ pipeline {
         stage('Run MicroProfile Rest Client TCK') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed -Dpayara.version=${pom.version}"
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-server-remote -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
