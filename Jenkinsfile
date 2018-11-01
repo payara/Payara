@@ -75,7 +75,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "*/jenkins"]],
                     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'cargotracker']],
                     userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -106,7 +106,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/JenkinsTest"]],
+                    branches: [[name: "*/jenkins"]],
                     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'EE7-Samples']],
                     userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
