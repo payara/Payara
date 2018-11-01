@@ -101,9 +101,7 @@
         <yasson.version>1.0.2</yasson.version>
 
         <!-- JSON-P -->
-        <jsonp-api.version>1.1.3</jsonp-api.version>
-        <jsonp-ri.version>1.1.3</jsonp-ri.version>
-        <jsonp-jaxrs.version>1.1.3</jsonp-jaxrs.version>
+        <jsonp-jaxrs.version>1.1.1</jsonp-jaxrs.version>
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
@@ -317,12 +315,12 @@
                             <artifact>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>javax.json</artifactId>
-                                <version>${jsonp-ri.version}</version>
+                                <version>${jsonp.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>1.0</specVersion>
-                            <implVersion>${jsonp-ri.version}</implVersion>
+                            <specVersion>${jsonp.version}</specVersion>
+                            <implVersion>${jsonp.version}</implVersion>
                             <apiPackage>javax.json</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -977,12 +975,12 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
-                <version>${jsonp-ri.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.json</groupId>
                 <artifactId>javax.json-api</artifactId>
-                <version>${jsonp-api.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
