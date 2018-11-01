@@ -129,7 +129,7 @@ pipeline {
                     sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                    -Dpayara_domain=${DOMAIN_NAME} \
+                    -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
                     -Ppayara-server-remote,stable,payara4"""
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
@@ -237,7 +237,7 @@ pipeline {
                     sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                    -Dpayara_domain=${DOMAIN_NAME} \
+                    -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
                     -Ppayara-server-remote,stable,payara4"""
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
