@@ -22,6 +22,7 @@ pipeline {
                     payaraBuildNumber = "${currentBuild.number}"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
+                    echo "Domain name is ${DOMAIN_NAME}"
                 }
             }
         }
