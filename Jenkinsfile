@@ -260,5 +260,6 @@ def void teardownDomain() {
     echo 'tidying up after tests:'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} stop-database --dbtype derby || true"
+    archiveArtifacts artifacts: 'appserver/distributions/payara/target/stage/payara41/glassfish/domains/${DOMAIN_NAME}/logs/*.log', fingerprint: true
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }
