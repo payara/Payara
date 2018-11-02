@@ -1,0 +1,153 @@
+#!groovy
+// Jenkinsfile for building a PR and running the MicroProfile TCK tests against it
+def pom
+def payaraBuildNumber
+pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
+    agent any
+    tools {
+        jdk "zulu-8"
+    }
+    stages {
+        stage('Report') {
+            steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                }
+            }
+        }
+        stage('Checkout MicroProfile TCK Runners') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run MicroProfile Config TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Fault Tolerance TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Health TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/payara-health-arquillian-extension/pom.xml -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile JWT-Auth TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/payara-jwt-auth-arquillian-extension/pom.xml -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml -Ppayara-micro-managed,full,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Metrics TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile OpenAPI TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile OpenTracing TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Rest Client TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+    }
+}

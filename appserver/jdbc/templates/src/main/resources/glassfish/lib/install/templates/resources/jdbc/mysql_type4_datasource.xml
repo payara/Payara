@@ -58,16 +58,16 @@
     ======================================================================================================
     |  res-type                             datasource-classname                                         |
     ======================================================================================================
-    |  javax.sql.DataSource                 com.mysql.cj.jdbc.MysqlDataSource                |
-    |  javax.sql.ConnectionPoolDataSource   com.mysql.cj.jdbc.MysqlConnectionPoolDataSource  |
-    |  javax.sql.XADataSource               com.mysql.cj.jdbc.MysqlXADataSource              |
+    |  javax.sql.DataSource                 com.mysql.jdbc.jdbc2.optional.MysqlDataSource                |
+    |  javax.sql.ConnectionPoolDataSource   com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource  |
+    |  javax.sql.XADataSource               com.mysql.jdbc.jdbc2.optional.MysqlXADataSource              |
     ======================================================================================================
 -->
 
 <resources>
     <jdbc-connection-pool 
         name="mysql-pool" 
-        datasource-classname="com.mysql.cj.jdbc.MysqlDataSource"
+        datasource-classname="com.mysql.jdbc.jdbc2.optional.MysqlDataSource"
         res-type="javax.sql.DataSource">
         <property name="user" value="DB_USER"/>
         <property name="password" value="DB_PASSWORD"/>
