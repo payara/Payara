@@ -47,6 +47,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
@@ -60,6 +61,8 @@ public class CLIUtil {
     private static final int MAX_COMMANDS_TO_DISPLAY = 75;
 
     private static final LocalStringsImpl strings = new LocalStringsImpl(CLIUtil.class);
+
+    protected static final Logger LOGGER = Logger.getLogger(CLIUtil.class.getPackage().getName());
 
     /**
      *   Read passwords from the password file and save them in a java.util.Map.
@@ -195,24 +198,25 @@ public class CLIUtil {
      * Return all commands, local and remote.
      *
      * @param container
-     * @param po Options to get the command i.e. admin port
+     * @param options Options to get the command i.e. admin port
      * @param env
      * @return the commands as a String array, sorted
      */
-    public static String[] getAllCommands(CLIContainer container, ProgramOptions po, Environment env) {
+    public static String[] getAllCommands(CLIContainer container, ProgramOptions options, Environment env) {
+        String[] remoteCommands, localCommands, allCommands;
+
         try {
-            String[] remoteCommands = getRemoteCommands(container, po, env);
-            String[] localCommands = getLocalCommands(container);
-            String[] allCommands = new String[localCommands.length + remoteCommands.length];
-            System.arraycopy(localCommands, 0, allCommands, 0, localCommands.length);
-            System.arraycopy(remoteCommands, 0, allCommands, localCommands.length, remoteCommands.length);
-            Arrays.sort(allCommands);
-            return allCommands;
-        } catch (CommandValidationException cve) {
-            return null;
-        } catch (CommandException ce) {
-            return null;
+            remoteCommands = getRemoteCommands(container, options, env);
+        } catch (CommandException ex) {
+            LOGGER.log(SEVERE, "Remote commands not fetched : {0}", ex.getMessage());
+            remoteCommands = new String[]{};
         }
+        localCommands = getLocalCommands(container);
+        allCommands = new String[localCommands.length + remoteCommands.length];
+        System.arraycopy(localCommands, 0, allCommands, 0, localCommands.length);
+        System.arraycopy(remoteCommands, 0, allCommands, localCommands.length, remoteCommands.length);
+        Arrays.sort(allCommands);
+        return allCommands;
     }
 
     /**
