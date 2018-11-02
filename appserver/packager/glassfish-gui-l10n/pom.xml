@@ -52,7 +52,7 @@
     <name>Glassfish Admin GUI Localization Package</name>
     <packaging>distribution-fragment</packaging>
  
-     <build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -153,6 +153,66 @@
         <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>webui-jsf-suntheme-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>cdieventbus-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>datadog-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>email-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>eventbus-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>healthcheck-service-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>hipchat-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>jmx-monitoring-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>microprofile-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>newrelic-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>slack-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>snmp-notifier-console-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>xmpp-notifier-console-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
