@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -57,6 +56,7 @@ import javax.json.JsonObjectBuilder;
 import javax.servlet.http.HttpServletResponse;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import static java.util.logging.Level.WARNING;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.glassfish.api.StartupRunLevel;
@@ -89,6 +89,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
     
     @Inject
     MetricsHealthCheckConfiguration configuration;
+
+    private static final Logger LOG = Logger.getLogger(HealthCheckService.class.getName());
 
     private final Map<String, Set<HealthCheck>> healthChecks = new ConcurrentHashMap<>();
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
@@ -182,8 +184,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
                         Thread.currentThread().setContextClassLoader(originalClassLoader);
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(HealthCheckService.class.getName()).log(Level.WARNING,
-                            "Exception executing HealthCheck: " + healthCheck.getClass().getCanonicalName(), ex);
+                    LOG.log(WARNING, "Exception executing HealthCheck : " + healthCheck.getClass().getCanonicalName(), ex);
                     // If there's any issue, set the response to an error
                     response.setStatus(500);
                 }

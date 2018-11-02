@@ -154,16 +154,6 @@
            <artifactId>production-domain-web</artifactId>
            <version>${project.version}</version>
        </dependency>
-        <dependency>
-           <groupId>org.glassfish.main.admin</groupId>
-           <artifactId>jdk11-domain</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.main.admin</groupId>
-           <artifactId>jdk11-domain-web</artifactId>
-           <version>${project.version}</version>
-       </dependency>
     </dependencies>
 </project>
 

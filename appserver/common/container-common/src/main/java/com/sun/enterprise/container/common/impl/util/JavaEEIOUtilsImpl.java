@@ -37,22 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl.util;
 
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
+import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.logging.LogDomains;
+import org.jvnet.hk2.annotations.Service;
 
 import java.io.*;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,12 +70,9 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 	private static final Logger _logger = LogDomains.getLogger(
 			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER, false);
 
-	@Inject
-	ServiceLocator habitat;
+	private final Collection<GlassFishOutputStreamHandler> outputHandlers = new CopyOnWriteArraySet<>();
 
-	private final Collection<GlassFishOutputStreamHandler> outputHandlers = new HashSet<>();
-
-	private Collection<GlassFishInputStreamHandler> inputHandlers = new HashSet<GlassFishInputStreamHandler>();
+	private final Collection<GlassFishInputStreamHandler> inputHandlers = new CopyOnWriteArraySet<>();
 
         @Override
 	public ObjectInputStream createObjectInputStream(InputStream is,
@@ -96,89 +90,53 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 	public byte[] serializeObject(Object obj, boolean replaceObject)
 			throws java.io.IOException {
 
-		byte[] data = null;
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = null;
-		try {
-			oos = createObjectOutputStream(bos, replaceObject);
-
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			 ObjectOutputStream oos = createObjectOutputStream(bos, replaceObject)) {
 			oos.writeObject(obj);
 			oos.flush();
-			data = bos.toByteArray();
+			return bos.toByteArray();
 		} catch (java.io.NotSerializableException notSerEx) {
 			throw notSerEx;
 		} catch (Exception th) {
 			throw new IOException(th);
-		} finally {
-			if (oos != null) {
-				try {
-					oos.close();
-				} catch (Exception ex) {
-				}
-			}
-			try {
-				bos.close();
-			} catch (Exception ex) {
-			}
 		}
-
-		return data;
 	}
 
-        @Override
-        public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader) throws Exception {
-            return deserializeObject(data, resolveObject, appClassLoader, 0L);
-        }
+	@Override
+	public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader) throws Exception {
+		return deserializeObject(data, resolveObject, appClassLoader, 0L);
+	}
 
-        @Override
+	@Override
 	public Object deserializeObject(byte[] data, boolean resolveObject,
 			ClassLoader appClassLoader, long uniqueId) throws Exception {
 
-		Object obj = null;
-		ByteArrayInputStream bis = null;
-		ObjectInputStream ois = null;
-		try {
-			bis = new ByteArrayInputStream(data);
-			ois = createObjectInputStream(bis, resolveObject, appClassLoader, uniqueId);
-			obj = ois.readObject();
+		try (ByteArrayInputStream bis = new ByteArrayInputStream(data);
+			 ObjectInputStream ois = createObjectInputStream(bis, resolveObject, appClassLoader, uniqueId)) {
+			return ois.readObject();
 		} catch (Exception ex) {
 			_logger.log(Level.FINE, "Error during deserialization", ex);
 			throw ex;
-		} finally {
-			try {
-				ois.close();
-			} catch (Exception ex) {
-				_logger.log(Level.FINEST, "Error during ois.close()", ex);
-			}
-			try {
-				bis.close();
-			} catch (Exception ex) {
-				_logger.log(Level.FINEST, "Error during bis.close()", ex);
-			}
 		}
-		return obj;
 	}
 
-        @Override
+	@Override
 	public void addGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler) {
 		outputHandlers.add(handler);
-
 	}
 
-        @Override
+	@Override
 	public void removeGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler) {
 		outputHandlers.remove(handler);
 	}
 
-        @Override
-	public void addGlassFishInputStreamHandler(
-			GlassFishInputStreamHandler handler) {
+	@Override
+	public void addGlassFishInputStreamHandler(GlassFishInputStreamHandler handler) {
 		inputHandlers.add(handler);
 	}
 
-        @Override
-	public void removeGlassFishInputStreamHandler(
-			GlassFishInputStreamHandler handler) {
+	@Override
+	public void removeGlassFishInputStreamHandler(GlassFishInputStreamHandler handler) {
 		inputHandlers.remove(handler);
 	}
 }

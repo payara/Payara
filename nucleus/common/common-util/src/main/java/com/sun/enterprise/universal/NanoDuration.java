@@ -37,18 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal;
-
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Convert a nanosec duration into something readable
  * @author bnevins
- * Thread Safe.  
+ * Thread Safe.
  * Immutable
  */
 public final class NanoDuration {
+
+    // possibly useful constants
+    private final static double NSEC_PER_MICROSECOND = 1000;
+    private final static double NSEC_PER_MILLISECOND = 1000d * 1000;
+    private final static double NSEC_PER_SECOND = 1000d * 1000 * 1000;
+    private final static double NSEC_PER_MINUTE = 60d * 1000 * 1000 * 1000;
+
+    private double numSeconds = -1.0;
+    private double numMilliSeconds = -1.0;
+    private double numMicroSeconds = -1.0;
+    private double numNanoSeconds = -1.0;
+    private Duration duration;
+
     public NanoDuration(long nsec) {
         // if > 1 minute -- use Duration
         if(nsec >= NSEC_PER_MINUTE) {
@@ -56,16 +68,14 @@ public final class NanoDuration {
             return;
         }
 
-        double ns = nsec;
+        if((double) nsec >= NSEC_PER_SECOND)
+            numSeconds = (double) nsec / NSEC_PER_SECOND;
 
-        if(ns >= NSEC_PER_SECOND)
-            numSeconds = ns / NSEC_PER_SECOND;
+        else if((double) nsec >= NSEC_PER_MILLISECOND)
+            numMilliSeconds = (double) nsec / NSEC_PER_MILLISECOND;
 
-        else if(ns >= NSEC_PER_MILLISECOND)
-            numMilliSeconds = ns / NSEC_PER_MILLISECOND;
-
-        else if(ns >= NSEC_PER_MICROSECOND)
-            numMicroSeconds = ns / NSEC_PER_MICROSECOND;
+        else if((double) nsec >= NSEC_PER_MICROSECOND)
+            numMicroSeconds = (double) nsec / NSEC_PER_MICROSECOND;
 
         else
             numNanoSeconds = nsec; // not a double!
@@ -92,17 +102,5 @@ public final class NanoDuration {
 
         return s;
     }
-    
-    // possibly useful constants
-    public final static double NSEC_PER_MICROSECOND = 1000;
-    public final static double NSEC_PER_MILLISECOND = 1000 * 1000;
-    public final static double NSEC_PER_SECOND = 1000 * 1000 * 1000;
-    public final static double NSEC_PER_MINUTE = 60 * 1000 * 1000 * 1000;
 
-    private double numSeconds = -1.0;
-    private double numMilliSeconds = -1.0;
-    private double numMicroSeconds = -1.0;
-    private double numNanoSeconds = -1.0;
-    private Duration duration;
-    private final LocalStringsImpl strings = new LocalStringsImpl(NanoDuration.class);
 }
