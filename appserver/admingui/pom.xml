@@ -142,19 +142,32 @@
         <module>payara-console-extras-l10n</module>
         <module>payara-support</module>
         <module>slack-notifier-console-plugin</module>
+        <module>slack-notifier-console-plugin-l10n</module>
         <module>hipchat-notifier-console-plugin</module>
+        <module>hipchat-notifier-console-plugin-l10n</module>
         <module>eventbus-notifier-console-plugin</module>
+        <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
+        <module>cdieventbus-notifier-console-plugin-l10n</module>
     	<module>email-notifier-console-plugin</module>
+    	<module>email-notifier-console-plugin-l10n</module>
         <module>snmp-notifier-console-plugin</module>
+        <module>snmp-notifier-console-plugin-l10n</module>
         <module>xmpp-notifier-console-plugin</module>
+        <module>xmpp-notifier-console-plugin-l10n</module>
         <module>jms-notifier-console-plugin</module>
+        <module>jms-notifier-console-plugin-l10n</module>
         <module>datadog-notifier-console-plugin</module>
+        <module>datadog-notifier-console-plugin-l10n</module>
         <module>healthcheck-service-console-plugin</module>
+        <module>healthcheck-service-console-plugin-l10n</module>
         <module>newrelic-notifier-console-plugin</module>
+        <module>newrelic-notifier-console-plugin-l10n</module>
         <module>jmx-monitoring-plugin</module>
+        <module>jmx-monitoring-plugin-l10n</module>
         <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
+        <module>microprofile-console-plugin-l10n</module>
     </modules>
     <build>
         <plugins>
