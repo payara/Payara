@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.AbstractMap;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +147,13 @@ public class GAVConvertor {
                     artefactURL = new URL(repositoryURL, relativeURLString + archiveType);
 
                     HttpURLConnection httpConnection = (HttpURLConnection) artefactURL.openConnection();
+                    
+                    String auth = artefactURL.getUserInfo();
+                    if (auth != null) {
+                        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+                        httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
+                    }
+                    
                     httpConnection.setRequestMethod("HEAD");
 
                     if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {

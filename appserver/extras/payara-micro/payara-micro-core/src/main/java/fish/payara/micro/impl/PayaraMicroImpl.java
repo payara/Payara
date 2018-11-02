@@ -1235,7 +1235,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         try {
                             // If there isn't a trailing /, add one
                             if (!value.endsWith("/")) {
-                                value = value + "/";
                                 repositoryURLs.add(new URL(value + "/"));
                             } else {
                                 repositoryURLs.add(new URL(value));
