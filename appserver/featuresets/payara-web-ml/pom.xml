@@ -99,7 +99,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-	<!-- hazelcast package -->
+	<!-- hazelcast l10n package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>hazelcast-l10n</artifactId>
