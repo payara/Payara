@@ -39,16 +39,15 @@
  */
 package fish.payara.security.openid.controller;
 
+import fish.payara.security.openid.api.AccessToken;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
-import fish.payara.security.openid.api.OpenIdContext;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import java.io.StringReader;
 import static java.util.Objects.nonNull;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -60,13 +59,15 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import fish.payara.security.openid.api.OpenIdContext;
+import javax.enterprise.context.RequestScoped;
 
 /**
  * Controller for Token endpoint
  *
  * @author Gaurav Gupta
  */
-@ApplicationScoped
+@RequestScoped
 public class UserInfoController {
 
     @Inject
@@ -86,7 +87,7 @@ public class UserInfoController {
      * @param accessToken
      * @return the claims json object
      */
-    public JsonObject getUserInfo(OpenIdConfiguration configuration, String accessToken) {
+    public JsonObject getUserInfo(OpenIdConfiguration configuration, AccessToken accessToken) {
         LOGGER.finest("Sending the request to the userinfo endpoint");
         JsonObject userInfo;
 

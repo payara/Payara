@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -319,10 +319,18 @@ public class JWSAdapterManager implements PostConstruct {
         return new File(new File(installRootURI), "lib");
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     static String publicExtensionHref(final Extension ext) {
         return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     static String publicExtensionLookupURIText(final Extension ext) {
         return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
                 ext.getExtDirectoryNumber() + "/" +

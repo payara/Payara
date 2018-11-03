@@ -89,6 +89,14 @@ public @interface AzureAuthenticationDefinition {
     OpenIdProviderMetadata providerMetadata() default @OpenIdProviderMetadata;
 
     /**
+     * Optional. The claims definition defines the custom claims mapping of
+     * caller name and groups.
+     *
+     * @return
+     */
+    ClaimsDefinition claimsDefinition() default @ClaimsDefinition;
+
+    /**
      * Required. The client identifier issued when the application was
      * registered
      * <p>
@@ -124,7 +132,7 @@ public @interface AzureAuthenticationDefinition {
      *
      * @return
      */
-    String redirectURI() default "";
+    String redirectURI() default "${baseURL}/Callback";
 
     /**
      * Optional. The scope value defines the access privileges. The basic (and
