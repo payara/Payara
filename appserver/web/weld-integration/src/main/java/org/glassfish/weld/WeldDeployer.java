@@ -110,7 +110,6 @@ import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.weld.connector.WeldUtils;
-import org.glassfish.weld.services.BootstrapConfigurationImpl;
 import org.glassfish.weld.services.EjbServicesImpl;
 import org.glassfish.weld.services.ExternalConfigurationImpl;
 import org.glassfish.weld.services.InjectionServicesImpl;
@@ -120,7 +119,6 @@ import org.glassfish.weld.services.SecurityServicesImpl;
 import org.glassfish.weld.services.TransactionServicesImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
@@ -147,7 +145,6 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import java.util.logging.Level;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer> implements PostConstruct, EventListener {
@@ -302,9 +299,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
 
-            BootstrapConfigurationImpl bootstrapConfiguration = new BootstrapConfigurationImpl();
-            deploymentImpl.getServices().add(BootstrapConfiguration.class, bootstrapConfiguration);
-
             addWeldListenerToAllWars(context);
         } else {
             deploymentImpl.scanArchive(archive, ejbs, context, archiveName);
@@ -320,6 +314,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
         externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
         externalConfiguration.setBeanIndexOptimization(dc != null ? !dc.isAvailabilityEnabled() : true);
+        externalConfiguration.setNonPortableMode(false);
+        configureConcurrentDeployment(context, externalConfiguration);
+        
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
@@ -861,6 +858,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
         deploymentImpl.addDynamicExtension(createProbeExtension());
+    }
+    
+    private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
+        configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
+        configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
     }
 
     private Metadata<Extension> createProbeExtension() {

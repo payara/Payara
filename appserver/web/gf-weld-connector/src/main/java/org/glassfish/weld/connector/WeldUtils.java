@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -476,6 +476,36 @@ public class WeldUtils {
         }
 
         return types;
+    }
+    
+    public static int getPreLoaderThreads() {
+        int result = 0;
+        // Check the "global" configuration
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        if (serviceLocator != null) {
+            Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            if (config != null) {
+                result = Integer.valueOf(config.getExtensionByType(CDIService.class).getPreLoaderThreadPoolSize());
+            }
+        }
+
+        return result;
+        
+    }
+    
+    public static boolean isConcurrentDeploymentEnabled() {
+        boolean result = false;
+        // Check the "global" configuration
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        if (serviceLocator != null) {
+            Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            if (config != null) {
+                result = Boolean.valueOf(config.getExtensionByType(CDIService.class).getEnableConcurrentDeployment());
+            }
+        }
+
+        return result;
+        
     }
 
 
