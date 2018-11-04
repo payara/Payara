@@ -44,8 +44,10 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
@@ -74,7 +76,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  * @author Andrew Pielage
  */
 @Service(name = "payara-executor-service")
-@RunLevel(StartupRunLevel.VAL)
 public class PayaraExecutorService implements ConfigListener, EventListener {
     
     @Inject
@@ -97,12 +98,19 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     @PostConstruct
     public void postConstruct() {
         
-        events.register(this);
-        payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
-                .getService(PayaraExecutorServiceConfiguration.class);
+        if (events != null) {
+            events.register(this);
+        }
         
-        transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
+        if (payaraExecutorServiceConfiguration == null) {
+            payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
+                    .getService(PayaraExecutorServiceConfiguration.class);
+        }
         
+        if (transactions != null) {
+            transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
+        }
+
         initialiseThreadPools();
     }
     
@@ -170,7 +178,16 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return scheduledThreadPoolExecutor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
+    
+    public ExecutorService getUnderlyingExecutorService() {
+        return threadPoolExecutor;
+    }
 
+    public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
+        return scheduledThreadPoolExecutor;
+    }
+
+    
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();

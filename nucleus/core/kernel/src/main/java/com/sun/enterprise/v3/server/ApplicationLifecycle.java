@@ -47,6 +47,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -154,6 +155,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     ConfigSupport configSupport;
+    
+    @Inject
+    PayaraExecutorService executorService;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -172,13 +176,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     protected DeploymentLifecycleProbeProvider 
         deploymentLifecycleProbeProvider = null;
 
-    private ExecutorService executorService = null;
-
     private Collection<ApplicationLifecycleInterceptor> alcInterceptors = Collections.EMPTY_LIST;
     
     @Override
     public void postConstruct() {
-        executorService = createExecutorService();
         deploymentLifecycleProbeProvider = 
             new DeploymentLifecycleProbeProvider();
         alcInterceptors = habitat.getAllServices(
@@ -587,7 +588,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                 try {
                     // scan the jar and store the result in the deployment context.
-                    ParsingContext parsingContext = new ParsingContext.Builder().logger(context.getLogger()).executorService(executorService).build();
+                    ParsingContext parsingContext = new ParsingContext.Builder().logger(context.getLogger()).executorService(executorService.getUnderlyingExecutorService()).build();
                     Parser parser = new Parser(parsingContext);
                     ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
                     parser.parse(scannerAdapter, null);
