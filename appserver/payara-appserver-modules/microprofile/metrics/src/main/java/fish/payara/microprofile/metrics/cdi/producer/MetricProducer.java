@@ -57,7 +57,7 @@ import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @Dependent
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public final class MetricProducer {
+public class MetricProducer {
 
     @Inject
     private MetricRegistry registry;
