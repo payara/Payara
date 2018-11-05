@@ -41,106 +41,9 @@
 
 package com.sun.enterprise.web;
 
-import java.io.File;
-import java.net.BindException;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.ResourceBundle;
-
-import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.jsp.JspFactory;
-import javax.servlet.jsp.tagext.JspTag;
-
-import org.apache.catalina.Connector;
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Deployer;
-import org.apache.catalina.Engine;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Realm;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.startup.ContextConfig;
-import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.ServerInfo;
-import org.apache.jasper.runtime.JspFactoryImpl;
-import org.apache.jasper.xmlparser.ParserUtils;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.web.TldProvider;
-import org.glassfish.grizzly.config.ContextRootInfo;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.grizzly.http.server.util.Mapper;
-import org.glassfish.grizzly.http.server.util.MappingData;
-import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.grizzly.ContextMapper;
-import org.glassfish.web.LogFacade;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
-import org.glassfish.web.admin.monitor.JspProbeProvider;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
-import org.glassfish.web.admin.monitor.ServletProbeProvider;
-import org.glassfish.web.admin.monitor.SessionProbeProvider;
-import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
-import org.glassfish.web.admin.monitor.WebStatsProviderBootstrap;
-import org.glassfish.web.config.serverbeans.SessionProperties;
-import org.glassfish.web.deployment.archivist.WebArchivist;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
-import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
-import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ObservableBean;
-import org.jvnet.hk2.config.Transactions;
-import org.jvnet.hk2.config.types.Property;
-import org.xml.sax.EntityResolver;
-
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -160,10 +63,71 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.naming.NamingException;
+import org.apache.catalina.*;
+import org.apache.catalina.Context;
+import org.apache.catalina.Engine;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardEngine;
+import org.apache.catalina.startup.ContextConfig;
+import org.apache.catalina.util.RequestUtil;
+import org.apache.catalina.util.ServerInfo;
+import org.apache.jasper.runtime.JspFactoryImpl;
+import org.apache.jasper.xmlparser.ParserUtils;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.web.TldProvider;
+import org.glassfish.grizzly.config.ContextRootInfo;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.server.util.MappingData;
+import org.glassfish.grizzly.http.util.DataChunk;
+import org.glassfish.hk2.api.*;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.grizzly.ContextMapper;
+import org.glassfish.web.LogFacade;
+import org.glassfish.web.admin.monitor.*;
+import org.glassfish.web.config.serverbeans.SessionProperties;
+import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.glassfish.web.deployment.runtime.SunWebAppImpl;
+import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.valve.GlassFishValve;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.types.Property;
+import org.xml.sax.EntityResolver;
+
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.naming.NamingException;
+import javax.servlet.Filter;
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.jsp.JspFactory;
+import javax.servlet.jsp.tagext.JspTag;
+import java.io.File;
+import java.net.BindException;
+import java.net.MalformedURLException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Web container service
@@ -248,7 +212,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Transactions transactions;
-    
+
     @Inject
     private LoggingRuntime loggingRuntime;
 
@@ -404,17 +368,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             useDOLforDeployment = Boolean.valueOf(System.getProperty(DOL_DEPLOYMENT));
         }
     }
-    
+
     private WebConfigListener addAndGetWebConfigListener() {
-    	ServiceLocator locator = (ServiceLocator) habitat;
-    	
+    	ServiceLocator locator = habitat;
+
     	DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
     	DynamicConfiguration config = dcs.createDynamicConfiguration();
-    	
+
     	config.addActiveDescriptor(WebConfigListener.class);
-    	
+
     	config.commit();
-    	
+
     	return locator.getService(WebConfigListener.class);
     }
 
@@ -423,7 +387,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         final ReentrantReadWriteLock mapperLock = grizzlyService.obtainMapperLock();
         mapperLock.writeLock().lock();
-        
+
         try {
             createProbeProviders();
 
@@ -469,7 +433,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             String maxDepth = null;
             org.glassfish.web.config.serverbeans.WebContainer configWC =
                    serverConfig.getExtensionByType(
-                   org.glassfish.web.config.serverbeans.WebContainer.class); 
+                   org.glassfish.web.config.serverbeans.WebContainer.class);
             if (configWC != null)
                 maxDepth = configWC.getPropertyValue(DISPATCHER_MAX_DEPTH);
             if (maxDepth != null) {
@@ -487,7 +451,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
             File currentLogFile = loggingRuntime.getCurrentLogFile();
             if (currentLogFile != null) {
-                logServiceFile = currentLogFile.getAbsolutePath();            
+                logServiceFile = currentLogFile.getAbsolutePath();
             }
 
             Level level = Logger.getLogger("org.apache.catalina.level").getLevel();
@@ -626,7 +590,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 _embedded.start();
             } catch (LifecycleException le) {
                 logger.log(Level.SEVERE, LogFacade.UNABLE_TO_START_WEB_CONTAINER, le);
-                return;
             } finally {
                 // Restore original context classloader
                 Thread.currentThread().setContextClassLoader(current);
@@ -664,7 +627,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * have been invoked at their contextInitialized method
      */
     void afterServletContextInitializedEvent(WebBundleDescriptor wbd) {
-        events.send(new Event<WebBundleDescriptor>(
+        events.send(new Event<>(
                 WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT, wbd),
                 false);
     }
@@ -679,7 +642,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             _embedded.destroy();
         } catch (LifecycleException le) {
             logger.log(Level.SEVERE, LogFacade.UNABLE_TO_STOP_WEB_CONTAINER, le);
-            return;
         }
     }
 
@@ -701,7 +663,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Gets the probe provider for servlet related events.
-     * @return 
+     * @return
      */
     public ServletProbeProvider getServletProbeProvider() {
         return servletProbeProvider;
@@ -710,7 +672,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Gets the probe provider for jsp related events.
-     * @return 
+     * @return
      */
     public JspProbeProvider getJspProbeProvider() {
         return jspProbeProvider;
@@ -719,7 +681,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Gets the probe provider for session related events.
-     * @return 
+     * @return
      */
     public SessionProbeProvider getSessionProbeProvider() {
         return sessionProbeProvider;
@@ -727,7 +689,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Gets the probe provider for request/response related events.
-     * @return 
+     * @return
      */
     public RequestProbeProvider getRequestProbeProvider() {
         return requestProbeProvider;
@@ -735,7 +697,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Gets the probe provider for web module related events.
-     * @return 
+     * @return
      */
     public WebModuleProbeProvider getWebModuleProbeProvider() {
         return webModuleProbeProvider;
@@ -833,8 +795,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param <T>
      * @param module
      * @param clazz
-     * @return 
-     * @throws java.lang.Exception 
+     * @return
+     * @throws java.lang.Exception
      */
     public <T extends JspTag> T createTagHandlerInstance(WebModule module,
                                                          Class<T> clazz) throws Exception {
@@ -853,7 +815,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      *
      * @param listener the NetworkListener config object.
      * @param httpService the http-service element.
-     * @return 
+     * @return
      */
     protected WebConnector createHttpListener(NetworkListener listener,
             HttpService httpService) {
@@ -977,7 +939,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * mod_jk, mod_jk2 or mod_ajp.
      * @param listener
      * @param httpService
-     * @return 
+     * @return
      */
     protected WebConnector createJKConnector(NetworkListener listener,
                                              HttpService httpService) {
@@ -1021,45 +983,39 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
              */
         }
 
-        jkConnector = (WebConnector) _embedded.createConnector(address,
-                port, "ajp");
+        jkConnector = (WebConnector) _embedded.createConnector(address, port, "ajp");
         jkConnector.configureJKProperties(listener);
+        jkConnector.setDomain(_serverContext.getDefaultDomainName());
+        jkConnector.setInstanceName(instanceName);
 
         String defaultHost = "server";
         String jkConnectorName = "jk-connector";
+
         if (listener != null) {
             defaultHost = listener.findHttpProtocol().getHttp().getDefaultVirtualServer();
             jkConnectorName = listener.getName();
-        }
-        jkConnector.setDefaultHost(defaultHost);
-        jkConnector.setName(jkConnectorName);
-        jkConnector.setDomain(_serverContext.getDefaultDomainName());
-        jkConnector.setInstanceName(instanceName);
-        if (listener != null) {
             jkConnector.configure(listener, isSecure, httpService);
             connectorMap.put(listener.getName(), jkConnector);
-        }
-
-        if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, LogFacade.JK_LISTENER_CREATED,
-                    new Object[]{listener.getName(), listener.getAddress(), listener.getPort()});
-        }
-
-        for (Mapper m : habitat.<Mapper>getAllServices(Mapper.class)) {
-            if (m.getPort() == port && m instanceof ContextMapper) {
-                ContextMapper cm = (ContextMapper) m;
-                if (listener.getName().equals(cm.getId())) {
-                    jkConnector.setMapper(m);
-                    break;
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, LogFacade.JK_LISTENER_CREATED,
+                        new Object[]{listener.getName(), listener.getAddress(), listener.getPort()});
+            }
+            for (Mapper m : habitat.getAllServices(Mapper.class)) {
+                if (m.getPort() == port && m instanceof ContextMapper) {
+                    ContextMapper cm = (ContextMapper) m;
+                    if (listener.getName().equals(cm.getId())) {
+                        jkConnector.setMapper(m);
+                        break;
+                    }
                 }
             }
         }
 
+        jkConnector.setDefaultHost(defaultHost);
+        jkConnector.setName(jkConnectorName);
+
         _embedded.addConnector(jkConnector);
-
-
         return jkConnector;
-
     }
 
     /**
@@ -1225,7 +1181,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param vsBean          The virtual-server configuration bean
      * @param httpService     The http-service element.
      * @param securityService The security-service element
-     * @return 
+     * @return
      */
     public VirtualServer createHost(
             com.sun.enterprise.config.serverbeans.VirtualServer vsBean,
@@ -1409,7 +1365,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param vsBean
      * @param docroot
      * @param mimeMap
-     * @return 
+     * @return
      */
     public VirtualServer createHost(String vsID,
                                     com.sun.enterprise.config.serverbeans.VirtualServer vsBean,
@@ -1693,7 +1649,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * @param wmInfo
      * @param j2eeApplication
      * @param deploymentProperties
-     * @return 
+     * @return
      */
     public List<Result<WebModule>> loadWebModule(
             WebModuleConfig wmInfo, String j2eeApplication,
@@ -2166,7 +2122,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     /**
      * Utility Method to access the ServerContext
-     * @return 
+     * @return
      */
     public ServerContext getServerContext() {
         return _serverContext;
@@ -2179,7 +2135,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
    /**
     * Returns the folder where library files are to be found
-    * @return 
+    * @return
     */
     File getLibPath() {
         return instance.getLibPath();
@@ -2190,7 +2146,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * The application id for this web module
      * HERCULES:add
      * @param wm
-     * @return 
+     * @return
      */
     public String getApplicationId(WebModule wm) {
         return wm.getID();
@@ -2200,7 +2156,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     /**
      * Return the Absolute path for location where all the deployed
      * standalone modules are stored for this Server Instance.
-     * @return 
+     * @return
      */
     public File getModulesRoot() {
         return _modulesRoot;
@@ -2414,7 +2370,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     /**
      * Get the lifecycle listeners associated with this lifecycle. If this
      * Lifecycle has no listeners registered, a zero-length array is returned.
-     * @return 
+     * @return
      */
     public LifecycleListener[] findLifecycleListeners() {
         return new LifecycleListener[0];
@@ -2480,7 +2436,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     /**
      * Return the parent/top-level container in _embedded for virtual
      * servers.
-     * @return 
+     * @return
      */
     public Engine getEngine() {
         return _embedded.getEngines()[0];

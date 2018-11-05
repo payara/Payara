@@ -108,9 +108,9 @@ public class SQLStoreManager implements PersistenceStore {
         return configCache.getPersistenceConfig(classType);
     }
 
-    /**  
+    /**
      * @inheritDoc
-     */  
+     */
     public ConfigCache getConfigCache() {
         return configCache;
     }
@@ -375,27 +375,28 @@ public class SQLStoreManager implements PersistenceStore {
         Concurrency concurrency = config.getConcurrency(pm.isOptimisticTransaction());
         SelectQueryPlan plan = retrieveAction.buildQueryPlan(this, concurrency);
         ArrayList statements = plan.getStatements();
-        Object result = null;
 
         SelectStatement s = (SelectStatement) statements.get(0);
-        result = executeQuery(pm, s, concurrency, parameters);
+        Object result = executeQuery(pm, s, concurrency, parameters);
 
-        if ((plan.options & RetrieveDescImpl.OPT_AGGREGATE) == 0) {
-            // This was a regular query, no aggregate.
+        if (result != null) {
+            if ((plan.options & RetrieveDescImpl.OPT_AGGREGATE) == 0) {
+                // This was a regular query, no aggregate.
 
-            if ((plan.options & RetrieveDescImpl.OPT_DISTINCT) > 0) {
-                // Perform manual DISTINCT if required
+                if ((plan.options & RetrieveDescImpl.OPT_DISTINCT) > 0) {
+                    // Perform manual DISTINCT if required
 
-                if (((plan.options & RetrieveDescImpl.OPT_FOR_UPDATE) > 0 &&
-                        !vendorType.isDistinctSupportedWithUpdateLock()) ) {
+                    if (((plan.options & RetrieveDescImpl.OPT_FOR_UPDATE) > 0 &&
+                            !vendorType.isDistinctSupportedWithUpdateLock()) ) {
 
-                    HashSet hash = new HashSet();
-                    for (Iterator iter = ((Collection)result).iterator(); iter.hasNext(); ) {
-                        Object temp = iter.next();
-                        if (!hash.contains(temp)) {
-                            hash.add(temp);
-                        } else {
-                            iter.remove();
+                        HashSet hash = new HashSet();
+                        for (Iterator iter = ((Collection)result).iterator(); iter.hasNext(); ) {
+                            Object temp = iter.next();
+                            if (!hash.contains(temp)) {
+                                hash.add(temp);
+                            } else {
+                                iter.remove();
+                            }
                         }
                     }
                 }

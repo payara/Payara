@@ -303,6 +303,7 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
         to.setOperationId(mergeProperty(to.getOperationId(), from.operationId(), override));
         to.setSummary(mergeProperty(to.getSummary(), from.summary(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.deprecated(), override));
     }
 
     public static void merge(CallbackOperation from, Operation to,

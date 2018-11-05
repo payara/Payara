@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -350,7 +351,9 @@ public class DriverLoader implements ConnectorConstants {
     /**
      * Get the library locations corresponding to the ext directories mentioned
      * as part of the jvm-options.
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
      */
+    @Deprecated
     private Vector getLibExtDirs() {
         String extDirStr = System.getProperty("java.ext.dirs");
         logger.log(Level.FINE, "lib/ext dirs : " + extDirStr);

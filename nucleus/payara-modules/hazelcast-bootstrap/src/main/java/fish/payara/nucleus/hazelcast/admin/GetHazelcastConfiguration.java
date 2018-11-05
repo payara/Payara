@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2014-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -119,6 +119,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"DAS Port",runtimeConfiguration.getDasPort(),"Domain"});
         columnFormatter.addRow(new Object[]{"Cluster Mode",runtimeConfiguration.getDiscoveryMode(),"Domain"});
         columnFormatter.addRow(new Object[]{"Tcpip Members",runtimeConfiguration.getTcpipMembers(),"Domain"});
+        columnFormatter.addRow(new Object[]{"DNS Members",runtimeConfiguration.getDnsMembers(),"Domain"});
         columnFormatter.addRow(new Object[]{"MulticastGroup",runtimeConfiguration.getMulticastGroup(),"Domain"});
         columnFormatter.addRow(new Object[]{"MulticastPort",runtimeConfiguration.getMulticastPort(),"Domain"});
         columnFormatter.addRow(new Object[]{"Enabled",nodeConfiguration.getEnabled(),"Config"});
@@ -151,6 +152,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("dasBindAddress", runtimeConfiguration.getDASBindAddress());
         map.put("dasPort", runtimeConfiguration.getDasPort());
         map.put("tcpipMembers", runtimeConfiguration.getTcpipMembers());
+        map.put("dnsMembers", runtimeConfiguration.getDnsMembers());
         map.put("clusterMode", runtimeConfiguration.getDiscoveryMode());
         map.put("memberName", nodeConfiguration.getMemberName());
         map.put("memberGroup", nodeConfiguration.getMemberGroup());
