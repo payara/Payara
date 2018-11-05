@@ -41,8 +41,8 @@
 
 package com.sun.enterprise.resource;
 
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,7 +83,7 @@ public class ConnectorXAResource implements XAResource {
     private ResourceHandle localHandle_;
     private JavaEETransaction associatedTransaction;
 
-    private static Map<ManagedConnection, ?> listenerTable = new Hashtable<>();
+    private static Map<ManagedConnection, ?> listenerTable = new ConcurrentHashMap<>();
 
 
     // Create logger object per Java SDK 1.4 to log messages
