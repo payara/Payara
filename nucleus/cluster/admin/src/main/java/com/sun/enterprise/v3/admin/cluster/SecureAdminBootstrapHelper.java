@@ -307,7 +307,7 @@ public abstract class SecureAdminBootstrapHelper {
          * @return
          */
         Integer secondsSince_01_Jan_1970(final long milliseconds) {
-            return Integer.valueOf((int) (milliseconds) / 1000);
+            return (int) (milliseconds) / 1000;
         }
     }
 
@@ -347,9 +347,7 @@ public abstract class SecureAdminBootstrapHelper {
             catch (IOException ex) {
                 throw new IOException(remoteNodeDir, ex);
             }
-            logger.log(Level.FINE, "Creating remote bootstrap directory "
-                    + remoteDir + " with permissions "
-                    + instanceDirPermissions.toString());
+            logger.log(Level.FINE, "Creating remote bootstrap directory {0} with permissions {1}", new Object[]{remoteDir, instanceDirPermissions.toString()});
             try {
                 ftpClient.mkdirs(remoteDir, instanceDirPermissions);
             }
@@ -524,12 +522,11 @@ public abstract class SecureAdminBootstrapHelper {
         @Override
         protected void close() {
             // Nothing to do for local provider
-            return;
         }
     }
 
     public static class BootstrapException extends Exception {
-        private transient final SSHLauncher launcher;
+        private final transient SSHLauncher launcher;
 
         public BootstrapException(final SSHLauncher launcher, final Exception ex) {
             super(ex);

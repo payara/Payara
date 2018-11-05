@@ -85,7 +85,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class RestartDeploymentGroupCommand implements AdminCommand {
     
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NL = System.lineSeparator();
     
     @Inject
     private ServerEnvironment env;
@@ -192,7 +192,7 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
                 output.append(invocation.report().getMessage()).append(NL);
             }
             try {
-                long delayVal = Long.valueOf(delay);
+                long delayVal = Long.parseLong(delay);
                 if (delayVal > 0) {
                     Thread.sleep(delayVal);
                 }
