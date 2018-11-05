@@ -188,6 +188,7 @@ pipeline {
             post {
                 always {
                     teardownDomain()
+		}
                 unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
