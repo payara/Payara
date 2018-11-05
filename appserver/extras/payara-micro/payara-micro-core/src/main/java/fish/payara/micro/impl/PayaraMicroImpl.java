@@ -149,7 +149,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private File copyDirectory;
     private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
-    private List<URL> repositoryURLs;
+    private List<String> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
@@ -667,15 +667,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         for (String url : URLs) {
-            try {
-                if (!url.endsWith("/")) {
-                    repositoryURLs.add(new URL(url + "/"));
-                } else {
-                    repositoryURLs.add(new URL(url));
-                }
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
-            }
+            repositoryURLs.add(url);
         }
         return this;
     }
@@ -1096,11 +1088,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         preBootCommands = new BootCommands();
         postBootCommands = new BootCommands();
         postDeployCommands = new BootCommands();
-        try {
-            repositoryURLs.add(new URL(defaultMavenRepository));
-        } catch (MalformedURLException ex) {
-            // will never happen as it is a constant
-        }
+        repositoryURLs.add(defaultMavenRepository);
         addShutdownHook();
     }
 
@@ -1232,16 +1220,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         GAVs.add(value);
                         break;
                     case additionalrepository:
-                        try {
-                            // If there isn't a trailing /, add one
-                            if (!value.endsWith("/")) {
-                                repositoryURLs.add(new URL(value + "/"));
-                            } else {
-                                repositoryURLs.add(new URL(value));
-                            }
-                        } catch (MalformedURLException ex) {
-                            LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", value);
-                        }
+                         repositoryURLs.add(value);
                         break;
                     case outputuberjar:
                         uberJar = new File(value);
@@ -1955,6 +1934,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      */
     private void getGAVURLs() throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
+        
+        
 
         for (String gav : GAVs) {
             try {

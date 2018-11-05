@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,11 +47,14 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.AbstractMap;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 
 /**
  * Performs the functions required for converting GAV (group, artefact, version)
@@ -81,7 +84,29 @@ public class GAVConvertor {
         artefactMapEntry = new AbstractMap.SimpleEntry<>(GAVMap.get("artefactId"), artefactURL);
         
         return artefactMapEntry;
-    } 
+    }
+    
+    /**
+     * Returns a valid URL for a provided GAV (GroupId, ArtifactId, Version).
+     * @param GAV A comma separated list of the groupId, artifactId, 
+     * and version number
+     * @param repositoryURLs A collection of repository URLs to search for the 
+     * target artefact in
+     * @return A URL matching the provided GAV
+     * @throws MalformedURLException Thrown if an artefact cannot be found for
+     * the provided GAV
+     */
+    public Map.Entry<String, URL> getArtefactMapEntry(String GAV, Collection<String> repositoryURLs) throws MalformedURLException {
+        List<URL> repoURLs = new LinkedList<URL>();
+        for (String url: repositoryURLs) {
+            String convertedURL = (String) TranslatedConfigView.getTranslatedValue(url);
+            if (!convertedURL.endsWith("/")) {
+              convertedURL += "/";
+            }
+            repoURLs.add(new URL(convertedURL));
+        }
+        return getArtefactMapEntry(GAV, repoURLs);
+    }
     
     /**
      * Splits a provided GAV String and sets the class variables to the 
