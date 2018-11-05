@@ -57,45 +57,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>healthcheck-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>notification-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.health</groupId>
-            <artifactId>microprofile-health-api</artifactId>
-            <version>${microprofile-healthcheck.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.microprofile.healthcheck</groupId>
             <artifactId>microprofile-healthcheck</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.admingui</groupId>
-            <artifactId>console-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>${javaee.api.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
