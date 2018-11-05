@@ -55,9 +55,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -92,9 +89,9 @@ public abstract class SecureAdminBootstrapHelper {
      * @param remoteNodeDir directory of the remote node on the remote system
      * @param instance name of the instance on the remote node to bootstrap
      * @param node Node from the domain configuration for the target node
-     * @param logger
+     * @param logger Logger to use
      * @return the remote helper
-     * @throws IOException
+     * @throws BootstrapException
      */
     public static SecureAdminBootstrapHelper getRemoteHelper(
             final ServiceLocator habitat,
@@ -194,7 +191,7 @@ public abstract class SecureAdminBootstrapHelper {
     /**
      * Bootstraps the instance for remote admin.
      *
-     * @throws IOException
+     * @throws BootstrapException
      */
     public void bootstrapInstance() throws BootstrapException {
         try {
@@ -216,7 +213,7 @@ public abstract class SecureAdminBootstrapHelper {
     /**
      * Implements the helper functionality for a remote instance.
      */
-    private static abstract class RemoteHelper extends SecureAdminBootstrapHelper {
+    private abstract static class RemoteHelper extends SecureAdminBootstrapHelper {
         final Logger logger;
         final File dasInstanceDir;
         final String instance;
@@ -238,9 +235,6 @@ public abstract class SecureAdminBootstrapHelper {
             remoteInstanceDir = remoteInstanceDir(this.remoteNodeDir);
         }
 
-//        private long dasDomainXMLTimestamp(final File dasInstanceDir) {
-//            return new File(dasInstanceDir.toURI().resolve(DOMAIN_XML_PATH)).lastModified();
-//        }
         abstract void writeToFile(final String path, final InputStream content) throws IOException;
 
         abstract void setLastModified(final String path, final long when) throws IOException;
