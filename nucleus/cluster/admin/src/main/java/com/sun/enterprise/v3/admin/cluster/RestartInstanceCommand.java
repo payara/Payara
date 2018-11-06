@@ -313,7 +313,10 @@ public class RestartInstanceCommand implements AdminCommand {
         }
 
         String val = rac.findPropertyInReport("restartable");
-        return Boolean.parseBoolean(val);
+        if (val != null && val.equals("false")) {
+            return false;
+    }
+        return true;
     }
 
     private void waitForRestart() {

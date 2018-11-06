@@ -139,7 +139,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
                         s.setNodeRef(s.getNodeAgentRef());
                         s.setNodeAgentRef(null);
                     }
-                    //remove the node-agent element
+                    //remove the node-agent element by setting to null
                     d.setNodeAgents(null);
                     return null;
                 }

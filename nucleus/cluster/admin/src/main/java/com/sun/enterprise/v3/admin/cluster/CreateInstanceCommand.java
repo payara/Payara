@@ -88,7 +88,7 @@ import javax.inject.Inject;
         description="Create Instance")
 })
 public class CreateInstanceCommand implements AdminCommand {
-    private static final String NL = System.lineSeparator();
+    private static final String NEWLINE = System.lineSeparator();
     
     @Inject
     private CommandRunner cr;
@@ -430,7 +430,7 @@ public class CreateInstanceCommand implements AdminCommand {
         if (userManagedNodeType()) {
             String msg = Strings.get("create.instance.config",
                     instance, humanCommand);
-            msg = StringUtils.cat(NL, registerInstanceMessage, msg);
+            msg = StringUtils.cat(NEWLINE, registerInstanceMessage, msg);
             report.setMessage(msg);
             return;
         }
@@ -456,7 +456,7 @@ public class CreateInstanceCommand implements AdminCommand {
         String msg = Strings.get("create.instance.success",
                 instance, nodeHost);
         if (!terse) {
-            msg = StringUtils.cat(NL,
+            msg = StringUtils.cat(NEWLINE,
                     output.toString().trim(), registerInstanceMessage, msg);
         }
         report.setMessage(msg);
@@ -549,7 +549,17 @@ public class CreateInstanceCommand implements AdminCommand {
         return fullCommand.toString();
     }
 
+    // verbose but very readable...
     private boolean userManagedNodeType() {
-        return !(theNode.isLocal() || theNode.getType().equals("SSH") || theNode.getType().equals("DCOM"));
+        if(theNode.isLocal())
+            return false;
+
+        if(theNode.getType().equals("SSH"))
+            return false;
+
+        if(theNode.getType().equals("DCOM"))
+            return false;
+
+        return true;
     }
 }

@@ -164,26 +164,38 @@ public class ValidateNodeCommand implements AdminCommand {
         // What is there in the node is valid. Now go update anything that
         // was not there.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        if (! excludeFromUpdate.contains(INSTALLDIR)) 
-            map.add(installdir, installdir);
-        if (! excludeFromUpdate.contains(NODEHOST))
-            map.add(NODEHOST, nodehost);
-        if (! excludeFromUpdate.contains(NODEDIR))
-            map.add(NODEDIR, nodedir);
-        if (! excludeFromUpdate.contains(SSHPORT))
-            map.add(SSHPORT, sshport);
-        if (! excludeFromUpdate.contains(SSHUSER))
-            map.add(SSHUSER, sshuser);
-        if (! excludeFromUpdate.contains(SSHKEYFILE))
-            map.add(SSHKEYFILE, sshkeyfile);
+        ParameterMap map = buildMap(excludeFromUpdate);
 
         // Only update if there is something to do
         if ( map.size() > 1) {
             ci.parameters(map);
             ci.execute();
         }
+    }
+    
+    private ParameterMap buildMap(Set<String> excludeFromUpdate) {
+        ParameterMap map = new ParameterMap();
+        map.add("DEFAULT", name);
+        if (! excludeFromUpdate.contains(INSTALLDIR)) {
+            map.add(installdir, installdir);
+        }
+        if (! excludeFromUpdate.contains(NODEHOST)) {
+            map.add(NODEHOST, nodehost);
+        }
+        if (! excludeFromUpdate.contains(NODEDIR)) {
+            map.add(NODEDIR, nodedir);
+        }
+        if (! excludeFromUpdate.contains(SSHPORT)) {
+            map.add(SSHPORT, sshport);
+        }
+        if (! excludeFromUpdate.contains(SSHUSER)) {
+            map.add(SSHUSER, sshuser);
+        }
+        if (! excludeFromUpdate.contains(SSHKEYFILE)) {
+            map.add(SSHKEYFILE, sshkeyfile);
+        }
+        
+        return map;
     }
 
     public void validateNode(final Node node) throws
