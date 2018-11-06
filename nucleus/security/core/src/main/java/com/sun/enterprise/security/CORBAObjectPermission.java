@@ -37,44 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.security.BasicPermission;
 
-
 /**
- * This object represents the permission to invoke on a set of CORBA objects
- * that are not EJBs.
- * The name is the CORBA Object's name (currently only "*" is supported).
- * The actions are the methods on the object.
+ * This object represents the permission to invoke on a set of CORBA objects that are not EJBs. The name is the CORBA
+ * Object's name (currently only "*" is supported). The actions are the methods on the object.
  *
  * This class extends BasicPermission to support wildcard matching.
  */
 public class CORBAObjectPermission extends BasicPermission {
 
     public CORBAObjectPermission() {
-	
-	super("*", "*");
+
+        super("*", "*");
     }
 
     public CORBAObjectPermission(String name) {
 
-	super("*", "*");
+        super("*", "*");
 
-	// currently only name "*" is supported
-	if ( !name.equals("*") ) {
-	    throw new RuntimeException("CORBAObjectPermission name must be *");
-	}
+        // currently only name "*" is supported
+        if (!name.equals("*")) {
+            throw new RuntimeException("CORBAObjectPermission name must be *");
+        }
     }
 
     public CORBAObjectPermission(String name, String actions) {
 
-	super("*", actions);
-	
-	// currently only name "*" is supported
-	if ( !name.equals("*") ) {
-	    throw new RuntimeException("CORBAObjectPermission name must be *");
-	}
+        super("*", actions);
+
+        // currently only name "*" is supported
+        if (!name.equals("*")) {
+            throw new RuntimeException("CORBAObjectPermission name must be *");
+        }
     }
 }

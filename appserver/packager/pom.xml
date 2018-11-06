@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -88,7 +88,6 @@
     <modules>
         <module>external</module> 
         <module>legal</module>
-        <module>pkg-bootstrap</module>
         <module>appserver-base</module>
         <module>felix</module>
         <module>glassfish-hk2</module>

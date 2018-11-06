@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
@@ -45,25 +45,24 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
- * This Factory provides DigestParameterGenerator instances to generate 
- * DigestAlgorithmParameter objects from Http and Sip servlet requests. 
+ * This Factory provides DigestParameterGenerator instances to generate DigestAlgorithmParameter objects from Http and
+ * Sip servlet requests.
  *
  * @author K.Venugopal@sun.com
  */
 public abstract class DigestParameterGenerator {
 
-    public static final String HTTP_DIGEST="HttpDigest";
-    public static final String SIP_DIGEST="SIPDigest";
-    public DigestParameterGenerator() {
-    }
+    public static final String HTTP_DIGEST = "HttpDigest";
+    public static final String SIP_DIGEST = "SIPDigest";
 
-    //TODO: Ability to return implementations through services mechanism.
+    // TODO: Ability to return implementations through services mechanism.
     public static DigestParameterGenerator getInstance(String algorithm) {
         if (HTTP_DIGEST.equals(algorithm)) {
             return new HttpDigestParamGenerator();
         }
+        
         return new HttpDigestParamGenerator();
     }
-    
-    public abstract DigestAlgorithmParameter[] generateParameters(AlgorithmParameterSpec value)throws InvalidAlgorithmParameterException;
+
+    public abstract DigestAlgorithmParameter[] generateParameters(AlgorithmParameterSpec value) throws InvalidAlgorithmParameterException;
 }

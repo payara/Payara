@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
 
 /**
  * An EJB resource.
- * 
+ *
  * @author Harish Prabandham
  */
 public class EJBResource extends Resource {
@@ -55,15 +55,20 @@ public class EJBResource extends Resource {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
+        if (obj == this) {
             return true;
+        }
 
-        if ((obj == null) || (obj.getClass() != getClass()))
+        if (obj == null || obj.getClass() != getClass()) {
             return false;
+        }
 
-        Resource r = (Resource) obj;
+        Resource otherResource = (Resource) obj;
 
-        return getApplication().equals(r.getApplication()) && getMethod().equals(r.getMethod()) && getName().equals(r.getName());
+        return
+            getApplication().equals(otherResource.getApplication()) &&
+            getMethod().equals(otherResource.getMethod()) &&
+            getName().equals(otherResource.getName());
     }
 
     @Override

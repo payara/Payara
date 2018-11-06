@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.microprofile.metrics.MetricsService;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -96,43 +97,62 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     @Param(name = "dynamic", optional = true)
     private Boolean dynamic;
 
+    @Param(name = "endpoint", optional = true)
+    private String endpoint;
+
+    @Param(name = "virtualServers", optional = true)
+    private String virtualServers;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
     
     @Override
-    public void execute(AdminCommandContext adminCommandContext) {
+    public void execute(AdminCommandContext context) {
+        ActionReport actionReport = context.getActionReport();
+
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         try {
-            ConfigSupport.apply(metricsConfigurationProxy -> {
+            ConfigSupport.apply(configProxy -> {
+                boolean restart = false;
                 if (dynamic != null) {
-                    metricsConfigurationProxy.setDynamic(String.valueOf(dynamic));
+                    configProxy.setDynamic(dynamic.toString());
                 }
                 if (enabled != null) {
-                    metricsConfigurationProxy.setEnabled(String.valueOf(enabled));
-                    if (dynamic != null) {
-                        if (dynamic) {
-                            metricsService.resetMetricsEnabledProperty();
-                        }
-                    } else if (Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                    configProxy.setEnabled(enabled.toString());
+                    if ((dynamic != null && dynamic)
+                            || Boolean.valueOf(metricsConfiguration.getDynamic())) {
                         metricsService.resetMetricsEnabledProperty();
+                    } else {
+                        restart = true;
                     }
                 }
                 if (secure != null) {
-                    metricsConfigurationProxy.setSecure(String.valueOf(secure));
-                    if (dynamic != null) {
-                        if (dynamic) {
-                            metricsService.resetMetricsSecureProperty();
-                        }
-                    } else if (Boolean.valueOf(metricsConfiguration.getDynamic())) {
+                    configProxy.setSecureMetrics(secure.toString());
+                    if ((dynamic != null && dynamic)
+                            || Boolean.valueOf(metricsConfiguration.getDynamic())) {
                         metricsService.resetMetricsSecureProperty();
+                    } else {
+                        restart = true;
                     }
                 }
-                return metricsConfigurationProxy;
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
+                    restart = true;
+                }
+                if (virtualServers != null) {
+                    configProxy.setVirtualServers(virtualServers);
+                    restart = true;
+                }
+
+                if (restart) {
+                    actionReport.setMessage("Restart server for change to take effect");
+                }
+                return configProxy;
             }, metricsConfiguration);
         } catch (TransactionFailure ex) {
-            adminCommandContext.getActionReport().failure(LOGGER, "Failed to update Metrics configuration", ex);
+            actionReport.failure(LOGGER, "Failed to update Metrics configuration", ex);
         }
     }
     

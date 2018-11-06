@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] and/or affiliates -->
+<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rest-client</artifactId>
@@ -77,7 +77,6 @@
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
             <version>1.1</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>

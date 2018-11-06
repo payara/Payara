@@ -40,14 +40,9 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.ldap;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Vector;
+import static java.util.logging.Level.FINE;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -67,13 +62,11 @@ import javax.security.auth.login.LoginException;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-
-import sun.security.x509.X500Name;
 
 /**
  * Realm wrapper for supporting LDAP authentication.
@@ -107,13 +100,13 @@ import sun.security.x509.X500Name;
  *   <li>search-bind-password - The password of search-bind-dn.optional and no default value.
  *   <li>pool-size - The JNDI ldap connection pool size.
  * </ul>
- * 
+ *
  * @see com.sun.enterprise.security.auth.login.LDAPLoginModule
  *
  */
 @Service
-public final class LDAPRealm extends IASRealm {
-    
+public final class LDAPRealm extends BaseRealm {
+
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "ldap";
 
@@ -174,8 +167,7 @@ public final class LDAPRealm extends IASRealm {
 
     public static final String SSL = "SSL";
 
-    private HashMap groupCache;
-    private Vector emptyVector;
+    private Map<String, List<String>> groupCache;
     private Properties ldapBindProps = new Properties();
 
     /**
@@ -187,26 +179,26 @@ public final class LDAPRealm extends IASRealm {
      * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
+    @Override
     public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
-        
+
         String url = props.getProperty(PARAM_DIRURL);
         String dn = props.getProperty(PARAM_USERDN);
-        String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
 
         if (url == null || dn == null || jaasCtx == null) {
             throw new BadRealmException(sm.getString("ldaprealm.badconfig", url, dn, jaasCtx));
         }
-        
+
         this.setProperty(PARAM_DIRURL, url);
         ldapBindProps.setProperty(Context.PROVIDER_URL, url);
         this.setProperty(PARAM_USERDN, dn);
-        this.setProperty(IASRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+        this.setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
         String mode = props.getProperty(PARAM_MODE, MODE_DEFAULT);
         if (!MODE_DEFAULT.equals(mode)) {
-            String msg = sm.getString("ldaprealm.badmode", mode);
-            throw new BadRealmException(msg);
+            throw new BadRealmException(sm.getString("ldaprealm.badmode", mode));
         }
         this.setProperty(PARAM_MODE, mode);
 
@@ -291,19 +283,16 @@ public final class LDAPRealm extends IASRealm {
             if (System.getProperty(SUN_JNDI_POOL_PROTOCOL) == null) {
                 System.setProperty(SUN_JNDI_POOL_PROTOCOL, DEFAULT_POOL_PROTOCOL);
             }
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "LDAPRealm : Using custom socket factory for SSL with pooling");
-            }
+            _logger.log(FINE, "LDAPRealm : Using custom socket factory for SSL with pooling");
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(FINE)) {
             Properties tempProps = (Properties) ldapBindProps.clone();
             tempProps.remove(Context.SECURITY_CREDENTIALS);
-            _logger.log(Level.FINE, "LDAPRealm : " + tempProps);
+            _logger.log(Level.FINE, "LDAPRealm : {0}", tempProps);
         }
 
-        groupCache = new HashMap();
-        emptyVector = new Vector();
+        groupCache = new HashMap<>();
     }
 
     /**
@@ -312,6 +301,7 @@ public final class LDAPRealm extends IASRealm {
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
@@ -321,9 +311,9 @@ public final class LDAPRealm extends IASRealm {
         if (groupMapper == null) {
             return grpList;
         }
-        ArrayList<String> finalresult = new ArrayList<String>();
+        List<String> finalresult = new ArrayList<>();
         for (String grp : grpList) {
-            ArrayList<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             groupMapper.getMappedGroups(grp, result);
             finalresult.add(grp);
             if (!result.isEmpty()) {
@@ -352,12 +342,13 @@ public final class LDAPRealm extends IASRealm {
             ctx = new InitialDirContext(getLdapBindProps());
 
             String _username = userDN;
-            try {
-                X500Name name = new X500Name(userDN);
-                _username = name.getCommonName();
-            } catch (IOException e) {
-                // Ignoring the exception to suppot simple group names as userDN
-                // Issue GLASSFISH-19595
+            LdapName name = new LdapName(userDN); //Ignoring the exception to suppot simple group names as userDN
+            //Issue GLASSFISH-19595
+            for (Rdn rdn : name.getRdns()) {
+                if (rdn.getType().equalsIgnoreCase("CN")) {
+                    _username = rdn.getValue().toString();
+                    break;
+                }
             }
             if (_username == null && userDN != null && userDN.startsWith("uid")) {
                 // handle uid=XXX here where cn is not present
@@ -369,8 +360,8 @@ public final class LDAPRealm extends IASRealm {
                 }
 
             }
-            StringBuffer sb = new StringBuffer(getProperty(PARAM_GRP_SEARCH_FILTER));
-            StringBuffer dynSb = new StringBuffer(getProperty(PARAM_DYNAMIC_GRP_FILTER));
+            StringBuilder sb = new StringBuilder(getProperty(PARAM_GRP_SEARCH_FILTER));
+            StringBuilder dynSb = new StringBuilder(getProperty(PARAM_DYNAMIC_GRP_FILTER));
             substitute(sb, SUBST_SUBJECT_NAME, _username);
             substitute(sb, SUBST_SUBJECT_DN, userDN);
             substitute(dynSb, SUBST_SUBJECT_NAME, _username);
@@ -378,7 +369,7 @@ public final class LDAPRealm extends IASRealm {
 
             srcFilter = sb.toString();
             dynFilter = dynSb.toString();
-            List<String> groupsList = new ArrayList<String>();
+            List<String> groupsList = new ArrayList<>();
             groupsList.addAll(groupSearch(ctx, getProperty(PARAM_GRPDN), srcFilter, getProperty(PARAM_GRP_TARGET)));
             // search filter is constructed internally as
             // as a groupofURLS
@@ -407,9 +398,10 @@ public final class LDAPRealm extends IASRealm {
      * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
      *            does not support this operation.
      */
+    @Override
     public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
-        Vector v = (Vector) groupCache.get(username);
-        if (v == null) {
+        List<String> cachedGroups = groupCache.get(username);
+        if (cachedGroups == null) {
             // Note : assuming the username is a userDN here
             List<String> searchedGrps = getGroups(username);
             if (searchedGrps != null) {
@@ -420,21 +412,16 @@ public final class LDAPRealm extends IASRealm {
             }
             // we don't load group here as we need to bind ctx to user with
             // password before doing that and password is not available here
-            return emptyVector.elements();
+            return Collections.emptyEnumeration();
         } else {
             if (groupMapper != null) {
-                Vector ret = new Vector();
-                ret.addAll(v);
-                ArrayList<String> result = new ArrayList<String>();
-                for (Object o : v) {
-                    String grp = (String) o;
-                    ArrayList<String> tmp = this.getMappedGroupNames(grp);
-                    result.addAll(tmp);
+                List<String> result = new LinkedList<>(cachedGroups);
+                for (String grp : cachedGroups) {
+                    result.addAll(this.getMappedGroupNames(grp));
                 }
-                ret.addAll(result);
-                return ret.elements();
+                return Collections.enumeration(result);
             } else {
-                return v.elements();
+                return Collections.enumeration(cachedGroups);
             }
         }
     }
@@ -447,21 +434,21 @@ public final class LDAPRealm extends IASRealm {
      *
      */
     private void setGroupNames(String username, String[] groups) {
-        Vector v = new Vector(groups.length);
-        for (int i = 0; i < groups.length; i++) {
-            v.add(groups[i]);
-        }
-        groupCache.put(username, v);
+        groupCache.put(username, new LinkedList<>(Arrays.asList(groups)));
     }
 
     /**
      * Supports mode=find-bind. See class documentation.
      *
+     * @param _username
+     * @param _password
+     * @return
+     * @throws javax.security.auth.login.LoginException
      */
     public String[] findAndBind(String _username, char[] _password) throws LoginException {
         // do search for user, substituting %s for username
         _username = RFC2254Encode(_username);
-        StringBuffer sb = new StringBuffer(getProperty(PARAM_SEARCH_FILTER));
+        StringBuilder sb = new StringBuilder(getProperty(PARAM_SEARCH_FILTER));
         substitute(sb, SUBST_SUBJECT_NAME, _username);
         String userid = sb.toString();
 
@@ -481,14 +468,14 @@ public final class LDAPRealm extends IASRealm {
             }
 
             boolean bindSuccessful = bindAsUser(realUserDN, _password);
-            if (bindSuccessful == false) {
+            if (!bindSuccessful) {
                 String msg = sm.getString("ldaprealm.bindfailed", realUserDN);
                 throw new LoginException(msg);
             }
 
             // search groups using above connection, substituting %d (and %s)
-            sb = new StringBuffer(getProperty(PARAM_GRP_SEARCH_FILTER));
-            StringBuffer dynSb = new StringBuffer(getProperty(PARAM_DYNAMIC_GRP_FILTER));
+            sb = new StringBuilder(getProperty(PARAM_GRP_SEARCH_FILTER));
+            StringBuilder dynSb = new StringBuilder(getProperty(PARAM_DYNAMIC_GRP_FILTER));
 
             substitute(sb, SUBST_SUBJECT_NAME, _username);
             substitute(sb, SUBST_SUBJECT_DN, realUserDN);
@@ -497,7 +484,7 @@ public final class LDAPRealm extends IASRealm {
 
             srcFilter = sb.toString();
             dynFilter = dynSb.toString();
-            ArrayList groupsList = new ArrayList();
+            List<String> groupsList = new ArrayList<>();
             groupsList.addAll(groupSearch(ctx, getProperty(PARAM_GRPDN), srcFilter, getProperty(PARAM_GRP_TARGET)));
             // search filter is constructed internally as
             // as a groupofURLS
@@ -519,18 +506,18 @@ public final class LDAPRealm extends IASRealm {
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "LDAP:Group search filter: " + srcFilter);
-            StringBuffer gb = new StringBuffer();
+            _logger.log(Level.FINE, "LDAP:Group search filter: {0}", srcFilter);
+            StringBuilder gb = new StringBuilder();
             gb.append("Group memberships found: ");
             if (grpList.length > 0) {
-                for (int i = 0; i < grpList.length; i++) {
-                    gb.append(" " + grpList[i]);
+                for (String grpList1 : grpList) {
+                    gb.append(" ").append(grpList1);
                 }
             } else {
                 gb.append("(null)");
             }
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "LDAP: " + gb.toString());
+                _logger.log(Level.FINE, "LDAP: {0}", gb.toString());
             }
         }
         grpList = addAssignGroups(grpList);
@@ -538,7 +525,7 @@ public final class LDAPRealm extends IASRealm {
         setGroupNames(_username, grpList);
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "LDAP: login succeeded for: " + _username);
+             _logger.log(Level.FINE, "LDAP: login succeeded for: {0}", _username);
         }
 
         return grpList;
@@ -550,7 +537,7 @@ public final class LDAPRealm extends IASRealm {
      */
     private String userSearch(DirContext ctx, String baseDN, String filter) {
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINE, "search: baseDN: " + baseDN + "  filter: " + filter);
+            _logger.log(Level.FINE, "search: baseDN: {0}  filter: {1}", new Object[]{baseDN, filter});
         }
 
         String foundDN = null;
@@ -566,8 +553,8 @@ public final class LDAPRealm extends IASRealm {
             if (namingEnum.hasMore()) {
                 SearchResult res = (SearchResult) namingEnum.next();
 
-                StringBuffer sb = new StringBuffer();
-                // for dn name with '/'
+                StringBuilder sb = new StringBuilder();
+                //for dn name with '/'
                 CompositeName compDN = new CompositeName(res.getName());
                 String ldapDN = compDN.get(0);
                 sb.append(ldapDN);
@@ -578,7 +565,7 @@ public final class LDAPRealm extends IASRealm {
                 }
                 foundDN = sb.toString();
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.log(Level.FINE, "Found user DN: " + foundDN);
+                    _logger.log(Level.FINE, "Found user DN: {0}", foundDN);
                 }
             }
         } catch (Exception e) {
@@ -614,8 +601,8 @@ public final class LDAPRealm extends IASRealm {
             bindSuccessful = true;
         } catch (Exception e) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("Error binding to directory as: " + bindDN);
-                _logger.finest("Exception from JNDI: " + e.toString());
+                _logger.log(Level.FINEST, "Error binding to directory as: {0}", bindDN);
+                _logger.log(Level.FINEST, "Exception from JNDI: {0}", e.toString());
             }
         } finally {
             if (ctx != null) {
@@ -632,21 +619,22 @@ public final class LDAPRealm extends IASRealm {
      * Search for group membership using the given connection.
      *
      */
-    private List dynamicGroupSearch(DirContext ctx, String baseDN, String memberOfAttr, String filter, String target)
-            throws NamingException {
-        List groupList = new ArrayList();
+    private List<String> dynamicGroupSearch(
+        DirContext ctx, String baseDN, String memberOfAttr, String filter, String target
+    ) {
+        List<String> groupList = new ArrayList<>();
 
         String[] targets = new String[] { memberOfAttr };
 
         try {
-            SearchControls ctls = new SearchControls();
-            ctls.setReturningAttributes(targets);
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            SearchControls searchControls = new SearchControls();
+            searchControls.setReturningAttributes(targets);
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             // Set this to false to avoid objects and hence exposing ldap object
             // injection.
-            ctls.setReturningObjFlag(false);
+            searchControls.setReturningObjFlag(false);
 
-            NamingEnumeration e = ctx.search(baseDN, filter, ctls);
+            NamingEnumeration e = ctx.search(baseDN, filter, searchControls);
 
             while (e.hasMore()) {
                 SearchResult res = (SearchResult) e.next();
@@ -657,7 +645,7 @@ public final class LDAPRealm extends IASRealm {
                         LdapName dn = new LdapName(groupDN);
                         for (Rdn rdn : dn.getRdns()) {
                             if (rdn.getType().equalsIgnoreCase(target)) {
-                                groupList.add(rdn.getValue());
+                                groupList.add(rdn.getValue().toString());
                                 break;
                             }
                         }
@@ -675,8 +663,8 @@ public final class LDAPRealm extends IASRealm {
      * Search for group membership using the given connection.
      *
      */
-    private List groupSearch(DirContext ctx, String baseDN, String filter, String target) {
-        List groupList = new ArrayList();
+    private List<String> groupSearch(DirContext ctx, String baseDN, String filter, String target) {
+        List<String> groupList = new ArrayList<>();
 
         try {
             String[] targets = new String[1];
@@ -711,7 +699,7 @@ public final class LDAPRealm extends IASRealm {
      * Do string substitution. target is replaced by value for all occurences.
      *
      */
-    private static void substitute(StringBuffer sb, String target, String value) {
+    private static void substitute(StringBuilder sb, String target, String value) {
         int i = sb.indexOf(target);
         while (i >= 0) {
             sb.replace(i, i + target.length(), value);
@@ -721,14 +709,11 @@ public final class LDAPRealm extends IASRealm {
 
     /**
      * Escape special chars in search filter, according to RFC2254
-     * 
-     * @param inName
-     * @return
      */
     private String RFC2254Encode(String inName) {
 
         int len = inName.length();
-        StringBuffer buf = new StringBuffer(len);
+        StringBuilder buf = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
             char ch = inName.charAt(i);
             switch (ch) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -56,6 +57,7 @@ public interface Applications extends ConfigBeanProxy  {
      * Gets the value of the MbeanorApplication property.
      * Objects of the following type(s) are allowed in the list
      * {@link Application }
+     * @return 
      */             
     @Element("*")
     @RestRedirect(opType= RestRedirect.OpType.PUT, commandName="deploy")
@@ -63,6 +65,9 @@ public interface Applications extends ConfigBeanProxy  {
             
     /**
      * Gets a subset of {@link #getModules()} that has the given type.
+     * @param <T>
+     * @param type
+     * @return 
      */
     @DuckTyped
     <T> List<T> getModules(Class<T> type);

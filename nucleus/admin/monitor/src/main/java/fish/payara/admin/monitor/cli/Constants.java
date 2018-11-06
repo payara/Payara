@@ -42,10 +42,11 @@ package fish.payara.admin.monitor.cli;
 /**
  *
  * @author Susan Rai
+ * @since 4.1.2.183
  */
 public final class Constants {
 
-    public final static String[] validModuleNames = {
+    public static final String[] validModuleNames = {
         "cloud",
         "cloud-elasticity",
         "cloud-orchestrator",

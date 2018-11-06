@@ -152,7 +152,7 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
                 }
             }, monitoringService);
         } catch (TransactionFailure ex) {
-            logger.log(Level.WARNING, "Falied to execute the command " + "set-monitoring-service-configuration: " + ex.getCause().getMessage());
+            logger.log(Level.WARNING, "Failed to execute the command set-monitoring-service-configuration: {0}",  ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }

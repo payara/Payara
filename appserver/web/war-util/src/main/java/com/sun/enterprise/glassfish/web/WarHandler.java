@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.enterprise.glassfish.web;
 
@@ -95,6 +95,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 public class WarHandler extends AbstractArchiveHandler {
 
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
+    private static final String PAYARA_WEB_XML = "WEB-INF/payara-web.xml";
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
     private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
     private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
@@ -211,14 +212,13 @@ public class WarHandler extends AbstractArchiveHandler {
 
         WebXmlParser webXmlParser = null;
         boolean hasWSLDD = archive.exists(WEBLOGIC_XML);
-        File runtimeAltDDFile = archive.getArchiveMetaData(
-                    DeploymentProperties.RUNTIME_ALT_DD, File.class);
-        if (runtimeAltDDFile != null &&
-                "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) &&
-                runtimeAltDDFile.isFile()) {
+        File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        if (runtimeAltDDFile != null && "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) && runtimeAltDDFile.isFile()) {
             webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
+        } else if (archive.exists(PAYARA_WEB_XML)){
+            webXmlParser = new PayaraWebXmlParser(archive, application);
         } else if (archive.exists(GLASSFISH_WEB_XML)) {
             webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (archive.exists(SUN_WEB_XML)) {
@@ -635,6 +635,24 @@ public class WarHandler extends AbstractArchiveHandler {
         @Override
         protected String getRootElementName() {
             return "glassfish-web-app";
+        }
+    }
+    
+    protected class PayaraWebXmlParser extends GlassFishWebXmlParser {
+        PayaraWebXmlParser(ReadableArchive archive, Application application)
+                throws XMLStreamException, IOException {
+
+            super(archive, application);
+        }
+        
+        @Override
+        protected String getXmlFileName() {
+            return PAYARA_WEB_XML;
+        }
+
+        @Override
+        protected String getRootElementName() {
+            return "payara-web-app";
         }
     }
 

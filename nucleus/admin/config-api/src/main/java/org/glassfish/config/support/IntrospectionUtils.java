@@ -52,8 +52,8 @@ import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 
 public final class IntrospectionUtils {
 
-    private static final Logger logger = ConfigApiLoggerInfo.getLogger();
-    private static final int debugLevel = 0;
+    private static final Logger LOGGER = ConfigApiLoggerInfo.getLogger();
+    private static final int DEBUG_LEVEL = 0;
 
     @SuppressWarnings("unchecked")
     public static Method[] findMethods(Class<?> c) {
@@ -70,7 +70,7 @@ public final class IntrospectionUtils {
      * @return
      */
     public static boolean setProperty(Object o, String name, String value) {
-        if (debugLevel > 1) {
+        if (DEBUG_LEVEL > 1) {
             debug("setProperty(" + o.getClass() + " " + name + "=" + value + ")");
         }
         String setter = "set" + capitalize(name);
@@ -176,26 +176,26 @@ public final class IntrospectionUtils {
             }
 
         } catch (IllegalArgumentException ex2) {
-            logger.log(Level.INFO, "IAE " + o + " " + name + " " + value, ex2);
+            LOGGER.log(Level.INFO, "IAE " + o + " " + name + " " + value, ex2);
         } catch (SecurityException ex1) {
-            if (debugLevel > 0) {
+            if (DEBUG_LEVEL > 0) {
                 debug("SecurityException for " + o.getClass() + " " + name + "=" + value + ")");
             }
-            if (debugLevel > 1) {
+            if (DEBUG_LEVEL > 1) {
                 ex1.printStackTrace();
             }
         } catch (IllegalAccessException iae) {
-            if (debugLevel > 0) {
+            if (DEBUG_LEVEL > 0) {
                 debug("IllegalAccessException for " + o.getClass() + " " + name + "=" + value + ")");
             }
-            if (debugLevel > 1) {
+            if (DEBUG_LEVEL > 1) {
                 iae.printStackTrace();
             }
         } catch (InvocationTargetException ie) {
-            if (debugLevel > 0) {
+            if (DEBUG_LEVEL > 0) {
                 debug("InvocationTargetException for " + o.getClass() + " " + name + "=" + value + ")");
             }
-            if (debugLevel > 1) {
+            if (DEBUG_LEVEL > 1) {
                 ie.printStackTrace();
             }
         }
@@ -203,8 +203,8 @@ public final class IntrospectionUtils {
     }
 
     private static void debug(String s) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "IntrospectionUtils: {0}", s);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "IntrospectionUtils: {0}", s);
         }
     }
 

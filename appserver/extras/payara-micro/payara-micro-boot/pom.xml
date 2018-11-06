@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.micro</groupId>
     <artifactId>payara-micro-boot</artifactId>
@@ -57,7 +57,6 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-api</artifactId>
             <version>${hk2.version}</version>
-            <type>jar</type>
             <optional>true</optional>
 	</dependency>
 	<dependency>

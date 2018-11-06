@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -60,11 +61,6 @@ import javax.validation.constraints.NotNull;
  * It also allows optional properties which can be used by the provider
  * implementation for its configuration.
  */
-
-/* @XmlType(name = "", propOrder = {
-    "property"
-}) */
-
 @Configured
 public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
 
@@ -83,8 +79,8 @@ public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the name property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setName(String value) throws PropertyVetoException;
 
@@ -104,8 +100,8 @@ public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the policyProvider property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPolicyProvider(String value) throws PropertyVetoException;
 
@@ -124,16 +120,18 @@ public interface JaccProvider extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the policyConfigurationFactoryProvider property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setPolicyConfigurationFactoryProvider(String value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link PropertyBag}
+     * Properties as per {@link PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

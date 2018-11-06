@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions copyright [2017] Payara Foundation and/or affiliates
+// Portions copyright [2017-2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -84,6 +84,7 @@ public final class ConfigBeansUtilities {
     
     /**
      * Get the default value of Format from dtd
+     * @return 
      */
     public static String getDefaultFormat() {
         return "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -91,6 +92,7 @@ public final class ConfigBeansUtilities {
 
     /**
      * Get the default value of RotationPolicy from dtd
+     * @return 
      */
     public static String getDefaultRotationPolicy() {
         return "time";
@@ -98,6 +100,7 @@ public final class ConfigBeansUtilities {
 
     /**
      * Get the default value of RotationEnabled from dtd
+     * @return 
      */
     public static String getDefaultRotationEnabled() {
         return "true";
@@ -105,6 +108,7 @@ public final class ConfigBeansUtilities {
 
     /**
      * Get the default value of RotationIntervalInMinutes from dtd
+     * @return 
      */
     public static String getDefaultRotationIntervalInMinutes() {
         return "1440";
@@ -112,6 +116,7 @@ public final class ConfigBeansUtilities {
 
     /**
      * Get the default value of QueueSizeInBytes from dtd
+     * @return 
      */
     public static String getDefaultQueueSizeInBytes() {
         return "4096";
@@ -120,6 +125,7 @@ public final class ConfigBeansUtilities {
     /**
      * This method is used to convert a string value to boolean.
      *
+     * @param value
      * @return true if the value is one of true, on, yes, 1. Note
      *         that the values are case sensitive. If it is not one of these
      *         values, then, it returns false.

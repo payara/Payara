@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.183-SNAPSHOT</version>
+    <version>5.184-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.183-SNAPSHOT</tag>
+        <tag>payara-server-5.184-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -147,7 +147,8 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <!-- Enable this to allow downloading Eclipse MicroProfile Snapshot builds -->
+                <enabled>false</enabled>
             </snapshots>
         </repository>
 
@@ -249,33 +250,34 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p4</grizzly.version>
+        <grizzly.version>2.4.3.payara-p5</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
         <!-- Microprofile -->
-        <microprofile-config.version>1.2.1</microprofile-config.version>
+        <microprofile-config.version>1.3</microprofile-config.version>
+        <microprofile-opentracing.version>1.1</microprofile-opentracing.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p7</jersey.version>
+        <jersey.version>2.27.payara-p13</jersey.version>
 
         <!-- Bean Validation -->
-        <javax.validation.version>2.0.0.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.9.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.9.Final</hibernate.validator-cdi.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
+        <hibernate.validator.version>6.0.12.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.12.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
         <javax.el.version>3.0.1-b04</javax.el.version>
-        <javax.el-api.version>3.0.1-b04</javax.el-api.version>
+        <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JavaMail -->
         <mail.version>1.6.1</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
-        <javax.annotation-api.version>1.3</javax.annotation-api.version>
+        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
 
 
         <!-- Other -->
@@ -290,9 +292,9 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.3.3</classmate.version>
-        <jboss.logging.version>3.3.1.Final</jboss.logging.version>
+        <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.22.0-GA</javassist.version>
+        <javassist.version>3.23.1-GA</javassist.version>
 
         <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
@@ -304,7 +306,7 @@
         <antlr.version>2.7.7</antlr.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.5</jackson.version>
+        <jackson.version>2.9.6</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.18</snakeyaml.version>
 
@@ -312,7 +314,7 @@
 
         <mimepull.version>1.9.7</mimepull.version>
         
-        <opentracing.version>0.30.0</opentracing.version>
+        <opentracing.version>0.31.0</opentracing.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
@@ -322,9 +324,9 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>6.0</asm.version>
+        <asm.version>6.2.1</asm.version>
         <ha-api.version>3.1.9</ha-api.version>
-        <hazelcast.version>3.10.2</hazelcast.version>
+        <hazelcast.version>3.10.5</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>
@@ -353,8 +355,6 @@
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
-        <!-- MicroProfile API Versions -->
-        <microprofile-opentracing.version>1.0.payara-p1</microprofile-opentracing.version>
     </properties>
 
     <modules>
@@ -1327,7 +1327,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>2.14.2</version>
+                <version>2.14.6</version>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>

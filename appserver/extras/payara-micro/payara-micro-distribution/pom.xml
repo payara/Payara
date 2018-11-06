@@ -45,15 +45,11 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
-
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
-    <packaging>jar</packaging>
-
     <name>Payara Micro Distribution</name>
-
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -218,7 +214,6 @@
             <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-full-container</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -374,7 +369,6 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 
@@ -383,7 +377,6 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 
@@ -392,7 +385,6 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-boot</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 
@@ -401,7 +393,6 @@
             <groupId>fish.payara.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 
@@ -410,21 +401,18 @@
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>glassfish-batch-connector</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>
             <artifactId>glassfish-batch-commands</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.appserver</groupId>
             <artifactId>payara-jbatch</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 
@@ -433,21 +421,18 @@
             <groupId>fish.payara.ejb.timer</groupId>
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.persistence.coordination</groupId>
             <artifactId>hazelcast-eclipselink-coordination</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>fish.payara.jmx.monitoring</groupId>
             <artifactId>jmx-monitoring</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <optional>true</optional>
         </dependency>
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,89 +39,213 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+
+import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.*;
+import java.util.logging.Logger;
+
 import static java.lang.Thread.currentThread;
 import static java.util.logging.Level.FINEST;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-
-import java.io.IOException;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
-
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import static org.eclipse.microprofile.jwt.config.Names.*;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid according to
  * the MP-JWT 1.0 spec.
- * 
+ *
  * @author Arjan Tijms
  */
 public class SignedJWTIdentityStore implements IdentityStore {
-    
-    private static final Logger logger = Logger.getLogger(SignedJWTIdentityStore.class.getName()); 
-    
+
+    private static final Logger LOGGER = Logger.getLogger(SignedJWTIdentityStore.class.getName());
+
+    private static final String RSA_ALGORITHM = "RSA";
+
     private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
-    private String acceptedIssuer;
-    
+
+    private final String acceptedIssuer;
+
+    private final Config config;
+
     public SignedJWTIdentityStore() {
-        try {
-            Properties properties = new Properties();
-            properties.load(currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties").openStream());
-            
-            acceptedIssuer = properties.getProperty("accepted.issuer");
-            
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to load properties", e);
-        }
+        config = ConfigProvider.getConfig();
+        acceptedIssuer = readVendorIssuer()
+                .orElseGet(() -> config.getOptionalValue(ISSUER, String.class)
+                .orElseThrow(() -> new IllegalStateException("No issuer found")));
     }
-    
+
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
         try {
-            JsonWebTokenImpl jsonWebToken = 
-                    jwtTokenParser.parse(
-                            signedJWTCredential.getSignedJWT(), 
-                            acceptedIssuer, 
-                            readPublicKey("/publicKey.pem"));
-            
-            List<String> groups = new ArrayList<String>(
+
+            Optional<PublicKey> publicKey = readPublicKeyFromLocation("/publicKey.pem");
+            if (!publicKey.isPresent()) {
+                publicKey = readMPEmbeddedPublicKey();
+            }
+            if (!publicKey.isPresent()) {
+                publicKey = readMPPublicKeyFromLocation();
+            }
+            if (!publicKey.isPresent()) {
+                throw new IllegalStateException("No PublicKey found");
+            }
+
+            JsonWebTokenImpl jsonWebToken
+                    = jwtTokenParser.parse(
+                            signedJWTCredential.getSignedJWT(),
+                            acceptedIssuer,
+                            publicKey.get()
+                    );
+
+            List<String> groups = new ArrayList<>(
                     jsonWebToken.getClaim("groups"));
-            
+
             return new CredentialValidationResult(
-                    jsonWebToken, 
+                    jsonWebToken,
                     new HashSet<>(groups));
-            
+
         } catch (Exception e) {
-            logger.log(FINEST, "Exception trying to parse JWT token.", e);
+            LOGGER.log(FINEST, "Exception trying to parse JWT token.", e);
         }
 
         return INVALID_RESULT;
     }
-    
-    public PublicKey readPublicKey(String resourceName) throws Exception {
-        byte[] byteBuffer = new byte[16384];
-        int length = currentThread().getContextClassLoader()
-                                    .getResource(resourceName)
-                                    .openStream()
-                                    .read(byteBuffer);
-        
-        String key = new String(byteBuffer, 0, length).replaceAll("-----BEGIN (.*)-----", "")
-                                                      .replaceAll("-----END (.*)----", "")
-                                                      .replaceAll("\r\n", "")
-                                                      .replaceAll("\n", "")
-                                                      .trim();
 
-        return KeyFactory.getInstance("RSA")
-                         .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key)));
+    private Optional<String> readVendorIssuer() {
+        String issuer = null;
+        URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
+        if (mpJwtResource != null) {
+            try {
+                Properties properties = new Properties();
+                properties.load(mpJwtResource.openStream());
+                issuer = properties.getProperty("accepted.issuer");
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to load properties", e);
+            }
+        }
+        return Optional.ofNullable(issuer);
     }
+
+    private Optional<PublicKey> readMPEmbeddedPublicKey() throws Exception {
+        Optional<String> key = config.getOptionalValue(VERIFIER_PUBLIC_KEY, String.class);
+        if (!key.isPresent()) {
+            return Optional.empty();
+        }
+        return createPublicKey(key.get());
+    }
+
+    private Optional<PublicKey> readMPPublicKeyFromLocation() throws Exception {
+        Optional<String> locationOpt = config.getOptionalValue(VERIFIER_PUBLIC_KEY_LOCATION, String.class);
+
+        if (!locationOpt.isPresent()) {
+            return Optional.empty();
+        }
+
+        String publicKeyLocation = locationOpt.get();
+
+        return readPublicKeyFromLocation(publicKeyLocation);
+    }
+
+    private Optional<PublicKey> readPublicKeyFromLocation(String publicKeyLocation) throws Exception {
+
+        URL publicKeyURL = currentThread().getContextClassLoader().getResource(publicKeyLocation);
+
+        if (publicKeyURL == null) {
+            try {
+                publicKeyURL = new URL(publicKeyLocation);
+            } catch (MalformedURLException ex) {
+                publicKeyURL = null;
+            }
+        }
+        if (publicKeyURL == null) {
+            return Optional.empty();
+        }
+
+        byte[] byteBuffer = new byte[16384];
+        try (InputStream inputStream = publicKeyURL.openStream()) {
+            return createPublicKey(new String(byteBuffer, 0, inputStream.read(byteBuffer)));
+        }
+    }
+
+
+    private Optional<PublicKey> createPublicKey(String key) throws Exception {
+        try {
+            return Optional.of(createPublicKeyFromPem(key));
+        } catch (Exception pemEx) {
+            try {
+                return Optional.of(createPublicKeyFromJWKS(key));
+            } catch (Exception jwksEx) {
+                throw new DeploymentException(jwksEx);
+            }
+        }
+    }
+
+    private PublicKey createPublicKeyFromPem(String key) throws Exception {
+        key = key.replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("-----END (.*)----", "")
+                .replaceAll("\r\n", "")
+                .replaceAll("\n", "")
+                .trim();
+
+        byte[] keyBytes = Base64.getDecoder().decode(key);
+        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(keyBytes);
+        return KeyFactory.getInstance(RSA_ALGORITHM)
+                .generatePublic(publicKeySpec);
+
+    }
+
+    private PublicKey createPublicKeyFromJWKS(String jwksValue) throws Exception {
+        JsonObject jwks = parseJwks(jwksValue);
+        JsonArray keys = jwks.getJsonArray("keys");
+        JsonObject jwk = keys != null ? keys.getJsonObject(0) : jwks;
+
+        // the public exponent
+        byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
+        BigInteger exponent = new BigInteger(1, exponentBytes);
+
+        // the modulus
+        byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
+        BigInteger modulus = new BigInteger(1, modulusBytes);
+
+        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+        return KeyFactory.getInstance(RSA_ALGORITHM)
+                .generatePublic(publicKeySpec);
+    }
+
+    private JsonObject parseJwks(String jwksValue) throws Exception {
+        JsonObject jwks;
+        try (JsonReader reader = Json.createReader(new StringReader(jwksValue))) {
+            jwks = reader.readObject();
+        } catch (Exception ex) {
+            // if jwks is encoded
+            byte[] jwksDecodedValue = Base64.getDecoder().decode(jwksValue);
+            try (InputStream jwksStream = new ByteArrayInputStream(jwksDecodedValue);
+                 JsonReader reader = Json.createReader(jwksStream)) {
+                jwks = reader.readObject();
+            }
+        }
+        return jwks;
+    }
+
+
 
 }

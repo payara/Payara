@@ -77,8 +77,7 @@ public abstract class CopyConfig implements AdminCommand {
     ServerEnvironment env;
     @Inject
     ServerEnvironmentImpl envImpl;
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(CopyConfig.class);
+    final private static LocalStringManagerImpl LOCAL_STRINGSs = new LocalStringManagerImpl(CopyConfig.class);
 
     public Config copyConfig(Configs configs, Config config, String destConfigName, Logger logger) throws PropertyVetoException,
             TransactionFailure {
@@ -108,15 +107,14 @@ public abstract class CopyConfig implements AdminCommand {
         configs.getConfig().add(destCopy);
         copyOfConfig = destCopy;
 
-        String srcConfig = "";
-        srcConfig = config.getName();
+        String srcConfig = config.getName();
 
         File configConfigDir = new File(env.getConfigDirPath(),
                 configName);
         for (Config c : configs.getConfig()) {
             File existingConfigConfigDir = new File(env.getConfigDirPath(), c.getName());
             if (!c.getName().equals(configName) && configConfigDir.equals(existingConfigConfigDir)) {
-                throw new TransactionFailure(localStrings.getLocalString(
+                throw new TransactionFailure(LOCAL_STRINGSs.getLocalString(
                         "config.duplicate.dir",
                         "Config {0} is trying to use the same directory as config {1}",
                         configName, c.getName()));
@@ -125,7 +123,7 @@ public abstract class CopyConfig implements AdminCommand {
         try {
             if (!(new File(configConfigDir, "docroot").mkdirs() &&
                   new File(configConfigDir, "lib/ext").mkdirs())) {
-                throw new IOException(localStrings.getLocalString("config.mkdirs",
+                throw new IOException(LOCAL_STRINGSs.getLocalString("config.mkdirs",
                         "error creating config specific directories"));
             }
 

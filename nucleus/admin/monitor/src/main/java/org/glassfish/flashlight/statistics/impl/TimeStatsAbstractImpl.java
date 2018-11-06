@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.statistics.impl;
 
@@ -49,26 +50,29 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Harpreet Singh
  */
-public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
-        implements TimeStats {
+public abstract class TimeStatsAbstractImpl extends AbstractTreeNode implements TimeStats {
 
-    private Average average = AverageFactory.createAverage();
+    protected static final String NEWLINE = System.lineSeparator();
+    
+    private final Average average = AverageFactory.createAverage();
 
 
-    private AtomicLong lastSampleTime = new AtomicLong(0);
+    private final AtomicLong lastSampleTime = new AtomicLong(0);
     protected long startTime = 0;
 
-    private ThreadLocalTimeStatData individualData = new ThreadLocalTimeStatData();
+    private final ThreadLocalTimeStatData individualData = new ThreadLocalTimeStatData();
 
     private static class ThreadLocalTimeStatData extends ThreadLocal<TimeStatData> {
-
         private TimeStatData tsd;
 
-        protected TimeStatData initialValue (){
+        @Override
+        protected TimeStatData initialValue(){
             tsd = new TimeStatData ();
             return tsd;
         }
-        public TimeStatData get (){
+        
+        @Override
+        public TimeStatData get(){
             if (tsd == null)
                 tsd = new TimeStatData();
             return tsd;
@@ -76,15 +80,10 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
         
     }
 
-    protected static final String NEWLINE = System.getProperty("line.separator");
-
+    @Override
     public double getTime() {
         return average.getAverage();
     }
-
-    abstract public void entry();
-
-    abstract public void exit();
 
     protected void postEntry(long entryTime) {
         if (startTime == 0) {
@@ -100,50 +99,61 @@ public abstract class TimeStatsAbstractImpl extends AbstractTreeNode
         average.addDataPoint(tsd.getTotalTime());
     }
 
+    @Override
     public long getMinimumTime() {
         return average.getMin();
     }
 
+    @Override
     public long getMaximumTime() {
         return average.getMax();
     }
 
     // only for testing purposes.
+    @Override
     public void setTime(long time) {
-        //  System.err.println ("setTime only for Testing purposes");
         individualData.get().setTotalTime(time);
         average.addDataPoint(time);
     }
 
+    @Override
     public void setReset(boolean reset) {
         average.setReset();
         individualData.get().setReset();
     }
 
+    @Override
     public long getTimesCalled() {
         return average.getSize();
     }
+    
     // Implementations for TimeStatistic
+    @Override
     public long getCount() {
         return getTimesCalled();
     }
 
+    @Override
     public long getMaxTime() {
         return getMaximumTime();
     }
 
+    @Override
     public long getMinTime() {
         return getMinimumTime();
     }
 
+    @Override
     public long getTotalTime() {
         return average.getTotal();
     }
 
+    @Override
     public long getLastSampleTime() {
         return this.lastSampleTime.get();
     }
 
+    @Override
     public long getStartTime() {
         return this.startTime;
     }

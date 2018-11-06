@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -61,10 +62,9 @@ import javax.rmi.*;
  */
 public final class Utility {
 
-    static final Logger _logger = CULoggerInfo.getLogger();
+    private static final Logger _logger = CULoggerInfo.getLogger();
 
-    private static LocalStringManagerImpl localStrings =
-    new LocalStringManagerImpl(Utility.class);
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Utility.class);
 
     public static void checkJVMVersion()
     {
@@ -106,14 +106,14 @@ public final class Utility {
      * Return the hostname of the local machine.
      */
     public static String getLocalHost()  {
-	String hostname = null;
-	try {
-	    InetAddress ia = InetAddress.getLocalHost();
-	    hostname = ia.getHostName();
-	} catch(UnknownHostException e) {
-	    return "localhost";
-	}
-	return hostname;
+        String hostname = null;
+        try {
+            InetAddress ia = InetAddress.getLocalHost();
+            hostname = ia.getHostName();
+        } catch(UnknownHostException e) {
+            return "localhost";
+        }
+        return hostname;
     }
 
     /**
@@ -146,20 +146,20 @@ public final class Utility {
 	    PortableRemoteObject.narrow(objRef, anInterface);
     }
 
-    
+
     /**
      * Returns a character array for the valid characters in a CharBuffer.
      * @param cb
-     * @return 
+     * @return
      */
     public static char[] toCharArray(final CharBuffer cb) {
         return cb.toString().toCharArray();
     }
-    
+
     /**
      * Returns a byte array for the valid bytes in a ByteBuffer.
      * @param bb
-     * @return 
+     * @return
      */
     public static byte[] toByteArray(final ByteBuffer bb) {
         final byte[] result = new byte[bb.limit() - bb.position()];
@@ -330,12 +330,12 @@ public final class Utility {
             int i=0;
             for (i =0; i<methodsList.length; ++i)
             {
-                if(methodsList[i].getName().equalsIgnoreCase(setMeth) == true)
+                if(methodsList[i].getName().equalsIgnoreCase(setMeth))
                 {
                   Class[] parameterTypes = methodsList[i].getParameterTypes();
                   if(parameterTypes.length == 1 )
                   {
-                       if(parameterTypes[0].getName().equals("java.lang.String"))
+                       if(String.class.equals(parameterTypes[0]))
                        {
                            methodFound = true;
                            break;
@@ -346,7 +346,7 @@ public final class Utility {
 
                 }
             }
-            if(methodFound == true)
+            if(methodFound)
             {
                 Object[] params = {value};
                 methodsList[i].invoke(obj, params);

@@ -43,7 +43,7 @@ package com.sun.enterprise.security.auth.login;
 import java.security.Principal;
 
 public class DistinguishedPrincipalCredential {
-    
+
     private Principal principal;
 
     public DistinguishedPrincipalCredential(Principal principal) {
@@ -54,6 +54,7 @@ public class DistinguishedPrincipalCredential {
         return principal;
     }
 
+    @Override
     public String toString() {
         return "DistingushedPrincipal: " + principal;
     }

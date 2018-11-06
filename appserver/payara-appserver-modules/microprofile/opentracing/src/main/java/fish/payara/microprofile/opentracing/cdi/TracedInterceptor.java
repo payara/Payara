@@ -40,8 +40,11 @@
 package fish.payara.microprofile.opentracing.cdi;
 
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
@@ -70,7 +73,7 @@ import org.glassfish.internal.api.Globals;
 @Interceptor
 @Traced
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class TracedInterceptor {
+public class TracedInterceptor implements Serializable {
 
     private static final Logger logger = Logger.getLogger(TracedInterceptor.class.getName());
 
@@ -83,7 +86,7 @@ public class TracedInterceptor {
         ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
         OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
         InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
-
+        
         // Initialise return value
         Object proceed = null;
 
@@ -112,9 +115,9 @@ public class TracedInterceptor {
             // Only trace if we've explicitly been told to (which is the default behaviour)
             if (tracingEnabled) {
                 // If we *have* been told to, get the application's Tracer instance and start an active span.
-                try (ActiveSpan activeSpan = openTracing
-                        .getTracer(openTracing.getApplicationName(invocationManager, invocationContext))
-                        .buildSpan(operationName).startActive()) {
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(invocationManager, invocationContext));
+                Span activeSpan = tracer.buildSpan(operationName).start();
+                try (Scope scope = tracer.scopeManager().activate(activeSpan, true)) { // TODO Check whether this should be true or false
 
                     // Proceed the invocation
                     try {

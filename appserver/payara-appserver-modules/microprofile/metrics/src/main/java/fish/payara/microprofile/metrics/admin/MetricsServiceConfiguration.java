@@ -68,8 +68,8 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
      * @return
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecure();
-    void setSecure(String value) throws PropertyVetoException;
+    String getSecureMetrics();
+    void setSecureMetrics(String value) throws PropertyVetoException;
     
     /**
      * Boolean value determining if the service is dynamic or not.
@@ -79,5 +79,23 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getDynamic();
     void setDynamic(String value) throws PropertyVetoException;
+
+    /**
+     * String value defines the endpoint of metrics service.
+     *
+     * @return
+     */
+    @Attribute(defaultValue = "metrics")
+    String getEndpoint();
+    void setEndpoint(String value) throws PropertyVetoException;
+
+    /**
+     * String value defines the attached virtual servers.
+     *
+     * @return
+     */
+    @Attribute(dataType = String.class)
+    String getVirtualServers();
+    void setVirtualServers(String value) throws PropertyVetoException;
 
 }

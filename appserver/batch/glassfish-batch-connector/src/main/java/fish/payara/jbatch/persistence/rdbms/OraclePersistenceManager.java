@@ -1,24 +1,53 @@
 /*
- * Copyright (c) 2014, 2015, 2016 Payara Foundation. All rights reserved.
- 
- * The contents of this file are subject to the terms of the Common Development
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
- 
+ *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.exception.PersistenceException;
-import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.CHECKPOINT_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.JOB_STATUS_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_EXECUTION_INSTANCE_TABLE_KEY;
+import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.STEP_STATUS_TABLE_KEY;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -31,15 +60,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
+import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
 
 /**
- * 
+ *
  * Oracle Persistence Manager
  */
 
@@ -51,11 +81,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
-	
+
 	// oracle create table strings
 	protected Map<String, String> createOracleTableStrings;
 	protected Map<String, String> createOracleIndexStrings;
-        
+
         protected Map<String, String> oracleObjectNames;
 
 	@Override
@@ -98,10 +128,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		this.batchConfig = batchConfig;
 
-		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+                schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+                jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+                prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
+                suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 
-		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-		
 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
@@ -122,8 +153,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		// Load the table names and queries shared between different database
 		// types
 
-		tableNames = getSharedTableMap(batchConfig);
-                oracleObjectNames = getOracleObjectsMap(batchConfig);
+		tableNames = getSharedTableMap();
+                oracleObjectNames = getOracleObjectsMap();
 
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
@@ -131,16 +162,16 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
-		
+
 		logger.config("JNDI name = " + jndiName);
 
 
 		try {
-			if (!isOracleSchemaValid()) {
+			if (!isSchemaValid()) {
 				setDefaultSchema();
 
 			}
-			checkOracleTables();
+                    checkOracleTables();
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -155,32 +186,28 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isOracleSchemaValid() throws SQLException {
+        @Override
+	protected boolean isSchemaValid() throws SQLException {
 
 		logger.entering(CLASSNAME, "isOracleSchemaValid");
 		boolean result = false;
-		Connection conn = null;
-		DatabaseMetaData dbmd = null;
-		ResultSet rs = null;
 
-		try {
-			conn = getConnectionToDefaultSchema();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getSchemas();
+		try (Connection conn = getConnectionToDefaultSchema()) {
+			DatabaseMetaData dbmd = conn.getMetaData();
+			try (ResultSet rs = dbmd.getSchemas()) {
+				while (rs.next()) {
 
-			while (rs.next()) {
-
-				String schemaname = rs.getString("TABLE_SCHEM");
-				if (schema.equalsIgnoreCase(schemaname)) {
-					logger.exiting(CLASSNAME, "isSchemaValid", true);
-					return true;
+					String schemaname = rs.getString("TABLE_SCHEM");
+					if (schema.equalsIgnoreCase(schemaname)) {
+						logger.exiting(CLASSNAME, "isSchemaValid", true);
+						return true;
+					}
 				}
 			}
+
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, rs, null);
 		}
 		logger.exiting(CLASSNAME, "isOracleSchemaValid", false);
 
@@ -193,18 +220,15 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * @throws SQLException
 	 */
 	private void checkOracleTables() throws SQLException {
-		// put the create table strings into a hashmap
-		createOracleTableStrings = setOracleTableMap(batchConfig);
-
-		// put the create index strings into a hashmap
-		createOracleIndexStrings = setOracleIndexMap(batchConfig);
+		 setOracleTableMap();
+                 setOracleIndexMap();
 		logger.entering(CLASSNAME, "checkOracleTables");
 
 		createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
 
                 // do same check for indexes, triggers and sequences
-                // for triggers and indexes, also check for old names that did not include a prefix/suffix for backward compatibility 
+                // for triggers and indexes, also check for old names that did not include a prefix/suffix for backward compatibility
                 if (!checkOracleIndexExists(oracleObjectNames.get(CREATE_CHECKPOINTDATA_INDEX_KEY),
                                             CREATE_CHECKPOINTDATA_INDEX_KEY,
                                             tableNames.get(CHECKPOINT_TABLE_KEY))) {
@@ -214,29 +238,29 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 
 		createOracleTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_JOBINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_TRG),
                                 DEFAULT_JOBINSTANCEDATA_TRG_KEY,
                                 tableNames.get(JOB_INSTANCE_TABLE_KEY));
-               
+
 
 		createOracleTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_EXECUTIONINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(EXECUTIONINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_TRG),
                                 DEFAULT_EXECUTIONINSTANCEDATA_TRG_KEY,
                                 tableNames.get(EXECUTION_INSTANCE_TABLE_KEY));
-            
+
 
 		createOracleTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
 				createOracleTableStrings.get(CREATE_TABLE_STEPINSTANCEDATA));
-                createOracleSequenceNotExists(oracleObjectNames.get(STEPINSTANCEDATA_SEQ_KEY),
+                createTableIfNotExists(oracleObjectNames.get(STEPINSTANCEDATA_SEQ_KEY),
                                 createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_SEQ));
                 createOracleTriggerNotExists(oracleObjectNames.get(STEPINSTANCEDATA_TRG_KEY),
                                 createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_TRG),
@@ -251,6 +275,25 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		logger.exiting(CLASSNAME, "checkOracleTables");
 	}
 
+        @Override
+        public void createTables(DataSource dataSource, BatchRuntimeConfiguration batchRuntimeConfiguration){
+            this.dataSource = dataSource;
+            prefix = batchRuntimeConfiguration.getTablePrefix();
+            suffix = batchRuntimeConfiguration.getTableSuffix();
+            schema = batchRuntimeConfiguration.getSchemaName();
+            tableNames = getSharedTableMap();
+            oracleObjectNames = getOracleObjectsMap();
+
+            try {
+                if (!isSchemaValid()) {
+                    setDefaultSchema();
+                }
+                checkOracleTables();
+            } catch (SQLException ex) {
+                logger.severe(ex.getLocalizedMessage());
+            }
+         }
+
 	/**
 	 * Create the jbatch tables if they do not exist.
 	 * @param tableName
@@ -262,14 +305,9 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		logger.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
 				tableName, createTableStatement });
 
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rs = null;
-		PreparedStatement ps = null;
-		try {
-			conn = getConnection();
-			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
+		try (Connection conn = getConnection();
+			 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+								ResultSet.CONCUR_READ_ONLY)) {
 			String query = "SELECT lower(owner),lower(table_name) FROM all_tables where lower(owner) =  "
 					+ "\'"
 					+ schema.toLowerCase()
@@ -277,122 +315,91 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 					+ " and lower(table_name)= "
 					+ "\'"
 					+ tableName.toLowerCase() + "\'";
-			rs = stmt.executeQuery(query);
 
-			int rowcount = getTableRowCount(rs);
-
-			// Create table if it does not exist
-			if (rowcount == 0) {
-				if (!rs.next()) {
-					logger.log(Level.INFO, tableName
-							+ " table does not exists. Trying to create it.");
-					ps = conn.prepareStatement(createTableStatement);
-					ps.executeUpdate();
+			try (ResultSet rs = stmt.executeQuery(query)) {
+				int rowcount = getTableRowCount(rs);
+				// Create table if it does not exist
+				if (rowcount == 0) {
+					if (!rs.next()) {
+						logger.log(Level.INFO, tableName
+								+ " table does not exists. Trying to create it.");
+						try (PreparedStatement ps = conn.prepareStatement(createTableStatement)) {
+							ps.executeUpdate();
+						}
+					}
 				}
 			}
+
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
-		} finally {
-			cleanupConnection(conn, ps);
 		}
 
 		logger.exiting(CLASSNAME, "createOracleTableNotExists");
 	}
 
-	/**
-	 * Create the jbatch sequences if they do not exist
-	 * @param sequencename
-	 * @param seqstmt
-	 * @throws SQLException
-	 */
-	public void createOracleSequenceNotExists(String sequencename, String seqstmt) throws SQLException {
-		logger.entering(CLASSNAME, "createOracleSequenceNotExists");
-		// check sequences that exist
-		Connection conn = null;
-		boolean seqexists = false;
-		ResultSet results = null;
-		PreparedStatement ps = null;
-		try {
-			conn = getConnection();
-			Statement stmt = conn.createStatement();
-                        
-                        String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
-				       + "\'" + sequencename.toLowerCase() + "\'";
+        @Override
+        public boolean checkIfTableExists(DataSource dSource, String tableName, String schemaName) {
+                dataSource = dSource;
 
-			results = stmt.executeQuery(query);
+                boolean result = false;
 
-			while (results.next()) {
+                try (Connection connection = dataSource.getConnection()) {
+                    schema = schemaName;
 
-				seqexists = true;
-				break;
+                    if (!isSchemaValid()) {
+                        setDefaultSchema();
+                    }
 
-			}
+                    String query = "select lower(sequence_name) from user_sequences where lower(sequence_name)="
+                            + "\'" + tableName.toLowerCase() + "\'";
 
-			if (!seqexists) {
-				// create the sequence
+					try (Statement statement = connection.createStatement();
+						 ResultSet resultSet = statement.executeQuery(query)) {
+						while (resultSet.next()) {
+							result = true;
+							break;
+						}
+					}
+                } catch (SQLException ex) {
+                    logger.severe(ex.getLocalizedMessage());
+                }
 
-				ps = conn.prepareStatement(seqstmt);
-				ps.executeUpdate();
-
-			}
-		} catch (SQLException e) {
-
-			e.printStackTrace();
-			throw e;
-		} finally {
-			cleanupConnection(conn, results, ps);
-		}
-		logger.exiting(CLASSNAME, "createOracleSequenceNotExists");
-
-	}
+                return result;
+        }
     /**
      * Create the relevant jbatch triggers as required
      * @param triggername
      * @param trgstmt
      * @throws SQLException
      */
-	public void createOracleTriggerNotExists(String triggername, String trgstmt, 
+	public void createOracleTriggerNotExists(String triggername, String trgstmt,
                     String defaultTriggername, String tablename) throws SQLException {
 
 		logger.entering(CLASSNAME, "createOracleTableNotExists", new Object[] {
 				triggername, trgstmt, defaultTriggername, tablename });
-		Connection conn = null;
 		boolean triggerexists = false;
-		ResultSet results = null;
-		Statement ps = null;
-		try {
-			conn = getConnection();
-			Statement stmt = conn.createStatement();
+		try (Connection conn = getConnection();
+			 Statement stmt = conn.createStatement()) {
 
-                        String query = "select lower(trigger_name) from user_triggers "
-                                     + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
-                                     +   " and lower(trigger_name) in ("
-                                             + "\'" + triggername.toLowerCase() + "\',"
-                                             + "\'" + defaultTriggername.toLowerCase() + "\')"
-                                    +    " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
-                        results = stmt.executeQuery(query);
-
-			while (results.next()) {
-
-				triggerexists = true;
-				break;
-
+			String query = "select lower(trigger_name) from user_triggers "
+						 + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
+						 +   " and lower(trigger_name) in ("
+								 + "\'" + triggername.toLowerCase() + "\',"
+								 + "\'" + defaultTriggername.toLowerCase() + "\')"
+						+    " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
+			try (ResultSet results = stmt.executeQuery(query)) {
+				triggerexists = results.next();
 			}
 
 			if (!triggerexists) {
 				// create the trigger
-
-				ps = conn.createStatement();
-                                ps.executeUpdate(trgstmt);
-
+				try (Statement ps = conn.createStatement()) {
+					ps.executeUpdate(trgstmt);
+				}
 			}
 		} catch (SQLException e) {
-
-			e.printStackTrace();
 			throw e;
-		} finally {
-			cleanupConnection(conn, results, null);
 		}
 		logger.exiting(CLASSNAME, "createOracleTriggerNotExists");
 
@@ -406,49 +413,32 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	public boolean checkOracleIndexExists(String indexname, String defaultIndexname, String tablename) throws SQLException {
 		logger.entering(CLASSNAME, "createOracleIndexNotExists",new Object[] {
 				indexname, defaultIndexname, tablename });
-		Connection conn = null;
 		boolean indexexists = false;
-		ResultSet results = null;
-		try {
-			conn = getConnection();
-			Statement stmt = conn.createStatement();
-                        
-                        String query = "select lower(index_name) from user_indexes"
-                                     + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
-                                     +   " and lower(index_name) in ("
-                                             + "\'" + indexname.toLowerCase() + "\',"
-                                             + "\'" + defaultIndexname.toLowerCase() + "\')"
-                                     +   " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
+		try (Connection conn = getConnection();
+			 Statement stmt = conn.createStatement()) {
+			String query = "select lower(index_name) from user_indexes"
+						 + " where lower(table_owner)=\'" + schema.toLowerCase()+ "\'"
+						 +   " and lower(index_name) in ("
+								 + "\'" + indexname.toLowerCase() + "\',"
+								 + "\'" + defaultIndexname.toLowerCase() + "\')"
+						 +   " and lower(table_name)=\'" + tablename.toLowerCase() + "\'";
 
-			results = stmt.executeQuery(query);
-
-			while (results.next()) {
-
-				indexexists = true;
-				break;
-
+			try (ResultSet results = stmt.executeQuery(query)) {
+				indexexists = results.next();
 			}
 		} catch (SQLException e) {
-
-			e.printStackTrace();
 			throw e;
-		} finally {
-			cleanupConnection(conn, results, null);
 		}
 		logger.exiting(CLASSNAME, "createOracleIndexNotExists");
 		return indexexists;
 	}
-	
+
 	/**
 	 * Method invoked to insert the Oracle create table, trigger and sequence
 	 * strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleTableMap(IBatchConfig batchConfig) {
-                String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+	private Map<String, String> setOracleTableMap() {
 		createOracleTableStrings = new HashMap<>();
 		createOracleTableStrings.put(CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
 				+ tableNames.get(CHECKPOINT_TABLE_KEY)
@@ -463,11 +453,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 				"CREATE SEQUENCE " + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY));
 		createOracleTableStrings
 				.put(CREATE_JOBINSTANCEDATA_TRG,
-						"CREATE OR REPLACE TRIGGER " + oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY) 
+						"CREATE OR REPLACE TRIGGER " + oracleObjectNames.get(JOBINSTANCEDATA_TRG_KEY)
                                                                 + " BEFORE INSERT ON "
 								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 								+ " FOR EACH ROW BEGIN SELECT "
-                                                                + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY) 
+                                                                + oracleObjectNames.get(JOBINSTANCEDATA_SEQ_KEY)
                                                                 + ".nextval INTO :new.jobinstanceid FROM dual; END;");
 
 		createOracleTableStrings
@@ -540,7 +530,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	 * Method invoked to insert the Oracle create index strings into a hashmap
 	 **/
 
-	protected Map<String, String> setOracleIndexMap(IBatchConfig batchConfig) {
+	private Map<String, String> setOracleIndexMap() {
 		createOracleIndexStrings = new HashMap<>();
 		createOracleIndexStrings.put(
 				CREATE_CHECKPOINTDATA_INDEX,
@@ -548,24 +538,20 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 						+ " on " + tableNames.get(CHECKPOINT_TABLE_KEY) + "(id)");
 		return createOracleIndexStrings;
 	}
-	
-        protected Map<String, String> getOracleObjectsMap(IBatchConfig batchConfig) {
-		String prefix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
-		String suffix = batchConfig.getConfigProperties().getProperty(
-				BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY, "");
+
+        protected Map<String, String> getOracleObjectsMap() {
 		Map<String, String> result = new HashMap<String, String>(7);
-                
+
 		result.put(JOBINSTANCEDATA_SEQ_KEY, prefix + JOBINSTANCEDATA_SEQ_KEY + suffix);
 		result.put(EXECUTIONINSTANCEDATA_SEQ_KEY, prefix + EXECUTIONINSTANCEDATA_SEQ_KEY + suffix);
 		result.put(STEPINSTANCEDATA_SEQ_KEY, prefix + STEPINSTANCEDATA_SEQ_KEY + suffix);
-                
+
                 result.put(JOBINSTANCEDATA_TRG_KEY, prefix + JOBINSTANCEDATA_TRG_KEY + suffix);
 		result.put(EXECUTIONINSTANCEDATA_TRG_KEY, prefix + EXECUTIONINSTANCEDATA_TRG_KEY + suffix);
 		result.put(STEPINSTANCEDATA_TRG_KEY, prefix + STEPINSTANCEDATA_TRG_KEY + suffix);
-                
+
                 result.put(CREATE_CHECKPOINTDATA_INDEX_KEY, prefix + CREATE_CHECKPOINTDATA_INDEX_KEY + suffix);
-                
+
 		return result;
 	}
 

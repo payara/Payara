@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
@@ -100,6 +101,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
     final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Threshold Time", "Threshold Unit"};
+    final static String MPHealthCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "Timeout"};
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -109,6 +111,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
     private final String hoggingThreadsPropertyName = "hoggingThreads";
     private final String stuckThreadsPropertyName = "stuckThreads";
+    private final String mpHealthcheckPropertyName = "mpHealth";
     
     @Inject
     ServiceLocator habitat;
@@ -134,11 +137,13 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ActionReport hoggingThreadsActionReport = mainActionReport.addSubActionsReport(); // subReport(1)
         ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport(); // subReport(2) 
         ActionReport stuckThreadsActionReport = mainActionReport.addSubActionsReport(); //subReport(3)
+        ActionReport mpHealthcheckCheckerActionReport = mainActionReport.addSubActionsReport(); //subReport(4)
 
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
         ColumnFormatter stuckThreadsColumnFormatter = new ColumnFormatter(stuckThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
+        ColumnFormatter mpHealthCheckColumnFormatter = new ColumnFormatter(MPHealthCheckHeaders);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
         HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
@@ -214,6 +219,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         Properties hoggingThreadsExtraProps = new Properties();
         Properties stuckThreadsExtrasProps = new Properties();
         Properties thresholdDiagnosticsExtraProps = new Properties();
+        Properties mpHealthcheckExtrasProps = new Properties();
         
         for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
             Checker checker = configuration.getCheckerByType(serviceHandle.getService().getCheckerType());
@@ -265,7 +271,20 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 
                 addStuckThreadsCheckerExtrasProps(stuckThreadsExtrasProps, stuckThreadsChecker);
                 
-            } else if (checker != null) {
+            } else if (checker instanceof MicroProfileHealthCheckerConfiguration) {
+                MicroProfileHealthCheckerConfiguration mpHealthcheckChecker = (MicroProfileHealthCheckerConfiguration) checker;
+                
+                Object[] values = new Object[5];
+                values[0] = mpHealthcheckChecker.getName();
+                values[1] = mpHealthcheckChecker.getEnabled();
+                values[2] = mpHealthcheckChecker.getTime();
+                values[3] = mpHealthcheckChecker.getUnit();
+                values[4] = mpHealthcheckChecker.getTimeout();
+                mpHealthCheckColumnFormatter.addRow(values);
+                
+                addMPHealthcheckCheckerExtrasProps(mpHealthcheckExtrasProps, mpHealthcheckChecker);
+                
+            }else if (checker != null) {
                 Object values[] = new Object[4];
                 values[0] = checker.getName();
                 values[1] = checker.getEnabled();
@@ -294,6 +313,10 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             stuckThreadsActionReport.setMessage(stuckThreadsColumnFormatter.toString());
             stuckThreadsActionReport.appendMessage(StringUtils.EOL);
         }
+        if (!mpHealthCheckColumnFormatter.getContent().isEmpty()) {
+            mpHealthcheckCheckerActionReport.setMessage(mpHealthCheckColumnFormatter.toString());
+            mpHealthcheckCheckerActionReport.appendMessage(StringUtils.EOL);
+        }
         
         // Populate the extraProps with defaults for any checker that isn't present
         baseExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, garbageCollectorPropertyName);
@@ -307,12 +330,14 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 heapMemoryUsagePropertyName);
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
                 machineMemoryUsagePropertyName);
+        mpHealthcheckExtrasProps = checkCheckerPropertyPresence(mpHealthcheckExtrasProps, mpHealthcheckPropertyName);
         
         // Add the extra props to their respective action reports
         baseActionReport.setExtraProperties(baseExtraProps);
         hoggingThreadsActionReport.setExtraProperties(hoggingThreadsExtraProps);
         thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
         stuckThreadsActionReport.setExtraProperties(stuckThreadsExtrasProps);
+        mpHealthcheckCheckerActionReport.setExtraProperties(mpHealthcheckExtrasProps);
         
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
@@ -342,6 +367,18 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("thresholdUnit", stuckThreadsChecker.getThresholdTimeUnit());
         
         stuckThreadsExtrasProps.put(stuckThreadsPropertyName, extraPropsMap);
+        
+    }
+    
+    private void addMPHealthcheckCheckerExtrasProps(Properties mpHealthcheckExtrasProps, MicroProfileHealthCheckerConfiguration mpHealthcheckCheck) {
+        Map<String, Object> extraPropsMap = new HashMap<String, Object>(5);
+        extraPropsMap.put("checkerName", mpHealthcheckCheck.getName());
+        extraPropsMap.put("enabled", mpHealthcheckCheck.getEnabled());
+        extraPropsMap.put("time", mpHealthcheckCheck.getTime());
+        extraPropsMap.put("unit", mpHealthcheckCheck.getUnit());
+        extraPropsMap.put("timeout", mpHealthcheckCheck.getTimeout());
+        
+        mpHealthcheckExtrasProps.put(mpHealthcheckPropertyName, extraPropsMap);
         
     }
     
@@ -443,6 +480,11 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     extraPropsMap.put("checkerName", DEFAULT_STUCK_THREAD_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
+                case mpHealthcheckPropertyName:
+                    extraPropsMap = new HashMap<>(5);
+                    extraPropsMap.put("checkerName", DEFAULT_MICROPROFILE_HEALTHCHECK_NAME);
+                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
             }
         }
         
@@ -462,6 +504,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         } else if (extraPropsMap.containsValue(DEFAULT_STUCK_THREAD_NAME)){
             extraPropsMap.put("threshold",  DEFAULT_TIME);
             extraPropsMap.put("thresholdUnit", DEFAULT_UNIT);
+        } else if (extraPropsMap.containsValue(DEFAULT_MICROPROFILE_HEALTHCHECK_NAME)) {
+            extraPropsMap.put("timeout", DEFAULT_TIMEOUT);
         } else {
             extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
             extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);

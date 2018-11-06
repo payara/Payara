@@ -50,7 +50,7 @@ header
     
     import java.util.ResourceBundle;
     import org.glassfish.persistence.common.I18NHelper;
-    import com.sun.jdo.spi.persistence.utility.StringHelper;
+    import org.glassfish.common.util.StringHelper;
 }
 
 /**

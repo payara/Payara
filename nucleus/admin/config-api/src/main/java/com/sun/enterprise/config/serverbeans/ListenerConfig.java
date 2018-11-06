@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -60,11 +61,6 @@ import javax.validation.constraints.NotNull;
 /**
  * Connects a specific listener class with specific managed objects  
  */
-
-/* @XmlType(name = "", propOrder = {
-    "property"
-}) */
-
 @Configured
 public interface ListenerConfig extends ConfigBeanProxy, PropertyBag {
 
@@ -74,8 +70,7 @@ public interface ListenerConfig extends ConfigBeanProxy, PropertyBag {
      * The name of a class that can act as a listener for alerts.
      * Non-empty string containing a Java class name.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute(key=true)
     @NotNull
@@ -84,8 +79,8 @@ public interface ListenerConfig extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the listenerClassName property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setListenerClassName(String value) throws PropertyVetoException;
 
@@ -95,8 +90,7 @@ public interface ListenerConfig extends ConfigBeanProxy, PropertyBag {
      * A list of managed object names that the listener should be subscribed to.
      * A non-empty, comma separated list.
      * 
-     * @return possible object is
-     *         {@link String }
+     * @return possible object is {@link String }
      */
     @Attribute
     @NotNull
@@ -105,16 +99,18 @@ public interface ListenerConfig extends ConfigBeanProxy, PropertyBag {
     /**
      * Sets the value of the subscribeListenerWith property.
      *
-     * @param value allowed object is
-     *              {@link String }
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
      */
     void setSubscribeListenerWith(String value) throws PropertyVetoException;
     
     /**
-    	Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
+     * Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
+     * @return 
      */
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
+    @Override
     List<Property> getProperty();
 }

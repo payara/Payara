@@ -65,22 +65,22 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-public class EmbeddedSecurityLifeCycle
-        implements EmbeddedLifecycle{
+public class EmbeddedSecurityLifeCycle implements EmbeddedLifecycle {
 
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     @Inject
     private EmbeddedSecurity embeddedSecurity;
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
 
     @Override
     public void creation(Server server) {
 
-        //If the instanceRoot is not set to a non-embedded GF install,
-        //copy the security config files from the security.jar to the instanceRoot/config dir
+        // If the instanceRoot is not set to a non-embedded GF install,
+        // copy the security config files from the security.jar to the instanceRoot/config dir
 
         EmbeddedFileSystem fileSystem = server.getFileSystem();
         File instanceRoot = fileSystem.instanceRoot;
@@ -89,14 +89,16 @@ public class EmbeddedSecurityLifeCycle
         }
 
         try {
-            //Get the keyfile names from the security service
+            // Get the keyfile names from the security service
             List<String> keyFileNames = embeddedSecurity.getKeyFileNames(securityService);
-            for(String keyFileName:keyFileNames) {
-                //Copy the keyfiles in instanceRoot/config. If file is already present, then exit (handled by getManagedFile)
+            for (String keyFileName : keyFileNames) {
+                // Copy the keyfiles in instanceRoot/config. If file is already present, then exit (handled by
+                // getManagedFile)
                 FileUtils.getManagedFile("config" + File.separator + embeddedSecurity.parseFileName(keyFileName), instanceRoot);
             }
-            //Copy the other security files to instanceRoot/config
-            //Assuming that these files are present as config/filename in the embedded jar file and are to be extracted that way/
+            // Copy the other security files to instanceRoot/config
+            // Assuming that these files are present as config/filename in the embedded jar file and are to be
+            // extracted that way/
             FileUtils.getManagedFile("config" + File.separator + "login.conf", instanceRoot);
             FileUtils.getManagedFile("config" + File.separator + "server.policy", instanceRoot);
             FileUtils.getManagedFile("config" + File.separator + "cacerts.jks", instanceRoot);
@@ -111,8 +113,8 @@ public class EmbeddedSecurityLifeCycle
             }
             System.setProperty(SecuritySupport.keyStoreProp, keystoreFile);
             System.setProperty(SecuritySupport.trustStoreProp, truststoreFile);
-        }catch(IOException ioEx) {
-           _logger.log(Level.WARNING, SecurityLoggerInfo.copyingSecurityConfigFilesIOError, ioEx);
+        } catch (IOException ioEx) {
+            _logger.log(Level.WARNING, SecurityLoggerInfo.copyingSecurityConfigFilesIOError, ioEx);
         }
     }
 

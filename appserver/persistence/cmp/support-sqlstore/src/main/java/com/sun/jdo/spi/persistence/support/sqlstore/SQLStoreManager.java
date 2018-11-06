@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * SQLStoreManager.java
@@ -56,7 +57,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.sql.RetrieveDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.UpdateObjectDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.concurrency.Concurrency;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.generator.*;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
@@ -107,9 +108,9 @@ public class SQLStoreManager implements PersistenceStore {
         return configCache.getPersistenceConfig(classType);
     }
 
-    /**  
+    /**
      * @inheritDoc
-     */  
+     */
     public ConfigCache getConfigCache() {
         return configCache;
     }
@@ -374,27 +375,28 @@ public class SQLStoreManager implements PersistenceStore {
         Concurrency concurrency = config.getConcurrency(pm.isOptimisticTransaction());
         SelectQueryPlan plan = retrieveAction.buildQueryPlan(this, concurrency);
         ArrayList statements = plan.getStatements();
-        Object result = null;
 
         SelectStatement s = (SelectStatement) statements.get(0);
-        result = executeQuery(pm, s, concurrency, parameters);
+        Object result = executeQuery(pm, s, concurrency, parameters);
 
-        if ((plan.options & RetrieveDescImpl.OPT_AGGREGATE) == 0) {
-            // This was a regular query, no aggregate.
+        if (result != null) {
+            if ((plan.options & RetrieveDescImpl.OPT_AGGREGATE) == 0) {
+                // This was a regular query, no aggregate.
 
-            if ((plan.options & RetrieveDescImpl.OPT_DISTINCT) > 0) {
-                // Perform manual DISTINCT if required
+                if ((plan.options & RetrieveDescImpl.OPT_DISTINCT) > 0) {
+                    // Perform manual DISTINCT if required
 
-                if (((plan.options & RetrieveDescImpl.OPT_FOR_UPDATE) > 0 &&
-                        !vendorType.isDistinctSupportedWithUpdateLock()) ) {
+                    if (((plan.options & RetrieveDescImpl.OPT_FOR_UPDATE) > 0 &&
+                            !vendorType.isDistinctSupportedWithUpdateLock()) ) {
 
-                    HashSet hash = new HashSet();
-                    for (Iterator iter = ((Collection)result).iterator(); iter.hasNext(); ) {
-                        Object temp = iter.next();
-                        if (!hash.contains(temp)) {
-                            hash.add(temp);
-                        } else {
-                            iter.remove();
+                        HashSet hash = new HashSet();
+                        for (Iterator iter = ((Collection)result).iterator(); iter.hasNext(); ) {
+                            Object temp = iter.next();
+                            if (!hash.contains(temp)) {
+                                hash.add(temp);
+                            } else {
+                                iter.remove();
+                            }
                         }
                     }
                 }

@@ -37,57 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
-
-
+import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 
 /**
- * Implementation class for Digest algorithm parameters. 
+ * Implementation class for Digest algorithm parameters.
+ * 
  * @author K.Venugopal@sun.com
  */
+public class DigestAlgorithmParameterImpl implements DigestAlgorithmParameter {
 
-public class DigestAlgorithmParameterImpl implements  com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter {
-    
     private static byte[] delimeter = ":".getBytes();
     private String algorithm = "";
-    private byte[] data = null;          
+    private byte[] data;
     private String name = "";
 
-    public DigestAlgorithmParameterImpl(String name,byte[] data) {        
+    public DigestAlgorithmParameterImpl(String name, byte[] data) {
         this.data = data;
         this.name = name;
     }
-    
-    public DigestAlgorithmParameterImpl(String name,byte[] data,byte delimiter) {        
-        this.data = data;
-        this.delimeter = delimeter;
-        this.name = name;
-    }
-    
-    
-    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data) {
-        this.algorithm = algorithm;
-        this.data = data;
-        this.name = name;
-    }
-    
-    public DigestAlgorithmParameterImpl(String name,String algorithm, byte[] data,byte [] delimiter) {
-        this.algorithm = algorithm;
+
+    public DigestAlgorithmParameterImpl(String name, byte[] data, byte delimiter) {
         this.data = data;
         this.delimeter = delimeter;
         this.name = name;
     }
-    
+
+    public DigestAlgorithmParameterImpl(String name, String algorithm, byte[] data) {
+        this.algorithm = algorithm;
+        this.data = data;
+        this.name = name;
+    }
+
+    public DigestAlgorithmParameterImpl(String name, String algorithm, byte[] data, byte[] delimiter) {
+        this.algorithm = algorithm;
+        this.data = data;
+        this.delimeter = delimeter;
+        this.name = name;
+    }
+
     public String getAlgorithm() {
         return this.algorithm;
     }
-    
-    public  byte[] getValue() {
+
+    public byte[] getValue() {
         return data;
-    }    
-   
+    }
+
     public byte[] getDelimiter() {
         return delimeter;
     }

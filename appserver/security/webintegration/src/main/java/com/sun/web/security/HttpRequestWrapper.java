@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import java.io.BufferedReader;
@@ -71,7 +71,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.glassfish.grizzly.http.util.DataChunk;
 
-class HttpRequestWrapper implements HttpRequest, ServletRequest {
+public class HttpRequestWrapper implements HttpRequest, ServletRequest {
 
     private final Request httpRequest;
     private final HttpServletRequest servletRequest;
@@ -79,7 +79,7 @@ class HttpRequestWrapper implements HttpRequest, ServletRequest {
     private ServletRequest maskedFacade;
     private ServletRequest facade;
 
-    HttpRequestWrapper(HttpRequest request, HttpServletRequest servletRequest) {
+    public HttpRequestWrapper(HttpRequest request, HttpServletRequest servletRequest) {
         httpRequest = (Request) request;
         this.servletRequest = servletRequest;
         isDefaultContext = httpRequest.getMappingData().isDefaultContext;
@@ -90,11 +90,6 @@ class HttpRequestWrapper implements HttpRequest, ServletRequest {
     public void addCookie(Cookie cookie) {
         httpRequest.addCookie(cookie);
     }
-
-    /*
-     * Delegate to HttpServletResponse public void addHeader(String name, String value) { httpRequest.addHeader(name,
-     * value); }
-     */
 
     @Override
     public void addHeader(String name, String value) {

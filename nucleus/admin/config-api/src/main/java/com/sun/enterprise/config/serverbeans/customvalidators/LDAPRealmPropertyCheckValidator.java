@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
@@ -55,18 +56,21 @@ public class LDAPRealmPropertyCheckValidator
     private static final String LDAP_REALM =
         "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm";
 
+    @Override
     public void initialize(final LDAPRealmPropertyCheck fqcn) {
+        //no-op
     }
 
+    @Override
     public boolean isValid(final AuthRealm realm,
         final ConstraintValidatorContext constraintValidatorContext) {
 
         if (realm.getClassname().equals(LDAP_REALM)) {
-            Property jaas_context = realm.getProperty("jaas-context");
+            Property jaasContext = realm.getProperty("jaas-context");
             Property dn = realm.getProperty("base-dn");
             Property url = realm.getProperty("directory");
 
-            if (jaas_context == null || jaas_context.getName().equals(""))
+            if (jaasContext == null || jaasContext.getName().equals(""))
                 return false;
 
             if (url == null || url.getName().equals(""))

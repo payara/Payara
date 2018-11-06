@@ -48,7 +48,7 @@
     <parent>
 	      <groupId>org.glassfish.main.web</groupId>
     	  <artifactId>web</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -199,7 +199,6 @@
             <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

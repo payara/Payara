@@ -43,12 +43,11 @@
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.external</groupId>
     <artifactId>microprofile-opentracing-repackaged</artifactId>
-    <packaging>jar</packaging>
 
     <name>Repackaged MicroProfile OpenTracing</name>
     <description>Repackages MicroProfile OpenTracing jar to expose more packages into the OSGI module</description>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.template;
 
@@ -60,28 +61,28 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 public class TemplateInfoHolder {
 
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(TemplateInfoHolder.class);
-    //Path where schema resides. 
-    private final static String TEMPLATE_INFO_SCHEMA_PATH = "xsd/schema/template-info.xsd";
-    private TemplateInfo _templateInfo;
-    private String _location;
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(TemplateInfoHolder.class);
+    /** Path where schema resides. */
+    private static final String TEMPLATE_INFO_SCHEMA_PATH = "xsd/schema/template-info.xsd";
+    private TemplateInfo templateInfo;
+    private String location;
 
     public TemplateInfoHolder(InputStream inputSteam, String location)
             throws DomainException {
         try {
-            _templateInfo = parse(inputSteam);
+            templateInfo = parse(inputSteam);
         } catch (Exception e) {
-            throw new DomainException(_strings.get("failedToParse", TEMPLATE_INFO_SCHEMA_PATH));
+            throw new DomainException(STRINGS.get("failedToParse", TEMPLATE_INFO_SCHEMA_PATH));
         }
-        _location = location;
+        this.location = location;
     }
 
     public TemplateInfo getTemplateInfo() {
-        return _templateInfo;
+        return templateInfo;
     }
 
     public String getLocation() {
-        return _location;
+        return location;
     }
 
     /**
@@ -92,12 +93,10 @@ public class TemplateInfoHolder {
      * @throws Exception If any error occurs in parsing.
      */
     @SuppressWarnings("rawtypes")
-    private TemplateInfo parse(InputStream configStream)
-            throws Exception {
+    private TemplateInfo parse(InputStream configStream) throws Exception {
         if (configStream == null) {
             throw new DomainException("Invalid stream");
-        }
-        try {
+        } try {
             URL schemaUrl = getClass().getClassLoader().getResource(TEMPLATE_INFO_SCHEMA_PATH);
             JAXBContext context = JAXBContext.newInstance(TemplateInfo.class.getPackage().getName());
             Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -108,8 +107,7 @@ public class TemplateInfoHolder {
             SAXSource source = new SAXSource(is);
             Object obj = unmarshaller.unmarshal(source);
             return obj instanceof JAXBElement ? (TemplateInfo)(((JAXBElement) obj).getValue()) : (TemplateInfo) obj;
-        }
-        finally {
+        } finally {
             try {
                 configStream.close();
                 configStream = null;

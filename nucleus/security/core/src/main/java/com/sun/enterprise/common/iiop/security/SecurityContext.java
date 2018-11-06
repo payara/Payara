@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * @(#)SecurityContext.java	1.5 00/10/24
  */
-
 package com.sun.enterprise.common.iiop.security;
 
-
-import javax.security.auth.*;
+import javax.security.auth.Subject;
 
 /*
  * This interface is part of the contract between CSIV2 interceptors
@@ -53,7 +52,6 @@ import javax.security.auth.*;
  *
  * @author  Nithya Subramanian
  */
-
 
 /**
  *  A subject is used a container for passing the security context
@@ -66,8 +64,8 @@ import javax.security.auth.*;
  *      and password in the PasswordCredential. PasswordCredential
  *      must be passed as a PrivateCredential.
  *
- *    X500Name:
- *      DN name specified in X500Name will be asserted. X500Name must 
+ *    X500Principal:
+ *      DN name specified in X500Principal will be asserted. X500Principal must 
  *      be passed as a PublicCredential.
  *
  *    GSSUPName:
@@ -108,9 +106,21 @@ import javax.security.auth.*;
  *     identcls *and* authcls (this allows both a client auth token
  *     and an identity token to be passed across the interface).
  */
-
 public class SecurityContext {
+    
     public Subject subject;
-    public Class   authcls;
-    public Class   identcls;
+    public Class<?> authcls;
+    public Class<?> identcls;
+    
+    public Subject getSubject() {
+        return subject;
+    }
+    
+    public Class<?> getCredentialClass() {
+        if (authcls != null) {
+            return authcls;
+        }
+        
+        return identcls;
+    }
 }

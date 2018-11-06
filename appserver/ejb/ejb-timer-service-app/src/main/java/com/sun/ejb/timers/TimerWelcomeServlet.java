@@ -37,16 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.timers;
 
 import java.io.*;
-import java.net.*;
 import java.util.Set;
 
 import javax.servlet.*;
@@ -55,6 +50,8 @@ import javax.servlet.http.*;
 
 import org.glassfish.ejb.persistent.timer.TimerLocal;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.TimerPrimaryKey;
+import static java.util.Objects.isNull;
 
 /**
  *
@@ -85,22 +82,30 @@ public class TimerWelcomeServlet extends HttpServlet {
             out.println("<br>");
 
             // Persistent timers
-            Set persistenttimers = timer.findActiveTimersOwnedByThisServer();
+            Set persistentTimers = timer.findActiveTimersOwnedByThisServer();
             // Non-persistent timers get directly from the service
 
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            Set nonpersistenttimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
-            int persistentsize = persistenttimers.size();
-            int nonpersistentsize = nonpersistenttimers.size();
+            EJBTimerService ejbTimerService = null;
+            if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+                ejbTimerService = EJBTimerService.getPersistentTimerService();
+            } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
+                ejbTimerService = EJBTimerService.getNonPersistentTimerService();
+            }
+            if(isNull(ejbTimerService)) {
+                throw new IllegalStateException("EJB Timer Service is not available");
+            }
+            Set<TimerPrimaryKey> nonPersistentTimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
+            int persistentTimerSize = persistentTimers.size();
+            int nonPersistentTimerSize = nonPersistentTimers.size();
 
-            out.println("There " + ((persistentsize == 1)? "is " : "are  ") 
-                    + persistentsize
-                    + " active persistent timer" + ((persistentsize == 1)? "" : "s")
+            out.println("There " + ((persistentTimerSize == 1)? "is " : "are  ")
+                    + persistentTimerSize
+                    + " active persistent timer" + ((persistentTimerSize == 1)? "" : "s")
                     + " on this container");
             out.println("<br>");
-            out.println("There " + ((nonpersistentsize == 1)? "is " : "are  ") 
-                    + nonpersistentsize
-                    + " active non-persistent timer" + ((nonpersistentsize == 1)? "" : "s")
+            out.println("There " + ((nonPersistentTimerSize == 1)? "is " : "are  ")
+                    + nonPersistentTimerSize
+                    + " active non-persistent timer" + ((nonPersistentTimerSize == 1)? "" : "s")
                     + " on this container");
             out.println("<br>");
 

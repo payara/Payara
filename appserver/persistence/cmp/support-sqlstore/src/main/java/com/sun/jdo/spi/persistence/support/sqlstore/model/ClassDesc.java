@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * ClassDesc.java
@@ -65,7 +66,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.sql.RetrieveDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.UpdateObjectDescImpl;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.concurrency.*;
 import com.sun.jdo.spi.persistence.support.sqlstore.sql.generator.UpdateQueryPlan;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
@@ -250,7 +251,7 @@ public class ClassDesc
 
         if (!(c = model.validate(className, classLoader, null)).isEmpty()) {
             Iterator iter = c.iterator();
-            StringBuffer validationMsgs = new StringBuffer();
+            StringBuilder validationMsgs = new StringBuilder();
 
             while (iter.hasNext()) {
                 Exception ex = (Exception) iter.next();
@@ -313,7 +314,7 @@ public class ClassDesc
         // If so, we need to convert it '.' to '$' because is it
         // an inner class.
         if (suffix.compareToIgnoreCase(".oid") == 0) { // NOI18N
-            StringBuffer buf = new StringBuffer(keyClassName);
+            StringBuilder buf = new StringBuilder(keyClassName);
 
             buf.setCharAt(buf.length() - 4, '$');
             keyClassName = buf.toString();
@@ -1395,7 +1396,7 @@ public class ClassDesc
      */
     private String generateRDCacheKey(FieldDesc additionalField)
     {
-        StringBuffer key = new StringBuffer();
+        StringBuilder key = new StringBuilder();
 
         key.append(pcClass.getName());
 

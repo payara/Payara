@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * SQLStateManager.java
@@ -3014,8 +3015,8 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
             // Add the dependency only if both objects involved
             // in the relationship being removed are already persistent.
-            if (addedInverseFieldSM.state.isPersistentInDataStore()
-                    && addedSM.state.isPersistentInDataStore()) {
+            if (addedInverseFieldSM.state.isPersistentInDataStore() &&
+                    addedSM != null && addedSM.state.isPersistentInDataStore()) {
 
                 // First parameter == null marks a non removable dependency.
                 // RESOLVE: Pass inverseFieldDesc here.

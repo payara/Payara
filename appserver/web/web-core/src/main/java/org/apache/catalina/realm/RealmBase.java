@@ -55,24 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.realm;
 
-import org.apache.catalina.*;
-import org.apache.catalina.authenticator.AuthenticatorBase;
-import org.apache.catalina.connector.Response;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityCollection;
-import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.util.HexUtils;
-import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.MD5Encoder;
-import org.apache.catalina.util.StringManager;
+import static org.apache.catalina.connector.Response.HTTP_RESPONSE_DATE_HEADER;
 
-import javax.management.ObjectName;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -83,42 +70,67 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.util.Utility;
+import javax.management.ObjectName;
 import javax.servlet.ServletContext;
 // END SJSWS 6324431
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.catalina.Authenticator;
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
+import org.apache.catalina.Globals;
+import org.apache.catalina.HttpRequest;
+import org.apache.catalina.HttpResponse;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.LogFacade;
+import org.apache.catalina.Realm;
+import org.apache.catalina.authenticator.AuthenticatorBase;
+import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.SecurityCollection;
+import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.util.HexUtils;
+import org.apache.catalina.util.LifecycleSupport;
+import org.apache.catalina.util.MD5Encoder;
+
+import com.sun.enterprise.util.Utility;
 
 /**
- * Simple implementation of <b>Realm</b> that reads an XML file to configure
- * the valid users, passwords, and roles.  The file format (and default file
- * location) are identical to those currently supported by Tomcat 3.X.
+ * Simple implementation of <b>Realm</b> that reads an XML file to configure the valid users, passwords, and roles. The
+ * file format (and default file location) are identical to those currently supported by Tomcat 3.X.
  *
  * @author Craig R. McClanahan
  * @version $Revision: 1.14 $ $Date: 2007/04/18 17:27:23 $
  */
 
-public abstract class RealmBase
-    implements Lifecycle, Realm {
+public abstract class RealmBase implements Lifecycle, Realm {
 
     protected static final Logger log = LogFacade.getLogger();
     protected static final ResourceBundle rb = log.getResourceBundle();
 
-
-    //START SJSAS 6202703
+    // START SJSAS 6202703
     /**
      * "Expires" header always set to Date(1), so generate once only
      */
-    private static final String DATE_ONE =
-            (new SimpleDateFormat(Response.HTTP_RESPONSE_DATE_HEADER,
-            Locale.US)).format(new Date(1));
-    //END SJSAS 6202703
+    private static final String DATE_ONE = (new SimpleDateFormat(HTTP_RESPONSE_DATE_HEADER, Locale.US)).format(new Date(1));
+    // END SJSAS 6202703
 
     // ----------------------------------------------------- Instance Variables
 
-     /**
+    /**
      * The debugging detail level for this component.
      */
     protected int debug = 0;
@@ -126,101 +138,81 @@ public abstract class RealmBase
     /**
      * The Container with which this Realm is associated.
      */
-    protected Container container = null;
-
-
-    /**
-     * Flag indicating whether a check to see if the request is secure is
-     * required before adding Pragma and Cache-Control headers when proxy 
-     * caching has been disabled
-     */
-    protected boolean checkIfRequestIsSecure = false;
-
+    protected Container container;
 
     /**
-     * Digest algorithm used in storing passwords in a non-plaintext format.
-     * Valid values are those accepted for the algorithm name by the
-     * MessageDigest class, or <code>null</code> if no digesting should
-     * be performed.
+     * Flag indicating whether a check to see if the request is secure is required before adding Pragma and Cache-Control
+     * headers when proxy caching has been disabled
      */
-    protected String digest = null;
+    protected boolean checkIfRequestIsSecure;
+
+    /**
+     * Digest algorithm used in storing passwords in a non-plaintext format. Valid values are those accepted for the
+     * algorithm name by the MessageDigest class, or <code>null</code> if no digesting should be performed.
+     */
+    protected String digest;
 
     /**
      * The encoding charset for the digest.
      */
-    protected String digestEncoding = null;
-
+    protected String digestEncoding;
 
     /**
      * Descriptive information about this Realm implementation.
      */
-    protected static final String info =
-        "org.apache.catalina.realm.RealmBase/1.0";
-
+    protected static final String info = "org.apache.catalina.realm.RealmBase/1.0";
 
     /**
      * The lifecycle event support for this component.
      */
     protected LifecycleSupport lifecycle = new LifecycleSupport(this);
 
-
     /**
      * The MessageDigest object for digesting user credentials (passwords).
      */
-    protected volatile MessageDigest md = null;
-
+    protected volatile MessageDigest md;
 
     /**
      * The MD5 helper object for this class.
      */
     protected static final MD5Encoder md5Encoder = new MD5Encoder();
 
-
     /**
      * MD5 message digest provider.
      */
     protected static volatile MessageDigest md5Helper;
 
-
     /**
      * Has this component been started?
      */
-    protected boolean started = false;
-
+    protected boolean started;
 
     /**
      * The property change support for this component.
      */
     protected PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-
     /**
      * Should we validate client certificate chains when they are presented?
      */
     protected boolean validate = true;
-
+    
 
     // ------------------------------------------------------------- Properties
-
 
     /**
      * Return the Container with which this Realm has been associated.
      */
     public Container getContainer() {
-
-        return (container);
-
+        return container;
     }
 
     /**
      * Return the debugging detail level for this component.
      */
     public int getDebug() {
-
-        return (this.debug);
-
+        return debug;
     }
-
 
     /**
      * Set the debugging detail level for this component.
@@ -228,9 +220,7 @@ public abstract class RealmBase
      * @param debug The new debugging detail level
      */
     public void setDebug(int debug) {
-
         this.debug = debug;
-
     }
 
     /**
@@ -239,23 +229,19 @@ public abstract class RealmBase
      * @param container The associated Container
      */
     public void setContainer(Container container) {
-
         Container oldContainer = this.container;
         this.container = container;
         this.checkIfRequestIsSecure = container.isCheckIfRequestIsSecure();
+        
         support.firePropertyChange("container", oldContainer, this.container);
-
     }
 
     /**
-     * Return the digest algorithm  used for storing credentials.
+     * Return the digest algorithm used for storing credentials.
      */
     public String getDigest() {
-
         return digest;
-
     }
-
 
     /**
      * Set the digest algorithm used for storing credentials.
@@ -263,9 +249,7 @@ public abstract class RealmBase
      * @param digest The new digest algorithm
      */
     public void setDigest(String digest) {
-
         this.digest = digest;
-
     }
 
     /**
@@ -287,26 +271,19 @@ public abstract class RealmBase
     }
 
     /**
-     * Return descriptive information about this Realm implementation and
-     * the corresponding version number, in the format
+     * Return descriptive information about this Realm implementation and the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
     public String getInfo() {
-
         return info;
-
     }
-
 
     /**
      * Return the "validate certificate chains" flag.
      */
     public boolean getValidate() {
-
-        return (this.validate);
-
+        return validate;
     }
-
 
     /**
      * Set the "validate certificate chains" flag.
@@ -314,72 +291,58 @@ public abstract class RealmBase
      * @param validate The new validate certificate chains flag
      */
     public void setValidate(boolean validate) {
-
         this.validate = validate;
-
     }
-
 
     // --------------------------------------------------------- Public Methods
 
-
-    
     /**
      * Add a property change listener to this component.
      *
      * @param listener The listener to add
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-
         support.addPropertyChangeListener(listener);
-
     }
 
-
     /**
-     * Return the Principal associated with the specified username and
-     * credentials, if there is one; otherwise return <code>null</code>.
+     * Return the Principal associated with the specified username and credentials, if there is one; otherwise return
+     * <code>null</code>.
      *
      * @param username Username of the Principal to look up
-     * @param credentials Password or other credentials to use in
-     *  authenticating this username
+     * @param credentials Password or other credentials to use in authenticating this username
      */
     public Principal authenticate(String username, char[] credentials) {
-
         char[] serverCredentials = getPassword(username);
 
-        boolean validated ;
-        if ( serverCredentials == null ) {
+        boolean validated;
+        if (serverCredentials == null) {
             validated = false;
-        } else if(hasMessageDigest()) {
+        } else if (hasMessageDigest()) {
             validated = equalsIgnoreCase(serverCredentials, digest(credentials));
         } else {
             validated = Arrays.equals(serverCredentials, credentials);
         }
-        if(! validated ) {
+        
+        if (!validated) {
             return null;
         }
+        
         return getPrincipal(username);
     }
 
-
     /**
-     * Return the Principal associated with the specified username, which
-     * matches the digest calculated using the given parameters using the
-     * method described in RFC 2069; otherwise return <code>null</code>.
+     * Return the Principal associated with the specified username, which matches the digest calculated using the given
+     * parameters using the method described in RFC 2069; otherwise return <code>null</code>.
      *
      * @param username Username of the Principal to look up
      * @param clientDigest Digest which has been submitted by the client
-     * @param nOnce Unique (or supposedly unique) token which has been used
-     * for this request
+     * @param nOnce Unique (or supposedly unique) token which has been used for this request
      * @param realm Realm name
-     * @param md5a2 Second MD5 digest used to calculate the digest :
-     * MD5(Method + ":" + uri)
+     * @param md5a2 Second MD5 digest used to calculate the digest : MD5(Method + ":" + uri)
      */
-    public Principal authenticate(String username, char[] clientDigest,
-                                  String nOnce, String nc, String cnonce,
-                                  String qop, String realm,
-                                  char[] md5a2) {
+    public Principal authenticate(String username, char[] clientDigest, String nOnce, String nc, String cnonce, String qop, String realm,
+            char[] md5a2) {
 
         char[] md5a1 = getDigest(username, realm);
         if (md5a1 == null)
@@ -392,9 +355,8 @@ public abstract class RealmBase
         int md5a2Length = ((md5a2 != null) ? md5a2.length : 0);
 
         // serverDigestValue = md5a1:nOnce:nc:cnonce:qop:md5a2
-        char[] serverDigestValue = new char[md5a1.length + 1 + 
-            nOnceLength + 1 + ncLength + 1 + cnonceLength + 1 +
-            qopLength + 1 + md5a2Length];
+        char[] serverDigestValue = new char[md5a1.length + 1 + nOnceLength + 1 + ncLength + 1 + cnonceLength + 1 + qopLength + 1
+                + md5a2Length];
 
         System.arraycopy(md5a1, 0, serverDigestValue, 0, md5a1.length);
         int ind = md5a1.length;
@@ -426,30 +388,26 @@ public abstract class RealmBase
         byte[] valueBytes = null;
 
         try {
-            valueBytes = Utility.convertCharArrayToByteArray(
-                    serverDigestValue, getDigestEncoding());
+            valueBytes = Utility.convertCharArrayToByteArray(serverDigestValue, getDigestEncoding());
         } catch (CharacterCodingException cce) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION),
-                                              getDigestEncoding());
+            String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION), getDigestEncoding());
             log.log(Level.SEVERE, msg, cce);
             throw new IllegalArgumentException(cce.getMessage());
         }
 
         char[] serverDigest = null;
         // Bugzilla 32137
-        synchronized(md5Helper) {
+        synchronized (md5Helper) {
             serverDigest = md5Encoder.encode(md5Helper.digest(valueBytes));
         }
 
         if (log.isLoggable(Level.FINE)) {
-            String msg = "Username:" + username
-                         + " ClientSigest:" + Arrays.toString(clientDigest) + " nOnce:" + nOnce
-                         + " nc:" + nc + " cnonce:" + cnonce + " qop:" + qop
-                         + " realm:" + realm + "md5a2:" + Arrays.toString(md5a2)
-                         + " Server digest:" + String.valueOf(serverDigest);
+            String msg = "Username:" + username + " ClientSigest:" + Arrays.toString(clientDigest) + " nOnce:" + nOnce + " nc:" + nc
+                    + " cnonce:" + cnonce + " qop:" + qop + " realm:" + realm + "md5a2:" + Arrays.toString(md5a2) + " Server digest:"
+                    + String.valueOf(serverDigest);
             log.log(Level.FINE, msg);
         }
-        
+
         if (Arrays.equals(serverDigest, clientDigest)) {
             return getPrincipal(username);
         } else {
@@ -457,14 +415,12 @@ public abstract class RealmBase
         }
     }
 
-
-
     /**
-     * Return the Principal associated with the specified chain of X509
-     * client certificates.  If there is none, return <code>null</code>.
+     * Return the Principal associated with the specified chain of X509 client certificates. If there is none, return
+     * <code>null</code>.
      *
-     * @param certs Array of client certificates, with the first one in
-     *  the array being the certificate of the client itself.
+     * @param certs Array of client certificates, with the first one in the array being the certificate of the client
+     * itself.
      */
     public Principal authenticate(X509Certificate certs[]) {
 
@@ -477,8 +433,7 @@ public abstract class RealmBase
         if (validate) {
             for (int i = 0; i < certs.length; i++) {
                 if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Checking validity for '" +
-                            certs[i].getSubjectDN().getName() + "'");
+                    log.log(Level.FINE, "Checking validity for '" + certs[i].getSubjectDN().getName() + "'");
                 try {
                     certs[i].checkValidity();
                 } catch (Exception e) {
@@ -494,44 +449,35 @@ public abstract class RealmBase
 
     }
 
-    
     /**
-     * Execute a periodic task, such as reloading, etc. This method will be
-     * invoked inside the classloading context of this container. Unexpected
-     * throwables will be caught and logged.
+     * Execute a periodic task, such as reloading, etc. This method will be invoked inside the classloading context of this
+     * container. Unexpected throwables will be caught and logged.
      */
     public void backgroundProcess() {
     }
 
-
     /**
-     * Return the SecurityConstraints configured to guard the request URI for
-     * this request, or <code>null</code> if there is no such constraint.
+     * Return the SecurityConstraints configured to guard the request URI for this request, or <code>null</code> if there is
+     * no such constraint.
      *
      * @param request Request we are processing
      * @param context Context the Request is mapped to
      */
-    public SecurityConstraint[] findSecurityConstraints(
-            HttpRequest request, Context context) {
-        return findSecurityConstraints(
-            request.getRequestPathMB().toString(),
-            ((HttpServletRequest) request.getRequest()).getMethod(),
-            context);
+    public SecurityConstraint[] findSecurityConstraints(HttpRequest request, Context context) {
+        return findSecurityConstraints(request.getRequestPathMB().toString(), ((HttpServletRequest) request.getRequest()).getMethod(),
+                context);
     }
 
     /**
-     * Gets the security constraints configured by the given context
-     * for the given request URI and method.
+     * Gets the security constraints configured by the given context for the given request URI and method.
      *
      * @param uri the request URI (minus the context Path)
      * @param method the request method
      * @param context the context
      *
-     * @return the security constraints configured by the given context
-     * for the given request URI and method, or null
+     * @return the security constraints configured by the given context for the given request URI and method, or null
      */
-    public SecurityConstraint[] findSecurityConstraints(
-            String uri, String method, Context context) {
+    public SecurityConstraint[] findSecurityConstraints(String uri, String method, Context context) {
 
         ArrayList<SecurityConstraint> results = null;
 
@@ -541,11 +487,10 @@ public abstract class RealmBase
                 log.log(Level.FINE, "  No applicable constraints defined");
             return (null);
         }
-        
+
         // START SJSWS 6324431
         String origUri = uri;
-        boolean caseSensitiveMapping = 
-            ((StandardContext)context).isCaseSensitiveMapping();
+        boolean caseSensitiveMapping = ((StandardContext) context).isCaseSensitiveMapping();
         if (uri != null && !caseSensitiveMapping) {
             uri = uri.toLowerCase(Locale.ENGLISH);
         }
@@ -554,11 +499,11 @@ public abstract class RealmBase
         boolean found = false;
 
         List<SecurityConstraint> constraints = context.getConstraints();
-        Iterator<SecurityConstraint> i = constraints.iterator(); 
+        Iterator<SecurityConstraint> i = constraints.iterator();
         while (i.hasNext()) {
             SecurityConstraint constraint = i.next();
             SecurityCollection[] collection = constraint.findCollections();
-                     
+
             // If collection is null, continue to avoid an NPE
             // See Bugzilla 30624
             if (collection == null) {
@@ -566,58 +511,47 @@ public abstract class RealmBase
             }
 
             if (log.isLoggable(Level.FINEST)) {
-                /* SJSWS 6324431
-                log.trace("  Checking constraint '" + constraints[i] +
-                    "' against " + method + " " + uri + " --> " +
-                    constraints[i].included(uri, method));
-                */
+                /*
+                 * SJSWS 6324431 log.trace("  Checking constraint '" + constraints[i] + "' against " + method + " " + uri + " --> " +
+                 * constraints[i].included(uri, method));
+                 */
                 // START SJSWS 6324431
-                String msg = "Checking constraint '" + constraint +
-                             "' against " + method + " " + origUri +
-                             " --> " +
-                             constraint.included(uri, method,
-                                                 caseSensitiveMapping);
+                String msg = "Checking constraint '" + constraint + "' against " + method + " " + origUri + " --> "
+                        + constraint.included(uri, method, caseSensitiveMapping);
                 log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
-            /* SJSWS 6324431
-            if (log.isDebugEnabled() && constraints[i].included(
-                    uri, method)) {
-                log.debug("  Matched constraint '" + constraints[i] +
-                    "' against " + method + " " + uri);
-            }
-            */
+            /*
+             * SJSWS 6324431 if (log.isDebugEnabled() && constraints[i].included( uri, method)) { log.debug("  Matched constraint '"
+             * + constraints[i] + "' against " + method + " " + uri); }
+             */
             // START SJSWS 6324431
-            if (log.isLoggable(Level.FINE)
-                    && constraint.included(uri, method,
-                                           caseSensitiveMapping)) {
+            if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
 
-                log.log(Level.FINE, "  Matched constraint '" + constraint +
-                        "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
 
             }
             // END SJSWS 6324431
 
-            for (int j=0; j < collection.length; j++){
+            for (int j = 0; j < collection.length; j++) {
                 String[] patterns = collection[j].findPatterns();
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
-                if ( patterns == null) {
+                if (patterns == null) {
                     continue;
                 }
 
-                for(int k=0; k < patterns.length; k++) {
-                    /* SJSWS 6324431
-                    if(uri.equals(patterns[k])) {
-                    */
+                for (int k = 0; k < patterns.length; k++) {
+                    /*
+                     * SJSWS 6324431 if(uri.equals(patterns[k])) {
+                     */
                     // START SJSWS 6324431
-                    String pattern = caseSensitiveMapping ? patterns[k] :
-                        patterns[k].toLowerCase(Locale.ENGLISH);
+                    String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     if (uri != null && uri.equals(pattern)) {
-                    // END SJSWS 6324431
+                        // END SJSWS 6324431
                         found = true;
-                        if(collection[j].findMethod(method)) {
-                            if(results == null) {
+                        if (collection[j].findMethod(method)) {
+                            if (results == null) {
                                 results = new ArrayList<SecurityConstraint>();
                             }
                             results.add(constraint);
@@ -633,50 +567,39 @@ public abstract class RealmBase
 
         int longest = -1;
 
-        i = constraints.iterator(); 
+        i = constraints.iterator();
         while (i.hasNext()) {
             SecurityConstraint constraint = i.next();
-            SecurityCollection [] collection =
-                constraint.findCollections();
-            
+            SecurityCollection[] collection = constraint.findCollections();
+
             // If collection is null, continue to avoid an NPE
             // See Bugzilla 30624
-            if ( collection == null) {
+            if (collection == null) {
                 continue;
             }
 
             if (log.isLoggable(Level.FINEST)) {
-                /* SJSWS 6324431
-                log.trace("  Checking constraint '" + constraints[i] +
-                    "' against " + method + " " + uri + " --> " +
-                    constraints[i].included(uri, method));
-                */
+                /*
+                 * SJSWS 6324431 log.trace("  Checking constraint '" + constraints[i] + "' against " + method + " " + uri + " --> " +
+                 * constraints[i].included(uri, method));
+                 */
                 // START SJSWS 6324431
-                String msg = "  Checking constraint '" + constraint +
-                             "' against " + method + " " + origUri +
-                             " --> " +
-                             constraint.included(uri, method,
-                                                 caseSensitiveMapping);
+                String msg = "  Checking constraint '" + constraint + "' against " + method + " " + origUri + " --> "
+                        + constraint.included(uri, method, caseSensitiveMapping);
                 log.log(Level.FINE, msg);
                 // END SJSWS 6324431
             }
-            /* SJSWS 6324431
-            if (log.isDebugEnabled() && constraints[i].included(
-                    uri, method)) {
-                log.debug("  Matched constraint '" + constraints[i] +
-                    "' against " + method + " " + uri);
-            }
-            */
+            /*
+             * SJSWS 6324431 if (log.isDebugEnabled() && constraints[i].included( uri, method)) { log.debug("  Matched constraint '"
+             * + constraints[i] + "' against " + method + " " + uri); }
+             */
             // START SJSWS 6324431
-            if (log.isLoggable(Level.FINE) &&
-                    constraint.included(uri, method,
-                                        caseSensitiveMapping)) {
-                log.log(Level.FINE, "  Matched constraint '" + constraint +
-                        "' against " + method + " " + origUri);
+            if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
+                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
-            for (int j=0; j < collection.length; j++){
+            for (int j = 0; j < collection.length; j++) {
                 String[] patterns = collection[j].findPatterns();
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
@@ -686,27 +609,20 @@ public abstract class RealmBase
 
                 boolean matched = false;
                 int length = -1;
-                for (int k=0; k < patterns.length; k++) {
-                    /* SJSWS 6324431
-                    String pattern = patterns[k];
-                    */
+                for (int k = 0; k < patterns.length; k++) {
+                    /*
+                     * SJSWS 6324431 String pattern = patterns[k];
+                     */
                     // START SJSWS 6324431
-                    String pattern = caseSensitiveMapping ?
-                        patterns[k]:patterns[k].toLowerCase(Locale.ENGLISH);
+                    String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
-                    if (pattern.startsWith("/") &&
-                            pattern.endsWith("/*") && 
-                            pattern.length() >= longest) {
-                            
+                    if (pattern.startsWith("/") && pattern.endsWith("/*") && pattern.length() >= longest) {
+
                         if (pattern.length() == 2) {
                             matched = true;
                             length = pattern.length();
-                        } else if (uri != null
-                                && (pattern.regionMatches(
-                                        0,uri,0,pattern.length()-1)
-                                    || (pattern.length()-2 == uri.length()
-                                        && pattern.regionMatches(
-                                            0,uri,0,pattern.length()-2)))) {
+                        } else if (uri != null && (pattern.regionMatches(0, uri, 0, pattern.length() - 1)
+                                || (pattern.length() - 2 == uri.length() && pattern.regionMatches(0, uri, 0, pattern.length() - 2)))) {
                             matched = true;
                             length = pattern.length();
                         }
@@ -734,75 +650,61 @@ public abstract class RealmBase
             return resultsToArray(results);
         }
 
-        i = constraints.iterator(); 
+        i = constraints.iterator();
         while (i.hasNext()) {
             SecurityConstraint constraint = i.next();
             SecurityCollection[] collection = constraint.findCollections();
 
             // If collection is null, continue to avoid an NPE
             // See Bugzilla 30624
-            if ( collection == null) {
+            if (collection == null) {
                 continue;
             }
-            
+
             if (log.isLoggable(Level.FINEST)) {
-                /* SJSWS 6324431
-                log.trace("  Checking constraint '" + constraints[i] +
-                    "' against " + method + " " + uri + " --> " +
-                    constraints[i].included(uri, method));
-                */
+                /*
+                 * SJSWS 6324431 log.trace("  Checking constraint '" + constraints[i] + "' against " + method + " " + uri + " --> " +
+                 * constraints[i].included(uri, method));
+                 */
                 // START SJSWS 6324431
-                String msg = "  Checking constraint '" + constraint +
-                        "' against " + method + " " + origUri +
-                        " --> " +
-                        constraint.included(uri, method,
-                                caseSensitiveMapping);
+                String msg = "  Checking constraint '" + constraint + "' against " + method + " " + origUri + " --> "
+                        + constraint.included(uri, method, caseSensitiveMapping);
                 log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
-            /* SJSWS 6324431
-            if (log.isDebugEnabled() && constraints[i].included(
-                    uri, method)) {
-                log.debug("  Matched constraint '" + constraints[i] +
-                    "' against " + method + " " + uri);
-            }
-            */
+            /*
+             * SJSWS 6324431 if (log.isDebugEnabled() && constraints[i].included( uri, method)) { log.debug("  Matched constraint '"
+             * + constraints[i] + "' against " + method + " " + uri); }
+             */
             // START SJSWS 6324431
-            if (log.isLoggable(Level.FINE) &&
-                    constraint.included(uri, method,
-                                        caseSensitiveMapping)) {
+            if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
 
-                log.log(Level.FINE, "  Matched constraint '" + constraint +
-                        "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
             boolean matched = false;
             int pos = -1;
-            for (int j=0; j < collection.length; j++){
-                String [] patterns = collection[j].findPatterns();
+            for (int j = 0; j < collection.length; j++) {
+                String[] patterns = collection[j].findPatterns();
                 // If patterns is null, continue to avoid an NPE
                 // See Bugzilla 30624
                 if (patterns == null) {
                     continue;
                 }
 
-                for(int k=0; k < patterns.length && !matched; k++) {
-                    /* SJSWS 6324431
-                    String pattern = patterns[k];
-                    */
+                for (int k = 0; k < patterns.length && !matched; k++) {
+                    /*
+                     * SJSWS 6324431 String pattern = patterns[k];
+                     */
                     // START SJSWS 6324431
-                    String pattern = caseSensitiveMapping ? 
-                        patterns[k]:patterns[k].toLowerCase(Locale.ENGLISH);
+                    String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
-                    if (uri != null && pattern.startsWith("*.")){
+                    if (uri != null && pattern.startsWith("*.")) {
                         int slash = uri.lastIndexOf("/");
                         int dot = uri.lastIndexOf(".");
-                        if (slash >= 0 && dot > slash &&
-                                dot != uri.length()-1 &&
-                                uri.length()-dot == pattern.length()-1) {
-                            if (pattern.regionMatches(
-                                    1,uri,dot,uri.length()-dot)) {
+                        if (slash >= 0 && dot > slash && dot != uri.length() - 1 && uri.length() - dot == pattern.length() - 1) {
+                            if (pattern.regionMatches(1, uri, dot, uri.length() - dot)) {
                                 matched = true;
                                 pos = j;
                             }
@@ -810,11 +712,11 @@ public abstract class RealmBase
                     }
                 }
             }
-    
+
             if (matched) {
                 found = true;
                 if (collection[pos].findMethod(method)) {
-                    if(results == null) {
+                    if (results == null) {
                         results = new ArrayList<SecurityConstraint>();
                     }
                     results.add(constraint);
@@ -826,11 +728,11 @@ public abstract class RealmBase
             return resultsToArray(results);
         }
 
-        i = constraints.iterator(); 
+        i = constraints.iterator();
         while (i.hasNext()) {
             SecurityConstraint constraint = i.next();
             SecurityCollection[] collection = constraint.findCollections();
-            
+
             // If collection is null, continue to avoid an NPE
             // See Bugzilla 30624
             if (collection == null) {
@@ -838,37 +740,27 @@ public abstract class RealmBase
             }
 
             if (log.isLoggable(Level.FINEST)) {
-                /* SJSWS 6324431
-                log.trace("  Checking constraint '" + constraints[i] +
-                    "' against " + method + " " + uri + " --> " +
-                    constraints[i].included(uri, method));
-                */
+                /*
+                 * SJSWS 6324431 log.trace("  Checking constraint '" + constraints[i] + "' against " + method + " " + uri + " --> " +
+                 * constraints[i].included(uri, method));
+                 */
                 // START SJSWS 6324431
-                String msg = "  Checking constraint '" + constraint +
-                        "' against " + method + " " + origUri +
-                        " --> " +
-                        constraint.included(uri, method,
-                                caseSensitiveMapping);
+                String msg = "  Checking constraint '" + constraint + "' against " + method + " " + origUri + " --> "
+                        + constraint.included(uri, method, caseSensitiveMapping);
                 log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
-            /* SJSWS 6324431
-            if (log.isDebugEnabled() && constraints[i].included(
-                    uri, method)) {
-                log.debug("  Matched constraint '" + constraints[i] +
-                    "' against " + method + " " + uri);
-            }
-            */
+            /*
+             * SJSWS 6324431 if (log.isDebugEnabled() && constraints[i].included( uri, method)) { log.debug("  Matched constraint '"
+             * + constraints[i] + "' against " + method + " " + uri); }
+             */
             // START SJSWS 6324431
-            if (log.isLoggable(Level.FINE) &&
-                    constraint.included(uri, method,
-                                        caseSensitiveMapping)) {
-                log.log(Level.FINE, "  Matched constraint '" + constraint +
-                        "' against " + method + " " + origUri);
+            if (log.isLoggable(Level.FINE) && constraint.included(uri, method, caseSensitiveMapping)) {
+                log.log(Level.FINE, "  Matched constraint '" + constraint + "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
-            for (int j=0; j < collection.length; j++){
+            for (int j = 0; j < collection.length; j++) {
                 String[] patterns = collection[j].findPatterns();
 
                 // If patterns is null, continue to avoid an NPE
@@ -878,22 +770,21 @@ public abstract class RealmBase
                 }
 
                 boolean matched = false;
-                for (int k=0; k < patterns.length && !matched; k++) {
-                    /* SJSWS 6324431
-                    String pattern = patterns[k];
-                    */
+                for (int k = 0; k < patterns.length && !matched; k++) {
+                    /*
+                     * SJSWS 6324431 String pattern = patterns[k];
+                     */
                     // START SJSWS 6324431
-                    String pattern = caseSensitiveMapping ? 
-                        patterns[k]:patterns[k].toLowerCase(Locale.ENGLISH);
+                    String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
-                    if (pattern.equals("/")){
+                    if (pattern.equals("/")) {
                         matched = true;
                     }
                 }
                 if (matched) {
                     if (results == null) {
                         results = new ArrayList<SecurityConstraint>();
-                    }                    
+                    }
                     results.add(constraint);
                 }
             }
@@ -907,24 +798,22 @@ public abstract class RealmBase
 
         return resultsToArray(results);
     }
- 
+
     /**
      * Convert an ArrayList to a SecurityContraint [].
      */
-    private SecurityConstraint [] resultsToArray(ArrayList<SecurityConstraint> results) {
-        if(results == null) {
+    private SecurityConstraint[] resultsToArray(ArrayList<SecurityConstraint> results) {
+        if (results == null) {
             return null;
         }
-        SecurityConstraint [] array = new SecurityConstraint[results.size()];
+        SecurityConstraint[] array = new SecurityConstraint[results.size()];
         results.toArray(array);
         return array;
     }
 
-    
     /**
-     * Perform access control based on the specified authorization constraint.
-     * Return <code>true</code> if this constraint is satisfied and processing
-     * should continue, or <code>false</code> otherwise.
+     * Perform access control based on the specified authorization constraint. Return <code>true</code> if this constraint
+     * is satisfied and processing should continue, or <code>false</code> otherwise.
      *
      * @param request Request we are processing
      * @param response Response we are creating
@@ -933,19 +822,15 @@ public abstract class RealmBase
      *
      * @exception IOException if an input/output error occurs
      */
-    public boolean hasResourcePermission(HttpRequest request,
-                                         HttpResponse response,
-                                         SecurityConstraint []constraints,
-                                         Context context)
-        throws IOException {
+    public boolean hasResourcePermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, Context context)
+            throws IOException {
 
         if (constraints == null || constraints.length == 0)
             return (true);
 
         // Which user principal have we already authenticated?
-        Principal principal = ((HttpServletRequest)request.getRequest())
-                                                            .getUserPrincipal();
-        for(int i=0; i < constraints.length; i++) {
+        Principal principal = ((HttpServletRequest) request.getRequest()).getUserPrincipal();
+        for (int i = 0; i < constraints.length; i++) {
             SecurityConstraint constraint = constraints[i];
             String roles[] = constraint.findAuthRoles();
             if (roles == null)
@@ -958,15 +843,15 @@ public abstract class RealmBase
                 log.log(Level.FINE, "  Checking roles " + principal);
 
             if (roles.length == 0) {
-                if(constraint.getAuthConstraint()) {
+                if (constraint.getAuthConstraint()) {
 
                     // BEGIN S1AS 4878272
-                    ((HttpServletResponse) response.getResponse()).sendError
-                        (HttpServletResponse.SC_FORBIDDEN);
+                    ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_FORBIDDEN);
                     response.setDetailMessage(rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
                     // END S1AS 4878272
 
-                    if (log.isLoggable(Level.FINE)) log.log(Level.FINE, "No roles ");
+                    if (log.isLoggable(Level.FINE))
+                        log.log(Level.FINE, "No roles ");
                     return (false); // No listed roles means no access at all
                 } else {
                     if (log.isLoggable(Level.FINE)) {
@@ -979,13 +864,11 @@ public abstract class RealmBase
                     log.log(Level.FINE, "  No user authenticated, cannot grant access");
 
                 // BEGIN S1AS 4878272
-                ((HttpServletResponse) response.getResponse()).sendError
-                    (HttpServletResponse.SC_FORBIDDEN);
+                ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_FORBIDDEN);
                 response.setDetailMessage(rb.getString(LogFacade.CONFIG_ERROR_NOT_AUTHENTICATED));
                 // END S1AS 4878272
                 return (false);
             }
-
 
             for (int j = 0; j < roles.length; j++) {
                 if (hasRole(principal, roles[j])) {
@@ -999,64 +882,50 @@ public abstract class RealmBase
             }
         }
         // Return a "Forbidden" message denying access to this resource
-        /* S1AS 4878272
-        ((HttpServletResponse) response.getResponse()).sendError
-        */
+        /*
+         * S1AS 4878272 ((HttpServletResponse) response.getResponse()).sendError
+         */
         // BEGIN S1AS 4878272
-        ((HttpServletResponse) response.getResponse()).sendError
-            (HttpServletResponse.SC_FORBIDDEN);
+        ((HttpServletResponse) response.getResponse()).sendError(HttpServletResponse.SC_FORBIDDEN);
         response.setDetailMessage(rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
         // END S1AS 4878272
         return (false);
 
     }
-    
-    //START SJSAS 6232464
+
+    // START SJSAS 6232464
     /**
-     * Return <code>true</code> if the specified Principal has the specified
-     * security role, within the context of this Realm; otherwise return
-     * <code>false</code>.  This method can be overridden by Realm
-     * implementations. The default implementation is to forward to
-     * hasRole(Principal principal, String role).
+     * Return <code>true</code> if the specified Principal has the specified security role, within the context of this
+     * Realm; otherwise return <code>false</code>. This method can be overridden by Realm implementations. The default
+     * implementation is to forward to hasRole(Principal principal, String role).
      *
      * @param request Request we are processing
      * @param response Response we are creating
      * @param principal Principal for whom the role is to be checked
      * @param role Security role to be checked
      */
-    public boolean hasRole(HttpRequest request, 
-                           HttpResponse response, 
-                           Principal principal, 
-                           String role) {
+    public boolean hasRole(HttpRequest request, HttpResponse response, Principal principal, String role) {
         return hasRole(principal, role);
     }
-    //END SJSAS 6232464
-    
-    //START SJSAS 6202703
+    // END SJSAS 6232464
+
+    // START SJSAS 6202703
     /**
-     * Checks whether or not authentication is needed.
-     * Returns an int, one of AUTHENTICATE_NOT_NEEDED, AUTHENTICATE_NEEDED,
+     * Checks whether or not authentication is needed. Returns an int, one of AUTHENTICATE_NOT_NEEDED, AUTHENTICATE_NEEDED,
      * or AUTHENTICATED_NOT_AUTHORIZED.
      *
      * @param request Request we are processing
      * @param response Response we are creating
      * @param constraints Security constraint we are enforcing
-     * @param disableProxyCaching whether or not to disable proxy caching for
-     *        protected resources.
-     * @param securePagesWithPragma true if we add headers which 
-     * are incompatible with downloading office documents in IE under SSL but
-     * which fix a caching problem in Mozilla.
+     * @param disableProxyCaching whether or not to disable proxy caching for protected resources.
+     * @param securePagesWithPragma true if we add headers which are incompatible with downloading office documents in IE
+     * under SSL but which fix a caching problem in Mozilla.
      * @param ssoEnabled true if sso is enabled
      * @exception IOException if an input/output error occurs
      */
-    public int preAuthenticateCheck(HttpRequest request,
-                                    HttpResponse response,
-                                    SecurityConstraint[] constraints,
-                                    boolean disableProxyCaching,
-                                    boolean securePagesWithPragma,
-                                    boolean ssoEnabled)
-                                    throws IOException {
-        for(int i=0; i < constraints.length; i++) {
+    public int preAuthenticateCheck(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints,
+            boolean disableProxyCaching, boolean securePagesWithPragma, boolean ssoEnabled) throws IOException {
+        for (int i = 0; i < constraints.length; i++) {
             if (constraints[i].getAuthConstraint()) {
                 disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
                 return Realm.AUTHENTICATE_NEEDED;
@@ -1064,13 +933,11 @@ public abstract class RealmBase
         }
         return Realm.AUTHENTICATE_NOT_NEEDED;
     }
-    
-    
+
     /**
-     * Authenticates the user making this request, based on the specified
-     * login configuration.  Return <code>true</code> if any specified
-     * requirements have been satisfied, or <code>false</code> if we have
-     * created a response challenge already.
+     * Authenticates the user making this request, based on the specified login configuration. Return <code>true</code> if
+     * any specified requirements have been satisfied, or <code>false</code> if we have created a response challenge
+     * already.
      *
      * @param request Request we are processing
      * @param response Response we are creating
@@ -1078,17 +945,12 @@ public abstract class RealmBase
      * @param authenticator the current authenticator.
      * @exception IOException if an input/output error occurs
      */
-    public boolean invokeAuthenticateDelegate(HttpRequest request,
-                                              HttpResponse response,
-                                              Context context,
-                                              Authenticator authenticator,
-                                              boolean calledFromAuthenticate)
-          throws IOException {
+    public boolean invokeAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context, Authenticator authenticator,
+            boolean calledFromAuthenticate) throws IOException {
         LoginConfig config = context.getLoginConfig();
-        return ((AuthenticatorBase) authenticator).authenticate(
-                        request, response, config);
+        return ((AuthenticatorBase) authenticator).authenticate(request, response, config);
     }
-    
+
     /**
      * Post authentication for given request and response.
      *
@@ -1097,22 +959,17 @@ public abstract class RealmBase
      * @param context The Context to which client of this class is attached.
      * @exception IOException if an input/output error occurs
      */
-    public boolean invokePostAuthenticateDelegate(HttpRequest request,
-                                              HttpResponse response,
-                                              Context context)
-          throws IOException {
-         return true;
+    public boolean invokePostAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context) throws IOException {
+        return true;
     }
-    
-    //END SJSAS 6202703
+
+    // END SJSAS 6202703
 
     /**
-     * Return <code>true</code> if the specified Principal has the specified
-     * security role, within the context of this Realm; otherwise return
-     * <code>false</code>.  This method can be overridden by Realm
-     * implementations, but the default is adequate when an instance of
-     * <code>GenericPrincipal</code> is used to represent authenticated
-     * Principals from this Realm.
+     * Return <code>true</code> if the specified Principal has the specified security role, within the context of this
+     * Realm; otherwise return <code>false</code>. This method can be overridden by Realm implementations, but the default
+     * is adequate when an instance of <code>GenericPrincipal</code> is used to represent authenticated Principals from this
+     * Realm.
      *
      * @param principal Principal for whom the role is to be checked
      * @param role Security role to be checked
@@ -1120,8 +977,7 @@ public abstract class RealmBase
     public boolean hasRole(Principal principal, String role) {
 
         // Should be overridden in JAASRealm - to avoid pretty inefficient conversions
-        if ((principal == null) || (role == null) ||
-            !(principal instanceof GenericPrincipal))
+        if ((principal == null) || (role == null) || !(principal instanceof GenericPrincipal))
             return (false);
 
         GenericPrincipal gp = (GenericPrincipal) principal;
@@ -1134,20 +990,17 @@ public abstract class RealmBase
         if (log.isLoggable(Level.FINE)) {
             String name = principal.getName();
             if (result) {
-                log.log(Level.FINE, LogFacade.USERNAME_HAS_ROLE, new Object[] {name, role});
-            }
-            else {
-                log.log(Level.FINE, LogFacade.USERNAME_NOT_HAVE_ROLE, new Object[] {name, role});
+                log.log(Level.FINE, LogFacade.USERNAME_HAS_ROLE, new Object[] { name, role });
+            } else {
+                log.log(Level.FINE, LogFacade.USERNAME_NOT_HAVE_ROLE, new Object[] { name, role });
             }
         }
         return (result);
 
     }
 
-    
     /**
-     * Enforce any user data constraint required by the security constraint
-     * guarding this request URI.
+     * Enforce any user data constraint required by the security constraint guarding this request URI.
      *
      * @param request Request we are processing
      * @param response Response we are creating
@@ -1155,27 +1008,20 @@ public abstract class RealmBase
      *
      * @exception IOException if an input/output error occurs
      * 
-     * @return <code>true</code> if this constraint was not violated and
-     * processing should continue, or <code>false</code> if we have created
-     * a response already
+     * @return <code>true</code> if this constraint was not violated and processing should continue, or <code>false</code>
+     * if we have created a response already
      */
-    public boolean hasUserDataPermission(HttpRequest request,
-                                         HttpResponse response,
-                                         SecurityConstraint[] constraints)
-        throws IOException {
-        return hasUserDataPermission(request,response,constraints,null,null);
+    public boolean hasUserDataPermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints) throws IOException {
+        return hasUserDataPermission(request, response, constraints, null, null);
     }
 
     /**
-     * Checks if the given request URI and method are the target of any
-     * user-data-constraint with a transport-guarantee of CONFIDENTIAL,
-     * and whether any such constraint is already satisfied.
+     * Checks if the given request URI and method are the target of any user-data-constraint with a transport-guarantee of
+     * CONFIDENTIAL, and whether any such constraint is already satisfied.
      * 
-     * If <tt>uri</tt> and <tt>method</tt> are null, then the URI and method
-     * of the given <tt>request</tt> are checked.
+     * If <tt>uri</tt> and <tt>method</tt> are null, then the URI and method of the given <tt>request</tt> are checked.
      *
-     * If a user-data-constraint exists that is not satisfied, then the 
-     * given <tt>request</tt> will be redirected to HTTPS.
+     * If a user-data-constraint exists that is not satisfied, then the given <tt>request</tt> will be redirected to HTTPS.
      *
      * @param request the request that may be redirected
      * @param response the response that may be redirected
@@ -1183,17 +1029,12 @@ public abstract class RealmBase
      * @param uri the request URI (minus the context path) to check
      * @param method the request method to check
      *
-     * @return true if the request URI and method are not the target of any
-     * unsatisfied user-data-constraint with a transport-guarantee of
-     * CONFIDENTIAL, and false if they are (in which case the given request
-     * will have been redirected to HTTPS)
+     * @return true if the request URI and method are not the target of any unsatisfied user-data-constraint with a
+     * transport-guarantee of CONFIDENTIAL, and false if they are (in which case the given request will have been redirected
+     * to HTTPS)
      */
-    public boolean hasUserDataPermission(HttpRequest request,
-                                         HttpResponse response,
-                                         SecurityConstraint[] constraints,
-                                         String uri,
-                                         String method)
-        throws IOException {
+    public boolean hasUserDataPermission(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints, String uri,
+            String method) throws IOException {
         // Is there a relevant user data constraint?
         if (constraints == null || constraints.length == 0) {
             if (log.isLoggable(Level.FINE))
@@ -1201,7 +1042,7 @@ public abstract class RealmBase
             return (true);
         }
 
-        for(int i=0; i < constraints.length; i++) {
+        for (int i = 0; i < constraints.length; i++) {
             SecurityConstraint constraint = constraints[i];
             String userConstraint = constraint.getUserConstraint();
             if (userConstraint == null) {
@@ -1225,22 +1066,17 @@ public abstract class RealmBase
         }
 
         // Initialize variables we need to determine the appropriate action
-        HttpServletRequest hrequest = (HttpServletRequest)
-            request.getRequest();
-        HttpServletResponse hresponse = (HttpServletResponse)
-            response.getResponse();
+        HttpServletRequest hrequest = (HttpServletRequest) request.getRequest();
+        HttpServletResponse hresponse = (HttpServletResponse) response.getResponse();
         int redirectPort = request.getConnector().getRedirectPort();
 
         // Is redirecting disabled?
         if (redirectPort <= 0) {
             if (log.isLoggable(Level.FINE))
                 log.log(Level.FINE, "  SSL redirect is disabled");
-            /* S1AS 4878272
-            hresponse.sendError
-            response.sendError
-                (HttpServletResponse.SC_FORBIDDEN,
-                 hrequest.getRequestURI());
-            */
+            /*
+             * S1AS 4878272 hresponse.sendError response.sendError (HttpServletResponse.SC_FORBIDDEN, hrequest.getRequestURI());
+             */
             // BEGIN S1AS 4878272
             hresponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             response.setDetailMessage(hrequest.getRequestURI());
@@ -1255,17 +1091,15 @@ public abstract class RealmBase
         // Protocol
         file.append(protocol).append("://").append(host);
         // Host with port
-        if(redirectPort != 443) {
+        if (redirectPort != 443) {
             file.append(":").append(redirectPort);
         }
         // URI
         file.append(hrequest.getRequestURI());
         String requestedSessionId = hrequest.getRequestedSessionId();
-        if ((requestedSessionId != null) &&
-            hrequest.isRequestedSessionIdFromURL()) {
-            String sessionParameterName = ((request.getContext() != null)?
-                    request.getContext().getSessionParameterName() :
-                    Globals.SESSION_PARAMETER_NAME);
+        if ((requestedSessionId != null) && hrequest.isRequestedSessionIdFromURL()) {
+            String sessionParameterName = ((request.getContext() != null) ? request.getContext().getSessionParameterName()
+                    : Globals.SESSION_PARAMETER_NAME);
             file.append(";" + sessionParameterName + "=");
             file.append(requestedSessionId);
         }
@@ -1280,8 +1114,7 @@ public abstract class RealmBase
 
         return (false);
     }
-    
-    
+
     /**
      * Remove a property change listener from this component.
      *
@@ -1293,9 +1126,7 @@ public abstract class RealmBase
 
     }
 
-
     // ------------------------------------------------------ Lifecycle Methods
-
 
     /**
      * Add a lifecycle event listener to this component.
@@ -1308,15 +1139,12 @@ public abstract class RealmBase
 
     }
 
-
     /**
-     * Gets the (possibly empty) list of lifecycle listeners associated
-     * with this Realm.
+     * Gets the (possibly empty) list of lifecycle listeners associated with this Realm.
      */
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
-
 
     /**
      * Remove a lifecycle event listener from this component.
@@ -1328,13 +1156,11 @@ public abstract class RealmBase
     }
 
     /**
-     * Prepare for the beginning of active use of the public methods of this
-     * component.  This method should be called before any of the public
-     * methods of this component are utilized.  It should also send a
-     * LifecycleEvent of type START_EVENT to any registered listeners.
+     * Prepare for the beginning of active use of the public methods of this component. This method should be called before
+     * any of the public methods of this component are utilized. It should also send a LifecycleEvent of type START_EVENT to
+     * any registered listeners.
      *
-     * @exception LifecycleException if this component detects a fatal error
-     *  that prevents this component from being used
+     * @exception LifecycleException if this component detects a fatal error that prevents this component from being used
      */
     public void start() throws LifecycleException {
 
@@ -1353,26 +1179,21 @@ public abstract class RealmBase
             try {
                 md = MessageDigest.getInstance(digest);
             } catch (NoSuchAlgorithmException e) {
-                String msg = MessageFormat.format(rb.getString(LogFacade.INVALID_ALGORITHM_EXCEPTION),
-                                                  digest);
+                String msg = MessageFormat.format(rb.getString(LogFacade.INVALID_ALGORITHM_EXCEPTION), digest);
                 throw new LifecycleException(msg, e);
             }
         }
 
     }
 
-
     /**
-     * Gracefully terminate the active use of the public methods of this
-     * component.  This method should be the last one called on a given
-     * instance of this component.  It should also send a LifecycleEvent
-     * of type STOP_EVENT to any registered listeners.
+     * Gracefully terminate the active use of the public methods of this component. This method should be the last one
+     * called on a given instance of this component. It should also send a LifecycleEvent of type STOP_EVENT to any
+     * registered listeners.
      *
-     * @exception LifecycleException if this component detects a fatal error
-     *  that needs to be reported
+     * @exception LifecycleException if this component detects a fatal error that needs to be reported
      */
-    public void stop()
-        throws LifecycleException {
+    public void stop() throws LifecycleException {
 
         // Validate and update our current component state
         if (!started) {
@@ -1386,11 +1207,11 @@ public abstract class RealmBase
 
         // Clean up allocated resources
         md = null;
-        
+
         destroy();
-    
+
     }
-    
+
     public void destroy() {
         // no op
     }
@@ -1407,16 +1228,13 @@ public abstract class RealmBase
 
     // ------------------------------------------------------ Protected Methods
 
-
     /**
-     * Digest the password using the specified algorithm and
-     * convert the result to a corresponding hexadecimal string.
-     * If exception, the plain credentials string is returned.
+     * Digest the password using the specified algorithm and convert the result to a corresponding hexadecimal string. If
+     * exception, the plain credentials string is returned.
      *
-     * @param credentials Password or other credentials to use in
-     *  authenticating this username
+     * @param credentials Password or other credentials to use in authenticating this username
      */
-    protected char[] digest(char[] credentials)  {
+    protected char[] digest(char[] credentials) {
 
         // If no MessageDigest instance is specified, return unchanged
         if (hasMessageDigest() == false)
@@ -1426,16 +1244,14 @@ public abstract class RealmBase
         synchronized (this) {
             try {
                 md.reset();
-    
+
                 byte[] bytes = null;
                 try {
-                    bytes = Utility.convertCharArrayToByteArray(
-                            credentials, getDigestEncoding());
-                } catch(CharacterCodingException cce) {
-                    String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION),
-                                                      getDigestEncoding());
+                    bytes = Utility.convertCharArrayToByteArray(credentials, getDigestEncoding());
+                } catch (CharacterCodingException cce) {
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION), getDigestEncoding());
                     log.log(Level.SEVERE, msg, cce);
-                        throw new IllegalArgumentException(cce.getMessage());
+                    throw new IllegalArgumentException(cce.getMessage());
                 }
                 md.update(bytes);
 
@@ -1465,11 +1281,11 @@ public abstract class RealmBase
             }
         }
 
-    	if (hasMessageDigest()) {
-    		// Use pre-generated digest
-    		return getPassword(username);
-    	}
-    	
+        if (hasMessageDigest()) {
+            // Use pre-generated digest
+            return getPassword(username);
+        }
+
         char[] pwd = getPassword(username);
         int usernameLength = ((username != null) ? username.length() : 0);
         int realmNameLength = ((realmName != null) ? realmName.length() : 0);
@@ -1494,43 +1310,36 @@ public abstract class RealmBase
 
         byte[] valueBytes = null;
         try {
-            valueBytes = Utility.convertCharArrayToByteArray(
-                digestValue, getDigestEncoding());
-        } catch(CharacterCodingException cce) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION),
-                                             getDigestEncoding());
+            valueBytes = Utility.convertCharArrayToByteArray(digestValue, getDigestEncoding());
+        } catch (CharacterCodingException cce) {
+            String msg = MessageFormat.format(rb.getString(LogFacade.ILLEGAL_DIGEST_ENCODING_EXCEPTION), getDigestEncoding());
             log.log(Level.SEVERE, msg, cce);
             throw new IllegalArgumentException(cce.getMessage());
         }
 
         byte[] digest = null;
         // Bugzilla 32137
-        synchronized(md5Helper) {
+        synchronized (md5Helper) {
             digest = md5Helper.digest(valueBytes);
         }
 
         return md5Encoder.encode(digest);
     }
 
-
     /**
-     * Return a short name for this Realm implementation, for use in
-     * log messages.
+     * Return a short name for this Realm implementation, for use in log messages.
      */
     protected abstract String getName();
-
 
     /**
      * Return the password associated with the given principal's user name.
      */
     protected abstract char[] getPassword(String username);
 
-
     /**
      * Return the Principal associated with the given user name.
      */
     protected abstract Principal getPrincipal(String username);
-
 
     /**
      * Log a message on the Logger associated with our Container (if any)
@@ -1545,14 +1354,13 @@ public abstract class RealmBase
             name = container.getName();
         }
         if (logger != null) {
-            logger.log(getName()+"[" + name + "]: " + message);
+            logger.log(getName() + "[" + name + "]: " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, getName()+"[" + name + "]: " + message);
+                log.log(Level.INFO, getName() + "[" + name + "]: " + message);
             }
         }
     }
-
 
     /**
      * Log a message on the Logger associated with our Container (if any)
@@ -1568,26 +1376,20 @@ public abstract class RealmBase
             name = container.getName();
         }
         if (logger != null) {
-            logger.log(getName()+"[" + name + "]: " + message, t,
-                org.apache.catalina.Logger.WARNING);
+            logger.log(getName() + "[" + name + "]: " + message, t, org.apache.catalina.Logger.WARNING);
         } else {
-            log.log(Level.WARNING, getName()+"[" + name + "]: " + message, t);
+            log.log(Level.WARNING, getName() + "[" + name + "]: " + message, t);
         }
     }
-    
-    //START SJSAS 6202703
-    protected void disableProxyCaching(HttpRequest request,
-                                       HttpResponse response, 
-                                       boolean disableProxyCaching,
-                                       boolean securePagesWithPragma) {
+
+    // START SJSAS 6202703
+    protected void disableProxyCaching(HttpRequest request, HttpResponse response, boolean disableProxyCaching,
+            boolean securePagesWithPragma) {
         HttpServletRequest hsrequest = (HttpServletRequest) request.getRequest();
         // Make sure that constrained resources are not cached by web proxies
         // or browsers as caching can provide a security hole
-        if (disableProxyCaching
-                && !"POST".equalsIgnoreCase(hsrequest.getMethod())
-                && (!checkIfRequestIsSecure || !hsrequest.isSecure())) {
-            HttpServletResponse sresponse =
-                    (HttpServletResponse) response.getResponse();
+        if (disableProxyCaching && !"POST".equalsIgnoreCase(hsrequest.getMethod()) && (!checkIfRequestIsSecure || !hsrequest.isSecure())) {
+            HttpServletResponse sresponse = (HttpServletResponse) response.getResponse();
             if (securePagesWithPragma) {
                 // FIXME: These cause problems with downloading office docs
                 // from IE under SSL and may not be needed for newer Mozilla
@@ -1600,10 +1402,9 @@ public abstract class RealmBase
             sresponse.setHeader("Expires", DATE_ONE);
         }
     }
-    //END SJSAS 6202703
+    // END SJSAS 6202703
 
-
-    // -------------------- JMX and Registration  --------------------
+    // -------------------- JMX and Registration --------------------
 
     protected ObjectName controller;
 
@@ -1617,8 +1418,8 @@ public abstract class RealmBase
 
     // BEGIN IASRI 4808401, 4934562
     /**
-     * Return an alternate principal from the request if available.
-     * Tomcat realms do not implement this so always return null as default.
+     * Return an alternate principal from the request if available. Tomcat realms do not implement this so always return
+     * null as default.
      *
      * @param req The request object.
      * @return Alternate principal or null.
@@ -1627,10 +1428,9 @@ public abstract class RealmBase
         return null;
     }
 
-        
     /**
-     * Return an alternate auth type from the request if available.
-     * Tomcat realms do not implement this so always return null as default.
+     * Return an alternate auth type from the request if available. Tomcat realms do not implement this so always return
+     * null as default.
      *
      * @param req The request object.
      * @return Alternate auth type or null.
@@ -1639,7 +1439,6 @@ public abstract class RealmBase
         return null;
     }
     // END IASRI 4808401
-
 
     // BEGIN IASRI 4856062,4918627,4874504
     /**
@@ -1651,21 +1450,20 @@ public abstract class RealmBase
         // DO NOTHING. PRIVATE EXTENSION
     }
 
-
     /**
      * Returns the name of the associated realm.
      *
      * @return realm name or null if not set.
      */
-    public String getRealmName(){
+    public String getRealmName() {
         // DO NOTHING. PRIVATE EXTENSION
         return null;
     }
+
     // END IASRI 4856062,4918627,4874504
     public Principal authenticate(HttpServletRequest hreq) {
         throw new UnsupportedOperationException();
     }
-
 
     private boolean equalsIgnoreCase(char[] arr1, char[] arr2) {
         if (arr1 == null) {
@@ -1675,8 +1473,8 @@ public abstract class RealmBase
                 return false;
             }
         }
-        
-        //here, arr1 and arr2 are not null with equal length
+
+        // here, arr1 and arr2 are not null with equal length
         boolean result = true;
         for (int i = 0; i < arr1.length; i++) {
             if (Character.toLowerCase(arr1[i]) != Character.toLowerCase(arr2[i])) {

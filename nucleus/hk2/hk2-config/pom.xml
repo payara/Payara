@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <artifactId>hk2-config</artifactId>
     
@@ -57,8 +57,7 @@
 
     <properties>
         <javax.validation.version.upperbound>3</javax.validation.version.upperbound>
-        <hibernate-validator.version.upperbound>7</hibernate-validator.version.upperbound>
-        <hibernate-validator.version>6.0.3.Final</hibernate-validator.version>
+        <hibernate.validator.version.upperbound>7</hibernate.validator.version.upperbound>
     </properties>
     
     <build>
@@ -113,7 +112,7 @@
                         <Import-Package>
                             javax.validation.*;resolution:=optional;version="${range;[==,${javax.validation.version.upperbound});${javax.validation.version}}
 ",
-                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate-validator.version.upperbound});${hibernate-validator.version}}",
+                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
                             *
                         </Import-Package>
                     </instructions>
@@ -147,7 +146,7 @@
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate-validator.version}</version>
+            <version>${hibernate.validator.version}</version>
         </dependency>
 
         <!-- hk2-config tests use hibernate-validator which requires javax.el-api -->

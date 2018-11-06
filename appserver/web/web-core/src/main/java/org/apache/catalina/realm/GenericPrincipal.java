@@ -55,9 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.realm;
-
 
 import org.apache.catalina.Realm;
 
@@ -65,24 +64,19 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
- * Generic implementation of <strong>java.security.Principal</strong> that
- * is available for use by <code>Realm</code> implementations.
+ * Generic implementation of <strong>java.security.Principal</strong> that is available for use by <code>Realm</code>
+ * implementations.
  *
  * @author Craig R. McClanahan
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:52 $
  */
-
 public class GenericPrincipal implements Principal {
-
 
     // ----------------------------------------------------------- Constructors
 
-
     /**
-     * Construct a new Principal, associated with the specified Realm, for the
-     * specified username and password.
+     * Construct a new Principal, associated with the specified Realm, for the specified username and password.
      *
      * @param realm The Realm that owns this Principal
      * @param name The username of the user represented by this Principal
@@ -94,24 +88,21 @@ public class GenericPrincipal implements Principal {
 
     }
 
-
     /**
-     * Construct a new Principal, associated with the specified Realm, for the
-     * specified username and password, with the specified role names
-     * (as Strings).
+     * Construct a new Principal, associated with the specified Realm, for the specified username and password, with the
+     * specified role names (as Strings).
      *
      * @param realm The Realm that owns this principal
      * @param name The username of the user represented by this Principal
      * @param password Credentials used to authenticate this user
      * @param roles List of roles (must be Strings) possessed by this user
      */
-    public GenericPrincipal(Realm realm, String name, char[] password,
-                            List<String> roles) {
+    public GenericPrincipal(Realm realm, String name, char[] password, List<String> roles) {
 
         super();
         this.realm = realm;
         this.name = name;
-        this.password = ((password != null)? ((char[])password.clone()) : null);
+        this.password = ((password != null) ? ((char[]) password.clone()) : null);
         if (roles != null) {
             this.roles = new String[roles.size()];
             this.roles = roles.toArray(this.roles);
@@ -120,12 +111,11 @@ public class GenericPrincipal implements Principal {
         }
     }
 
-    public GenericPrincipal(String name, char[] password,
-                            List<String> roles) {
+    public GenericPrincipal(String name, char[] password, List<String> roles) {
 
         super();
         this.name = name;
-        this.password = ((password != null)? ((char[])password.clone()) : null);
+        this.password = ((password != null) ? ((char[]) password.clone()) : null);
         if (roles != null) {
             this.roles = new String[roles.size()];
             this.roles = roles.toArray(this.roles);
@@ -136,7 +126,6 @@ public class GenericPrincipal implements Principal {
 
     // ------------------------------------------------------------- Properties
 
-
     /**
      * The username of the user represented by this Principal.
      */
@@ -146,17 +135,14 @@ public class GenericPrincipal implements Principal {
         return (this.name);
     }
 
-
     /**
-     * The authentication credentials for the user represented by
-     * this Principal.
+     * The authentication credentials for the user represented by this Principal.
      */
     protected char[] password = null;
 
     public char[] getPassword() {
-        return ((this.password != null)? ((char[])this.password.clone()) : null);
+        return ((this.password != null) ? ((char[]) this.password.clone()) : null);
     }
-
 
     /**
      * The Realm with which this Principal is associated.
@@ -167,10 +153,9 @@ public class GenericPrincipal implements Principal {
         return (this.realm);
     }
 
-    void setRealm( Realm realm ) {
-        this.realm=realm;
+    void setRealm(Realm realm) {
+        this.realm = realm;
     }
-
 
     /**
      * The set of roles associated with this user.
@@ -181,9 +166,7 @@ public class GenericPrincipal implements Principal {
         return (this.roles);
     }
 
-
     // --------------------------------------------------------- Public Methods
-
 
     /**
      * Does the user represented by this Principal possess the specified role?
@@ -192,7 +175,7 @@ public class GenericPrincipal implements Principal {
      */
     public boolean hasRole(String role) {
 
-        if("*".equals(role)) // Special 2.4 role meaning everyone
+        if ("*".equals(role)) // Special 2.4 role meaning everyone
             return true;
         if (role == null)
             return (false);
@@ -200,23 +183,20 @@ public class GenericPrincipal implements Principal {
 
     }
 
-
     /**
-     * Return a String representation of this object, which exposes only
-     * information that should be public.
+     * Return a String representation of this object, which exposes only information that should be public.
      */
     public String toString() {
 
         StringBuilder sb = new StringBuilder("GenericPrincipal[");
         sb.append(this.name);
         sb.append("(");
-        for( int i=0;i<roles.length; i++ ) {
-            sb.append( roles[i]).append(",");
+        for (int i = 0; i < roles.length; i++) {
+            sb.append(roles[i]).append(",");
         }
         sb.append(")]");
         return (sb.toString());
 
     }
-
 
 }

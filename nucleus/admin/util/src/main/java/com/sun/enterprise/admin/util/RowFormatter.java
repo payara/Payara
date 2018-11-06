@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -65,12 +66,9 @@ public class RowFormatter {
      */
     public String addColumn(Object[] objs ){
          // check to make sure the number of rows is the same as what we already have
-        if (numRows != -1) {
-            if (objs.length != numRows) {
+        if (numRows != -1 && objs.length != numRows) {
                 throw new IllegalArgumentException(
-                        String.format("invalid number of columns (%d), expected (%d)",
-                            objs.length, numRows));
-            }
+                        String.format("invalid number of columns (%d), expected (%d)", objs.length, numRows));
         }
 
 
@@ -85,10 +83,10 @@ public class RowFormatter {
         longestValue += 2;
         StringBuilder sb = new StringBuilder();
 
-        StringBuilder formattedline = new StringBuilder("%1$-"+longestValue +"s:%2$-1s");
+        String formattedline = "%1$-" + longestValue + "s:%2$-1s";
         for (int i = 0; i <numRows; i ++) {
 
-            sb.append( String.format(formattedline.toString(),headings[i],objs[i])).append("\n");
+            sb.append( String.format(formattedline, headings[i], objs[i])).append("\n");
         }
         return sb.toString();
     }

@@ -39,8 +39,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
 -->
+<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -126,7 +126,6 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>${jsonp.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
@@ -163,17 +162,14 @@
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
             <version>1.1</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-processing</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-jaxb</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

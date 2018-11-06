@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
@@ -48,9 +48,9 @@ import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
  */
 public class DigestCredentials {
 
-    private String realmName = "";
-    private String username = "";
-    private DigestAlgorithmParameter[] params = null;
+    private final String realmName;
+    private final String username;
+    private final DigestAlgorithmParameter[] params;
 
     public DigestCredentials(String realmName, String username, DigestAlgorithmParameter[] params) {
         this.realmName = realmName;
@@ -59,11 +59,11 @@ public class DigestCredentials {
     }
 
     public String getRealmName() {
-        return this.realmName;
+        return realmName;
     }
 
     public String getUserName() {
-        return this.username;
+        return username;
     }
 
     public DigestAlgorithmParameter[] getParameters() {

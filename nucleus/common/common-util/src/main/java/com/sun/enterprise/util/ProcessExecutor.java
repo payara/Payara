@@ -37,39 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.util;
 
 //JDK imports
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.FileReader;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.lang.IllegalArgumentException;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Kedar
  * @version 1.0
- * @deprecated Use ProcessManager instead
+ * @deprecated Use com.sun.enterprise.universal.process.ProcessManager instead
  */
 public class ProcessExecutor {
     public static final long kDefaultTimeoutMillis = 600000;
     public static final long kSleepTime = 2000;
     private static final long DEFAULT_TIMEOUT_SEC = 600;
-    private static final String NEWLINE = System.getProperty("line.separator");
+    private static final String NEWLINE = System.lineSeparator();
     private long mTimeoutMilliseconds = 0;
     protected String[] mCmdStrings = null;
     protected File mOutFile = null;
@@ -80,7 +67,7 @@ public class ProcessExecutor {
     private String[] mEnv = null; //environment
     private String[] mInputLines = null; // strings to set in process's InputStream (like from redirection)
     private int mExitValue = -1;
-    private Process mSubProcess = null; // used to get handle to child process for ProcessManager funtionality
+    private Process mSubProcess = null; // used to get handle to child process for ProcessManager functionality
     private boolean mVerboseMode = false;
     private boolean retainExecutionLogs = false;
     private String lastExecutionOutputString = null;
@@ -144,7 +131,7 @@ public class ProcessExecutor {
                 mCmdStrings[i] = mCmdStrings[i].replace(fwdSlashChar, backSlashChar);
             }
         }
-        mTimeoutMilliseconds = (long) timeoutSeconds * 1000;
+        mTimeoutMilliseconds = timeoutSeconds * 1000;
     }
 
     /**
@@ -198,7 +185,7 @@ public class ProcessExecutor {
         }
     }
 
-    private final static String cannotCreateTempFiles() {
+    private static String cannotCreateTempFiles() {
         return "Could not create temporary files - check "
                 + System.getProperty("java.io.tmpdir")
                 + " to see if its writeable and not-full";
@@ -280,8 +267,8 @@ public class ProcessExecutor {
 
             if (bDebug) {
                 System.out.println("\n**** Executing command:");
-                for (int ii = 0; ii < mCmdStrings.length; ii++) {
-                    System.out.println(mCmdStrings[ii]);
+                for (String mCmdString : mCmdStrings) {
+                    System.out.println(mCmdString);
                 }
             }
 
@@ -334,14 +321,9 @@ public class ProcessExecutor {
                     }
                 }
             }
-        }
-        catch (SecurityException se) {
+        } catch (SecurityException | IOException se) {
             throw new ExecException(se.getMessage());
-        }
-        catch (IOException ioe) {
-            throw new ExecException(ioe.getMessage());
-        }
-        finally {
+        } finally {
 
             // retain buffers before deleting them
             retainBuffers();
@@ -353,13 +335,9 @@ public class ProcessExecutor {
             }
         }
 
-        if (bReturnOutputLines) {
-            return getInputStrings(inputStream);
-        }
-        else {
-            return null;
-        }
-
+        return bReturnOutputLines
+            ? getInputStrings(inputStream)
+            : null;
     }
 
     /**
@@ -376,72 +354,43 @@ public class ProcessExecutor {
         if (mInputLines == null)
             return;
 
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(new BufferedWriter(
-                    new OutputStreamWriter(subProcess.getOutputStream())));
-
-            for (int i = 0; i < mInputLines.length; i++) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(subProcess.getOutputStream())))) {
+            for (String mInputLine : mInputLines) {
                 if (bDebug) {
-                    System.out.println("InputLine ->" + mInputLines[i] + "<-");
+                    System.out.println("InputLine ->" + mInputLine + "<-");
                 }
-                out.println(mInputLines[i]);
+                out.println(mInputLine);
             }
             out.flush();
         }
         catch (Exception e) {
             throw new ExecException(e.getMessage());
         }
-        finally {
-            try {
-                out.close();
-            }
-            catch (Throwable t) {
-            }
-        }
     }
 
     private String[] getInputStrings(InputStream inputStream) throws ExecException {
         if (inputStream == null)
             return null;
-        BufferedReader in = null;
-        ArrayList list = new ArrayList();
-        String str;
-        try {
-            in = new BufferedReader(new InputStreamReader(inputStream));
-            while ((str = in.readLine()) != null)
-                list.add(str);
-            if (list.size() < 1)
-                return null;
-            return (String[]) list.toArray(new String[list.size()]);
-
-        }
-        catch (Exception e) {
+        List<String> list = new ArrayList<>();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream))) {
+            String str;
+            while ((str = in.readLine()) != null) list.add(str);
+            return list.isEmpty()
+                ? null
+                : list.toArray(new String[0]);
+        } catch (Exception e) {
             throw new ExecException(e.getMessage());
-        }
-        finally {
-            try {
-                in.close();
-            }
-            catch (Throwable t) {
-            }
         }
     }
 
     private OutputStream redirectProcessOutput(Process subProcess) throws ExecException {
-        OutputStream out = null;
+        OutputStream out;
         try {
             InputStream in = subProcess.getInputStream();
             // Redirect stderr for verbose mode
-            if (mVerboseMode) {
-                // send output to stderr
-                out = System.err;
-            }
-            else {
-                // send to temp file
-                out = new FileOutputStream(mOutFile);
-            }
-
+            out = mVerboseMode
+                ? System.err
+                : new FileOutputStream(mOutFile);
             new FlusherThread(in, out).start();
         }
         catch (Exception e) {
@@ -451,18 +400,13 @@ public class ProcessExecutor {
     }
 
     private OutputStream redirectProcessError(Process subProcess) throws ExecException {
-        OutputStream out = null;
+        OutputStream out;
         try {
             InputStream in = subProcess.getErrorStream();
             // Redirect stderr for verbose mode
-            if (mVerboseMode) {
-                // send output to stderr
-                out = System.err;
-            }
-            else {
-                // send to temp file
-                out = new FileOutputStream(mErrFile);
-            }
+            out = mVerboseMode
+                ? System.err
+                : new FileOutputStream(mErrFile);
             new FlusherThread(in, out).start();
         }
         catch (Exception e) {
@@ -491,11 +435,9 @@ public class ProcessExecutor {
      * @param file the file to read
      */
     protected String getFileBuffer(File file) {
-        final StringBuffer sb = new StringBuffer();
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(file));
-            String line = null;
+        final StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
                 sb.append(NEWLINE);
@@ -504,14 +446,7 @@ public class ProcessExecutor {
         catch (Exception e) {
             //squelch the exception
         }
-        finally {
-            try {
-                reader.close();
-            }
-            catch (Exception e) {
-            }
-        }
-        return (sb.toString());
+        return sb.toString();
     }
 
     protected String getLatestOutput(final File f) {
@@ -532,15 +467,15 @@ public class ProcessExecutor {
         return (f.exists());
     }
 
-    private String a2s(String[] a) {
-        final StringBuffer s = new StringBuffer();
-        if (a != null) {
-            for (int i = 0; i < a.length; i++) {
-                s.append(a[i]);
+    private String a2s(String[] strings) {
+        final StringBuilder s = new StringBuilder();
+        if (strings != null) {
+            for (String anA : strings) {
+                s.append(anA);
                 s.append(" ");
             }
         }
-        return (s.toString());
+        return s.toString();
     }
 
     /*
@@ -565,46 +500,26 @@ public class ProcessExecutor {
 
         String readLastBytesAsString() {
             final int n = getNumberOfBytes(LAST_BYTES);
-            final StringBuffer sb = new StringBuffer();
             final long ln = file.length(); //if SecurityManager is not present, this is safe.
             if (ln == 0)
-                return (sb.toString()); //nothing to read, file may not exist, is protected, is a directory etc.
+                return ""; //nothing to read, file may not exist, is protected, is a directory etc.
             assert (n <= ln) : ("Asked to read number of bytes more than size of file");
             final long s = ln - n;
             return (readWithoutCheck(s));
         }
 
         private String readWithoutCheck(final long seekPos) {
-            final StringBuffer sb = new StringBuffer();
-            RandomAccessFile rf = null;
-            int lines = 0;
-            try {
-                rf = new RandomAccessFile(file, RMODE);
+            final StringBuilder sb = new StringBuilder();
+            try (RandomAccessFile rf = new RandomAccessFile(file, RMODE)) {
                 rf.seek(seekPos);
                 String tmp = rf.readLine();
                 while (tmp != null) {
-                    lines++;
                     sb.append(tmp);
                     //sb.append(Character.LINE_SEPARATOR);
                     sb.append('\n'); // adding a newline character is going to add one extra byte
                     tmp = rf.readLine();
                 }
-            }
-            catch (Exception e) {
-                //e.printStackTrace(); //ignore
-            }
-            finally {
-                try {
-                    if (rf != null)
-                        rf.close();
-                }
-                catch (Exception e) {
-                }//ignore;
-            }
-            //System.out.println("ln-seekPos = " + (ln - seekPos) );
-            //System.out.println("bytes = " + sb.toString().getBytes().length);
-            //System.out.println("lines = " + lines);
-            //assert ((ln - seekPos) == (sb.toString().getBytes().length + lines)) : "Wrong number of bytes read";
+            } catch (Exception e) { }
             return (sb.toString());
         }
 
@@ -643,9 +558,8 @@ public class ProcessExecutor {
  * inner class to flush runtime.exec process so it doesn't hang
  */
 class FlusherThread extends Thread {
-    InputStream mInStream = null;
-    OutputStream mOutStream = null;
-    public static final int kSize = 1024;
+    InputStream mInStream;
+    OutputStream mOutStream;
 
     FlusherThread(InputStream in, OutputStream out) {
         mInStream = in;
@@ -658,27 +572,18 @@ class FlusherThread extends Thread {
             return;
 
         // transfer bytes from input to output stream
-        try {
-            int byteCnt = 0;
+        try (OutputStream outputStream = mOutStream) {
             byte[] buffer = new byte[4096];
+            int byteCnt;
             while ((byteCnt = mInStream.read(buffer)) != -1) {
-                if (mOutStream != null && byteCnt > 0) {
-                    mOutStream.write(buffer, 0, byteCnt);
-                    mOutStream.flush();
+                if (outputStream != null && byteCnt > 0) {
+                    outputStream.write(buffer, 0, byteCnt);
+                    outputStream.flush();
                 }
                 yield();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // ignore
-        }
-        finally {
-            try {
-                mOutStream.close();
-            }
-            catch (IOException ioe) {
-                // ignore
-            }
         }
     }
 }

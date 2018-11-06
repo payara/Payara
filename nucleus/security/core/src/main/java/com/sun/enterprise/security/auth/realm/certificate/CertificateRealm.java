@@ -40,31 +40,32 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.certificate;
 
-import static java.util.Collections.list;
-import static java.util.logging.Level.FINEST;
-
-import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 
 import org.glassfish.security.common.Group;
-import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-//import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
-import com.sun.enterprise.security.auth.realm.IASRealm;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 
-import sun.security.x509.X500Name;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import javax.security.auth.callback.Callback;
+
+
+import org.jvnet.hk2.annotations.Service;
+import javax.security.auth.x500.X500Principal;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -94,11 +95,11 @@ import sun.security.x509.X500Name;
  *
  */
 @Service
-public final class CertificateRealm extends IASRealm {
+public final class CertificateRealm extends BaseRealm {
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
-    private Vector<String> defaultGroups = new Vector<String>();
+    private LinkedList<String> defaultGroups = new LinkedList<>();
 
     /**
      * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
@@ -109,21 +110,19 @@ public final class CertificateRealm extends IASRealm {
      * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't exist.
      *
      */
+    @Override
     protected void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
 
         String[] groups = addAssignGroups(null);
         if (groups != null && groups.length > 0) {
-            for (String gp : groups) {
-                defaultGroups.add(gp);
-            }
+            defaultGroups.addAll(Arrays.asList(groups));
         }
 
-        String jaasCtx = props.getProperty(IASRealm.JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx != null) {
-            setProperty(IASRealm.JAAS_CONTEXT_PARAM, jaasCtx);
+            setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
-     
     }
 
     /**
@@ -132,67 +131,65 @@ public final class CertificateRealm extends IASRealm {
      *
      * @return Description of the kind of authentication that is directly supported by this realm.
      */
+    @Override
     public String getAuthType() {
         return AUTH_TYPE;
     }
-
-    /**
-     * Complete authentication of certificate user.
-     *
-     * <P>
-     * As noted, the certificate realm does not do the actual authentication (signature and cert chain validation) for the
-     * user certificate, this is done earlier in NSS. This method simply sets up the security context for the user in order
-     * to properly complete the authentication processing.
-     *
-     * <P>
-     * If any groups have been assigned to cert-authenticated users through the assign-groups property these groups are
-     * added to the security context for the current user.
-     *
-     * @param subject The Subject object for the authentication request.
-     * @param x500name The X500Name object from the user certificate.
-     *
-     */
-    public void authenticate(Subject subject, X500Name x500name) {
-
-        // It is important to use x500name.getName() in order to be
-        // consistent with web containers view of the name - see bug
-        // 4646134 for reasons why this matters.
-        String name = x500name.getName();
-
-        if (_logger.isLoggable(FINEST)) {
-            _logger.finest("Certificate realm setting up security context for: " + name);
-        }
-
-        if (defaultGroups != null) {
-            Set<Principal> principalSet = subject.getPrincipals();
-            for (String groupName : list(defaultGroups.elements())) {
-                principalSet.add(new Group(groupName));
-            }
-        }
-        
-        if (!subject.getPrincipals().isEmpty()) {
-            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500name));
-        }
-
-        SecurityContext.setCurrent(new SecurityContext(name, subject));
-    }
     
+
     /**
      * Returns the name of all the groups that this user belongs to.
      *
-     * @param username Name of the user in this realm whose group listing is needed.
+     * @param username Name of the user in this realm whose group listing
+     *     is needed.
      * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
-     *            does not support this operation.
+     * @exception InvalidOperationException thrown if the realm does not
+     *     support this operation - e.g. Certificate realm does not support
+     *     this operation.
+     * @throws com.sun.enterprise.security.auth.realm.NoSuchUserException
      *
      */
-    public Enumeration getGroupNames(String username) throws NoSuchUserException, InvalidOperationException {
+    @Override
+    public Enumeration getGroupNames(String username)
+        throws NoSuchUserException, InvalidOperationException
+    {
         // This is called during web container role check, not during
         // EJB container role cheks... fix RI for consistency.
 
         // Groups for cert users is empty by default unless some assign-groups
         // property has been specified (see init()).
-        return defaultGroups.elements();
+        return Collections.enumeration(defaultGroups);
+    }
+
+    /**
+     * Returns the name of all the groups that this user belongs to.
+     *
+     * @param subject The Subject object for the authentication request.
+     * @param x500principal The X500Name object from the user certificate.
+     *
+     */
+    public void authenticate(Subject subject, X500Principal x500principal) {
+        // It is important to use x500name.getName() in order to be
+        // consistent with web containers view of the name - see bug
+        // 4646134 for reasons why this matters.
+        String name = x500principal.getName();
+
+        if (_logger.isLoggable(Level.FINEST)) {
+            _logger.log(Level.FINEST, "Certificate realm setting up security context for: {0}", name);
+        }
+
+        if (defaultGroups != null) {
+	    Set<Principal> principalSet = subject.getPrincipals();
+	    for (String groupName : defaultGroups) {
+		principalSet.add(new Group(groupName));
+	    }
+	}
+
+        if (!subject.getPrincipals().isEmpty()) {
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500principal));
+        }
+        
+        SecurityContext.setCurrent(new SecurityContext(name, subject));
     }
 
     /**
@@ -202,7 +199,7 @@ public final class CertificateRealm extends IASRealm {
      * the application name information.
      */
     public final static class AppContextCallback implements Callback {
-        
+
         private String moduleID;
 
         /**
@@ -218,9 +215,11 @@ public final class CertificateRealm extends IASRealm {
         }
 
         /**
-         * Set the fully qualified module name. The module name consists of the application name (if not a singleton) followed
-         * by a '#' and the name of the module.
+         * Set the fully qualified module name. The module name consists
+         * of the application name (if not a singleton) followed by a '#'
+         * and the name of the module.
          * 
+         * @param moduleID
          */
         public void setModuleID(String moduleID) {
             this.moduleID = moduleID;

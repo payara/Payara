@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.batch;
 
@@ -52,6 +52,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Properties;
+import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS_STEPS;
 
 /**
  * Command to list batch jobs info
@@ -102,8 +103,8 @@ public class ListBatchJobStepsProxy
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        if (subProperties.get("listBatchJobSteps") != null)
-            extraProps.put("listBatchJobSteps", subProperties.get("listBatchJobSteps"));
+        if (subProperties.get(LIST_BATCH_JOBS_STEPS) != null)
+            extraProps.put(LIST_BATCH_JOBS_STEPS, subProperties.get(LIST_BATCH_JOBS_STEPS));
     }
 
 }

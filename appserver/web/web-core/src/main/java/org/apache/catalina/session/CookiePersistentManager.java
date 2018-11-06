@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.session;
 
 import org.apache.catalina.LogFacade;
@@ -74,6 +74,7 @@ public class CookiePersistentManager extends StandardManager {
 
     @Override
     public void add(Session session) {
+        sessions.put(session.getIdInternal(), session);
         synchronized (sessionIds) {
             if (!sessionIds.add(session.getIdInternal())) {
                 throw new IllegalArgumentException("Session with id " + session.getIdInternal() +

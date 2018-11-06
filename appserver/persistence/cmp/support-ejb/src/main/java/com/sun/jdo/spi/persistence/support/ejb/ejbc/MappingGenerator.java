@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portion Copyright [2018] Payara Foundation and/or affiliates
 
 /*
  * MappingGenerator.java
@@ -81,7 +82,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
 import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;
 import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
 import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-import com.sun.jdo.spi.persistence.utility.StringHelper;
+import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeployCommandParameters;

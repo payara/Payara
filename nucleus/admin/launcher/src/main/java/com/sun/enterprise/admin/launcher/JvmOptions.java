@@ -62,7 +62,7 @@ class JvmOptions {
      * Pattern for recognising environment variables which are in the style of ${ENV=foo}
      * @see org.glassfish.config.support.TranslatedConfigView
      */
-    private final static Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
+    private static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
     
     Map<String, String> sysProps = new HashMap<String, String>();
@@ -321,7 +321,7 @@ class JvmOptions {
         try {
             osgiPort = Integer.parseInt(s);
         }
-        catch (Exception e) {
+        catch (NumberFormatException e) {
             // already handled -- it is already set to -1
         }
     }
@@ -329,7 +329,7 @@ class JvmOptions {
     private static class NameValue {
 
         NameValue(String s) {
-            int index = s.indexOf("=");
+            int index = s.indexOf('=');
 
             if (index < 0) {
                 name = s;

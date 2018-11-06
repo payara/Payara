@@ -37,48 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
-import com.sun.enterprise.security.SecurityLoggerInfo;
-import com.sun.enterprise.security.common.Util;
+import static java.util.logging.Level.FINE;
+
 import java.io.IOException;
-import java.security.Key;
+import java.security.AccessControlException;
+import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Permission;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
-import java.security.cert.Certificate;
+import java.util.PropertyPermission;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 
-
-//V3:Commented import com.sun.enterprise.config.clientbeans.Ssl
-import com.sun.enterprise.server.pluggable.SecuritySupport;
-//V3:Commented import com.sun.web.security.SSLSocketFactory;
-import com.sun.enterprise.security.integration.AppClientSSL;
-import java.util.logging.*;
-import com.sun.logging.*;
-import java.security.AccessControlException;
-import java.security.AccessController;
-import java.security.Permission;
-import java.util.PropertyPermission;
-import javax.net.ssl.SSLSocketFactory;
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
+import com.sun.enterprise.security.SecurityLoggerInfo;
+import com.sun.enterprise.security.common.Util;
+import com.sun.enterprise.security.integration.AppClientSSL;
+import com.sun.enterprise.server.pluggable.SecuritySupport;
 
 /**
- *  Handy class containing static functions.
+ * Handy class containing static functions.
+ * 
  * @author Harpreet Singh
  * @author Vivek Nagar
  * @author Shing Wai Chan
@@ -86,33 +85,34 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public final class SSLUtils implements PostConstruct {
-    private static final String DEFAULT_OUTBOUND_KEY_ALIAS = "s1as";
+    
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    
     public static final String HTTPS_OUTBOUND_KEY_ALIAS = "com.sun.enterprise.security.httpsOutboundKeyAlias";
     private static final String DEFAULT_SSL_PROTOCOL = "TLS";
 
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
-
     @Inject
-    private SecuritySupport secSupp;
+    private SecuritySupport securitySupport;
 
-    private boolean hasKey = false;
-    private KeyStore mergedTrustStore = null;
-    private AppClientSSL appclientSsl = null;
-    private SSLContext ctx = null;
-    
+    private boolean hasKey;
+    private KeyStore mergedTrustStore;
+    private AppClientSSL appclientSsl;
+    private SSLContext sslContext;
+
     public void postConstruct() {
         try {
-            //TODO: To check the right implementation once we support EE.
-            if(secSupp == null){
-                secSupp = SecuritySupport.getDefaultInstance();
+            // TODO: To check the right implementation once we support EE.
+            if (securitySupport == null) {
+                securitySupport = SecuritySupport.getDefaultInstance();
             }
+            
             KeyStore[] keyStores = getKeyStores();
+            
             if (keyStores != null) {
                 for (KeyStore keyStore : keyStores) {
-                    Enumeration aliases = keyStore.aliases();
+                    Enumeration<String> aliases = keyStore.aliases();
                     while (aliases.hasMoreElements()) {
-                        String alias = (String) aliases.nextElement();
-                        if (keyStore.isKeyEntry(alias)) {
+                        if (keyStore.isKeyEntry(aliases.nextElement())) {
                             hasKey = true;
                             break;
                         }
@@ -122,95 +122,97 @@ public final class SSLUtils implements PostConstruct {
                     }
                 }
             }
-            mergedTrustStore = mergingTrustStores(secSupp.getTrustStores());
+            
+            mergedTrustStore = mergingTrustStores(securitySupport.getTrustStores());
             getSSLContext(null, null, null);
-        } catch(Exception ex) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "SSLUtils static init fails.", ex);
-            }
+        } catch (Exception ex) {
+            _logger.log(FINE, "SSLUtils static init fails.", ex);
             throw new IllegalStateException(ex);
         }
     }
 
     SSLContext getSSLContext(String protocol, String algorithm, String trustAlgorithm) {
         try {
-            //V3:Commented to break dependency on WebTier.
-            //The SSLSocketFactory CTOR will now take care of setting the kmgr and tmgr
-            //SSLSocketFactory.setManagers(getKeyManagers(), getTrustManagers());
+            // V3:Commented to break dependency on WebTier.
+            // The SSLSocketFactory CTOR will now take care of setting the kmgr and tmgr
+            // SSLSocketFactory.setManagers(getKeyManagers(), getTrustManagers());
 
             // Creating a default SSLContext and HttpsURLConnection for clients
             // that use Https
             if (protocol == null) {
                 protocol = DEFAULT_SSL_PROTOCOL;
             }
-            ctx = SSLContext.getInstance(protocol);
+            
+            sslContext = SSLContext.getInstance(protocol);
             String keyAlias = System.getProperty(HTTPS_OUTBOUND_KEY_ALIAS);
-            KeyManager[] kMgrs = getKeyManagers(algorithm);
-            if (keyAlias != null && keyAlias.length() > 0 && kMgrs != null) {
-                for (int i = 0; i < kMgrs.length; i++) {
-                    kMgrs[i] = new J2EEKeyManager((X509KeyManager)kMgrs[i], keyAlias);
+            
+            KeyManager[] keyManagers = getKeyManagers(algorithm);
+            if (keyAlias != null && keyAlias.length() > 0 && keyManagers != null) {
+                for (int i = 0; i < keyManagers.length; i++) {
+                    keyManagers[i] = new J2EEKeyManager((X509KeyManager) keyManagers[i], keyAlias);
                 }
             }
-            ctx.init(kMgrs, getTrustManagers(trustAlgorithm), null);
+            sslContext.init(keyManagers, getTrustManagers(trustAlgorithm), null);
 
-            HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
-            //refer issue :http://java.net/jira/browse/GLASSFISH-15369
-            SSLContext.setDefault(ctx);
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            
+            // See https://github.com/eclipse-ee4j/glassfish/issues/15369
+            SSLContext.setDefault(sslContext);
         } catch (Exception e) {
             throw new Error(e);
         }
-        return ctx;
+        
+        return sslContext;
     }
 
-    public boolean verifyMasterPassword(final char[] masterPass) {
-        return secSupp.verifyMasterPassword(masterPass);
+    public boolean verifyMasterPassword(char[] masterPass) {
+        return securitySupport.verifyMasterPassword(masterPass);
     }
 
-    public KeyStore[] getKeyStores() throws IOException{
-        return secSupp.getKeyStores();
+    public KeyStore[] getKeyStores() throws IOException {
+        return securitySupport.getKeyStores();
     }
 
-    public KeyStore getKeyStore() throws IOException{
+    public KeyStore getKeyStore() throws IOException {
         return getKeyStores()[0];
     }
 
-    public KeyStore[] getTrustStores() throws IOException{
-        return secSupp.getTrustStores();
+    public KeyStore[] getTrustStores() throws IOException {
+        return securitySupport.getTrustStores();
     }
 
-    public KeyStore getTrustStore() throws IOException{
+    public KeyStore getTrustStore() throws IOException {
         return getTrustStores()[0];
     }
 
     /**
-     * This API is for temporary purpose.  It will be removed once JSR 196
-     * is updated.
+     * This API is for temporary purpose. It will be removed once JSR 196 is updated.
      */
     public KeyStore getMergedTrustStore() {
         return mergedTrustStore;
     }
 
-    public KeyManager[] getKeyManagers() throws Exception{
+    public KeyManager[] getKeyManagers() throws Exception {
         return getKeyManagers(null);
     }
-    public KeyManager[] getKeyManagers(String algorithm) throws IOException,
-            KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException{
-        return secSupp.getKeyManagers(algorithm);
-    } 
-    public TrustManager[] getTrustManagers() throws Exception{
-        return getTrustManagers(null);
-    }
-    public TrustManager[] getTrustManagers(String algorithm) throws IOException,
-            KeyStoreException, NoSuchAlgorithmException{
-        return secSupp.getTrustManagers(algorithm);
+
+    public KeyManager[] getKeyManagers(String algorithm) throws IOException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        return securitySupport.getKeyManagers(algorithm);
     }
 
-    
-    public void setAppclientSsl(AppClientSSL ssl){
+    public TrustManager[] getTrustManagers() throws Exception {
+        return getTrustManagers(null);
+    }
+
+    public TrustManager[] getTrustManagers(String algorithm) throws IOException, KeyStoreException, NoSuchAlgorithmException {
+        return securitySupport.getTrustManagers(algorithm);
+    }
+
+    public void setAppclientSsl(AppClientSSL ssl) {
         appclientSsl = ssl;
     }
 
-    public  AppClientSSL getAppclientSsl() {
+    public AppClientSSL getAppclientSsl() {
         return appclientSsl;
     }
 
@@ -230,11 +232,11 @@ public final class SSLUtils implements PostConstruct {
     }
 
     /**
-     * Check whether given String is of the form [&lt;TokenName&gt;:]alias
-     * where alias is an key entry.
+     * Check whether given String is of the form [&lt;TokenName&gt;:]alias where alias is an key entry.
+     * 
      * @param certNickname
      * @return boolean
-     */ 
+     */
     public boolean isTokenKeyAlias(String certNickname) throws Exception {
         boolean isTokenKeyAlias = false;
         if (certNickname != null) {
@@ -243,7 +245,7 @@ public final class SSLUtils implements PostConstruct {
             int count = -1;
             String aliasName = null;
             if (ind != -1) {
-                String[] tokens = secSupp.getTokenNames();
+                String[] tokens = securitySupport.getTokenNames();
                 String tokenName = certNickname.substring(0, ind);
                 aliasName = certNickname.substring(ind + 1);
                 for (int i = 0; i < tokens.length; i++) {
@@ -268,13 +270,12 @@ public final class SSLUtils implements PostConstruct {
     }
 
     /**
-     * Get a PrivateKeyEntry with certNickName is of the form
-     * [&lt;TokenName&gt;:]alias where alias is an key entry.
+     * Get a PrivateKeyEntry with certNickName is of the form [&lt;TokenName&gt;:]alias where alias is an key entry.
+     * 
      * @param certNickname
      * @return PrivateKeyEntry
-     */ 
-    public PrivateKeyEntry getPrivateKeyEntryFromTokenAlias(
-            String certNickname) throws Exception {
+     */
+    public PrivateKeyEntry getPrivateKeyEntryFromTokenAlias(String certNickname) throws Exception {
         checkPermission(SecuritySupport.KEYSTORE_PASS_PROP);
         PrivateKeyEntry privKeyEntry = null;
         if (certNickname != null) {
@@ -283,7 +284,7 @@ public final class SSLUtils implements PostConstruct {
             int count = -1;
             String aliasName = certNickname;
             if (ind != -1) {
-                String[] tokens = secSupp.getTokenNames();
+                String[] tokens = securitySupport.getTokenNames();
                 String tokenName = certNickname.substring(0, ind);
                 aliasName = certNickname.substring(ind + 1);
                 for (int i = 0; i < tokens.length; i++) {
@@ -294,19 +295,16 @@ public final class SSLUtils implements PostConstruct {
             }
 
             if (count != -1 && kstores.length >= count) {
-                PrivateKey privKey = secSupp.getPrivateKeyForAlias(aliasName, count);
+                PrivateKey privKey = securitySupport.getPrivateKeyForAlias(aliasName, count);
                 if (privKey != null) {
-                    Certificate[] certs = kstores[count].getCertificateChain(
-                            aliasName);
+                    Certificate[] certs = kstores[count].getCertificateChain(aliasName);
                     privKeyEntry = new PrivateKeyEntry(privKey, certs);
                 }
             } else {
                 for (int i = 0; i < kstores.length; i++) {
-                    PrivateKey privKey = secSupp.getPrivateKeyForAlias(aliasName, i);
+                    PrivateKey privKey = securitySupport.getPrivateKeyForAlias(aliasName, i);
                     if (privKey != null) {
-                       Certificate[] certs =
-                                kstores[i].getCertificateChain(
-                                aliasName);
+                        Certificate[] certs = kstores[i].getCertificateChain(aliasName);
                         privKeyEntry = new PrivateKeyEntry(privKey, certs);
                         break;
                     }
@@ -320,46 +318,44 @@ public final class SSLUtils implements PostConstruct {
     public static void checkPermission(String key) {
         try {
             // Checking a random permission to check if it is server.
-            if(Util.isEmbeddedServer() || Util.getDefaultHabitat() == null
-                    || Util.getInstance().isACC() || Util.getInstance().isNotServerOrACC()){
+            if (Util.isEmbeddedServer() || Util.getDefaultHabitat() == null || Util.getInstance().isACC() || Util.getInstance().isNotServerOrACC()) {
                 return;
             }
-            Permission perm = new RuntimePermission("SSLPassword");
-            AccessController.checkPermission(perm);
+            
+            AccessController.checkPermission(new RuntimePermission("SSLPassword"));
         } catch (AccessControlException e) {
             String message = e.getMessage();
-            Permission perm = new PropertyPermission(key, "read");
+            Permission permission = new PropertyPermission(key, "read");
             if (message != null) {
-                message = message.replace(e.getPermission().toString(), perm.toString());
+                message = message.replace(e.getPermission().toString(), permission.toString());
             }
-            throw new AccessControlException(message, perm);
+            
+            throw new AccessControlException(message, permission);
         }
     }
-    
+
     public String[] getSupportedCipherSuites() {
-         //postConstruct is already setting this.
-         return  HttpsURLConnection.getDefaultSSLSocketFactory().getSupportedCipherSuites();
+        // postConstruct is already setting this.
+        return HttpsURLConnection.getDefaultSSLSocketFactory().getSupportedCipherSuites();
     }
-    
-    private KeyStore mergingTrustStores(KeyStore[] trustStores)
-            throws IOException, KeyStoreException,
-            NoSuchAlgorithmException, CertificateException {
+
+    private KeyStore mergingTrustStores(KeyStore[] trustStores) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         KeyStore mergedStore;
         try {
-            mergedStore = secSupp.loadNullStore("CaseExactJKS", secSupp.getKeyStores().length - 1);
-        } catch(KeyStoreException ex) {
-            mergedStore = secSupp.loadNullStore("JKS", secSupp.getKeyStores().length - 1);
+            mergedStore = securitySupport.loadNullStore("CaseExactJKS", securitySupport.getKeyStores().length - 1);
+        } catch (KeyStoreException ex) {
+            mergedStore = securitySupport.loadNullStore("JKS", securitySupport.getKeyStores().length - 1);
         }
 
-        String[] tokens = secSupp.getTokenNames();
+        String[] tokens = securitySupport.getTokenNames();
         for (int i = 0; i < trustStores.length; i++) {
-            Enumeration aliases = trustStores[i].aliases();
+            Enumeration<String> aliases = trustStores[i].aliases();
             while (aliases.hasMoreElements()) {
-                String alias = (String)aliases.nextElement();
+                String alias = (String) aliases.nextElement();
                 Certificate cert = trustStores[i].getCertificate(alias);
 
-                //need to preserve the token:alias name format
-                String alias2 = (i < tokens.length - 1)? tokens[i] + ":" + alias : alias;
+                // Need to preserve the token:alias name format
+                String alias2 = (i < tokens.length - 1) ? tokens[i] + ":" + alias : alias;
 
                 String alias3 = alias2;
                 boolean alreadyInStore = false;
@@ -377,13 +373,14 @@ public final class SSLUtils implements PostConstruct {
                 }
             }
         }
+        
         return mergedStore;
-     }
+    }
 
     /**
      * 
      *
-     * @param alias  the admin key alias
+     * @param alias the admin key alias
      * @param protocol the protocol or null, uses "TLS" if this argument is null.
      * @return the SSLSocketFactory from the initialized SSLContext
      */
@@ -392,25 +389,29 @@ public final class SSLUtils implements PostConstruct {
     }
 
     /*
-    * @param alias  the admin key alias
-    * @param protocol the protocol or null, uses "TLS" if this argument is null.
-    * @return the initialized SSLContext
-    */
+     * @param alias the admin key alias
+     * 
+     * @param protocol the protocol or null, uses "TLS" if this argument is null.
+     * 
+     * @return the initialized SSLContext
+     */
     public SSLContext getAdminSSLContext(String alias, String protocol) {
         try {
             if (protocol == null) {
                 protocol = "TLS";
             }
-            SSLContext cntxt = SSLContext.getInstance(protocol);
-            KeyManager[] kMgrs = getKeyManagers();
-            if (alias != null && alias.length() > 0 && kMgrs != null) {
-                for (int i = 0; i < kMgrs.length; i++) {
-                    kMgrs[i] = new J2EEKeyManager((X509KeyManager)kMgrs[i], alias);
+            
+            SSLContext adminSSLContextxt = SSLContext.getInstance(protocol);
+            
+            KeyManager[] keyManagers = getKeyManagers();
+            if (alias != null && alias.length() > 0 && keyManagers != null) {
+                for (int i = 0; i < keyManagers.length; i++) {
+                    keyManagers[i] = new J2EEKeyManager((X509KeyManager) keyManagers[i], alias);
                 }
             }
-            cntxt.init(kMgrs, getTrustManagers(), null);
+            adminSSLContextxt.init(keyManagers, getTrustManagers(), null);
 
-            return cntxt;
+            return adminSSLContextxt;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -987,6 +987,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
         resetLogging();
+        runtimeDir.processDirectoryInformation();
 
         // build the runtime
         BootstrapProperties bprops = new BootstrapProperties();
@@ -1906,6 +1907,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
                     }
+                } else if (clustermode.startsWith("dns:")) {
+                    String dnsmembers = clustermode.substring(4);
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.dns-members=" + dnsmembers));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=dns"));
+                    
                 }
             } else {
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
@@ -2290,7 +2296,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
         props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
         props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
-        props.setProperty("payaramicro.publicAddress", publicAddress);
+        
+        if (publicAddress != null) {
+            props.setProperty("payaramicro.publicAddress", publicAddress);
+        }
 
         if (userLogFile != null) {
             props.setProperty("payaramicro.userLogFile", userLogFile);

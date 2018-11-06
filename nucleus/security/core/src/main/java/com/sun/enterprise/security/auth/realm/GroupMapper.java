@@ -37,13 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  *
@@ -51,7 +48,7 @@ import java.util.StringTokenizer;
  */
 public class GroupMapper {
 
-    private Map<String, ArrayList<String>> groupMappingTable = new HashMap<String, ArrayList<String>>();
+    private Map<String, List<String>> groupMappingTable = new HashMap<>();
 
     public void parse(String mappingStr) {
         StringTokenizer tokenizer = new StringTokenizer(mappingStr, ";");
@@ -67,16 +64,12 @@ public class GroupMapper {
             validate(mappedGroup, mappingGroups);
             for (String grp : mappingGroups) {
                 int aIndex = grp.indexOf("->");
-                String theGroup = null;
-                if (aIndex > 0) {
-                    String tGrp = grp.substring(0, aIndex);
-                    theGroup = tGrp.trim();
-                } else {
-                    theGroup = grp.trim();
-                }
-                ArrayList<String> mappedGroupList = groupMappingTable.get(theGroup);
+                String theGroup = (aIndex > 0)
+                    ? grp.substring(0, aIndex).trim()
+                    : grp.trim();
+                List<String> mappedGroupList = groupMappingTable.get(theGroup);
                 if (mappedGroupList == null) {
-                    mappedGroupList = new ArrayList<String>();
+                    mappedGroupList = new ArrayList<>();
                 }
                 mappedGroupList.add(mappedGroup);
                 groupMappingTable.put(theGroup, mappedGroupList);
@@ -84,24 +77,24 @@ public class GroupMapper {
         }
     }
 
-    public void getMappedGroups(String group, ArrayList<String> result) {
+    public void getMappedGroups(String group, List<String> result) {
         if (result == null) {
             throw new RuntimeException("result argument cannot be NULL");
         }
-        ArrayList<String> mappedGrps = groupMappingTable.get(group);
+        List<String> mappedGrps = groupMappingTable.get(group);
         if (mappedGrps == null || mappedGrps.isEmpty()) {
             return;
         }
         addUnique(result, mappedGrps);
         // look for transitive closure
-        ArrayList<String> result1 = new ArrayList<String>();
+        List<String> result1 = new ArrayList<>();
         for (String str : mappedGrps) {
             getMappedGroups(group, str, result1);
         }
         addUnique(result, result1);
     }
 
-    private void addUnique(ArrayList<String> dest, ArrayList<String> src) {
+    private void addUnique(List<String> dest, List<String> src) {
         for (String str : src) {
             if (!dest.contains(str)) {
                 dest.add(str);
@@ -109,22 +102,9 @@ public class GroupMapper {
         }
     }
 
-    /*
-     * public void traverse() { Iterator<String> it = groupMappingTable.keySet().iterator(); while(it.hasNext()) { String
-     * key = it.next(); System.out.println(); System.out.print( key + "<<<Is Mapped to>>>"); ArrayList<String> list = new
-     * ArrayList<String>(); getMappedGroups(key, list); if (list != null) { for (String str : list) { System.out.print(str +
-     * ", "); } } System.out.println(); } }
-     */
-    /**
-     * @param args the command line arguments
-     * 
-     *        public static void main(String[] args) { // TODO code application logic here GroupMapper mapper = new
-     *        GroupMapper(); mapper.parse(mappingStr); mapper.traverse(); }
-     */
+    private void getMappedGroups(String group, String str, List<String> result) {
 
-    private void getMappedGroups(String group, String str, ArrayList<String> result) {
-
-        ArrayList<String> mappedGrps = groupMappingTable.get(str);
+        List<String> mappedGrps = groupMappingTable.get(str);
         if (mappedGrps == null || mappedGrps.isEmpty()) {
             return;
         }
@@ -140,12 +120,9 @@ public class GroupMapper {
     private void validate(String mappedGroup, String[] mappingGroups) {
         for (String str : mappingGroups) {
             int aIndex = str.indexOf("->");
-            String theGroup = null;
-            if (aIndex > 0) {
-                theGroup = str.substring(0, aIndex);
-            } else {
-                theGroup = str;
-            }
+            String theGroup = (aIndex > 0)
+                ? str.substring(0, aIndex)
+                : str;
             if (theGroup.equals(mappedGroup)) {
                 throw new RuntimeException("Illegal Mapping: Identity Mapping of group '" + theGroup + "' to '" + theGroup + "'");
             }

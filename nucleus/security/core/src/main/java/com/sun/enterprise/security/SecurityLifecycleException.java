@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 /**
@@ -46,7 +46,9 @@ package com.sun.enterprise.security;
  */
 class SecurityLifecycleException extends RuntimeException {
 
+    private static final long serialVersionUID = 2536434397751006228L;
+
     public SecurityLifecycleException(Exception ex) {
-        this.initCause(ex);
+        initCause(ex);
     }
 }

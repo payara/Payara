@@ -37,26 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import com.sun.enterprise.config.serverbeans.SecurityService;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import org.jvnet.hk2.annotations.Contract;
 
+import com.sun.enterprise.config.serverbeans.SecurityService;
+
 /**
- * Utility contact to copy the security related config files
- * from the passed non-embedded instanceDir to the embedded
- * server instance's config.
- * This is implemented by the EmbeddedSecurityUtil class
+ * Utility contact to copy the security related config files from the passed non-embedded instanceDir to the embedded
+ * server instance's config. This is implemented by the EmbeddedSecurityUtil class
  *
  * @author Nithya Subramanian
  */
@@ -64,11 +62,11 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface EmbeddedSecurity {
 
-    public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) throws IOException, XMLStreamException;
+    void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) throws IOException, XMLStreamException;
 
-    public String parseFileName(String fullFilePath);
+    String parseFileName(String fullFilePath);
 
-    public boolean isEmbedded(ServerEnvironment se);
+    boolean isEmbedded(ServerEnvironment se);
 
-    public List<String> getKeyFileNames(SecurityService securityService);
+    List<String> getKeyFileNames(SecurityService securityService);
 }

@@ -59,39 +59,39 @@ import javax.inject.Singleton;
 
 /**
  *
- * @author venu
- * TODO: need to change this class, it needs to be similar to SecurityServicesUtil
+ * @author venu TODO: need to change this class, it needs to be similar to SecurityServicesUtil
  */
 @Service
 @Singleton
 public class Util {
-    private static ServiceLocator habitat = Globals.getDefaultHabitat();
-    
-    @Inject 
+    private static ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+
+    @Inject
     private ProcessEnvironment penv;
-    
-   
-    //stuff required for AppClient
+
+    // stuff required for AppClient
     private CallbackHandler callbackHandler;
     private Object appClientMsgSecConfigs;
-    
-    //Note: Will return Non-Null only after Util has been 
-    //Injected in some Service.
+
+    // Note: Will return Non-Null only after Util has been
+    // Injected in some Service.
     public static ServiceLocator getDefaultHabitat() {
-        return habitat;
+        return serviceLocator;
     }
-    
+
     public static Util getInstance() {
         // return my singleton service
-        return habitat.getService(Util.class);
+        return serviceLocator.getService(Util.class);
     }
-    
+
     public boolean isACC() {
         return penv.getProcessType().equals(ProcessType.ACC);
     }
+
     public boolean isServer() {
         return penv.getProcessType().isServer();
     }
+
     public boolean isNotServerOrACC() {
         return penv.getProcessType().equals(ProcessType.Other);
     }
@@ -111,7 +111,7 @@ public class Util {
     public void setAppClientMsgSecConfigs(Object appClientMsgSecConfigs) {
         this.appClientMsgSecConfigs = appClientMsgSecConfigs;
     }
-    
+
     public static boolean isEmbeddedServer() {
         List<String> servers = Server.getServerNames();
         if (!servers.isEmpty()) {
@@ -119,37 +119,37 @@ public class Util {
         }
         return false;
     }
-    
+
     public static File writeConfigFileToTempDir(String fileName) throws IOException {
         File filePath = new File(fileName);
 
         if (filePath.exists()) {
-            //the string provided is a filepath, so return
+            // the string provided is a filepath, so return
             return filePath;
         }
         File localFile = null;
-        //Parent directories until the fileName exist, so create the file that has been provided
+        // Parent directories until the fileName exist, so create the file that has been provided
         if (filePath.getParentFile() != null && filePath.getParentFile().exists()) {
             localFile = filePath;
-            if(!localFile.createNewFile()) {
+            if (!localFile.createNewFile()) {
                 throw new IOException();
             }
 
         } else {
             /*
-             * File parent directory does not exist - so create parent directory as user.home/.glassfish-{embedded}/config
-             * */
+             * File parent directory does not exist - so create parent directory as
+             * user.home/.glassfish-{embedded}/config
+             */
             String userHome = System.getProperty("user.home");
 
             String embeddedServerName = getCurrentEmbeddedServerName();
-            File tempDir = new File(userHome + File.separator + ".glassfish4-"+embeddedServerName+File.separator + "config");
+            File tempDir = new File(userHome + File.separator + ".glassfish4-" + embeddedServerName + File.separator + "config");
             boolean mkDirSuccess = true;
             if (!tempDir.exists()) {
                 mkDirSuccess = tempDir.mkdirs();
             }
 
-            localFile = new File(tempDir.getAbsolutePath()+File.separator + fileName);
-
+            localFile = new File(tempDir.getAbsolutePath() + File.separator + fileName);
 
             if (mkDirSuccess && !localFile.exists()) {
                 localFile.createNewFile();
@@ -165,10 +165,10 @@ public class Util {
                 oStream.write(iStream.read());
             }
         } finally {
-	    if (oStream != null) {
+            if (oStream != null) {
                 oStream.close();
-	    }
-            if  (iStream != null) {
+            }
+            if (iStream != null) {
                 iStream.close();
             }
 
@@ -184,5 +184,5 @@ public class Util {
         return embeddedServerName;
 
     }
-    
+
 }
