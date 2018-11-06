@@ -77,8 +77,8 @@ import org.glassfish.internal.api.LogManager;
  * Apache <code>mod_log_config</code> module.  As an additional feature,
  * automatic rollover of log files at a specified interval is also supported.
  *
- * </p>This class uses a direct <code>ByteBuffer</code> to store and write 
- * logs. 
+ * </p>This class uses a direct <code>ByteBuffer</code> to store and write
+ * logs.
  *
  * @author Jean-Francois Arcand
  * @author Charlie J. Hunt
@@ -107,7 +107,7 @@ public final class PEAccessLogValve
      * be reset after each rotation.
      * If undefined, all access log history files will be preserved.
      */
-    private static final String LOGGING_MAX_HISTORY_FILES = 
+    private static final String LOGGING_MAX_HISTORY_FILES =
         "com.sun.enterprise.server.logging.max_history_files";
 
     /**
@@ -123,9 +123,9 @@ public final class PEAccessLogValve
     private static final String LOG_ROTATION_TIME_FORMAT
             = "'T'HH-mm-ss";
 
-    private static final SimpleDateFormat LOG_ROTATION_TIME_FORMATTER
+    private final SimpleDateFormat LOG_ROTATION_TIME_FORMATTER
             = new SimpleDateFormat(LOG_ROTATION_TIME_FORMAT);
-    
+
     // ----------------------------------------------------- Instance Variables
     /**
      * The directory in which log files are created.
@@ -210,7 +210,7 @@ public final class PEAccessLogValve
      * The interval between rotating the logs
      */
     private int rotationInterval;
-    
+
     /**
      * Maximum size a log file can be before rotating
      */
@@ -237,7 +237,7 @@ public final class PEAccessLogValve
     private int bufferSize = MIN_BUFFER_SIZE;
 
     /**
-     * If the writer interval is equals to zero, then always flush the 
+     * If the writer interval is equals to zero, then always flush the
      * direct byte buffer after every request.
      */
     private boolean flushRealTime = true;
@@ -586,7 +586,7 @@ public final class PEAccessLogValve
                         _logger.log(
                                 Level.SEVERE,
                                 LogFacade.ACCESS_LOG_UNABLE_TO_WRITE,
-                            new Object[] {ex});   
+                            new Object[] {ex});
                         return;
                     }
                 }
@@ -865,7 +865,7 @@ public final class PEAccessLogValve
         }
 
         // log to console
-        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());   
+        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
     }
 
     // -------------------------------------------------------- Private Methods
@@ -874,7 +874,7 @@ public final class PEAccessLogValve
      */
     private synchronized void close() {
 
-        try{            
+        try{
             // Make sure the byteBuffer is clean
             log();
             fileChannel.close();
@@ -1068,7 +1068,7 @@ public final class PEAccessLogValve
             }
         }
     }
-   
+
     /**
      * Rotates the old log file and creates a new log file.
      */
@@ -1125,7 +1125,7 @@ public final class PEAccessLogValve
             }
         }
     }
-    
+
     // ------------------------------------------------------ Lifecycle Methods
     /**
      * Add a lifecycle event listener to this component.

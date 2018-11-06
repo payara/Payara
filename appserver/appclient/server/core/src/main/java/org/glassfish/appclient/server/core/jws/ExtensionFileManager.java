@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -79,9 +79,11 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  * all extension jars referenced directly or indirectly from that jar.  
  * 
  * @author tjquinn
+ * @deprecated Since 5.184. Extension jars are not used for JDK9+
  */
 @Service
 @Singleton
+@Deprecated
 public class ExtensionFileManager implements PostConstruct {
     
     /** the property name that points to extension directories */

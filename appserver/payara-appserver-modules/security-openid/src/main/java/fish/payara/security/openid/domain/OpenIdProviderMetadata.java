@@ -39,6 +39,7 @@
  */
 package fish.payara.security.openid.domain;
 
+import static fish.payara.security.openid.api.OpenIdConstant.CLAIMS_SUPPORTED;
 import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_ENCRYPTION_ALG_VALUES_SUPPORTED;
 import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_ENCRYPTION_ENC_VALUES_SUPPORTED;
 import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED;
@@ -70,6 +71,7 @@ public class OpenIdProviderMetadata {
     private String userinfoEndpoint;
     private URL jwksURL;
     private final Set<String> scopesSupported;
+    private final Set<String> claimsSupported;
     private final Set<String> responseTypeSupported;
     private final Set<String> idTokenSigningAlgorithmsSupported;
     private final Set<String> idTokenEncryptionAlgorithmsSupported;
@@ -80,6 +82,7 @@ public class OpenIdProviderMetadata {
         this.document = document;
         this.issuerURI = document.getString(ISSUER);
         this.scopesSupported = getValues(SCOPES_SUPPORTED);
+        this.claimsSupported = getValues(CLAIMS_SUPPORTED);
         this.responseTypeSupported = getValues(RESPONSE_TYPES_SUPPORTED);
         this.idTokenSigningAlgorithmsSupported = getValues(ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED);
         this.idTokenEncryptionAlgorithmsSupported = getValues(ID_TOKEN_ENCRYPTION_ALG_VALUES_SUPPORTED);
@@ -138,6 +141,10 @@ public class OpenIdProviderMetadata {
 
     public Set<String> getScopesSupported() {
         return scopesSupported;
+    }
+
+    public Set<String> getClaimsSupported() {
+        return claimsSupported;
     }
 
     public Set<String> getResponseTypeSupported() {

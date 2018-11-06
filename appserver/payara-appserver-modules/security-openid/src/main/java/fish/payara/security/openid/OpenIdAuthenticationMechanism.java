@@ -39,13 +39,10 @@
  */
 package fish.payara.security.openid;
 
-import com.nimbusds.jwt.JWT;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
-import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
-import static fish.payara.security.openid.api.OpenIdConstant.IDENTITY_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
@@ -54,11 +51,10 @@ import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
 import fish.payara.security.openid.controller.StateController;
 import fish.payara.security.openid.controller.TokenController;
-import fish.payara.security.openid.controller.UserInfoController;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
+import fish.payara.security.openid.domain.RefreshTokenImpl;
 import java.io.StringReader;
-import java.util.Map;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.logging.Level.WARNING;
@@ -72,7 +68,6 @@ import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
@@ -137,9 +132,6 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private TokenController tokenController;
-
-    @Inject
-    private UserInfoController userInfoController;
 
     @Inject
     private StateController stateController;
@@ -239,10 +231,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         JsonObject tokensObject = Json.createReader(new StringReader(tokensBody)).readObject();
 
         if (response.getStatus() == Status.OK.getStatusCode()) {
-
             // Successful Token Response
             updateContext(tokensObject, httpContext);
-            CallerOnlyCredential credential = new CallerOnlyCredential(context.getSubject());
+            OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
@@ -255,24 +246,13 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private void updateContext(JsonObject tokensObject, HttpMessageContext httpContext) {
-        String idToken = tokensObject.getString(IDENTITY_TOKEN);
-        JWT idTokenJWT = tokenController.parseIdToken(idToken);
-
-        Map<String, Object> claims = tokenController.validateIdToken(configuration, httpContext, idTokenJWT);
-        context.setIdentityToken(idToken);
-        context.setIdentityTokenClaims(claims);
-
-        String accessToken = tokensObject.getString(ACCESS_TOKEN, null);
-        if (nonNull(accessToken)) {
-            tokenController.validateAccessToken(context, accessToken, idTokenJWT.getHeader().getAlgorithm());
-            context.setAccessToken(accessToken);
-            JsonObject userInfo = userInfoController.getUserInfo(configuration, accessToken);
-            context.setClaims(userInfo);
-        }
-
         context.setProviderMetadata(configuration.getProviderMetadata().getDocument());
         context.setTokenType(tokensObject.getString(TOKEN_TYPE, null));
-        context.setRefreshToken(tokensObject.getString(REFRESH_TOKEN, null));
+
+        String refreshToken = tokensObject.getString(REFRESH_TOKEN, null);
+        if (nonNull(refreshToken)) {
+            context.setRefreshToken(new RefreshTokenImpl(refreshToken));
+        }
         String expiresIn = tokensObject.getString(EXPIRES_IN, null);
         if (nonNull(expiresIn)) {
             context.setExpiresIn(Integer.parseInt(expiresIn));

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * FieldDesc.java
@@ -401,7 +402,7 @@ public abstract class FieldDesc implements java.io.Serializable {
                 case FieldTypeEnumeration.BIGDECIMAL:
                     if (!(value instanceof BigDecimal)) {
                         if (value instanceof Double)
-                            value = new BigDecimal(number.doubleValue());
+                            value = BigDecimal.valueOf(number.doubleValue());
                         else if (value instanceof BigInteger)
                             value = new BigDecimal((java.math.BigInteger) value);
                         else
