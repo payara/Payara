@@ -462,7 +462,7 @@ public class DeploymentImpl implements CDI11Deployment {
 
     @Override
     public Iterable<Metadata<Extension>> getExtensions() {
-        if ( extensions != null ) {
+        if (extensions != null) {
             return extensions;
         }
 
@@ -475,22 +475,22 @@ public class DeploymentImpl implements CDI11Deployment {
         // ensure we don't add the same extension twice
         HashMap<Class,Metadata<Extension>> loadedExtensions = new HashMap<>();
         
-        for ( BeanDeploymentArchive bda : bdas ) {
-            if ( ! ( bda instanceof RootBeanDeploymentArchive ) ) {
-                ClassLoader moduleClassLoader = ( ( BeanDeploymentArchiveImpl ) bda ).getModuleClassLoaderForBDA();
+        for (BeanDeploymentArchive bda : bdas) {
+            if (!(bda instanceof RootBeanDeploymentArchive)) {
+                ClassLoader moduleClassLoader = ((BeanDeploymentArchiveImpl)bda).getModuleClassLoaderForBDA();
                 if (!scannedClassLoaders.contains(moduleClassLoader)) {
                     scannedClassLoaders.add(moduleClassLoader);
-                extensions = context.getTransientAppMetaData( WeldDeployer.WELD_BOOTSTRAP,
-                                                              WeldBootstrap.class).loadExtensions( moduleClassLoader );
-                if ( extensions != null ) {
-                    for ( Metadata<Extension> bdaExtn : extensions ) {
+                    extensions = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, 
+                                                                 WeldBootstrap.class).loadExtensions(moduleClassLoader);
+                    if (extensions != null) {
+                        for (Metadata<Extension> bdaExtn : extensions) {
                             if (loadedExtensions.get(bdaExtn.getValue().getClass()) == null) {
-                        extnList.add(bdaExtn);
+                                extnList.add(bdaExtn);
                                 loadedExtensions.put(bdaExtn.getValue().getClass(), bdaExtn);
+                            }
+                        }
                     }
                 }
-            }
-        }
             }
         }
         extnList.addAll(dynamicExtensions);
