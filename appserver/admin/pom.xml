@@ -64,8 +64,6 @@
         <module>cli-optional-l10n</module>
         <module>gf_template</module>
         <module>gf_template_web</module>
-        <module>jdk11_template</module>
-        <module>jdk11_template_web</module>
         <module>production_domain_template</module>
         <module>production_domain_template_web</module>
     </modules>

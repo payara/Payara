@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi;
 
@@ -649,10 +649,12 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             return java.sql.Connection.TRANSACTION_REPEATABLE_READ;
         } else if (tranIsolation.equalsIgnoreCase("serializable")) {
             return java.sql.Connection.TRANSACTION_SERIALIZABLE;
+        } else if (tranIsolation.equalsIgnoreCase("snapshot")) {  
+            return fish.payara.sql.Connection.TRANSACTION_SNAPSHOT;
         } else {
             throw new ResourceException("Invalid transaction isolation; the transaction "
                     + "isolation level can be empty or any of the following: "
-                    + "read-uncommitted, read-committed, repeatable-read, serializable");
+                    + "read-uncommitted, read-committed, repeatable-read, serializable, custom");
         }
     }
 

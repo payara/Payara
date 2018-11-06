@@ -89,9 +89,9 @@ public class ResultDesc {
     /** Indicates whether this ResultDesc is prefetching relationship fields. */
     private boolean prefetching;
 
-    /** 
-     * Maps ForeignFieldDesc to ResultDesc. The ForeignFieldDesc correspond to 
-     * prefetched collection relationship fields. The ResultDesc is the 
+    /**
+     * Maps ForeignFieldDesc to ResultDesc. The ForeignFieldDesc correspond to
+     * prefetched collection relationship fields. The ResultDesc is the
      * associated result descriptor.
      */
     private Map prefetchedCollectionFields;
@@ -457,7 +457,7 @@ public class ResultDesc {
         String retVal = null;
         if(reader != null) {
             BufferedReader buffReader = new BufferedReader(reader);
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             try {
                 int charRead;
                 while( (charRead = buffReader.read() ) != -1) {
@@ -529,7 +529,7 @@ public class ResultDesc {
                 // each result object is guaranteed to be instance of PersistenceCapable
                 PersistenceCapable pc = (PersistenceCapable) resultItr.next();
 
-                // pc can be null if this is a projection query 
+                // pc can be null if this is a projection query
                 if (pc != null) {
                     applyDeferredUpdatesToPrefetchedCollections(pc);
                 }
@@ -692,7 +692,7 @@ public class ResultDesc {
     }
 
     /**
-     * Adds <code>value</code> to the collection for the given field <code>f</code> 
+     * Adds <code>value</code> to the collection for the given field <code>f</code>
      * and statemanager <code>sm</code>.
      * Also sets presence mask bit for the field in given <code>sm</code>, if not already set.
      * @param sm Given StateManager, is always a SQLStateManager
@@ -711,7 +711,7 @@ public class ResultDesc {
         // Set the presence mask if necessary.
         // SCOCollections might be != null and presence mask not set.
         if (!sm.getPresenceMaskBit(f.absoluteID)) {
-            sm.setPresenceMaskBit(f.absoluteID);                                    
+            sm.setPresenceMaskBit(f.absoluteID);
         }
 
         if (value != null) {

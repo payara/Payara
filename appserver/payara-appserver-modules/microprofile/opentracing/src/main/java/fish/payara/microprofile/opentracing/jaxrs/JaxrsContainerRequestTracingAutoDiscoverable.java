@@ -40,10 +40,10 @@
 package fish.payara.microprofile.opentracing.jaxrs;
 
 import javax.ws.rs.core.FeatureContext;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
-import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
  * AutoDiscoverable that adds the JaxRs ContainerFilter and ExceptionMapper classes.
@@ -54,9 +54,10 @@ public class JaxrsContainerRequestTracingAutoDiscoverable implements ForcedAutoD
 
     @Override
     public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console) - this will throw an exception 
-        DOLUtils.getCurrentBundleForContext(
-                Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext());
+        // Only register for application deployments (not the admin console)
+        if (Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext() == null) {
+            return;
+        }
         
         // Add the ContainerFilter
         if (!context.getConfiguration().isRegistered(JaxrsContainerRequestTracingDynamicFeature.class)) {

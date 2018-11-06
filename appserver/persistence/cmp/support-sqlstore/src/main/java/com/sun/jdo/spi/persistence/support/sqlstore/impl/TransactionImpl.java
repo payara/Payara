@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * TransactionImpl.java
@@ -65,7 +66,6 @@ import org.glassfish.persistence.common.I18NHelper;
 
 import com.sun.jdo.spi.persistence.support.sqlstore.connection.ConnectionImpl;
 
-import com.sun.jdo.spi.persistence.support.sqlstore.utility.*;
 import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperTransaction;
@@ -122,7 +122,7 @@ public class TransactionImpl
      * locked before other lower-level objects are locked (i.e. the
      * transaction object).  It may NOT be locked the other way round.
      */
-    static String    globalLock = "TranGlobalLock"; // NOI18N
+    private static final Object GLOBAL_LOCK = new Object(); // NOI18N
 
     /**
      * Transaction status (from javax.transaction.Status).
@@ -215,7 +215,7 @@ public class TransactionImpl
      * If true, at commit instances retain their values and the instances
      */
     private boolean retainValues = true;
-    
+
     /**
      * Flag that indicates how to handle objects after roolback.
      * If true, at rollback instances restore their values and the instances
@@ -341,7 +341,7 @@ public class TransactionImpl
     public boolean getRetainValues() {
         return retainValues;
     }
-    
+
     public void setRestoreValues(boolean flag) {
         //
         // First do a quick check to make sure the transaction is active.
@@ -373,7 +373,7 @@ public class TransactionImpl
     public boolean getRestoreValues() {
         return restoreValues;
     }
-    
+
 
     public void setNontransactionalRead (boolean flag) {
         //
@@ -722,7 +722,7 @@ public class TransactionImpl
                 }
             }
 
-            // Force to close the persistence manager. 
+            // Force to close the persistence manager.
             persistenceManager.forceClose();
 
             throw new JDOFatalInternalException(I18NHelper.getMessage(messages,
@@ -1101,7 +1101,7 @@ public class TransactionImpl
         // (i.e. beforeCompletion, xaRes.prepare) the lock is released, and
         // that other threads can access this object.  See note at top of file.
         //
-        synchronized (this.globalLock) {
+        synchronized (GLOBAL_LOCK) {
             return this.status;
         }
     }
@@ -1117,7 +1117,7 @@ public class TransactionImpl
      * @return True if transaction is completed.
      */
     boolean isTerminated() {
-        synchronized (this.globalLock) {
+        synchronized (this.GLOBAL_LOCK) {
             return ((this.status == Status.STATUS_COMMITTED)
                 ||    (this.status == Status.STATUS_ROLLEDBACK)
                 ||    (this.status == Status.STATUS_NO_TRANSACTION));
@@ -1187,9 +1187,9 @@ public class TransactionImpl
     //        created (ncg)
     //
     private void setStatus(int status) {
-        synchronized(this.globalLock) {
+        synchronized(this.GLOBAL_LOCK) {
             if (this.tracing) {
-                Object[] items= new Object[] {Thread.currentThread(),this.toString(), 
+                Object[] items= new Object[] {Thread.currentThread(),this.toString(),
                     this.statusString(this.status), this.statusString(status), persistenceManager};
                 logger.finest("sqlstore.transactionimpl.status",items); // NOI18N
             }
@@ -1222,7 +1222,7 @@ public class TransactionImpl
                 if (!_connection.isClosed()) {
                     closeConnection();
                     throw new JDOFatalInternalException(I18NHelper.getMessage(
-                        messages, 
+                        messages,
                         "transaction.transactionimpl.forget.connectionnotclosed")); // NOI18N
                 }
             } catch (Exception e) {
@@ -1276,7 +1276,7 @@ public class TransactionImpl
     private void traceCallInfo(String call, int info, String s) {
 
         //TODO : Optimize this when converting to resource budles
-        StringBuffer logMessage = new StringBuffer();
+        StringBuilder logMessage = new StringBuilder();
         logMessage.append("Thread.currentThread()").append("Tran[") // NOI18N
             .append(this.toString()).append("].").append(call) // NOI18N
             .append(": status = ").append(this.statusString(this.status)); // NOI18N
@@ -1291,7 +1291,7 @@ public class TransactionImpl
             logMessage.append(", onePhase = true"); // NOI18N
         if (s != null)
             logMessage.append(", " + s + " for " + persistenceManager); // NOI18N
-        
+
         logger.finest("sqlstore.transactionimpl.general",logMessage.toString()); // NOI18N
     }
 
@@ -1352,7 +1352,7 @@ public class TransactionImpl
         if (_connection == null) {
             // find a new connection
             if (connectionFactory == null) {
-                throw new JDOFatalInternalException(I18NHelper.getMessage(messages, 
+                throw new JDOFatalInternalException(I18NHelper.getMessage(messages,
                     "transaction.transactionimpl.getconnection.nullcf")); // NOI18N
             }
 
@@ -1362,7 +1362,7 @@ public class TransactionImpl
         _connectionReferenceCount++;
 
         if (debug) {
-            Object[] items = new Object[] {_connection, Boolean.valueOf(optimistic), 
+            Object[] items = new Object[] {_connection, Boolean.valueOf(optimistic),
                 new Integer(_connectionReferenceCount) , persistenceManager};
             logger.finest("sqlstore.transactionimpl.getconnection",items); // NOI18N
         }
@@ -1419,7 +1419,7 @@ public class TransactionImpl
 
         if (debug) {
             Object[] items = new Object[] {Boolean.valueOf(optimistic),
-                Boolean.valueOf(startedCommit), 
+                Boolean.valueOf(startedCommit),
                 new Integer(_connectionReferenceCount) , persistenceManager};
             logger.finest("sqlstore.transactionimpl.releaseconnection",items); // NOI18N
         }
