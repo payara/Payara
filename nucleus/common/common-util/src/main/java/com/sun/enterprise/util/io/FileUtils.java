@@ -38,8 +38,8 @@
  * holder.
  */
 
-/* 
- * Portions Copyright [2016] [Payara Foundation] 
+/*
+ * Portions Copyright [2016-2018] [Payara Foundation]
  */
 package com.sun.enterprise.util.io;
 
@@ -48,46 +48,21 @@ import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
-import org.jvnet.hk2.config.ConfigBean;
-
-
 
 public class FileUtils  {
-    final static Logger _utillogger = CULoggerInfo.getLogger();
+
+    private final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
 
@@ -215,13 +190,13 @@ public class FileUtils  {
 
       String canonical =null;
       String absolute=null;
-      
+
       try {
     	  canonical = safeGetCanonicalPath(f);
     	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
-    	   
+
     	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
-     
+
     	  if(canonical.equals(absolute)){
     		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
 		        return true;
@@ -441,7 +416,7 @@ public class FileUtils  {
         String name = revertFriendlyFilenameExtension(filename);
 
         //then, revert the rest of the string
-        return name.replaceAll("__", "/");
+        return name != null ? name.replaceAll("__", "/") : filename;
     }
 
     /////////////////////////////////////////////////////////
@@ -814,7 +789,7 @@ public class FileUtils  {
             _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
-        f.deleteOnExit(); // just in case
+        if (f != null) f.deleteOnExit(); // just in case
         return f;
     }
 
@@ -1009,33 +984,33 @@ public class FileUtils  {
      * @param fout the destination file
      */
     public static void copyFile(File fin, File fout) throws IOException {
-
-        InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
-        FileOutputStream fos = FileUtils.openFileOutputStream(fout);
-        copy(inStream, fos, fin.length());
+        try (InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
+             FileOutputStream fos = FileUtils.openFileOutputStream(fout)) {
+            copy(inStream, fos, fin.length());
+        }
     }
 
 
     public static void copy(InputStream in, FileOutputStream out, long size) throws IOException {
-
-        try {
-            copyWithoutClose(in, out, size);
-        } finally {
-            if (in != null)
-                in.close();
-            if (out != null)
-                out.close();
+        try (InputStream inputStream = in;
+             FileOutputStream fileOutputStream = out) {
+            copyWithoutClose(inputStream, fileOutputStream, size);
         }
     }
 
     public static void copyWithoutClose(InputStream in, FileOutputStream out, long size) throws IOException {
-
         ReadableByteChannel inChannel = Channels.newChannel(in);
         FileChannel outChannel = out.getChannel();
         outChannel.transferFrom(inChannel, 0, size);
-
     }
 
+    /**
+     * Copies from InputStream to OutputStream and does not close the streams intentionally.
+     * @param in Stream to read from.
+     * @param os Stream to write to.
+     * @param size Buffersize for copying
+     * @throws IOException Problem when copying
+     */
     public static void copy(InputStream in, OutputStream os, long size) throws IOException {
         if (os instanceof FileOutputStream) {
             copy(in, (FileOutputStream) os, size);
@@ -1043,7 +1018,6 @@ public class FileUtils  {
             ReadableByteChannel inChannel = Channels.newChannel(in);
             WritableByteChannel outChannel = Channels.newChannel(os);
             if (size==0) {
-
                 ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
                 int read;
                 do {
