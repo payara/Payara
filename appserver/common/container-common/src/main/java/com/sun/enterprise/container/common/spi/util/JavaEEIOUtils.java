@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.spi.util;
 
 import org.jvnet.hk2.annotations.Contract;
-
-import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 
 import java.io.*;
 
@@ -58,31 +56,31 @@ import java.io.*;
  *   d) (Non serializable) StatefulSessionBeans
  *
  * @author Mahesh Kannan
- * 
+ *
  */
 @Contract
 public interface JavaEEIOUtils {
-	
-    public ObjectInputStream createObjectInputStream(InputStream is, boolean resolveObject, ClassLoader loader, long uniqueId)
+
+    ObjectInputStream createObjectInputStream(InputStream is, boolean resolveObject, ClassLoader loader, long uniqueId)
 	    throws Exception;
 
-    public ObjectOutputStream createObjectOutputStream(OutputStream os, boolean replaceObject)
+    ObjectOutputStream createObjectOutputStream(OutputStream os, boolean replaceObject)
 	    throws IOException;
 
-    public byte[] serializeObject(Object obj, boolean replaceObject)
+    byte[] serializeObject(Object obj, boolean replaceObject)
 	    throws java.io.IOException;
 
-    public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader)
+    Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader)
             throws Exception;
-    public Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader, long uniqueId)
+    Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader appClassLoader, long uniqueId)
             throws Exception;
-    
-    public void addGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler);
-    
-    public void removeGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler);
-    
-    public void addGlassFishInputStreamHandler(GlassFishInputStreamHandler handler);
-    
-    public void removeGlassFishInputStreamHandler(GlassFishInputStreamHandler handler);
+
+    void addGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler);
+
+    void removeGlassFishOutputStreamHandler(GlassFishOutputStreamHandler handler);
+
+    void addGlassFishInputStreamHandler(GlassFishInputStreamHandler handler);
+
+    void removeGlassFishInputStreamHandler(GlassFishInputStreamHandler handler);
 
 }
