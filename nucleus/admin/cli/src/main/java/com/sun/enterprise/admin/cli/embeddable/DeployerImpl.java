@@ -64,8 +64,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -184,7 +187,15 @@ public class DeployerImpl implements Deployer {
         if ("file".equalsIgnoreCase(archive.getScheme())) {
             file = new File(archive);
         } else {
-            file = createFile(archive.toURL().openStream());
+            URL urlArchive = archive.toURL();
+            String auth = urlArchive.getUserInfo();
+            HttpURLConnection httpConnection = (HttpURLConnection) urlArchive.openConnection();
+                    if (auth != null) {
+                        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+                        httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
+                    }
+            
+            file = createFile(httpConnection.getInputStream());
         }
         return file;
     }
