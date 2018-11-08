@@ -56,12 +56,10 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -185,6 +183,14 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
         return scheduledThreadPoolExecutor;
+    }
+    
+    public int getExecutorThreadPoolSize() {
+        return Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize());
+    }
+    
+    public int getScheduledExecutorThreadPoolSize() {
+        return Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize());
     }
 
     

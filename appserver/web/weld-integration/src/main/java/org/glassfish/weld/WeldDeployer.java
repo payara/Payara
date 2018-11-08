@@ -145,6 +145,9 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import org.glassfish.weld.services.ExecutorServicesImpl;
+import org.jboss.weld.manager.api.ExecutorServices;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer> implements PostConstruct, EventListener {
@@ -204,6 +207,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
+    
+    @Inject
+    private PayaraExecutorService executorService;
 
     private Map<Application, WeldBootstrap> appToBootstrap = new HashMap<>();
 
@@ -298,6 +304,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
+            
+            ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
+            deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
 
             addWeldListenerToAllWars(context);
         } else {
