@@ -82,6 +82,29 @@ pipeline {
                 }
             }
         }
+        stage('Upload Releases') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Renaming Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "cp ./appserver/distributions/payara/target/payara.zip ./payara-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-ml/target/payara-ml.zip ./payara-ml-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-web/target/payara-web.zip ./payara-web-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-web-ml/target/payara-web-ml.zip ./payara-web-ml-prerelease.zip"
+                sh "cp ./appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar ./payara-micro-prerelease.jar"
+                sh "cp ./appserver/extras/embedded/all/target/payara-embedded-all.jar ./payara-embedded-all-prerelease.jar"
+                sh "cp ./appserver/extras/embedded/web/target/payara-embedded-web.jar ./payara-embedded-web-prerelease.jar"
+                
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Uploading Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                withAWS(region:'eu-west-1', credentials: 'awsPayara') {
+                    s3Upload bucket: 'payara.fish', file: 'payara-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-ml-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-web-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-web-ml-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-micro-prerelease.jar'
+                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-all-prerelease.jar'
+                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-web-prerelease.jar'
+                }
+            }
+        }
         stage('Checkout EE8 Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -261,29 +284,6 @@ pipeline {
             post {
                 unstable {
                     junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Upload Releases') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Renaming Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "cp ./appserver/distributions/payara/target/payara.zip ./payara-prerelease.zip"
-                sh "cp ./appserver/distributions/payara-ml/target/payara-ml.zip ./payara-ml-prerelease.zip"
-                sh "cp ./appserver/distributions/payara-web/target/payara-web.zip ./payara-web-prerelease.zip"
-                sh "cp ./appserver/distributions/payara-web-ml/target/payara-web-ml.zip ./payara-web-ml-prerelease.zip"
-                sh "cp ./appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar ./payara-micro-prerelease.jar"
-                sh "cp ./appserver/extras/embedded/all/target/payara-embedded-all.jar ./payara-embedded-all-prerelease.jar"
-                sh "cp ./appserver/extras/embedded/web/target/payara-embedded-web.jar ./payara-embedded-web-prerelease.jar"
-                
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Uploading Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                withAWS(region:'eu-west-1', credentials: 'awsPayara') {
-                    s3Upload bucket: 'payara.fish', file: 'payara-prerelease.zip'
-                    s3Upload bucket: 'payara.fish', file: 'payara-ml-prerelease.zip'
-                    s3Upload bucket: 'payara.fish', file: 'payara-web-prerelease.zip'
-                    s3Upload bucket: 'payara.fish', file: 'payara-web-ml-prerelease.zip'
-                    s3Upload bucket: 'payara.fish', file: 'payara-micro-prerelease.jar'
-                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-all-prerelease.jar'
-                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-web-prerelease.jar'
                 }
             }
         }
