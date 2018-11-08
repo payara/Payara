@@ -120,10 +120,7 @@ public class MetricsService implements EventListener {
         if (isMetricsEnabled()) {
             PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
             payaraExecutor.submit(() -> {
-                MBeanMetadataConfig metadataConfig = getConfig();
-
-                checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
-                initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+                bootstrap();
             });
         }
     }
@@ -185,15 +182,18 @@ public class MetricsService implements EventListener {
      * service.
      */
     public void reregisterMetadataConfig() {
-        initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
+        // Initialise the metadata lists if they haven't yet
+        if (unresolvedBaseMetadataList == null || unresolvedVendorMetadataList == null) {
+            bootstrap();
+        } else {
+            initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
+        }
     }
 
-    private MBeanMetadataConfig getConfig() {
-        
+    private MBeanMetadataConfig getConfig() {   
         InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
         MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
-        
-        
+          
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
@@ -355,4 +355,9 @@ public class MetricsService implements EventListener {
         return appName;
     }
 
+    private void bootstrap() {
+        MBeanMetadataConfig metadataConfig = getConfig();
+        checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
+        initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+    }
 }
