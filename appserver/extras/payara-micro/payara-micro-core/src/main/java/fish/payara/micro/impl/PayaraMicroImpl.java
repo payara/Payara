@@ -666,9 +666,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
-        for (String url : URLs) {
-            repositoryURLs.add(url);
-        }
+        repositoryURLs.addAll(Arrays.asList(URLs));
         return this;
     }
 
