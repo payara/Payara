@@ -36,100 +36,138 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.resource.listener;
 
-import com.sun.enterprise.resource.pool.PoolManager;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.resource.*;
+import static java.util.logging.Level.FINE;
 
-import javax.resource.spi.*;
-import java.util.*;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionEvent;
+import javax.resource.spi.ManagedConnection;
+
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.resource.ResourceHandle;
+import com.sun.enterprise.resource.pool.PoolManager;
+import com.sun.logging.LogDomains;
 
 /**
  * @author Binod P.G
  */
 public class LocalTxConnectionEventListener extends ConnectionEventListener {
 
-    private PoolManager poolMgr;
+    private static final Logger LOGGER = LogDomains.getLogger(LocalTxConnectionEventListener.class,
+            LogDomains.RSR_LOGGER);
+
+    private final PoolManager poolMgr;
 
     // connectionHandle -> ResourceHandle
     // Whenever a connection is associated with a ManagedConnection,
     // that connection and the resourcehandle associated with its
     // original ManagedConnection will be put in this table.
-    private IdentityHashMap associatedHandles;
+    private final Map<Object, ResourceHandle> associatedHandles;
 
-    private ResourceHandle resource;
-        
+    private final ResourceHandle resource;
+
     public LocalTxConnectionEventListener(ResourceHandle resource) {
         this.resource = resource;
-        this.associatedHandles = new IdentityHashMap(10);
+        this.associatedHandles = new IdentityHashMap<>(10);
         this.poolMgr = ConnectorRuntime.getRuntime().getPoolManager();
     }
 
+    @Override
     public void connectionClosed(ConnectionEvent evt) {
-        Object connectionHandle = evt.getConnectionHandle();
-        ResourceHandle handle = resource;
-        if (associatedHandles.containsKey(connectionHandle)) {
-            handle = (ResourceHandle) associatedHandles.get(connectionHandle);
+        // Get the resource handle from the event
+        final Object connectionHandle = evt.getConnectionHandle();
+
+        synchronized (this) {
+            ResourceHandle handle = getResourceHandle(connectionHandle);
+
+            if (handle != null) {
+                // close the resource
+                poolMgr.resourceClosed(handle);
+            }
         }
-        poolMgr.resourceClosed(handle); 
     }
-        
-    public void connectionErrorOccurred(ConnectionEvent evt) {
+
+    @Override
+    public synchronized void connectionErrorOccurred(ConnectionEvent evt) {
         resource.setConnectionErrorOccurred();
         ManagedConnection mc = (ManagedConnection) evt.getSource();
         mc.removeConnectionEventListener(this);
-	    poolMgr.resourceErrorOccurred( resource );
-/*
-        try {
-            mc.destroy();
-        } catch (Exception ex) {
-            // ignore exception
-        }
-*/
+        poolMgr.resourceErrorOccurred(resource);
     }
 
     /**
      * Resource adapters will signal that the connection being closed is bad.
+     * 
      * @param evt ConnectionEvent
      */
-    public void badConnectionClosed(ConnectionEvent evt){
+    @Override
+    public void badConnectionClosed(ConnectionEvent evt) {
         Object connectionHandle = evt.getConnectionHandle();
-        ResourceHandle handle = resource;
-        if (associatedHandles.containsKey(connectionHandle)) {
-            handle = (ResourceHandle) associatedHandles.get(connectionHandle);
+
+        synchronized (this) {
+            ResourceHandle handle = getResourceHandle(connectionHandle);
+
+            if (handle != null) {
+                poolMgr.badResourceClosed(handle);
+
+                ManagedConnection mc = (ManagedConnection) evt.getSource();
+                mc.removeConnectionEventListener(this);
+            }
         }
-        ManagedConnection mc = (ManagedConnection) evt.getSource();
-        mc.removeConnectionEventListener(this);
-
-        poolMgr.badResourceClosed(handle); 
     }
 
+    @Override
     public void localTransactionStarted(ConnectionEvent evt) {
-            // no-op
+        // no-op
     }
 
+    @Override
     public void localTransactionCommitted(ConnectionEvent evt) {
-         // no-op
+        // no-op
     }
 
+    @Override
     public void localTransactionRolledback(ConnectionEvent evt) {
         // no-op
     }
 
-    public void associateHandle(Object c, ResourceHandle h) {
+    public synchronized void associateHandle(Object c, ResourceHandle h) {
         associatedHandles.put(c, h);
     }
 
-    public ResourceHandle  removeAssociation(Object c) {
-        return (ResourceHandle) associatedHandles.remove(c);
+    public synchronized ResourceHandle removeAssociation(Object c) {
+        return associatedHandles.remove(c);
     }
 
-    public Map getAssociatedHandles(){
-        return associatedHandles;
+    public synchronized void resetAssociations() throws ResourceException {
+        for (Entry<Object, ResourceHandle> userHandleEntry : associatedHandles.entrySet()) {
+            Object connectionHandle = userHandleEntry.getKey();
+            ResourceHandle associatedHandle = userHandleEntry.getValue();
+            ManagedConnection associatedConnection = (ManagedConnection) associatedHandle.getResource();
+            associatedConnection.associateConnection(connectionHandle);
+            LOGGER.log(FINE, "connection_sharing_reset_association", connectionHandle);
+        }
+        // all associated handles are mapped back to their actual Managed Connection.
+        // Clear the associations.
+        associatedHandles.clear();
     }
-        
+
+    private ResourceHandle getResourceHandle(Object connectionHandle) {
+        ResourceHandle handle = associatedHandles.get(connectionHandle);
+        if (handle != null) {
+            return handle;
+        }
+        return resource;
+    }
+
 }
-
