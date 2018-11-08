@@ -306,7 +306,9 @@ public final class HttpConnectorAddress {
     }
 
     private char[] getPassword() {
-        return authInfo != null ? authInfo.getPassword().toCharArray() : "".toCharArray();
+        String password = authInfo != null ? authInfo.getPassword() : "";
+        
+        return password != null ? password.toCharArray() : null;
     }
 
     private URLConnection openConnection(URL url) throws IOException    {
@@ -344,15 +346,16 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null;
-        String user = this.getUser();
-        String pass = this.getPassword() != null ? new String(this.getPassword()) : null;
-        String up = (user == null) ? "" : user;
-        String pp = (pass == null) ? "" : pass;
-        cs = up + ":" + pp;
-        String enc = this.getBase64Encoded(cs);
-        enc = enc.replaceAll(System.getProperty("line.separator"), "");
-        return ( AUTHORIZATION_TYPE + enc );
+        String user = getUser();
+        char[] password = getPassword();
+        
+        return 
+            AUTHORIZATION_TYPE + 
+            getBase64Encoded(
+                (user == null ? "" : user) + 
+                ":" + 
+                (password == null ? "" : new String(password)))
+                .replaceAll(System.getProperty("line.separator"), "");
     }
   
     private String getBase64Encoded(String clearString) {

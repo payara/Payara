@@ -46,22 +46,11 @@
 
 package org.glassfish.webservices.monitoring;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.tools.ws.spi.WSToolsObjectFactory;
+import com.sun.xml.bind.api.JAXBRIContext;
+import org.glassfish.webservices.LogUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -75,13 +64,18 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
-
-import org.glassfish.webservices.LogUtils;
-
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.tools.ws.spi.WSToolsObjectFactory;
-import com.sun.xml.bind.api.JAXBRIContext;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This servlet is responsible for testing web-services.
@@ -581,7 +575,7 @@ public class WebServiceTesterServlet extends HttpServlet {
         }
         if (svcClass != null) {
             svcClass = svcClass.substring(0, svcClass.indexOf(".class"));
-            return svcClass.replaceAll(File.separator, ".");
+            return svcClass.replace(File.separator, ".");
         } else {
             return null;
         }

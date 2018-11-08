@@ -177,23 +177,30 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             if (requestTracing != null) {
                 try {
                     // Try to get the propagated trace ID if there is one
-                    UUID propagatedTraceId = UUID.fromString(request.getHeader(PropagationHeaders.PROPAGATED_TRACE_ID));
+                    String propagatedTraceIdHeader = request.getHeader(PropagationHeaders.PROPAGATED_TRACE_ID);
                     
-                    try {
-                        // Try to get the propagated parent ID if there is one
-                        UUID propagatedParentId = 
-                                UUID.fromString(request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
-                        // Try to get the relationship type if present
-                        RequestTraceSpan.SpanContextRelationshipType propagatedSpanContextRelationshipType = RequestTraceSpan
-                                .SpanContextRelationshipType.valueOf(request.getHeader(
-                                        PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE));
-                        requestTracing.startTrace(propagatedTraceId, propagatedParentId, 
-                                propagatedSpanContextRelationshipType, "processContainerRequest");
-                    } catch (NullPointerException | IllegalArgumentException ex) {
-                        LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.invalidPropagatedParentId, ex, 
-                                request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
-                        // Just try to start a normal trace
+                    if (propagatedTraceIdHeader == null) {
+                        // No header with ID provided: just try to start a normal trace
                         requestTracing.startTrace("processContainerRequest");
+                    } else {
+                        UUID propagatedTraceId = UUID.fromString(propagatedTraceIdHeader);
+                        
+                        try {
+                            // Try to get the propagated parent ID if there is one
+                            UUID propagatedParentId = 
+                                    UUID.fromString(request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
+                            // Try to get the relationship type if present
+                            RequestTraceSpan.SpanContextRelationshipType propagatedSpanContextRelationshipType = RequestTraceSpan
+                                    .SpanContextRelationshipType.valueOf(request.getHeader(
+                                            PropagationHeaders.PROPAGATED_RELATIONSHIP_TYPE));
+                            requestTracing.startTrace(propagatedTraceId, propagatedParentId, 
+                                    propagatedSpanContextRelationshipType, "processContainerRequest");
+                        } catch (NullPointerException | IllegalArgumentException ex) {
+                            LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.invalidPropagatedParentId, ex, 
+                                    request.getHeader(PropagationHeaders.PROPAGATED_PARENT_ID));
+                            // Just try to start a normal trace
+                            requestTracing.startTrace("processContainerRequest");
+                        }
                     }
                 } catch (IllegalArgumentException ex) {
                     if (LOGGER.isLoggable(Level.WARNING)) {
@@ -201,9 +208,6 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                                 request.getHeader(PropagationHeaders.PROPAGATED_TRACE_ID));
                     }
                     // Just try to start a normal trace
-                    requestTracing.startTrace("processContainerRequest");
-                } catch (NullPointerException ex) {
-                    // If we get a Null Pointer, just try to start a normal trace, as there isn't a propagated trace ID
                     requestTracing.startTrace("processContainerRequest");
                 }
             }

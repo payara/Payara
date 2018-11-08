@@ -190,7 +190,8 @@
 
         <jsf-ext.version>0.2</jsf-ext.version>
         <jsftemplating.version>2.1.2</jsftemplating.version>
-        <woodstock.version>4.0.2.10.payara-p13</woodstock.version>
+        <woodstock.version>4.0.2.10.payara-p15</woodstock.version>
+
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
 

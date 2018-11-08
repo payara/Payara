@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -61,14 +61,12 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.InjectionTarget;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,7 +82,7 @@ import static org.glassfish.weld.connector.WeldUtils.*;
  */
 public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
-    private Logger logger = Logger.getLogger(BeanDeploymentArchiveImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(BeanDeploymentArchiveImpl.class.getName());
 
     private ReadableArchive archive;
     private String id;
@@ -318,6 +316,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public String getFriendlyId() {
         return this.friendlyId;
     }
+
+    @Override
+    public Collection<String> getKnownClasses() {
+        return moduleClassNames;
+    }
+
+    @Override
+    public Collection<Class<?>> getLoadedBeanClasses() {
+        return beanClasses;
+    }
+    
+    
 
     //A graphical representation of the BDA hierarchy to aid in debugging
     //and to provide a better representation of how Weld treats the deployed

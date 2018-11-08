@@ -451,6 +451,14 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- Micro Service -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-micro</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <profiles>

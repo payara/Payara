@@ -183,6 +183,66 @@
             <artifactId>gf-admingui-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>cdieventbus-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>datadog-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>email-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>eventbus-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>healthcheck-service-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>hipchat-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>jmx-monitoring-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>microprofile-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>newrelic-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>slack-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>snmp-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.admingui</groupId>
+            <artifactId>xmpp-notifier-console-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

@@ -73,7 +73,6 @@ import java.io.*;
 import java.net.Socket;
 import java.text.MessageFormat;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Startup/Shutdown shell program for Catalina.  The following command line
@@ -96,7 +95,7 @@ import java.util.logging.Logger;
 
 public class Catalina extends Embedded {
 
-    private static final ClassLoader standardServerClassLoader =
+    private static final ClassLoader STANDARD_SERVER_CLASS_LOADER =
         StandardServer.class.getClassLoader();
 
 
@@ -284,7 +283,7 @@ public class Catalina extends Embedded {
         if (debug>0)
             digester.setDebug(debug);
         digester.setValidating(false);
-        digester.setClassLoader(standardServerClassLoader);
+        digester.setClassLoader(STANDARD_SERVER_CLASS_LOADER);
 
         // Configure the actions we will be using
         digester.addObjectCreate("Server",
@@ -329,7 +328,7 @@ public class Catalina extends Embedded {
         digester.addObjectCreate("Server/Service/Connector",
                                  "org.apache.catalina.connector.CoyoteConnector",
                                  "className");
-        digester.addRule("Server/Service/Connector", 
+        digester.addRule("Server/Service/Connector",
                          new SetAllPropertiesRule());
         digester.addSetNext("Server/Service/Connector",
                             "addConnector",
@@ -498,9 +497,8 @@ public class Catalina extends Embedded {
         Exception ex = null;
         InputSource inputSource = null;
         InputStream inputStream = null;
-        File file = null;
+        File file = configFile();
         try {
-            file = configFile();
             inputStream = new FileInputStream(file);
             inputSource = new InputSource("file://" + file.getAbsolutePath());
         } catch (Exception e) {
@@ -572,7 +570,7 @@ public class Catalina extends Embedded {
     }
 
 
-    /* 
+    /*
      * Load using arguments
      */
     public void load(String args[]) {
@@ -643,7 +641,7 @@ public class Catalina extends Embedded {
     public void stop() {
 
         try {
-            // Remove the ShutdownHook first so that server.stop() 
+            // Remove the ShutdownHook first so that server.stop()
             // doesn't get invoked twice
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
         } catch (Throwable t) {
@@ -699,7 +697,7 @@ public class Catalina extends Embedded {
             if (server != null) {
                 Catalina.this.stop();
             }
-            
+
         }
 
     }

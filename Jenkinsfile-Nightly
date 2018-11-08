@@ -1,0 +1,291 @@
+#!groovy
+def pom
+def DOMAIN_NAME='test-domain'
+def ASADMIN
+def payaraBuildNumber
+pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
+    agent any
+    environment {
+        MP_METRICS_TAGS='tier=integration'
+    }
+    tools {
+        jdk "zulu-8"
+    }
+    stages {
+        stage('Report') {
+            steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "${currentBuild.number}"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                    echo "Domain name is ${DOMAIN_NAME}"
+                }
+            }
+        }
+        stage('Clean') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Wiping Maven Repo  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "rm -rf ~/.m2/repository/*"
+                
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "rm -rf /tmp/arquillian*; rm -rf /tmp/javaee*; rm -rf /tmp/fileinstall*; rm -rf /tmp/surefire*; rm -rf /tmp/payara*; rm -rf /tmp/cargo*"
+            }
+        }
+        stage('Build') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                
+                // Build Embedded - don't build the Arquillian Containers
+                sh """mvn -B -V -ff -e clean install -f appserver/extras/embedded/pom.xml \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for Quicklook Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script{
+                    ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+                }
+                sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+                sh "${ASADMIN} start-database --dbtype derby || true"
+            }
+        }
+        stage('Run Quicklook Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean test \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all \
+                -f appserver/tests/quicklook/pom.xml"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    echo 'tidying up after tests:'
+                    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+                    sh "${ASADMIN} stop-database --dbtype derby || true"
+                    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Upload Releases') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Renaming Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "cp ./appserver/distributions/payara/target/payara.zip ./payara-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-ml/target/payara-ml.zip ./payara-ml-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-web/target/payara-web.zip ./payara-web-prerelease.zip"
+                sh "cp ./appserver/distributions/payara-web-ml/target/payara-web-ml.zip ./payara-web-ml-prerelease.zip"
+                sh "cp ./appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar ./payara-micro-prerelease.jar"
+                sh "cp ./appserver/extras/embedded/all/target/payara-embedded-all.jar ./payara-embedded-all-prerelease.jar"
+                sh "cp ./appserver/extras/embedded/web/target/payara-embedded-web.jar ./payara-embedded-web-prerelease.jar"
+                
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Uploading Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                withAWS(region:'eu-west-1', credentials: 'awsPayara') {
+                    s3Upload bucket: 'payara.fish', file: 'payara-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-ml-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-web-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-web-ml-prerelease.zip'
+                    s3Upload bucket: 'payara.fish', file: 'payara-micro-prerelease.jar'
+                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-all-prerelease.jar'
+                    s3Upload bucket: 'payara.fish', file: 'payara-embedded-web-prerelease.jar'
+                }
+            }
+        }
+        stage('Checkout EE8 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run EE8 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Ppayara-server-managed"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+	stage('Checkout CargoTracker Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargotracker.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run CargoTracker Tests Embedded') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Ppayara-server-embedded,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout EE7 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run EE7 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                 -Ppayara-server-managed,stable,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout MicroProfile TCK Runners') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run MicroProfile Config TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Config/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Fault Tolerance TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Fault-Tolerance/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Health TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/payara-health-arquillian-extension/pom.xml -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile JWT-Auth TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/payara-jwt-auth-arquillian-extension/pom.xml -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml -Ppayara-micro-managed,full,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Metrics TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Metrics/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile OpenAPI TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenAPI/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile OpenTracing TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-OpenTracing/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Run MicroProfile Rest Client TCK') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -f MicroProfile-Rest-Client/tck-runner/pom.xml -Ppayara-micro-managed,payara5 -Dpayara.version=${pom.version}"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+    }
+}
