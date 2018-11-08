@@ -274,10 +274,10 @@ public class ConnectorXAResource implements XAResource {
     private void resetAssociation() throws XAException{
         try {
             ResourceHandle handle = getResourceHandleForFinalize();
-            LocalTxConnectionEventListener l = (LocalTxConnectionEventListener) handle.getListener();
+            LocalTxConnectionEventListener connectionEventListener = (LocalTxConnectionEventListener) handle.getListener();
 
             // Reset all connection associations
-            l.resetAssociations();
+            connectionEventListener.resetAssociations();
 
         } catch (Exception ex) {
             handleResourceException(ex);
