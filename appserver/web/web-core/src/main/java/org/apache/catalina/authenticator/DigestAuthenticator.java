@@ -159,7 +159,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
      */
     protected boolean validateUri = true;
 
-    
+
     // --------------------------------------------------------- Public Methods
 
     /**
@@ -184,24 +184,24 @@ public class DigestAuthenticator extends AuthenticatorBase {
         // Validate any credentials already included with this request
         HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
         HttpServletResponse httpServletResponse = (HttpServletResponse) response.getResponse();
-        
+
         String authorization = request.getAuthorization();
         DigestInfo digestInfo = new DigestInfo(getOpaque(), getNonceValidity(), getKey(), isValidateUri());
 
         if (authorization != null) {
             boolean validRequest = digestInfo.validate(httpServletRequest, authorization, config);
             if (validRequest) {
-                
+
                 principal = context.getRealm().authenticate(httpServletRequest);
-                
+
                 if (principal != null) {
                     register(request, response, principal, DIGEST_METHOD, parseUsername(authorization), null);
-                    
+
                     String ssoId = (String) request.getNote(REQ_SSOID_NOTE);
                     if (ssoId != null) {
                         getSession(request, true);
                     }
-                    
+
                     return true;
                 }
             }
@@ -213,17 +213,17 @@ public class DigestAuthenticator extends AuthenticatorBase {
         // to be unique).
         setAuthenticateHeader(httpServletRequest, httpServletResponse, config, generateNonce(httpServletRequest), digestInfo.isNonceStale());
         httpServletResponse.sendError(SC_UNAUTHORIZED);
-        
+
         return false;
     }
-    
-    
+
+
  // ------------------------------------------------------------- Properties
 
     /**
      * Return the message digest algorithm for this Manager.
      */
-    public static String getAlgorithm() {
+    public static synchronized String getAlgorithm() {
         return algorithm;
     }
 
@@ -286,7 +286,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
         this.validateUri = validateUri;
     }
 
-    
+
 
     // ------------------------------------------------------ Protected Methods
 
@@ -300,26 +300,26 @@ public class DigestAuthenticator extends AuthenticatorBase {
         if (authorization == null) {
             return null;
         }
-        
+
         if (!authorization.startsWith("Digest ")) {
             return null;
         }
-        
+
         authorization = authorization.substring(7).trim();
 
         StringTokenizer commaTokenizer = new StringTokenizer(authorization, ",");
 
         while (commaTokenizer.hasMoreTokens()) {
             String currentToken = commaTokenizer.nextToken();
-            
+
             int equalSign = currentToken.indexOf('=');
             if (equalSign < 0) {
                 return null;
             }
-            
+
             String currentTokenName = currentToken.substring(0, equalSign).trim();
             String currentTokenValue = currentToken.substring(equalSign + 1).trim();
-            
+
             if ("username".equals(currentTokenName)) {
                 return removeQuotes(currentTokenValue);
             }
@@ -341,11 +341,11 @@ public class DigestAuthenticator extends AuthenticatorBase {
         if (quotedString.length() > 0 && quotedString.charAt(0) != '"' && !quotesRequired) {
             return quotedString;
         }
-        
+
         if (quotedString.length() > 2) {
             return quotedString.substring(1, quotedString.length() - 1);
         }
-        
+
         return EMPTY_STRING;
     }
 
@@ -377,7 +377,7 @@ public class DigestAuthenticator extends AuthenticatorBase {
      * Generates the WWW-Authenticate header.
      * <p>
      * The header MUST follow this template :
-     * 
+     *
      * <pre>
      *      WWW-Authenticate    = "WWW-Authenticate" ":" "Digest"
      *                            digest-challenge
@@ -492,11 +492,11 @@ public class DigestAuthenticator extends AuthenticatorBase {
             if (authorization == null) {
                 return false;
             }
-            
+
             if (!authorization.startsWith("Digest ")) {
                 return false;
             }
-            
+
             authorization = authorization.substring(7).trim();
 
             // Bugzilla 37132: http://issues.apache.org/bugzilla/show_bug.cgi?id=37132

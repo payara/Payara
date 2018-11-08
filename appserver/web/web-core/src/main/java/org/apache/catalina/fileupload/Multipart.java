@@ -51,6 +51,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,7 +140,7 @@ public class Multipart {
         if (parts != null) {
             return;
         }
-        parts = new ArrayList<Part>();
+        parts = new ArrayList<>();
         try {
             RequestItemIterator iter = new RequestItemIterator(this, request);
             while (iter.hasNext()) {
@@ -151,15 +152,16 @@ public class Multipart {
                                          requestItem.isFormField(),
                                          requestItem.getSubmittedFileName(),
                                          request.getCharacterEncoding());
-                Streams.copy(requestItem.openStream(),
-                             partItem.getOutputStream(), true);
-                String fileName = partItem.getSubmittedFileName();
-                if (fileName == null || fileName.length() == 0) {
-                    // Add part name and value as a parameter
-                    request.addParameter(partItem.getName(),
-                                         new String[] {partItem.getString()});
+                try (InputStream itemInputStream = requestItem.openStream()) {
+                    Streams.copy(itemInputStream, partItem.getOutputStream(), true);
+                    String fileName = partItem.getSubmittedFileName();
+                    if (fileName == null || fileName.length() == 0) {
+                        // Add part name and value as a parameter
+                        request.addParameter(partItem.getName(),
+                                             new String[] {partItem.getString()});
+                    }
+                    parts.add(partItem);
                 }
-                parts.add((Part)partItem);
             }
         } catch (SizeException ex) {
             throw new IllegalStateException(ex);
@@ -193,7 +195,7 @@ public class Multipart {
             if (name.equals(fieldName)) {
                 return part;
             }
-        } 
+        }
         return null;
     }
 

@@ -64,6 +64,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -77,6 +79,7 @@ import java.util.Hashtable;
 public final class PasswdUserDatabase
     implements UserDatabase {
 
+    private static final Logger LOGGER = Logger.getLogger(PasswdUserDatabase.class.getName());
 
     // --------------------------------------------------------- Constructors
 
@@ -171,10 +174,7 @@ public final class PasswdUserDatabase
      */
     private void init() {
 
-        BufferedReader reader = null;
-        try {
-
-            reader = new BufferedReader(new FileReader(PASSWORD_FILE));
+        try (BufferedReader reader = new BufferedReader(new FileReader(PASSWORD_FILE))) {
 
             while (true) {
 
@@ -196,7 +196,7 @@ public final class PasswdUserDatabase
                 for (int i = 0; i < tokens.length; i++)
                     tokens[i] = null;
                 while (n < tokens.length) {
-                    String token = null;
+                    String token;
                     int colon = line.indexOf(':');
                     if (colon >= 0) {
                         token = line.substring(0, colon);
@@ -214,18 +214,8 @@ public final class PasswdUserDatabase
 
             }
 
-            reader.close();
-            reader = null;
-
         } catch (Exception e) {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException f) {
-                    ;
-                }
-                reader = null;
-            }
+            LOGGER.log(Level.WARNING, "Initialization of set of users and home directories failed.", e);
         }
 
     }
