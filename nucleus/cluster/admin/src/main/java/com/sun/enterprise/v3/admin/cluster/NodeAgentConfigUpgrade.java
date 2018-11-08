@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -53,8 +54,6 @@ import com.sun.enterprise.config.serverbeans.NodeAgent;
 import com.sun.enterprise.config.serverbeans.NodeAgents;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import javax.inject.Inject;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -65,7 +64,6 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
 
@@ -83,6 +81,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
     @Inject
     Servers servers;
 
+    @Override
     public void postConstruct() {
 
         final NodeAgents nodeAgents = domain.getNodeAgents();
@@ -92,12 +91,13 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
         }
 
         final List<NodeAgent> agList= nodeAgents.getNodeAgent();
-        if (agList.size() == 0) {
+        if (agList.isEmpty()) {
             createDefaultNodeList();
             return;
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                @Override
                 public Object run(Domain d) throws PropertyVetoException, TransactionFailure {
 
                     Nodes nodes=d.createChild(Nodes.class);
@@ -131,7 +131,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
                     d.setNodes(nodes);
 
                     List<Server> serverList=servers.getServer();
-                    if (serverList.size() <= 0)
+                    if (serverList.isEmpty())
                         return null;
 
                     for (Server s: serverList){
@@ -139,8 +139,7 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
                         s.setNodeRef(s.getNodeAgentRef());
                         s.setNodeAgentRef(null);
                     }
-                    //remove the node-agent element
-//                    d.getNodeAgents().getNodeAgent().clear();
+                    //remove the node-agent element by setting to null
                     d.setNodeAgents(null);
                     return null;
                 }
@@ -158,10 +157,10 @@ public class NodeAgentConfigUpgrade implements ConfigurationUpgrade, PostConstru
      * If the domain.xml has no node agents, then create the default node list
      * with the localhost node.
      */
-
     private void createDefaultNodeList() {
         try {
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                @Override
                 public Object run(Domain d) throws PropertyVetoException, TransactionFailure {
 
                     Nodes nodes=d.createChild(Nodes.class);

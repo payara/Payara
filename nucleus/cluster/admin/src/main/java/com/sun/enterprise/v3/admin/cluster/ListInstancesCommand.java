@@ -162,7 +162,7 @@ public class ListInstancesCommand implements AdminCommand {
     }
 
     private void noStatus(List<Server> serverList) {
-        if (serverList.size() < 1) {
+        if (serverList.isEmpty()) {
             report.setMessage(NONE);
             return;
         }
@@ -242,7 +242,7 @@ public class ListInstancesCommand implements AdminCommand {
                 infos.add(ii);
             }
         }
-        if (infos.size() < 1) {
+        if (infos.isEmpty()) {
             report.setMessage(NONE);
             return;
         }
@@ -260,7 +260,6 @@ public class ListInstancesCommand implements AdminCommand {
             List<String> failedCmds = stateService.getFailedCommands(name);
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
                 if (ii.isRunning()) {
-                    //value += (";" + InstanceState.StateType.RESTART_REQUIRED.getDescription());
                     value = InstanceState.StateType.RESTART_REQUIRED.getDescription();
                 }
             }
