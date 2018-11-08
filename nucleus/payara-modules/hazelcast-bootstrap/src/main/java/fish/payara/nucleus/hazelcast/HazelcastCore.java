@@ -42,6 +42,7 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
+import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
@@ -54,6 +55,8 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategyFactory;
+import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -66,7 +69,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -436,7 +441,19 @@ public class HazelcastCore implements EventListener, ConfigListener {
             mcConfig.setEnabled(true);                       
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
-        } else {   
+        } else if (discoveryMode.startsWith("kubernetes")) {
+            config.setProperty("hazelcast.discovery.enabled", "true");
+
+            Map<String, Comparable> kubernetesConfigMap = new HashMap<>();
+            kubernetesConfigMap.put(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace());
+            kubernetesConfigMap.put(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName());
+            kubernetesConfigMap.put(KubernetesProperties.SERVICE_LABEL_NAME.key(), configuration.getKubernetesServiceLabelName());
+            kubernetesConfigMap.put(KubernetesProperties.SERVICE_LABEL_VALUE.key(), configuration.getKubernetesServiceLabelValue());
+
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().addDiscoveryStrategyConfig(
+                    new DiscoveryStrategyConfig(new HazelcastKubernetesDiscoveryStrategyFactory(), kubernetesConfigMap));
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+        } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            

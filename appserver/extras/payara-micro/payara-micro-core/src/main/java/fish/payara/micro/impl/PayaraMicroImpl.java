@@ -1883,11 +1883,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.das-port=" + hostPort[2]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=domain"));
                     }
+                } else if (clustermode.startsWith("kubernetes")) {
+                    String[] kubernetesInfo = clustermode.substring(11).split(",");
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=kubernetes"));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-namespace=" + kubernetesInfo[0]));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-name=" + kubernetesInfo[1]));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-label-name=" + kubernetesInfo[2]));
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-label-value=" + kubernetesInfo[3]));
                 } else if (clustermode.startsWith("dns:")) {
                     String dnsmembers = clustermode.substring(4);
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.dns-members=" + dnsmembers));
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=dns"));
-                    
                 }
             } else {
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));

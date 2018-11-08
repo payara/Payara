@@ -93,6 +93,7 @@ public interface HazelcastRuntimeConfiguration
     // multicast
     // tcpip
     // dns
+    // kubernetes
     @Attribute(defaultValue = "domain")
     String getDiscoveryMode();
     public void setDiscoveryMode(String value);
@@ -121,5 +122,21 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "")
     String getLicenseKey();
     public void setLicenseKey(String value);
+
+    @Attribute(defaultValue = "default")
+    String getKubernetesNamespace();
+    public void setKubernetesNamespace(String value);
+
+    @Attribute(defaultValue = "")
+    String getKubernetesServiceName();
+    public void setKubernetesServiceName(String value);
+
+    @Attribute(defaultValue = "name")
+    String getKubernetesServiceLabelName();
+    public void setKubernetesServiceLabelName(String value);
+
+    @Attribute(defaultValue = "payara")
+    String getKubernetesServiceLabelValue();
+    public void setKubernetesServiceLabelValue(String value);
 
 }
