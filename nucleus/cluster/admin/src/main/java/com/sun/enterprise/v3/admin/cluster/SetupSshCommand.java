@@ -37,6 +37,8 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.universal.glassfish.TokenResolver;
@@ -159,19 +161,15 @@ public class SetupSshCommand implements AdminCommand {
         
         for (String node : hosts) {
             sshL.init(user, node, port, realPass, sshkeyfile, sshkeypassphrase, logger);
-            if (generatekey ) {
-                if (sshkeyfile != null || SSHUtil.getExistingKeyFile() != null) {
-                    if (sshL.checkConnection()) {
+            if (generatekey && (sshkeyfile != null || SSHUtil.getExistingKeyFile() != null) && sshL.checkConnection()) {
                         logger.info(Strings.get("setup.ssh.already.configured", user, node));
                         continue;
-                    }
-                }
             }
             try {
                 sshL.setupKey(node, sshpublickeyfile, generatekey, realPass);
             }
             catch (IOException ce) {
-                logger.log(Level.INFO, "SSH key setup failed: " + ce);
+                logger.log(Level.INFO, "SSH key setup failed: {0}", ce);
                 report.setMessage(Strings.get("setup.ssh.failed", ce.getMessage()));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;

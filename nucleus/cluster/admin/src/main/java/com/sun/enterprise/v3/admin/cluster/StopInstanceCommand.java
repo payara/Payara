@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -61,14 +62,12 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.internal.api.ServerContext;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import org.glassfish.api.admin.*;
@@ -135,6 +134,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     SFTPClient ftpClient=null;
     private WindowsRemoteFile wrf;
 
+    @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();
@@ -310,8 +310,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                 instanceName, nodeName, humanCommand);
 
         if (logger.isLoggable(Level.FINE))
-            logger.fine("stop-instance: running " + humanCommand +
-                        " on " + nodeName);
+            logger.log(Level.FINE, "stop-instance: running {0} on {1}", new Object[]{humanCommand, nodeName});
 
         nodeUtils.runAdminCommandOnNode(node, command, context,
                                         firstErrorMessage, humanCommand, null);
