@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 /*
  * To change this template, choose Tools | Templates
@@ -99,12 +100,12 @@ public final class PathnameParser
         {
             return mName;
         }
-        
+
         public boolean isWildType()
         {
             return mType.indexOf(MATCH_ZERO_OR_MORE) >= 0;
         }
-        
+
         public boolean isWildName()
         {
             return mName != null && mName.indexOf(MATCH_ZERO_OR_MORE) >= 0;
@@ -165,12 +166,12 @@ public final class PathnameParser
     {
         return mIsFullPath;
     }
-    
+
     public boolean isRoot()
     {
         return mParts.isEmpty();
     }
-    
+
     /** return true if any part of the path includes a wildcard */
     public boolean isWild()
     {
@@ -206,7 +207,7 @@ public final class PathnameParser
             return null;
         }
 
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < mParts.size() - 1; ++i)
         {
             final PathPart part = mParts.get(i);

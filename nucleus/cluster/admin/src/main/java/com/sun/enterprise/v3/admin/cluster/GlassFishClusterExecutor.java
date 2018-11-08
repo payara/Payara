@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -52,7 +53,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import org.glassfish.config.support.CommandTarget;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
@@ -65,7 +65,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Vijay Ramachandran
  */
 @Service(name="GlassFishClusterExecutor")
-public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct {
+public class GlassFishClusterExecutor implements ClusterExecutor {
 
     @Inject
     private Domain domain;
@@ -82,12 +82,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
     @Inject
     private ServiceLocator habitat;
 
-    private static final LocalStringManagerImpl strings =
-                        new LocalStringManagerImpl(GlassFishClusterExecutor.class);
-
-    @Override
-    public void postConstruct() {
-    }
+    private static final LocalStringManagerImpl STRINGS = new LocalStringManagerImpl(GlassFishClusterExecutor.class);
 
     /**
      * <p>Execute the passed command on targeted remote instances. The list of remote
@@ -137,7 +132,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
                 if(Boolean.FALSE.equals(Boolean.valueOf(dynRecfg))) {
                     ActionReport aReport = context.getActionReport().addSubActionsReport();
                     aReport.setActionExitCode(ActionReport.ExitCode.WARNING);
-                    aReport.setMessage(strings.getLocalString("glassfish.clusterexecutor.dynrecfgdisabled",
+                    aReport.setMessage(STRINGS.getLocalString("glassfish.clusterexecutor.dynrecfgdisabled",
                             "WARNING: The command was not replicated to all cluster instances because the" +
                                     " dynamic-reconfig-enabled flag is set to false for cluster {0}", targetName));
                     for(Server s : targetService.getInstances(targetName)) {
@@ -167,7 +162,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
                 if (!clusterNoReplication.isEmpty()) {
                     ActionReport aReport = context.getActionReport().addSubActionsReport();
                     aReport.setActionExitCode(ActionReport.ExitCode.WARNING);
-                    aReport.setMessage(strings.getLocalString("glassfish.clusterexecutor.dynrecfgdisabled",
+                    aReport.setMessage(STRINGS.getLocalString("glassfish.clusterexecutor.dynrecfgdisabled",
                             "WARNING: The command was not replicated to all cluster instances because the"
                             + " dynamic-reconfiguration-enabled flag is set to false for cluster(s) {0}", clusterNoReplication));
                 }
@@ -179,7 +174,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
             if(instancesForReplication.isEmpty()) {
                 ActionReport aReport = context.getActionReport().addSubActionsReport();
                 aReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                aReport.setMessage(strings.getLocalString("glassfish.clusterexecutor.notargets",
+                aReport.setMessage(STRINGS.getLocalString("glassfish.clusterexecutor.notargets",
                         "Did not find any suitable instances for target {0}; command executed on DAS only", targetName));
                 return ActionReport.ExitCode.SUCCESS;
             }

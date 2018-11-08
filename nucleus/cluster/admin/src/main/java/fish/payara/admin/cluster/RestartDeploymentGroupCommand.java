@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,6 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Progress;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -86,7 +85,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class RestartDeploymentGroupCommand implements AdminCommand {
     
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NL = System.lineSeparator();
     
     @Inject
     private ServerEnvironment env;
@@ -193,13 +192,12 @@ public class RestartDeploymentGroupCommand implements AdminCommand {
                 output.append(invocation.report().getMessage()).append(NL);
             }
             try {
-                long delayVal = Long.valueOf(delay);
+                long delayVal = Long.parseLong(delay);
                 if (delayVal > 0) {
-                    Thread.currentThread().sleep(delayVal);
+                    Thread.sleep(delayVal);
                 }
-            }
-            catch(InterruptedException e) {
-                
+            } catch(InterruptedException e) {
+                //ignore
             }
         }
     }

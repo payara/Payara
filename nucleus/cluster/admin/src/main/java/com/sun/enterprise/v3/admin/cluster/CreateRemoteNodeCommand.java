@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
@@ -56,9 +58,6 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 
 /**
  * Refactored from CreateNodeSshCommand.java on 9/10/11
@@ -89,7 +88,8 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     boolean install;
     @Param(optional = true)
     String archive;
-    static final String NL = System.getProperty("line.separator");
+    static final String NL = System.lineSeparator();
+    @SuppressWarnings("NonConstantLogger")
     Logger logger = null;
     NodeUtils nodeUtils;
     protected String remotePort;

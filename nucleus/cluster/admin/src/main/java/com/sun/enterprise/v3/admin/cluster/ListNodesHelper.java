@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -84,23 +85,26 @@ public class ListNodesHelper {
             String host = n.getNodeHost();
             String installDir = n.getInstallDir();
 
-            if (!listType.equals(nodeType) && !listType.equals("ALL"))
+            if (!listType.equals(nodeType) && !listType.equals("ALL")) {
                 continue;
+            }
 
-            if (firstNode)
+            if (firstNode) {
                 firstNode = false;
-            else
+            } else {
                 sb.append(EOL);
+            }
 
-            if (terse)
+            if (terse) {
                 sb.append(name);
-            else if (!long_opt)
+            } else if (!long_opt) {
                 sb.append(name).append("  ").append(nodeType).append("  ").append(host);
+            }
 
             if (long_opt){
                 List<Server> serversOnNode = servers.getServersOnNode(n);
                 StringBuilder instanceList = new StringBuilder();
-                if (serversOnNode.size() > 0) {
+                if (!serversOnNode.isEmpty()) {
                     int i = 0;
                     for (Server server: serversOnNode){
                         if (i > 0)
@@ -109,15 +113,15 @@ public class ListNodesHelper {
                         i++;
                     }
                 }
-                NodeInfo ni = new NodeInfo( name,  host,  installDir,
-                        nodeType,  instanceList.toString());
+                NodeInfo ni = new NodeInfo(name, host, installDir, nodeType, instanceList.toString());
                 infos.add(ni);
             }
         }
-        if (long_opt)
+        if (long_opt) {
             return  NodeInfo.format(infos);
-        else
+        } else {
             return sb.toString();
+        }
 
     }
 }

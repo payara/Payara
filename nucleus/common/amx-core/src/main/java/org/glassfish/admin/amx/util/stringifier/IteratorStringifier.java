@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.stringifier;
 
@@ -46,39 +47,39 @@ import java.util.Iterator;
 /**
 	Stringifies an Iterator, using an optional element Stringifier
  */
- 
+
 public final class IteratorStringifier extends IteratorStringifierBase
 {
-		public 
+		public
 	IteratorStringifier()
 	{
 		super();
 	}
-	
-		public 
+
+		public
 	IteratorStringifier( String delim )
 	{
 		super( delim );
 	}
-	
-		public 
+
+		public
 	IteratorStringifier( Stringifier elementStringifier )
 	{
 		super( elementStringifier );
 	}
-	
-		public 
+
+		public
 	IteratorStringifier( String delim, Stringifier elementStringifier )
 	{
 		super( delim, elementStringifier );
 	}
-	
-	
+
+
 		public void
 	stringifyElement(
 		Object			elem,
 		String			delim,
-		StringBuffer	buf)
+		StringBuilder	buf)
 	{
 		if ( elem == null )
 		{
@@ -89,8 +90,8 @@ public final class IteratorStringifier extends IteratorStringifierBase
 			buf.append( mElementStringifier.stringify( elem ) );
 		}
 	}
-	
-	
+
+
 	/*
 		Static variant when direct call will suffice.
 	 */
@@ -98,11 +99,11 @@ public final class IteratorStringifier extends IteratorStringifierBase
 	stringify( Iterator iter, String delim )
 	{
 		final IteratorStringifier	stringifier	= new IteratorStringifier( delim );
-		
+
 		return( stringifier.stringify( iter, delim, SmartStringifier.DEFAULT ) );
 	}
-	
-	
+
+
 	public final static IteratorStringifier DEFAULT = new IteratorStringifier( "," );
 }
 

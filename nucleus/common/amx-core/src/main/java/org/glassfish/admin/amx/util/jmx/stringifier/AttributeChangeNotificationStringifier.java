@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -44,7 +45,7 @@ import javax.management.AttributeChangeNotification;
 import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
 public class AttributeChangeNotificationStringifier
-        extends NotificationStringifier 
+        extends NotificationStringifier
 {
     public static final AttributeChangeNotificationStringifier DEFAULT =
             new AttributeChangeNotificationStringifier();
@@ -63,15 +64,14 @@ public class AttributeChangeNotificationStringifier
     {
         final AttributeChangeNotification notif = (AttributeChangeNotification) o;
 
-        final StringBuffer b = super._stringify(notif);
+        final StringBuilder b = super._stringify(notif);
         append(b, "");
 
         final String attrName = notif.getAttributeName();
         final String oldValue = SmartStringifier.toString(notif.getOldValue());
         final String newValue = SmartStringifier.toString(notif.getNewValue());
 
-        final String msg = attrName + ": " + oldValue + " => " + newValue;
-        b.append(msg);
+        b.append(attrName).append(": ").append(oldValue).append(" => ").append(newValue);
 
         return (b.toString());
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -60,20 +61,19 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 /**
- * Usage:
- * export-sync-bundle --target cluster_std-alone-instance [--retrieve <false>]
- *[file_name]
- *
- * --target      Cluster or stand alone server instance (required)
+ * Usage: <br>
+ * export-sync-bundle --target cluster_std-alone-instance [--retrieve <false>] [file_name]
+ * <p>
+ * --target      Cluster or stand alone server instance (required) <br>
  * --retrieve    When true, the zip file is downloaded under the specified file_name in local machine
  *	         When false, the zip file is exported under the the specified file_name on DAS
- *	         Default value is false. (optional)
- *
- * file_name    Specifies the file name and location of the synchronized content.
+ *	         Default value is false. (optional)</br>
+ * </p>
+ * file_name    Specifies the file name and location of the synchronized content.<br>
  * If file_name is not specified and --retrieve=false, the default value is
- * install-root/domains/domain_name/sync/<target>-sync-bundle.zip.
+ * install-root/domains/domain_name/sync/&lt;target&gt;-sync-bundle.zip.
  * If file_name is not specified and --retrieve=true, the default value is
- * <target>-sync-bundle.zip.  (optional)
+ * &lt;target&gt;-sync-bundle.zip.  (optional)
  *
  * @author Byron Nevins
  * @author Jennifer Chou
@@ -92,11 +92,33 @@ import org.glassfish.hk2.api.PerLookup;
 public class ExportSyncBundle implements AdminCommand {
 
     @Param(name="target", optional = false)
-    private String cluster_instance;
+    private String clusterInstance;
     @Param(name="retrieve", optional = true, defaultValue="false")
     private boolean isRetrieve;
     @Param(optional = true, primary = true)
     String file_name;
+    
+    @Inject @Optional
+    private Servers servers;
+    @Inject @Optional
+    private Clusters clusters;
+    @Inject
+    private ServerSynchronizer serverSynchronizer;
+    @Inject
+    
+    private ServerEnvironment env;
+    private ActionReport report = null;
+    private File syncBundleExport;
+    private Logger logger = null;
+    private Payload.Outbound payload = null;
+    private Server instance;
+    private Cluster cluster;
+    private SyncRequest syncRequest = new SyncRequest();
+    private static final String[] ALL_DIRS = new String[]{
+        "config", "applications", "lib", "docroot", "config-specific"
+    };
+    
+    private static final String SYNC_FAIL = "export.sync.bundle.fail";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -116,7 +138,7 @@ public class ExportSyncBundle implements AdminCommand {
                 return;
 
             syncRequest = new SyncRequest();
-            syncRequest.instance = cluster_instance;
+            syncRequest.instance = clusterInstance;
 
             if (!sync())
                 return;
@@ -129,9 +151,8 @@ public class ExportSyncBundle implements AdminCommand {
                 pumpItOut(context);
         }
         catch (Exception e) {
-            setError(Strings.get("export.sync.bundle.fail", e.toString()));
-            logger.log(Level.SEVERE, Strings.get("export.sync.bundle.fail", e.toString()), e);
-            return;
+            setError(Strings.get(SYNC_FAIL, e.toString()));
+            logger.log(Level.SEVERE, Strings.get(SYNC_FAIL, e.toString()), e);
         }
     }
 
@@ -155,11 +176,9 @@ public class ExportSyncBundle implements AdminCommand {
         } catch (IOException ex) {
             setError(Strings.get("export.sync.bundle.retrieveFailed", ex.getLocalizedMessage()));
             if (logger.isLoggable(Level.FINER)) {
-                logger.finer("fileURI: " +
-                                parentURI.relativize(localFile.toURI()));
-                logger.finer("file-xfer-root: " +
-                                parent.getPath().replace('\\', '/'));
-                logger.finer("file: " + syncBundleExport.getAbsolutePath());
+                logger.log(Level.FINER, "fileURI: {0}", parentURI.relativize(localFile.toURI()));
+                logger.log(Level.FINER, "file-xfer-root: {0}", parent.getPath().replace('\\', '/'));
+                logger.log(Level.FINER, "file: {0}", syncBundleExport.getAbsolutePath());
             }
         }
     }
@@ -223,25 +242,25 @@ public class ExportSyncBundle implements AdminCommand {
     }
 
     private String getDefaultBundleName() {
-        return cluster_instance + "-sync-bundle.zip";
+        return clusterInstance + "-sync-bundle.zip";
     }
 
     private boolean isValid() {
         // verify the cluster or stand-alone server name corresponds to reality!
         if (servers != null)
-            instance = servers.getServer(cluster_instance);
+            instance = servers.getServer(clusterInstance);
         if (clusters != null) {
-            cluster = clusters.getCluster(cluster_instance);
+            cluster = clusters.getCluster(clusterInstance);
             if (cluster != null) {
                 List<Server> list = cluster.getInstances();
                 if (list == null || list.isEmpty()) {
-                    setError(Strings.get("sync.empty_cluster", cluster_instance));
+                    setError(Strings.get("sync.empty_cluster", clusterInstance));
                     return false;
                 }
             }
         }
         if (instance == null && cluster == null) {
-            setError(Strings.get("sync.unknown.instanceOrCluster", cluster_instance));
+            setError(Strings.get("sync.unknown.instanceOrCluster", clusterInstance));
             return false;
         }
 
@@ -290,22 +309,5 @@ public class ExportSyncBundle implements AdminCommand {
     private boolean hasError() {
         return report.getActionExitCode() != ExitCode.SUCCESS;
     }
-    @Inject @Optional
-    private Servers servers;
-    @Inject @Optional
-    private Clusters clusters;
-    @Inject
-    private ServerSynchronizer serverSynchronizer;
-    @Inject
-    private ServerEnvironment env;
-    private ActionReport report = null;
-    private File syncBundleExport;
-    private Logger logger = null;
-    private Payload.Outbound payload = null;
-    private Server instance;
-    private Cluster cluster;
-    private SyncRequest syncRequest = new SyncRequest();
-    private static final String[] ALL_DIRS = new String[]{
-        "config", "applications", "lib", "docroot", "config-specific"
-    };
+    
 }

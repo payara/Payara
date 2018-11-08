@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -55,7 +55,6 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.ArrayList;
@@ -80,7 +79,7 @@ import java.util.ArrayList;
 })
 public class DeleteInstanceCommand implements AdminCommand {
 
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NL = System.lineSeparator();
 
     @Inject
     private CommandRunner cr;
@@ -103,6 +102,7 @@ public class DeleteInstanceCommand implements AdminCommand {
     private Server instance;
     private String noderef;
     private String nodedir;
+    @SuppressWarnings("NonConstantLogger")
     private Logger logger;    
     private String instanceHost;
     private Node theNode = null;
@@ -240,8 +240,7 @@ public class DeleteInstanceCommand implements AdminCommand {
         String msg = Strings.get("delete.instance.success",
                     instanceName, theNode.getNodeHost());
         if (!terse) {
-            msg = StringUtils.cat(NL,
-                    output.toString().trim(), msg);
+            msg = StringUtils.cat(NL, output.toString().trim(), msg);
         }
         report.setMessage(msg);
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.stringifier;
 
@@ -50,26 +51,26 @@ import java.security.cert.X509Certificate;
 /**
 	Stringifies an X509CertificateStringifier.
  */
- 
+
 public final class X509CertificateStringifier implements Stringifier
 {
 	public final static X509CertificateStringifier	DEFAULT	= new X509CertificateStringifier();
-	
+
 		public
 	X509CertificateStringifier()
 	{
 	}
-	
-	
+
+
 		private static byte[]
 	getFingerprint( byte[] signature, String alg )
 	{
 		byte[]	result	= null;
-		
+
 		try
 		{
 			final MessageDigest md = MessageDigest.getInstance( alg );
-			
+
 			result	= md.digest( signature );
 		}
 		catch ( NoSuchAlgorithmException e )
@@ -77,39 +78,39 @@ public final class X509CertificateStringifier implements Stringifier
 			result	= signature;
 			e.printStackTrace();
 		}
-		
+
 		return( result );
 	}
-	
+
 	/**
 		Static variant when direct call will suffice.
 	 */
 		public static String
 	stringify( final X509Certificate cert )
 	{
-		final StringBuffer	buf	= new StringBuffer();
+		final StringBuilder	buf	= new StringBuilder();
 		final String		NL	= "\n";
-		
-		buf.append( "Issuer: " + cert.getIssuerDN().getName() + NL);
-		buf.append( "Issued to: " + cert.getSubjectDN().getName()  + NL);
-		buf.append( "Version: " + cert.getVersion()  + NL);
-		buf.append( "Not valid before: " + cert.getNotBefore()  + NL);
-		buf.append( "Not valid after: " + cert.getNotAfter()  + NL);
-		buf.append( "Serial number: " + cert.getSerialNumber()  + NL);	
-		buf.append( "Signature algorithm: " + cert.getSigAlgName()  + NL);	
-		buf.append( "Signature algorithm OID: " + cert.getSigAlgOID()  + NL);
-		
+
+		buf.append("Issuer: ").append(cert.getIssuerDN().getName()).append(NL);
+		buf.append("Issued to: ").append(cert.getSubjectDN().getName()).append(NL);
+		buf.append("Version: ").append(cert.getVersion()).append(NL);
+		buf.append("Not valid before: ").append(cert.getNotBefore()).append(NL);
+		buf.append("Not valid after: ").append(cert.getNotAfter()).append(NL);
+		buf.append("Serial number: ").append(cert.getSerialNumber()).append(NL);
+		buf.append("Signature algorithm: ").append(cert.getSigAlgName()).append(NL);
+		buf.append("Signature algorithm OID: ").append(cert.getSigAlgOID()).append(NL);
+
 		buf.append( "Signature fingerprint (MD5): " );
 		byte[]	fingerprint	= getFingerprint( cert.getSignature(), "MD5" );
-		buf.append( StringUtil.toHexString( fingerprint, ":" ) + NL );
-		
+		buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
+
 		buf.append( "Signature fingerprint (SHA1): " );
 		fingerprint	= getFingerprint( cert.getSignature(), "SHA1" );
-		buf.append( StringUtil.toHexString( fingerprint, ":" )  + NL );
-		
+		buf.append(StringUtil.toHexString(fingerprint, ":")).append(NL);
+
 		return( buf.toString() );
 	}
-	
+
 		public String
 	stringify( Object object )
 	{
