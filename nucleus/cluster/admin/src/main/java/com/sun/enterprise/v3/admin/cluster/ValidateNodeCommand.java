@@ -164,7 +164,14 @@ public class ValidateNodeCommand implements AdminCommand {
         // What is there in the node is valid. Now go update anything that
         // was not there.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
-        ParameterMap map = buildMap(excludeFromUpdate);
+        ParameterMap map = new ParameterMap();
+        map.add("DEFAULT", name);
+        addIfNotExcluded(INSTALLDIR, installdir, map);
+        addIfNotExcluded(NODEHOST, nodehost, map);
+        addIfNotExcluded(NODEDIR, nodedir, map);
+        addIfNotExcluded(SSHPORT, sshport, map);
+        addIfNotExcluded(SSHUSER, sshuser, map);
+        addIfNotExcluded(SSHKEYFILE, sshkeyfile, map);
 
         // Only update if there is something to do
         if ( map.size() > 1) {
@@ -173,29 +180,10 @@ public class ValidateNodeCommand implements AdminCommand {
         }
     }
     
-    private ParameterMap buildMap(Set<String> excludeFromUpdate) {
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        if (! excludeFromUpdate.contains(INSTALLDIR)) {
-            map.add(installdir, installdir);
+    private void addIfNotExcluded(String key, String value, ParameterMap map){
+        if (!excludeFromUpdate.contains(key)){
+            map.add(key, value);
         }
-        if (! excludeFromUpdate.contains(NODEHOST)) {
-            map.add(NODEHOST, nodehost);
-        }
-        if (! excludeFromUpdate.contains(NODEDIR)) {
-            map.add(NODEDIR, nodedir);
-        }
-        if (! excludeFromUpdate.contains(SSHPORT)) {
-            map.add(SSHPORT, sshport);
-        }
-        if (! excludeFromUpdate.contains(SSHUSER)) {
-            map.add(SSHUSER, sshuser);
-        }
-        if (! excludeFromUpdate.contains(SSHKEYFILE)) {
-            map.add(SSHKEYFILE, sshkeyfile);
-        }
-        
-        return map;
     }
 
     public void validateNode(final Node node) throws
