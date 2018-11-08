@@ -33,4 +33,12 @@ file and include the License file at packager/legal/LICENSE.txt.
         parentId="propSheetSection"
         content="healthcheck/healthcheckConfigLink.jsf"
     />
+    
+      <integration-point
+        id="microProfileHealthcheckChecker"
+        type="org.glassfish.admingui:serverInstTab"
+        priority="80"
+        parentId="serverInstTabs"
+        content="healthcheck/mphealthcheckTabs.jsf"
+    />
 </console-config>

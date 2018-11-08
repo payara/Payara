@@ -1632,6 +1632,7 @@ input[type="checkbox"]:checked:before {
     line-height: 1.5em;
     display: inline-block;
     text-align: center;
+    font-size: 14px;
 }
 
 input[type="radio"] {
