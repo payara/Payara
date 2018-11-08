@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import javax.management.MBeanServerNotification;
 
 public class MBeanServerNotificationStringifier
-        extends NotificationStringifier 
+        extends NotificationStringifier
 {
     public static final MBeanServerNotificationStringifier DEFAULT =
             new MBeanServerNotificationStringifier();
@@ -63,7 +64,7 @@ public class MBeanServerNotificationStringifier
     {
         final MBeanServerNotification notif = (MBeanServerNotification) o;
 
-        final StringBuffer b = super._stringify(notif);
+        final StringBuilder b = super._stringify(notif);
         append(b, "");
 
         append(b, "registered MBean: " + notif.getMBeanName());

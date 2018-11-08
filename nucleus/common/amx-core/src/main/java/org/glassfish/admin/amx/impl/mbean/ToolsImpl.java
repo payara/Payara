@@ -37,26 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
+
 package org.glassfish.admin.amx.impl.mbean;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.List;
-import java.util.HashSet;
-
-import javax.management.MBeanInfo;
-import javax.management.ObjectName;
-import javax.management.InstanceNotFoundException;
 import org.glassfish.admin.amx.base.Pathnames;
 import org.glassfish.admin.amx.base.Tools;
 import org.glassfish.admin.amx.core.AMXValidator;
+import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.SetUtil;
 import org.glassfish.admin.amx.util.StringUtil;
 import org.glassfish.admin.amx.util.jmx.MBeanInterfaceGenerator;
-import org.glassfish.admin.amx.core.Util;
+
+import javax.management.MBeanInfo;
+import javax.management.ObjectName;
+import java.util.*;
 
 public class ToolsImpl extends AMXImplBase // implements Tools
 {
@@ -107,15 +103,14 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         }
 
         final MBeanInterfaceGenerator gen = new MBeanInterfaceGenerator();
-        final String out = gen.generate(mbeanInfo, true);
 
-        return out;
+        return gen.generate(mbeanInfo, true);
     }
 
     public String info(final Collection<ObjectName> objectNames) {
-        final Set<String> alreadyDone = new HashSet<String>();
+        final Set<String> alreadyDone = new HashSet<>();
 
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
 
         if (objectNames.size() != 0) {
             final String NL = StringUtil.NEWLINE();
@@ -134,15 +129,14 @@ public class ToolsImpl extends AMXImplBase // implements Tools
                 alreadyDone.add(type);
                 alreadyDone.add(classname);
 
-                buf.append("MBeanInfo for " + objectName + NL);
-                //buf.append(JMXUtil.toString(mbeanInfo) + NL + NL );
+                buf.append("MBeanInfo for ").append(objectName).append(NL);
 
                 buf.append(java(objectName));
-                buf.append(NL + NL + NL + NL);
+                buf.append(NL).append(NL).append(NL).append(NL);
             }
         }
 
-        buf.append("Matched " + objectNames.size() + " mbean(s).");
+        buf.append("Matched ").append(objectNames.size()).append(" mbean(s).");
 
         return buf.toString();
     }
@@ -186,7 +180,7 @@ public class ToolsImpl extends AMXImplBase // implements Tools
     }
 
     public String validate(final ObjectName[] targets) {
-        final Set<ObjectName> all = new HashSet<ObjectName>();
+        final Set<ObjectName> all = new HashSet<>();
 
         for (final ObjectName objectName : targets) {
             if (objectName.isPattern()) {
