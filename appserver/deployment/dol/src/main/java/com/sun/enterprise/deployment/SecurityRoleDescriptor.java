@@ -50,32 +50,32 @@ import org.glassfish.security.common.Role;
     *@author Danny Coward
     */
 public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
-    
+
     /**
     * Construct a SecurityRoleDescriptor from the given role name and description.
     */
     public SecurityRoleDescriptor(String name, String description) {
 	super(name, description);
     }
-    
+
     /**
     * Construct a SecurityRoleDescriptor from the given role object.
     */
-    
+
     public SecurityRoleDescriptor(Role role) {
 	super(role.getName(), role.getDescription());
     }
-    
+
     /**
     * Default constructor.
     */
     public SecurityRoleDescriptor() {
     }
-    
+
     /**
     * Equality on rolename.
     */
-    
+
     public boolean equals(Object other) {
 	if (other instanceof SecurityRoleDescriptor &&
 	    this.getName().equals( ((SecurityRoleDescriptor) other).getName() )) {
@@ -83,19 +83,19 @@ public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
 	}
 	return false;
     }
-    
+
     /**
     * My hashcode.
     */
-    
+
     public int hashCode() {
 	return this.getName().hashCode();
     }
-    
+
     /**
     * Formatted string representing my state.
-    */    
-    public void print(StringBuffer toStringBuffer) {
+    */
+    public void print(StringBuilder toStringBuffer) {
 	toStringBuffer.append("SecurityRole ");
 	super.print(toStringBuffer);
     }

@@ -67,13 +67,13 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
     private String refType=null;
     private String refHomeIntf=null;
     private String refIntf=null;
-    
+
     // local-ref or remote-ref
     private boolean isLocal=false;
 
     /**
-     * holds the ejb-link value associated to this ejb reference before the 
-     * ejbs were resolved 
+     * holds the ejb-link value associated to this ejb reference before the
+     * ejbs were resolved
      */
     private String ejbLink=null;
 
@@ -88,8 +88,8 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
      */
     private String lookupName=null;
 
-    /** 
-     * copy constructor 
+    /**
+     * copy constructor
      *
      * @param other handle to other EjbReferenceDescriptor to clone
      */
@@ -103,13 +103,13 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
     lookupName = other.lookupName;
 	referringBundle = other.referringBundle; // copy as-is
 	ejbDescriptor = other.ejbDescriptor;
-	if (ejbDescriptor != null) { 
+	if (ejbDescriptor != null) {
             ejbDescriptor.addEjbReferencer(this); // ???
 	}
     }
 
-    /** 
-     * Construct an remote ejb reference to the given ejb descriptor 
+    /**
+     * Construct an remote ejb reference to the given ejb descriptor
      * with the given name and descriptor of the reference.
      *
      * @param name the ejb-ref name as used in the referencing bean
@@ -120,11 +120,11 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	super(name, "", description);
 	this.setEjbDescriptor(ejbDescriptor);
     }
-    
+
     /**
-     * constructs an local or remote ejb reference to the given ejb descriptor, 
+     * constructs an local or remote ejb reference to the given ejb descriptor,
      * the description and the name of the reference
-     * 
+     *
      * @param name is the name of the reference
      * @param description is a human readable description of the reference
      * @param ejbDescriptor the referenced EJB
@@ -135,17 +135,17 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
         this.isLocal = isLocal;
         this.setEjbDescriptor(ejbDescriptor);
     }
-    
-    /** 
+
+    /**
     * Constructs a reference in the exterrnal state.
     */
-    
+
     public EjbReferenceDescriptor() {
     }
 
     /**
      * Set the referring bundle, i.e. the bundle within which this
-     * EJB reference is declared. 
+     * EJB reference is declared.
      */
     @Override
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
@@ -155,14 +155,14 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 
     /**
      * Get the referring bundle, i.e. the bundle within which this
-     * EJB reference is declared.  
+     * EJB reference is declared.
      */
     @Override
     public BundleDescriptor getReferringBundleDescriptor()
     {
 	return referringBundle;
     }
-    
+
     /**
      * Sets the ejb descriptor to which I refer.
      * @param ejbDescriptor the ejb descriptor referenced, null if it is unknown at this time
@@ -173,7 +173,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
             this.ejbDescriptor.removeEjbReferencer(this); // remove previous referencer
 	}
         this.ejbDescriptor=ejbDescriptor;
-	if (ejbDescriptor!=null) { 
+	if (ejbDescriptor!=null) {
             ejbDescriptor.addEjbReferencer(this);
             if (isLocal()) {
                 if (!ejbDescriptor.isLocalInterfacesSupported() &&
@@ -194,10 +194,10 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	}
     }
 
-    
+
     /**
     * Sets the jndi name of the bean type which I am referring.*/
-    
+
     @Override
     public void setJndiName(String jndiName) {
 	this.setValue(jndiName);
@@ -208,18 +208,18 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
         String name = getJndiName();
         return ( (name != null) && !name.equals("") );
     }
-    
+
     /** return true if I know the name of the ejb to which I refer.
     */
-    
+
     public boolean isLinked() {
 	return ejbLink!=null;
     }
-    
-    /** 
-     * @return the name of the ejb to which I refer 
+
+    /**
+     * @return the name of the ejb to which I refer
     */
-    
+
     @Override
     public String getLinkName() {
 	if (ejbDescriptor==null) {
@@ -232,40 +232,40 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	}
     }
 
-    /** 
+    /**
      * Sets the name of the ejb to which I refer.
      */
     @Override
     public void setLinkName(String linkName) {
         ejbLink = (String)TranslatedConfigView.getTranslatedValue(linkName);
-    }    
+    }
     /**
      * return the jndi name of the bean to which I refer.
      */
-    
+
     @Override
     public String getJndiName() {
         String jndiName = this.getValue();
         if( isLocal() ) {
             // mapped-name has no meaning for the local ejb view.  ejb-link
             // should be used to resolve any ambiguities about the target
-            // local ejb. 
+            // local ejb.
             return jndiName;
         } else {
-            return (jndiName != null && ! jndiName.equals("")) ? 
+            return (jndiName != null && ! jndiName.equals("")) ?
                 jndiName : getMappedName();
         }
     }
-    
+
     /**
     * Return the jndi name of the bean to which I refer.
     */
-    
+
     @Override
     public String getValue() {
 	if (ejbDescriptor == null) {
             return super.getValue();
-	} else {        
+	} else {
             if (isLocal()) {
                 return super.getValue();
             } else {
@@ -288,15 +288,15 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
     public boolean hasLookupName() {
         return (lookupName != null && lookupName.length() > 0);
     }
-        
+
     /** return the ejb to whoch I refer.
     */
-    
+
     @Override
     public EjbDescriptor getEjbDescriptor() {
 	return ejbDescriptor;
-    }  
-    
+    }
+
     /**
      * @return true if the EJB reference uses the local interfaces of the EJB
      */
@@ -304,7 +304,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
     public boolean isLocal() {
         return isLocal;
     }
-    
+
     /**
      * Set whether this EJB Reference uses local interfaces or remote
      * @param local true if the EJB reference use local interfaces
@@ -313,11 +313,11 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
     public void setLocal(boolean local) {
         this.isLocal = local;
     }
-    
+
     /**
     * Retusn the type of the ejb to whioch I refer.
     */
-    
+
     @Override
     public String getType() {
         if (ejbDescriptor==null) {
@@ -326,7 +326,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
             return ejbDescriptor.getType();
         }
     }
-    
+
     /** Assigns the type of the ejb to whcoih I refer.
     */
     @Override
@@ -342,45 +342,45 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 
     @Override
     public void setInjectResourceType(String resourceType) {
-        if (isEJB30ClientView()) { 
-            setEjbInterface(resourceType); 
+        if (isEJB30ClientView()) {
+            setEjbInterface(resourceType);
         } else {
             setEjbHomeInterface(resourceType);
         }
     }
-    
+
     /**
-      * Gets the home classname of the referee EJB. 
+      * Gets the home classname of the referee EJB.
       */
     public String getHomeClassName() {
         return refHomeIntf;
     }
-    
-    /** 
+
+    /**
      * Sets the home classname of the bean to whcioh I refer.
      */
 
     public void setHomeClassName(String homeClassName) {
         refHomeIntf = homeClassName;
     }
-    
-    /** 
-     * @return the bean instance interface classname of the referee EJB. 
+
+    /**
+     * @return the bean instance interface classname of the referee EJB.
      */
     public String getBeanClassName() {
         return refIntf;
     }
-    
+
     /** Sets the bean instance business interface classname of the bean to which I refer.
-     * this interface is the local object or the remote interfaces depending if the 
+     * this interface is the local object or the remote interfaces depending if the
      * reference is local or not.
     */
     public void setBeanClassName(String remoteClassName) {
         refIntf = remoteClassName;
-    }      
-    
-    /** 
-     * Gets the home classname of the referee EJB. 
+    }
+
+    /**
+     * Gets the home classname of the referee EJB.
      * @return the class name of the EJB home.
      */
     @Override
@@ -388,25 +388,25 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
         return getHomeClassName();
     }
 
-    /** 
-     * Sets the local or remote home classname of the referee EJB. 
+    /**
+     * Sets the local or remote home classname of the referee EJB.
      * @param homeClassName the class name of the EJB home.
      */
     @Override
     public void setEjbHomeInterface(String homeClassName) {
         setHomeClassName(homeClassName);
     }
-    
-    /** 
-     * Gets the local or remote interface classname of the referee EJB. 
+
+    /**
+     * Gets the local or remote interface classname of the referee EJB.
      * @return the classname of the EJB remote object.
      */
     @Override
     public String getEjbInterface() {
         return getBeanClassName();
     }
-    /** 
-     * Sets the local or remote bean interface classname of the referee EJB. 
+    /**
+     * Sets the local or remote bean interface classname of the referee EJB.
      * @param remoteClassName the classname of the EJB remote object.
      */
     @Override
@@ -424,33 +424,32 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 
     /** returns a formatted string representing me.
     */
-    
+
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         String localVsRemote = isLocal() ? "Local" : "Remote";
-        toStringBuffer.append(localVsRemote + " ejb-ref ");
-        toStringBuffer.append("name="+getName());
+        toStringBuffer.append(localVsRemote).append(" ejb-ref ");
+        toStringBuffer.append("name=").append(getName());
 
         if( isEJB30ClientView() ) {
-            toStringBuffer.append("," + localVsRemote + " 3.x interface ="+getEjbInterface());
+            toStringBuffer.append(",").append(localVsRemote).append(" 3.x interface =").append(getEjbInterface());
         } else {
-            toStringBuffer.append("," + localVsRemote + " 2.x home ="+getEjbHomeInterface());
-            toStringBuffer.append("," + localVsRemote + " 2.x component interface="+getEjbInterface());
+            toStringBuffer.append(",").append(localVsRemote).append(" 2.x home =").append(getEjbHomeInterface());
+            toStringBuffer.append(",").append(localVsRemote).append(" 2.x component interface=").append(getEjbInterface());
         }
 
         if( ejbDescriptor != null ) {
-            toStringBuffer.append(" resolved to intra-app EJB "+ejbDescriptor.getName() +
-            " in module " + ejbDescriptor.getEjbBundleDescriptor().getModuleName());
+            toStringBuffer.append(" resolved to intra-app EJB ").append(ejbDescriptor.getName()).append(" in module ").append(ejbDescriptor.getEjbBundleDescriptor().getModuleName());
         }
 
-        toStringBuffer.append(",ejb-link="+getLinkName());
-        toStringBuffer.append(",lookup="+getLookupName());
-        toStringBuffer.append(",mappedName="+getMappedName());
-        toStringBuffer.append(",jndi-name=" + getValue());                    
+        toStringBuffer.append(",ejb-link=").append(getLinkName());
+        toStringBuffer.append(",lookup=").append(getLookupName());
+        toStringBuffer.append(",mappedName=").append(getMappedName());
+        toStringBuffer.append(",jndi-name=").append(getValue());
 
-        toStringBuffer.append(",refType="+getType());
+        toStringBuffer.append(",refType=").append(getType());
     }
-    
+
     /* Equality on name. */
     @Override
     public boolean equals(Object object) {

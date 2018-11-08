@@ -50,7 +50,7 @@ import javax.servlet.descriptor.JspPropertyGroupDescriptor;
  */
 public class JspGroupDescriptor extends Descriptor
         implements JspPropertyGroupDescriptor {
-    
+
     private String elIgnored;
     private String scriptingInvalid;
     private String isXml;
@@ -63,7 +63,7 @@ public class JspGroupDescriptor extends Descriptor
     private String defaultContentType = null;
     private String buffer = null;
     private String errorOnUndeclaredNamespace;
-    
+
     /**
      * Return the set of URL pattern aliases for this group.
      */
@@ -81,7 +81,7 @@ public class JspGroupDescriptor extends Descriptor
         this.getUrlPatterns().add(urlPattern);
 
     }
-   
+
     /**
      * Removes a URL pattern from this jsp group.
      */
@@ -107,9 +107,9 @@ public class JspGroupDescriptor extends Descriptor
         this.getIncludePreludes().add(prelude);
 
     }
-   
+
     /**
-     * Removes an element 
+     * Removes an element
      */
     public void removeIncludePrelude(String prelude) {
         this.getIncludePreludes().remove(prelude);
@@ -133,9 +133,9 @@ public class JspGroupDescriptor extends Descriptor
         this.getIncludeCodas().add(coda);
 
     }
-   
+
     /**
-     * Removes an element 
+     * Removes an element
      */
     public void removeIncludeCoda(String coda) {
         this.getIncludeCodas().remove(coda);
@@ -152,7 +152,7 @@ public class JspGroupDescriptor extends Descriptor
     public String getElIgnored() {
         return elIgnored;
     }
-    
+
     /**
      * enable/disable scripting
      */
@@ -165,12 +165,12 @@ public class JspGroupDescriptor extends Descriptor
     }
 
     /**
-     * enable/disable xml 
+     * enable/disable xml
      */
     public void setIsXml(String value) {
         isXml = value;
     }
-    
+
     public String getIsXml() {
         return isXml;
     }
@@ -196,7 +196,7 @@ public class JspGroupDescriptor extends Descriptor
     public String getTrimDirectiveWhitespaces() {
         return trimDirectiveWhitespaces;
     }
-    
+
     /**
      * get display name.
      */
@@ -265,7 +265,7 @@ public class JspGroupDescriptor extends Descriptor
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("\n JspGroupDescriptor");
         toStringBuffer.append( "\n");
         super.print(toStringBuffer);

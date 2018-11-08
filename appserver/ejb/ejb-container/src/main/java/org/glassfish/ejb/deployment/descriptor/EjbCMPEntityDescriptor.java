@@ -306,7 +306,7 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
     * Return my formatted string representation.
     */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("\n cmpVersion ").append(cmpVersion).
             append("\n primKeyField ");

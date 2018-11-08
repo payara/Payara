@@ -709,7 +709,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
 	/**
 	* Returns a formatted String of the attributes of this object.
 	*/
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	    toStringBuffer.append("Session descriptor");
 	    toStringBuffer.append("\n sessionType ").append(getSessionType());
 	    super.print(toStringBuffer);

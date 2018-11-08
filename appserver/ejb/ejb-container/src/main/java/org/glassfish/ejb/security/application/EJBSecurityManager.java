@@ -127,14 +127,14 @@ public final class EJBSecurityManager implements SecurityManager {
     private final SecurityRoleMapperFactory roleMapperFactory;
 
     private final EjbDescriptor deploymentDescriptor;
-    
+
     // Objects required for Run-AS
     private final RunAsIdentityDescriptor runAs;
 
     // JACC related
     private static PolicyConfigurationFactory policyConfigurationFactory;
     private String ejbName;
-    
+
     // contextId id is the same as an appname. This will be used to get
     // a PolicyConfiguration object per application.
     private String contextId;
@@ -213,7 +213,7 @@ public final class EJBSecurityManager implements SecurityManager {
             _logger.log(SEVERE, "JACC_ejbsm.codesourceerror", mue);
             throw new RuntimeException(mue);
         }
-        
+
         return result;
     }
 
@@ -232,7 +232,7 @@ public final class EJBSecurityManager implements SecurityManager {
                 }
             }
         }
-        
+
         return policyConfigurationFactory;
     }
 
@@ -405,7 +405,7 @@ public final class EJBSecurityManager implements SecurityManager {
             if (permissions == null) {
                 permissions = new Permissions();
             }
-            
+
             permissions.add(ejbmp);
             if (_logger.isLoggable(FINE)) {
                 _logger.fine("JACC DD conversion: EJBMethodPermission ->(" + ejbmp.getName() + " " + ejbmp.getActions() + ") is (unchecked)");
@@ -420,13 +420,13 @@ public final class EJBSecurityManager implements SecurityManager {
             if (permissions == null) {
                 permissions = new Permissions();
             }
-            
+
             permissions.add(ejbMethodPermission);
             if (_logger.isLoggable(FINE)) {
                 _logger.fine("JACC DD conversion: EJBMethodPermission ->(" + ejbMethodPermission.getName() + " " + ejbMethodPermission.getActions() + ") is (excluded)");
             }
         }
-        
+
         return permissions;
     }
 
@@ -462,21 +462,14 @@ public final class EJBSecurityManager implements SecurityManager {
         EJBMethodPermission ejbmp = null;
 
         // phase 1
-        Map mpMap = eDescriptor.getMethodPermissionsFromDD();
+        Map<MethodPermission, List<MethodDescriptor>> mpMap = eDescriptor.getMethodPermissionsFromDD();
         if (mpMap != null) {
 
-            Iterator mpIt = mpMap.entrySet().iterator();
+            for (Map.Entry<MethodPermission, List<MethodDescriptor>> entry : mpMap.entrySet()) {
 
-            while (mpIt.hasNext()) {
+                MethodPermission mp = entry.getKey();
 
-                Map.Entry entry = (Map.Entry) mpIt.next();
-                MethodPermission mp = (MethodPermission) entry.getKey();
-
-                Iterator mdIt = ((ArrayList) entry.getValue()).iterator();
-
-                while (mdIt.hasNext()) {
-
-                    MethodDescriptor md = (MethodDescriptor) mdIt.next();
+                for (MethodDescriptor md : entry.getValue()) {
 
                     String mthdName = md.getName();
                     String mthdIntf = md.getEjbClassSymbol();
@@ -495,22 +488,17 @@ public final class EJBSecurityManager implements SecurityManager {
         // phase 2 - configures additional perms:
         // . to optimize performance of Permissions.implies
         // . to cause any uncovered methods to be unchecked
+        for (MethodDescriptor md : eDescriptor.getMethodDescriptors()) {
 
-        Iterator mdIt = eDescriptor.getMethodDescriptors().iterator();
-        while (mdIt.hasNext()) {
-
-            MethodDescriptor md = (MethodDescriptor) mdIt.next();
             Method mthd = md.getMethod(eDescriptor);
-            String mthdIntf = md.getEjbClassSymbol();
-
             if (mthd == null) {
                 continue;
             }
 
+            String mthdIntf = md.getEjbClassSymbol();
             if (mthdIntf == null || mthdIntf.equals("")) {
                 _logger.log(Level.SEVERE, "method_descriptor_not_defined",
-                        new Object[] { eName, md.getName(), md.getParameterClassNames() });
-
+                        new Object[]{eName, md.getName(), md.getParameterClassNames()});
                 continue;
             }
 

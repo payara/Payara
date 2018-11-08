@@ -84,9 +84,9 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     private String localHomeClassName;
     private String localClassName;
 
-    private Set<String> remoteBusinessClassNames = new HashSet<String>();
-    private Set<String> localBusinessClassNames = new HashSet<String>();
-    private Set<String> noInterfaceLocalBeanClassNames = new HashSet<String>();
+    private Set<String> remoteBusinessClassNames = new HashSet<>();
+    private Set<String> localBusinessClassNames = new HashSet<>();
+    private Set<String> noInterfaceLocalBeanClassNames = new HashSet<>();
 
     // This is the value of the EJB 2.1 deployment descriptor entry
     // for service endpoint interface.
@@ -107,51 +107,38 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     private Map<MethodDescriptor, ContainerTransaction> methodContainerTransactions = null;
     private Map<MethodPermission, Set<MethodDescriptor>> permissionedMethodsByPermission = null;
     private Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = null;
-    private Set<EnvironmentProperty> environmentProperties =
-            new HashSet<EnvironmentProperty>();
-    private Set<EjbReference> ejbReferences =
-            new HashSet<EjbReference>();
-    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences =
-            new HashSet<ResourceEnvReferenceDescriptor>();
-    private Set<MessageDestinationReferenceDescriptor> messageDestReferences =
-            new HashSet<MessageDestinationReferenceDescriptor>();
-    private Set<ResourceReferenceDescriptor> resourceReferences =
-            new HashSet<ResourceReferenceDescriptor>();
-    private Set<ServiceReferenceDescriptor> serviceReferences =
-            new HashSet<ServiceReferenceDescriptor>();
+    private Set<EnvironmentProperty> environmentProperties = new HashSet<>();
+    private Set<EjbReference> ejbReferences = new HashSet<>();
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences = new HashSet<>();
+    private Set<MessageDestinationReferenceDescriptor> messageDestReferences = new HashSet<>();
+    private Set<ResourceReferenceDescriptor> resourceReferences = new HashSet<>();
+    private Set<ServiceReferenceDescriptor> serviceReferences = new HashSet<>();
 
-    private Set<LifecycleCallbackDescriptor> postConstructDescs =
-            new HashSet<LifecycleCallbackDescriptor>();
-    private Set<LifecycleCallbackDescriptor> preDestroyDescs =
-            new HashSet<LifecycleCallbackDescriptor>();
+    private Set<LifecycleCallbackDescriptor> postConstructDescs = new HashSet<>();
+    private Set<LifecycleCallbackDescriptor> preDestroyDescs = new HashSet<>();
 
     // if non-null, refer all environment refs here
     private WritableJndiNameEnvironment env;
 
-    private Set<LifecycleCallbackDescriptor> aroundInvokeDescs =
-            new HashSet<LifecycleCallbackDescriptor>();
-    private Set<LifecycleCallbackDescriptor> aroundTimeoutDescs =
-            new HashSet<LifecycleCallbackDescriptor>();
+    private Set<LifecycleCallbackDescriptor> aroundInvokeDescs = new HashSet<>();
+    private Set<LifecycleCallbackDescriptor> aroundTimeoutDescs = new HashSet<>();
 
 
     // Late-binding system-level interceptors for this EJB.  These can be set
     // as late as initialization time, so they are not part of the interceptor
     // binding translation that happens for application-defined interceptors.
-    private List<InterceptorDescriptor> frameworkInterceptors = new LinkedList<InterceptorDescriptor>();
+    private List<InterceptorDescriptor> frameworkInterceptors = new LinkedList<>();
 
     private Set<EntityManagerFactoryReferenceDescriptor>
-            entityManagerFactoryReferences =
-            new HashSet<EntityManagerFactoryReferenceDescriptor>();
+            entityManagerFactoryReferences = new HashSet<>();
 
     private Set<EntityManagerReferenceDescriptor>
-            entityManagerReferences =
-            new HashSet<EntityManagerReferenceDescriptor>();
+            entityManagerReferences = new HashSet<>();
 
-    private Set roleReferences = new HashSet();
+    private Set<RoleReference> roleReferences = new HashSet<>();
     private EjbBundleDescriptorImpl bundleDescriptor;
     // private EjbIORConfigurationDescriptor iorConfigDescriptor = new EjbIORConfigurationDescriptor();
-    private Set<EjbIORConfigurationDescriptor> iorConfigDescriptors =
-            new OrderedSet<EjbIORConfigurationDescriptor>();
+    private Set<EjbIORConfigurationDescriptor> iorConfigDescriptors = new OrderedSet<>();
     //private Set methodDescriptors = new HashSet();
     private String ejbClassName;
 
@@ -177,23 +164,19 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
 
     private MethodDescriptor timedObjectMethod;
 
-    private List<ScheduledTimerDescriptor> timerSchedules =
-            new ArrayList<ScheduledTimerDescriptor>();
+    private List<ScheduledTimerDescriptor> timerSchedules = new ArrayList<>();
 
-    private List<MethodDescriptor> timerMethodDescriptors =
-            new ArrayList<MethodDescriptor>();
+    private List<MethodDescriptor> timerMethodDescriptors = new ArrayList<>();
 
     //
     // The set of all interceptor classes applicable to this bean.  This
     // includes any interceptor class that is present at *either* the class
     // level or method-level.
     //
-    private Set<EjbInterceptor> allInterceptorClasses =
-            new HashSet<EjbInterceptor>();
+    private Set<EjbInterceptor> allInterceptorClasses = new HashSet<>();
 
     // Ordered list of class-level interceptors for this bean.
-    private List<EjbInterceptor> interceptorChain =
-            new LinkedList<EjbInterceptor>();
+    private List<EjbInterceptor> interceptorChain = new LinkedList<>();
 
     //
     // Interceptor info per business method.  If the map does not
@@ -206,8 +189,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     // method.  An empty list would mean all the interceptors have been
     // disabled for that particular business method.
     //
-    private Map<MethodDescriptor, List<EjbInterceptor>> methodInterceptorsMap =
-            new HashMap<MethodDescriptor, List<EjbInterceptor>>();
+    private Map<MethodDescriptor, List<EjbInterceptor>> methodInterceptorsMap = new HashMap<>();
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EjbDescriptor.class);
@@ -1418,9 +1400,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         if (needToConvertMethodPermissions()) {
             convertMethodPermissions();
         }
-        Set<Role> allPermissionedRoles = new HashSet<Role>();
-        for (Iterator i = this.getPermissionedMethodsByPermission().keySet().iterator(); i.hasNext();) {
-            MethodPermission pm = (MethodPermission) i.next();
+        Set<Role> allPermissionedRoles = new HashSet<>();
+        for (MethodPermission pm : this.getPermissionedMethodsByPermission().keySet()) {
             if (pm.isRoleBased()) {
                 allPermissionedRoles.add(pm.getRole());
             }
@@ -1670,7 +1651,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     private void updateMethodPermissionForMethod(MethodPermission mp, MethodDescriptor md) {
 
         // Get the current set of method permissions for that method
-        Set oldPermissions = getMethodPermissions(md);
+        Set<MethodPermission> oldPermissions = getMethodPermissions(md);
 
         if (oldPermissions.isEmpty()) {
             // this is easy, just add the new one
@@ -1687,8 +1668,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         if (mp.isExcluded()) {
             // Excluded methods takes precedence on any other form of method permission
             // remove all existing method permission...
-            for (Iterator oldPermissionsItr = oldPermissions.iterator(); oldPermissionsItr.hasNext();) {
-                MethodPermission oldMp = (MethodPermission) oldPermissionsItr.next();
+            for (MethodPermission oldMp : oldPermissions) {
                 removePermissionedMethod(oldMp, md);
             }
             // add the excluded
@@ -1698,8 +1678,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                 // we are trying to add an unchecked method permisison, all role-based
                 // method permission should be removed since unchecked is now used, if a
                 // particular method has an excluded method permision, we do not add it
-                for (Iterator oldPermissionsItr = oldPermissions.iterator(); oldPermissionsItr.hasNext();) {
-                    MethodPermission oldMp = (MethodPermission) oldPermissionsItr.next();
+                for (MethodPermission oldMp : oldPermissions) {
                     if (!oldMp.isExcluded()) {
                         removePermissionedMethod(oldMp, md);
                         addMethodPermissionForMethod(mp, md);
@@ -1709,8 +1688,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                 // we are trying to add a role based method permission. Check that
                 // unchecked or excluded method permissions have not been set
                 // and add it to the current list of role based permission
-                for (Iterator oldPermissionsItr = oldPermissions.iterator(); oldPermissionsItr.hasNext();) {
-                    MethodPermission oldMp = (MethodPermission) oldPermissionsItr.next();
+                for (MethodPermission oldMp : oldPermissions) {
                     if (!oldMp.isExcluded()) {
                         if (!oldMp.isUnchecked()) {
                             addMethodPermissionForMethod(mp, md);
@@ -1733,22 +1711,18 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * @return the set of method permission assigned to a ejb method descriptor.
      */
     @Override
-    public Set getMethodPermissionsFor(MethodDescriptor methodDescriptor) {
-
+    public Set<MethodPermission> getMethodPermissionsFor(MethodDescriptor methodDescriptor) {
         if (needToConvertMethodPermissions()) {
             convertMethodPermissions();
         }
         return getMethodPermissions(methodDescriptor);
     }
 
-    private Set getMethodPermissions(MethodDescriptor methodDescriptor) {
-
-        Set methodPermissionsForMethod = new HashSet();
-        for (Iterator e = this.getPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
-            MethodPermission nextPermission = (MethodPermission) e.next();
-            Set permissionedMethods = (Set) this.getPermissionedMethodsByPermission().get(nextPermission);
-            for (Iterator itr = permissionedMethods.iterator(); itr.hasNext();) {
-                MethodDescriptor md = (MethodDescriptor) itr.next();
+    private Set<MethodPermission> getMethodPermissions(MethodDescriptor methodDescriptor) {
+        Set<MethodPermission> methodPermissionsForMethod = new HashSet<>();
+        for (MethodPermission nextPermission : this.getPermissionedMethodsByPermission().keySet()) {
+            Set<MethodDescriptor> permissionedMethods = this.getPermissionedMethodsByPermission().get(nextPermission);
+            for (MethodDescriptor md : permissionedMethods) {
                 if (md.equals(methodDescriptor)) {
                     methodPermissionsForMethod.add(nextPermission);
                 }
@@ -2447,7 +2421,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      */
     public Set<RoleReference> getRoleReferences() {
         if (roleReferences == null) {
-            roleReferences = new HashSet();
+            roleReferences = new HashSet<>();
         }
         return roleReferences;
     }
@@ -2841,7 +2815,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * @param toStringBuffer
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n homeClassName ").append(homeClassName);
         toStringBuffer.append("\n remoteClassName ").append(remoteClassName);
@@ -2875,17 +2849,15 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         toStringBuffer.append("\n roleReferences ");
         if (roleReferences != null)
             printDescriptorSet(roleReferences, toStringBuffer);
-        for (Iterator e = this.getPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
-            MethodPermission nextPermission = (MethodPermission) e.next();
+        for (MethodPermission nextPermission : this.getPermissionedMethodsByPermission().keySet()) {
             toStringBuffer.append("\n method-permission->method: ");
             nextPermission.print(toStringBuffer);
             toStringBuffer.append(" -> ").append(this.getPermissionedMethodsByPermission().get(nextPermission));
         }
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
-        for (Iterator itr = descSet.iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
+        for (Object obj : descSet) {
             if (obj instanceof Descriptor)
                 ((Descriptor) obj).print(sbuf);
             else
@@ -2933,11 +2905,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
 
             if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase
                     (iorDesc.getConfidentiality())) {
-                continue;
-
-            } else if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase
-                    (iorDesc.getConfidentiality())) {
-
                 continue;
 
             } else if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase

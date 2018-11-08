@@ -387,7 +387,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return
      */
     @Override
-    public Vector<NamedReferencePair> getNamedReferencePairs() {
+    public List<NamedReferencePair> getNamedReferencePairs() {
         return super.getNamedReferencePairsFrom(this);
     }
 
@@ -2429,7 +2429,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Return a formatted version as a String.
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("\nWeb Bundle descriptor");
         toStringBuffer.append("\n");
         printCommon(toStringBuffer);
@@ -2444,7 +2444,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @param toStringBuffer
      */
     @Override
-    public void printCommon(StringBuffer toStringBuffer) {
+    public void printCommon(StringBuilder toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n context root ").append(getContextRoot());
         if (sessionConfig != null) {
@@ -2488,11 +2488,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             printDescriptorSet(environmentEntries, toStringBuffer);
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
         if (descSet == null)
             return;
-        for (Iterator itr = descSet.iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+        for (Object obj : descSet) {
             if (obj instanceof Descriptor)
                 ((Descriptor) obj).print(sbuf);
             else
@@ -2609,11 +2608,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled) {
         this.jaxrsRolesAllowedEnabled = jaxrsRolesAllowedEnabled;
     }
-    
+
     public String getAppContextId() {
         return appContextId;
     }
-    
+
     public void setAppContextId(String appContextId) {
         this.appContextId = appContextId;
     }

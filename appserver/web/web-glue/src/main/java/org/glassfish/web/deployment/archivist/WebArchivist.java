@@ -296,13 +296,13 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     /**
      * @return a list of libraries included in the archivist
      */
-    public Vector<String> getLibraries(Archive archive) {
+    public List<String> getLibraries(Archive archive) {
 
         Enumeration<String> entries = archive.entries();
         if (entries==null)
             return null;
 
-        Vector<String> libs = new Vector<String>();
+        List<String> libs = new ArrayList<>();
         while (entries.hasMoreElements()) {
 
             String entryName = entries.nextElement();
@@ -380,12 +380,10 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     private List<WebFragmentDescriptor> readStandardFragments(WebBundleDescriptorImpl descriptor,
             ReadableArchive archive) throws IOException {
 
-        List<WebFragmentDescriptor> wfList = new ArrayList<WebFragmentDescriptor>();
-        Vector libs = getLibraries(archive);
-        if (libs != null && libs.size() > 0) {
-
-            for (int i = 0; i < libs.size(); i++) {
-                String lib = (String)libs.get(i);
+        List<WebFragmentDescriptor> wfList = new ArrayList<>();
+        List<String> libs = getLibraries(archive);
+        if (libs != null && !libs.isEmpty()) {
+            for (String lib : libs) {
                 Archivist wfArchivist = new WebFragmentArchivist(this, habitat);
                 wfArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
                 wfArchivist.setRuntimeXMLValidationLevel(
@@ -398,13 +396,13 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                     if (embeddedArchive != null &&
                             wfArchivist.hasStandardDeploymentDescriptor(embeddedArchive)) {
                         try {
-                            wfDesc = (WebFragmentDescriptor)wfArchivist.open(embeddedArchive);
-                        } catch(SAXParseException ex) {
+                            wfDesc = (WebFragmentDescriptor) wfArchivist.open(embeddedArchive);
+                        } catch (SAXParseException ex) {
                             IOException ioex = new IOException();
                             ioex.initCause(ex);
                             throw ioex;
                         }
-                    } else {   
+                    } else {
                         wfDesc = new WebFragmentDescriptor();
                         wfDesc.setExists(false);
                     }
@@ -413,7 +411,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         embeddedArchive.close();
                     }
                 }
-                wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));    
+                wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
                 wfList.add(wfDesc);
 
                 descriptor.putJarNameWebFragmentNamePair(wfDesc.getJarName(), wfDesc.getName());

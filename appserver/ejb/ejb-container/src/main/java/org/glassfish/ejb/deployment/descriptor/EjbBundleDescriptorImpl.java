@@ -692,7 +692,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     * Returns a formatted String representing my state.
     */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
     toStringBuffer.append("EjbBundleDescriptor\n");
         super.print(toStringBuffer);
         if (cmpResourceReference!=null) {

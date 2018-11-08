@@ -122,7 +122,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Collection getNamedDescriptors();
 
-    public abstract Vector<NamedReferencePair> getNamedReferencePairs();
+    public abstract List<NamedReferencePair> getNamedReferencePairs();
 
     public abstract String getContextRoot();
 
@@ -470,7 +470,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract void combineInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2);
 
-    public abstract void printCommon(StringBuffer toStringBuffer);
+    public abstract void printCommon(StringBuilder toStringBuffer);
 
     @Override
     public abstract ArchiveType getModuleType();
@@ -497,7 +497,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract boolean isJaxrsRolesAllowedEnabled();
     public abstract void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled);
-    
+
     public abstract String getAppContextId();
     public abstract void setAppContextId(String appContextId);
 

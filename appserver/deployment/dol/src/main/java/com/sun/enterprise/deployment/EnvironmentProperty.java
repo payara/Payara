@@ -62,7 +62,7 @@ import java.util.Set;
  * @author Danny Coward
  */
 public class EnvironmentProperty extends Descriptor implements InitializationParameter, ContextParameter, ApplicationParam, WebDescriptor, EnvironmentEntry, InjectionCapable {
-    private String value; 
+    private String value;
     private String type;
     private Object valueObject;
     private boolean setValueCalled = false;
@@ -97,7 +97,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
     protected String lookupName;
 
-    /** 
+    /**
     ** copy constructor.
      * @param other
     */
@@ -106,44 +106,44 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	value = other.value;
 	type = other.type;
 	valueObject = other.valueObject;
-    }  
-				    
-    /** 
+    }
+
+    /**
     ** Construct an environment property if type String and empty string value and no description.
     */
 
     public EnvironmentProperty() {
-    }  
-    
-     /** 
-    ** Construct an environment property of given name value and description. 
+    }
+
+     /**
+    ** Construct an environment property of given name value and description.
      * @param name
      * @param value
      * @param description
     */
     public EnvironmentProperty(String name, String value, String description) {
 	this(name, value, description, null);
-    }  
-    
-    /** 
+    }
+
+    /**
     ** Construct an environment property of given name value and description and type.
     ** Throws an IllegalArgumentException if bounds checking is true and the value cannot be
-    ** reconciled with the given type. 
+    ** reconciled with the given type.
      * @param name
      * @param value
      * @param description
      * @param type
-    */ 
+    */
     public EnvironmentProperty(String name, String value, String description, String type) {
 	super(name, description);
 	this.value = value;
 	checkType(type);
 	this.type = type;
-    } 
-    
-    /** 
-    ** Returns the String value of this environment property 
-     * @return 
+    }
+
+    /**
+    ** Returns the String value of this environment property
+     * @return
     */
     @Override
     public String getValue() {
@@ -152,29 +152,29 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	}
 	return value;
     }
-    
+
     /**
      * Returns a resolved value of this environment property
-     * @return 
+     * @return
      */
     public String getResolvedValue() {
     	return RelativePathResolver.resolvePath(getValue());
     }
-    
-    /** 
-     ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is 
+
+    /**
+     ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is
      ** true and the value cannot be
-     ** reconciled with the given type. 
-     * @return 
+     ** reconciled with the given type.
+     * @return
      */
      public Object getResolvedValueObject() {
  	if (this.valueObject == null) {
  	    this.valueObject = "";
  	}
- 	return getObjectFromString(this.getResolvedValue(), this.getValueType()); 
+ 	return getObjectFromString(this.getResolvedValue(), this.getValueType());
      }
-    
-    /** 
+
+    /**
     ** checks the given class type. throws an IllegalArgumentException if bounds checking
     ** if the type is not allowed.
     */
@@ -212,23 +212,23 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	    }
 	}
     }
-    
-    /** 
-    ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is 
+
+    /**
+    ** Returns the typed value object of this environment property. Throws an IllegalArgumentException if bounds checking is
     ** true and the value cannot be
-    ** reconciled with the given type. 
-     * @return 
+    ** reconciled with the given type.
+     * @return
     */
     public Object getValueObject() {
 	if (this.valueObject == null) {
 	    this.valueObject = "";
 	}
-	return getObjectFromString(this.getValue(), this.getValueType()); 
+	return getObjectFromString(this.getValue(), this.getValueType());
     }
-    
-    /** 
-    ** Returns value type of this environment property. 
-     * @return 
+
+    /**
+    ** Returns value type of this environment property.
+     * @return
     */
     public Class getValueType() {
 	if (this.type == null) {
@@ -242,8 +242,8 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	    }
 	}
     }
-    
-     /** 
+
+     /**
     ** Returns value type of this environment property. Throws Illegal argument exception if this is not an
     ** allowed type and bounds checking.
      * @param type
@@ -279,10 +279,10 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         return type;
     }
 
-    
-     /** 
-    ** Returns value type of this environment property as a classname. 
-     * @return 
+
+     /**
+    ** Returns value type of this environment property as a classname.
+     * @return
     */
     @Override
     public String getType() {
@@ -299,7 +299,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     }
 
     /**
-     * 
+     *
      * @return the mapped name or an empty string if not set
      */
     public String getMappedName() {
@@ -308,7 +308,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
     /**
      * Sets the lookup name
-     * @param lName 
+     * @param lName
      */
    public void setLookupName(String lName) {
         lookupName = lName;
@@ -323,17 +323,17 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     }
 
     /**
-     * 
+     *
      * @return true if lookup is not null and non-zero length
      */
     public boolean hasLookupName() {
         return (lookupName != null && lookupName.length() > 0);
     }
-    
-    /** 
+
+    /**
     ** Sets the value of the environment property to the given string.
      * @param value
-    */    
+    */
     @Override
     public void setValue(String value) {
 	this.value = value;
@@ -343,7 +343,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
     /**
      * Returns true if the value of the environment property has been set
-     * @return 
+     * @return
      */
     public boolean isSetValueCalled() {
         return setValueCalled;
@@ -353,7 +353,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         return ( setValueCalled || hasLookupName() || getMappedName().length() > 0);
     }
 
-     /** 
+     /**
     ** Returns true if the argument is an environment property of the same name, false else.
      * @param other
     */
@@ -365,26 +365,26 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	}
 	return false;
     }
-    
-    /** 
+
+    /**
     ** The hashCode of an environment property is the same as that of the name String.
     */
     @Override
     public int hashCode() {
 	return this.getName().hashCode();
     }
-    
-    /** 
+
+    /**
     ** Returns a String representation of this environment property.
      * @param toStringBuffer
     */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	toStringBuffer.append("Env-Prop: ").append(super.getName()).append("@");
         printInjectableResourceInfo(toStringBuffer);
         toStringBuffer.append("@").append(this.getType()).append("@").append(this.getValue()).append("@").append("@").append(super.getDescription());
     }
-    
+
     private Object getObjectFromString(String string, Class type) {
         if (type == null && !this.isBoundsChecking()) {
             Object obj = getValueObjectUsingAllowedTypes(string);
@@ -431,9 +431,9 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 								       "enterprise.deployment.exceptionillegaltypeenvproperty",
 								       "Illegal type for environment properties: {0}", new Object[] {type}));
     }
-	
 
-    private Object getValueObjectUsingAllowedTypes(String string) 
+
+    private Object getValueObjectUsingAllowedTypes(String string)
                                   throws IllegalArgumentException {
         if (this.type.equals(int.class.getName())) {
             return Integer.valueOf(string);
@@ -455,7 +455,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
             } else {
                 return string.charAt(0);
             }
-        } 
+        }
         return null;
     }
 
@@ -492,7 +492,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
             injectionTargets.add(target);
         }
     }
-    
+
     @Override
     public Set<InjectionTarget> getInjectionTargets() {
         return (injectionTargets != null) ? injectionTargets : new HashSet<InjectionTarget>();
@@ -531,11 +531,11 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     public void setInjectResourceType(String resourceType) {
         type = convertPrimitiveTypes(resourceType);
     }
-    
 
-    public StringBuffer printInjectableResourceInfo
-        (StringBuffer toStringBuffer) {
-        
+
+    public StringBuilder printInjectableResourceInfo
+        (StringBuilder toStringBuffer) {
+
         if( isInjectable() ) {
             for (InjectionTarget target : getInjectionTargets()) {
                 if( target.isFieldInjectable() ) {
@@ -544,7 +544,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
                             append(target.getFieldName());
                 } else {
                     toStringBuffer.append("Method-Injectable Resource. Class name =").
-                            append(target.getClassName()).append(" Method =").                            
+                            append(target.getClassName()).append(" Method =").
                             append(target.getMethodName());
                 }
             }
@@ -554,10 +554,10 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
         return toStringBuffer;
     }
-    
-    // 
+
+    //
     // End InjectableResource implementation
     //
-    
-    
+
+
 }

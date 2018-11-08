@@ -96,7 +96,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
     public void setExists(boolean exists) {
         this.exists = exists;
     }
-    
+
     @Override
     protected WebComponentDescriptor combineWebComponentDescriptor(
             WebComponentDescriptor webComponentDescriptor) {
@@ -254,7 +254,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                 if (jdr.isConflict((ResourceEnvReferenceDescriptor)jdRef)) {
                     conflictResourceEnvReference = true;
                 }
-                combineInjectionTargets(jdr, jdRef);   
+                combineInjectionTargets(jdr, jdRef);
             } else {
                 addResourceEnvReferenceDescriptor(jdRef);
             }
@@ -326,15 +326,15 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
     /**
      * Return a formatted version as a String.
      */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("\nWeb Fragment descriptor");
         toStringBuffer.append("\n");
         printCommon(toStringBuffer);
         if (jarName != null) {
-            toStringBuffer.append("\njar name " + jarName);
+            toStringBuffer.append("\njar name ").append(jarName);
         }
         if (ordering != null) {
-            toStringBuffer.append("\nordering " + ordering);
+            toStringBuffer.append("\nordering ").append(ordering);
         }
     }
 

@@ -66,7 +66,7 @@ import java.util.Collections;
  * looked up through ArchivistFactory.
  *
  * @author  Shing Wai Chan
- * @version 
+ * @version
  */
 class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
 
@@ -83,7 +83,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     @Override
     public ArchiveType getModuleType() {
         return null;
-    }        
+    }
 
     /**
      * Archivist read XML deployment descriptors and keep the
@@ -92,8 +92,8 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      */
     public void setDescriptor(Application descriptor) {
         this.descriptor = null;
-    }  
-    
+    }
+
     /**
      * @return the DeploymentDescriptorFile responsible for handling
      * standard deployment descriptor
@@ -105,7 +105,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
         }
         return standardDD;
     }
-    
+
     /**
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
@@ -137,8 +137,8 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     }
 
     /**
-     * In the case of web archive, the super handles() method should be able 
-     * to make a unique identification.  If not, then the archive is definitely 
+     * In the case of web archive, the super handles() method should be able
+     * to make a unique identification.  If not, then the archive is definitely
      * not a war.
      */
     @Override
@@ -151,12 +151,12 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     protected String getArchiveExtension() {
         return WEB_FRAGMENT_EXTENSION;
     }
-    
+
     /**
      * @return a list of libraries included in the archivist
      */
     @Override
-    public Vector getLibraries(Archive archive) {
+    public List<String> getLibraries(Archive archive) {
         return null;
     }
 }

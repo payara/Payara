@@ -96,7 +96,7 @@ public class MultipartConfigDescriptor extends Descriptor implements MultipartCo
     }
 
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         if (location != null) {
             toStringBuffer.append("\n multipart location ").append(location);
         }

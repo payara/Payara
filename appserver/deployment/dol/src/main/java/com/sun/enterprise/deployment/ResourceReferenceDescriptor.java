@@ -58,16 +58,16 @@ import java.util.logging.Logger;
  * @author Danny Coward
  */
 
-public class ResourceReferenceDescriptor extends EnvironmentProperty 
+public class ResourceReferenceDescriptor extends EnvironmentProperty
 	implements NamedDescriptor, ResourceReference {
 
     static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
-    /** 
+    /**
      * For database resources, this says the application will log in.
      */
     public static final String APPLICATION_AUTHORIZATION = "Application";
-    /** 
+    /**
      * For database resources this says the container will log in.
      */
     public static final String CONTAINER_AUTHORIZATION = "Container";
@@ -75,16 +75,16 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     // res-sharing-scope values
     public static final String RESOURCE_SHAREABLE = "Shareable";
     public static final String RESOURCE_UNSHAREABLE = "Unshareable";
-    
+
     private static final String URL_RESOURCE_TYPE = "java.net.URL";
-    
+
     //START OF IASRI 4633229
-    private static final String CONNECTOR_RESOURCE_TYPE = "javax.resource.cci.ConnectionFactory";    
+    private static final String CONNECTOR_RESOURCE_TYPE = "javax.resource.cci.ConnectionFactory";
     //END OF IASRI 4633229
-    private static final String MAIL_RESOURCE_TYPE = "javax.mail.Session";    
+    private static final String MAIL_RESOURCE_TYPE = "javax.mail.Session";
 
     // start IASRI 4734197
-    private static final String JDBC_RESOURCE_TYPE = "javax.sql.DataSource";    
+    private static final String JDBC_RESOURCE_TYPE = "javax.sql.DataSource";
     // end IASRI 4734197
 
     private static final String ORB_RESOURCE_TYPE = "org.omg.CORBA.ORB";
@@ -92,7 +92,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     private static final String WEBSERVICE_CONTEXT_TYPE =
         "javax.xml.ws.WebServiceContext";
 
-    // change field name from type to rType since it's error-prone 
+    // change field name from type to rType since it's error-prone
     // to use the same field name as its super class
     private String rType;
 
@@ -105,15 +105,15 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     private String authorization;
     private DataSource dataSource;
     private String sharingScope;
-    
+
     private List runtimeProps=null;
-    
+
     // for cmp-resource type
     boolean createTablesAtDeploy=false;
     boolean dropTablesAtUndeploy=false;
     String databaseVendorName = null;
     Properties schemaGeneratorProperties = null;
-    
+
     // Create logger object per Java SDK 1.4 to log messages
     // introduced Santanu De, Sun Microsystems, March 2002
     static final Logger _logger = DOLUtils.getDefaultLogger();
@@ -121,26 +121,26 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     // START OF IASRI 4718559
     private static final LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ResourceReferenceDescriptor.class);
-    // END OF IASRI 4718559    
-    
+    // END OF IASRI 4718559
+
     /**
-     * Construct a resource reference with the given name, description 
+     * Construct a resource reference with the given name, description
      * and type.
      * @param name the name of the reference
      * @param description the description
      * @param type the type of the resource reference.
      */
-    public ResourceReferenceDescriptor(String name, String description, 
+    public ResourceReferenceDescriptor(String name, String description,
 					String type) {
 	super(name, "", description);
 	rType = type;
     }
-    
+
     /**
      * Default constructor.
      */
     public ResourceReferenceDescriptor() {
-    }    
+    }
 
     /**
      * Return the JNDI name of this resource reference.
@@ -152,7 +152,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         if (jndiName != null  && ! jndiName.equals("")) {
             return jndiName;
         }
-        if (mappedName != null && ! mappedName.equals("")) { 
+        if (mappedName != null && ! mappedName.equals("")) {
             return mappedName;
         }
         if(StringUtils.ok(lookupName)) {
@@ -165,8 +165,8 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         }
         return "";
     }
-        
-    /** 
+
+    /**
      * Set the JNDI name of this resource reference.
      * @param jndiName the JNDI name of the resource reference.
      */
@@ -184,7 +184,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public void setInjectResourceType(String resourceType) {
         rType = resourceType;
     }
-   
+
     /**
      * Has the sharing scope been set?
      * @return true if the sharing scope has been set
@@ -203,8 +203,8 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	}
 	return sharingScope;
     }
-    
-    /** 
+
+    /**
      * Set the res-sharing-scope of this resource reference.
      * @param ss the sharing scope.
      */
@@ -220,7 +220,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public boolean isResolved() {
 	return true;
     }
-    
+
     /**
      * Has the authorization type been set?
      * @return true if the authorization type has been set
@@ -230,14 +230,14 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     }
 
     /**
-     * Return true of this resource reference is expecting the container 
+     * Return true of this resource reference is expecting the container
      * to authorize the resource.
      * @return true if authorization is container managed.
      */
     public boolean isContainerAuthorization() {
 	return this.getAuthorization().equals(CONTAINER_AUTHORIZATION);
     }
-    
+
     /**
      * Return the authorization type of this resource. The default value
      * is APPLICATION_AUTHORIZATION
@@ -251,16 +251,16 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	return this.authorization;
     }
 
-    /** 
-     * Sets the authorization type of this resource. 
+    /**
+     * Sets the authorization type of this resource.
      * @param authorization the authorization type.
-     */    
+     */
     @Override
     public void setAuthorization(String authorization) {
 	this.authorization = authorization;
     }
 
-    /** 
+    /**
      * Return the type of the resource.
      * @return the type of the resource.
      */
@@ -268,15 +268,15 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public String getType() {
         return rType;
     }
-    
-    /** 
+
+    /**
      * Sets the type of this resource.
      * @param type the type of the resource.
      */
     @Override
     public void setType(String type) {
         rType = type;
-    }	
+    }
 
     /**
      * Lookup the datasource from the namespace based on the JNDI name.
@@ -286,7 +286,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     {
 	if ( dataSource == null ) {
 	    try {
-		// Get JDBC DataSource for database 
+		// Get JDBC DataSource for database
 		javax.naming.Context ctx = new javax.naming.InitialContext();
 		// cache the datasource to avoid JNDI lookup overheads
 		dataSource = (DataSource)ctx.lookup(getJndiName());
@@ -297,15 +297,15 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
     /**
      * Return true is the resource is of {@link javax.xml.ws.WebServiceContext} type
-     * @return 
+     * @return
      */
     public boolean isWebServiceContext() {
         return this.getType().equals(WEBSERVICE_CONTEXT_TYPE);
     }
-    
+
     /**
      * Return true is the resource is of {@link org.omg.CORBA.ORB} type
-     * @return 
+     * @return
      */
     public boolean isORB() {
     	return this.getType().equals(ORB_RESOURCE_TYPE);
@@ -343,16 +343,16 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
     /**
      * Return true if this resource is a JMS connection factory.
-     * @return true if the resource is a JMS connection factory, false 
+     * @return true if the resource is a JMS connection factory, false
      * otherwise.
      */
     public boolean isJMSConnectionFactory() {
         String myType = this.getType();
-        return 
+        return
             ( myType.equals("javax.jms.QueueConnectionFactory") ||
               myType.equals("javax.jms.TopicConnectionFactory") );
     }
-    
+
     /**
      * Return the identity used to authorize this resource.
      * @return the principal.
@@ -360,7 +360,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public ResourcePrincipal getResourcePrincipal() {
 	return this.resourcePrincipal;
     }
-    
+
     /**
      * Sets the identity used to authorize this resource.
      * @param resourcePrincipal the principal.
@@ -368,7 +368,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public void setResourcePrincipal(ResourcePrincipal resourcePrincipal) {
 	this.resourcePrincipal = resourcePrincipal;
     }
-    
+
     /**
      * Sets the mail configuration information for this reference.
      * @param mailConfiguration the mail configuration object.
@@ -376,7 +376,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public void setMailConfiguration(MailConfiguration mailConfiguration) {
 	this.mailConfiguration = mailConfiguration;
     }
-    
+
     /**
      * Add a new runtime property to this cmp resource
      * @param newProp
@@ -387,7 +387,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	 }
 	 runtimeProps.add(newProp);
      }
-     
+
      /**
       * @return the runtime properties for this cmp resource
       */
@@ -397,7 +397,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	 }
 	 return runtimeProps.iterator();
      }
-    
+
     /**
      * Return the mail configuration details of thsi resource or null.
      * @return the mail configuration object.
@@ -405,48 +405,48 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public MailConfiguration getMailConfiguration() {
 	return this.mailConfiguration;
     }
-    
-    /** 
-     * @return true if automatic creation of tables for the CMP Beans is 
+
+    /**
+     * @return true if automatic creation of tables for the CMP Beans is
      * done at deployment time
      */
     public boolean isCreateTablesAtDeploy() {
         return createTablesAtDeploy;
     }
-    
+
     /**
-     * Sets whether if automatic creation of tables for the CMP Beans is 
+     * Sets whether if automatic creation of tables for the CMP Beans is
      * done at deployment time
      * @param createTablesAtDeploy
      */
     public void setCreateTablesAtDeploy(boolean createTablesAtDeploy) {
         this.createTablesAtDeploy = createTablesAtDeploy;
     }
-    
-    /** 
-     * @return true if automatic creation of tables for the CMP Beans is 
+
+    /**
+     * @return true if automatic creation of tables for the CMP Beans is
      * done at deployment time
      */
     public boolean isDropTablesAtUndeploy() {
         return dropTablesAtUndeploy;
     }
-    
+
     /**
-     * Sets whether if automatic creation of tables for the CMP Beans is 
+     * Sets whether if automatic creation of tables for the CMP Beans is
      * done at deployment time
      * @param dropTablesAtUndeploy
      */
     public void setDropTablesAtUndeploy(boolean dropTablesAtUndeploy) {
         this.dropTablesAtUndeploy = dropTablesAtUndeploy;
     }
-    
+
     /**
      * @return the database vendor name
      */
     public String getDatabaseVendorName() {
         return databaseVendorName;
     }
-    
+
     /**
      * Sets the database vendor name
      * @param vendorName
@@ -454,14 +454,14 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public void setDatabaseVendorName(String vendorName) {
         this.databaseVendorName = vendorName;
     }
-    
+
     /**
      * @return the override properties for the schema generation
      */
     public Properties getSchemaGeneratorProperties() {
         return schemaGeneratorProperties;
     }
-    
+
     /**
      * Sets the override properties for the schema generation
      * @param props
@@ -469,9 +469,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     public void setSchemaGeneratorProperties(Properties props) {
         schemaGeneratorProperties = props;
     }
-    
+
     /**
-     * Equality on name. 
+     * Equality on name.
      * @param object
      */
     @Override
@@ -482,7 +482,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	}
 	return false;
     }
-    
+
     @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
@@ -493,13 +493,13 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         return result;
     }
 
-    /** 
+    /**
      * Returns a formatted string representing my state.
      * @param toStringBuffer
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        StringBuffer sb = toStringBuffer;
+    public void print(StringBuilder toStringBuffer) {
+        StringBuilder sb = toStringBuffer;
         sb.append("Res-Ref-Env-Property: ");
         sb.append(super.getName());
         sb.append("@");
@@ -515,9 +515,9 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
             sb.append(getMailConfiguration());
 	}
         if (runtimeProps!=null) {
-            for (Iterator itr = runtimeProps.iterator();itr.hasNext();) {
-                sb.append("\nPropery : ");
-                sb.append(itr.next());
+            for (Object runtimeProp : runtimeProps) {
+                sb.append("\nProperty : ");
+                sb.append(runtimeProp);
             }
         } else {
             sb.append("\nNo Runtime properties");
@@ -525,27 +525,27 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         sb.append("\nDatabase Vendor : ").append(databaseVendorName);
         sb.append("\nCreate Tables at Deploy : ").append(createTablesAtDeploy);
         sb.append("\nDelete Tables at Undeploy : ").append(dropTablesAtUndeploy);
-        
+
         if (schemaGeneratorProperties!=null) {
             sb.append("\nSchema Generator Properties : ");
             sb.append(schemaGeneratorProperties);
         }
-                
+
     }
    //START OF IASRI 4633229
     /**
      * Return true if this resource is a CCI connection factory.
-     * @return true if the resource is a CCI connection factory, false 
+     * @return true if the resource is a CCI connection factory, false
      * otherwise.
      */
     public boolean isResourceConnectionFactory () {
         return this.getType().equals(CONNECTOR_RESOURCE_TYPE);
-    }    
+    }
     //END OF IASRI 4633229
 
     // START OF IASRI 4718559, 4729298
-    /** 
-    ** checks the given class type. throws an IllegalArgumentException 
+    /**
+    ** checks the given class type. throws an IllegalArgumentException
     ** if bounds checking
     ** if the class of type "type" does not exist
     */
@@ -553,8 +553,8 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         if (rType == null) {
 	    if (this.isBoundsChecking()) {
 	        throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptiontypenotallowedpropertytype", 
-                "{0} is not an allowed property value type", 
+                "enterprise.deployment.exceptiontypenotallowedpropertytype",
+                "{0} is not an allowed property value type",
                 new Object[] {"null"}));
             }
         }
@@ -563,20 +563,20 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	    // is it loadable ?
 	    try {
 	        // Bug fix 4850684: for resource-refs that are user-defined classes,
-	        // the classloader used to load them cannot be the one associated 
+	        // the classloader used to load them cannot be the one associated
 	        // with the application deployed, since the classloader instance
 	        // would have no idea about classes not included in app
 	        // for e.g connector module with res-ref that points to the
 	        // ConnectionFactory class of a resource adapter
-	      
+
 	        typeClass = Class.forName(rType, true,
 					  Thread.currentThread().getContextClassLoader());
-		
+
 	    } catch (Throwable t) {
 	        if (this.isBoundsChecking()) {
 		    throw new IllegalArgumentException(localStrings.getLocalString(
-                  "enterprise.deployment.exceptiontypenotallowedpropertytype", 
-                  "{0} is not an allowed property value type", 
+                  "enterprise.deployment.exceptiontypenotallowedpropertytype",
+                  "{0} is not an allowed property value type",
                   new Object[] {rType}));
 		} else {
 		    return;

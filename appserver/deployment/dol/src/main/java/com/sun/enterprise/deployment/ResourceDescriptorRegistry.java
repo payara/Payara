@@ -64,12 +64,12 @@ public class ResourceDescriptorRegistry implements Serializable {
     e.g. ConnectionFactoryDescriptor and AdminObjectDescriptor is not allowed to define at Application Client Descriptor.
      */
     static {
-        invalidResourceTypeScopes.put(JavaEEResourceType.MSD,new HashSet<Class>());
-        invalidResourceTypeScopes.put(JavaEEResourceType.DSD,new HashSet<Class>());
-        invalidResourceTypeScopes.put(JavaEEResourceType.JMSCFDD,new HashSet<Class>());
-        invalidResourceTypeScopes.put(JavaEEResourceType.JMSDD,new HashSet<Class>());
-        invalidResourceTypeScopes.put(JavaEEResourceType.CFD,new HashSet<Class>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
-        invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<Class>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
+        invalidResourceTypeScopes.put(JavaEEResourceType.MSD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.DSD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.JMSCFDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.JMSDD,new HashSet<>());
+        invalidResourceTypeScopes.put(JavaEEResourceType.CFD,new HashSet<>(Collections.singletonList(ApplicationClientDescriptor.class)));
+        invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<>(Collections.singletonList(ApplicationClientDescriptor.class)));
 
     }
 
@@ -77,14 +77,14 @@ public class ResourceDescriptorRegistry implements Serializable {
             new LocalStringManagerImpl(ResourceDescriptorRegistry.class);
 
     private Map<JavaEEResourceType,Set<ResourceDescriptor>> resourceDescriptors
-            = new HashMap<JavaEEResourceType,Set<ResourceDescriptor>>();
+            = new HashMap<>();
 
     /**
      * This method returns all descriptors associated with the app.
      * @return
      */
     public Set<ResourceDescriptor> getAllResourcesDescriptors() {
-        Set<ResourceDescriptor> allResourceDescriptors = new HashSet<ResourceDescriptor>();
+        Set<ResourceDescriptor> allResourceDescriptors = new HashSet<>();
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.DSD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MSD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CFD));
@@ -101,7 +101,7 @@ public class ResourceDescriptorRegistry implements Serializable {
      * @return
      */
     public Set<ResourceDescriptor> getAllResourcesDescriptors(Class givenClazz) {
-        Set<ResourceDescriptor> allResourceDescriptors = new HashSet<ResourceDescriptor>();
+        Set<ResourceDescriptor> allResourceDescriptors = new HashSet<>();
 
         for(JavaEEResourceType javaEEResourceType: JavaEEResourceType.values()) {
             Set<Class> invalidClassSet = invalidResourceTypeScopes.get(javaEEResourceType);
@@ -155,7 +155,7 @@ public class ResourceDescriptorRegistry implements Serializable {
     public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType javaEEResourceType) {
         Set<ResourceDescriptor> resourceDescriptorSet = resourceDescriptors.get(javaEEResourceType);
         if(resourceDescriptorSet==null) {
-            resourceDescriptors.put(javaEEResourceType,new HashSet<ResourceDescriptor>());
+            resourceDescriptors.put(javaEEResourceType,new HashSet<>());
         }
         return resourceDescriptors.get(javaEEResourceType);
     }

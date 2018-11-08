@@ -1153,7 +1153,7 @@ public final class PersistenceDescriptor extends Descriptor {
     /**
     * Return my formatted string representation.
     */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("\n Entity descriptor");
 	toStringBuffer.append("\n cmpFields ").append(cmpFields);

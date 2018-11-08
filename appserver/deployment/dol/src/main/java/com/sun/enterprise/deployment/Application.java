@@ -1624,7 +1624,7 @@ public class Application extends CommonResourceBundleDescriptor
      * A formatted String representing my state.
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("Application");
         toStringBuffer.append("\n");
         super.print(toStringBuffer);
@@ -1642,9 +1642,8 @@ public class Application extends CommonResourceBundleDescriptor
         toStringBuffer.append("\n Realm ").append(realm);
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
-        for (Iterator itr = descSet.iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
+        for (Object obj : descSet) {
             if (obj instanceof Descriptor)
                 ((Descriptor) obj).print(sbuf);
             else

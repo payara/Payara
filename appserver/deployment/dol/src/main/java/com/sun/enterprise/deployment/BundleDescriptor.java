@@ -418,8 +418,8 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Utility method for iterating the set of NameReference pairs in the supplied nameEnvironment
      */
-    protected Vector<NamedReferencePair> getNamedReferencePairsFrom(JndiNameEnvironment nameEnvironment) {
-        Vector<NamedReferencePair> pairs = new Vector<NamedReferencePair>();
+    protected List<NamedReferencePair> getNamedReferencePairsFrom(JndiNameEnvironment nameEnvironment) {
+        List<NamedReferencePair> pairs = new ArrayList<>();
         for (Iterator itr = nameEnvironment.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
             ResourceReferenceDescriptor resourceReference = (ResourceReferenceDescriptor) itr.next();
             pairs.add(NamedReferencePair.createResourceRefPair((Descriptor) nameEnvironment, resourceReference));
@@ -615,7 +615,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Prints a formatted string representing my state.
      */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("\n");
         super.print(toStringBuffer);
         toStringBuffer.append("\n Roles[] = ").append(roles);

@@ -108,7 +108,7 @@ public class WebServiceEndpoint extends Descriptor
     private String webComponentLink;
     private WebComponentDescriptor webComponentImpl;
 
-    // List of handlers associated with this endpoint. 
+    // List of handlers associated with this endpoint.
     // Handler order is important and must be preserved.
     // This list hols the handlers specified for JAXRPC based service
     private LinkedList handlers;
@@ -137,29 +137,29 @@ public class WebServiceEndpoint extends Descriptor
     //
     // For ejb endpoints, the uri is relative to root of the
     // public web server (i.e. the first portion of the uri is a context root).
-    // 
-    // E.g. if the web server is listening at http://localhost:8000, 
+    //
+    // E.g. if the web server is listening at http://localhost:8000,
     // an endpoint address URI of StockQuoteService/StockQuotePort would result
     // in an endpoint address of :
     //
     //     http://localhost:8000/StockQuoteService/StockQuotePort
-    // 
+    //
     // The context root portion should not conflict with the context root
-    // of any web application.  
+    // of any web application.
     //
     // For servlet endpoints, the uri is optional.  If the uri is not specified,
-    // it will be derived from the url pattern for the servlet that is 
-    // implementing this endpoint. The syntax of the servlet 
+    // it will be derived from the url pattern for the servlet that is
+    // implementing this endpoint. The syntax of the servlet
     // endpoint address uri is the same as the syntax for the url-pattern
     // element in the web.xml servlet-mapping. Note that this makes it different
     // than the syntax for ejb endpoint uris, since the servlet endpoint uri
     // given here will be relative to the context root of the servlet's
     // web application.
-    // 
+    //
     private String endpointAddressUri;
 
-    // Optional authentication method for EJB endpoints.  
-    // Auth method holds an authorization type with one of the following 
+    // Optional authentication method for EJB endpoints.
+    // Auth method holds an authorization type with one of the following
     // values : BASIC, CLIENT-CERT
     // The BASIC constant is defined on HttpServletRequest.
     // If set to null (default), endpoint does not perform authentication
@@ -173,7 +173,7 @@ public class WebServiceEndpoint extends Descriptor
     private String transportGuarantee;
 
     // The Service QName is derived during j2eec and stored as
-    // runtime information.  
+    // runtime information.
     private String serviceNamespaceUri;
     private String serviceLocalPart;
 
@@ -653,7 +653,7 @@ public class WebServiceEndpoint extends Descriptor
 
     //
     // Runtime information
-    // 
+    //
 
     public boolean hasEndpointAddressUri() {
         return (endpointAddressUri != null);
@@ -742,7 +742,7 @@ public class WebServiceEndpoint extends Descriptor
 
     /**
      * Generate a URL pointing to the initial wsdl document for this
-     * endpoint's web service.  
+     * endpoint's web service.
      */
     public URL composeFinalWsdlUrl(URL root) throws MalformedURLException {
 
@@ -762,7 +762,7 @@ public class WebServiceEndpoint extends Descriptor
     /**
      * This is the logical equivalent to endpoint address uri, but for
      * url publishing.  Like endpoint address uri, it does not include the
-     * context root for servlet endpoints.  
+     * context root for servlet endpoints.
      *
      * @return publishing uri without a leading or trailing slash.
      */
@@ -915,8 +915,8 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     /**
-     * Store current contents of servlet impl class in a runtime descriptor 
-     * element. The standard deployment descriptor element will be replaced at 
+     * Store current contents of servlet impl class in a runtime descriptor
+     * element. The standard deployment descriptor element will be replaced at
      * deployment time with a container-provided servlet impl, so we need
      * to make a copy of this value in the runtime information.
      */
@@ -986,8 +986,8 @@ public class WebServiceEndpoint extends Descriptor
         }
 
         // Copy the value of the servlet impl bean class into
-        // the runtime information.  This way, we'll still 
-        // remember it after the servlet-class element has been 
+        // the runtime information.  This way, we'll still
+        // remember it after the servlet-class element has been
         // replaced with the name of the container's servlet class.
         saveServletImplClass();
 
@@ -1013,8 +1013,8 @@ public class WebServiceEndpoint extends Descriptor
                 String uri = (String) urlPatterns.iterator().next();
                 setEndpointAddressUri(uri);
 
-                // Set transport guarantee in runtime info if transport 
-                // guarantee is INTEGRAL or CONDIFIDENTIAL for any 
+                // Set transport guarantee in runtime info if transport
+                // guarantee is INTEGRAL or CONDIFIDENTIAL for any
                 // security constraint with this url-pattern.
                 Collection constraints =
                         bundle.getSecurityConstraintsForUrlPattern(uri);
@@ -1055,7 +1055,7 @@ public class WebServiceEndpoint extends Descriptor
         return "so`ap";
     }
 
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append("\n endpoint name = ").append(endpointName);
         toStringBuffer.append( "\n endpoint intf = ").append(serviceEndpointInterface);

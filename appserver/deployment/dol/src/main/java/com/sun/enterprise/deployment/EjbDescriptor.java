@@ -113,7 +113,7 @@ public interface EjbDescriptor extends NamedDescriptor,
 
     Set<MethodDescriptor> getMethodDescriptors();
 
-    Map getMethodPermissionsFromDD();
+    Map<MethodPermission, List<MethodDescriptor>> getMethodPermissionsFromDD();
 
     String getEjbClassName();
 

@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-/** 
+/**
  * This class contains deployment information for an EntityBean with
  * bean-managed persistence.
  * Subclasses contains additional information for EJB1.1/EJB2.0 CMP EntityBeans.
@@ -74,16 +74,16 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	    new LocalStringManagerImpl(EjbEntityDescriptor.class);
 
                static Logger _logger = DOLUtils.getDefaultLogger();
- 
 
-    
+
+
     /**
-     * The default constructor. 
+     * The default constructor.
      */
     public EjbEntityDescriptor() {
     }
-    
-    /** 
+
+    /**
      * The copy constructor.
      */
     public EjbEntityDescriptor(EjbDescriptor other) {
@@ -93,8 +93,8 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	    this.persistenceType = entity.persistenceType;
 	    this.isReentrant = entity.isReentrant;
 	    this.primaryKeyClassName = entity.primaryKeyClassName;
-	}   
-    } 
+	}
+    }
 
     @Override
     public String getEjbTypeForDisplay() {
@@ -102,20 +102,20 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     }
 
     /**
-     * Gets the container transaction type for this entity bean. Entity 
+     * Gets the container transaction type for this entity bean. Entity
      * beans always have CONTAINER_TRANSACTION_TYPE transaction type.
      */
     public String getTransactionType() {
 	return super.transactionType;
     }
-    
+
     /**
-     * Sets the transaction type for this entity bean. 
-     * Throws an illegal argument exception if this type is not 
+     * Sets the transaction type for this entity bean.
+     * Throws an illegal argument exception if this type is not
      * CONTAINER_TRANSACTION_TYPE.
      */
     public void setTransactionType(String transactionType) {
-	if (!CONTAINER_TRANSACTION_TYPE.equals(transactionType) 
+	if (!CONTAINER_TRANSACTION_TYPE.equals(transactionType)
 		&& this.isBoundsChecking()) {
 	    throw new IllegalArgumentException(localStrings.getLocalString(
 	      "enterprise.deployment.exceptionentitybeancanonlyhavecntnrtxtype",
@@ -136,7 +136,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     public boolean isReentrant() {
 	return this.isReentrant;
     }
-    
+
     public String getReentrant() {
 	if (this.isReentrant()) {
 	    return TRUE;
@@ -144,7 +144,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	    return FALSE;
 	}
     }
-    
+
     public void setReentrant(String reentrantString) {
 	if (TRUE.equalsIgnoreCase(reentrantString)) {
 	    this.setReentrant(true);
@@ -158,9 +158,9 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	    throw new IllegalArgumentException(localStrings.getLocalString(
 									   "enterprise.deployment.exceptionstringnotlegalvalue",
 									  "{0} is not a legal value for entity reentrancy", new Object[] {reentrantString}));
-	}   
+	}
     }
-    
+
     /**
      * Sets the isReentrant flag for this bean.
      */
@@ -168,7 +168,7 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	this.isReentrant = isReentrant;
 
     }
-    
+
     /**
      * Returns the persistence type for this entity bean. Defaults to BEAN_PERSISTENCE.
      */
@@ -178,16 +178,16 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	}
 	return this.persistenceType;
     }
-    
+
     /**
-     * Sets the persistence type for this entity bean. Allowable values are BEAN_PERSISTENCE 
+     * Sets the persistence type for this entity bean. Allowable values are BEAN_PERSISTENCE
      * or CONTAINER_PERSISTENCE, or else an IllegalArgumentException is thrown.
      */
     public void setPersistenceType(String persistenceType) {
 	boolean isValidChange = (BEAN_PERSISTENCE.equals(persistenceType) || CONTAINER_PERSISTENCE.equals(persistenceType));
 	if (isValidChange || !this.isBoundsChecking()) {
 	    this.persistenceType = persistenceType;
-	    
+
 	} else {
 	        //_logger.log(Level.FINE,"Warning " + persistenceType + " is not an allowed persistence type");
 	    throw new IllegalArgumentException(localStrings.getLocalString(
@@ -195,9 +195,9 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 									   "{0} is not an allowed persistence type", new Object[] {persistenceType}));
 	}
     }
-    
+
     /**
-     * Return the classname of the primary key for this bean, or the empty 
+     * Return the classname of the primary key for this bean, or the empty
      * string if none has been set.
      */
     public String getPrimaryKeyClassName() {
@@ -206,23 +206,23 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	}
 	return this.primaryKeyClassName;
     }
-    
+
     /**
-     * Set the classname of the primary key used by this bean. 
+     * Set the classname of the primary key used by this bean.
      */
     public void setPrimaryKeyClassName(String primaryKeyClassName) {
 	this.primaryKeyClassName = primaryKeyClassName;
 
     }
-    
+
     /**
      * Returns the type of this bean. EjbEntityDescriptor.TYPE
      */
     public String getType() {
 	return TYPE;
     }
-    
-    /** 
+
+    /**
      * Sets my type String.
      */
     public void setType(String type) {
@@ -230,11 +230,11 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	       "enterprise.deployment.exceptioncannotsettypeonentitybean",
 	       "Cannon set type on an entity bean"));
     }
-    
+
     /**
      * Return my formatted string representation.
      */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("\n Entity descriptor");
 	toStringBuffer.append("\n isReentrant ").append(isReentrant);

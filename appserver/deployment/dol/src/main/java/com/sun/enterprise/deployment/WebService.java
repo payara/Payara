@@ -101,7 +101,7 @@ public class WebService extends Descriptor {
     private Boolean isJaxWSBased = null;
 
     /**
-     * Default constructor. 
+     * Default constructor.
      */
     public WebService() {
         this("");
@@ -116,7 +116,7 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * This is called after verifying that all the endpoints are of the same type, either JAX-WS or JAX-RPC 
+     * This is called after verifying that all the endpoints are of the same type, either JAX-WS or JAX-RPC
      * @param isJaxWSBased
      */
     public void setJaxWSBased(boolean isJaxWSBased) {
@@ -124,7 +124,7 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * copy constructor. 
+     * copy constructor.
      */
     public WebService(WebService other) {
         super(other);
@@ -266,13 +266,13 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * Select one of this webservice's endpoints to use for converting 
-     * relative imports.  
+     * Select one of this webservice's endpoints to use for converting
+     * relative imports.
      */
     public WebServiceEndpoint pickEndpointForRelativeImports() {
         WebServiceEndpoint pick = null;
 
-        // First secure endpoint takes precedence.  
+        // First secure endpoint takes precedence.
         for(WebServiceEndpoint wse : endpoints.values()) {
             if( wse.isSecure() ) {
                 pick = wse;
@@ -286,7 +286,7 @@ public class WebService extends Descriptor {
     /**
      * Returns a formatted String of the attributes of this object.
      */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         super.print(toStringBuffer);
         toStringBuffer.append( "\n wsdl file : ").append( wsdlFileUri);
         toStringBuffer.append( "\n mapping file ").append(mappingFileUri);
@@ -295,4 +295,4 @@ public class WebService extends Descriptor {
         toStringBuffer.append( "\n endpoints ").append(endpoints);
     }
 
-}    
+}

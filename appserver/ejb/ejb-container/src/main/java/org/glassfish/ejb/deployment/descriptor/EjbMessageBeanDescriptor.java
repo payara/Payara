@@ -804,7 +804,7 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
      * @param toStringBuffer
     */
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	super.print(toStringBuffer);
 	toStringBuffer.append("Message-driven descriptor : ").append(
             activationConfig.getActivationConfig()).append(

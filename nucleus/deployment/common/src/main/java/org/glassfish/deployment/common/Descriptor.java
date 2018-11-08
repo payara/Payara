@@ -98,7 +98,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
     /**
      * Add a child descriptor to the parent descriptor as an extension.
      *
-     * @param dde the child descriptor  
+     * @param dde the child descriptor
      *
      */
     public <T extends Descriptor> void addDescriptorExtension(final T dde) {
@@ -114,7 +114,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
     /**
      * Get all child descriptor extensions for a given type.
      *
-     * @param c the child descriptor type  
+     * @param c the child descriptor type
      * @return the list of descriptor extension for a given type
      *
      */
@@ -126,15 +126,15 @@ public class Descriptor extends DynamicAttributesDescriptor {
     /**
      * Get child descriptor extension for a given type.
      *
-     * It is a convenience API to get the single child extension descriptor 
+     * It is a convenience API to get the single child extension descriptor
      * if the XML element it represents can only occur once.
-     * 
-     * Returns that single descriptor if the XML element that the given type 
+     *
+     * Returns that single descriptor if the XML element that the given type
      * represents can only occur once.
-     * Returns the first element of the list of descriptors if the XML element 
+     * Returns the first element of the list of descriptors if the XML element
      * that the given type represents can occur multiple times.
      *
-     * @param c the child descriptor type  
+     * @param c the child descriptor type
      * @return the single or the first descriptor extension for a given type
      *
      */
@@ -250,7 +250,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
         }
 
         // so far, no luck, it is possible that this
-        // environment property was transfered through jndi 
+        // environment property was transfered through jndi
         // between machines with different locales, if I have
         // at least one value, and no language was specified,
         // let's return it.
@@ -495,7 +495,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * @param index the index in the vector
      * @return the unique String
      */
-    private static String uniquifyString(String trialName, Vector<String> v, int index) {
+    private static String uniquifyString(String trialName, List<String> v, int index) {
         for (String next : v) {
             if (next.equals(trialName)) {
                 index++;
@@ -513,7 +513,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * @param otherNames The Vector of String objects none of which will be the same as the return
      * @return the unique String
      */
-    public static String createUniqueFilenameAmongst(String trialName, Vector<String> otherNames) {
+    public static String createUniqueFilenameAmongst(String trialName, List<String> otherNames) {
 
         /* extract file.ext */
         int p = trialName.lastIndexOf(".");
@@ -524,9 +524,8 @@ public class Descriptor extends DynamicAttributesDescriptor {
         String file = trialName.substring(0, p);
 
         /* get list of filenames less extension */
-        Vector<String> nameList = new Vector<String>();
-        for (Enumeration e = otherNames.elements(); e.hasMoreElements();) {
-            String name = e.nextElement().toString();
+        List<String> nameList = new ArrayList<>();
+        for (String name : otherNames) {
             if (name.endsWith(ext)) {
                 nameList.add(name.substring(0, name.length() - ext.length()));
             }
@@ -600,7 +599,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
     /**
      * A String representation of this object.
      */
-    public void print(StringBuffer sb) {
+    public void print(StringBuilder sb) {
 
         if (displayNames != null) {
             sb.append("Display Names:");
@@ -637,7 +636,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * @param sb the buffer
      * @param localizedMap the localized Map
      */
-    private void displayLocalizedMap(StringBuffer sb, Map<String, String> localizedMap) {
+    private void displayLocalizedMap(StringBuilder sb, Map<String, String> localizedMap) {
         for (Map.Entry<String, String> entry : localizedMap.entrySet()) {
             sb.append("\n   lang[");
             sb.append(entry.getKey());

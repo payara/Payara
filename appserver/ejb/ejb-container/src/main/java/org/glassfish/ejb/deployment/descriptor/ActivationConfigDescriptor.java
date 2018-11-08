@@ -46,7 +46,7 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
-/** 
+/**
  * This class holds a set of activation config properties.
  *
  * @author Kenneth Saks
@@ -56,18 +56,18 @@ public final class ActivationConfigDescriptor extends Descriptor {
 
     // Set of EnvironmentProperty entries
     private Set<EnvironmentProperty> activationConfig;
-    
+
     public ActivationConfigDescriptor()
     {
-        activationConfig = new OrderedSet<EnvironmentProperty>();        
+        activationConfig = new OrderedSet<>();
     }
 
     public ActivationConfigDescriptor(ActivationConfigDescriptor other) {
-        activationConfig = new OrderedSet<EnvironmentProperty>(other.activationConfig);
+        activationConfig = new OrderedSet<>(other.activationConfig);
      }
 
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("Activation Config : ").append(activationConfig);
     }
 
