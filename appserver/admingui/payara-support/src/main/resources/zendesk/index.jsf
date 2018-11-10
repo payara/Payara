@@ -1,0 +1,79 @@
+<!--
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+-->
+
+<event>
+    <!beforeCreate
+        setPageSessionAttribute(key="specialAdminIndicator", value="null");
+        py.getSpecialAdminIndicator(token="#{pageSession.specialAdminIndicator}");
+    />
+</event>
+
+<f:verbatim>
+    <base href="/resource/payara_support/zendesk/">
+    <script type="text/javascript">
+        var specialAdminIndicator = "#{pageSession.specialAdminIndicator}";
+
+        // Set the admin console port for use in angular
+        var globalPort = "4848";
+        let portSplit = window.location.href.split(':');
+        if (portSplit.length >= 2) {
+            globalPort = portSplit[2].split('/')[0];
+        }
+    </script>
+    <app-root></app-root>
+    <script type="text/javascript" src="/resource/zendesk/inline.bundle.js"></script>
+    <script type="text/javascript" src="/resource/zendesk/polyfills.bundle.js"></script>
+    <script type="text/javascript" src="/resource/zendesk/scripts.bundle.js"></script>
+    <script type="text/javascript" src="/resource/zendesk/styles.bundle.js"></script>
+    <script type="text/javascript" src="/resource/zendesk/vendor.bundle.js"></script>
+    <script type="text/javascript" src="/resource/zendesk/main.bundle.js"></script>
+
+    <script type="text/javascript">
+      addCSS('/resource/zendesk/assets/skins/payara_theme/styles.css');
+      function addCSS(filename){
+        var head = document.getElementsByTagName('head')[0];
+        var style = document.createElement('link');
+        style.href = filename;
+        style.type = 'text/css';
+        style.rel = 'stylesheet';
+        head.appendChild(style);
+      }
+    </script>
+</f:verbatim>
