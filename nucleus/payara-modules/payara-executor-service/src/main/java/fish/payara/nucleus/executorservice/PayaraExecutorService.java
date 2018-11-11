@@ -141,7 +141,6 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
         scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
                 Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()),
                 (Runnable r) -> new Thread(r, "payara-executor-service-scheduled-task"));
-        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
     }
 
     public <T> Future<T> submit(Callable<T> task) {
