@@ -83,9 +83,11 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -142,11 +144,14 @@ public class JavaEETransactionManagerSimplified
     private boolean monitoringEnabled = false;
 
     private TransactionServiceProbeProvider monitor;
-    private Hashtable txnTable = null;
+    private Map<String, Transaction> txnTable = null;
 
     private Cache resourceTable;
 
-    private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+    private final ScheduledThreadPoolExecutor scheduledTransactionManagerExecutor;
+
+    private final AtomicLong scheduledTransactionTimeouts = new AtomicLong(0);
+    private volatile long scheduledTransactionTimeoutsAtLastPurge = 0;
 
     static {
         statusMap.put(Status.STATUS_ACTIVE, "Active");
@@ -166,10 +171,22 @@ public class JavaEETransactionManagerSimplified
         transactions = new ThreadLocal<>();
         localCallCounter = new ThreadLocal<>();
         delegates = new ThreadLocal<>();
-        scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
+        scheduledTransactionManagerExecutor = new ScheduledThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors()
         );
-        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        if (getPurgeCancelledTtransactionsAfter() > 0) {
+            scheduledTransactionManagerExecutor.scheduleAtFixedRate(
+                this::purgeCancelledTransactionTimeouts, 5, 1, TimeUnit.SECONDS
+            );
+        }
+    }
+
+    private void purgeCancelledTransactionTimeouts() {
+        long currentTransactionTimeouts = scheduledTransactionTimeouts.get();
+        if(currentTransactionTimeouts - scheduledTransactionTimeoutsAtLastPurge >= getPurgeCancelledTtransactionsAfter()) {
+            scheduledTransactionTimeoutsAtLastPurge = currentTransactionTimeouts;
+            scheduledTransactionManagerExecutor.purge();
+        }
     }
 
     public void postConstruct() {
@@ -308,7 +325,7 @@ public class JavaEETransactionManagerSimplified
     }
 
     public void shutdown() {
-        scheduledThreadPoolExecutor.shutdown();
+        scheduledTransactionManagerExecutor.shutdown();
     }
 
     public void initRecovery(boolean force) {
@@ -595,12 +612,13 @@ public class JavaEETransactionManagerSimplified
     }
 
     private JavaEETransactionImpl initJavaEETransaction(int timeout) {
-        JavaEETransactionImpl tx = null;
+        JavaEETransactionImpl tx;
         // Do not need to use injection.
         if (timeout > 0) {
             tx = new JavaEETransactionImpl(timeout, this);
-            ScheduledFuture<?> scheduledFuture = scheduledThreadPoolExecutor.schedule(tx, timeout, TimeUnit.SECONDS);
+            ScheduledFuture<?> scheduledFuture = scheduledTransactionManagerExecutor.schedule(tx, timeout, TimeUnit.SECONDS);
             tx.setScheduledTimeoutFuture(scheduledFuture);
+            scheduledTransactionTimeouts.incrementAndGet();
         } else {
             tx = new JavaEETransactionImpl(this);
         }
@@ -1157,12 +1175,11 @@ public class JavaEETransactionManagerSimplified
     *  @see TransactionAdminBean
     */
     public ArrayList getActiveTransactions() {
-        ArrayList tranBeans = new ArrayList();
-        txnTable = new Hashtable();
-        Object[] activeCopy = activeTransactions.toArray(); // get the clone of the active transactions
-        for (Object anActiveCopy : activeCopy) {
+        ArrayList<TransactionAdminBean> tranBeans = new ArrayList<>();
+        txnTable = new ConcurrentHashMap<>();
+        Transaction[] activeCopy = activeTransactions.toArray(new Transaction[0]); // get the clone of the active transactions
+        for (Transaction tran : activeCopy) {
             try {
-                Transaction tran = (Transaction) anActiveCopy;
                 TransactionAdminBean tBean = getDelegate().getTransactionAdminBean(tran);
                 if (tBean == null) {
                     // Shouldn't happen
@@ -1263,7 +1280,7 @@ public class JavaEETransactionManagerSimplified
             // ignore
         }
 
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(task, 0, statInterval, TimeUnit.MILLISECONDS);
+        scheduledTransactionManagerExecutor.scheduleAtFixedRate(task, 0, statInterval, TimeUnit.MILLISECONDS);
     }
 
     // Mods: Adding TimerTask class for statistic dumps
