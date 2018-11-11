@@ -68,8 +68,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -122,6 +125,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private boolean historicalTraceEnabled;
     private Integer historicalTraceStoreSize;
     private Long historicalTraceStoreTimeout;
+    private ScheduledFuture<?> historicalTraceTask;
+    private Set<ScheduledFuture<?>> scheduledCheckers;
 
     @Override
     public void event(Event event) {
@@ -179,6 +184,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
     public void bootstrapHealthCheck() {
         if (configuration != null) {
             if (enabled) {
+                scheduledCheckers = new HashSet<>();
                 executeTasks();
                 if (historicalTraceEnabled) {
                     healthCheckEventStore.initialize(historicalTraceStoreSize);
@@ -188,7 +194,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
                         // if not use timeout value as period
                         long period = historicalTraceStoreTimeout > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                                 ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : historicalTraceStoreTimeout;
-                        executor.scheduleAtFixedRate(
+                        historicalTraceTask = executor.scheduleAtFixedRate(
                                 new HistoricHealthCheckCleanupTask(historicalTraceStoreTimeout), 0, period, TimeUnit.SECONDS);
                     }
                 }
@@ -225,9 +231,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
 
             if (registeredTask.getCheck().getOptions().isEnabled()) {
-                executor.scheduleAtFixedRate(registeredTask, 0,
+                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
                         registeredTask.getCheck().getOptions().getTime(),
                         registeredTask.getCheck().getOptions().getUnit());
+                if (scheduledCheckers != null) {
+                    scheduledCheckers.add(checker);
+                }
             }
         }
     }
@@ -276,6 +285,18 @@ public class HealthCheckService implements EventListener, ConfigListener {
      */
     public void shutdownHealthCheck() {
         Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
+        
+        if (historicalTraceTask != null) {
+            historicalTraceTask.cancel(false);
+            historicalTraceTask = null;
+        }
+        
+        if (scheduledCheckers != null) {
+            for (ScheduledFuture<?> scheduledChecker : scheduledCheckers) {
+                scheduledChecker.cancel(false);
+            }
+            scheduledCheckers.clear();
+        }
     }
 
     public BaseHealthCheck getCheck(String serviceName) {
