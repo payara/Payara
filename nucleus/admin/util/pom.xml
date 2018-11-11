@@ -188,5 +188,11 @@
             <artifactId>javax.json-api</artifactId>
             <version>1.1</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

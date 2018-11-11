@@ -44,6 +44,7 @@ package com.sun.enterprise.admin.util;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.StartupRunLevel;
@@ -82,48 +83,19 @@ public class CommandThreadPool implements PostConstruct {
     @Inject
     private Logger logger;
 
-    private ExecutorService svc = null;
+    @Inject
+    PayaraExecutorService executor;
 
     /**
      * Process the instance file if this is DAS and there are instances configured already in this domain
      */
     @Override
     public void postConstruct() {
-        // If this is not the DAS, no need for this pool
-        if(serverEnv.isInstance()) {
-            return;
-        }
-        int poolSize = 5;
-        Config svrConfig = domain.getConfigNamed("server-config");
-        // I am doing this code instead of a simple svrConfig.getAdminListener() here because embedded tests are failing
-        // during build; got to check the reason why later.
-        if(svrConfig != null) {
-            NetworkConfig nwc = svrConfig.getNetworkConfig();
-            if (nwc != null) {
-                List<NetworkListener> lss = nwc.getNetworkListeners().getNetworkListener();
-                if ( (lss != null) && (!lss.isEmpty()) ) {
-                    for (NetworkListener ls : lss) {
-                        if (ServerTags.ADMIN_LISTENER_ID.equals(ls.getName()) && ls.findThreadPool() != null) {
-                            poolSize = Integer.parseInt(ls.findThreadPool().getMaxThreadPoolSize());
-                        }
-                    }
-                }
-            }
-        }
-        svc = Executors.newFixedThreadPool(poolSize, new InstanceStateThreadFactory());
+
     }
 
     public Future<InstanceCommandResult> submitJob(InstanceCommand ice, InstanceCommandResult r) {
         FutureTask<InstanceCommandResult> t = new FutureTask<InstanceCommandResult>((Runnable)ice, r);
-        return svc.submit(t, r);
-    }
-
-    private static class InstanceStateThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(Runnable runnableObj) {
-            Thread t = new Thread(runnableObj);
-            t.setDaemon(true);
-            return t;
-        }
+        return executor.submit(t, r);
     }
 }
