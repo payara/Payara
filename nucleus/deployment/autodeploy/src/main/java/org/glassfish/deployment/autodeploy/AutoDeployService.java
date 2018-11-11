@@ -42,6 +42,7 @@
 package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -95,12 +98,12 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     
     @Inject
     ServerEnvironment env;
+    
+    @Inject PayaraExecutorService executor;
 
     private AutoDeployer autoDeployer = null;
     
-    private Timer autoDeployerTimer;
-    
-    private TimerTask autoDeployerTimerTask;
+    private ScheduledFuture<?> autoDeployerTimerTask;
     
     private String target;
     
@@ -222,11 +225,9 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     }
     
     private void startAutoDeployer(int pollingIntervalInSeconds) {
-        long pollingInterval = pollingIntervalInSeconds * 1000L;
         autoDeployer.init();
-        autoDeployerTimer = new Timer("AutoDeployer", true);
-        autoDeployerTimer.schedule(
-                autoDeployerTimerTask = new TimerTask() {
+        autoDeployerTimerTask = executor.scheduleAtFixedRate(
+                new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -236,9 +237,10 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                             AutoDeployer.deplLogger.log(Level.FINE, ex.getMessage(), ex);
                         }
                     }
-                }, 
-                pollingInterval, 
-                pollingInterval);
+                },
+                0L,
+                pollingIntervalInSeconds, 
+                TimeUnit.SECONDS);
         logConfig(
                 "Started", 
                 isAutoDeployEnabled(), 
@@ -252,12 +254,11 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
          * and the timer.
          */
         deplLogger.fine("[AutoDeploy] Stopping");
-        if (autoDeployer!=null)
+        if (autoDeployer!=null) {
             autoDeployer.cancel(true);
-        if (autoDeployerTimerTask!=null)
-            autoDeployerTimerTask.cancel();
-        if (autoDeployerTimer != null) {
-            autoDeployerTimer.cancel();
+        }
+        if (autoDeployerTimerTask!=null) {
+            autoDeployerTimerTask.cancel(false);
         }
     }
     
