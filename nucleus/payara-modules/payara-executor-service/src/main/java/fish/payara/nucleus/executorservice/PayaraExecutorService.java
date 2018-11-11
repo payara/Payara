@@ -41,6 +41,7 @@ package fish.payara.nucleus.executorservice;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import java.beans.PropertyChangeEvent;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -49,8 +50,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -139,8 +143,17 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
         }
 
         scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
-                Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()),
-                (Runnable r) -> new Thread(r, "payara-executor-service-scheduled-task"));
+                Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()), (Runnable r) -> {
+                    Thread t = new Thread(r, "payara-executor-service-scheduled-task");
+                    t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                        @Override
+                        public void uncaughtException(Thread thread, Throwable thrwbl) {
+                            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Uncaught exception in Payara Scheduled Executor thread ",thrwbl);
+                        }
+                    });
+                    return t;
+        });
+        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
     }
 
     public <T> Future<T> submit(Callable<T> task) {
