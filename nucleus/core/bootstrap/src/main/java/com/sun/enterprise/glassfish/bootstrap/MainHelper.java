@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
@@ -80,7 +81,7 @@ public class MainHelper {
         }
     }
 
-    private static int getMajorJdkVersion() {
+    public static int getMajorJdkVersion() {
       String jv = System.getProperty("java.version");
       String[] split = jv.split("[\\._\\-]+");
       if (split.length > 0) {
@@ -89,7 +90,7 @@ public class MainHelper {
       return -1;
     }
 
-    private static int getMinorJdkVersion() {
+    public static int getMinorJdkVersion() {
         // this is a subset of the code in com.sun.enterprise.util.JDK
         // this module has no dependencies on util code so it was dragged in here.
 
