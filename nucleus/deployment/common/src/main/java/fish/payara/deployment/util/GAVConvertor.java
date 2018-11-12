@@ -46,7 +46,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.AbstractMap;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.config.support.TranslatedConfigView;
+import com.sun.enterprise.universal.GFBase64Encoder;
 
 /**
  * Performs the functions required for converting GAV (group, artefact, version)
@@ -175,7 +175,7 @@ public class GAVConvertor {
                     
                     String auth = artefactURL.getUserInfo();
                     if (auth != null) {
-                        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+                        String encodedAuth = new GFBase64Encoder().encode(auth.getBytes());
                         httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
                     }
                     

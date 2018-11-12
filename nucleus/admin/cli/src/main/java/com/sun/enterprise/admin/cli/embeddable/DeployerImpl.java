@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.admin.cli.embeddable;
 
+import com.sun.enterprise.universal.GFBase64Encoder;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
@@ -68,7 +69,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -191,7 +191,7 @@ public class DeployerImpl implements Deployer {
             String auth = urlArchive.getUserInfo();
             HttpURLConnection httpConnection = (HttpURLConnection) urlArchive.openConnection();
                     if (auth != null) {
-                        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+                        String encodedAuth = new GFBase64Encoder().encode(auth.getBytes());
                         httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
                     }
             
