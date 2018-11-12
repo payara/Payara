@@ -142,6 +142,7 @@ public class JavaEETransactionManagerSimplified
     private  static final Map<Integer, String> statusMap = new HashMap<>();
     private List<Transaction> activeTransactions = Collections.synchronizedList(new ArrayList<>());
     private boolean monitoringEnabled = false;
+    private ScheduledFuture<?> statisticsMonitoringFuture;
 
     private TransactionServiceProbeProvider monitor;
     private Map<String, Transaction> txnTable = null;
@@ -152,6 +153,7 @@ public class JavaEETransactionManagerSimplified
 
     private final AtomicLong scheduledTransactionTimeouts = new AtomicLong(0);
     private volatile long scheduledTransactionTimeoutsAtLastPurge = 0;
+    private ScheduledFuture<?> purgeScheduledTransactionsFuture;
 
     static {
         statusMap.put(Status.STATUS_ACTIVE, "Active");
@@ -167,6 +169,7 @@ public class JavaEETransactionManagerSimplified
 
     }
 
+
     public JavaEETransactionManagerSimplified() {
         transactions = new ThreadLocal<>();
         localCallCounter = new ThreadLocal<>();
@@ -175,8 +178,8 @@ public class JavaEETransactionManagerSimplified
             Runtime.getRuntime().availableProcessors()
         );
         if (getPurgeCancelledTtransactionsAfter() > 0) {
-            scheduledTransactionManagerExecutor.scheduleAtFixedRate(
-                this::purgeCancelledTransactionTimeouts, 5, 1, TimeUnit.SECONDS
+            purgeScheduledTransactionsFuture = scheduledTransactionManagerExecutor.scheduleAtFixedRate(
+                    this::purgeCancelledTransactionTimeouts, 5, 1, TimeUnit.SECONDS
             );
         }
     }
@@ -325,6 +328,12 @@ public class JavaEETransactionManagerSimplified
     }
 
     public void shutdown() {
+        if (statisticsMonitoringFuture != null) {
+            statisticsMonitoringFuture.cancel(false);
+        }
+        if (purgeScheduledTransactionsFuture != null) {
+            purgeScheduledTransactionsFuture.cancel(false);
+        }
         scheduledTransactionManagerExecutor.shutdown();
     }
 
@@ -375,8 +384,6 @@ public class JavaEETransactionManagerSimplified
                if(_logger.isLoggable(Level.FINE)) {
                    _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, isSameRM? " + isSameRM);
                }
-           } catch ( XAException xex ) {
-               throw new SystemException(sm.getString("enterprise_distributedtx.samerm_excep",xex));
            } catch ( Exception ex ) {
                throw new SystemException(sm.getString("enterprise_distributedtx.samerm_excep",ex));
            }
@@ -1280,7 +1287,7 @@ public class JavaEETransactionManagerSimplified
             // ignore
         }
 
-        scheduledTransactionManagerExecutor.scheduleAtFixedRate(task, 0, statInterval, TimeUnit.MILLISECONDS);
+        statisticsMonitoringFuture = scheduledTransactionManagerExecutor.scheduleAtFixedRate(task, 0, statInterval, TimeUnit.MILLISECONDS);
     }
 
     // Mods: Adding TimerTask class for statistic dumps
