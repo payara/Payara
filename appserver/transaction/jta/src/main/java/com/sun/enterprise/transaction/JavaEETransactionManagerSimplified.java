@@ -175,11 +175,11 @@ public class JavaEETransactionManagerSimplified
         localCallCounter = new ThreadLocal<>();
         delegates = new ThreadLocal<>();
         scheduledTransactionManagerExecutor = new ScheduledThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors()
+            Math.min(Runtime.getRuntime().availableProcessors(), 3)
         );
         if (getPurgeCancelledTtransactionsAfter() > 0) {
             purgeScheduledTransactionsFuture = scheduledTransactionManagerExecutor.scheduleAtFixedRate(
-                    this::purgeCancelledTransactionTimeouts, 5, 1, TimeUnit.SECONDS
+                    this::purgeCancelledTransactionTimeouts, 5, 5, TimeUnit.SECONDS
             );
         }
     }

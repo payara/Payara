@@ -98,7 +98,7 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" timeout-in-seconds="300">
          <property name="xaresource-txn-timeout" value="300"/>
-         <property name="purge-cancelled-transactions-after" value="100"></property>
+         <property name="purge-cancelled-transactions-after" value="500"></property>
        </transaction-service>
        <ejb-container max-pool-size="128">
          <ejb-timer-service />
