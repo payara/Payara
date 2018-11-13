@@ -97,7 +97,8 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     @Inject
     ServerEnvironment env;
     
-    @Inject PayaraExecutorService executor;
+    @Inject 
+    private PayaraExecutorService executor;
 
     private AutoDeployer autoDeployer = null;
     
