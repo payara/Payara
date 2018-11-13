@@ -442,17 +442,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
         } else if (discoveryMode.startsWith("kubernetes")) {
-            config.setProperty("hazelcast.discovery.enabled", "true");
-
-            Map<String, Comparable> kubernetesConfigMap = new HashMap<>();
-            kubernetesConfigMap.put(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace());
-            kubernetesConfigMap.put(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName());
-            kubernetesConfigMap.put(KubernetesProperties.SERVICE_LABEL_NAME.key(), configuration.getKubernetesServiceLabelName());
-            kubernetesConfigMap.put(KubernetesProperties.SERVICE_LABEL_VALUE.key(), configuration.getKubernetesServiceLabelValue());
-
-            config.getNetworkConfig().getJoin().getDiscoveryConfig().addDiscoveryStrategyConfig(
-                    new DiscoveryStrategyConfig(new HazelcastKubernetesDiscoveryStrategyFactory(), kubernetesConfigMap));
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+            config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
+                    .setProperty(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace())
+                    .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName());
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");

@@ -131,12 +131,4 @@ public interface HazelcastRuntimeConfiguration
     String getKubernetesServiceName();
     public void setKubernetesServiceName(String value);
 
-    @Attribute(defaultValue = "name")
-    String getKubernetesServiceLabelName();
-    public void setKubernetesServiceLabelName(String value);
-
-    @Attribute(defaultValue = "payara")
-    String getKubernetesServiceLabelValue();
-    public void setKubernetesServiceLabelValue(String value);
-
 }
