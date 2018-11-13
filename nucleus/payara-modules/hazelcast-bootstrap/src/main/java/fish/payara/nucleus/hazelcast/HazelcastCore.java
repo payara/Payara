@@ -42,7 +42,6 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
-import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
 import com.hazelcast.config.GroupConfig;
@@ -55,7 +54,6 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategyFactory;
 import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
@@ -69,9 +67,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -445,7 +441,8 @@ public class HazelcastCore implements EventListener, ConfigListener {
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
                     .setProperty(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace())
-                    .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName());
+                    .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName())
+                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), configuration.getStartPort());
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
