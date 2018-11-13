@@ -1098,7 +1098,7 @@ Parent is ${project.parent}</echo>
             <dependency> <!-- A utility to automatically install bundles from a directory.-->
                <groupId>org.apache.felix</groupId>
                <artifactId>org.apache.felix.fileinstall</artifactId>
-               <version>3.6.4</version>
+               <version>3.6.4.payara-p1</version>
             </dependency>
             <dependency>
                <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
