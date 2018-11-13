@@ -493,8 +493,12 @@ public class EJBUtils {
         // PAYARA-3087 linkage error occurs when multiple threads load the same generated classes concurrently.
         synchronized (EJBUtils.class) {
 
-            generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
-            generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
+            if (generatedRemoteIntf == null) {
+                generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
+            }
+            if (generatedRemoteWrapper == null) {
+                generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
+            }
 
             if( (generatedRemoteIntf != null) &&
                 (generatedRemoteWrapper != null) ) {
