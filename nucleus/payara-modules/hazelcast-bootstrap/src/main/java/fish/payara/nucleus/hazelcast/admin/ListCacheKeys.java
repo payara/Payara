@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,15 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.hazelcast.cache.impl.CacheEntry;
+import com.hazelcast.cache.impl.CacheProxy;
+import com.hazelcast.cache.impl.ClusterWideIterator;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -93,6 +97,7 @@ public class ListCacheKeys implements AdminCommand {
     protected String cacheName;
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void execute(AdminCommandContext context) {
 
         final ActionReport actionReport = context.getActionReport();
@@ -103,17 +108,28 @@ public class ListCacheKeys implements AdminCommand {
                 StringBuilder builder = new StringBuilder();
                 builder.append("{ \n");
                 for (DistributedObject dobject : instance.getDistributedObjects()) {
+                    Iterator<Object> keyIterator = null;
                     if (dobject instanceof IMap) {
                         if (cacheName == null || cacheName.isEmpty() || cacheName.equals(((IMap<Object, Object>) dobject).getName())) {
-                            builder.append("Cache " + ((IMap<Object, Object>) dobject).getName()).append("\n{");
-                            for (Object key : ((IMap<Object, Object>) dobject).keySet()) {
-                                try {
-                                    builder.append(key.toString()).append(",\n");
-                                } catch (Exception cnfe) {
-                                    builder.append(cnfe.getMessage()).append(",\n");
-                                }
-                            }
-                            builder.append("}\n");
+                            builder.append("Cache ").append(((IMap<Object, Object>) dobject).getName()).append("\n{");
+                            keyIterator = ((IMap<Object, Object>) dobject).keySet().iterator();
+                        }
+                    } else if (dobject instanceof CacheProxy) {
+                        CacheProxy jcache = (CacheProxy) dobject;
+                        if (cacheName == null || cacheName.isEmpty() || cacheName.equals(jcache.getName())) {
+                            builder.append("JCache ").append(jcache.getName()).append("\n{");
+                            keyIterator = new ClusterWideIterator<>(jcache, 10, true);
+                        }
+                    }
+                    while (keyIterator != null && keyIterator.hasNext()) {
+                        Object key = keyIterator.next();
+                        if(key instanceof CacheEntry) {
+                            key = ((CacheEntry)key).getKey();
+                        }
+                        try {
+                            builder.append(key.toString()).append(",\n");
+                        } catch (Exception cnfe) {
+                            builder.append(cnfe.getMessage()).append(",\n");
                         }
                     }
                 }
