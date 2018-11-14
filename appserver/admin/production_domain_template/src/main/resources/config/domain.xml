@@ -353,7 +353,8 @@
              </message-security-config>
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" timeout-in-seconds="300">
-           <property name="xaresource-txn-timeout" value="300"/>
+             <property name="xaresource-txn-timeout" value="300"/>
+             <property name="purge-cancelled-transactions-after" value="500"/>
          </transaction-service>
          <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
          <request-tracing-service-configuration>
