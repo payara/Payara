@@ -59,7 +59,8 @@
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/property", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
             py.onlyGetMicroProfileProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
-            setPageSessionAttribute(key="tableList", value="#{pageSession.modifiedProps}");
+            py.convertToConfigProperties(props="#{pageSession.modifiedProps}" convertedProps="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.convertedProps}");
             setPageSessionAttribute(key="showCancelButton", value="#{false}");
             setPageSessionAttribute(key="isMicroProfileProps", value="#{true}");
         />

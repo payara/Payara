@@ -47,7 +47,7 @@
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!-- i18n -->
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainPropsPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.application.ApplicationConfigurationPropertiesTabTittle}" >
 <!define name="content">
     <event>
         <!beforeCreate
@@ -72,7 +72,7 @@
     </event>
     <sun:form id="propertyForm">
 #include "/common/applications/appGeneralTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18nc.applications.ApplicationPropsPageTitle}" >
+        <sun:title id="propertyContentPage" title="$resource{i18nc.application.ApplicationConfigurationPropertiesTabTittle}" >
 #include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg.inc"

@@ -43,11 +43,11 @@
         <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
- 
                 removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
                 if (#{pageSession.isMicroProfileProps}=true) {
                     py.convertToMicroProfileProperties(props="#{pageSession.tableList}" convertedProps="#{pageSession.tableList}");
-                    py.mergeConfigProperties(newProps="#{pageSession.tableList}" oldProps="#{pageSession.properties}" modifiedProps="#{pageSession.finalProps}");
+                    py.mergeConfigProperties(newProps="#{pageSession.tableList}" currentPros="#{pageSession.modifiedProps}" 
+                                             oldProps="#{pageSession.properties}" modifiedProps="#{pageSession.finalProps}");
                 }
                 
                 if (#{pageSession.isMicroProfileProps}=false) {

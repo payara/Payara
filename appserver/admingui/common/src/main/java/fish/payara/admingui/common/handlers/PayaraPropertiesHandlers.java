@@ -219,16 +219,25 @@ public class PayaraPropertiesHandlers {
             input = {
                 @HandlerInput(name = "newProps", type = List.class, required = true)
                 ,
+                @HandlerInput(name = "currentPros", type = List.class, required = true)
+                ,
                 @HandlerInput(name = "oldProps", type = List.class, required = true)},
             output = {
                 @HandlerOutput(name = "modifiedProps", type = List.class)}
     )
     public static void mergeConfigProperties(HandlerContext handlerCtx) {
         List<Map<String, String>> newProps = (List<Map<String, String>>) handlerCtx.getInputValue("newProps");
+        List<Map<String, String>> currentPros = (List<Map<String, String>>) handlerCtx.getInputValue("currentPros");
         List<Map<String, String>> oldProps = (List<Map<String, String>>) handlerCtx.getInputValue("oldProps");
         List<Map<String, String>> modifiedProps = new ArrayList<>();
 
-        if (newProps != null) {
+        if (currentPros.size() > 0 && currentPros.size() > newProps.size()) {
+            for (Map<String, String> prop : currentPros) {
+                if (newProps.contains(prop)) {
+                    modifiedProps.add(prop);
+                }
+            }
+        } else {
             for (Map<String, String> prop : newProps) {
                 modifiedProps.add(prop);
             }
@@ -236,7 +245,8 @@ public class PayaraPropertiesHandlers {
 
         if (oldProps != null) {
             for (Map<String, String> prop : oldProps) {
-                if (!prop.values().toString().contains("payara.microprofile")) {
+                if (!prop.values().toString().contains("payara.microprofile")
+                        && !currentPros.contains(prop)) {
                     modifiedProps.add(prop);
                 }
             }

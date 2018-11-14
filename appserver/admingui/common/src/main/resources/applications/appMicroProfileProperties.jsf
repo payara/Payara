@@ -47,7 +47,7 @@
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!-- i18n -->
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainPropsPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.application.ApplicationMicroProfilePropertiesTabTittle}" >
 <!define name="content">
     <event>
         <!beforeCreate
@@ -65,14 +65,15 @@
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/property", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
             py.onlyGetMicroProfileProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
-            setPageSessionAttribute(key="tableList", value="#{pageSession.modifiedProps}");
+            py.convertToConfigProperties(props="#{pageSession.modifiedProps}" convertedProps="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.convertedProps}");
             setPageSessionAttribute(key="isMicroProfileProps", value="#{true}");
             setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
 #include "/common/applications/appGeneralTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18nc.applications.ApplicationPropsPageTitle}" >
+        <sun:title id="propertyContentPage" title="$resource{i18nc.application.ApplicationMicroProfilePropertiesTabTittle}" >
 #include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg.inc"
