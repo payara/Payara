@@ -36,52 +36,31 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
  */
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.DEFAULT_LOGFILE;
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.FLASHLIGHT_AGENT_NAME;
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.LIBMON_NAME;
-import static com.sun.enterprise.admin.launcher.GFLauncherConstants.NEWLINE;
-import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
-import static com.sun.enterprise.util.SystemPropertyConstants.INSTANCE_ROOT_PROPERTY;
-import static com.sun.enterprise.util.SystemPropertyConstants.JAVA_ROOT_PROPERTY;
-import static fish.payara.admin.launcher.PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY;
-import static fish.payara.admin.launcher.PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE;
-import static fish.payara.admin.launcher.PayaraDefaultJvmOptions.GRIZZLY_NPN_JAR_LOCATION;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
-
 import com.sun.enterprise.universal.collections.CollectionUtils;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.process.ProcessStreamDrainer;
-import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
-import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.universal.xml.MiniXmlParser;
+import static com.sun.enterprise.util.SystemPropertyConstants.*;
+import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import com.sun.enterprise.util.JDK;
+import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
+import java.util.stream.Collectors;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
@@ -907,21 +886,14 @@ public abstract class GFLauncher {
     }
     
     private void addDefaultJvmOptions() {
-        if (!jvmOptions.getCombinedMap().containsKey(GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
-            jvmOptions.sysProps.put(GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
-                    GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
+        if (!jvmOptions.getCombinedMap().containsKey(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
+            jvmOptions.sysProps.put(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
             
             // Log that we've made the change
             GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
-                    GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
-                    GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
-        }
-
-        // Attempt to load the Grizzly NPN jar if it's needed
-        if (GRIZZLY_NPN_JAR_LOCATION != null && !jvmOptions.getCombinedMap().containsKey(GRIZZLY_NPN_JAR_LOCATION)) {
-            jvmOptions.xProps.put(GRIZZLY_NPN_JAR_LOCATION, null);
-
-            GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, GRIZZLY_NPN_JAR_LOCATION, null);
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
+                    PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
         }
     }
 
