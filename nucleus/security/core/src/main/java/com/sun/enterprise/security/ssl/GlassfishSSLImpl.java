@@ -43,6 +43,7 @@ package com.sun.enterprise.security.ssl;
 import java.net.Socket;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSocket;
+import org.glassfish.grizzly.config.ssl.JSSE14SocketFactory;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.ssl.SSLSupport;
@@ -56,6 +57,9 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="com.sun.enterprise.security.ssl.GlassfishSSLImpl")
 @ContractsProvided({GlassfishSSLImpl.class, SSLImplementation.class})
 public class GlassfishSSLImpl extends SSLImplementation {
+    public static final String PROP_GLASSFISH_SOCKETFACTORY =
+            "fish.payara.ssl.GlassfishServerSocketFactory";
+
     public GlassfishSSLImpl() {
     }
 
@@ -64,7 +68,12 @@ public class GlassfishSSLImpl extends SSLImplementation {
     }
 
     public ServerSocketFactory getServerSocketFactory() {
-        return new GlassfishServerSocketFactory();
+        if(Boolean.valueOf(System.getProperty(PROP_GLASSFISH_SOCKETFACTORY, "false"))) {
+            return new GlassfishServerSocketFactory();
+        } else {
+            // Fixes Payara-499, Payara-2613 and 1047
+            return new JSSE14SocketFactory();
+        }
     }
 
     public SSLSupport getSSLSupport(Socket socket) {
