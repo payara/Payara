@@ -79,7 +79,9 @@ public class PayaraGeneratedCacheKey implements GeneratedCacheKey, Serializable 
     public int hashCode() {
         return hashCode;
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return "PayaraGeneratedCacheKey{" + "values=" + Arrays.deepToString(values) + '}';
+    }
 }
