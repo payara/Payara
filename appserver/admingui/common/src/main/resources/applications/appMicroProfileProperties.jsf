@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -38,59 +38,52 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-
+    Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 -->
 
-<!-- standalone/standaloneInstanceProperties.jsf -->
 <!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
-    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!-- i18n -->
-<!composition template="/templates/default.layout"  guiTitle="Standalone Instance #{pageSession.instanceName} $resource{i18ncs.PropertiesTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainPropsPageTitle}" >
 <!define name="content">
     <event>
         <!beforeCreate
-            getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
-            urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
-            setSessionAttribute(key="clusterTabs" value="clusterInstanceProps");
-            setSessionAttribute(key="standaloneInstanceTabs" value="instanceProps");
-
-            setPageSessionAttribute(key="parentPage", value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{pageSession.encodedInstanceName}");
-            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/cluster/standalone/standaloneInstanceProperties.jsf?instanceName=#{pageSession.encodedInstanceName}");
-            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}");
-            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}");
-
+            getRequestValue(key="appName" value="#{pageSession.appName}");
+            urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+            setSessionAttribute(key="appGeneralTabs" value="microProfileProps");
+            
             setPageSessionAttribute(key="rest-api" value="true");
             setPageSessionAttribute(key="edit" value="#{true}" );
             setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
+            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/common/applications/appMicroProfileProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
 
-            gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
-            gf.isInstanceName(instanceName="#{pageSession.instanceName}");
+            setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/property", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
-            py.onlyGetConfigurationProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
+            py.onlyGetMicroProfileProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
             setPageSessionAttribute(key="tableList", value="#{pageSession.modifiedProps}");
-            setPageSessionAttribute(key="isMicroProfileProps", value="#{false}");
+            setPageSessionAttribute(key="isMicroProfileProps", value="#{true}");
+            setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
-#include "/cluster/standalone/standaloneInstanceTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}">
+#include "/common/applications/appGeneralTabs.inc"
+        <sun:title id="propertyContentPage" title="$resource{i18nc.applications.ApplicationPropsPageTitle}" >
 #include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
-#include "/common/shared/alertMsg_1.inc"
+#include "/common/shared/alertMsg.inc"
 #include "/common/shared/nameSection.inc"
-
 #include "/common/shared/propertyDescTable.inc"
 
         <sun:title id="bottomTitle">
 #include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 
-        <sun:hidden id="helpKey" value="$resource{help_cluster.standaloneInstanceProperties}" />
+        <sun:hidden id="helpKey" value="$resource{help_common.instanceProperties}" />
 
     </sun:form>
 #include "/common/shared/changeButtonsJS.inc"
