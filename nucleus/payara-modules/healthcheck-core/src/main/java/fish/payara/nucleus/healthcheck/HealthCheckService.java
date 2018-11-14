@@ -116,7 +116,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private HistoricHealthCheckEventStore healthCheckEventStore;
 
     @Inject 
-    PayaraExecutorService executor;
+    private PayaraExecutorService executor;
 
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
