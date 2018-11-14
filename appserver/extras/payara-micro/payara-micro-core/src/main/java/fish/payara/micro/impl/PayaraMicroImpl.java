@@ -1885,9 +1885,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     }
                 } else if (clustermode.startsWith("kubernetes")) {
                     String[] kubernetesInfo = clustermode.substring(11).split(",");
-                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=kubernetes"));
-                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-namespace=" + kubernetesInfo[0]));
-                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-name=" + kubernetesInfo[1]));
+                    if (kubernetesInfo.length == 2) {
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=kubernetes"));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-namespace=" + kubernetesInfo[0]));
+                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-name=" + kubernetesInfo[1]));
+                    }
                 } else if (clustermode.startsWith("dns:")) {
                     String dnsmembers = clustermode.substring(4);
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.dns-members=" + dnsmembers));
