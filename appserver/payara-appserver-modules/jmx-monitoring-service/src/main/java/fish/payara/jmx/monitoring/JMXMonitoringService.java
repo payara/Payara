@@ -48,9 +48,6 @@ import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,7 +77,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.admin.amx.config.AMXConfiguration;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyVetoException;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the
@@ -116,16 +115,17 @@ public class JMXMonitoringService implements EventListener {
 
     @Inject
     private NotificationService notificationService;
+    
+    @Inject
+    PayaraExecutorService executor;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-    private ScheduledExecutorService executor;
     private JMXMonitoringFormatter formatter;
     private boolean enabled;
     private int amxBootDelay = 10;
     private long monitoringDelay = amxBootDelay + 15;
-
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    private ScheduledFuture<?> monitoringFuture;
 
     @PostConstruct
     public void postConstruct() throws NamingException {
@@ -145,22 +145,14 @@ public class JMXMonitoringService implements EventListener {
     }
 
     /**
-     * Bootstraps the monitoring service. Creates a thread pool for the
-     * ScheduledExecutorService. Schedules the AMXBoot class to execute if AMX
+     * Bootstraps the monitoring service. 
+     * Schedules the AMXBoot class to execute if AMX
      * is enabled. Schedules the JMXMonitoringFormatter to execute at a
      * specified fixed rate if enabled in the configuration.
      */
     public void bootstrapMonitoringService() {
         if (configuration != null && configuration.getEnabled().equalsIgnoreCase("true")) {
             shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
-
-            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, PREFIX.concat(Integer.toString(threadNumber.getAndIncrement())).concat(")")
-                    );
-                }
-            });
 
             final MBeanServer server = getPlatformMBeanServer();
 
@@ -178,7 +170,7 @@ public class JMXMonitoringService implements EventListener {
                 }
             }
 
-            executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
+            monitoringFuture = executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
                     TimeUnit.MILLISECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
                             TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.MILLISECONDS);
@@ -224,9 +216,10 @@ public class JMXMonitoringService implements EventListener {
      * Shuts the scheduler down.
      */
     private void shutdownMonitoringService() {
-        if (executor != null) {
+        if (monitoringFuture != null) {
             Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
-            executor.shutdownNow();
+            monitoringFuture.cancel(false);
+            monitoringFuture = null;
         }
     }
 

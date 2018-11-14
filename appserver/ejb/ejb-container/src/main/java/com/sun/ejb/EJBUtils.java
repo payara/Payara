@@ -482,52 +482,71 @@ public class EJBUtils {
         String wrapperClassName = EJBUtils.
             getGeneratedRemoteWrapperName(businessInterfaceName);
 
-        Class generatedRemoteIntf = null;
-        try {
-            generatedRemoteIntf =
-                appClassLoader.loadClass(generatedRemoteIntfName);
-        } catch(Exception e) {
-        }
-
-        Class generatedRemoteWrapper = null;
-        try {
-            generatedRemoteWrapper =
-                appClassLoader.loadClass(wrapperClassName);
-        } catch(Exception e) {
-        }
+        Class generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
+        Class generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
 
         if( (generatedRemoteIntf != null) &&
             (generatedRemoteWrapper != null) ) {
             return;
         }
 
-        _setClassLoader(appClassLoader);
+        // PAYARA-3087 linkage error occurs when multiple threads load the same generated classes concurrently.
+        synchronized (EJBUtils.class) {
 
+            if (generatedRemoteIntf == null) {
+                generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
+            }
+            if (generatedRemoteWrapper == null) {
+                generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
+            }
+
+            if( (generatedRemoteIntf != null) &&
+                (generatedRemoteWrapper != null) ) {
+                return;
+            }
+
+            _setClassLoader(appClassLoader);
+
+            try {
+                if( generatedRemoteIntf == null ) {
+
+                    RemoteGenerator gen = new RemoteGenerator(appClassLoader,
+                                                              businessInterfaceName);
+
+                    Class developerClass = appClassLoader.loadClass(businessInterfaceName);
+                    generateAndLoad(gen, generatedRemoteIntfName, appClassLoader, developerClass);
+
+                }
+
+                if( generatedRemoteWrapper == null ) {
+
+                    Remote30WrapperGenerator gen = new Remote30WrapperGenerator
+                        (appClassLoader, businessInterfaceName,
+                         generatedRemoteIntfName);
+
+                    Class developerClass = appClassLoader.loadClass(businessInterfaceName);
+                    generateAndLoad(gen, wrapperClassName, appClassLoader, developerClass);
+                }
+
+            } finally {
+                // Fix for 7075: Make sure no classloader is bound to threadlocal:
+                // avoid possible classloader leak.
+                _setClassLoader(null) ;
+            }
+        }
+    }
+
+    /**
+     * Loads the a class by name using the provided classloader.
+     * @param clsLoader Classloader to use for loading
+     * @param clsName Name of the class to load.
+     * @return loaded class or null in case of an exception.
+     */
+    private static Class loadClassIgnoringExceptions(ClassLoader clsLoader, String clsName) {
         try {
-            if( generatedRemoteIntf == null ) {
-
-                RemoteGenerator gen = new RemoteGenerator(appClassLoader,
-                                                          businessInterfaceName);
-
-                Class developerClass = appClassLoader.loadClass(businessInterfaceName);
-                generateAndLoad(gen, generatedRemoteIntfName, appClassLoader, developerClass);
-
-            }
-
-            if( generatedRemoteWrapper == null ) {
-
-                Remote30WrapperGenerator gen = new Remote30WrapperGenerator
-                    (appClassLoader, businessInterfaceName,
-                     generatedRemoteIntfName);
-
-                Class developerClass = appClassLoader.loadClass(businessInterfaceName);
-                generateAndLoad(gen, wrapperClassName, appClassLoader, developerClass);
-            }
-
-        } finally {
-            // Fix for 7075: Make sure no classloader is bound to threadlocal:
-            // avoid possible classloader leak.
-            _setClassLoader(null) ;
+            return clsLoader.loadClass(clsName);
+        } catch(Exception e) {
+            return null;
         }
     }
 
