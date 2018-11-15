@@ -57,6 +57,7 @@ import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import java.io.*;
 import java.lang.reflect.*;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -472,8 +473,7 @@ public class EJBUtils {
                                            businessInterfaceName);
     }
 
-    public static void loadGeneratedRemoteBusinessClasses
-        (ClassLoader appClassLoader, String businessInterfaceName)
+    public static void loadGeneratedRemoteBusinessClasses(ClassLoader appClassLoader, String businessInterfaceName)
         throws Exception {
 
         String generatedRemoteIntfName = EJBUtils.
@@ -490,49 +490,33 @@ public class EJBUtils {
             return;
         }
 
-        // PAYARA-3087 linkage error occurs when multiple threads load the same generated classes concurrently.
-        synchronized (EJBUtils.class) {
+        _setClassLoader(appClassLoader);
 
-            if (generatedRemoteIntf == null) {
-                generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
-            }
-            if (generatedRemoteWrapper == null) {
-                generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
-            }
+        try {
+            if( generatedRemoteIntf == null ) {
 
-            if( (generatedRemoteIntf != null) &&
-                (generatedRemoteWrapper != null) ) {
-                return;
+                RemoteGenerator gen = new RemoteGenerator(appClassLoader,
+                                                          businessInterfaceName);
+
+                Class developerClass = appClassLoader.loadClass(businessInterfaceName);
+                generateAndLoad(gen, generatedRemoteIntfName, appClassLoader, developerClass);
+
             }
 
-            _setClassLoader(appClassLoader);
+            if( generatedRemoteWrapper == null ) {
 
-            try {
-                if( generatedRemoteIntf == null ) {
+                Remote30WrapperGenerator gen = new Remote30WrapperGenerator
+                    (appClassLoader, businessInterfaceName,
+                     generatedRemoteIntfName);
 
-                    RemoteGenerator gen = new RemoteGenerator(appClassLoader,
-                                                              businessInterfaceName);
-
-                    Class developerClass = appClassLoader.loadClass(businessInterfaceName);
-                    generateAndLoad(gen, generatedRemoteIntfName, appClassLoader, developerClass);
-
-                }
-
-                if( generatedRemoteWrapper == null ) {
-
-                    Remote30WrapperGenerator gen = new Remote30WrapperGenerator
-                        (appClassLoader, businessInterfaceName,
-                         generatedRemoteIntfName);
-
-                    Class developerClass = appClassLoader.loadClass(businessInterfaceName);
-                    generateAndLoad(gen, wrapperClassName, appClassLoader, developerClass);
-                }
-
-            } finally {
-                // Fix for 7075: Make sure no classloader is bound to threadlocal:
-                // avoid possible classloader leak.
-                _setClassLoader(null) ;
+                Class developerClass = appClassLoader.loadClass(businessInterfaceName);
+                generateAndLoad(gen, wrapperClassName, appClassLoader, developerClass);
             }
+
+        } finally {
+            // Fix for 7075: Make sure no classloader is bound to threadlocal:
+            // avoid possible classloader leak.
+            _setClassLoader(null) ;
         }
     }
 
@@ -555,20 +539,11 @@ public class EJBUtils {
 
         String className = getGenericEJBHomeClassName();
 
-        Class generatedGenericEJBHomeClass = null;
-
-        try {
-            generatedGenericEJBHomeClass = appClassLoader.loadClass(className);
-        } catch(Exception e) {
-        }
+        Class generatedGenericEJBHomeClass = loadClassIgnoringExceptions(appClassLoader, className);
 
         if( generatedGenericEJBHomeClass == null ) {
-
-            GenericHomeGenerator gen =new GenericHomeGenerator(appClassLoader);
-
-
-            generatedGenericEJBHomeClass =generateAndLoad(gen, className,
-                    appClassLoader, EJBUtils.class);
+            GenericHomeGenerator gen = new GenericHomeGenerator(appClassLoader);
+            generatedGenericEJBHomeClass = generateAndLoad(gen, className, appClassLoader, EJBUtils.class);
         }
 
         return generatedGenericEJBHomeClass;
@@ -589,57 +564,70 @@ public class EJBUtils {
                                          final ClassLoader loader,
                                          final Class protectionDomainBase) {
 
-        cgf.evaluate();
+        Class clazz = loadClassIgnoringExceptions(loader, actualClassName);
 
-        final Properties props = new Properties();
-        if( _logger.isLoggable(Level.FINE) ) {
-
-            props.put(DUMP_AFTER_SETUP_VISITOR, "true");
-            props.put(TRACE_BYTE_CODE_GENERATION, "true");
-            props.put(USE_ASM_VERIFIER, "true");
-
-            try {
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(baos);
-
-                _sourceCode(ps, props);
-                _logger.fine(baos.toString());
-
-            } catch(Exception e) {
-                _logger.log(Level.FINE, "exception generating src", e);
-            }
-
+        if (clazz != null) {
+            return clazz;
         }
 
-        Class result = null;
-        try {
-            if(System.getSecurityManager() == null) {
-                result = _generate(loader, protectionDomainBase.getProtectionDomain(),
-                                   props);
-            } else {
-                result = (Class)  java.security.AccessController.doPrivileged
-                        (new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                    	return  _generate(loader, protectionDomainBase.getProtectionDomain(),
-                                          props);
-                    }});
-            }
-        } catch (RuntimeException | LinkageError runEx) {
-            //We would have got this exception if there were two (or more)
-            //  concurrent threads that attempted to define the same class
-            //  Lets try to load the class and if we are able to load it
-            //  then we can ignore the exception. Else throw the original exception
-            try {
-                result = loader.loadClass(actualClassName);
-                _logger.log(Level.FINE, "[EJBUtils] Got exception ex: " + runEx
-                        + " but loaded class: " + result.getName());
-            } catch (ClassNotFoundException cnfEx) {
-                throw runEx;
-            }
-        }
+        // PAYARA-3087 LinkageError occurs when multiple threads generate classes
+        synchronized (EJBUtils.class) {
 
-        return result;
+            clazz = loadClassIgnoringExceptions(loader, actualClassName);
+
+            if (clazz != null) {
+                return clazz;
+            }
+
+            cgf.evaluate();
+
+            final Properties props = new Properties();
+            if( _logger.isLoggable(Level.FINE) ) {
+
+                props.put(DUMP_AFTER_SETUP_VISITOR, "true");
+                props.put(TRACE_BYTE_CODE_GENERATION, "true");
+                props.put(USE_ASM_VERIFIER, "true");
+
+                try {
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    PrintStream ps = new PrintStream(baos);
+
+                    _sourceCode(ps, props);
+                    _logger.fine(baos.toString());
+
+                } catch(Exception e) {
+                    _logger.log(Level.FINE, "exception generating src", e);
+                }
+
+            }
+
+            Class result;
+            try {
+                if(System.getSecurityManager() == null) {
+                    result = _generate(loader, protectionDomainBase.getProtectionDomain(),
+                                       props);
+                } else {
+                    result = java.security.AccessController.doPrivileged(
+                        (PrivilegedAction<Class>) () -> _generate(loader, protectionDomainBase.getProtectionDomain(), props)
+                    );
+                }
+            } catch (RuntimeException runEx) {
+                //We would have got this exception if there were two (or more)
+                //  concurrent threads that attempted to define the same class
+                //  Lets try to load the class and if we are able to load it
+                //  then we can ignore the exception. Else throw the original exception
+                try {
+                    result = loader.loadClass(actualClassName);
+                    _logger.log(Level.FINE, "[EJBUtils] Got exception ex: " + runEx
+                            + " but loaded class: " + result.getName());
+                } catch (ClassNotFoundException cnfEx) {
+                    throw runEx;
+                }
+            }
+
+            return result;
+        }
     }
 
 
@@ -683,16 +671,14 @@ public class EJBUtils {
     private static ClassLoader getBusinessIntfClassLoader
         (String businessInterface) throws Exception {
 
-        ClassLoader contextLoader = null;
+        ClassLoader contextLoader;
         if(System.getSecurityManager() == null) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             contextLoader = (cl != null) ? cl :
                 ClassLoader.getSystemClassLoader();
         } else {
-            contextLoader = (ClassLoader)
-            java.security.AccessController.doPrivileged
-                    (new java.security.PrivilegedAction() {
-                public java.lang.Object run() {
+            contextLoader = java.security.AccessController.doPrivileged(
+                (PrivilegedAction<ClassLoader>) () -> {
                     // Return context class loader.  If there is none,
                     // which could happen within Appclient container,
                     // return system class loader.
@@ -701,23 +687,20 @@ public class EJBUtils {
                     return (cl != null) ? cl :
                         ClassLoader.getSystemClassLoader();
 
-                }});
+                }
+            );
         }
 
         final Class businessInterfaceClass =
             contextLoader.loadClass(businessInterface);
 
-        ClassLoader appClassLoader = null;
+        ClassLoader appClassLoader;
         if(System.getSecurityManager() == null) {
             appClassLoader = businessInterfaceClass.getClassLoader();
         } else {
-            appClassLoader = (ClassLoader)
-            java.security.AccessController.doPrivileged
-                    (new java.security.PrivilegedAction() {
-                public java.lang.Object run() {
-                    return businessInterfaceClass.getClassLoader();
-
-                }});
+            appClassLoader = java.security.AccessController.doPrivileged(
+                (PrivilegedAction<ClassLoader>) () -> businessInterfaceClass.getClassLoader()
+            );
         }
 
         return appClassLoader;
