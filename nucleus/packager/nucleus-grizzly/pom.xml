@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -47,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     
     <artifactId>nucleus-grizzly</artifactId>
@@ -67,15 +68,54 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-             <groupId>org.glassfish.grizzly</groupId>
-             <artifactId>grizzly-npn-bootstrap</artifactId>
-            <version>${grizzly.npn.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-npn-osgi</artifactId>
             <version>${grizzly.npn.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-npn-jars</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <!-- Copy all the required npn-bootstrap jars here -->
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.8.1</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.8</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.7</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.6</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 

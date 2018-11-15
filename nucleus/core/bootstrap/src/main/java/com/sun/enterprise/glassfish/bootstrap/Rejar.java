@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.io.*;
 import java.util.*;
 import java.util.jar.*;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.*;
 import java.nio.ByteBuffer;
 
 /**
@@ -59,72 +58,43 @@ public class Rejar {
 
     public Rejar() {
     }
-    
+
     public void rejar(File out, File modules) throws IOException {
 
-        Map<String, ByteArrayOutputStream> metadata = new HashMap<String, ByteArrayOutputStream>();
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(out);
-            Set<String> names = new HashSet<String>();
+        Map<String, ByteArrayOutputStream> metadata = new HashMap<>();
+        try (FileOutputStream fos = new FileOutputStream(out)) {
+            Set<String> names = new HashSet<>();
             names.add(Attributes.Name.MAIN_CLASS.toString());
-            JarOutputStream jos = null;
-            try {
-                jos = new JarOutputStream(fos, getManifest());
+            try (JarOutputStream jos = new JarOutputStream(fos, getManifest())) {
                 processDirectory(jos, modules, names, metadata);
-                for (File directory : modules.listFiles(new FileFilter() {
-                    public boolean accept(File pathname) {
-                        return pathname.isDirectory();
+                File[] directories = modules.listFiles(pathname -> pathname.isDirectory());
+                if (directories != null) {
+                    for (File directory : directories) {
+                        processDirectory(jos, directory, names, metadata);
                     }
-                })) {
-                    processDirectory(jos, directory, names, metadata);
                 }
-
                 // copy the inhabitants files.
                 for (Map.Entry<String, ByteArrayOutputStream> e : metadata.entrySet()) {
                     copy(e.getValue().toByteArray(), e.getKey(), jos);
                 }
                 jos.flush();
-            } finally {
-                if (jos!=null) {
-                    try {
-                        jos.close();
-                    } catch(IOException ioe) {
-                        // ignore
-                    }
-                }
-            }
-        } finally {
-            if (fos!=null) {
-                try {
-                    fos.close();
-                } catch(IOException ioe) {
-                    // ignore
-                }
             }
         }
     }
 
     protected Manifest getManifest() throws IOException {
         Manifest m = new Manifest();
-        m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0"); 
+        m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
         m.getMainAttributes().put(Attributes.Name.MAIN_CLASS, "com.sun.enterprise.glassfish.bootstrap.ASMain");
         return m;
     }
 
     protected void processDirectory(JarOutputStream jos, File directory, Set<String> names, Map<String, ByteArrayOutputStream> metadata ) throws IOException {
-
-            for (File module : directory.listFiles(new FileFilter() {
-                public boolean accept(File pathname) {
-                    if (pathname.getName().endsWith("jar")) {
-                        return true;
-                    }
-                    return false;
-                }
-            })) {
+        File[] jars = directory.listFiles(pathname -> pathname.getName().endsWith("jar"));
+        if (jars != null) {
+            for (File module : jars) {
                 // add module
-                JarFile in = new JarFile(module);
-                try {
+                try (JarFile in = new JarFile(module)) {
                     Enumeration<JarEntry> entries = in.entries();
                     while (entries.hasMoreElements()) {
                         JarEntry je = entries.nextElement();
@@ -147,17 +117,9 @@ public class Rejar {
                             copy(in, je, jos);
                         }
                     }
-                } finally {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (Throwable t) {
-                                // Ignore
-                        }
-                    }
                 }
-
-            };
+            }
+        }
     }
 
     protected  void copy(JarFile in, JarEntry je, JarOutputStream jos) throws IOException {
@@ -175,15 +137,11 @@ public class Rejar {
     }
 
     protected void copy(JarFile in, JarEntry je, WritableByteChannel out) throws IOException {
-        InputStream is = in.getInputStream(je);
-        try {
-            ReadableByteChannel inChannel = Channels.newChannel(is);
+        try (ReadableByteChannel inChannel = Channels.newChannel(in.getInputStream(je))) {
             ByteBuffer byteBuffer = ByteBuffer.allocate(Long.valueOf(je.getSize()).intValue());
             inChannel.read(byteBuffer);
             byteBuffer.rewind();
             out.write(byteBuffer);
-        } finally {
-            is.close();
         }
     }
 

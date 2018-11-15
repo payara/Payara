@@ -65,7 +65,7 @@ import java.util.logging.Level;
 public class LargeFileSubstitutionHandler extends FileSubstitutionHandler {
     private static final String BACKUP_FILE_PREFIX = ".bkp";
     private static final String TEMP_FILE_PREFIX = ".tmp";
-    private File _outputFile;
+    private File outputFile;
 
     public LargeFileSubstitutionHandler(File file) throws FileNotFoundException {
         super(file);
@@ -74,48 +74,48 @@ public class LargeFileSubstitutionHandler extends FileSubstitutionHandler {
     @Override
     public Reader getReader() {
         try {
-            _reader = new BufferedReader(new InputStreamReader(new FileInputStream(_inputFile)));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile)));
         } catch (FileNotFoundException e) {
-            _logger.log(Level.INFO, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()) 
+            LOGGER.log(Level.INFO, STRINGS.get("invalidFileLocation", inputFile.getAbsolutePath()) 
                     , e);
         }
-        return _reader;
+        return reader;
     }
 
     @Override
     public Writer getWriter() {
-        _outputFile = new File(_inputFile.getAbsolutePath() + TEMP_FILE_PREFIX);
+        outputFile = new File(inputFile.getAbsolutePath() + TEMP_FILE_PREFIX);
         try {
-            if (!_outputFile.exists()) {
-                if (!_outputFile.createNewFile()) {
+            if (!outputFile.exists()) {
+                if (!outputFile.createNewFile()) {
                     throw new IOException();
                 }
             }
-            _writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile)));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile)));
         } catch (IOException e) {
-            _logger.log(Level.INFO, _strings.get("failureTempFileCreation",
-                    _outputFile.getAbsolutePath(), e));
+            LOGGER.log(Level.INFO, STRINGS.get("failureTempFileCreation",
+                    outputFile.getAbsolutePath(), e));
         }
-        return _writer;
+        return writer;
     }
 
     @Override
     public void finish() {
         super.finish();
-        String inputFileName = _inputFile.getName();
-        File inputBackUpfile = new File(_inputFile.getAbsolutePath() + BACKUP_FILE_PREFIX);
-        if (_inputFile.renameTo(inputBackUpfile)) {
-            if (_outputFile.renameTo(new File(_inputFile.getAbsolutePath()))) {
+        String inputFileName = inputFile.getName();
+        File inputBackUpfile = new File(inputFile.getAbsolutePath() + BACKUP_FILE_PREFIX);
+        if (inputFile.renameTo(inputBackUpfile)) {
+            if (outputFile.renameTo(new File(inputFile.getAbsolutePath()))) {
                 if (!inputBackUpfile.delete()) {
-                    _logger.log(Level.INFO, _strings.get("failureInBackUpFileDeletion", 
+                    LOGGER.log(Level.INFO, STRINGS.get("failureInBackUpFileDeletion", 
                             inputBackUpfile.getAbsolutePath()));
                 }
             } else {
-                _logger.log(Level.INFO, _strings.get("failureInFileRename", _outputFile.getAbsolutePath(),
+                LOGGER.log(Level.INFO, STRINGS.get("failureInFileRename", outputFile.getAbsolutePath(),
                         inputFileName));
             }
         } else {
-            _logger.log(Level.WARNING,  _strings.get("failureInFileRename", _inputFile.getAbsolutePath(),
+            LOGGER.log(Level.WARNING,  STRINGS.get("failureInFileRename", inputFile.getAbsolutePath(),
                    inputBackUpfile.getName()));
         }
     }

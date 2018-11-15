@@ -59,6 +59,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -67,6 +68,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -81,6 +83,7 @@ import org.jvnet.hk2.annotations.Service;
 public class FaultToleranceService implements EventListener {
     
     public static final String FAULT_TOLERANCE_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
+    public static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
     public static final String FALLBACK_HANDLER_METHOD_NAME = "handle";
     
     private static final Logger logger = Logger.getLogger(FaultToleranceService.class.getName());
@@ -99,16 +102,10 @@ public class FaultToleranceService implements EventListener {
     @Inject
     Events events;
     
-    private final Map<String, Boolean> enabledMap;
-    private final Map<String, Map<String, Semaphore>> bulkheadExecutionSemaphores;
-    private final Map<String, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
-    private final Map<String, Map<String, CircuitBreakerState>> circuitBreakerStates;
+    private final Map<String, FaultToleranceObject> faultToleranceObjects;
     
     public FaultToleranceService() {
-        enabledMap = new ConcurrentHashMap<>();
-        bulkheadExecutionSemaphores  = new ConcurrentHashMap<>();
-        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
-        circuitBreakerStates = new ConcurrentHashMap<>();
+        faultToleranceObjects = new ConcurrentHashMap<>();
     }
     
     @PostConstruct
@@ -136,17 +133,33 @@ public class FaultToleranceService implements EventListener {
      */
     public Boolean isFaultToleranceEnabled(String applicationName, Config config) {
         try {
-            if (enabledMap.containsKey(applicationName)) {
-                return enabledMap.get(applicationName);
+            if (faultToleranceObjects.containsKey(applicationName)) {
+                return faultToleranceObjects.get(applicationName).isEnabled();
             } else {
-                setFaultToleranceEnabled(applicationName, config);
-                return enabledMap.get(applicationName);
+                initialiseFaultToleranceObject(applicationName, config);
+                return faultToleranceObjects.get(applicationName).isEnabled();
             }
         } catch (NullPointerException npe) {
-            setFaultToleranceEnabled(applicationName, config);
-            return enabledMap.get(applicationName);
+            initialiseFaultToleranceObject(applicationName, config);
+            return faultToleranceObjects.get(applicationName).isEnabled();
         }
-        
+    }
+    
+    /**
+     * Checks whether fault tolerance metrics are enabled for a given application, setting its enabled value if it doesn't
+     * already have one.
+     * @param applicationName The application to check if Fault Tolerance metrics are enabled for.
+     * @param config The application config to check for any override values when setting the enabled status for an
+     * unregistered application.
+     * @return True if Fault Tolerance metrics are enabled for the given application name
+     */
+    public Boolean areFaultToleranceMetricsEnabled(String applicationName, Config config) {
+        if (faultToleranceObjects.containsKey(applicationName)) {
+            return faultToleranceObjects.get(applicationName).areMetricsEnabled();
+        } else {
+            initialiseFaultToleranceObject(applicationName, config);
+            return faultToleranceObjects.get(applicationName).areMetricsEnabled();
+        }
     }
     
     /**
@@ -154,31 +167,21 @@ public class FaultToleranceService implements EventListener {
      * @param applicationName The name of the application to register
      * @param config The config to check for override values from
      */
-    private synchronized void setFaultToleranceEnabled(String applicationName, Config config) {
-        try {
-            // Double lock as multiple methods can get inside the calling if at the same time
-            logger.log(Level.FINER, "Checking double lock to see if something else has added the application");
-            if (!enabledMap.containsKey(applicationName)) {
-                if (config != null) {
-                    // Set the enabled value to the override value from the config, or true if it isn't configured
-                    enabledMap.put(applicationName, 
-                        config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
-                } else {
-                    logger.log(Level.FINE, "No config found, so enabling fault tolerance for application: {0}",
-                            applicationName);
-                    enabledMap.put(applicationName, Boolean.TRUE);
-                }
-            }
-        } catch (NullPointerException npe) {
-            logger.log(Level.FINE, "Caught null pointer attempting to register application: " + applicationName, npe);
+    private synchronized void initialiseFaultToleranceObject(String applicationName, Config config) {
+        // Double lock as multiple methods can get inside the calling if at the same time
+        logger.log(Level.FINER, "Checking double lock to see if something else has added the application");
+        if (!faultToleranceObjects.containsKey(applicationName)) {
             if (config != null) {
                 // Set the enabled value to the override value from the config, or true if it isn't configured
-                enabledMap.put(applicationName, 
-                    config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(Boolean.TRUE));
+                faultToleranceObjects.put(applicationName, new FaultToleranceObject(
+                        config.getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class)
+                                .orElse(Boolean.TRUE), 
+                        config.getOptionalValue(METRICS_ENABLED_PROPERTY, Boolean.class)
+                                .orElse(Boolean.TRUE)));
             } else {
                 logger.log(Level.FINE, "No config found, so enabling fault tolerance for application: {0}",
                         applicationName);
-                enabledMap.put(applicationName, Boolean.TRUE);
+                faultToleranceObjects.put(applicationName, new FaultToleranceObject(Boolean.TRUE, Boolean.TRUE));
             }
         }
     }
@@ -247,22 +250,31 @@ public class FaultToleranceService implements EventListener {
      * Gets the Bulkhead Execution Semaphore for a given application method, registering it to the 
      * FaultToleranceService if it hasn't already.
      * @param applicationName The name of the application
+     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
      * @param annotatedMethod The method that's annotated with @Bulkhead
      * @param bulkheadValue The value parameter of the Bulkhead annotation
      * @return The Semaphore for the given application method.
      */
-    public Semaphore getBulkheadExecutionSemaphore(String applicationName, Method annotatedMethod, int bulkheadValue) {
+    public Semaphore getBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
+            Method annotatedMethod, int bulkheadValue) {
         Semaphore bulkheadExecutionSemaphore;
         String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
-        Map<String, Semaphore> annotatedMethodSemaphores = bulkheadExecutionSemaphores.get(applicationName);
+        Map<String, Semaphore> annotatedMethodSemaphores = null;
         
-        // If there isn't a semaphore registered for this application name, register one, otherwise just return
+        try {
+            annotatedMethodSemaphores = faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores()
+                    .get(invocationTarget);
+        } catch (NullPointerException npe) {
+            logger.log(Level.FINE, "NPE caught trying to get semaphores for annotated method", npe);
+        }
+        
+        // If there isn't a semaphore registered for this bean, register one, otherwise just return
         // the one already registered
         if (annotatedMethodSemaphores == null) {
-            logger.log(Level.FINER, "No matching application in the bulkhead execution semaphore map, registering...");
-            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, fullMethodSignature,
-                    bulkheadValue);
+            logger.log(Level.FINER, "No matching application or bean in bulkhead execution semaphore map, registering...");
+            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, invocationTarget, 
+                    fullMethodSignature, bulkheadValue);
         } else {
             bulkheadExecutionSemaphore = annotatedMethodSemaphores.get(fullMethodSignature);
         
@@ -271,8 +283,8 @@ public class FaultToleranceService implements EventListener {
             if (bulkheadExecutionSemaphore == null) {
                 logger.log(Level.FINER, "No matching method signature in the bulkhead execution semaphore map, "
                         + "registering...");
-                bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, fullMethodSignature,
-                        bulkheadValue);
+                bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, invocationTarget, 
+                        fullMethodSignature, bulkheadValue);
             }
         }
         
@@ -281,57 +293,63 @@ public class FaultToleranceService implements EventListener {
     
     /**
      * Helper method to create and register a Bulkhead Execution Semaphore for an annotated method
-     * @param applicationName The application name to register the semaphore against
+     * @param applicationName The name of the application
+     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
      * @param fullMethodSignature The method signature to register the semaphore against
      * @param bulkheadValue The size of the bulkhead
      * @return The Bulkhead Execution Semaphore for the given method signature and application
      */
-    private synchronized Semaphore createBulkheadExecutionSemaphore(String applicationName, String fullMethodSignature, 
-            int bulkheadValue) {
+    private synchronized Semaphore createBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
+            String fullMethodSignature, int bulkheadValue) {
         
         // Double lock as multiple methods can get inside the calling if at the same time
         logger.log(Level.FINER, "Checking double lock to see if something else has already added the application to "
                 + "the bulkhead execution semaphore map");
-        if (bulkheadExecutionSemaphores.get(applicationName) == null) {
-            logger.log(Level.FINER, "Registering application to the bulkhead execution semaphore map: {0}", 
-                    applicationName);
-            bulkheadExecutionSemaphores.put(applicationName, new ConcurrentHashMap<>());
+        if (faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget) == null) {
+            logger.log(Level.FINER, "Registering bean to bulkhead execution semaphore map: {0}", 
+                    invocationTarget);
+            
+            faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores().put(
+                    invocationTarget, 
+                    new ConcurrentHashMap<>());
         }
         
         // Double lock as multiple methods can get inside the calling if at the same time
         logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
                 + "to the bulkhead execution semaphore map");
-        if (bulkheadExecutionSemaphores.get(applicationName).get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map for "
-                    + "application {1}", new String[]{fullMethodSignature, applicationName});
-            bulkheadExecutionSemaphores.get(applicationName).put(fullMethodSignature, new Semaphore(bulkheadValue, 
-                    true));
+        if (faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
+                .get(fullMethodSignature) == null) {
+            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map", fullMethodSignature);
+            faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
+                    .put(fullMethodSignature, new Semaphore(bulkheadValue, true));
         }
 
-        return bulkheadExecutionSemaphores.get(applicationName).get(fullMethodSignature);
+        return faultToleranceObjects.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
+                .get(fullMethodSignature);
     }
     
     /**
      * Gets the Bulkhead Execution Queue Semaphore for a given application method, registering it to the 
      * FaultToleranceService if it hasn't already.
      * @param applicationName The name of the application
+     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
      * @param annotatedMethod The method that's annotated with @Bulkhead and @Asynchronous
      * @param bulkheadWaitingTaskQueue The waitingTaskQueue parameter of the Bulkhead annotation
      * @return The Semaphore for the given application method.
      */
-    public Semaphore getBulkheadExecutionQueueSemaphore(String applicationName, Method annotatedMethod,
-            int bulkheadWaitingTaskQueue) {
+    public Semaphore getBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
+            Method annotatedMethod, int bulkheadWaitingTaskQueue) {
         Semaphore bulkheadExecutionQueueSemaphore;
         String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
         Map<String, Semaphore> annotatedMethodExecutionQueueSemaphores = 
-                bulkheadExecutionQueueSemaphores.get(applicationName);
+                faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget);
         
         // If there isn't a semaphore registered for this application name, register one, otherwise just return
         // the one already registered
         if (annotatedMethodExecutionQueueSemaphores == null) {
             logger.log(Level.FINER, "No matching application in the bulkhead execution semaphore map, registering...");
-            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, 
+            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, invocationTarget, 
                     fullMethodSignature, bulkheadWaitingTaskQueue);
         } else {
             bulkheadExecutionQueueSemaphore = annotatedMethodExecutionQueueSemaphores.get(fullMethodSignature);
@@ -341,7 +359,7 @@ public class FaultToleranceService implements EventListener {
             if (bulkheadExecutionQueueSemaphore == null) {
                 logger.log(Level.FINER, "No matching method signature in the bulkhead execution queue semaphore map, "
                         + "registering...");
-                bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, 
+                bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, invocationTarget, 
                         fullMethodSignature, bulkheadWaitingTaskQueue);
             }
         }
@@ -351,56 +369,63 @@ public class FaultToleranceService implements EventListener {
     
     /**
      * Helper method to create and register a Bulkhead Execution Queue Semaphore for an annotated method
-     * @param applicationName The application name to register the semaphore against
+     * @param applicationName The name of the application
+     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
      * @param fullMethodSignature The method signature to register the semaphore against
      * @param bulkheadWaitingTaskQueue The size of the waiting task queue of the bulkhead
      * @return The Bulkhead Execution Queue Semaphore for the given method signature and application
      */
-    private synchronized Semaphore createBulkheadExecutionQueueSemaphore(String applicationName, 
+    private synchronized Semaphore createBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
             String fullMethodSignature, int bulkheadWaitingTaskQueue) {
         // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the application to "
+        logger.log(Level.FINER, "Checking double lock to see if something else has already added the object to "
                 + "the bulkhead execution queue semaphore map");
-        if (bulkheadExecutionQueueSemaphores.get(applicationName) == null) {
-            logger.log(Level.FINER, "Registering application to the bulkhead execution queue semaphore map: {0}", 
-                    applicationName);
-            bulkheadExecutionQueueSemaphores.put(applicationName, new ConcurrentHashMap<>());
+        if (faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget) 
+                == null) {
+            logger.log(Level.FINER, "Registering object to the bulkhead execution queue semaphore map: {0}", 
+                    invocationTarget);
+            faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores()
+                    .put(invocationTarget, new ConcurrentHashMap<>());
         }
         
         // Double lock as multiple methods can get inside the calling if at the same time
         logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
                 + "to the bulkhead execution queue semaphore map");
-        if (bulkheadExecutionQueueSemaphores.get(applicationName).get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map for "
-                    + "application {1}", new String[]{fullMethodSignature, applicationName});
-            bulkheadExecutionQueueSemaphores.get(applicationName)
+        if (faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget).
+                get(fullMethodSignature) == null) {
+            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map", 
+                    fullMethodSignature);
+            faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget)
                     .put(fullMethodSignature, new Semaphore(bulkheadWaitingTaskQueue, true));
         }
 
-        return bulkheadExecutionQueueSemaphores.get(applicationName).get(fullMethodSignature);
+        return faultToleranceObjects.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget)
+                .get(fullMethodSignature);
     }
     
     /**
-     * Gets the CircuitBreakerState object for a given application name and method. If a CircuitBreakerState hasn't
-     * been registered for the given application name and method, it will register the given CircuitBreaker.
-     * @param applicationName The application name
+     * Gets the CircuitBreakerState object for a given application name and method.If a CircuitBreakerState hasn't been 
+     * registered for the given application name and method, it will register the given CircuitBreaker.
+     * @param applicationName The name of the application
+     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
      * @param annotatedMethod The method annotated with @CircuitBreaker
      * @param circuitBreaker The @CircuitBreaker annotation from the annotated method
      * @return The CircuitBreakerState for the given application and method
      */
-    public CircuitBreakerState getCircuitBreakerState(String applicationName, Method annotatedMethod, 
-            CircuitBreaker circuitBreaker) {
+    public CircuitBreakerState getCircuitBreakerState(String applicationName, Object invocationTarget, 
+            Method annotatedMethod, CircuitBreaker circuitBreaker) {
         CircuitBreakerState circuitBreakerState;
         String fullMethodSignature = getFullMethodSignature(annotatedMethod);
         
         Map<String, CircuitBreakerState> annotatedMethodCircuitBreakerStates = 
-                circuitBreakerStates.get(applicationName);
+                faultToleranceObjects.get(applicationName).getCircuitBreakerStates().get(invocationTarget);
 
         // If there isn't a CircuitBreakerState registered for this application name, register one, otherwise just 
         // return the one already registered
         if (annotatedMethodCircuitBreakerStates == null) {
-            logger.log(Level.FINER, "No matching application in the circuit breaker states map, registering...");
-            circuitBreakerState = registerCircuitBreaker(applicationName, fullMethodSignature, circuitBreaker);
+            logger.log(Level.FINER, "No matching object in the circuit breaker states map, registering...");
+            circuitBreakerState = registerCircuitBreaker(applicationName, invocationTarget, fullMethodSignature, 
+                    circuitBreaker);
         } else {
             circuitBreakerState = annotatedMethodCircuitBreakerStates.get(fullMethodSignature);
         
@@ -408,7 +433,8 @@ public class FaultToleranceService implements EventListener {
             // return the one already registered
             if (circuitBreakerState == null) {
                 logger.log(Level.FINER, "No matching method in the circuit breaker states map, registering...");
-                circuitBreakerState = registerCircuitBreaker(applicationName, fullMethodSignature, circuitBreaker);
+                circuitBreakerState = registerCircuitBreaker(applicationName, invocationTarget, fullMethodSignature, 
+                        circuitBreaker);
             }
         }
         
@@ -422,28 +448,30 @@ public class FaultToleranceService implements EventListener {
      * @param bulkheadWaitingTaskQueue The CircuitBreaker annotation of the annotated method
      * @return The CircuitBreakerState object for the given method signature and application
      */
-    private synchronized CircuitBreakerState registerCircuitBreaker(String applicationName, String fullMethodSignature, 
-            CircuitBreaker circuitBreaker) {
+    private synchronized CircuitBreakerState registerCircuitBreaker(String applicationName, Object invocationTarget, 
+            String fullMethodSignature, CircuitBreaker circuitBreaker) {
         // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the application "
+        logger.log(Level.FINER, "Checking double lock to see if something else has already added the object "
                 + "to the circuit breaker states map");
-        if (circuitBreakerStates.get(applicationName) == null) {
+        if (faultToleranceObjects.get(applicationName).getCircuitBreakerStates().get(invocationTarget) == null) {
             logger.log(Level.FINER, "Registering application to the circuit breaker states map: {0}", 
-                    applicationName);
-            circuitBreakerStates.put(applicationName, new ConcurrentHashMap<>());
+                    invocationTarget);
+            faultToleranceObjects.get(applicationName).getCircuitBreakerStates().put(invocationTarget, 
+                    new ConcurrentHashMap<>());
         }
         
         // Double lock as multiple methods can get inside the calling if at the same time
         logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
                 + "to the circuit breaker states map");
-        if (circuitBreakerStates.get(applicationName).get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering CircuitBreakerState for method {0} to the circuit breaker states map "
-                    + "for application {1}", new String[]{fullMethodSignature, applicationName});
-            circuitBreakerStates.get(applicationName)
+        if (faultToleranceObjects.get(applicationName).getCircuitBreakerStates().get(invocationTarget)
+                .get(fullMethodSignature) == null) {
+            logger.log(Level.FINER, "Registering CircuitBreakerState for method {0} to the circuit breaker states map", 
+                    fullMethodSignature);
+            faultToleranceObjects.get(applicationName).getCircuitBreakerStates().get(invocationTarget)
                     .put(fullMethodSignature, new CircuitBreakerState(circuitBreaker.requestVolumeThreshold()));
         }
 
-        return circuitBreakerStates.get(applicationName).get(fullMethodSignature);
+        return faultToleranceObjects.get(applicationName).getCircuitBreakerStates().get(invocationTarget).get(fullMethodSignature);
     }
 
     /**
@@ -451,26 +479,7 @@ public class FaultToleranceService implements EventListener {
      * @param applicationName The name of the application to remove
      */
     private void deregisterApplication(String applicationName) {
-        enabledMap.remove(applicationName);
-        deregisterCircuitBreaker(applicationName);
-        deregisterBulkhead(applicationName);
-    }
-    
-    /**
-     * Removes the given application name from the circuit breaker states map
-     * @param applicationName The name of the application to remove
-     */
-    private void deregisterCircuitBreaker(String applicationName) {
-        circuitBreakerStates.remove(applicationName);
-    }
-    
-    /**
-     * Removes the given application name from the bulkhead maps
-     * @param applicationName The name of the application to remove
-     */
-    private void deregisterBulkhead(String applicationName) {
-        bulkheadExecutionSemaphores.remove(applicationName);
-        bulkheadExecutionQueueSemaphores.remove(applicationName);
+        faultToleranceObjects.remove(applicationName);
     }
     
     /**
@@ -488,6 +497,20 @@ public class FaultToleranceService implements EventListener {
             if (appName == null) {
                 appName = invocationManager.getCurrentInvocation().getComponentId();
 
+                // If we've found a component name, check if there's an application registered with the same name
+                if (appName != null) {
+                    ApplicationRegistry applicationRegistry = habitat.getService(ApplicationRegistry.class);
+
+                    // If it's not directly in the registry, it's possible due to how the componentId is constructed
+                    if (applicationRegistry.get(appName) == null) {
+                        String[] componentIds = appName.split("_/");
+                        
+                        // The application name should be the first component
+                        appName = componentIds[0];
+                    }
+                }
+                
+                // If we still don't have a name - just construct it from the method signature
                 if (appName == null) {
                     appName = getFullMethodSignature(invocationContext.getMethod());
                 }
@@ -531,5 +554,26 @@ public class FaultToleranceService implements EventListener {
         span.addSpanTag("Module Name", invocationManager.getCurrentInvocation().getModuleName());
         span.addSpanTag("Class Name", invocationContext.getMethod().getDeclaringClass().getName());
         span.addSpanTag("Method Name", invocationContext.getMethod().getName());
+    }
+    
+    public void incrementCounterMetric(MetricRegistry metricRegistry, String metricName, String applicationName, 
+            Config config) {
+        if (areFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.counter(metricName).inc();
+        }
+    }
+    
+    public void updateHistogramMetric(MetricRegistry metricRegistry, String metricName, int value,
+            String applicationName, Config config) {
+        if (areFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.histogram(metricName).update(value);
+        }
+    }
+    
+    public void updateHistogramMetric(MetricRegistry metricRegistry, String metricName, long value,
+            String applicationName, Config config) {
+        if (areFaultToleranceMetricsEnabled(applicationName, config)) {
+            metricRegistry.histogram(metricName).update(value);
+        }
     }
 }

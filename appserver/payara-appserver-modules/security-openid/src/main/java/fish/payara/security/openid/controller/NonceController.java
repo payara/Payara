@@ -61,7 +61,7 @@ import org.glassfish.common.util.StringHelper;
 @ApplicationScoped
 public class NonceController {
 
-    private final static String NONCE_KEY = "oidc.nonce";
+    private static final String NONCE_KEY = "oidc.nonce";
 
     public void store(OpenIdNonce nonce, OpenIdConfiguration configuration, HttpMessageContext context) {
         if (configuration.isUseNonce()) {

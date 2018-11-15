@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.logging;
@@ -77,6 +76,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
     @Inject
     LoggingConfigImpl logConfig;
 
+    @Override
     public void postConstruct() {
         for (Config config : configs.getConfig()) {
             doUpgrade(config);
@@ -142,6 +142,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             final Map<String, String> m = new HashMap<String, String>(logLevels);
 
             ConfigSupport.apply(new SingleConfigCode<Config>() {
+                @Override
                 public Object run(Config c) throws PropertyVetoException, TransactionFailure {
 
                     try {

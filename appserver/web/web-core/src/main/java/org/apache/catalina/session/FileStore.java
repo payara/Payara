@@ -79,6 +79,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -95,8 +96,8 @@ import java.util.logging.Logger;
 
 public final class FileStore extends StoreBase {
 
-    private static final Logger log = LogFacade.getLogger();
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final Logger LOGGER = LogFacade.getLogger();
+    private static final ResourceBundle RESOURCE_BUNDLE = LOGGER.getResourceBundle();
 
     // ----------------------------------------------------- Constants
 
@@ -136,12 +137,12 @@ public final class FileStore extends StoreBase {
      * Name to register for the background thread.
      */
     private static final String threadName = "FileStore";
-    
+
     /**
     * Our write-through cache of session objects
     * HERCULES: addition
     */
-    private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<String, Session>();     
+    private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
 
     // ------------------------------------------------------------- Properties
@@ -171,7 +172,7 @@ public final class FileStore extends StoreBase {
                                    this.directory);
 
     }
-    
+
 
     /**
      * Return descriptive information about this Store implementation and
@@ -285,14 +286,14 @@ public final class FileStore extends StoreBase {
      */
     public Session load(String id)
         throws ClassNotFoundException, IOException {
-            
+
         //HERCULES:addition
         // Check to see if it's in our cache first
         Session sess = sessions.get(id);
         if ( sess != null ) {
             return sess;
         }
-        //HERCULES:addition            
+        //HERCULES:addition
 
         // Open an input stream to the specified pathname, if any
         File file = file(id);
@@ -304,61 +305,33 @@ public final class FileStore extends StoreBase {
             return (null);
         }
         if (debug >= 1) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.LOADING_SESSION_FROM_FILE),
-                                              new Object[] {id, file.getAbsolutePath()});
+            String msg = MessageFormat.format(
+                    RESOURCE_BUNDLE.getString(LogFacade.LOADING_SESSION_FROM_FILE), id, file.getAbsolutePath()
+            );
             log(msg);
         }
 
-        FileInputStream fis = null;
-        BufferedInputStream bis = null;
-        ObjectInputStream ois = null;
-        Loader loader = null;
-        ClassLoader classLoader = null;
-        try {
-            fis = new FileInputStream(file.getAbsolutePath());
-            bis = new BufferedInputStream(fis);
+        try (FileInputStream fis = new FileInputStream(file.getAbsolutePath());
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
             Container container = manager.getContainer();
-            if (container != null) {
-                ois = ((StandardContext)container).createObjectInputStream(bis);
-            } else {
-                ois = new ObjectInputStream(bis);
+            try (ObjectInputStream ois = createObjectInputStream(container, bis)) {
+                StandardSession session = StandardSession.deserialize(ois, manager);
+                session.setManager(manager);
+                return (session);
             }
             //end HERCULES:mod
         } catch (FileNotFoundException e) {
             if (debug >= 1)
                 log("No persisted data file found");
             return (null);
-        } catch (IOException e) {
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException f) {
-                    // Ignore
-                }
-            }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException f) {
-                    // Ignore
-                }
-            }
-            throw e;
         }
+    }
 
-        try {
-            StandardSession session = StandardSession.deserialize(ois, manager);
-            session.setManager(manager);            
-            return (session);
-        } finally {
-            // Close the input stream
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch (IOException f) {
-                    // Ignore
-                }
-            }
+    private ObjectInputStream createObjectInputStream(Container container, BufferedInputStream bis) throws IOException {
+        if (container != null) {
+            return ((StandardContext)container).createObjectInputStream(bis);
+        } else {
+            return new ObjectInputStream(bis);
         }
     }
 
@@ -379,16 +352,16 @@ public final class FileStore extends StoreBase {
             return;
         }
         if (debug >= 1) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.REMOVING_SESSION_FROM_FILE),
+            String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.REMOVING_SESSION_FROM_FILE),
                                               new Object[] {id, file.getAbsolutePath()});
             log(msg);
         }
         //HERCULES: addition
-        // Take it out of the cache 
-        sessions.remove(id);        
+        // Take it out of the cache
+        sessions.remove(id);
         //HERCULES: addition
-        if (!file.delete() && log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "Cannot delete file: " + file);
+        if (!file.delete() && LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Cannot delete file: " + file);
         }
     }
 
@@ -410,7 +383,7 @@ public final class FileStore extends StoreBase {
         }
         if (debug >= 1) {
 
-            String msg = MessageFormat.format(rb.getString(LogFacade.SAVING_SESSION_TO_FILE),
+            String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.SAVING_SESSION_TO_FILE),
                                               new Object[] {session.getIdInternal(), file.getAbsolutePath()});
             log(msg);
         }
@@ -473,12 +446,12 @@ public final class FileStore extends StoreBase {
         }
         if (!file.exists() || !file.isDirectory()) {
             if (!file.delete() && file.exists()) {
-                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_DELETE_FILE_EXCEPTION),
+                String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.UNABLE_DELETE_FILE_EXCEPTION),
                                                   file);
                 throw new IOException(msg);
             }
             if (!file.mkdirs() && !file.isDirectory()) {
-                String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIR_EXCEPTION),
+                String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.UNABLE_CREATE_DIR_EXCEPTION),
                                                   file);
                 throw new IOException(msg);
             }

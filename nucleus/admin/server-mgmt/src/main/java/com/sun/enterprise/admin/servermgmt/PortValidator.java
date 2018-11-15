@@ -37,12 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * PortValidator.java
- *
- * Created on August 11, 2003, 7:44 PM
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -53,28 +48,31 @@ import com.sun.enterprise.util.net.NetUtils;
 /**
  * This validator ensures that the specified port is not in use.
  * @author  kebbs
+ * @since August 11, 2003, 7:44 PM
  */
 public class PortValidator extends Validator {
 
-    private static final StringManager _strMgr = 
-        StringManager.getManager(PortValidator.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(PortValidator.class);
 
-    /** Creates a new instance of PortValidator */
+    /** Creates a new instance of PortValidator
+     * @param name Name of an entry that is used in case of validation errors.
+     * If the name is null "" is used instead.
+     */
     public PortValidator(String name) {
         super(name, java.lang.Integer.class);
     }
  
      /**
      * Validates the given Port.
-     * @param str Must be the absolute path of the File that will be validated.
+     * @param obj Must be the absolute path of the File that will be validated.
      * @throws InvalidConfigException
      */
+    @Override
     public void validate(Object obj) throws InvalidConfigException
     {
         super.validate(obj);
-        if (!NetUtils.isPortFree(((Integer)obj).intValue())) {
-            throw new InvalidConfigException(
-                _strMgr.getString("portValidator.in_use", obj));
+        if (!NetUtils.isPortFree(((Integer)obj))) {
+            throw new InvalidConfigException(STRING_MANAGER.getString("portValidator.in_use", obj));
         }
     }
 }

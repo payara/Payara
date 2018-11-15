@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.api.visitor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.ws.rs.Consumes;
@@ -108,16 +109,16 @@ public interface ApiVisitor {
 
     void visitConsumes(Consumes produces, AnnotatedElement element, ApiContext context);
 
-    void visitQueryParam(QueryParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context);
 
-    void visitPathParam(PathParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context);
 
-    void visitFormParam(FormParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context);
 
-    void visitHeaderParam(HeaderParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context);
 
-    void visitCookieParam(CookieParam param, java.lang.reflect.Parameter element, ApiContext context);
-
+    void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context);
+    
     // OpenAPI annotations
 
     void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context);

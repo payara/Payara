@@ -42,12 +42,15 @@ package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.DasConfig;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,11 +89,12 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
     @Inject
     ServiceLocator habitat;
     
+    @Inject
+    PayaraExecutorService executor;
+    
     private Logger logger;
     
-    private Timer timer;
-    
-    private TimerTask timerTask;
+    ScheduledFuture<?> timerTask;
     
     private DynamicReloader reloader;
     
@@ -153,22 +157,21 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
     }
     
     private void start(int pollIntervalInSeconds) {
-        long pollIntervalInMS = pollIntervalInSeconds * 1000L;
         reloader.init();
-        timer = new Timer("DynamicReloader", true);
-        timer.schedule(
-                timerTask = new TimerTask() {
+        timerTask = executor.scheduleAtFixedRate(
+                new Runnable() {
                     @Override
                     public void run() {
                         try {
                             reloader.run();
                         } catch (Exception ex) {
-                            ex.printStackTrace();
+                            logger.log(Level.SEVERE, "Error in the DynamicReloader Scheduled Task", ex);
                         }
                     }
-                }, 
-                pollIntervalInMS, 
-                pollIntervalInMS);
+                },
+                0L,
+                pollIntervalInSeconds, 
+                TimeUnit.SECONDS);
         logger.fine("[Reloader] Started, monitoring every " +
                     pollIntervalInSeconds + " seconds"
                     );
@@ -182,10 +185,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
         logger.fine("[Reloader] Stopping");
         reloader.cancel();
         if(timerTask != null) {
-            timerTask.cancel();
-        }
-        if (timer != null) {
-            timer.cancel();
+            timerTask.cancel(false);
         }
     }
     

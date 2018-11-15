@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.remote.writer;
 
 import com.sun.enterprise.admin.remote.ParamsWithPayload;
@@ -54,6 +56,8 @@ import org.glassfish.api.admin.ParameterMap;
  */
 public class ParameterMapFormProprietaryWriter implements ProprietaryWriter {
 
+    private static final String UTF8 = "UTF-8";
+    
     @Override
     public void writeTo(Object entity, HttpURLConnection urlConnection) throws IOException {
         ParameterMap pm;
@@ -71,14 +75,14 @@ public class ParameterMapFormProprietaryWriter implements ProprietaryWriter {
                 if (sb.length() > 0) {
                     sb.append('&');
                 }
-                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                sb.append(URLEncoder.encode(entry.getKey(), UTF8));
                 if (value != null) {
                     sb.append('=');
-                    sb.append(URLEncoder.encode(value, "UTF-8"));
+                    sb.append(URLEncoder.encode(value, UTF8));
                 }
             }
         }
-        urlConnection.getOutputStream().write(sb.toString().getBytes("UTF-8"));
+        urlConnection.getOutputStream().write(sb.toString().getBytes(UTF8));
     }
 
     @Override

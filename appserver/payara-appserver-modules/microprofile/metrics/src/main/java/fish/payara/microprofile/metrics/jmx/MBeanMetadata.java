@@ -40,17 +40,63 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE;
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.KEY;
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER;
+import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
+import static java.util.Arrays.asList;
+import java.util.HashSet;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import java.util.Set;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MBeanMetadata extends Metadata {
 
-    @XmlElement(name="mbean")
+    private static final Logger LOGGER = Logger.getLogger(MBeanMetadata.class.getName());
+
+    @XmlElement(name = "mbean")
     private String mBean;
+
+    @XmlElement
+    private boolean dynamic = true;
+
+    @XmlTransient
+    private Boolean valid;
+
+    private static final Set<String> SUPPORTED_UNITS
+            = new HashSet<>(asList(
+                    MetricUnits.NONE,
+                    MetricUnits.BITS,
+                    MetricUnits.KILOBITS,
+                    MetricUnits.MEGABITS,
+                    MetricUnits.GIGABITS,
+                    MetricUnits.KIBIBITS,
+                    MetricUnits.MEBIBITS,
+                    MetricUnits.GIBIBITS,
+                    MetricUnits.BYTES,
+                    MetricUnits.KILOBYTES,
+                    MetricUnits.MEGABYTES,
+                    MetricUnits.GIGABYTES,
+                    MetricUnits.NANOSECONDS,
+                    MetricUnits.MICROSECONDS,
+                    MetricUnits.MILLISECONDS,
+                    MetricUnits.SECONDS,
+                    MetricUnits.MINUTES,
+                    MetricUnits.HOURS,
+                    MetricUnits.DAYS,
+                    MetricUnits.PERCENT,
+                    MetricUnits.PER_SECOND
+            ));
 
     public MBeanMetadata() {
         super(null, MetricType.INVALID);
@@ -67,6 +113,73 @@ public class MBeanMetadata extends Metadata {
 
     public void setMBean(String mBean) {
         this.mBean = mBean;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
+
+    @Override
+    public String getUnit() {
+        if (isNull(super.getUnit())) {
+            setUnit(MetricUnits.NONE);
+        }
+        return super.getUnit();
+    }
+
+    public void setUnit(String unit) {
+        if (SUPPORTED_UNITS.contains(unit)) {
+            super.setUnit(unit);
+        }
+    }
+
+    public boolean isValid() {
+        if (valid == null) {
+            valid = validateMetadata();
+        }
+        return valid;
+    }
+
+    private boolean validateMetadata() {
+        boolean validationResult = true;
+        MBeanMetadata metadata = this;
+
+        if (isNull(metadata.getName())) {
+            LOGGER.log(WARNING, "'name' property not defined in {0} mbean metadata", metadata.getMBean());
+            validationResult = false;
+        }
+        if (isNull(metadata.getMBean())) {
+            LOGGER.log(WARNING, "'mbean' property not defined in {0} metadata", metadata.getName());
+            validationResult = false;
+        }
+        if (isNull(metadata.getType())) {
+            LOGGER.log(WARNING, "'type' property not defined in {0} metadata", metadata.getName());
+            validationResult = false;
+        }
+        if (nonNull(metadata.getName()) && nonNull(metadata.getMBean())) {
+            for (String keyword : new String[]{SPECIFIER, KEY, ATTRIBUTE, SUB_ATTRIBUTE}) {
+                if (metadata.getName().contains(keyword) && !metadata.getMBean().contains(keyword)) {
+                    LOGGER.log(
+                            WARNING,
+                            "{0} placeholder not found in 'mbean' {1} property",
+                            new String[]{keyword, metadata.getMBean()}
+                    );
+                    validationResult = false;
+                } else if (metadata.getMBean().contains(keyword) && !metadata.getName().contains(keyword)) {
+                    LOGGER.log(
+                            WARNING,
+                            "{0} placeholder not found in 'name' {1} property",
+                            new String[]{keyword, metadata.getName()}
+                    );
+                    validationResult = false;
+                }
+            }
+        }
+        return validationResult;
     }
 
 }

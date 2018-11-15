@@ -77,6 +77,14 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
 
         return event;
     }
+    
+    
+    @Override
+    public LogNotificationEvent buildNotificationEvent(String subject, String message) {
+        LogNotificationEvent event = super.buildNotificationEvent(subject, message);
+        event.setLevel(Level.INFO);
+        return event;
+    }
 
     @Override
     public LogNotificationEvent buildNotificationEvent(String name, List<HealthCheckResultEntry> entries, Level level) {

@@ -177,7 +177,6 @@
       
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
-	<jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>       
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -202,6 +201,11 @@
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
+        <!-- Grizzly NPN Jar version -->
+        <jvm-options>[1.8.0|1.8.0u120]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.6.jar</jvm-options>
+        <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
+        <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
+        <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
       </java-config>
       <availability-service>
           <web-container-availability/>
@@ -363,7 +367,6 @@
       
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
-	<jvm-options>-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -387,6 +390,11 @@
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>        
         <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
+        <!-- Grizzly NPN Jar version -->
+        <jvm-options>[1.8.0|1.8.0u120]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.6.jar</jvm-options>
+        <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
+        <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
+        <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
       </java-config>
          <availability-service>
              <web-container-availability/>

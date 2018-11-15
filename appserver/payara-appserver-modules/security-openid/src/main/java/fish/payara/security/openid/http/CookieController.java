@@ -39,10 +39,10 @@
  */
 package fish.payara.security.openid.http;
 
+import static java.util.Objects.nonNull;
 import java.util.Optional;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.Cookie;
-import static java.util.Objects.nonNull;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
@@ -64,6 +64,7 @@ public class CookieController implements HttpStorageController {
             cookie.setMaxAge(maxAge);
         }
         cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         String contextPath = httpContext.getRequest().getContextPath();
         cookie.setPath(isEmpty(contextPath) ? "/" : contextPath);
 

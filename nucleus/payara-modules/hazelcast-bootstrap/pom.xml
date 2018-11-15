@@ -42,7 +42,7 @@
    <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.payara-modules</groupId>
@@ -79,6 +79,11 @@
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <version>${hazelcast.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-kubernetes</artifactId>
+            <version>${hazelcast.kubernetes.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

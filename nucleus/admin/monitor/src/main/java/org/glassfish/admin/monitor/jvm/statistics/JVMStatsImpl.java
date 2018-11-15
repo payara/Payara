@@ -23,7 +23,7 @@
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
+ * "Portions Copyright [year] [NAME of copyright owner]"
  *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm.statistics;
 
@@ -51,10 +52,6 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.admin.monitor.cli.MonitorContract;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.flashlight.datatree.TreeNode;
-import java.lang.management.MemoryUsage;
-import org.glassfish.flashlight.datatree.MethodInvoker;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -71,7 +68,6 @@ import javax.inject.Named;
  * init, used, committed, max
  *
  */
-//public class JVMStatsImpl implements JVMStats, MonitorContract {
 @Service
 @PerLookup
 public class JVMStatsImpl implements MonitorContract {
@@ -88,12 +84,14 @@ public class JVMStatsImpl implements MonitorContract {
     private final LocalStringManagerImpl localStrings =
              new LocalStringManagerImpl(JVMStatsImpl.class);
 
-    private final String name = "jvm";
+    private static final String NAME = "jvm";
 
+    @Override
     public String getName() {
-        return name;
+        return NAME;
     }
 
+    @Override
     public ActionReport process(final ActionReport report, final String filter) {
 
         if (monitoringService != null) {
@@ -157,9 +155,9 @@ public class JVMStatsImpl implements MonitorContract {
     }
 
     // @author bnevins
-    private long getFirstTreeNodeAsLong(TreeNode parent, String name) {
+    private long getFirstTreeNodeAsLong(TreeNode parent, String NAME) {
 
-        List<TreeNode> nodes = parent.getNodes(name);
+        List<TreeNode> nodes = parent.getNodes(NAME);
 
         if(!nodes.isEmpty()) {
             TreeNode node = nodes.get(0);

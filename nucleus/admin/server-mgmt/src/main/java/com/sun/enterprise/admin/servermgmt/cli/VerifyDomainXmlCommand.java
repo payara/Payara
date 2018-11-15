@@ -41,10 +41,8 @@
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
-import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
@@ -59,13 +57,8 @@ import java.util.logging.Level;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.hk2.bootstrap.HK2Populator;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
@@ -84,9 +77,6 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
 
     @Param(name = "domain_name", primary = true, optional = true)
     private String domainName0;
-
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(VerifyDomainXmlCommand.class);
 
     @Override
     protected void validate()

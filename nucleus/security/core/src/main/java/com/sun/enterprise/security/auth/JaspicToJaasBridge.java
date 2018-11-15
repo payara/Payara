@@ -138,10 +138,9 @@ public class JaspicToJaasBridge {
 
         String callerPrincipalName = "";
         try {
-            final X500Name x500Name = new X500Name(x500Principal.getName(X500Principal.RFC1779));
-            callerPrincipalName = x500Name.toString();
+            callerPrincipalName = x500Principal.getName(X500Principal.RFC1779);
 
-            privileged(() -> validSubject.getPublicCredentials().add(x500Name));
+            privileged(() -> validSubject.getPublicCredentials().add(x500Principal));
 
             CertificateRealm certRealm = (CertificateRealm) Realm.getInstance(CertificateRealm.AUTH_TYPE);
             String jaasCtx = certRealm.getJAASContext();
@@ -153,7 +152,7 @@ public class JaspicToJaasBridge {
             }
 
             // Sets security context
-            certRealm.authenticate(validSubject, x500Name);
+            certRealm.authenticate(validSubject, x500Principal);
         } catch (Exception ex) {
             _logger.log(INFO, auditAtnRefusedError, callerPrincipalName);
 

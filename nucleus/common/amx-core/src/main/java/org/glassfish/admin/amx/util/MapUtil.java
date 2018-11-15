@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util;
 
@@ -55,7 +56,7 @@ public final class MapUtil
 
     public static <K, V> V getWithDefault(final Map<K, V> m, final K key, V defaultValue)
     {
-        return m.containsKey(key) ? m.get(key) : defaultValue;
+        return m.getOrDefault(key, defaultValue);
     }
 
     public static Object[] getKeyObjects(final Map<?, ?> m)
@@ -83,7 +84,7 @@ public final class MapUtil
             final String key,
             final V value)
     {
-        final Map<String, V> m = new HashMap<String, V>();
+        final Map<String, V> m = new HashMap<>();
 
         m.put(key, value);
 
@@ -97,7 +98,7 @@ public final class MapUtil
             final Map<K, V> m1,
             final Map<K, V> m2)
     {
-        final Map<K, V> m = new HashMap<K, V>();
+        final Map<K, V> m = new HashMap<>();
 
         if (m1 != null)
         {
@@ -113,7 +114,7 @@ public final class MapUtil
 
     public static <K, V> Map<K, V> toMap(final Object[] params, final Class<K> keyClass, final Class<V> valueClass)
     {
-        final Map<K, V> m = new HashMap<K, V>();
+        final Map<K, V> m = new HashMap<>();
 
         for (int i = 0; i < params.length; i += 2)
         {
@@ -151,7 +152,7 @@ public final class MapUtil
             throw new IllegalArgumentException("mappings must have even length");
         }
 
-        final Map<T, T> m = new HashMap<T, T>();
+        final Map<T, T> m = new HashMap<>();
 
         for (int i = 0; i < mappings.length; i += 2)
         {
@@ -173,7 +174,7 @@ public final class MapUtil
             throw new IllegalArgumentException("mappings must have even length");
         }
 
-        final Map<String, String> m = new HashMap<String, String>();
+        final Map<String, String> m = new HashMap<>();
 
         for (int i = 0; i < mappings.length; i += 2)
         {
@@ -190,9 +191,8 @@ public final class MapUtil
             final Map<T, ?> m,
             final T[] keys)
     {
-        for (int i = 0; i < keys.length; ++i)
-        {
-            m.remove(keys[i]);
+        for (T key : keys) {
+            m.remove(key);
         }
     }
 
@@ -231,7 +231,7 @@ public final class MapUtil
 
     public static <K, V> Map<K, V> newMapNoNullValues(final Map<K, V> m)
     {
-        final Map<K, V> result = new HashMap<K, V>();
+        final Map<K, V> result = new HashMap<>();
 
         for (final Map.Entry<K, V> me : m.entrySet())
         {
@@ -258,7 +258,7 @@ public final class MapUtil
             return ("null");
         }
 
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
 
         final String[] keyStrings = getKeyStrings(m);
         for (final String key : keyStrings)
@@ -281,7 +281,7 @@ public final class MapUtil
 
     public static <K> Set<K> getNullValueKeys(final Map<K, ?> m)
     {
-        final Set<K> s = new HashSet<K>();
+        final Set<K> s = new HashSet<>();
 
         for (final Map.Entry<K, ?> me : m.entrySet())
         {
@@ -334,7 +334,7 @@ public final class MapUtil
         }
         else
         {
-            result = new HashMap<String, String>();
+            result = new HashMap<>();
 
             for (final Map.Entry<?, ?> me : m.entrySet())
             {
@@ -361,7 +361,7 @@ public final class MapUtil
 
 
 
-	
+
 
 
 

@@ -82,6 +82,9 @@ public final class AuthenticationInfo {
      * @return String
      */
     public String getPassword() {
+        if (password == null) {
+            return null;
+        }
         return new String(password);
     }
     

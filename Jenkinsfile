@@ -1,55 +1,173 @@
+#!groovy
+// Jenkinsfile for building a PR and running a subset of tests against it
+def pom
+def DOMAIN_NAME
+def ASADMIN
+def payaraBuildNumber
 pipeline {
-    agent none
+    options {
+        disableConcurrentBuilds()
+    }
+    agent any
+    tools {
+        jdk "zulu-8"
+    }
     stages {
-        stage("Analyse") {
-            agent {
-                label "sonar"
-            }
-            tools {
-                jdk "zulu-8"
-            }
+        stage('Report') {
             steps {
-                echo "Analysing"
-                checkoutAndBuildSource()
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
+                    DOMAIN_NAME = "test-domain"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                    echo "Domain name is ${DOMAIN_NAME}"
+                }
             }
         }
-    }     
+        stage('Build') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                }
+            }
+        }
+        stage('Setup for Quicklook Tests') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run Quicklook Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean test \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all \
+                -f appserver/tests/quicklook/pom.xml"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout EE8 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for EE8 Tests') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run EE8 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Ppayara-server-remote"
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout CargoTracker Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Run CargoTracker Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh "rm -rf /tmp/cargo*"
+
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Ppayara-server-managed,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Checkout EE7 Tests') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/jenkins"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for EE7 Tests') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run EE7 Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
+                -Ppayara-server-remote,stable,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    teardownDomain()
+                }
+                unstable {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+    }
 }
-
-def checkoutAndBuildSource(){
-    echo 'JAVA_HOME = ' + JAVA_HOME
-    prNo = env.BRANCH_NAME
+def void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
-        dir('src'){
-            deleteDir()
-        }
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+        DOMAIN_NAME = "test-domain"
     }
-    checkout changelog: false, 
-      poll: false, 
-      scm: [$class: 'GitSCM', 
-      branches: [[name: "*/master"]], 
-      doGenerateSubmoduleConfigurations: false, 
-      extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'src']], 
-    submoduleCfg: [], 
-    userRemoteConfigs: [[url: 'https://github.com/payara/Payara.git']]]
-
-    withCredentials([[$class: 'StringBinding', credentialsId: 'jenkins-held-github-api-token-secret', variable: 'githubToken']
-                    [$class: 'StringBinding', credentialsId: 'jenkins-held-sonarcloud-token-secret', variable: 'sonarToken']]) {
-        dir('src') {
-            sh """mvn clean package \
-            -DskipTests \
-            -Dsonar.organization=payara \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.pullrequest.provider=github \
-            -Dsonar.analysis.mode=preview \
-            -Dsonar.pullrequest.github.repository=payara/Payara \
-            -Dsonar.pullrequest.github.endpoint=https://api.github.com/ \
-            -Dsonar.pullrequest.branch=${env.BRANCH_NAME} \
-            -Dsonar.pullrequest.key=${prNo} \
-            -Dsonar.pullrequest.base=master \
-            -Dsonar.github.oauth=${githubToken} \
-            -Dsonar.login=${sonarToken} \
-            sonar:sonar"""
-        }
-    }
+    sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-database --dbtype derby || true"
+}
+def void teardownDomain() {
+    echo 'tidying up after tests:'
+    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} stop-database --dbtype derby || true"
+    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }

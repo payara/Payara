@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.admin.remote.reader;
 
@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,7 +71,7 @@ import org.glassfish.api.ActionReport.MessagePart;
 public class ActionReportJsonProprietaryReader implements ProprietaryReader<ActionReport> {
     
     static class LoggerRef {
-        private static final Logger logger = AdminLoggerInfo.getLogger();
+        private static final Logger LOGGER = AdminLoggerInfo.getLogger();
     }
             
     @Override
@@ -88,16 +89,14 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FileUtils.copy(is, baos, 0);
         String str = baos.toString("UTF-8");
-        try {
-            JsonParser parser = Json.createParser(new StringReader(str));
+        try (JsonParser parser = Json.createParser(new StringReader(str))) {
             parser.next();
             JsonObject json = parser.getObject();
-            //JsonObject jsonObject = json.getJsonObject("action-report");
             CliActionReport result = new CliActionReport();
             fillActionReport(result, json);
             return result;
         } catch (JsonException ex) {
-            LoggerRef.logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
+            LoggerRef.LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }
@@ -171,20 +170,6 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
     }
     
-//    private void fillMessage(ActionReport.MessagePart mp, JsonObject json) throws JsonException {
-//        mp.setMessage(json.optString("value"));
-//        mp.setChildrenType(json.optString("children-type"));
-//        Properties props = extractProperties("properties", json);
-//        for (String key : props.stringPropertyNames()) {
-//            mp.addProperty(key, props.getProperty(key));
-//        }
-//        JsonArray subJsons = extractArray("messages", json);
-//        for (int i = 0; i < subJsons.length(); i++) {
-//            JsonObject subJson = subJsons.getJsonObject(i);
-//            fillMessage(mp.addChild(), subJson);
-//        }
-//    }
-    
     private static Object extractGeneral(final Object obj) throws JsonException {
         if (obj == null) {
             return null;
@@ -212,8 +197,8 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         if (preferredResult == null) {
             preferredResult = new HashMap();
         }
-        for (String key : json.keySet()) {
-            preferredResult.put(key, extractGeneral(json.get(key)));
+        for (Entry<String, JsonValue> entry : json.entrySet()) {
+            preferredResult.put(entry.getKey(), extractGeneral(entry.getValue()));
         }
         return preferredResult;
     }
@@ -230,33 +215,5 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
         return preferredResult;
     }
-    
-//    private Properties extractProperties(final String key, final JsonObject json) throws JsonException {
-//        Properties result = new Properties();
-//        JsonArray array = extractArray(key, json);
-//        for (int i = 0; i < array.length(); i++) {
-//            JsonObject entry = array.getJsonObject(i);
-//            Iterator keys = entry.keys();
-//            while (keys.hasNext()) {
-//                String inKey = (String) keys.next();
-//                result.put(inKey, entry.getString(key));
-//            }
-//        }
-//        return result;
-//    }
-//    
-//    private JsonArray extractArray(final String key, final JsonObject json) {
-//        Object res = json.opt(key);
-//        if (res == null) {
-//            return new JsonArray();
-//        }
-//        if (res instanceof JsonArray) {
-//            return (JsonArray) res;
-//        } else {
-//            JsonArray result = new JsonArray();
-//            result.put(res);
-//            return result;
-//        }
-//    }
     
 }

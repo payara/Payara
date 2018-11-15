@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,89 +55,88 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * Node for {@link RadixTree}.
  */
 class RadixTreeNode {
-    private static final Logger _logger = SLogger.getLogger();
+    private static final Logger LOGGER = SLogger.getLogger();
     
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTreeNode.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RadixTreeNode.class);
 
-    // Node key.
-    private String _key;
-    // Value of node.
-    private String _value;
-    // Associated child nodes.
-    private Map<Character, RadixTreeNode> _childNodes;
-    // Reference to parent node.
-    private RadixTreeNode _parentNode;
+    /** Node key. */
+    private String key;
+    /** Value of node. */
+    private String value;
+    /** Associated child nodes. */
+    private Map<Character, RadixTreeNode> childNodes;
+    /** Reference to parent node. */
+    private RadixTreeNode parentNode;
 
     /**
      * Construct {@link RadixTreeNode} for the give key, value pair.
      */
     RadixTreeNode (String key, String value) {
-        _key = key;
-        _value = value;
+        this.key = key;
+        this.value = value;
     }
 
     /**
-     * Get's the key.
+     * Gets the key.
      *
      * @return node key.
      */
     String getKey() {
-        return _key;
+        return key;
     }
 
     /**
-     * Set's the node key.
+     * Sets the node key.
      *
      * @param key the key to set.
      */
     void setKey(String key) {
-        this._key = key;
+        this.key = key;
     }
 
     /**
-     * Get's the node value.
+     * Gets the node value.
      *
      * @return node value.
      */
     String getValue() {
-        return _value;
+        return value;
     }
 
     /**
-     * Set's the node value.
+     * Sets the node value.
      *
      * @param value the value to set.
      */
     void setValue(String value) {
-        this._value = value;
+        this.value = value;
     }
 
     /**
-     * Get's the parent node.
+     * Gets the parent node.
      *
      * @return the parentNode.
      */
     RadixTreeNode getParentNode() {
-        return _parentNode;
+        return parentNode;
     }
 
     /**
-     * Get's the {@link Collection} of child nodes.
+     * Gets the {@link Collection} of child nodes.
      * Returns empty {@link Collection} object if no child data found.
      *
      * @return associated child nodes.
      */
     Collection<RadixTreeNode> getChildNodes() {
-        if (_childNodes != null) {
-            return _childNodes.values();
+        if (childNodes != null) {
+            return childNodes.values();
         } else {
-            List<RadixTreeNode> list  = Collections.emptyList();
-            return  list;
+            return Collections.emptyList();
         }
     }
 
     /**
-     * Add's a child node.
+     * Adds a child node.
      * <p>
      * NOTE: Addition of child with empty or null key is not allowed.
      * </p>
@@ -145,20 +144,19 @@ class RadixTreeNode {
      * @param node Node to add.
      */
     void addChildNode(RadixTreeNode node) {
-        if (node == null || node._key == null || node._key.isEmpty()) {
-            throw new IllegalArgumentException(_strings.get("errorInEmptyNullKeyInstertion"));
+        if (node == null || node.key == null || node.key.isEmpty()) {
+            throw new IllegalArgumentException(STRINGS.get("errorInEmptyNullKeyInstertion"));
         }
-        char c = node._key.charAt(0);
-        if (_childNodes == null) {
-            _childNodes = new HashMap<Character, RadixTreeNode>();
+        char c = node.key.charAt(0);
+        if (childNodes == null) {
+            childNodes = new HashMap<Character, RadixTreeNode>();
         }
-        RadixTreeNode oldNode = _childNodes.put(c, node);
+        RadixTreeNode oldNode = childNodes.put(c, node);
         if (oldNode != null) {
-            _logger.log(Level.WARNING, SLogger.CHILD_NODE_EXISTS, 
-            		new Object[] {this.toString(), oldNode.toString(), node.toString()});
-            oldNode._parentNode = null;
+            LOGGER.log(Level.WARNING, SLogger.CHILD_NODE_EXISTS, new Object[] {this.toString(), oldNode.toString(), node.toString()});
+            oldNode.parentNode = null;
         }
-        node._parentNode = this;
+        node.parentNode = this;
     }
 
     /**
@@ -167,17 +165,17 @@ class RadixTreeNode {
      * @param node child node.
      */
     void removeChildNode(RadixTreeNode node) {
-        if (node == null || node._key == null || node._key.isEmpty()) {
-            throw new IllegalArgumentException(_strings.get("invalidNodeKey"));
+        if (node == null || node.key == null || node.key.isEmpty()) {
+            throw new IllegalArgumentException(STRINGS.get("invalidNodeKey"));
         }
-        char c = node._key.charAt(0);
-        if (_childNodes != null) {
-            RadixTreeNode matchedNode = _childNodes.get(c);
+        char c = node.key.charAt(0);
+        if (childNodes != null) {
+            RadixTreeNode matchedNode = childNodes.get(c);
             if (matchedNode == node) {
-                node = _childNodes.remove(c);
-                node._parentNode = null;
+                node = childNodes.remove(c);
+                node.parentNode = null;
             } else {
-                throw new IllegalArgumentException(_strings.get("invalidChildNode", node, this));
+                throw new IllegalArgumentException(STRINGS.get("invalidChildNode", node, this));
             }
         }
     }
@@ -189,13 +187,13 @@ class RadixTreeNode {
      * @return The associated node or <code>null</code> if no association found.
      */
     RadixTreeNode getChildNode(char c) {
-        return _childNodes == null ? null : _childNodes.get(c);
+        return childNodes == null ? null : childNodes.get(c);
     }
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Node Key : " + _key + ", Value : " + _value);
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("Node Key : ").append(key).append(", Value : ").append(value);
         return buffer.toString();
     }
 }

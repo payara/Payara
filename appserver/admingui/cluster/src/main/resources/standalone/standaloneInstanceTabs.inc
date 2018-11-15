@@ -37,6 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
+    
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -80,6 +82,12 @@
 	    <!command
                 setSessionAttribute(key="standaloneInstanceTabs" value="instanceProps");
                 gf.redirect(page="#{request.contextPath}/cluster/standalone/standaloneInstanceProperties.jsf?instanceName=#{pageSession.encodedInstanceName}");
+	    />
+	</sun:tab>
+        <sun:tab id="microProfileProps" immediate="$boolean{true}" text="$resource{i18n.inst.tab.MicroProfileProperties}" >
+	    <!command
+                setSessionAttribute(key="standaloneInstanceTabs" value="microProfileProps");
+                gf.redirect(page="#{request.contextPath}/cluster/standalone/standaloneMicroProfileProperties.jsf?instanceName=#{pageSession.encodedInstanceName}");
 	    />
 	</sun:tab>
     </sun:tab>

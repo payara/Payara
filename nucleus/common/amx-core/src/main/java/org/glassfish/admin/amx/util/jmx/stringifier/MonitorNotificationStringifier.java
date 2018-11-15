@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import javax.management.monitor.MonitorNotification;
 
-public class MonitorNotificationStringifier extends NotificationStringifier 
+public class MonitorNotificationStringifier extends NotificationStringifier
 {
     public static final MonitorNotificationStringifier DEFAULT =
             new MonitorNotificationStringifier();
@@ -62,7 +63,7 @@ public class MonitorNotificationStringifier extends NotificationStringifier
     {
         final MonitorNotification notif = (MonitorNotification) o;
 
-        final StringBuffer b = super._stringify(notif);
+        final StringBuilder b = super._stringify(notif);
         append(b, "");
 
         append(b, "Observed object: " + notif.getObservedObject());

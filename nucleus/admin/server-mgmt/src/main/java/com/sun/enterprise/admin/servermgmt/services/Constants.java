@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright Payara Foundation and/or its affiliates
+ * Portions Copyright [2016-2018] Payara Foundation and/or its affiliates
  *
  */
 
@@ -63,7 +63,6 @@ class Constants {
     static final String AS_ADMIN_USER_TN = "AS_ADMIN_USER";
     static final String AS_ADMIN_PASSWORD_TN = "AS_ADMIN_PASSWORD";
     static final String AS_ADMIN_MASTERPASSWORD_TN = "AS_ADMIN_MASTERPASSWORD";
-    //static final String PASSWORD_FILE_PATH_TN        = "PASSWORD_FILE_PATH";
     static final String TIMEOUT_SECONDS_TN = "TIMEOUT_SECONDS";
     static final String OS_USER_TN = "OS_USER";
     static final String PRIVILEGES_TN = "PRIVILEGES";
@@ -92,10 +91,4 @@ class Constants {
     static final String INITD = "/etc/init.d";
     static final String REGEXP_PATTERN_BEGIN = "[KS][0-9][0-9]?";
 
-    static final boolean LINUX_HACK;
-
-    static {
-        LINUX_HACK = System.getProperty("user.name").indexOf("nevins") >= 0 &&
-                Boolean.parseBoolean(System.getenv("LINUX_HACK"));
-    }
 }

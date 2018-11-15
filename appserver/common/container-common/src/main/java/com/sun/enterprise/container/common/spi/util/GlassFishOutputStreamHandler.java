@@ -58,8 +58,8 @@ public interface GlassFishOutputStreamHandler {
 	 *  must return the object that needs to be written out to the
 	 *  stream OR null if it cannot handle the serialization of this
 	 *  object
-	 *  
+	 *
 	 */
-	public Object replaceObject(Object obj) throws IOException;
-	
+	Object replaceObject(Object obj) throws IOException;
+
 }

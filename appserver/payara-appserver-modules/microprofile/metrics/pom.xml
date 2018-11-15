@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.microprofile.metrics</groupId>
     <artifactId>microprofile-metrics</artifactId>
@@ -76,6 +76,11 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

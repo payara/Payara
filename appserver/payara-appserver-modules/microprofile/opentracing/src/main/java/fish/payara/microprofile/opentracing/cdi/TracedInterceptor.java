@@ -44,6 +44,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.logging.Logger;
 import javax.annotation.Priority;
@@ -72,7 +73,7 @@ import org.glassfish.internal.api.Globals;
 @Interceptor
 @Traced
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class TracedInterceptor {
+public class TracedInterceptor implements Serializable {
 
     private static final Logger logger = Logger.getLogger(TracedInterceptor.class.getName());
 

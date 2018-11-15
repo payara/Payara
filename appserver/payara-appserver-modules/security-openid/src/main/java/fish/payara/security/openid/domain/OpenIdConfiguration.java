@@ -65,6 +65,7 @@ public class OpenIdConfiguration {
     private int jwksReadTimeout;
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
+    private ClaimsConfiguration claimsConfiguration;
 
     private static final String BASE_URL_EXPRESSION = "${baseURL}";
 
@@ -203,6 +204,15 @@ public class OpenIdConfiguration {
         return this;
     }
 
+    public ClaimsConfiguration getClaimsConfiguration() {
+        return claimsConfiguration;
+    }
+
+    public OpenIdConfiguration setClaimsConfiguration(ClaimsConfiguration claimsConfiguration) {
+        this.claimsConfiguration = claimsConfiguration;
+        return this;
+    }
+
     public OpenIdTokenEncryptionMetadata getEncryptionMetadata() {
         return encryptionMetadata;
     }
@@ -228,6 +238,7 @@ public class OpenIdConfiguration {
                 + ", useNonce=" + useNonce
                 + ", useSession=" + useSession
                 + ", providerMetadata=" + providerMetadata
+                + ", claimsConfiguration=" + claimsConfiguration
                 + ", encryptionMetadata=" + encryptionMetadata
                 + '}';
     }

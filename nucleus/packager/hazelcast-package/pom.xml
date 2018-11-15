@@ -43,7 +43,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.183-SNAPSHOT</version>
+        <version>5.184-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>hazelcast-package</artifactId>
@@ -61,6 +61,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-kubernetes</artifactId>
+            <version>${hazelcast.kubernetes.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>

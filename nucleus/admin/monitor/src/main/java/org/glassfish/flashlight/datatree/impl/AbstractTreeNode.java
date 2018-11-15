@@ -48,6 +48,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 import org.glassfish.flashlight.datatree.TreeNode;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -292,13 +294,10 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
      */
     @Override
     public List<TreeNode> traverse(boolean ignoreDisabled) {
-//        System.out.println ("Node: " + this.getName ()+ " is enabled "+isEnabled());
         List<TreeNode> list = new ArrayList<TreeNode>();
 
-        if (ignoreDisabled) {
-            if (!this.enabled) {
+        if (ignoreDisabled && !this.enabled) {
                 return list;
-            }
         }
         list.add(this);
 
@@ -330,12 +329,12 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
 
         List<TreeNode> list = getNodesInternal(pattern, ignoreDisabled, gfv2Compatible);
 
-        if (list.size() <= 0)
+        if (list.isEmpty()) {
             list = getNodesInternal(pattern.replace("/", SLASH), ignoreDisabled, gfv2Compatible);
-
-        if (list.size() <= 0)
+        }
+        if (list.isEmpty()){
             list = getNodesInternal(decodeNameToDots(pattern), ignoreDisabled, gfv2Compatible);
-
+        }
         return list;
     }
 
@@ -368,10 +367,9 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
                     }
                 }
             }
-        }
-        catch (java.util.regex.PatternSyntaxException e) {
+        } catch (java.util.regex.PatternSyntaxException e) {
             // log this
-            // e.printStackTrace ();
+            Logger.getLogger("FLASHLIGHT-TREENODE").log(Level.FINEST, "Unable to process Regex", e);
         }
         return regexMatchedTree;
     }
@@ -389,8 +387,7 @@ public abstract class AbstractTreeNode implements TreeNode, Comparable<TreeNode>
         // is too hassling
 
         String modifiedPattern = pattern.replaceAll("\\*", ":");
-        String regex = modifiedPattern.replaceAll(":", ".*");
-        return regex;
+        return modifiedPattern.replaceAll(":", ".*");
     }
 
     @Override

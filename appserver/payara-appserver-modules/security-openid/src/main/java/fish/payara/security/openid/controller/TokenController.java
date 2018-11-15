@@ -55,36 +55,30 @@ import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
 import com.nimbusds.jose.proc.JWEKeySelector;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
-import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
-import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import static fish.payara.security.openid.OpenIdUtil.DEFAULT_JWT_SIGNED_ALGORITHM;
-import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN_HASH;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_SECRET;
 import static fish.payara.security.openid.api.OpenIdConstant.CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.GRANT_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
-import fish.payara.security.openid.api.OpenIdContext;
+import fish.payara.security.openid.domain.AccessTokenImpl;
+import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
-import java.util.Arrays;
+import static java.util.Collections.emptyMap;
 import java.util.Map;
 import static java.util.Objects.isNull;
 import javax.enterprise.context.ApplicationScoped;
@@ -144,40 +138,20 @@ public class TokenController {
         //  ID Token and Access Token Request
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(configuration.getProviderMetadata().getTokenEndpoint());
-        Response response = target.request()
+        return target.request()
                 .accept(APPLICATION_JSON)
                 .post(Entity.form(form));
-        return response;
-    }
-
-    /**
-     * Validates the ID token and retrieves the End-User's subject identifier
-     * and other claims.
-     *
-     * @param idToken
-     * @return id token claims
-     */
-    public JWT parseIdToken(String idToken) {
-        try {
-            /**
-             * The ID tokens are in JSON Web Token (JWT) format.
-             */
-            JWT idTokenJWT = JWTParser.parse(idToken);
-            return idTokenJWT;
-        } catch (ParseException ex) {
-            throw new IllegalStateException("Error in parsing the Id Token", ex);
-        }
     }
 
     /**
      * (5.1) Validate Id Token's claims and verify ID Token's signature.
      *
-     * @param configuration
-     * @param httpContext
      * @param idToken
+     * @param httpContext
+     * @param configuration
      * @return JWT Claims
      */
-    public Map<String, Object> validateIdToken(OpenIdConfiguration configuration, HttpMessageContext httpContext, JWT idToken) {
+    public Map<String, Object> validateIdToken(IdentityTokenImpl idToken, HttpMessageContext httpContext, OpenIdConfiguration configuration) {
         JWTClaimsSet claimsSet;
 
         /**
@@ -190,20 +164,55 @@ public class TokenController {
             expectedNonceHash = nonceController.getNonceHash(expectedNonce);
         }
 
-
         try {
+            JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(expectedNonceHash, configuration);
+            claimsSet = validateBearerToken(idToken.getTokenJWT(), jwtVerifier, configuration);
+        } finally {
+            nonceController.remove(configuration, httpContext);
+        }
 
-            if (idToken instanceof PlainJWT) {
-                PlainJWT plainToken = (PlainJWT) idToken;
-                try {
-                    claimsSet = plainToken.getJWTClaimsSet();
-                    JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(configuration, expectedNonceHash);
-                    jwtVerifier.verify(claimsSet, null);
-                } catch (ParseException | BadJWTException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-            } else if (idToken instanceof SignedJWT) {
-                SignedJWT signedToken = (SignedJWT) idToken;
+        return claimsSet.getClaims();
+    }
+
+    /**
+     * (5.2) Validate the Access Token & it's claims and verify the signature.
+     *
+     * @param accessToken
+     * @param idTokenAlgorithm
+     * @param idTokenClaims
+     * @param configuration
+     * @return JWT Claims
+     */
+    public Map<String, Object> validateAccessToken(AccessTokenImpl accessToken, Algorithm idTokenAlgorithm, Map<String, Object> idTokenClaims, OpenIdConfiguration configuration) {
+        Map<String, Object> claims = emptyMap();
+
+        AccessTokenClaimsSetVerifier jwtVerifier = new AccessTokenClaimsSetVerifier(
+                accessToken,
+                idTokenAlgorithm,
+                idTokenClaims,
+                configuration
+        );
+
+        // https://support.okta.com/help/s/article/Signature-Validation-Failed-on-Access-Token
+//        if (accessToken.getType() == AccessToken.Type.BEARER) {
+//            JWTClaimsSet claimsSet = validateBearerToken(accessToken.getTokenJWT(), jwtVerifier, configuration);
+//            claims = claimsSet.getClaims();
+//        } else {
+            jwtVerifier.validateAccessToken();
+//        }
+
+        return claims;
+    }
+
+    private JWTClaimsSet validateBearerToken(JWT token, JWTClaimsSetVerifier jwtVerifier, OpenIdConfiguration configuration) {
+        JWTClaimsSet claimsSet;
+        try {
+            if (token instanceof PlainJWT) {
+                PlainJWT plainToken = (PlainJWT) token;
+                claimsSet = plainToken.getJWTClaimsSet();
+                jwtVerifier.verify(claimsSet, null);
+            } else if (token instanceof SignedJWT) {
+                SignedJWT signedToken = (SignedJWT) token;
                 JWSHeader header = signedToken.getHeader();
                 String alg = header.getAlgorithm().getName();
                 if (isNull(alg)) {
@@ -213,33 +222,31 @@ public class TokenController {
 
                 ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
                 jwtProcessor.setJWSKeySelector(getJWSKeySelector(configuration, alg));
-                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, expectedNonceHash));
+                jwtProcessor.setJWTClaimsSetVerifier(jwtVerifier);
                 claimsSet = jwtProcessor.process(signedToken, null);
-
-            } else if (idToken instanceof EncryptedJWT) {
+            } else if (token instanceof EncryptedJWT) {
                 /**
                  * If ID Token is encrypted, decrypt it using the keys and
                  * algorithms
                  */
-                EncryptedJWT encryptedToken = (EncryptedJWT) idToken;
+                EncryptedJWT encryptedToken = (EncryptedJWT) token;
                 JWEHeader header = encryptedToken.getHeader();
                 String alg = header.getAlgorithm().getName();
 
                 ConfigurableJWTProcessor jwtProcessor = new DefaultJWTProcessor();
                 jwtProcessor.setJWSKeySelector(getJWSKeySelector(configuration, alg));
                 jwtProcessor.setJWEKeySelector(getJWEKeySelector(configuration));
-                jwtProcessor.setJWTClaimsSetVerifier(new IdTokenClaimsSetVerifier(configuration, expectedNonceHash));
+                jwtProcessor.setJWTClaimsSetVerifier(jwtVerifier);
                 claimsSet = jwtProcessor.process(encryptedToken, null);
             } else {
-                throw new IllegalStateException("Unexpected JWT type : " + idToken.getClass());
+                throw new IllegalStateException("Unexpected JWT type : " + token.getClass());
             }
-        } catch (BadJOSEException | JOSEException ex) {
+        } catch (ParseException | BadJOSEException | JOSEException ex) {
             throw new IllegalStateException(ex);
-        } finally {
-            nonceController.remove(configuration, httpContext);
         }
-        return claimsSet.getClaims();
+        return claimsSet;
     }
+
 
     /**
      * JWSKeySelector finds the JSON Web Key Set (JWKS) from jwks_uri endpoint
@@ -307,48 +314,4 @@ public class TokenController {
         return jweKeySelector;
     }
 
-    /**
-     * (5.2) Validate the access token
-     *
-     * @param context
-     * @param accessToken
-     * @param algorithm
-     */
-    public void validateAccessToken(OpenIdContext context, String accessToken, Algorithm algorithm) {
-        if (context.getIdentityTokenClaims().containsKey(ACCESS_TOKEN_HASH)) {
-
-            //Get the message digest for the JWS algorithm value used in the header(alg) of the ID Token
-            MessageDigest md = getMessageDigest(algorithm);
-
-            // Hash the octets of the ASCII representation of the access_token with the hash algorithm
-            md.update(accessToken.getBytes(US_ASCII));
-            byte[] hash = md.digest();
-
-            // Take the left-most half of the hash and base64url encode it.
-            byte[] leftHalf = Arrays.copyOf(hash, hash.length / 2);
-            String accessTokenHash = Base64URL.encode(leftHalf).toString();
-
-            // The value of at_hash in the ID Token MUST match the value produced
-            if (!context.getIdentityTokenClaims().get(ACCESS_TOKEN_HASH).equals(accessTokenHash)) {
-                throw new IllegalStateException("Invalid access token hash (at_hash) value");
-            }
-        }
-    }
-
-    /**
-     * Get the message digest instance for the given JWS algorithm value.
-     *
-     * @param algorithm The JSON Web Signature (JWS) algorithm.
-     *
-     * @return The message digest instance
-     */
-    public static MessageDigest getMessageDigest(Algorithm algorithm) {
-        String mdAlgorithm = "SHA-" + algorithm.getName().substring(2);
-
-        try {
-            return MessageDigest.getInstance(mdAlgorithm);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("No MessageDigest instance found with the specified algorithm : " + mdAlgorithm, ex);
-        }
-    }
 }

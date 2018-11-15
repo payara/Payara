@@ -56,6 +56,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Optional;
@@ -72,7 +75,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  */
 @Service(name = "payara-executor-service")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraExecutorService implements ConfigListener {
+public class PayaraExecutorService implements ConfigListener, EventListener {
     
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -85,17 +88,34 @@ public class PayaraExecutorService implements ConfigListener {
     @Inject
     ServerEnvironment serverEnvironment;
     
+    @Inject
+    private Events events;
+    
     private ThreadPoolExecutor threadPoolExecutor;
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
     
     @PostConstruct
     public void postConstruct() {
+        
+        events.register(this);
         payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
                 .getService(PayaraExecutorServiceConfiguration.class);
         
         transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
         
         initialiseThreadPools();
+    }
+    
+    /**
+     *
+     * @param event
+     */
+    @Override
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            threadPoolExecutor.shutdown();
+            scheduledThreadPoolExecutor.shutdown();
+        }
     }
     
     private void initialiseThreadPools() {
@@ -119,7 +139,8 @@ public class PayaraExecutorService implements ConfigListener {
         }
 
         scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
-                Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()));
+                Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()),
+                (Runnable r) -> new Thread(r, "payara-executor-service-scheduled-task"));
     }
 
     public <T> Future<T> submit(Callable<T> task) {

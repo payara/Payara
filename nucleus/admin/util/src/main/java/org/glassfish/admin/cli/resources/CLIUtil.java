@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.RefContainer;
 import com.sun.enterprise.config.serverbeans.Server;
-import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
 /**
  *
@@ -70,7 +69,6 @@ public class CLIUtil {
         if (cluster != null) {
             return cluster;
         }
-        DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
-        return dg;
+        return domain.getDeploymentGroupNamed(target);
     }
 }
