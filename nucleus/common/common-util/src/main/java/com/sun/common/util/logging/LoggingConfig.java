@@ -90,10 +90,14 @@ public interface LoggingConfig {
 
     Map<String, String> getLoggingProperties(String targetServer) throws IOException;
 
+    Map<String, String> getLoggingProperties(String targetServer, boolean usePlaceholderReplacement) throws IOException;
+
     /* get the properties and corresponding values in the logging.properties file.
 	*/
 
     Map<String, String> getLoggingProperties() throws IOException;
+
+    Map<String, String> getLoggingProperties(boolean usePlaceholderReplacement) throws IOException;
 
     /* creates zip file for given sourceDirectory
         */
