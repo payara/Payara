@@ -53,12 +53,12 @@ import java.util.Map;
  * @author jonathan coustick
  * @since 5.183
  */
-public class OTScope implements io.opentracing.Scope {
+public class OpenTracingScope implements io.opentracing.Scope {
 
     private Span currentSpan;
     private Map<Span, Boolean> allSpans;
     
-    public OTScope (){
+    public OpenTracingScope (){
         allSpans = new LinkedHashMap<>();
     }
     

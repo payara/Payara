@@ -55,19 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import org.apache.catalina.*;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.InstanceSupport;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.valve.GlassFishValve;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -99,8 +91,15 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.web.valve.GlassFishValve;
-// END GlassFish 1343
+
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.tag.Tags;
+import java.util.logging.Logger;
 
 /**
  * Standard implementation of the <b>Wrapper</b> interface that represents
@@ -119,34 +118,15 @@ public class StandardWrapper
                                                     "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
+    private final OpenTracingService openTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return false;
         }
     };
-
-    // ----------------------------------------------------------- Constructors
-
-
-    /**
-     * Create a new StandardWrapper component with the default basic Valve.
-     */
-    public StandardWrapper() {
-
-        super();
-        swValve=new StandardWrapperValve();
-        pipeline.setBasic(swValve);
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
-
-        // suppress PWC6117 file not found errors
-        java.util.logging.Logger jspLog = java.util.logging.Logger.getLogger("org.apache.jasper.servlet.JspServlet");
-        if(!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
-            jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
-        }
-    }
-
-
+    
+    
     // ----------------------------------------------------- Instance Variables
 
 
@@ -355,7 +335,28 @@ public class StandardWrapper
     private long multipartMaxRequestSize = -1L;
     private int multipartFileSizeThreshold = 10240;  // 10K
 
-    private boolean osgi = false;
+    private boolean osgi;
+
+
+    // ----------------------------------------------------------- Constructors
+
+
+    /**
+     * Create a new StandardWrapper component with the default basic Valve.
+     */
+    public StandardWrapper() {
+
+        swValve = new StandardWrapperValve();
+        pipeline.setBasic(swValve);
+        requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        
+        // suppress PWC6117 file not found errors
+        Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
+        if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
+            jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
+        }
+    }
 
 
     // ------------------------------------------------------------- Properties
@@ -1693,6 +1694,17 @@ public class StandardWrapper
                         serv.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
+                        String applicationName = openTracing.getApplicationName(
+                                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
+                                                
+                        if (openTracing.getTracer(applicationName).activeSpan() != null) {
+                            // Presumably held open by return being handled by another thread
+                            openTracing.getTracer(applicationName).activeSpan().setTag(
+                                    Tags.HTTP_STATUS.getKey(), 
+                                    Integer.toString(((HttpServletResponse) response).getStatus()));
+                            openTracing.getTracer(applicationName).activeSpan().finish();
+                        }
+                        
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
                             span.addSpanTag("ResponseStatus", Integer.toString(
                                     ((HttpServletResponse) response).getStatus()));
