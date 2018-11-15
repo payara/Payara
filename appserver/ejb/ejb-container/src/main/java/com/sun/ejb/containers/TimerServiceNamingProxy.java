@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -62,9 +63,9 @@ import javax.naming.NamingException;
 public class TimerServiceNamingProxy 
         implements NamedNamingObjectProxy {
 
-    static final String EJB_TIMER_SERVICE
-            = "java:comp/TimerService";
+    static final String EJB_TIMER_SERVICE = "java:comp/TimerService";
 
+    @Override
     public Object handle(String name) throws NamingException {
 
         if (EJB_TIMER_SERVICE.equals(name)) {
@@ -83,22 +84,16 @@ public class TimerServiceNamingProxy
         ComponentInvocation currentInv = 
                 EjbContainerUtilImpl.getInstance().getCurrentInvocation();
 
-        if(currentInv == null) {
+        if (currentInv == null) {
             throw new IllegalStateException("no current invocation");
-        } else if (currentInv.getInvocationType() !=
-                   ComponentInvocation.ComponentInvocationType.EJB_INVOCATION) {
-            throw new IllegalStateException
-                    ("Illegal invocation type for EJB Context : "
-                     + currentInv.getInvocationType());
+        } else if (currentInv.getInvocationType()
+                != ComponentInvocation.ComponentInvocationType.EJB_INVOCATION) {
+            throw new IllegalStateException("Illegal invocation type for EJB Context : "
+                    + currentInv.getInvocationType());
         }
 
-        EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-        if( ejbTimerService == null ) {
-            throw new IllegalStateException("EJB Timer Service not " +
-                                            "available");
-        }
-
-        return new EJBTimerServiceWrapper
-                (ejbTimerService, (EJBContextImpl) ((EjbInvocation) currentInv).context);
+        return EJBTimerService.getEJBTimerServiceWrapper(
+                (EJBContextImpl) ((EjbInvocation) currentInv).context
+        );
     }
 }
