@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -45,7 +47,6 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 import com.sun.enterprise.v3.admin.cluster.DeleteNodeRemoteCommand;
 import java.util.List;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -84,7 +85,7 @@ public class DeleteNodeDcom extends DeleteNodeRemoteCommand {
     }
 
     @Override
-    final protected void setTypeSpecificOperands(List<String> command, ParameterMap map) {
+    protected final void setTypeSpecificOperands(List<String> command, ParameterMap map) {
         command.add("--windowsuser");
         command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
         command.add("--windowsdomain");

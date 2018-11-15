@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -79,11 +80,11 @@ import org.glassfish.api.admin.ProgressStatus;
  */
 class ClusterCommandHelper {
 
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NEWLINE = System.getProperty("line.separator");
 
-    private Domain domain;
+    private final Domain domain;
 
-    private CommandRunner runner;
+    private final CommandRunner runner;
 
     private ProgressStatus progress;
 
@@ -175,7 +176,7 @@ class ClusterCommandHelper {
 
         // Make the thread pool use the smaller of the number of instances
         // or half the admin thread pool size.
-        int adminThreadPoolSize = getAdminThreadPoolSize(logger);
+        int adminThreadPoolSize = getAdminThreadPoolSize();
         int threadPoolSize = Math.min(nInstances, adminThreadPoolSize / 2);
         if (threadPoolSize < 1)
             threadPoolSize = 1;
@@ -216,7 +217,7 @@ class ClusterCommandHelper {
             msg = command + " " + iname;
             logger.info(msg);
             if (verbose) {
-                output.append(msg).append(NL);
+                output.append(msg).append(NEWLINE);
             }
 
             // Wrap the command invocation in a runnable and hand it off
@@ -250,7 +251,7 @@ class ClusterCommandHelper {
             }
             CommandRunnable cmdRunnable = null;
             try {
-                //cmdRunnable = responseQueue.take();
+                
                 cmdRunnable = responseQueue.poll(timeLeft, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 // This thread has been interrupted. Abort
@@ -259,7 +260,7 @@ class ClusterCommandHelper {
                         Integer.toString(n), Integer.toString(nInstances),
                         command);
                 logger.warning(msg);
-                output.append(msg).append(NL);
+                output.append(msg).append(NEWLINE);
                 failureOccurred = true;
                 // Re-establish interrupted state on thread
                 Thread.currentThread().interrupt();
@@ -284,7 +285,7 @@ class ClusterCommandHelper {
                 reportResult.failedServerNames.add(iname);
                 msg = iname + ": " + instanceReport.getMessage();
                 logger.severe(msg);
-                output.append(msg).append(NL);
+                output.append(msg).append(NEWLINE);
                 msg = Strings.get("cluster.command.instancesFailed", command, iname);
                 progress.progress(1, msg);
             } else {
@@ -307,14 +308,12 @@ class ClusterCommandHelper {
         // Display summary of started servers if in verbose mode or we
         // had one or more failures.
         if (succeededServerNames.length() > 0 && (verbose || failureOccurred)) {
-            output.append(NL + Strings.get("cluster.command.instancesSucceeded",
-                    command, succeededServerNames));
+            output.append(NEWLINE).append(Strings.get("cluster.command.instancesSucceeded", command, succeededServerNames));
         }
 
         if (failureOccurred) {
             // Display summary of failed servers if we have any
-            output.append(NL + Strings.get("cluster.command.instancesFailed",
-                    command, failedServerNames));
+            output.append(NEWLINE).append(Strings.get("cluster.command.instancesFailed", command, failedServerNames));
             if (succeededServerNames.length() > 0) {
                 // At least one instance started. Warning.
                 report.setActionExitCode(ExitCode.WARNING);
@@ -326,11 +325,10 @@ class ClusterCommandHelper {
 
         // Check for server that did not respond
         if (!waitingForServerNames.isEmpty()) {
-            msg = Strings.get("cluster.command.instancesTimedOut",
-                    command, listToString(waitingForServerNames));
+            msg = Strings.get("cluster.command.instancesTimedOut", command, listToString(waitingForServerNames));
             logger.warning(msg);
             if (output.length() > 0) {
-                output.append(NL);
+                output.append(NEWLINE);
             }
             output.append(msg);
             report.setActionExitCode(ExitCode.WARNING);
@@ -344,7 +342,7 @@ class ClusterCommandHelper {
     /**
      * Get the size of the admin threadpool
      */
-    private int getAdminThreadPoolSize(Logger logger) {
+    private int getAdminThreadPoolSize() {
 
         final int DEFAULT_POOL_SIZE = 5;
 
@@ -417,7 +415,7 @@ class ClusterCommandHelper {
     private static String serverListToString(List<Server> servers) {
         StringBuilder sb = new StringBuilder();
         for (Server s : servers) {
-            sb.append(s.getNodeRef() + ":" + s.getName() + " ");
+            sb.append(s.getNodeRef()).append(":").append(s.getName()).append(" ");
         }
         return sb.toString().trim();
     }
@@ -425,13 +423,13 @@ class ClusterCommandHelper {
     private static String listToString(List<String> slist) {
         StringBuilder sb = new StringBuilder();
         for (String s : slist) {
-            sb.append(s + " ");
+            sb.append(s).append(" ");
         }
         return sb.toString().trim();
     }
 
-    static public class ReportResult {
-        final public List<String> succeededServerNames = new ArrayList<String>();
-        final public List<String> failedServerNames = new ArrayList<String>();
+    public static class ReportResult {
+        public final List<String> succeededServerNames = new ArrayList<String>();
+        public final List<String> failedServerNames = new ArrayList<String>();
     }
 }

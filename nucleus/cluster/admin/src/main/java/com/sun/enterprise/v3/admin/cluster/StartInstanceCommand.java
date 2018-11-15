@@ -147,15 +147,15 @@ public class StartInstanceCommand implements AdminCommand {
      * do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(ServiceLocator habitat_, String iname_, boolean debug_, ServerEnvironment env_) {
-        instanceName = iname_;
-        debug = debug_;
-        habitat = habitat_;
+    StartInstanceCommand(ServiceLocator habitat, String iname, boolean debug, ServerEnvironment env) {
+        this.instanceName = iname;
+        this.debug = debug;
+        this.habitat = habitat;
         nodes = habitat.getService(Nodes.class);
 
         // env:  neither getByType or getByContract works.  Not worth the effort
         //to find the correct magic incantation for HK2!
-        env = env_;
+        this.env = env;
         servers = habitat.getService(Servers.class);
     }
 
@@ -264,8 +264,7 @@ public class StartInstanceCommand implements AdminCommand {
         humanCommand = makeCommandHuman(command);
 
         // First error message displayed if we fail
-        String firstErrorMessage = Strings.get("start.instance.failed",
-                        instanceName, noderef, nodeHost );
+        String firstErrorMessage = Strings.get("start.instance.failed", instanceName, noderef, nodeHost );
 
         StringBuilder output = new StringBuilder();
 
@@ -277,8 +276,7 @@ public class StartInstanceCommand implements AdminCommand {
         }
 
         // Run the command on the node and handle errors.
-        nodeUtils.runAdminCommandOnNode(node, command, ctx, firstErrorMessage,
-                humanCommand, output, waitForReaderThreads);
+        nodeUtils.runAdminCommandOnNode(node, command, ctx, firstErrorMessage, humanCommand, output, waitForReaderThreads);
 
         ActionReport report = ctx.getActionReport();
         if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
