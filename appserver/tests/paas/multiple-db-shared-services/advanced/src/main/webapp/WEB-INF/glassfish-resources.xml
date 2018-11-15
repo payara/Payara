@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
 
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 
@@ -51,7 +51,7 @@
 
     <jdbc-resource pool-name="java:app/jdbc/hr_pool" jndi-name="java:app/jdbc/HrRes"></jdbc-resource>
 
-    <jdbc-connection-pool datasource-classname="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" res-type="javax.sql.DataSource" name="java:app/jdbc/salary_pool">
+    <jdbc-connection-pool datasource-classname="com.mysql.cj.jdbc.MysqlXADataSource" res-type="javax.sql.DataSource" name="java:app/jdbc/salary_pool">
         <property name="service-name" value="salary-service"/>
     </jdbc-connection-pool>
     <jdbc-resource pool-name="java:app/jdbc/salary_pool" jndi-name="java:app/jdbc/SalaryRes"></jdbc-resource>
