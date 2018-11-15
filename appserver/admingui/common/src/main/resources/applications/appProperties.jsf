@@ -47,12 +47,14 @@
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!-- i18n -->
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainPropsPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.application.ApplicationConfigurationPropertiesTabTittle}" >
 <!define name="content">
     <event>
         <!beforeCreate
             getRequestValue(key="appName" value="#{pageSession.appName}");
             urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+            setSessionAttribute(key="appGeneralTabs" value="appliactionConfigurationProps");
+            
             setPageSessionAttribute(key="rest-api" value="true");
             setPageSessionAttribute(key="edit" value="#{true}" );
             setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
@@ -61,21 +63,24 @@
 
             setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
             gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/property", method="GET", result="#{requestScope.propTable}");
-            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
+            py.onlyGetConfigurationProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.modifiedProps}");
+            setPageSessionAttribute(key="isMicroProfileProps", value="#{false}");
             setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
 #include "/common/applications/appGeneralTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18nc.applications.ApplicationPropsPageTitle}"  helpText="$resource{i18nc.applications.ApplicationPropsPageTitleHelp}" >
-#include "/common/appServer/instancePropertiesButtons.jsf"
+        <sun:title id="propertyContentPage" title="$resource{i18nc.application.ApplicationConfigurationPropertiesTabTittle}" >
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg.inc"
 #include "/common/shared/nameSection.inc"
 #include "/common/shared/propertyDescTable.inc"
 
         <sun:title id="bottomTitle">
-#include "/common/appServer/instancePropertiesButtons.jsf"
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 
         <sun:hidden id="helpKey" value="$resource{help_common.instanceProperties}" />
