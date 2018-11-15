@@ -54,9 +54,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jta</artifactId>
     <packaging>glassfish-jar</packaging>
-    
+
     <name>JTA Implementation for Glassfish</name>
-    
+
     <developers>
         <developer>
             <id>mvatkina</id>
@@ -169,6 +169,6 @@
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
-      </dependency>
+        </dependency>
     </dependencies>
 </project>

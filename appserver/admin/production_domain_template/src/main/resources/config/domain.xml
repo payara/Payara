@@ -98,6 +98,7 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" timeout-in-seconds="300">
          <property name="xaresource-txn-timeout" value="300"/>
+         <property name="purge-cancelled-transactions-after" value="500"/>
        </transaction-service>
        <ejb-container max-pool-size="128">
          <ejb-timer-service />
@@ -174,7 +175,7 @@
         </message-security-config>
 	    <property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
-      
+
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
@@ -252,7 +253,7 @@
       <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
       <system-property name="org.jboss.weld.probe.allowRemoteAddress" value="127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.+"/>
     </config>
-    
+
     <config name="default-config" dynamic-reconfiguration-enabled="true" >
          <payara-executor-service-configuration/>
          <http-service>
@@ -352,7 +353,8 @@
              </message-security-config>
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" timeout-in-seconds="300">
-           <property name="xaresource-txn-timeout" value="300"/>
+             <property name="xaresource-txn-timeout" value="300"/>
+             <property name="purge-cancelled-transactions-after" value="500"/>
          </transaction-service>
          <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
          <request-tracing-service-configuration>
@@ -364,7 +366,7 @@
       <monitoring-service-configuration></monitoring-service-configuration>
       <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
-      
+
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
@@ -388,7 +390,7 @@
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
-        <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>        
+        <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
         <jvm-options>-Dorg.glassfish.grizzly.nio.DefaultSelectorHandler.force-selector-spin-detection=true</jvm-options>
         <!-- Grizzly NPN Jar version -->
         <jvm-options>[1.8.0|1.8.0u120]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.6.jar</jvm-options>
@@ -466,7 +468,7 @@
          <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
      </config>
   </configs>
-  
+
   <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%"/>
   <secure-admin special-admin-indicator="%%%SECURE_ADMIN_IDENTIFIER%%%">
       <secure-admin-principal dn="%%%ADMIN_CERT_DN%%%"></secure-admin-principal>
