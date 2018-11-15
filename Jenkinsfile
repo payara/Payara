@@ -71,7 +71,7 @@ pipeline {
                 }
             }
         }
-        stage('Checkout cargoTracker Tests') {
+        stage('Checkout CargoTracker Tests') {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -81,12 +81,15 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Run cargoTracker Tests') {
+        stage('Run CargoTracker Tests') {
             tools {
                 jdk "zulu-8"
             }
             steps {
                 dir('cargotracker') {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    sh "rm -rf /tmp/cargo*"
+
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
@@ -188,70 +191,73 @@ pipeline {
             post {
                 always {
                     teardownDomain()
-		}
-                unstable {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Run cargoTracker Tests JDK7') {
-            tools {
-                jdk "zulu-7"
-            }
-            environment {
-                MAVEN_OPTS="${mavenOpts}"
-            }
-            steps {
-                dir('cargotracker') {
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                    -Ppayara-server-managed,payara4"""
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                }
-            }
-            post {
-                unstable {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Setup for EE7 Tests JDK7') {
-            tools {
-                jdk "zulu-7"
-            }
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run EE7 Tests JDK7') {
-            tools {
-                jdk "zulu-7"
-            }
-            environment {
-                MAVEN_OPTS="${mavenOpts}"
-            }
-            steps {
-                dir('EE7-Samples') {
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                    -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                    -Ppayara-server-remote,stable,payara4"""
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                }
-            }
-            post {
-                always {
-                    teardownDomain()
                 }
                 unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
+        //stage('Run CargoTracker Tests JDK7') {
+        //    tools {
+        //        jdk "zulu-7"
+        //    }
+        //    environment {
+        //        MAVEN_OPTS="${mavenOpts}"
+        //    }
+        //    steps {
+        //        dir('cargotracker') {
+        //            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //            sh "rm -rf /tmp/cargo*"
+
+        //            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //            sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+        //            -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+        //            -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+        //            -Ppayara-server-managed,payara4"""
+        //            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //        }
+        //    }
+        //    post {
+        //        unstable {
+        //           junit '**/target/surefire-reports/*.xml'
+        //        }
+        //    }
+        //}
+        //stage('Setup for EE7 Tests JDK7') {
+        //    tools {
+        //        jdk "zulu-7"
+        //    }
+        //    steps {
+        //        setupDomain()
+        //    }
+        //}
+        //stage('Run EE7 Tests JDK7') {
+        //    tools {
+        //        jdk "zulu-7"
+        //    }
+        //    environment {
+        //        MAVEN_OPTS="${mavenOpts}"
+        //    }
+        //    steps {
+        //        dir('EE7-Samples') {
+        //            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //            sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+        //            -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+        //            -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+        //            -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
+        //            -Ppayara-server-remote,stable,payara4"""
+        //            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+        //        }
+        //    }
+        //    post {
+        //        always {
+        //            teardownDomain()
+        //        }
+        //        unstable {
+        //            junit '**/target/surefire-reports/*.xml'
+        //        }
+        //    }
+        //}
     }
 }
 def void setupDomain() {

@@ -214,7 +214,7 @@
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <mail.version>1.5.6</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
-        <hazelcast.version>3.10.5</hazelcast.version>
+        <hazelcast.version>3.11</hazelcast.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
         <xpp3.version>1.1.4c_7</xpp3.version>

@@ -37,7 +37,27 @@
  holder.
 -->
 
+<sun:tab id="mpHealthcheck" 
+         immediate="true" 
+         text="$resource{i18nhx.healthcheck.configuration.microprofileHealthcheckCheckerTabTitle}" 
+         toolTip="$resource{i18nhx.healthcheck.configuration.microprofileHealthcheckCheckerTabTitleToolTip}">
+    <!beforeCreate
+        setResourceBundle(key="i18nhx" bundle="fish.payara.admingui.healthcheck.Strings");
+        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    />
 
-#include "/healthcheck/healthcheck/checkers/mphealthcheckConfiguration_1.inc"
-#include "/healthcheck/healthcheck/healthcheckConfigTabs.inc
-#include "/healthcheck/healthcheck/checkers/mphealthcheckConfiguration_2.inc"
+    <!command
+        setSessionAttribute(key="serverInstTabs" value="mpHealthcheckTab");
+        gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/mphealthcheckConfigurationServer.jsf?target=server&tabSetName=serverInstTabs");
+    />
+
+    <sun:tab id="mpHealthcheckTab" 
+             immediate="$boolean{true}" 
+             text="Configuration" 
+             toolTip="$resource{i18nhx.healthcheck.configuration.microprofileHealthcheckCheckerTabTitleToolTip}">
+        <!command
+            setSessionAttribute(key="serverInstTabs" value="mpHealthcheckTab");
+            gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/mphealthcheckConfigurationServer.jsf?target=server&tabSetName=serverInstTabs");
+        />
+    </sun:tab>
+</sun:tab>
