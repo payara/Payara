@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -342,15 +342,16 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null;
-        String user = this.getUser();
-        String pass = this.getPassword() != null ? new String(this.getPassword()) : null;
-        String up = (user == null) ? "" : user;
-        String pp = (pass == null) ? "" : pass;
-        cs = up + ":" + pp;
-        String enc = this.getBase64Encoded(cs);
-        enc = enc.replaceAll(System.getProperty("line.separator"), "");
-        return ( AUTHORIZATION_TYPE + enc );
+        String user = getUser();
+        String password = getPassword();
+        
+        return 
+            AUTHORIZATION_TYPE + 
+            getBase64Encoded(
+                (user == null ? "" : user) + 
+                ":" + 
+                (password == null ? "" : password))
+                .replaceAll(System.getProperty("line.separator"), "");
     }
   
     private String getBase64Encoded(String clearString) {

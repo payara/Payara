@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
-
-import com.sun.enterprise.util.StringUtils;
 
 /**
  * A class that holds the user and password for the connection to the server.
@@ -49,14 +48,23 @@ import com.sun.enterprise.util.StringUtils;
  */
 public final class AuthenticationInfo {
     private final String user;
-    private final String password;
+    private final char[] password;
+    
+    /**
+     * 
+     * @param user the user name for the connection
+     * @param password the clear text password for the connection
+     */
+    public AuthenticationInfo(String user, String password) {
+        this(user,password == null? null : password.toCharArray());
+    }
 
     /**
-     * The only way to construct the instances of this class.
+     * 
      * @param user      the user name for the connection
      * @param password  the clear text password for the connection
      */
-    public AuthenticationInfo(String user, String password) {
+    public AuthenticationInfo(String user, char[] password) {
         this.user = user;
         this.password = password;
     }
@@ -74,14 +82,17 @@ public final class AuthenticationInfo {
      * @return String
      */
     public String getPassword() {
-        return password;
+        if (password == null) {
+            return null;
+        }
+        return new String(password);
     }
     
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("User: ").append(user);
-        result.append(", Password: ").append(StringUtils.ok(password) ? "<non-null>" : "<null>");
+        result.append(", Password: ").append((password != null && password.length > 0) ? "<non-null>" : "<null>");
         return result.toString();
     }
 }
