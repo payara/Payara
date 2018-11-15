@@ -63,6 +63,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-kubernetes</artifactId>
+            <version>${hazelcast.kubernetes.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>jsr107-repackaged</artifactId>
             <version>${project.version}</version>
