@@ -84,7 +84,7 @@ public class CommandThreadPool implements PostConstruct {
     private Logger logger;
 
     @Inject
-    PayaraExecutorService executor;
+    private PayaraExecutorService executor;
 
     /**
      * Process the instance file if this is DAS and there are instances configured already in this domain
