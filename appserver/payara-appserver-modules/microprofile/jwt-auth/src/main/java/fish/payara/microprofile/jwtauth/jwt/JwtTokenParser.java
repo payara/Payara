@@ -51,6 +51,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
@@ -63,9 +64,23 @@ import static org.eclipse.microprofile.jwt.Claims.*;
  * @author Arjan Tijms
  */
 public class JwtTokenParser {
-
+    
+    private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
+    
     private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
+    
+    private final boolean enableNamespacedClaims;
+    private final Optional<String> customNamespace;
 
+    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
+        this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
+        this.customNamespace = customNamespace;
+    }
+
+    public JwtTokenParser() {
+        this(Optional.empty(), Optional.empty());
+    }
+    
     public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(bearerToken);
 
@@ -81,7 +96,10 @@ public class JwtTokenParser {
 
         try (JsonReader reader = Json.createReader(new StringReader(signedJWT.getPayload().toString()))) {
             Map<String, JsonValue> rawClaims = new HashMap<>(reader.readObject());
-
+            
+            // Vendor - Process namespaced claims
+            rawClaims = handleNamespacedClaims(rawClaims);
+            
             // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
             if (!checkRequiredClaimsPresent(rawClaims)) {
                 throw new IllegalStateException("Not all required claims present");
@@ -114,14 +132,30 @@ public class JwtTokenParser {
             return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
     }
-
+    
+    private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
+        if(this.enableNamespacedClaims){
+            final String namespace = customNamespace.orElse(DEFAULT_NAMESPACE);
+            Map<String, JsonValue> processedClaims = new HashMap<>(currentClaims.size());
+            for(String claimName : currentClaims.keySet()){
+                JsonValue value = currentClaims.get(claimName);
+                if(claimName.startsWith(namespace)){
+                    claimName = claimName.substring(namespace.length());
+                }
+                processedClaims.put(claimName, value);
+            }
+            return processedClaims;
+        }else{
+            return currentClaims;
+        }
+    }
+        
     private boolean checkRequiredClaimsPresent(Map<String, JsonValue> presentedClaims) {
         for (Claims requiredClaim : requiredClaims) {
             if (presentedClaims.get(requiredClaim.name()) == null) {
                 return false;
             }
         }
-
         return true;
     }
 
