@@ -76,6 +76,10 @@ public class JwtTokenParser {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
         this.customNamespace = customNamespace;
     }
+
+    public JwtTokenParser() {
+        this(Optional.empty(), Optional.empty());
+    }
     
     public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(bearerToken);
