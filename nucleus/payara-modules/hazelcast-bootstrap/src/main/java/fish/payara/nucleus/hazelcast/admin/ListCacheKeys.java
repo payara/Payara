@@ -49,6 +49,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.Iterator;
 import java.util.Properties;
+
+import javax.cache.Cache.Entry;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -108,7 +110,7 @@ public class ListCacheKeys implements AdminCommand {
                 StringBuilder builder = new StringBuilder();
                 builder.append("{ \n");
                 for (DistributedObject dobject : instance.getDistributedObjects()) {
-                    Iterator<Object> keyIterator = null;
+                    Iterator<?> keyIterator = null;
                     if (dobject instanceof IMap) {
                         if (cacheName == null || cacheName.isEmpty() || cacheName.equals(((IMap<Object, Object>) dobject).getName())) {
                             builder.append("Cache ").append(((IMap<Object, Object>) dobject).getName()).append("\n{");
