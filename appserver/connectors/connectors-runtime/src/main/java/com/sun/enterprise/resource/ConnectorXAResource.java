@@ -37,9 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ResourceAllocationException;
+import javax.transaction.SystemException;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -51,19 +63,8 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.TransactionConstants;
 import com.sun.logging.LogDomains;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ResourceAllocationException;
-import javax.transaction.SystemException;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  * @author Tony Ng, Jagadish Ramu
@@ -82,7 +83,7 @@ public class ConnectorXAResource implements XAResource {
     private ResourceHandle localHandle_;
     private JavaEETransaction associatedTransaction;
 
-    private static Hashtable listenerTable = new Hashtable();
+    private static Map<ManagedConnection, ?> listenerTable = new ConcurrentHashMap<>();
 
 
     // Create logger object per Java SDK 1.4 to log messages
@@ -237,21 +238,21 @@ public class ConnectorXAResource implements XAResource {
     }
 
     private ResourceHandle getResourceHandle(boolean beginTxIfNeeded) throws PoolingException {
-        try {
-            ResourceHandle h = null;
+        ResourceHandle h;
+        try {            
             JavaEETransaction j2eetran = getCurrentTransaction();
-            if (j2eetran == null) {      //Only if some thing is wrong with tx manager.
-                h = localHandle_;        //Just return the local handle.
+            if (j2eetran == null || j2eetran.getNonXAResource() == null) {//Only if some thing is wrong with tx manager.
+                h = localHandle_;                                         //Just return the local handle.
             } else {
                 h = (ResourceHandle)j2eetran.getNonXAResource();
-            //make sure that if local-tx resource is set as 'unshareable', only one resource
-            //can be acquired. If the resource in question is not the one in transaction, fail
-            if (!localHandle_.isShareable()){
-                   if(h != localHandle_){
-                        throw new ResourceAllocationException("Cannot use more than one local-tx resource in unshareable scope");
+                //make sure that if local-tx resource is set as 'unshareable', only one resource
+                //can be acquired. If the resource in question is not the one in transaction, fail
+                if (!localHandle_.isShareable()){
+                       if(h != localHandle_){
+                            throw new ResourceAllocationException("Cannot use more than one local-tx resource in unshareable scope");
+                        }
                     }
                 }
-            }
             if (beginTxIfNeeded && h.getResourceState().isUnenlisted()) {
                 ManagedConnection mc = (ManagedConnection) h.getResource();
                 // begin the local transaction if first time
@@ -273,24 +274,10 @@ public class ConnectorXAResource implements XAResource {
     private void resetAssociation() throws XAException{
         try {
             ResourceHandle handle = getResourceHandleForFinalize();
+            LocalTxConnectionEventListener connectionEventListener = (LocalTxConnectionEventListener) handle.getListener();
 
-            LocalTxConnectionEventListener l = (LocalTxConnectionEventListener)handle.getListener();
-            //Get all associated Handles and reset their ManagedConnection association.
-            Map associatedHandles = l.getAssociatedHandles();
-            if(associatedHandles != null ){
-                Set<Map.Entry> userHandles = associatedHandles.entrySet();
-                for(Map.Entry userHandleEntry : userHandles ){
-                    ResourceHandle associatedHandle = (ResourceHandle)userHandleEntry.getValue();
-                    ManagedConnection associatedConnection = (ManagedConnection)associatedHandle.getResource();
-                    associatedConnection.associateConnection(userHandleEntry.getKey());
-                    if(_logger.isLoggable(Level.FINE)){
-                        _logger.log(Level.FINE, "connection_sharing_reset_association",
-                                userHandleEntry.getKey());
-                    }
-                }
-                //all associated handles are mapped back to their actual Managed Connection. Clear the associations.
-                associatedHandles.clear();
-            }
+            // Reset all connection associations
+            connectionEventListener.resetAssociations();
 
         } catch (Exception ex) {
             handleResourceException(ex);
@@ -298,7 +285,7 @@ public class ConnectorXAResource implements XAResource {
     }
    
     public JavaEETransaction getAssociatedTransaction(){
-         return associatedTransaction;
+        return associatedTransaction;
     }
 
     private void resetAssociatedTransaction(){

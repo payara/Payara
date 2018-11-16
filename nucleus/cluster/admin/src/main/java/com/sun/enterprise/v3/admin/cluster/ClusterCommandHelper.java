@@ -84,9 +84,9 @@ public class ClusterCommandHelper {
 
     private static final String NL = System.getProperty("line.separator");
 
-    private Domain domain;
+    private final Domain domain;
 
-    private CommandRunner runner;
+    private final CommandRunner runner;
 
     private ProgressStatus progress;
 
@@ -115,7 +115,6 @@ public class ClusterCommandHelper {
      * @param context       The AdminCommandContext to use when executing the
      *                      command.
      * @param verbose       true for more verbose output
-     * @param useExecutor   Whether calls should be concurrent
      * @return              An ActionReport containing the results
      * @throws CommandException
      */
@@ -213,7 +212,7 @@ public class ClusterCommandHelper {
         if (!rolling) {
             // Make the thread pool use the smaller of the number of instances
             // or half the admin thread pool size
-            int adminThreadPoolSize = getAdminThreadPoolSize(logger);
+            int adminThreadPoolSize = getAdminThreadPoolSize();
             threadPoolSize = Math.min(nInstances, adminThreadPoolSize / 2);
 
             if (threadPoolSize < 1) {
@@ -291,7 +290,7 @@ public class ClusterCommandHelper {
             }
             CommandRunnable cmdRunnable = null;
             try {
-                //cmdRunnable = responseQueue.take();
+                
                 cmdRunnable = responseQueue.poll(timeLeft, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 // This thread has been interrupted. Abort
@@ -348,14 +347,12 @@ public class ClusterCommandHelper {
         // Display summary of started servers if in verbose mode or we
         // had one or more failures.
         if (succeededServerNames.length() > 0 && (verbose || failureOccurred)) {
-            output.append(NL + Strings.get("cluster.command.instancesSucceeded",
-                    command, succeededServerNames));
+            output.append(NL).append(Strings.get("cluster.command.instancesSucceeded", command, succeededServerNames));
         }
 
         if (failureOccurred) {
             // Display summary of failed servers if we have any
-            output.append(NL + Strings.get("cluster.command.instancesFailed",
-                    command, failedServerNames));
+            output.append(NL).append(Strings.get("cluster.command.instancesFailed", command, failedServerNames));
             if (succeededServerNames.length() > 0) {
                 // At least one instance started. Warning.
                 report.setActionExitCode(ExitCode.WARNING);
@@ -367,8 +364,7 @@ public class ClusterCommandHelper {
 
         // Check for server that did not respond
         if (!waitingForServerNames.isEmpty()) {
-            msg = Strings.get("cluster.command.instancesTimedOut",
-                    command, listToString(waitingForServerNames));
+            msg = Strings.get("cluster.command.instancesTimedOut", command, listToString(waitingForServerNames));
             logger.warning(msg);
             if (output.length() > 0) {
                 output.append(NL);
@@ -385,7 +381,7 @@ public class ClusterCommandHelper {
     /**
      * Get the size of the admin threadpool
      */
-    private int getAdminThreadPoolSize(Logger logger) {
+    private int getAdminThreadPoolSize() {
 
         final int DEFAULT_POOL_SIZE = 5;
 
@@ -458,7 +454,7 @@ public class ClusterCommandHelper {
     private static String serverListToString(List<Server> servers) {
         StringBuilder sb = new StringBuilder();
         for (Server s : servers) {
-            sb.append(s.getNodeRef() + ":" + s.getName() + " ");
+            sb.append(s.getNodeRef()).append(":").append(s.getName()).append(" ");
         }
         return sb.toString().trim();
     }
@@ -466,13 +462,13 @@ public class ClusterCommandHelper {
     private static String listToString(List<String> slist) {
         StringBuilder sb = new StringBuilder();
         for (String s : slist) {
-            sb.append(s + " ");
+            sb.append(s).append(" ");
         }
         return sb.toString().trim();
     }
 
-    static public class ReportResult {
-        final public List<String> succeededServerNames = new ArrayList<String>();
-        final public List<String> failedServerNames = new ArrayList<String>();
+    public static class ReportResult {
+        public final List<String> succeededServerNames = new ArrayList<String>();
+        public final List<String> failedServerNames = new ArrayList<String>();
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -68,8 +69,8 @@ import org.glassfish.hk2.api.PostConstruct;
 })
 public class BootstrapSecureAdminCommand implements AdminCommand, PostConstruct {
 
-    private final static String DOWNLOADED_FILE_MIME_TYPE = "application/octet-stream";
-    private final static String DOWNLOAD_DATA_REQUEST_NAME = "secure-admin";
+    private static final String DOWNLOADED_FILE_MIME_TYPE = "application/octet-stream";
+    private static final String DOWNLOAD_DATA_REQUEST_NAME = "secure-admin";
 
     private File[] bootstrappedFiles = null;
 

@@ -197,11 +197,11 @@ Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
                     <network-listener port="8443" protocol="https-listener" transport="tcp" name="https-listener" thread-pool="http-thread-pool" enabled="false" />
                 </network-listeners>
                 <transports>
-                    <transport byte-buffer-type="HEAP" name="tcp" acceptor-threads="-1"></transport>
+                    <transport byte-buffer-type="HEAP" name="tcp"></transport>
                 </transports>
             </network-config>
             <thread-pools>
-                <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
+                <thread-pool name="http-thread-pool" min-thread-pool-size="2" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
             <microprofile-config/>

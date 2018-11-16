@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.stringifier;
 
@@ -45,50 +46,50 @@ import java.util.Iterator;
 
 /**
 	Stringifies an Iterator, using an optional element Stringifier.
-	
+
 	Must be subclassed to provide Stringification of an element.
  */
- 
+
 public abstract class IteratorStringifierBase implements Stringifier
 {
 	public final String			mDelim;
 	public final Stringifier	mElementStringifier;
-	
-		public 
+
+		public
 	IteratorStringifierBase()
 	{
 		this( ObjectStringifier.DEFAULT );
 	}
-	
-		public 
+
+		public
 	IteratorStringifierBase( String delim )
 	{
 		this( delim, new SmartStringifier( delim ) );
 	}
-	
-		public 
+
+		public
 	IteratorStringifierBase( Stringifier elementStringifier )
 	{
 		this( ",", elementStringifier );
 	}
-	
-		public 
+
+		public
 	IteratorStringifierBase( String delim, Stringifier elementStringifier )
 	{
 		mDelim				= delim;
 		mElementStringifier	= elementStringifier;
 	}
-	
+
 		public String
 	stringify( Object o )
 	{
 		assert( o != null );
 		Iterator	iter	= (Iterator)o;
-		
+
 		return( this.stringify( iter, mDelim, mElementStringifier ) );
 	}
-	
-	
+
+
 	/*
 		Subclass may choose to override this.
 	 */
@@ -96,25 +97,25 @@ public abstract class IteratorStringifierBase implements Stringifier
 	stringifyElement(
 		Object			elem,
 		String			delim,
-		StringBuffer	buf);
-		
-		
-	
+		StringBuilder	buf);
+
+
+
 		public String
 	stringify( Iterator iter, String delim, Stringifier stringifier )
 	{
 		assert( iter != null );
-		
-		StringBuffer	buf	= new StringBuffer();
-	
+
+		StringBuilder	buf	= new StringBuilder();
+
 		while ( iter.hasNext() )
 		{
 			final Object	elem	= iter.next();
-			
+
 			stringifyElement( elem, delim, buf );
 			buf.append( delim );
 		}
-		
+
 		// strip trailing delimiter
 		final int	length	= buf.length();
 		if ( length != 0 )
@@ -124,7 +125,7 @@ public abstract class IteratorStringifierBase implements Stringifier
 
 		return( buf.toString() );
 	}
-	
+
 	public final static IteratorStringifier DEFAULT = new IteratorStringifier( "," );
 }
 

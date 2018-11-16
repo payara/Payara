@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util;
 
@@ -49,7 +50,7 @@ the prompt to System.out.
  */
 public class LineReaderImpl implements LineReader
 {
-    final InputStreamReader mInputStreamReader;
+    private final InputStreamReader mInputStreamReader;
 
     public LineReaderImpl(InputStream inputStream)
     {
@@ -59,7 +60,7 @@ public class LineReaderImpl implements LineReader
     public String readLine(String prompt)
             throws java.io.IOException
     {
-        final StringBuffer line = new StringBuffer();
+        final StringBuilder line = new StringBuilder();
 
         if (prompt != null)
         {

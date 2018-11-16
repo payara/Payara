@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
+
 package org.glassfish.concurrent.runtime;
 
 import com.hazelcast.logging.Logger;

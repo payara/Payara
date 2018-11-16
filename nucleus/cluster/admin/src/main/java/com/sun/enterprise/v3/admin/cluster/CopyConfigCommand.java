@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -75,8 +76,7 @@ import org.glassfish.api.admin.RestEndpoints;
 })
 public final class CopyConfigCommand extends CopyConfig {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CopyConfigCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CopyConfigCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
