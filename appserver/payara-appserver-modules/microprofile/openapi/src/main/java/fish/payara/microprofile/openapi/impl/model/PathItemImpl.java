@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
@@ -346,6 +347,79 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     public PathItem addParameter(Parameter parameter) {
         parameters.add(parameter);
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PathItemImpl other = (PathItemImpl) obj;
+        if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        if (!Objects.equals(this.summary, other.summary)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.get, other.get)) {
+            return false;
+        }
+        if (!Objects.equals(this.put, other.put)) {
+            return false;
+        }
+        if (!Objects.equals(this.post, other.post)) {
+            return false;
+        }
+        if (!Objects.equals(this.delete, other.delete)) {
+            return false;
+        }
+        if (!Objects.equals(this.options, other.options)) {
+            return false;
+        }
+        if (!Objects.equals(this.head, other.head)) {
+            return false;
+        }
+        if (!Objects.equals(this.patch, other.patch)) {
+            return false;
+        }
+        if (!Objects.equals(this.trace, other.trace)) {
+            return false;
+        }
+        if (!Objects.equals(this.servers, other.servers)) {
+            return false;
+        }
+        if (!Objects.equals(this.parameters, other.parameters)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.ref);
+        hash = 37 * hash + Objects.hashCode(this.summary);
+        hash = 37 * hash + Objects.hashCode(this.description);
+        hash = 37 * hash + Objects.hashCode(this.get);
+        hash = 37 * hash + Objects.hashCode(this.put);
+        hash = 37 * hash + Objects.hashCode(this.post);
+        hash = 37 * hash + Objects.hashCode(this.delete);
+        hash = 37 * hash + Objects.hashCode(this.options);
+        hash = 37 * hash + Objects.hashCode(this.head);
+        hash = 37 * hash + Objects.hashCode(this.patch);
+        hash = 37 * hash + Objects.hashCode(this.trace);
+        hash = 37 * hash + Objects.hashCode(this.servers);
+        hash = 37 * hash + Objects.hashCode(this.parameters);
+        return hash;
     }
 
 }
