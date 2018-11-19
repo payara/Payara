@@ -45,8 +45,10 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
@@ -58,12 +60,10 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -78,7 +78,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  * @author Andrew Pielage
  */
 @Service(name = "payara-executor-service")
-@RunLevel(StartupRunLevel.VAL)
 public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @Inject
@@ -100,13 +99,20 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @PostConstruct
     public void postConstruct() {
-
-        events.register(this);
-        payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
-                .getService(PayaraExecutorServiceConfiguration.class);
-
-        transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
-
+      
+        if (events != null) {
+            events.register(this);
+        }
+        
+        if (payaraExecutorServiceConfiguration == null) {
+            payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
+                    .getService(PayaraExecutorServiceConfiguration.class);
+        }
+        
+        if (transactions != null) {
+            transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
+        }
+      
         initialiseThreadPools();
     }
 
@@ -183,7 +189,24 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return scheduledThreadPoolExecutor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
+    
+    public ExecutorService getUnderlyingExecutorService() {
+        return threadPoolExecutor;
+    }
 
+    public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
+        return scheduledThreadPoolExecutor;
+    }
+    
+    public int getExecutorThreadPoolSize() {
+        return Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize());
+    }
+    
+    public int getScheduledExecutorThreadPoolSize() {
+        return Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize());
+    }
+
+    
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();

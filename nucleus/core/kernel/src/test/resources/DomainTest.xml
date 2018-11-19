@@ -46,6 +46,8 @@
   <resources/>
   <configs>
     <config name="server-config">
+        
+      <payara-executor-service-configuration></payara-executor-service-configuration>
       <admin-service system-jmx-connector-name="system" type="das-and-server">
         <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" name="system" auth-realm-name="admin-realm"></jmx-connector>
         <das-config dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-enabled="true"></das-config>
