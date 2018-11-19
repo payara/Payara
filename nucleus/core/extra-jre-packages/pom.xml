@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-extra-jre-packages</artifactId>

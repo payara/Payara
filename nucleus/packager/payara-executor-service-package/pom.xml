@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>payara-executor-service-package</artifactId>

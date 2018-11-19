@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>cmp-ejb-mapping</artifactId>

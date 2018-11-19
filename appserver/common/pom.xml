@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.common</groupId>

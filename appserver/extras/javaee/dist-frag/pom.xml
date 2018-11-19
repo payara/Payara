@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>javaee-pom</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <name>GlassFish javaee.jar distribution fragment</name>
     <artifactId>javaee-frag</artifactId>

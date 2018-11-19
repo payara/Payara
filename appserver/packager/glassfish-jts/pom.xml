@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <artifactId>glassfish-jts</artifactId>
     <name>Glassfish Java Transaction Service</name>

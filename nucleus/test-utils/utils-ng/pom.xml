@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>test-utils</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main.tests</groupId>

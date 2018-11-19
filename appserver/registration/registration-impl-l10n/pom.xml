@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.registration</groupId>
         <artifactId>registration</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>registration-impl-l10n</artifactId>

@@ -45,7 +45,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main.external</groupId>
         <artifactId>external</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <artifactId>jcip-annotations-repackaged</artifactId>
     <name>jcip-annotations repackaged</name>

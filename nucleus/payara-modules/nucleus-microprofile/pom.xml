@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     
     <groupId>fish.payara.nucleus.microprofile</groupId>

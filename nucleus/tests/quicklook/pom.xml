@@ -71,13 +71,13 @@ utilities are in the NucleusTestUtils class.
     <parent>
         <groupId>org.glassfish.main.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     
     <groupId>org.glassfish.main.tests</groupId>
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
-    <version>5.184-SNAPSHOT</version>
+    <version>5.184</version>
     <description>This pom describes how to run QuickLook tests on the Nucleus distribution</description>
     
     <dependencies>

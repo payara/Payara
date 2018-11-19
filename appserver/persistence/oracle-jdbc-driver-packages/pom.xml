@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>

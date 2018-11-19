@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
     </parent>
     <groupId>fish.payara.persistence.coordination</groupId>
     <artifactId>hazelcast-eclipselink-coordination</artifactId>

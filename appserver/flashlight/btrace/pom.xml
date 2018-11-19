@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.184</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
 
