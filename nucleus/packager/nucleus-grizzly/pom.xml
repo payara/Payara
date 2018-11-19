@@ -89,6 +89,14 @@
                         <!-- Copy all the required npn-bootstrap jars here -->
                         <configuration>
                             <artifactItems>
+                                <!-- Default NPN Bootstrap Jar for old domain.xml files -->
+                                <artifactItem>
+                                    <groupId>org.glassfish.grizzly</groupId>
+                                    <artifactId>grizzly-npn-bootstrap</artifactId>
+                                    <version>1.8.1</version>
+                                    <destFileName>grizzly-npn-bootstrap.jar</destFileName>
+                                </artifactItem>
+                                <!-- Other versioned NPN Bootstrap Jars referenced in new domain.xml (since 5.184) -->
                                 <artifactItem>
                                     <groupId>org.glassfish.grizzly</groupId>
                                     <artifactId>grizzly-npn-bootstrap</artifactId>
