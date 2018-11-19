@@ -49,8 +49,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
-import fish.payara.notification.requesttracing.EventType;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
@@ -68,6 +66,13 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.opentracing.propagation.MapToTextMap;
+import fish.payara.notification.requesttracing.RequestTraceSpanContext;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.propagation.Format;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -92,6 +97,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private boolean classloading, security, naming, workArea;
 
     private RequestTracingService requestTracing;
+    private OpenTracingService openTracing;
     private StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
@@ -120,7 +126,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             logger.log(Level.INFO, "Error retrieving Stuck Threads Sore Healthcheck service "
                     + "during initialisation of Concurrent Context - NullPointerException");
         }
-
+        try {
+            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving OpenTracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
+        
         for (CONTEXT_TYPE contextType : contextTypes) {
             switch (contextType) {
                 case CLASSLOADING:
@@ -226,8 +238,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            RequestTraceSpan span = constructConcurrentContextSpan(invocation);
-            requestTracing.startTrace(span);
+            startConcurrentContextSpan(invocation, handle);
         }
 
         if (stuckThreads != null) {
@@ -236,20 +247,40 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
+    
+    private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
+        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+        
+        SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
+        
+        if (spanContext != null) {
+            // Start a trace in the request tracing system
+            SpanBuilder builder = tracer.buildSpan("executeConcurrentContext")
+                    .asChildOf(spanContext)
+                    .withTag("App Name", invocation.getAppName())
+                    .withTag("Component ID", invocation.getComponentId())
+                    .withTag("Module Name", invocation.getModuleName());
 
-    private RequestTraceSpan constructConcurrentContextSpan(ComponentInvocation invocation) {
-        RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeConcurrentContext");
-
-        span.addSpanTag("App Name", invocation.getAppName());
-        span.addSpanTag("Component ID", invocation.getComponentId());
-        span.addSpanTag("Module Name", invocation.getModuleName());
-        Object instance = invocation.getInstance();
-        if (instance != null) {
-            span.addSpanTag("Class Name", instance.getClass().getName());
+            Object instance = invocation.getInstance();
+            if (instance != null) {
+                builder.withTag("Class Name", instance.getClass().getName());
+            }
+            
+            builder.withTag("Thread Name", Thread.currentThread().getName());
+            
+            // Check for the presence of a propagated parent operation name
+            try {
+                String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
+                if (operationName != null) {
+                    builder.withTag("Parent Operation Name", operationName);
+                }
+            } catch (ClassCastException cce) {
+                logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
+            }
+            
+            builder.startActive(true);
         }
-        span.addSpanTag("Thread Name", Thread.currentThread().getName());
-
-        return span;
     }
 
     @Override

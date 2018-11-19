@@ -122,7 +122,7 @@ public class RestartInstanceCommand implements AdminCommand {
 
     private ActionReport report;
 
-    private final static long WAIT_TIME_MS = 600000; // 10 minutes
+    private static final long WAIT_TIME_MS = 600000; // 10 minutes
 
     private Server instance;
 
@@ -312,7 +312,7 @@ public class RestartInstanceCommand implements AdminCommand {
         String val = rac.findPropertyInReport("restartable");
         if (val != null && val.equals("false")) {
             return false;
-        }
+    }
         return true;
     }
 
@@ -385,20 +385,15 @@ public class RestartInstanceCommand implements AdminCommand {
      * See issue 16322 for more details
      */
     private void start() {
-        // be VERY careful -- we are being called from within a catch block...
-        Exception exception = null;
 
         try {
-            StartInstanceCommand sic =
-                    new StartInstanceCommand(habitat, instanceName,
-                            Boolean.parseBoolean(debug), env);
+            StartInstanceCommand sic = new StartInstanceCommand(habitat, instanceName, Boolean.parseBoolean(debug), env);
             sic.execute(context);
         }
         catch (Exception e) {
             // this is NOT normal!  start-instance communicates errors via the
             // reporter.  This catch should never happen.  It is here for robustness.
             // and especially for programmer/regression errors.
-            exception = e;
 
             // Perhaps a NPE or something **after** the report was set to success???
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

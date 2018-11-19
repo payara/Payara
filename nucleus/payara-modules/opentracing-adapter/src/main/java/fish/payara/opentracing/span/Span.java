@@ -188,7 +188,7 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     public void finish() {
         // Pass through to the Request Tracing Service
         getRequestTracingServiceIfNull();
-        requestTracing.traceSpan(this);        
+        requestTracing.traceSpan(this);
     }
 
     @Override

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -47,13 +48,10 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 
@@ -98,9 +96,8 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     @Param(name =  "force", optional = true, defaultValue = "false")
     private boolean force;
 
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NL = System.lineSeparator();
 
-    private Logger logger = null;
     protected abstract void populateParameters();
     protected abstract RemoteType getType();
     protected abstract String getDefaultPort();
@@ -110,7 +107,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         StringBuilder msg = new StringBuilder();
         Node node = null;
 
-        logger = context.getLogger();
+        Logger logger = context.getLogger();
 
         // Make sure Node is valid
         node = nodes.getNode(name);

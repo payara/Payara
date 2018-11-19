@@ -40,54 +40,29 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.opentracing;
+package fish.payara.nucleus.healthcheck.configuration;
 
-import io.opentracing.Span;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.Min;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Implementation of Scope from OpenTracing.
- * 
+ *
  * @author jonathan coustick
- * @since 5.183
+ * @since 5.184
  */
-public class OTScope implements io.opentracing.Scope {
-
-    private Span currentSpan;
-    private Map<Span, Boolean> allSpans;
+@Configured
+@CheckerConfigurationType(type = CheckerType.MP_HEALTH)
+public interface MicroProfileHealthCheckerConfiguration extends Checker {
     
-    public OTScope (){
-        allSpans = new LinkedHashMap<>();
-    }
+    @Attribute(defaultValue = "MP")
+    String getName();
+    void setName(String value) throws PropertyVetoException;
     
-    @Override
-    public void close() {
-        Iterator<Span> keys = allSpans.keySet().iterator();
-        while (keys.hasNext()){
-            Span span = keys.next();
-            if (allSpans.get(span)){
-                span.finish();
-            }
-            // Prevent scope holding on a reference to old spans
-            keys.remove();
-        }
-    }
-
-    @Override
-    public Span span() {
-        return currentSpan;
-    }
-    
-    // Package private - used only by ScopeManager
-    void setSpan(Span span, Boolean finishOnClose){
-        allSpans.put(span, finishOnClose);
-        currentSpan = span;
-    }
-    
-    void removeSpan(Span span){
-        allSpans.remove(span);
-    }
+    @Attribute(defaultValue = "30000", dataType = Long.class)
+    @Min(value = 0)
+    String getTimeout();
+    void setTimeout(String value) throws PropertyVetoException;
     
 }

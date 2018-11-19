@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -103,28 +104,20 @@ public class SynchronizeFiles implements AdminCommand {
     private final static LocalStringManagerImpl strings =
         new LocalStringManagerImpl(SynchronizeFiles.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         logger = context.getLogger();
         SyncRequest sr = null;
         try {
-            /*
-            try {
-            BufferedInputStream in =
-                new BufferedInputStream(new FileInputStream(fileList));
-            byte[] buf = new byte[8192];
-            int n = in.read(buf);
-            System.out.write(buf, 0, n);
-            in.close();
-            } catch (IOException ex) {}
-            */
             // read the input document
             JAXBContext jc = JAXBContext.newInstance(SyncRequest.class);
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             unmarshaller.setSchema(null);       // XXX - needed?
             sr = (SyncRequest)unmarshaller.unmarshal(fileList);
-            if (logger.isLoggable(Level.FINER))
-                logger.finer("SynchronizeFiles: synchronize dir " + sr.dir);
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "SynchronizeFiles: synchronize dir {0}", sr.dir);
+            }
         } catch (Exception ex) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("SynchronizeFiles: Exception reading request");
