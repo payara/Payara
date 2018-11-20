@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
-import fish.payara.microprofile.openapi.impl.processor.PathsProcessor;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.net.InetAddress;
@@ -289,7 +288,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
                 openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
                 openapi = new FilterProcessor().process(openapi, appConfig);
-                openapi = new PathsProcessor().process(openapi, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
             }
