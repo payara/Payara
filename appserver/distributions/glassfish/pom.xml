@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish</artifactId>
     <name>Glassfish Distribution</name>

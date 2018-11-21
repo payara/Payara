@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-hk2</artifactId>
     <name>Nucleus HK2 Package</name>
