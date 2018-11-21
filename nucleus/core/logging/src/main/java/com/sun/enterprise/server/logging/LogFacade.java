@@ -116,4 +116,9 @@ public class LogFacade {
     @LogMessageInfo(message = "The formatter class {0} could not be instantiated.", level="WARNING")
     public static final String INVALID_FORMATTER_CLASS_NAME = "NCLS-LOGGING-00013";    
 
+    @LogMessageInfo(message = "Unable to replace placeholders with values from system environment variables in logging properties.", level="SEVERE",
+            cause="An exception has occurred while replacing placeholders with values from system environment variables in logging properties.",
+            action="Take appropriate action based on the exception message.")
+    public static final String ERROR_PLACEHOLDERS_REPLACEMENT = "NCLS-LOGGING-00014";
+
 }

@@ -47,33 +47,41 @@
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!-- i18n -->
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.DomainPropsPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.application.ApplicationMicroProfilePropertiesTabTittle}" >
 <!define name="content">
     <event>
         <!beforeCreate
+            getRequestValue(key="appName" value="#{pageSession.appName}");
+            urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+            setSessionAttribute(key="appGeneralTabs" value="microProfileProps");
+            
             setPageSessionAttribute(key="rest-api" value="true");
             setPageSessionAttribute(key="edit" value="#{true}" );
             setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
-            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/common/appServer/serverInstDomainProps.jsf?");
+            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/common/applications/appMicroProfileProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
 
-            setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/property", method="GET", result="#{requestScope.propTable}");
-            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/property", method="GET", result="#{requestScope.propTable}");
+            setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
+            py.onlyGetMicroProfileProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
+            py.convertToConfigProperties(props="#{pageSession.modifiedProps}" convertedProps="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="isMicroProfileProps", value="#{true}");
             setPageSessionAttribute(key="showCancelButton", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
-#include "/common/appServer/domainTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18nc.domain.DomainPropsPageTitle}"  helpText="$resource{i18nc.domain.DomainPropsPageTitleHelp}" >
-#include "/common/appServer/instancePropertiesButtons.jsf"
+#include "/common/applications/appGeneralTabs.inc"
+        <sun:title id="propertyContentPage" title="$resource{i18nc.application.ApplicationMicroProfilePropertiesTabTittle}" >
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg.inc"
 #include "/common/shared/nameSection.inc"
 #include "/common/shared/propertyDescTable.inc"
 
         <sun:title id="bottomTitle">
-#include "/common/appServer/instancePropertiesButtons.jsf"
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 
         <sun:hidden id="helpKey" value="$resource{help_common.instanceProperties}" />

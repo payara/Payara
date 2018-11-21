@@ -43,6 +43,7 @@
 package com.sun.common.util.logging;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
+import com.sun.enterprise.util.PropertyPlaceholderHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -262,10 +263,10 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             }
             String property = (String) props.setProperty(key, e.getValue());
             if (e.getKey().contains("javax.enterprise.system.container.web")) {
-                setWebLoggers(e.getValue());
+                setWebLoggers(new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(e.getValue()));
             }
             //build Map of entries to return
-            m.put(key, property);
+            m.put(key, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(property));
         }
         return m;
     }
@@ -292,9 +293,20 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public synchronized Map<String, String> getLoggingProperties(String targetConfigName) throws IOException {
+        return getLoggingProperties(targetConfigName, true);
+    }
+
+    /**
+     * @param targetConfigName
+     * @param usePlaceholderReplacement - true for placeholder replacement, false returns original property value
+     * @return a Map of all the properties and corresponding values in the logging.properties file.
+     * @throws IOException 
+     */
+    @Override
+    public synchronized Map<String, String> getLoggingProperties(String targetConfigName, boolean usePlaceholderReplacement) throws IOException {
         loadLoggingProperties(targetConfigName);
         Enumeration e = props.propertyNames();
-        Map<String, String> m = getMap(e);
+        Map<String, String> m = getMap(e, usePlaceholderReplacement);
         return checkForLoggingProperties(m, targetConfigName);
     }
 
@@ -303,13 +315,27 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public synchronized Map<String, String> getLoggingProperties() throws IOException {
+        return getLoggingProperties(true);
+    }
+
+    /**
+     * @param usePlaceholderReplacement - true for placeholder replacement, false returns original property value
+     * @return a Map of all the properties and corresponding values in the logging.properties file.
+     * @throws IOException 
+     */
+    @Override
+    public synchronized Map<String, String> getLoggingProperties(boolean usePlaceholderReplacement) throws IOException {
         loadLoggingProperties();
         Enumeration e = props.propertyNames();
-        Map<String, String> m = getMap(e);
+        Map<String, String> m = getMap(e, usePlaceholderReplacement);
         return checkForLoggingProperties(m, "");
     }
 
     private Map<String, String> getMap(Enumeration e) {
+        return getMap(e, true);
+    }
+
+    private Map<String, String> getMap(Enumeration e, boolean usePlaceholderReplacement) {
         Map<String, String> m = new HashMap<>();
         while (e.hasMoreElements()) {
             String key = (String) e.nextElement();
@@ -317,7 +343,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
                 key = LoggingXMLNames.xmltoPropsMap.get(key);
             }
-            m.put(key, props.getProperty(key));
+            String value = usePlaceholderReplacement ? new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(props.getProperty(key)) : props.getProperty(key);
+            m.put(key, value);
         }
         return m;
     }

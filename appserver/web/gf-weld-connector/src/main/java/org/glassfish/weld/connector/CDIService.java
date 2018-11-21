@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -83,5 +83,36 @@ public interface CDIService extends ConfigExtension {
      *              {@link String }
      */
     void setEnableCdiDevMode(String value) throws PropertyVetoException;
+    
+    /**
+     * Gets the value of the enableConcurrentDeployment property.
+     *
+     * @return The value of the enableImplicitCdi property.
+     */
+    @Attribute (defaultValue="false", dataType=Boolean.class)
+    String getEnableConcurrentDeployment();
+
+    /**
+     * Sets the value of the enableConcurrentDeployment property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setEnableConcurrentDeployment(String value);
+
+    /**
+     * Gets the value of the preloader threads property.
+     *
+     * @return The value of the enableImplicitCdi property.
+     */
+    @Attribute (defaultValue="0", dataType=Integer.class)
+    String getPreLoaderThreadPoolSize();
+
+    /**
+     * Sets the value of the enableConcurrentDeployment property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setPreLoaderThreadPoolSize(String value);
+
 
 }
