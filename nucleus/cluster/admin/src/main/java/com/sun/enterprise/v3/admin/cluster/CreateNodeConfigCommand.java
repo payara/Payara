@@ -104,7 +104,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
             Map<String, String> systemPropsMap = new HashMap<String, String>((Map) (System.getProperties()));
             resolver = new TokenResolver(systemPropsMap);
             String resolvedInstallDir = resolver.resolve(installdir);
-            File actualInstallDir = new File(resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
+            File actualInstallDir = new File(resolvedInstallDir + File.separator + NodeUtils.LANDMARK_FILE);
 
             if (!actualInstallDir.exists()) {
                 report.setMessage(Strings.get("invalid.installdir", installdir));
