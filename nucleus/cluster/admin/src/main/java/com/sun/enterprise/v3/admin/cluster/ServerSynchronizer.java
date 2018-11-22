@@ -676,6 +676,6 @@ public final class ServerSynchronizer implements PostConstruct {
         // have to use string concatenation to combine the relative URI
         // with the base URI because URI.resolve() ignores the last
         // component of the base URI
-        return new File(new URI(base.toURI().toString() + File.separatorChar + uri));
+        return new File(new URI(base.toURI().toString() + "/" + uri));
     }
 }

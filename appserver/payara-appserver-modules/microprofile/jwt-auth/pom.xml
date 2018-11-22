@@ -45,7 +45,7 @@ holder.
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.microprofile.jwt-auth</groupId>

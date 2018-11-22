@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>4.1.2.184-SNAPSHOT</version>
+    <version>4.1.2.191-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>Payara Project</name>
@@ -55,7 +55,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-4.1.2.184-SNAPSHOT</tag>
+        <tag>payara-server-4.1.2.191-SNAPSHOT</tag>
     </scm>
     
     <distributionManagement>
@@ -145,7 +145,7 @@
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-4.1.2.184-SNAPSHOT</finalName>    
+                                    <finalName>payara-4.1.2.191-SNAPSHOT</finalName>    
                                     <includePom>false</includePom>                            
                                 </configuration>
                             </execution>
@@ -195,7 +195,7 @@
                                 <phase>pre-site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
-                                    <finalName>payara-4.1.2.184-SNAPSHOT</finalName>
+                                    <finalName>payara-4.1.2.191-SNAPSHOT</finalName>
                                 </configuration>
                             </execution>
                         </executions>
