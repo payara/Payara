@@ -205,7 +205,7 @@ public class TransactionScopedCDIUtil {
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
-            Optional<JavaEEContextUtil> ctxUtil = null;
+            Optional<JavaEEContextUtil> ctxUtil = Optional.empty();
             try {
                 ctxUtil = Optional.ofNullable(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class));
             }
