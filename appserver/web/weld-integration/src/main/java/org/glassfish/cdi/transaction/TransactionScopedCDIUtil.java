@@ -67,6 +67,9 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.InjectionTargetFactory;
 import javax.enterprise.util.AnnotationLiteral;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -197,6 +200,7 @@ public class TransactionScopedCDIUtil {
 
         private Class<?> beanClass;
         private InjectionTarget<Object> injectionTarget = null;
+        private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
@@ -268,16 +272,20 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
-            Object instance = injectionTarget.produce(ctx);
-            injectionTarget.inject(instance, ctx);
-            injectionTarget.postConstruct(instance);
-            return instance;
+            try(Context eeCtx = ctxUtil.pushContext()) {
+                Object instance = injectionTarget.produce(ctx);
+                injectionTarget.inject(instance, ctx);
+                injectionTarget.postConstruct(instance);
+                return instance;
+            }
         }
 
         @Override
         public void destroy(Object instance, CreationalContext<Object> ctx) {
-            injectionTarget.preDestroy(instance);
-            injectionTarget.dispose(instance);
+            try(Context eeCtx = ctxUtil.pushContext()) {
+                injectionTarget.preDestroy(instance);
+                injectionTarget.dispose(instance);
+            }
             ctx.release();
         }
     }
