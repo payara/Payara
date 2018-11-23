@@ -200,7 +200,7 @@ public class TransactionScopedCDIUtil {
 
         private Class<?> beanClass;
         private InjectionTarget<Object> injectionTarget = null;
-        private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        private final Optional<JavaEEContextUtil> ctxUtil = Optional.ofNullable(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class));
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
@@ -272,7 +272,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
-            try(Context eeCtx = ctxUtil.pushContext()) {
+            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
                 Object instance = injectionTarget.produce(ctx);
                 injectionTarget.inject(instance, ctx);
                 injectionTarget.postConstruct(instance);
@@ -282,7 +282,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public void destroy(Object instance, CreationalContext<Object> ctx) {
-            try(Context eeCtx = ctxUtil.pushContext()) {
+            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
                 injectionTarget.preDestroy(instance);
                 injectionTarget.dispose(instance);
             }
