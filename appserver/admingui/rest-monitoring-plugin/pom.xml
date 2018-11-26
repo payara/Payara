@@ -45,7 +45,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
     <artifactId>admingui</artifactId>
     <groupId>fish.payara.admingui</groupId>
-    <version>4.1.2.184-SNAPSHOT</version>
+    <version>4.1.2.191-SNAPSHOT</version>
   </parent>
 
   <artifactId>rest-monitoring-plugin</artifactId>

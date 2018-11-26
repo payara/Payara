@@ -46,7 +46,7 @@
     <parent>
 	<groupId>org.glassfish.main.persistence.cmp</groupId>
     	<artifactId>cmp</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>cmp-generator-database</artifactId>
