@@ -157,11 +157,6 @@ pipeline {
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MicroProfile TCKs  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
         }
         stage('Run MicroProfile Config TCK') {
             steps {
