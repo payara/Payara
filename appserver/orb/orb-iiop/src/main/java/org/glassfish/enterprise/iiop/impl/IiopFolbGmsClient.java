@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -188,17 +188,21 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     public boolean isGMSAvailable() {
-        boolean result = false;
-        if (cluster != null && cluster.isEnabled()) {
-            result = true;
-        }
-        return  result;
+        return isDeploymentGroupsActive() || isTraditionalClusterActive();
     }
 
     ////////////////////////////////////////////////////
     //
     // Implementation
     //
+    
+    private boolean isDeploymentGroupsActive() {
+    	return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
+    }
+    
+    private boolean isTraditionalClusterActive() {
+    	return myServer.getCluster() != null;
+    }
 
     private void removeMember(final String signal)
     {
