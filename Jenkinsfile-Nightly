@@ -76,10 +76,6 @@ pipeline {
                     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                     sh "${ASADMIN} stop-database --dbtype derby || true"
                     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs/*.log', fingerprint: true
-                    junit '**/target/surefire-reports/*.xml'
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -100,7 +96,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -124,7 +120,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -148,7 +144,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
