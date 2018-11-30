@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.gjc.spi;
 
@@ -304,8 +304,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * Adds a connection event listener to the ManagedConnectionImpl instance.
      *
      * @param listener <code>ConnectionEventListener</code>
-     * @see <code>removeConnectionEventListener</code>
+     * @see #removeConnectionEventListener
      */
+    @Override
     public void addConnectionEventListener(ConnectionEventListener listener) {
         this.listener = listener;
     }
@@ -319,6 +320,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is no more
      *                           valid or the connection handle passed is null
      */
+    @Override
     public void associateConnection(Object connection) throws ResourceException {
         logFine("In associateConnection");
         checkIfValid();
@@ -361,6 +363,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *
      * @throws ResourceException if the physical connection is no more valid
      */
+    @Override
     public void cleanup() throws ResourceException {
         logFine("In cleanup");
         //commenting this as cleanup is called after destroy in case of markConnectionAsBad()
@@ -413,6 +416,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *
      * @throws ResourceException if there is an error in closing the physical connection
      */
+    @Override
     public void destroy() throws ResourceException {
         logFine("In destroy");
         //GJCINT
@@ -466,6 +470,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *                           if there is a mismatch between the
      *                           password credentials or reauthentication is requested
      */
+    @Override
     public Object getConnection(Subject sub, javax.resource.spi.ConnectionRequestInfo cxReqInfo)
             throws ResourceException {
         logFine("In getConnection");
@@ -605,6 +610,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @return <code>LocalTransactionImpl</code> instance
      * @throws ResourceException if the physical connection is not valid
      */
+    @Override
     public javax.resource.spi.LocalTransaction getLocalTransaction() throws ResourceException {
         logFine("In getLocalTransaction");
         checkIfValid();
@@ -619,6 +625,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      * @see <code>setLogWriter</code>
      */
+    @Override
     public PrintWriter getLogWriter() throws ResourceException {
         logFine("In getLogWriter");
         checkIfValid();
@@ -633,6 +640,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @return <code>ManagedConnectionMetaData</code> instance
      * @throws ResourceException if the physical connection is not valid
      */
+    @Override
     public javax.resource.spi.ManagedConnectionMetaData getMetaData() throws ResourceException {
         logFine("In getMetaData");
         checkIfValid();
@@ -650,6 +658,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws NotSupportedException if underlying datasource is not an
      *                               <code>XADataSource</code>
      */
+    @Override
     public XAResource getXAResource() throws ResourceException {
         logFine("In getXAResource");
         checkIfValid();
@@ -676,8 +685,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * <code>ManagedConnectionImpl</code> instance.
      *
      * @param listener <code>ConnectionEventListener</code> to be removed
-     * @see <code>addConnectionEventListener</code>
+     * @see #addConnectionEventListener
      */
+    @Override
     public void removeConnectionEventListener(ConnectionEventListener listener) {
     }
 
@@ -748,6 +758,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      * @see <code>getLogWriter</code>
      */
+    @Override
     public void setLogWriter(PrintWriter out) throws ResourceException {
         checkIfValid();
         logWriter = out;
@@ -954,6 +965,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         connectionCount--;
     }
 
+    @Override
     public void dissociateConnections() {
         if(myLogicalConnection != null){
             myLogicalConnection.dissociateConnection();
@@ -983,12 +995,6 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     public javax.resource.spi.ManagedConnectionFactory getMcf() {
         return mcf;
     }
-
-/*
-    public boolean getStatementWrapping(){
-        return statemntWrapping;
-    }
-*/
 
     public int getStatementTimeout() {
         return statementTimeout;

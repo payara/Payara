@@ -72,11 +72,11 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>parameterIndex</code> to the JDBC type
      * <code>sqlType</code>.  All OUT parameters must be registered
      * before a stored procedure is executed.
-     * <p/>
+     * <p>
      * The JDBC type specified by <code>sqlType</code> for an OUT
      * parameter determines the Java type that must be used
      * in the <code>get</code> method to read the value of that parameter.
-     * <p/>
+     * </p>
      * If the JDBC type expected to be returned to this output parameter
      * is specific to this particular database, <code>sqlType</code>
      * should be <code>java.sql.Types.OTHER</code>.  The method
@@ -92,6 +92,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Types
      */
+    @Override
     public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
         callableStatement.registerOutParameter(parameterIndex, sqlType);
     }
@@ -101,11 +102,11 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>parameterIndex</code> to be of JDBC type
      * <code>sqlType</code>.  This method must be called
      * before a stored procedure is executed.
-     * <p/>
+     * <p>
      * The JDBC type specified by <code>sqlType</code> for an OUT
      * parameter determines the Java type that must be used
      * in the <code>get</code> method to read the value of that parameter.
-     * <p/>
+     * </p>
      * This version of <code>registerOutParameter</code> should be
      * used when the parameter is of JDBC type <code>NUMERIC</code>
      * or <code>DECIMAL</code>.
@@ -118,6 +119,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see java.sql.Types
      */
+    @Override
     public void registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
         callableStatement.registerOutParameter(parameterIndex, sqlType, scale);
     }
@@ -132,6 +134,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      *         <code>NULL</code>; <code>false</code> otherwise
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public boolean wasNull() throws SQLException {
         return callableStatement.wasNull();
     }
@@ -140,13 +143,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Retrieves the value of the designated JDBC <code>CHAR</code>,
      * <code>VARCHAR</code>, or <code>LONGVARCHAR</code> parameter as a
      * <code>String</code> in the Java programming language.
-     * <p/>
+     * <p>
      * For the fixed-length type JDBC <code>CHAR</code>,
      * the <code>String</code> object
      * returned has exactly the same value the JDBC
      * <code>CHAR</code> value had in the
      * database, including any padding added by the database.
-     *
+     * </p>
      * @param parameterIndex the first parameter is 1, the second is 2,
      *                       and so on
      * @return the parameter value. If the value is SQL <code>NULL</code>,
@@ -155,6 +158,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setString
      */
+    @Override
     public String getString(int parameterIndex) throws SQLException {
         return callableStatement.getString(parameterIndex);
     }
@@ -170,6 +174,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setBoolean
      */
+    @Override
     public boolean getBoolean(int parameterIndex) throws SQLException {
         return callableStatement.getBoolean(parameterIndex);
     }
@@ -185,6 +190,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setByte
      */
+    @Override
     public byte getByte(int parameterIndex) throws SQLException {
         return callableStatement.getByte(parameterIndex);
     }
@@ -200,6 +206,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setShort
      */
+    @Override
     public short getShort(int parameterIndex) throws SQLException {
         return callableStatement.getShort(parameterIndex);
     }
@@ -215,6 +222,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setInt
      */
+    @Override
     public int getInt(int parameterIndex) throws SQLException {
         return callableStatement.getInt(parameterIndex);
     }
@@ -230,6 +238,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setLong
      */
+    @Override
     public long getLong(int parameterIndex) throws SQLException {
         return callableStatement.getLong(parameterIndex);
     }
@@ -245,6 +254,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setFloat
      */
+    @Override
     public float getFloat(int parameterIndex) throws SQLException {
         return callableStatement.getFloat(parameterIndex);
     }
@@ -260,6 +270,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setDouble
      */
+    @Override
     public double getDouble(int parameterIndex) throws SQLException {
         return callableStatement.getDouble(parameterIndex);
     }
@@ -280,6 +291,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      *             or <code>getBigDecimal(String parameterName)</code>
      */
     @Deprecated
+    @Override
     public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
         return callableStatement.getBigDecimal(parameterIndex, scale);
     }
@@ -296,6 +308,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setBytes
      */
+    @Override
     public byte[] getBytes(int parameterIndex) throws SQLException {
         return callableStatement.getBytes(parameterIndex);
     }
@@ -311,6 +324,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setDate
      */
+    @Override
     public Date getDate(int parameterIndex) throws SQLException {
         return callableStatement.getDate(parameterIndex);
     }
@@ -326,6 +340,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setTime
      */
+    @Override
     public Time getTime(int parameterIndex) throws SQLException {
         return callableStatement.getTime(parameterIndex);
     }
@@ -341,6 +356,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setTimestamp
      */
+    @Override
     public Timestamp getTimestamp(int parameterIndex) throws SQLException {
         return callableStatement.getTimestamp(parameterIndex);
     }
@@ -349,13 +365,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Retrieves the value of the designated parameter as an <code>Object</code>
      * in the Java programming language. If the value is an SQL <code>NULL</code>,
      * the driver returns a Java <code>null</code>.
-     * <p/>
+     * <p>
      * This method returns a Java object whose type corresponds to the JDBC
      * type that was registered for this parameter using the method
      * <code>registerOutParameter</code>.  By registering the target JDBC
      * type as <code>java.sql.Types.OTHER</code>, this method can be used
      * to read database-specific abstract data types.
-     *
+     * </p>
      * @param parameterIndex the first parameter is 1, the second is 2,
      *                       and so on
      * @return A <code>java.lang.Object</code> holding the OUT parameter value
@@ -363,6 +379,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see java.sql.Types
      * @see #setObject
      */
+    @Override
     public Object getObject(int parameterIndex) throws SQLException {
         return callableStatement.getObject(parameterIndex);
     }
@@ -380,6 +397,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setBigDecimal
      * @since 1.2
      */
+    @Override
     public BigDecimal getBigDecimal(int parameterIndex) throws SQLException {
         return callableStatement.getBigDecimal(parameterIndex);
     }
@@ -396,6 +414,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Ref getRef(int i) throws SQLException {
         return callableStatement.getRef(i);
     }
@@ -411,6 +430,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Blob getBlob(int i) throws SQLException {
         return callableStatement.getBlob(i);
     }
@@ -427,6 +447,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Clob getClob(int i) throws SQLException {
         return callableStatement.getClob(i);
     }
@@ -443,6 +464,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Array getArray(int i) throws SQLException {
         return callableStatement.getArray(i);
     }
@@ -467,6 +489,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setDate
      * @since 1.2
      */
+    @Override
     public Date getDate(int parameterIndex, Calendar cal) throws SQLException {
         return callableStatement.getDate(parameterIndex, cal);
     }
@@ -491,6 +514,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTime
      * @since 1.2
      */
+    @Override
     public Time getTime(int parameterIndex, Calendar cal) throws SQLException {
         return callableStatement.getTime(parameterIndex, cal);
     }
@@ -515,6 +539,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTimestamp
      * @since 1.2
      */
+    @Override
     public Timestamp getTimestamp(int parameterIndex, Calendar cal) throws SQLException {
         return callableStatement.getTimestamp(parameterIndex, cal);
     }
@@ -525,7 +550,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * should be used for a user-defined or <code>REF</code> output parameter.  Examples
      * of user-defined types include: <code>STRUCT</code>, <code>DISTINCT</code>,
      * <code>JAVA_OBJECT</code>, and named array types.
-     * <p/>
+     * <p>
      * Before executing a stored procedure call, you must explicitly
      * call <code>registerOutParameter</code> to register the type from
      * <code>java.sql.Types</code> for each
@@ -536,16 +561,16 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * type code and type name information may ignore it.   To be portable,
      * however, applications should always provide these values for
      * user-defined and <code>REF</code> parameters.
-     * <p/>
+     * </p>
      * Although it is intended for user-defined and <code>REF</code> parameters,
      * this method may be used to register a parameter of any JDBC type.
      * If the parameter does not have a user-defined or <code>REF</code> type, the
      * <i>typeName</i> parameter is ignored.
-     * <p/>
+     * <p>
      * <P><B>Note:</B> When reading the value of an out parameter, you
      * must use the getter method whose Java type corresponds to the
      * parameter's registered SQL type.
-     *
+     * </p>
      * @param paramIndex the first parameter is 1, the second is 2,...
      * @param sqlType    a value from {@link java.sql.Types}
      * @param typeName   the fully-qualified name of an SQL structured type
@@ -553,6 +578,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see java.sql.Types
      * @since 1.2
      */
+    @Override
     public void registerOutParameter(int paramIndex, int sqlType, String typeName) throws SQLException {
         callableStatement.registerOutParameter(paramIndex, sqlType, typeName);
     }
@@ -562,11 +588,11 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>parameterName</code> to the JDBC type
      * <code>sqlType</code>.  All OUT parameters must be registered
      * before a stored procedure is executed.
-     * <p/>
+     * <p>
      * The JDBC type specified by <code>sqlType</code> for an OUT
      * parameter determines the Java type that must be used
      * in the <code>get</code> method to read the value of that parameter.
-     * <p/>
+     * </p>
      * If the JDBC type expected to be returned to this output parameter
      * is specific to this particular database, <code>sqlType</code>
      * should be <code>java.sql.Types.OTHER</code>.  The method
@@ -582,6 +608,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see java.sql.Types
      * @since 1.4
      */
+    @Override
     public void registerOutParameter(String parameterName, int sqlType) throws SQLException {
         callableStatement.registerOutParameter(parameterName, sqlType);
     }
@@ -591,11 +618,11 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>parameterName</code> to be of JDBC type
      * <code>sqlType</code>.  This method must be called
      * before a stored procedure is executed.
-     * <p/>
+     * <p>
      * The JDBC type specified by <code>sqlType</code> for an OUT
      * parameter determines the Java type that must be used
      * in the <code>get</code> method to read the value of that parameter.
-     * <p/>
+     * </p>
      * This version of <code>registerOutParameter</code> should be
      * used when the parameter is of JDBC type <code>NUMERIC</code>
      * or <code>DECIMAL</code>.
@@ -608,6 +635,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see java.sql.Types
      * @since 1.4
      */
+    @Override
     public void registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
         callableStatement.registerOutParameter(parameterName, sqlType, scale);
     }
@@ -618,7 +646,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * should be used for a user-named or REF output parameter.  Examples
      * of user-named types include: STRUCT, DISTINCT, JAVA_OBJECT, and
      * named array types.
-     * <p/>
+     * <p>
      * Before executing a stored procedure call, you must explicitly
      * call <code>registerOutParameter</code> to register the type from
      * <code>java.sql.Types</code> for each
@@ -629,16 +657,16 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * type code and type name information may ignore it.   To be portable,
      * however, applications should always provide these values for
      * user-named and REF parameters.
-     * <p/>
+     * </p>
      * Although it is intended for user-named and REF parameters,
      * this method may be used to register a parameter of any JDBC type.
      * If the parameter does not have a user-named or REF type, the
      * typeName parameter is ignored.
-     * <p/>
-     * <P><B>Note:</B> When reading the value of an out parameter, you
+     * <p>
+     * <B>Note:</B> When reading the value of an out parameter, you
      * must use the <code>getXXX</code> method whose Java type XXX corresponds to the
      * parameter's registered SQL type.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param sqlType       a value from {@link java.sql.Types}
      * @param typeName      the fully-qualified name of an SQL structured type
@@ -646,6 +674,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see java.sql.Types
      * @since 1.4
      */
+    @Override
     public void registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
         callableStatement.registerOutParameter(parameterName, sqlType, typeName);
     }
@@ -664,6 +693,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setURL
      * @since 1.4
      */
+    @Override
     public URL getURL(int parameterIndex) throws SQLException {
         return callableStatement.getURL(parameterIndex);
     }
@@ -680,20 +710,22 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getURL
      * @since 1.4
      */
+    @Override
     public void setURL(String parameterName, URL val) throws SQLException {
         callableStatement.setURL(parameterName, val);
     }
 
     /**
      * Sets the designated parameter to SQL <code>NULL</code>.
-     * <p/>
+     * <p>
      * <P><B>Note:</B> You must specify the parameter's SQL type.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param sqlType       the SQL type code defined in <code>java.sql.Types</code>
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setNull(String parameterName, int sqlType) throws SQLException {
         callableStatement.setNull(parameterName, sqlType);
     }
@@ -709,6 +741,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getBoolean
      * @since 1.4
      */
+    @Override
     public void setBoolean(String parameterName, boolean x) throws SQLException {
         callableStatement.setBoolean(parameterName, x);
     }
@@ -724,6 +757,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getByte
      * @since 1.4
      */
+    @Override
     public void setByte(String parameterName, byte x) throws SQLException {
         callableStatement.setByte(parameterName, x);
     }
@@ -739,6 +773,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getShort
      * @since 1.4
      */
+    @Override
     public void setShort(String parameterName, short x) throws SQLException {
         callableStatement.setShort(parameterName, x);
     }
@@ -754,6 +789,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getInt
      * @since 1.4
      */
+    @Override
     public void setInt(String parameterName, int x) throws SQLException {
         callableStatement.setInt(parameterName, x);
     }
@@ -769,6 +805,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getLong
      * @since 1.4
      */
+    @Override
     public void setLong(String parameterName, long x) throws SQLException {
         callableStatement.setLong(parameterName, x);
     }
@@ -784,6 +821,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getFloat
      * @since 1.4
      */
+    @Override
     public void setFloat(String parameterName, float x) throws SQLException {
         callableStatement.setFloat(parameterName, x);
     }
@@ -799,6 +837,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getDouble
      * @since 1.4
      */
+    @Override
     public void setDouble(String parameterName, double x) throws SQLException {
         callableStatement.setDouble(parameterName, x);
     }
@@ -815,6 +854,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getBigDecimal
      * @since 1.4
      */
+    @Override
     public void setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
         callableStatement.setBigDecimal(parameterName, x);
     }
@@ -833,6 +873,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getString
      * @since 1.4
      */
+    @Override
     public void setString(String parameterName, String x) throws SQLException {
         callableStatement.setString(parameterName, x);
     }
@@ -850,6 +891,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getBytes
      * @since 1.4
      */
+    @Override
     public void setBytes(String parameterName, byte x[]) throws SQLException {
         callableStatement.setBytes(parameterName, x);
     }
@@ -865,6 +907,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getDate
      * @since 1.4
      */
+    @Override
     public void setDate(String parameterName, Date x) throws SQLException {
         callableStatement.setDate(parameterName, x);
     }
@@ -880,6 +923,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getTime
      * @since 1.4
      */
+    @Override
     public void setTime(String parameterName, Time x) throws SQLException {
         callableStatement.setTime(parameterName, x);
     }
@@ -896,6 +940,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getTimestamp
      * @since 1.4
      */
+    @Override
     public void setTimestamp(String parameterName, Timestamp x) throws SQLException {
         callableStatement.setTimestamp(parameterName, x);
     }
@@ -908,17 +953,18 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>java.io.InputStream</code>. Data will be read from the stream
      * as needed until end-of-file is reached.  The JDBC driver will
      * do any necessary conversion from ASCII to the database char format.
-     * <p/>
-     * <P><B>Note:</B> This stream object can either be a standard
+     * <p>
+     * <B>Note:</B> This stream object can either be a standard
      * Java stream object or your own subclass that implements the
      * standard interface.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param x             the Java input stream that contains the ASCII parameter value
      * @param length        the number of bytes in the stream
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setAsciiStream(String parameterName, InputStream x, int length) throws SQLException {
         callableStatement.setAsciiStream(parameterName, x, length);
     }
@@ -930,17 +976,18 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * parameter, it may be more practical to send it via a
      * <code>java.io.InputStream</code> object. The data will be read from the stream
      * as needed until end-of-file is reached.
-     * <p/>
-     * <P><B>Note:</B> This stream object can either be a standard
+     * <p>
+     * <B>Note:</B> This stream object can either be a standard
      * Java stream object or your own subclass that implements the
      * standard interface.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param x             the java input stream which contains the binary parameter value
      * @param length        the number of bytes in the stream
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setBinaryStream(String parameterName, InputStream x, int length) throws SQLException {
         callableStatement.setBinaryStream(parameterName, x, length);
     }
@@ -949,10 +996,10 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Sets the value of the designated parameter with the given object. The second
      * argument must be an object type; for integral values, the
      * <code>java.lang</code> equivalent objects should be used.
-     * <p/>
-     * <p>The given Java object will be converted to the given targetSqlType
+     * <p>
+     * The given Java object will be converted to the given targetSqlType
      * before being sent to the database.
-     * <p/>
+     * </p>
      * If the object has a custom mapping (is of a class implementing the
      * interface <code>SQLData</code>),
      * the JDBC driver should call the method <code>SQLData.writeSQL</code> to write it
@@ -961,10 +1008,10 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>Ref</code>, <code>Blob</code>, <code>Clob</code>, <code>Struct</code>,
      * or <code>Array</code>, the driver should pass it to the database as a
      * value of the corresponding SQL type.
-     * <p/>
+     * <p>
      * Note that this method may be used to pass datatabase-
      * specific abstract data types.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param x             the object containing the input parameter value
      * @param targetSqlType the SQL type (as defined in java.sql.Types) to be
@@ -977,6 +1024,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getObject
      * @since 1.4
      */
+    @Override
     public void setObject(String parameterName, Object x, int targetSqlType, int scale) throws SQLException {
         callableStatement.setObject(parameterName, x, targetSqlType, scale);
     }
@@ -994,6 +1042,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getObject
      * @since 1.4
      */
+    @Override
     public void setObject(String parameterName, Object x, int targetSqlType) throws SQLException {
         callableStatement.setObject(parameterName, x, targetSqlType);
     }
@@ -1002,16 +1051,16 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Sets the value of the designated parameter with the given object.
      * The second parameter must be of type <code>Object</code>; therefore, the
      * <code>java.lang</code> equivalent objects should be used for built-in types.
-     * <p/>
-     * <p>The JDBC specification specifies a standard mapping from
+     * <p>
+     * The JDBC specification specifies a standard mapping from
      * Java <code>Object</code> types to SQL types.  The given argument
      * will be converted to the corresponding SQL type before being
      * sent to the database.
-     * <p/>
-     * <p>Note that this method may be used to pass datatabase-
+     * </p>
+     * Note that this method may be used to pass datatabase-
      * specific abstract data types, by using a driver-specific Java
      * type.
-     * <p/>
+     * <p>
      * If the object is of a class implementing the interface <code>SQLData</code>,
      * the JDBC driver should call the method <code>SQLData.writeSQL</code>
      * to write it to the SQL data stream.
@@ -1019,7 +1068,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>Ref</code>, <code>Blob</code>, <code>Clob</code>, <code>Struct</code>,
      * or <code>Array</code>, the driver should pass it to the database as a
      * value of the corresponding SQL type.
-     * <p/>
+     * </p>
      * This method throws an exception if there is an ambiguity, for example, if the
      * object is of a class implementing more than one of the interfaces named above.
      *
@@ -1030,6 +1079,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getObject
      * @since 1.4
      */
+    @Override
     public void setObject(String parameterName, Object x) throws SQLException {
         callableStatement.setObject(parameterName, x);
     }
@@ -1042,11 +1092,11 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * <code>java.io.Reader</code> object. The data will be read from the stream
      * as needed until end-of-file is reached.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <P><B>Note:</B> This stream object can either be a standard
+     * <p>
+     * <b>Note:</b> This stream object can either be a standard
      * Java stream object or your own subclass that implements the
      * standard interface.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param reader        the <code>java.io.Reader</code> object that
      *                      contains the UNICODE data used as the designated parameter
@@ -1054,6 +1104,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setCharacterStream(String parameterName, Reader reader, int length) throws SQLException {
         callableStatement.setCharacterStream(parameterName, reader, length);
     }
@@ -1076,6 +1127,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getDate
      * @since 1.4
      */
+    @Override
     public void setDate(String parameterName, Date x, Calendar cal) throws SQLException {
         callableStatement.setDate(parameterName, x, cal);
     }
@@ -1098,6 +1150,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getTime
      * @since 1.4
      */
+    @Override
     public void setTime(String parameterName, Time x, Calendar cal) throws SQLException {
         callableStatement.setTime(parameterName, x, cal);
     }
@@ -1120,6 +1173,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #getTimestamp
      * @since 1.4
      */
+    @Override
     public void setTimestamp(String parameterName, Timestamp x, Calendar cal) throws SQLException {
         callableStatement.setTimestamp(parameterName, x, cal);
     }
@@ -1130,15 +1184,15 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * be used for user-defined types and REF type parameters.  Examples
      * of user-defined types include: STRUCT, DISTINCT, JAVA_OBJECT, and
      * named array types.
-     * <p/>
-     * <P><B>Note:</B> To be portable, applications must give the
+     * <p>
+     * <b>Note:</b> To be portable, applications must give the
      * SQL type code and the fully-qualified SQL type name when specifying
      * a NULL user-defined or REF parameter.  In the case of a user-defined type
      * the name is the type name of the parameter itself.  For a REF
      * parameter, the name is the type name of the referenced type.  If
      * a JDBC driver does not need the type code or type name information,
      * it may ignore it.
-     * <p/>
+     * </p>
      * Although it is intended for user-defined and Ref parameters,
      * this method may be used to set a null parameter of any JDBC type.
      * If the parameter does not have a user-defined or REF type, the given
@@ -1152,6 +1206,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public void setNull(String parameterName, int sqlType, String typeName) throws SQLException {
         callableStatement.setNull(parameterName, sqlType, typeName);
     }
@@ -1160,13 +1215,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Retrieves the value of a JDBC <code>CHAR</code>, <code>VARCHAR</code>,
      * or <code>LONGVARCHAR</code> parameter as a <code>String</code> in
      * the Java programming language.
-     * <p/>
+     * <p>
      * For the fixed-length type JDBC <code>CHAR</code>,
      * the <code>String</code> object
      * returned has exactly the same value the JDBC
      * <code>CHAR</code> value had in the
      * database, including any padding added by the database.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @return the parameter value. If the value is SQL <code>NULL</code>, the result
      *         is <code>null</code>.
@@ -1174,6 +1229,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setString
      * @since 1.4
      */
+    @Override
     public String getString(String parameterName) throws SQLException {
         return callableStatement.getString(parameterName);
     }
@@ -1189,6 +1245,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setBoolean
      * @since 1.4
      */
+    @Override
     public boolean getBoolean(String parameterName) throws SQLException {
         return callableStatement.getBoolean(parameterName);
     }
@@ -1204,6 +1261,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setByte
      * @since 1.4
      */
+    @Override
     public byte getByte(String parameterName) throws SQLException {
         return callableStatement.getByte(parameterName);
     }
@@ -1219,6 +1277,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setShort
      * @since 1.4
      */
+    @Override
     public short getShort(String parameterName) throws SQLException {
         return callableStatement.getShort(parameterName);
     }
@@ -1234,6 +1293,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setInt
      * @since 1.4
      */
+    @Override
     public int getInt(String parameterName) throws SQLException {
         return callableStatement.getInt(parameterName);
     }
@@ -1249,6 +1309,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setLong
      * @since 1.4
      */
+    @Override
     public long getLong(String parameterName) throws SQLException {
         return callableStatement.getLong(parameterName);
     }
@@ -1264,6 +1325,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setFloat
      * @since 1.4
      */
+    @Override
     public float getFloat(String parameterName) throws SQLException {
         return callableStatement.getFloat(parameterName);
     }
@@ -1279,6 +1341,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setDouble
      * @since 1.4
      */
+    @Override
     public double getDouble(String parameterName) throws SQLException {
         return callableStatement.getDouble(parameterName);
     }
@@ -1295,6 +1358,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setBytes
      * @since 1.4
      */
+    @Override
     public byte[] getBytes(String parameterName) throws SQLException {
         return callableStatement.getBytes(parameterName);
     }
@@ -1310,6 +1374,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setDate
      * @since 1.4
      */
+    @Override
     public Date getDate(String parameterName) throws SQLException {
         return callableStatement.getDate(parameterName);
     }
@@ -1325,6 +1390,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTime
      * @since 1.4
      */
+    @Override
     public Time getTime(String parameterName) throws SQLException {
         return callableStatement.getTime(parameterName);
     }
@@ -1340,6 +1406,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTimestamp
      * @since 1.4
      */
+    @Override
     public Timestamp getTimestamp(String parameterName) throws SQLException {
         return callableStatement.getTimestamp(parameterName);
     }
@@ -1348,13 +1415,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Retrieves the value of a parameter as an <code>Object</code> in the Java
      * programming language. If the value is an SQL <code>NULL</code>, the
      * driver returns a Java <code>null</code>.
-     * <p/>
+     * <p>
      * This method returns a Java object whose type corresponds to the JDBC
      * type that was registered for this parameter using the method
      * <code>registerOutParameter</code>.  By registering the target JDBC
      * type as <code>java.sql.Types.OTHER</code>, this method can be used
      * to read database-specific abstract data types.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @return A <code>java.lang.Object</code> holding the OUT parameter value.
      * @throws java.sql.SQLException if a database access error occurs
@@ -1362,6 +1429,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setObject
      * @since 1.4
      */
+    @Override
     public Object getObject(String parameterName) throws SQLException {
         return callableStatement.getObject(parameterName);
     }
@@ -1378,6 +1446,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setBigDecimal
      * @since 1.4
      */
+    @Override
     public BigDecimal getBigDecimal(String parameterName) throws SQLException {
         return callableStatement.getBigDecimal(parameterName);
     }
@@ -1393,6 +1462,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public Ref getRef(String parameterName) throws SQLException {
         return callableStatement.getRef(parameterName);
     }
@@ -1408,6 +1478,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public Blob getBlob(String parameterName) throws SQLException {
         return callableStatement.getBlob(parameterName);
     }
@@ -1423,6 +1494,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public Clob getClob(String parameterName) throws SQLException {
         return callableStatement.getClob(parameterName);
     }
@@ -1438,6 +1510,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public Array getArray(String parameterName) throws SQLException {
         return callableStatement.getArray(parameterName);
     }
@@ -1461,6 +1534,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setDate
      * @since 1.4
      */
+    @Override
     public Date getDate(String parameterName, Calendar cal) throws SQLException {
         return callableStatement.getDate(parameterName, cal);
     }
@@ -1484,6 +1558,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTime
      * @since 1.4
      */
+    @Override
     public Time getTime(String parameterName, Calendar cal) throws SQLException {
         return callableStatement.getTime(parameterName, cal);
     }
@@ -1507,6 +1582,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setTimestamp
      * @since 1.4
      */
+    @Override
     public Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
         return callableStatement.getTimestamp(parameterName, cal);
     }
@@ -1524,6 +1600,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setURL
      * @since 1.4
      */
+    @Override
     public URL getURL(String parameterName) throws SQLException {
         return callableStatement.getURL(parameterName);
     }
@@ -1532,13 +1609,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Returns an object representing the value of OUT parameter
      * <code>i</code> and uses <code>map</code> for the custom
      * mapping of the parameter value.
-     * <p/>
+     * <p>
      * This method returns a Java object whose type corresponds to the
      * JDBC type that was registered for this parameter using the method
      * <code>registerOutParameter</code>.  By registering the target
      * JDBC type as <code>java.sql.Types.OTHER</code>, this method can
      * be used to read database-specific abstract data types.
-     *
+     * </p>
      * @param i   the first parameter is 1, the second is 2, and so on
      * @param map the mapping from SQL type names to Java classes
      * @return a <code>java.lang.Object</code> holding the OUT parameter value
@@ -1546,6 +1623,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setObject
      * @since 1.2
      */
+    @Override
     public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
         return callableStatement.getObject(i, map);
     }
@@ -1554,13 +1632,13 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * Returns an object representing the value of OUT parameter
      * <code>i</code> and uses <code>map</code> for the custom
      * mapping of the parameter value.
-     * <p/>
+     * <p>
      * This method returns a Java object whose type corresponds to the
      * JDBC type that was registered for this parameter using the method
      * <code>registerOutParameter</code>.  By registering the target
      * JDBC type as <code>java.sql.Types.OTHER</code>, this method can
      * be used to read database-specific abstract data types.
-     *
+     * </p>
      * @param parameterName the name of the parameter
      * @param map           the mapping from SQL type names to Java classes
      * @return a <code>java.lang.Object</code> holding the OUT parameter value
@@ -1568,6 +1646,7 @@ public abstract class CallableStatementWrapper extends PreparedStatementWrapper 
      * @see #setObject
      * @since 1.4
      */
+    @Override
     public Object getObject(String parameterName, Map<String, Class<?>> map) throws SQLException {
         return callableStatement.getObject(parameterName, map);
     }

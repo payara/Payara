@@ -70,7 +70,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * Constructor for <code>ManagedConnectionMetaDataImpl</code>
      *
      * @param mc <code>ManagedConnection</code>
-     * @throws <code>ResourceException</code> if getting the DatabaseMetaData object fails
+     * @throws ResourceException if getting the DatabaseMetaData object fails
      */
     public ManagedConnectionMetaDataImpl(ManagedConnectionImpl mc) throws ResourceException {
         try {
