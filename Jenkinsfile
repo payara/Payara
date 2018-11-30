@@ -65,8 +65,6 @@ pipeline {
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -99,7 +97,7 @@ pipeline {
                 }
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -140,8 +138,6 @@ pipeline {
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -191,8 +187,6 @@ pipeline {
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -218,7 +212,7 @@ pipeline {
         //        }
         //    }
         //    post {
-        //        unstable {
+        //        always {
         //           junit '**/target/surefire-reports/*.xml'
         //        }
         //    }
@@ -252,8 +246,6 @@ pipeline {
         //    post {
         //        always {
         //            teardownDomain()
-        //        }
-        //        unstable {
         //            junit '**/target/surefire-reports/*.xml'
         //        }
         //    }
