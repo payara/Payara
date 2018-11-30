@@ -42,6 +42,9 @@ package com.sun.enterprise.iiop.security;
 
 import org.glassfish.orb.admin.config.IiopListener;
 import java.util.logging.*;
+
+import static java.util.logging.Level.FINE;
+
 import java.util.List;
 
 import org.omg.IOP.Codec;
@@ -49,8 +52,13 @@ import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.IORInfo;
 
 import com.sun.logging.*;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import fish.payara.nucleus.cluster.PayaraCluster;
+
+import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
+import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
 import org.omg.CORBA.ORB;
 
@@ -68,8 +76,7 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject implements org.
     }
 
     private Codec codec;
-
-    private PayaraCluster cluster;
+    private GlassFishORBFactory orbFactory;
 
     // private GlassFishORBHelper helper = null;
     private ORB orb;
@@ -77,7 +84,8 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject implements org.
     public SecIORInterceptor(Codec c, ORB orb) {
         codec = c;
         this.orb = orb;
-        cluster = Lookups.getCluster();
+        
+        orbFactory = Lookups.getGlassFishORBFactory();	   
     }
 
     @Override
@@ -106,33 +114,31 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject implements org.
 
     private void addCSIv2Components(IORInfo iorInfo) {
         EjbDescriptor desc = null;
+        
         try {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, ".addCSIv2Components->: " + " " + iorInfo);
+            if (_logger.isLoggable(FINE)) {
+                _logger.log(FINE, ".addCSIv2Components->: " + " " + iorInfo);
             }
 
-            if (cluster != null && cluster.isEnabled()) {
+            if (orbFactory != null && orbFactory.isClusterActive()) {
 
-                // If this app server instance is part of a dynamic cluster (that is,
-                // one that supports RMI-IIOP failover and load balancing, DO NOT
-                // create the CSIv2 components here. Instead, handle this in the
-                // ORB's ServerGroupManager, in conjunctions with the
+                // If this app server instance is part of a dynamic cluster (that is, one 
+            	// that supports RMI-IIOP fail-over and load balancing, or a deployment
+            	// group exists (hazelcast cluster with more than one member, then DO NOT
+            	// create the CSIv2 components here. 
+            	// 
+            	// Instead, handle this in the ORB's ServerGroupManager, in conjunctions with the
                 // CSIv2SSLTaggedComponentHandler.
-                return;
+            	// See org.glassfish.enterprise.iiop.impl.GlassFishORBManager.setFOLBProperties(Properties)
+                
+            	return;
             }
 
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, ".addCSIv2Components ");
             }
 
-            // ORB orb = helper.getORB();
             int sslMutualAuthPort = getServerPort("SSL_MUTUALAUTH");
-            // try {
-            // sslMutualAuthPort = ((com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt)iorInfo).
-            // getServerPort("SSL_MUTUALAUTH");
-            // } catch (com.sun.corba.ee.spi.legacy.interceptor.UnknownType ute) {
-            // _logger.log(Level.FINE,"UnknownType exception", ute);
-            // }
 
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, ".addCSIv2Components: sslMutualAuthPort: " + sslMutualAuthPort);
@@ -143,14 +149,9 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject implements org.
 
             // Create CSIv2 tagged component
             int sslport = getServerPort("SSL");
-            // try {
-            // sslport = ((com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt)iorInfo).
-            // getServerPort("SSL");
-            // } catch (com.sun.corba.ee.spi.legacy.interceptor.UnknownType ute) {
-            // _logger.log(Level.FINE,"UnknownType exception", ute);
-            // }
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, ".addCSIv2Components: sslport: " + sslport);
+            
+            if (_logger.isLoggable(FINE)) {
+                _logger.log(FINE, ".addCSIv2Components: sslport: " + sslport);
             }
 
             TaggedComponent csiv2Comp = null;
