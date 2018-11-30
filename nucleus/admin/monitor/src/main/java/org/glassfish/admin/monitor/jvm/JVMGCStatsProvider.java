@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -50,22 +51,27 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.garbage-collectors */
-// v2 mbean: com.sun.appserv:name=Copy,type=garbage-collector,category=monitor,server=server
-// v3 mbean:
+/**
+ * Provides the MBean for JVM Garbage Collectors Statistics
+ * <p>
+ * The MBean produced from this is of the format
+ * {@code amx:pp=/mon/server-mon[server],type=garbage-collector-mon,name=jvm/garbage-collectors/PS MarkSweep}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="garbage-collector-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Garbage Collectors Statistics" )
 public class JVMGCStatsProvider {
 
-    private List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
+    private final List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
     private String gcName = null;
 
-    private CountStatisticImpl collectionCount = new CountStatisticImpl(
+    private final CountStatisticImpl collectionCount = new CountStatisticImpl(
             "CollectionCount", CountStatisticImpl.UNIT_COUNT,
                 "Total number of collections that have occurred" );
 
-    private CountStatisticImpl collectionTimeCount = new CountStatisticImpl(
+    private final CountStatisticImpl collectionTimeCount = new CountStatisticImpl(
             "CollectionTime", CountStatisticImpl.UNIT_MILLISECOND,
                 "Approximate accumulated collection elapsed time in milliseconds" );
 
@@ -73,6 +79,10 @@ public class JVMGCStatsProvider {
         this.gcName = gcName;
     }
 
+    /**
+     * Gets the total number of collections that have occurred
+     * @return a {@link CountStatistic} with the number of collections
+     */
     @ManagedAttribute(id="collectioncount-count")
     @Description( "total number of collections that have occurred" )
     public CountStatistic getCollectionCount() {
@@ -86,11 +96,14 @@ public class JVMGCStatsProvider {
         return collectionCount;
     }
 
+    /**
+     * Gets the approximate accumulated collection elapsed time
+     * @return a {@link CountStatistic} with the time in milliseconds
+     */
     @ManagedAttribute(id="collectiontime-count")
     @Description( "approximate accumulated collection elapsed time in milliseconds" )
     public CountStatistic getCollectionTime() {
         long times = -1;
-        int i = 0;
         for (GarbageCollectorMXBean gcBean : gcBeanList) {
             if (gcBean.getName().equals(gcName)) {
                 times = gcBean.getCollectionTime();

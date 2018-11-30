@@ -84,6 +84,7 @@
                 <module>microprofile</module>
                 <module>security-oauth2</module>
                 <module>yubikey-authentication</module>
+                <module>healthcheck-checker</module> <!-- as it depends on microprofile -->
             </modules>
         </profile>
     </profiles>

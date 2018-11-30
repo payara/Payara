@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util.proxy;
 
@@ -53,12 +54,13 @@ public class ProxyClass implements InvocationHandler {
 
     private static InheritableThreadLocal
             callStackHolder = new InheritableThreadLocal() {
+        @Override
         protected synchronized Object initialValue() {
             return new CallStack();
         }
     };
 
-    private static Logger _logger = getLogger();
+    private static final Logger LOGGER = getLogger();
 
     private Object delegate;
     private Interceptor interceptor;
@@ -69,6 +71,7 @@ public class ProxyClass implements InvocationHandler {
         this.interceptor = interceptor;
     }
     
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable {
         Call call = new Call(method, args);
@@ -77,9 +80,9 @@ public class ProxyClass implements InvocationHandler {
         try {
             interceptor.preInvoke(callStack);
         } catch (Throwable t) {
-            _logger.log(Level.FINE, "Preinvoke failed for MBeanServer interceptor [{0}].",
+            LOGGER.log(Level.FINE, "Preinvoke failed for MBeanServer interceptor [{0}].",
                     t.getMessage());
-            _logger.log(Level.FINEST,
+            LOGGER.log(Level.FINEST,
                     "Preinvoke exception for MBeanServer interceptor.", t);
         }
         Object result = null;
@@ -108,9 +111,9 @@ public class ProxyClass implements InvocationHandler {
             try {
                 interceptor.postInvoke(callStack);
             } catch (Throwable t) {
-                _logger.log(Level.FINE, "Postinvoke failed for MBeanServer interceptor [{0}].",
+                LOGGER.log(Level.FINE, "Postinvoke failed for MBeanServer interceptor [{0}].",
                         t.getMessage());
-                _logger.log(Level.FINEST,
+                LOGGER.log(Level.FINEST,
                         "Postinvoke exception for MBeanServer interceptor.", t);
             }
             callStack.endCall();

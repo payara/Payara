@@ -80,7 +80,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class UpdateResourceRef implements AdminCommand {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateResourceRef.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(UpdateResourceRef.class);
 
     @Param(primary = true)
     private String name;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -98,14 +99,11 @@ public class ChangeMasterPasswordCommand extends CLICommand {
     @Param(name = "domaindir", optional = true)
     protected String domainDirParam = null;
 
-    private final String CHANGE_MASTER_PASSWORD_DAS =
-            "_change-master-password-das";
+    private static final String CHANGE_MASTER_PASSWORD_DAS = "_change-master-password-das";
 
-    private final String CHANGE_MASTER_PASSWORD_NODE =
-            "_change-master-password-node";
+    private static final String CHANGE_MASTER_PASSWORD_NODE = "_change-master-password-node";
 
-    private static final LocalStringsImpl strings =
-       new LocalStringsImpl(ChangeMasterPasswordCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommand.class);
 
 
 
@@ -114,7 +112,7 @@ public class ChangeMasterPasswordCommand extends CLICommand {
         CLICommand command = null;
 
         if (domainDirParam != null && nodeDir != null) {
-            throw new CommandException(strings.get("both.domaindir.nodedir.not.allowed"));
+            throw new CommandException(STRINGS.get("both.domaindir.nodedir.not.allowed"));
         }
         try {
             if (isDomain()) {  // is it domain

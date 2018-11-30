@@ -42,10 +42,15 @@ package fish.payara.microprofile.metrics.jmx;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import static java.util.Objects.nonNull;
 import java.util.Set;
-import java.util.logging.Level;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeDataSupport;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
@@ -53,153 +58,284 @@ import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
 public class MBeanMetadataHelper {
 
-    private static final String SPECIFIER = "%s";
+    public static final String SPECIFIER = "%s"; // microprofile-metrics specification defined specifier
+    public static final String KEY = "${key}";
+    public static final String ATTRIBUTE = "${attribute}";
+    public static final String SUB_ATTRIBUTE = "${subattribute}";
+    public static final String ATTRIBUTE_SEPARATOR = "/";
+    public static final String SUB_ATTRIBUTE_SEPARATOR = "#";
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadataHelper.class.getName());
 
     /**
      * Registers metrics as MBeans
+     *
      * @param metricRegistry Registry to add metrics to
-     * @param metadataList List of all {@link MBeanMetadata} representing a {@link Metric}
-     * @param globalTags 
-     * @param isRetry true if this is not initial registration, this is used to register 
-     * lazy-loaded MBeans
+     * @param metadataList List of all {@link MBeanMetadata} representing a
+     * {@link Metric}
+     * @param globalTags
+     * @param isRetry true if this is not initial registration, this is used to
+     * register lazy-loaded MBeans
+     * @return the list of unresolved MBean Metadata
      */
-    public void registerMetadata(MetricRegistry metricRegistry,
+    public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
             List<MBeanMetadata> metadataList, Map<String, String> globalTags, boolean isRetry) {
 
-        if (!metricRegistry.getMetadata().isEmpty()) {
+        if (!metricRegistry.getMetadata().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
         }
 
-        resolveDynamicMetadata(metadataList);
-        for (MBeanMetadata beanMetadata: metadataList){
-          try {
-            if (metricRegistry.getNames().contains(beanMetadata.getName()) && isRetry){
-                //
-                continue;
-            }
-            beanMetadata.getTags().putAll(globalTags);
-            Metric type;
-            MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
-            switch (beanMetadata.getTypeRaw()) {
-                case COUNTER:
-                    type = new MBeanCounterImpl(mBeanExpression);
-                    break;
-                case GAUGE:
-                    type = (Gauge<Number>) mBeanExpression::getNumberValue;
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported type : " + beanMetadata);
-            }
-            metricRegistry.register(beanMetadata, type);
-            } catch (IllegalArgumentException e) {
-                LOGGER.log(Level.WARNING, e.getMessage());
+        List<MBeanMetadata> unresolvedMetadataList = resolveDynamicMetadata(metadataList);
+        for (MBeanMetadata beanMetadata : metadataList) {
+            try {
+                if (metricRegistry.getNames().contains(beanMetadata.getName())) {
+                    continue;
+                }
+                beanMetadata.getTags().putAll(globalTags);
+                Metric type;
+                MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
+                switch (beanMetadata.getTypeRaw()) {
+                    case COUNTER:
+                        type = new MBeanCounterImpl(mBeanExpression);
+                        break;
+                    case GAUGE:
+                        type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unsupported type : " + beanMetadata);
+                }
+                metricRegistry.register(beanMetadata, type);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(WARNING, ex.getMessage(), ex);
             }
         }
+        return unresolvedMetadataList;
     }
 
     /**
      * Resolve dynamic metadata by replacing specifier <b>%s</b> with the mbean value.
      *
      * @param metadataList list of MBean Metadata
+     * @return the list of unresolved MBean Metadata
      */
-    public void resolveDynamicMetadata(List<MBeanMetadata> metadataList) {
+    public List<MBeanMetadata> resolveDynamicMetadata(List<MBeanMetadata> metadataList) {
+        List<MBeanMetadata> unresolvedMetadataList = new ArrayList<>();
         List<MBeanMetadata> resolvedMetadataList = new ArrayList<>();
         List<Metadata> removedMetadataList = new ArrayList<>(metadataList.size());
         for (MBeanMetadata metadata : metadataList) {
-            if (!validateMetadata(metadata)) {
+            if (!metadata.isValid()) {
                 removedMetadataList.add(metadata);
                 continue;
             }
-            if (metadata.getName().contains(SPECIFIER)) {
-                MBeanExpression mBeanExpression;
+            if (metadata.getMBean().contains(SPECIFIER)
+                    || metadata.getMBean().contains(KEY)
+                    || metadata.getMBean().contains(ATTRIBUTE)
+                    || metadata.getMBean().contains(SUB_ATTRIBUTE)) {
                 try {
-                    mBeanExpression = new MBeanExpression(metadata.getMBean().replace(SPECIFIER, "*"));
-                    String dynamicKey = mBeanExpression.findDynamicKey();
-                    Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
-                    if (mBeanObjects.isEmpty()) {
-                        LOGGER.log(Level.INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
-                    }
-                    for (ObjectName objName : mBeanObjects) {
-                        String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
-
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(objName.getCanonicalName());
-                        builder.append("/");
-                        builder.append(mBeanExpression.getAttributeName());
-                        String subAttrName = mBeanExpression.getSubAttributeName();
-                        if (subAttrName != null) {
-                            builder.append("#");
-                            builder.append(subAttrName);
+                    if (metadata.getMBean().contains(SPECIFIER)
+                            || metadata.getMBean().contains(KEY)) {
+                        MBeanExpression mBeanExpression = new MBeanExpression(
+                                metadata.getMBean()
+                                        .replace(SPECIFIER, "*")
+                                        .replace(KEY, "*")
+                        );
+                        String dynamicKey = mBeanExpression.findDynamicKey();
+                        Set<ObjectName> mBeanObjects = mBeanExpression.queryNames(null);
+                        if (mBeanObjects.isEmpty()) {
+                            unresolvedMetadataList.add(metadata);
+                            LOGGER.log(INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
+                        } else if (metadata.isDynamic()) {
+                            unresolvedMetadataList.add(metadata);
                         }
-
-                        resolvedMetadataList.add(
-                                new MBeanMetadata(
-                                        builder.toString(),
-                                        metadata.getName().replace(SPECIFIER, dynamicValue),
-                                        metadata.getDisplayName().replace(SPECIFIER, dynamicValue),
-                                        metadata.getDescription().replace(SPECIFIER, dynamicValue),
-                                        metadata.getTypeRaw(),
-                                        metadata.getUnit()
-                                )
+                        for (ObjectName objName : mBeanObjects) {
+                            String dynamicValue = objName.getKeyPropertyList().get(dynamicKey);
+                            resolvedMetadataList.addAll(
+                                    loadAttribute(objName, mBeanExpression, metadata, dynamicValue)
+                            );
+                        }
+                    } else {
+                        MBeanExpression mBeanExpression = new MBeanExpression(metadata.getMBean());
+                        ObjectName objName = mBeanExpression.getObjectName();
+                        if (objName == null) {
+                            unresolvedMetadataList.add(metadata);
+                            LOGGER.log(INFO, "{0} does not correspond to any MBeans", metadata.getMBean());
+                        } else if (metadata.isDynamic()) {
+                            unresolvedMetadataList.add(metadata);
+                        }
+                        resolvedMetadataList.addAll(
+                                loadAttribute(objName, mBeanExpression, metadata, null)
                         );
                     }
                 } catch (IllegalArgumentException ex) {
-                    LOGGER.log(Level.SEVERE, ex, () -> metadata.getMBean() + " is invalid");
+                    LOGGER.log(SEVERE, ex, () -> metadata.getMBean() + " is invalid");
                 } finally {
                     removedMetadataList.add(metadata);
                 }
             }
         }
-        
+
         metadataList.removeAll(removedMetadataList);
         metadataList.addAll(resolvedMetadataList);
+        return unresolvedMetadataList;
     }
-    
-    private boolean validateMetadata(MBeanMetadata metadata) {
-        boolean valid = true;
-        
-        if (metadata.getName() == null) {
-            LOGGER.log(Level.WARNING, "'name' property not defined in {0} mbean metadata", metadata.getMBean());
-            valid = false;
-        }
-        if (metadata.getMBean() == null) {
-            LOGGER.log(Level.WARNING, "'mbean' property not defined in {0} metadata", metadata.getName());
-            valid = false;
-        }
-        if (metadata.getDisplayName() == null) {
-            LOGGER.log(Level.WARNING, "'displayName' property not defined in {0} metadata", metadata.getName());
-            valid = false;
-        }
-        if (metadata.getDescription() == null) {
-            LOGGER.log(Level.WARNING, "'description' property not defined in {0} metadata", metadata.getName());
-            valid = false;
-        }
-        if (metadata.getType() == null) {
-            LOGGER.log(Level.WARNING, "'type' property not defined in {0} metadata", metadata.getName());
-            valid = false;
-        }
-        if (metadata.getUnit() == null) {
-            LOGGER.log(Level.WARNING, "'unit' property not defined for {0} metadata", metadata.getName());
-            valid = false;
-        }
-        if (metadata.getName() != null && metadata.getMBean() != null) {
-            if (metadata.getName().contains(SPECIFIER) && !metadata.getMBean().contains(SPECIFIER)) {
-                LOGGER.log(Level.WARNING, "'%s' placeholder not found in 'mbean' {0} property", metadata.getMBean());
-                valid = false;
-            } else if (metadata.getMBean().contains(SPECIFIER) && !metadata.getName().contains(SPECIFIER)) {
-                LOGGER.log(Level.WARNING, "'%s' placeholder not found in 'name' {0} property", metadata.getName());
-                valid = false;
-            }
-        }
 
-        return valid;
+    private List<MBeanMetadata> loadAttribute(
+            ObjectName objName,
+            MBeanExpression mBeanExpression,
+            MBeanMetadata metadata,
+            String key) {
+
+        List<MBeanMetadata> metadataList = new ArrayList<>();
+        String attributeName;
+
+        if (ATTRIBUTE.equals(mBeanExpression.getAttributeName())) {
+            List<MBeanAttributeInfo> attributes = mBeanExpression.queryAttributes(objName);
+            for (MBeanAttributeInfo attribute : attributes) {
+                attributeName = attribute.getName();
+                metadataList.addAll(
+                        loadSubAttribute(
+                                objName,
+                                mBeanExpression,
+                                metadata,
+                                key,
+                                attributeName,
+                                true
+                        )
+                );
+            }
+        } else {
+            attributeName = mBeanExpression.getAttributeName();
+            metadataList.addAll(
+                    loadSubAttribute(
+                            objName,
+                            mBeanExpression,
+                            metadata,
+                            key,
+                            attributeName,
+                            false
+                    )
+            );
+        }
+        return metadataList;
+    }
+
+    private List<MBeanMetadata> loadSubAttribute(
+            ObjectName objName,
+            MBeanExpression mBeanExpression,
+            MBeanMetadata metadata,
+            String key,
+            String attribute,
+            boolean isDynamicAttribute) {
+        List<MBeanMetadata> metadataList = new ArrayList<>();
+        String exp = objName.getCanonicalName();
+        String subAttribute = mBeanExpression.getSubAttributeName();
+        if (subAttribute != null) {
+            if (SUB_ATTRIBUTE.equals(subAttribute)) {
+                Object obj = mBeanExpression.querySubAttributes(objName, attribute);
+                if (obj instanceof CompositeDataSupport) {
+                    CompositeDataSupport compositeData = (CompositeDataSupport) obj;
+                    for (String subAttrResolvedName : compositeData.getCompositeType().keySet()) {
+                        subAttribute = subAttrResolvedName;
+                        if ("description".equals(subAttribute)
+                                && compositeData.get(subAttribute) instanceof String
+                                && metadata.getDescription() == null) {
+                            metadata.setDescription((String) compositeData.get(subAttribute));
+                        } else if ("name".equals(subAttribute)
+                                && compositeData.get(subAttribute) instanceof String
+                                && metadata.getDisplayName() == null) {
+                            metadata.setDisplayName((String) compositeData.get(subAttribute));
+                        } else if ("unit".equals(subAttribute)
+                                && compositeData.get(subAttribute) instanceof String
+                                && MetricUnits.NONE.equals(metadata.getUnit())) {
+                            metadata.setUnit((String) compositeData.get(subAttribute));
+                        }
+                        if (compositeData.get(subAttribute) != null
+                                && !(compositeData.get(subAttribute) instanceof Number)) {
+                            continue;
+                        }
+                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+                    }
+                }
+            } else if (isDynamicAttribute) {
+                Object obj = mBeanExpression.querySubAttributes(objName, attribute);
+                if (obj instanceof CompositeDataSupport) {
+                    CompositeDataSupport compositeData = (CompositeDataSupport) obj;
+                    if (compositeData.containsKey(subAttribute) && compositeData.get(subAttribute) instanceof Number) {
+                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+                    }
+                }
+            } else {
+                metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+            }
+        } else {
+            metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+        }
+        return metadataList;
+    }
+
+    private MBeanMetadata createMetadata(
+            MBeanMetadata metadata,
+            String exp,
+            String key,
+            String attribute,
+            String subAttribute) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(exp);
+        builder.append(ATTRIBUTE_SEPARATOR);
+        builder.append(attribute);
+        if (subAttribute != null) {
+            builder.append(SUB_ATTRIBUTE_SEPARATOR);
+            builder.append(subAttribute);
+        }
+        return new MBeanMetadata(
+                builder.toString(),
+                formatMetadata(
+                        metadata.getName(),
+                        key,
+                        attribute,
+                        subAttribute
+                ),
+                formatMetadata(
+                        nonNull(metadata.getDisplayName()) ? metadata.getDisplayName() : metadata.getName(),
+                        key,
+                        attribute,
+                        subAttribute
+                ),
+                formatMetadata(
+                        nonNull(metadata.getDescription()) ? metadata.getDescription() : metadata.getName(),
+                        key,
+                        attribute,
+                        subAttribute
+                ),
+                metadata.getTypeRaw(),
+                metadata.getUnit()
+        );
+    }
+
+    private String formatMetadata(
+            String metadata,
+            String dynamicValue,
+            String attributeName,
+            String subAttributeName) {
+        if (dynamicValue != null && metadata.contains(SPECIFIER)) {
+            metadata = metadata.replace(SPECIFIER, dynamicValue);
+        }
+        if (dynamicValue != null && metadata.contains(KEY)) {
+            metadata = metadata.replace(KEY, dynamicValue);
+        }
+        if (attributeName != null && metadata.contains(ATTRIBUTE)) {
+            metadata = metadata.replace(ATTRIBUTE, attributeName);
+        }
+        if (subAttributeName != null && metadata.contains(SUB_ATTRIBUTE)) {
+            metadata = metadata.replace(SUB_ATTRIBUTE, subAttributeName);
+        }
+        return metadata;
     }
 
 }

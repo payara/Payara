@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -88,7 +89,8 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
     private static final String TRANSACTION_READ_COMMITTED = "TRANSACTION_READ_COMMITTED";
     private static final String TRANSACTION_REPEATABLE_READ = "TRANSACTION_REPEATABLE_READ";
     private static final String TRANSACTION_SERIALIZABLE = "TRANSACTION_SERIALIZABLE";
-
+    private static final String TRANSACTION_SNAPSHOT = "TRASNACTION_SNAPSHOT";
+    
     public DataSourceDefinitionDescriptor(){
         super.setResourceType(DSD);
     }
@@ -224,17 +226,28 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
     //Annotation uses integer values and hence this mapping is needed
     public String getIsolationLevelString(){
         String isolationLevelString = null;
-        if(isolationLevel == Connection.TRANSACTION_READ_COMMITTED){
-            isolationLevelString = TRANSACTION_READ_COMMITTED;
-        }else if (isolationLevel == Connection.TRANSACTION_READ_UNCOMMITTED){
-            isolationLevelString = TRANSACTION_READ_UNCOMMITTED;
-        }else if (isolationLevel == Connection.TRANSACTION_REPEATABLE_READ){
-            isolationLevelString = TRANSACTION_REPEATABLE_READ;
-        }else if (isolationLevel == Connection.TRANSACTION_SERIALIZABLE){
-            isolationLevelString = TRANSACTION_SERIALIZABLE;
+        switch (isolationLevel) {
+            case Connection.TRANSACTION_READ_COMMITTED:
+                isolationLevelString = TRANSACTION_READ_COMMITTED;
+                break;
+            case Connection.TRANSACTION_READ_UNCOMMITTED:
+                isolationLevelString = TRANSACTION_READ_UNCOMMITTED;
+                break;
+            case Connection.TRANSACTION_REPEATABLE_READ:
+                isolationLevelString = TRANSACTION_REPEATABLE_READ;
+                break;
+            case Connection.TRANSACTION_SERIALIZABLE:
+                isolationLevelString = TRANSACTION_SERIALIZABLE;
+                break;
+            case fish.payara.sql.Connection.TRANSACTION_SNAPSHOT:
+                isolationLevelString = TRANSACTION_SNAPSHOT;
+                break;
+            default:
+                break;
         }
         return isolationLevelString;
     }
+    
     public int getIsolationLevel() {
         return isolationLevel;
     }
@@ -253,9 +266,10 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
                 this.isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
             } else if (isolationLevelString.equals(TRANSACTION_SERIALIZABLE)) {
                 this.isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
+            } else if (isolationLevelString.equals(TRANSACTION_SNAPSHOT)) {
+                this.isolationLevel = fish.payara.sql.Connection.TRANSACTION_SNAPSHOT;
             } else {
-                throw new IllegalStateException
-                        ("Isolation level [ " + isolationLevelString + " ] not of of standard isolation levels.");
+                throw new IllegalStateException("Isolation level [ " + isolationLevelString + " ] not of standard isolation levels");
             }
         }
     }
@@ -279,11 +293,11 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
             case Connection.TRANSACTION_READ_UNCOMMITTED:
             case Connection.TRANSACTION_REPEATABLE_READ:
             case Connection.TRANSACTION_SERIALIZABLE:
+            case fish.payara.sql.Connection.TRANSACTION_SNAPSHOT:
                 this.isolationLevel = isolationLevel;
                 break;
-            default:
-                throw new IllegalStateException
-                        ("Isolation level [ " + isolationLevel + " ] not of of standard isolation levels.");
+            default:              
+                    throw new IllegalStateException("Isolation level [ " + isolationLevel + " ] not of of standard isolation levels.");
         }
         return true;
     }

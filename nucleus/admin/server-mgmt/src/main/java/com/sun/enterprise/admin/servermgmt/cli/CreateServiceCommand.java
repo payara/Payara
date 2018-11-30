@@ -44,7 +44,6 @@ import com.sun.enterprise.admin.util.ServerDirsSelector;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-import java.util.*;
 import java.util.logging.*;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -98,8 +97,6 @@ public final class CreateServiceCommand extends CLICommand {
     private ServerDirs dirs;
     private ServerDirsSelector selector = null;
 
-    /**
-     */
     @Override
     protected void validate() throws CommandException {
         try {
@@ -190,7 +187,7 @@ public final class CreateServiceCommand extends CLICommand {
         }
 
         if (logger.isLoggable(Level.FINER))
-            logger.finer("service name = " + serviceName);
+            logger.log(Level.FINER, "service name = {0}", serviceName);
     }
 
     private void validateAsadmin() throws CommandException {

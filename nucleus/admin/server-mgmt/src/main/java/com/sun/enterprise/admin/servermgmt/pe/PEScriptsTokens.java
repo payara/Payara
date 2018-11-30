@@ -43,7 +43,6 @@ package com.sun.enterprise.admin.servermgmt.pe;
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 
 /**
  * This class defines the tokens required by the startserv & stopserv scripts.

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -55,7 +56,6 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
 
 /**
@@ -99,9 +99,7 @@ public class UpdateNodeConfigCommand implements AdminCommand  {
     @Param(name = "nodedir", optional=true)
     private String nodedir;
 
-    private static final String NL = System.getProperty("line.separator");
-
-    private Logger logger = null;
+    private static final String NL = System.lineSeparator();
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -110,7 +108,7 @@ public class UpdateNodeConfigCommand implements AdminCommand  {
         Node node = null;
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
-        logger = context.getLogger();
+        Logger logger = context.getLogger();
 
         // Make sure Node is valid
         node = nodes.getNode(name);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -130,7 +131,7 @@ public final class TokenValue implements Comparable {
     /** Just appends additional '\' characters in the passed string. */
     private String escapeBackslashes(String anyString) {
         final char BACK_SLASH = '\\';
-        final StringBuffer escaped = new StringBuffer();
+        final StringBuilder escaped = new StringBuilder();
         for (int i = 0; i < anyString.length(); i++) {
             final char ch = anyString.charAt(i);
             escaped.append(ch);

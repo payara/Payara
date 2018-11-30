@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -51,7 +52,6 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.PerLookup;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.Map;
 import java.util.HashMap;
 import com.sun.enterprise.util.net.NetUtils;
@@ -97,23 +97,19 @@ public class CreateNodeConfigCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
 
         //validate installdir if passed and running on localhost
-        if (StringUtils.ok(nodehost)){
-            if (NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)){
-                TokenResolver resolver = null;
+        if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)) {
+            TokenResolver resolver = null;
 
-                // Create a resolver that can replace system properties in strings
-                Map<String, String> systemPropsMap =
-                        new HashMap<String, String>((Map)(System.getProperties()));
-                resolver = new TokenResolver(systemPropsMap);
-                String resolvedInstallDir = resolver.resolve(installdir);
-                File actualInstallDir = new File( resolvedInstallDir+"/" + NodeUtils.LANDMARK_FILE);
+            // Create a resolver that can replace system properties in strings
+            Map<String, String> systemPropsMap = new HashMap<String, String>((Map) (System.getProperties()));
+            resolver = new TokenResolver(systemPropsMap);
+            String resolvedInstallDir = resolver.resolve(installdir);
+            File actualInstallDir = new File(resolvedInstallDir + "/" + NodeUtils.LANDMARK_FILE);
 
-
-                if (!actualInstallDir.exists()){
-                    report.setMessage(Strings.get("invalid.installdir",installdir));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
+            if (!actualInstallDir.exists()) {
+                report.setMessage(Strings.get("invalid.installdir", installdir));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
             }
         }
         CommandInvocation ci = cr.getCommandInvocation("_create-node", report, context.getSubject());

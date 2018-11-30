@@ -66,8 +66,8 @@ import javax.security.auth.*;
  *      and password in the PasswordCredential. PasswordCredential
  *      must be passed as a PrivateCredential.
  *
- *    X500Name:
- *      DN name specified in X500Name will be asserted. X500Name must 
+ *    X500Principal:
+ *      DN name specified in X500Principal will be asserted. X500Principal must 
  *      be passed as a PublicCredential.
  *
  *    GSSUPName:

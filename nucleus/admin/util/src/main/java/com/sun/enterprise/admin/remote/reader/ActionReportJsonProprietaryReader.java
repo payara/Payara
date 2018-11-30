@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.admin.remote.reader;
 
@@ -48,6 +50,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +67,7 @@ import org.glassfish.api.ActionReport.MessagePart;
 public class ActionReportJsonProprietaryReader implements ProprietaryReader<ActionReport> {
     
     static class LoggerRef {
-        private static final Logger logger = AdminLoggerInfo.getLogger();
+        private static final Logger LOGGER = AdminLoggerInfo.getLogger();
     }
             
     @Override
@@ -89,7 +92,7 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
             fillActionReport(result, json);
             return result;
         } catch (JSONException ex) {
-            LoggerRef.logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
+            LoggerRef.LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }
@@ -135,20 +138,6 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
     }
     
-//    private void fillMessage(ActionReport.MessagePart mp, JSONObject json) throws JSONException {
-//        mp.setMessage(json.optString("value"));
-//        mp.setChildrenType(json.optString("children-type"));
-//        Properties props = extractProperties("properties", json);
-//        for (String key : props.stringPropertyNames()) {
-//            mp.addProperty(key, props.getProperty(key));
-//        }
-//        JSONArray subJsons = extractArray("messages", json);
-//        for (int i = 0; i < subJsons.length(); i++) {
-//            JSONObject subJson = subJsons.getJSONObject(i);
-//            fillMessage(mp.addChild(), subJson);
-//        }
-//    }
-    
     private static Object extractGeneral(final Object obj) throws JSONException {
         if (obj == null) {
             return null;
@@ -189,33 +178,5 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
         }
         return preferredResult;
     }
-    
-//    private Properties extractProperties(final String key, final JSONObject json) throws JSONException {
-//        Properties result = new Properties();
-//        JSONArray array = extractArray(key, json);
-//        for (int i = 0; i < array.length(); i++) {
-//            JSONObject entry = array.getJSONObject(i);
-//            Iterator keys = entry.keys();
-//            while (keys.hasNext()) {
-//                String inKey = (String) keys.next();
-//                result.put(inKey, entry.getString(key));
-//            }
-//        }
-//        return result;
-//    }
-//    
-//    private JSONArray extractArray(final String key, final JSONObject json) {
-//        Object res = json.opt(key);
-//        if (res == null) {
-//            return new JSONArray();
-//        }
-//        if (res instanceof JSONArray) {
-//            return (JSONArray) res;
-//        } else {
-//            JSONArray result = new JSONArray();
-//            result.put(res);
-//            return result;
-//        }
-//    }
     
 }

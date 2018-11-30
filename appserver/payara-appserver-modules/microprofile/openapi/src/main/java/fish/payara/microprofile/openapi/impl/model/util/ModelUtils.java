@@ -44,6 +44,7 @@ import static java.util.logging.Level.WARNING;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -63,6 +64,7 @@ import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.MatrixParam;
 import javax.ws.rs.OPTIONS;
+import javax.ws.rs.Path;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
@@ -279,7 +281,7 @@ public final class ModelUtils {
                 || type == float.class || type == Float.class || type == double.class || type == Double.class) {
             return SchemaType.NUMBER;
         }
-        if (type.isArray()) {
+        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
             return SchemaType.ARRAY;
         }
         if (String.class.isAssignableFrom(type)) {
@@ -513,14 +515,14 @@ public final class ModelUtils {
                                 }
                             }
                         }
-                        if (newValue instanceof Collection) {
+                        else if (newValue instanceof Collection) {
                             for (Object o : Collection.class.cast(newValue)) {
                                 if (!Collection.class.cast(currentValue).contains(o)) {
                                     Collection.class.cast(currentValue).add(o);
                                 }
                             }
                         }
-                        if (newValue instanceof Constructible) {
+                       else if (newValue instanceof Constructible) {
                             if (currentValue == null) {
                                 f.set(to, newValue.getClass().newInstance());
                                 currentValue = f.get(to);
@@ -536,4 +538,49 @@ public final class ModelUtils {
             }
         }
     }
+    
+    public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method,
+            OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
+        String path = getResourcePath(method, resourceMapping);
+        if (path != null) {
+            PathItem pathItem = api.getPaths().get(path);
+            if (pathItem != null) {
+                PathItem.HttpMethod httpMethod = getHttpMethod(method);
+                return pathItem.readOperationsMap().get(httpMethod);
+            }
+        }
+        return null;
+    }
+
+    public static String getResourcePath(GenericDeclaration declaration, Map<String, Set<Class<?>>> resourceMapping) {
+        String path = null;
+        if (declaration instanceof Method) {
+            Method method = (Method) declaration;
+
+            // If the method is a valid resource
+            if (method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(POST.class)
+                    || method.isAnnotationPresent(PUT.class) || method.isAnnotationPresent(DELETE.class)
+                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)) {
+                if (method.isAnnotationPresent(Path.class)) {
+                    path = getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"
+                            + method.getDeclaredAnnotation(Path.class).value();
+                } else {
+                    path = getResourcePath(method.getDeclaringClass(), resourceMapping);
+                }
+            }
+        }
+        if (declaration instanceof Class) {
+            Class<?> clazz = (Class<?>) declaration;
+
+            // If the class is a resource and contains a mapping
+            if (clazz.isAnnotationPresent(Path.class)) {
+                for (Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
+                    if (entry.getValue() != null && entry.getValue().contains(clazz)) {
+                        path = entry.getKey() + "/" + clazz.getDeclaredAnnotation(Path.class).value();
+                    }
+                }
+            }
+        }
+        return normaliseUrl(path);
+    } 
 }

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt;
 
 import java.util.logging.Logger;
@@ -51,7 +53,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class SLogger {
 
     public static Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
     private SLogger() {
@@ -60,7 +62,7 @@ public class SLogger {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.servermgmt.LogMessages";
     @LoggerInfo(subsystem = "ServerManagement", description = "Server Management Logger", publish = true)
     public static final String LOGGER_NAME = "javax.enterprise.servermgmt";
-    private final static Logger logger = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
+    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
     // these messages are historical.  We've transitioned to this latest Logging API
     @LogMessageInfo(message =
     "Caught an Exception: {0}",

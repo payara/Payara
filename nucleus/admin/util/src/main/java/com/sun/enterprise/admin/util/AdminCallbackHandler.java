@@ -77,7 +77,7 @@ public class AdminCallbackHandler implements CallbackHandler {
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
     
-    private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
+    private static final Logger LOGGER = GenericAdminAuthenticator.ADMSEC_LOGGER;
     
     private final Request request;
     
@@ -128,11 +128,6 @@ public class AdminCallbackHandler implements CallbackHandler {
         return result;
     }
     
-    
-//    private List<String> headers(final String headerName) {
-//        return headers.get(headerName);
-//    }
-    
     private static String headerName(final String headerName) {
         return headerName.toLowerCase(Locale.ENGLISH);
     }
@@ -143,19 +138,15 @@ public class AdminCallbackHandler implements CallbackHandler {
         }
         return headers;
     }
+    
     private String header(final String headerName) {
-//        final List<String> matches = headers(headerName);
-//        if (matches != null && matches.size() > 0) {
-//            return matches.get(0);
-//        }
-//        return null;
         return headers().get(headerName(headerName));
     }
     
     private PasswordAuthentication basicAuth() throws IOException {
         final String authHeader = header("Authorization");
         if (authHeader == null) {
-            logger.log(PROGRESS_LEVEL, "No Authorization header found; preparing default with username {0} and empty password", defaultAdminUsername);
+            LOGGER.log(PROGRESS_LEVEL, "No Authorization header found; preparing default with username {0} and empty password", defaultAdminUsername);
             return new PasswordAuthentication(defaultAdminUsername, new char[0]);
         }
         
@@ -163,16 +154,17 @@ public class AdminCallbackHandler implements CallbackHandler {
         String dec = new String(decoder.decodeBuffer(enc));
         int i = dec.indexOf(':');
         if (i < 0) {
-            logger.log(PROGRESS_LEVEL, "Authorization header contained no : to separate the username from the password; proceeding with an empty username and empty password");
+            LOGGER.log(PROGRESS_LEVEL, "Authorization header contained no : to separate the username from the password; proceeding with an empty username and empty password");
             return new PasswordAuthentication("", new char[0]);
         }
         final char[] password = dec.substring(i + 1).toCharArray();
         String username = dec.substring(0, i);
         if (username.isEmpty() && ! localPassword.isLocalPassword(new String(password))) {
-            logger.log(PROGRESS_LEVEL, "Authorization header contained no username and the password is not the local password, so continue with the default username {0}", defaultAdminUsername);
+            LOGGER.log(PROGRESS_LEVEL, "Authorization header contained no username and the password is not the local password, so continue with the default username {0}", defaultAdminUsername);
             username  = defaultAdminUsername;
         }
-        logger.log(PROGRESS_LEVEL, "basicAuth processing returning PasswordAuthentication with username {0}", username);
+        
+        LOGGER.log(PROGRESS_LEVEL, "basicAuth processing returning PasswordAuthentication with username {0}", username);
         return new PasswordAuthentication(username, password);    
         
     }

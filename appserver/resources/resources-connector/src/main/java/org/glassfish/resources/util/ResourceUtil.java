@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.resources.util;
 
@@ -55,9 +56,12 @@ public class ResourceUtil {
 
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
+    private static final String PAYARA_RESOURCES_XML_META_INF = "META-INF/payara-resources.xml";
+    private static final String PAYARA_RESOURCES_XML_WEB_INF = "WEB-INF/payara-resources.xml";
 
-
-    public static boolean hasResourcesXML(ReadableArchive archive, ServiceLocator locator){
+    
+    
+    public static boolean hasGlassfishResourcesXML(ReadableArchive archive, ServiceLocator locator){
         boolean hasResourcesXML = false;
         try{
             if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
@@ -73,7 +77,7 @@ public class ResourceUtil {
                     if(element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
                             element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")){
                         ReadableArchive subArchive = archive.getSubArchive(element);
-                        boolean answer = (subArchive != null && hasResourcesXML(subArchive, locator));
+                        boolean answer = (subArchive != null && hasGlassfishResourcesXML(subArchive, locator));
                         if (subArchive != null) {
                             subArchive.close();
                         }
@@ -87,6 +91,44 @@ public class ResourceUtil {
                     return archive.exists(RESOURCES_XML_WEB_INF);
                 }else {
                     return archive.exists(RESOURCES_XML_META_INF);
+                }
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return hasResourcesXML;
+    }
+    
+    public static boolean hasPayaraResourcesXML(ReadableArchive archive, ServiceLocator locator) {
+        boolean hasResourcesXML = false;
+        try{
+            if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
+                //handle top-level META-INF/glassfish-resources.xml
+                if(archive.exists(PAYARA_RESOURCES_XML_META_INF)){
+                    return true;
+                }
+
+                //check sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
+                Enumeration<String> entries = archive.entries();
+                while(entries.hasMoreElements()){
+                    String element = entries.nextElement();
+                    if(element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
+                            element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")){
+                        ReadableArchive subArchive = archive.getSubArchive(element);
+                        boolean answer = (subArchive != null && hasPayaraResourcesXML(subArchive, locator));
+                        if (subArchive != null) {
+                            subArchive.close();
+                        }
+                        if (answer) {
+                            return true;
+                        }
+                   }
+                }
+            }else{
+                if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
+                    return archive.exists(PAYARA_RESOURCES_XML_WEB_INF);
+                } else {
+                    return  archive.exists(PAYARA_RESOURCES_XML_META_INF);
                 }
             }
         }catch(IOException ioe){
