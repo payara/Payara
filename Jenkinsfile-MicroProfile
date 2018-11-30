@@ -52,7 +52,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -64,7 +64,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -80,7 +80,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -96,7 +96,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -108,7 +108,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -120,7 +120,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -132,7 +132,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -144,7 +144,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
