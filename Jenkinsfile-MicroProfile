@@ -173,7 +173,6 @@ pipeline {
                 sh "${ASADMIN} set-requesttracing-configuration --enabled=true --target=server-config --dynamic=true"
                 sh "${ASADMIN} create-system-properties --target=server-config USE_OPENTRACING_MOCK_TRACER=true"
                 sh "${ASADMIN} set configs.config.server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size=200"
-                sh "${ASADMIN} set-payara-executor-service-configuration --threadpoolexecutorcorepoolsize=20 --threadpoolexecutormaxpoolsize=100 --threadpoolexecutorqueuesize=200 --scheduledthreadpoolexecutorcorepoolsize=20"
                 sh "${ASADMIN} restart-domain $DOMAIN_NAME"
             }
         }

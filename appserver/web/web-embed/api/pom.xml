@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.web</groupId>
     	<artifactId>web-embed</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-embed-api</artifactId>   

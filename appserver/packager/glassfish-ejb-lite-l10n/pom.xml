@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.2.184-SNAPSHOT</version>
+        <version>4.1.2.191-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-ejb-lite-l10n</artifactId>
     <name>Glassfish EJB Lite Container l10n Package</name>
