@@ -72,8 +72,6 @@ pipeline {
                     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
                     sh "${ASADMIN} stop-database --dbtype derby || true"
                     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -120,7 +118,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -144,7 +142,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -168,7 +166,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -190,7 +188,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -203,7 +201,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -221,7 +219,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -239,7 +237,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -252,7 +250,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -265,7 +263,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -278,7 +276,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -291,7 +289,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Rest Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
