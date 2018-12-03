@@ -324,7 +324,7 @@
         <org.apache.felix.gogo.shell.version>1.0.0</org.apache.felix.gogo.shell.version>
         <org.apache.felix.gogo.command.version>1.0.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.6.4.payara-p1</org.apache.felix.fileinstall.version>
-        <org.apache.felix.configadmin.version>1.8.16</org.apache.felix.configadmin.version>
+        <org.apache.felix.configadmin.version>1.9.10</org.apache.felix.configadmin.version>
         <org.apache.felix.scr.version>2.0.14</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
