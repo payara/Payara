@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -91,7 +92,7 @@ public class NotificationStringifier implements Stringifier
         mOptions = options;
     }
 
-    protected void append(StringBuffer b, Object o)
+    protected void append(StringBuilder b, Object o)
     {
         if (b.length() != 0)
         {
@@ -113,9 +114,9 @@ public class NotificationStringifier implements Stringifier
         return (DEFAULT.stringify(o));
     }
 
-    protected StringBuffer _stringify(Notification notif)
+    protected StringBuilder _stringify(Notification notif)
     {
-        final StringBuffer b = new StringBuffer();
+        final StringBuilder b = new StringBuilder();
 
         if (mOptions.mIncludeSequenceNumber)
         {

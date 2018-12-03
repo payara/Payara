@@ -85,6 +85,14 @@ public @interface OpenIdAuthenticationDefinition {
     OpenIdProviderMetadata providerMetadata() default @OpenIdProviderMetadata;
 
     /**
+     * Optional. The claims definition defines the custom claims mapping of
+     * caller name and groups.
+     *
+     * @return
+     */
+    ClaimsDefinition claimsDefinition() default @ClaimsDefinition;
+
+    /**
      * The Microprofile Config key for the clientId is <code>{@value}</code>
      */
     public static final String OPENID_MP_CLIENT_ID = "payara.security.openid.clientId";
@@ -135,7 +143,7 @@ public @interface OpenIdAuthenticationDefinition {
      *
      * @return
      */
-    String redirectURI() default "";
+    String redirectURI() default "${baseURL}/Callback";
 
     /**
      * The Microprofile Config key for the scope is <code>{@value}</code>

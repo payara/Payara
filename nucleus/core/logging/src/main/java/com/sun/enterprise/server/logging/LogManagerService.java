@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.server.logging;
 
+import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.common.util.logging.LoggingOutputStream;
 import com.sun.common.util.logging.LoggingXMLNames;
@@ -64,6 +65,7 @@ import java.util.logging.Formatter;
 import javax.inject.Inject;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
+import java.lang.reflect.Field;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -327,6 +329,15 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             logMgr.readConfiguration();
 
+            // replace placehoders with values from system environment variables
+            try {
+                final Field propsLogManagerField = logMgr.getClass().getDeclaredField("props");
+                propsLogManagerField.setAccessible(true);
+                Properties props = (Properties) propsLogManagerField.get(logMgr);
+                propsLogManagerField.set(logMgr, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(props));
+            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_PLACEHOLDERS_REPLACEMENT, ex);
+            }
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,10 @@ import static org.jboss.weld.config.ConfigurationKey.PROBE_ALLOW_REMOTE_ADDRESS;
 import static org.jboss.weld.config.ConfigurationKey.PROBE_EVENT_MONITOR_EXCLUDE_TYPE;
 import static org.jboss.weld.config.ConfigurationKey.PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE;
 import static org.jboss.weld.config.ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER;
+import static org.jboss.weld.config.ConfigurationKey.CONCURRENT_DEPLOYMENT;
+import static org.jboss.weld.config.ConfigurationKey.NON_PORTABLE_MODE;
+import static org.jboss.weld.config.ConfigurationKey.PRELOADER_THREAD_POOL_SIZE;
+
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 
 /**
@@ -56,6 +60,18 @@ import org.jboss.weld.configuration.spi.ExternalConfiguration;
 public class ExternalConfigurationImpl implements ExternalConfiguration {
 
     private final Map<String, Object> propsMap = new HashMap<>();
+    
+    public void setPreLoaderThreadPoolSize(int size) {
+        propsMap.put(PRELOADER_THREAD_POOL_SIZE.get(), size);
+    }
+    
+    public void setNonPortableMode(boolean nonPortableMode) {
+        propsMap.put(NON_PORTABLE_MODE.get(), nonPortableMode);
+    }
+    
+    public void setConcurrentDeployment(boolean concurrentDeployment) {
+        propsMap.put(CONCURRENT_DEPLOYMENT.get(), concurrentDeployment);
+    }
 
     public void setRollingUpgradesDelimiter(String rollingUpgradesDelimiter) {
         propsMap.put(ROLLING_UPGRADES_ID_DELIMITER.get(), rollingUpgradesDelimiter);

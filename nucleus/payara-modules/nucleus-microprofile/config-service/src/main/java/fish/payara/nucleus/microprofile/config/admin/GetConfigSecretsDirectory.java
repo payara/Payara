@@ -64,16 +64,15 @@ import org.jvnet.hk2.annotations.Service;
  * @since 4.1.2.181
  * @author Steve Millidge (Payara Foundation)
  */
-@Service(name = "get-config-secrets-dir") // the name of the service is the asadmin command name
+@Service(name = "get-config-dir") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
-    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType()
 @RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface   
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.GET,
-            path = "get-config-secrets-dir",
-            description = "Gets the Secrets Directory for the Secrets Config Source")
+            path = "get-config-dir",
+            description = "Gets the Directory for the Config Source")
 })
 public class GetConfigSecretsDirectory implements AdminCommand {
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -55,7 +56,7 @@ public class TabularDataStringifier implements Stringifier
     @Override
     public String stringify(Object o)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         buf.append("Tabular data:\n");
 
         final TabularData data = (TabularData) o;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util;
 
@@ -98,14 +99,9 @@ public final class StringUtil
         {
             rightChar = '>';
         }
-        else
-        {
-            // same char on both left and right
-        }
+        // same char on both left and right
 
-        final String out = leftChar + s + rightChar;
-
-        return (out);
+        return (leftChar + s + rightChar);
     }
 
     public static String toHexString(byte theByte)
@@ -125,7 +121,7 @@ public final class StringUtil
 
     public static String toHexString(byte[] bytes, String delim)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
 
         if (bytes.length == 0)
         {
@@ -533,7 +529,7 @@ public final class StringUtil
 
         return (strings);
     }
-    
+
 
     public static String toLines(final List<String> items)
     {

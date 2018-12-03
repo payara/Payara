@@ -84,8 +84,8 @@ import java.util.logging.Logger;
 
 public class ExpandWar {
 
-    private static final Logger log = LogFacade.getLogger();
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final Logger LOGGER = LogFacade.getLogger();
+    private static final ResourceBundle RESOURCE_BUNDLE = LOGGER.getResourceBundle();
 
     /**
      * Expand the WAR file found at the specified URL into an unpacked
@@ -145,7 +145,7 @@ public class ExpandWar {
                                host.getAppBase());
         }
         if (!appBase.exists() || !appBase.isDirectory()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.APP_NOT_EXIST_EXCEPTION),
+            String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.APP_NOT_EXIST_EXCEPTION),
                                               appBase.getAbsolutePath());
             throw new IOException(msg);
         }
@@ -157,7 +157,7 @@ public class ExpandWar {
 
         // Create the new document base directory
         if (!docBase.mkdir()) {
-            String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
+            String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
                                               docBase);
             throw new IOException(msg);
         }
@@ -183,7 +183,7 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Trying to expand outside the docBase
                     // Throw an exception to stop the deployment
-                    String msg = MessageFormat.format(rb.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION),
+                    String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION),
                                                       new Object[] {war, name});
                     throw new IllegalArgumentException(msg);
                 }
@@ -192,7 +192,7 @@ public class ExpandWar {
                     File parent = new File(docBase,
                                            name.substring(0, last));
                     if (!parent.mkdirs() && !parent.isDirectory()) {
-                        String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
+                        String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
                                                           parent);
                         throw new IOException(msg);
                     }
@@ -205,8 +205,8 @@ public class ExpandWar {
                 long lastModified = jarEntry.getTime();
                 if ((lastModified != -1) && (lastModified != 0)) {
                     if (!expandedFile.setLastModified(lastModified)) {
-                        if (log.isLoggable(Level.WARNING)) {
-                            log.log(Level.WARNING, LogFacade.FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION,
+                        if (LOGGER.isLoggable(Level.WARNING)) {
+                            LOGGER.log(Level.WARNING, LogFacade.FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION,
                                     expandedFile.getAbsolutePath());
                         }
                     }
@@ -219,7 +219,7 @@ public class ExpandWar {
             throw e;
         } finally {
             if (!success) {
-                // If something went wrong, delete expanded dir to keep things 
+                // If something went wrong, delete expanded dir to keep things
                 // clean
                 deleteDir(docBase);
             }
@@ -269,7 +269,7 @@ public class ExpandWar {
             appBase = new File(System.getProperty("catalina.base"),
                                host.getAppBase());
         }
-        
+
         File docBase = new File(appBase, pathname);
 
         // Calculate the document base directory
@@ -279,9 +279,7 @@ public class ExpandWar {
         }
         JarURLConnection juc = (JarURLConnection) war.openConnection();
         juc.setUseCaches(false);
-        JarFile jarFile = null;
-        try {
-            jarFile = juc.getJarFile();
+        try (JarFile jarFile = juc.getJarFile()) {
             Enumeration<JarEntry> jarEntries = jarFile.entries();
             while (jarEntries.hasMoreElements()) {
                 JarEntry jarEntry = jarEntries.nextElement();
@@ -291,21 +289,9 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Entry located outside the docBase
                     // Throw an exception to stop the deployment
-                    String msg = MessageFormat.format(rb.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION),
-                                                    new Object[] {war, name});
+                    String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION), war, name);
                     throw new IllegalArgumentException(msg);
                 }
-            }
-        } catch (IOException e) {
-            throw e;
-        } finally {
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (Throwable t) {
-                    // Ignore
-                }
-                jarFile = null;
             }
         }
     }
@@ -318,10 +304,10 @@ public class ExpandWar {
      * @param dest File object representing the destination
      */
     public static boolean copy(File src, File dest) {
-        
+
         boolean result = true;
-        
-        String files[] = null;
+
+        String files[];
         if (src.isDirectory()) {
             files = src.list();
             result = dest.mkdir();
@@ -338,38 +324,20 @@ public class ExpandWar {
             if (fileSrc.isDirectory()) {
                 result = copy(fileSrc, fileDest);
             } else {
-                FileChannel ic = null;
-                FileChannel oc = null;
-                try {
-                    ic = (new FileInputStream(fileSrc)).getChannel();
-                    oc = (new FileOutputStream(fileDest)).getChannel();
+                try (FileChannel ic = (new FileInputStream(fileSrc)).getChannel();
+                     FileChannel oc = (new FileOutputStream(fileDest)).getChannel()) {
                     ic.transferTo(0, ic.size(), oc);
                 } catch (IOException e) {
-                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_COPYING_EXCEPTION),
-                                                      new Object[] {fileSrc, fileDest});
-                    log.log(Level.SEVERE, msg, e);
+                    String msg = MessageFormat.format(RESOURCE_BUNDLE.getString(LogFacade.ERROR_COPYING_EXCEPTION), fileSrc, fileDest);
+                    LOGGER.log(Level.SEVERE, msg, e);
                     result = false;
-                } finally {
-                    if (ic != null) {
-                        try {
-                            ic.close();
-                        } catch (IOException e) {
-                        }
-                    }
-                    if (oc != null) {
-                        try {
-                            oc.close();
-                        } catch (IOException e) {
-                        }
-                    }
                 }
             }
         }
         return result;
-        
     }
-    
-    
+
+
     /**
      * Delete the specified directory, including all of its contents and
      * sub-directories recursively. Any failure will be logged.
@@ -401,12 +369,12 @@ public class ExpandWar {
             }
         }
         if (logFailure && !result) {
-            log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
         return result;
      }
 
-    
+
     /**
      * Delete the specified directory, including all of its contents and
      * sub-directories recursively. Any failure will be logged.
@@ -437,7 +405,7 @@ public class ExpandWar {
                 deleteDir(file, logFailure);
             } else {
                 if (!file.delete() && logFailure) {
-                    log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, file.getAbsolutePath());
+                    LOGGER.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, file.getAbsolutePath());
                 }
             }
         }
@@ -448,11 +416,11 @@ public class ExpandWar {
         } else {
             result = true;
         }
-        
+
         if (logFailure && !result) {
-            log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
+            LOGGER.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
-        
+
         return result;
     }
 
@@ -488,7 +456,7 @@ public class ExpandWar {
         throws IOException {
         BufferedOutputStream output = null;
         try {
-            output = 
+            output =
                 new BufferedOutputStream(new FileOutputStream(file));
             byte buffer[] = new byte[2048];
             while (true) {

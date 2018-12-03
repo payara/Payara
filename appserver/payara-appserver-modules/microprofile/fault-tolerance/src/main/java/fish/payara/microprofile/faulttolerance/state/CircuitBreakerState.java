@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,8 +39,11 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,108 +52,102 @@ import java.util.logging.Logger;
  * @author Andrew Pielage
  */
 public class CircuitBreakerState {
-    
-    private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
-    
+
+    private static final Logger LOGGER = Logger.getLogger(CircuitBreakerState.class.getName());
+
     public enum CircuitState {
         OPEN, CLOSED, HALF_OPEN
     }
-    
+
     private final BlockingQueue<Boolean> closedResultsQueue;
-    private volatile int halfOpenSuccessfulResultsCounter;
-    private volatile CircuitState circuitState = CircuitState.CLOSED;
-    private volatile long timer = System.nanoTime();
-    private volatile long closedTime = 0;
-    private volatile long openTime = 0;
-    private volatile long halfOpenTime = 0;
-    
+
+    private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
+
+    private final Map<CircuitState, StateTime> allStateTimes = new HashMap<>();
+    private volatile StateTime currentStateTime;
+
     public CircuitBreakerState(int requestVolumeThreshold) {
-        closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
-        halfOpenSuccessfulResultsCounter = 0;
+        this.closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
+        for(CircuitState state : CircuitState.values()) {
+            this.allStateTimes.put(state, new StateTime(state));
+        }
+        this.currentStateTime = this.allStateTimes.get(CircuitState.CLOSED);
     }
-    
+
     /**
      * Gets the current circuit state.
      * @return The current circuit state
      */
     public CircuitState getCircuitState() {
-        return circuitState;
+        return this.currentStateTime.state();
     }
-    
+
     /**
      * Sets the CircuitBreaker state to the provided enum value.
      * @param circuitState The state to set the CircuitBreaker to.
      */
     public void setCircuitState(CircuitState circuitState) {
-        switch (this.circuitState) {
-            case OPEN:
-                updateOpenTime(System.nanoTime());
-                break;
-            case HALF_OPEN:
-                updateHalfOpenTime(System.nanoTime());
-                break;
-            case CLOSED:
-                updateClosedTime(System.nanoTime());
-                break;
+        this.currentStateTime.update();
+        if (!this.currentStateTime.is(circuitState)) {
+            StateTime nextStateTime = allStateTimes.get(circuitState);
+            nextStateTime.reset();
+            this.currentStateTime = nextStateTime;
         }
-        
-        resetTimer();
-        this.circuitState = circuitState;
     }
-    
+
     /**
      * Records a success or failure result to the CircuitBreaker.
      * @param result True for a success, false for a failure
      */
     public void recordClosedResult(Boolean result) {
         // If the queue is full, remove the oldest result and add
-        if (!closedResultsQueue.offer(result)) {
-            closedResultsQueue.poll();
-            closedResultsQueue.offer(result);
+        if (!this.closedResultsQueue.offer(result)) {
+            this.closedResultsQueue.poll();
+            this.closedResultsQueue.offer(result);
         }
     }
-    
+
     /**
      * Clears the results queue.
      */
     public void resetResults() {
-        closedResultsQueue.clear();
+        this.closedResultsQueue.clear();
     }
-    
+
     /**
      * Increments the successful results counter for the half open state.
      */
     public void incrementHalfOpenSuccessfulResultCounter() {
-        halfOpenSuccessfulResultsCounter++;
+        this.halfOpenSuccessfulResultsCounter.incrementAndGet();
     }
-    
+
     /**
      * Resets the successful results counter for the half open state.
      */
     public void resetHalfOpenSuccessfulResultCounter() {
-        halfOpenSuccessfulResultsCounter = 0;
+        this.halfOpenSuccessfulResultsCounter.set(0);
     }
-    
+
     /**
      * Gets the successful results counter for the half open state.
      * @return The number of consecutive successful results.
      */
     public int getHalfOpenSuccessFulResultCounter() {
-        return halfOpenSuccessfulResultsCounter;
+        return this.halfOpenSuccessfulResultsCounter.get();
     }
-    
+
     /**
      * Checks to see if the CircuitBreaker is over the given failure threshold.
      * @param failureThreshold The number of failures before the circuit breaker should open
      * @return True if the CircuitBreaker is over the failure threshold
      */
-    public Boolean isOverFailureThreshold(long failureThreshold) {
-        Boolean over = false;
+    public boolean isOverFailureThreshold(long failureThreshold) {
+        boolean over = false;
         int failures = 0;
-        
+
         // Only check if the queue is full
-        if (closedResultsQueue.remainingCapacity() == 0) {
-            for (Boolean success : closedResultsQueue) {
+        if (this.closedResultsQueue.remainingCapacity() == 0) {
+            for (Boolean success : this.closedResultsQueue) {
                 if (!success) {
                     failures++;
 
@@ -161,49 +158,20 @@ public class CircuitBreakerState {
                 }
             }
         } else {
-            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
-        }
-        
-        return over;
-    }
-    
-    private void resetTimer() {
-        timer = System.nanoTime();
-    }
-    
-    public long updateAndGetClosedTime(long nanoseconds) {     
-        if (circuitState.equals(CircuitState.CLOSED)) {
-            updateClosedTime(nanoseconds);
+            LOGGER.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
 
-        return closedTime;
+        return over;
     }
-    
-    private void updateClosedTime(long nanoseconds) {
-        closedTime =+ (nanoseconds - timer);
+
+    /**
+     * Updates if the current state equals the provided and returns the amount of nanos.
+     * @return The amount of nanos.
+     */
+    public long updateAndGet(CircuitState circuitState) {
+        return this.currentStateTime.is(circuitState)
+            ? this.currentStateTime.update()
+            : this.allStateTimes.get(circuitState).nanos();
     }
-    
-    public long updateAndGetOpenTime(long nanoseconds) {
-        if (circuitState.equals(CircuitState.OPEN)) {
-            updateOpenTime(nanoseconds);
-        }
-        
-        return openTime;
-    }
-    
-    private void updateOpenTime(long nanoseconds) {
-        openTime =+ (nanoseconds - timer);
-    }
-    
-    public long updateAndGetHalfOpenTime(long nanoseconds) {
-        if (circuitState.equals(CircuitState.HALF_OPEN)) {
-            updateHalfOpenTime(nanoseconds);
-        }
-        
-        return halfOpenTime;
-    }
-    
-    private void updateHalfOpenTime(long nanoseconds) {
-        halfOpenTime =+ (nanoseconds - timer);
-    }
+
 }

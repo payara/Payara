@@ -69,6 +69,8 @@ import java.util.Iterator;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.executorservice.PayaraExecutorServiceConfiguration;
 
 /**
  * Created by IntelliJ IDEA.
@@ -123,6 +125,11 @@ public class EventsTest extends ConfigApiTest {
         ActiveDescriptor<Server> descriptor = BuilderHelper.createConstantDescriptor(server,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
         ServiceLocatorUtilities.addOneDescriptor(habitat, descriptor);
+        
+        PayaraExecutorServiceConfiguration executor = habitat.getService(PayaraExecutorServiceConfiguration.class);
+        ActiveDescriptor<PayaraExecutorServiceConfiguration> descriptor2 = BuilderHelper.createConstantDescriptor(executor,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME, PayaraExecutorServiceConfiguration.class);
+        ServiceLocatorUtilities.addOneDescriptor(habitat, descriptor2);
 
         try {
             application = File.createTempFile("kerneltest", "tmp");

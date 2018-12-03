@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package fish.payara.nucleus.hazelcast.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
@@ -136,11 +135,14 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "dasPort", optional = true)
     private String dasPort;
 
-    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip")
+    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip,dns,kubernetes")
     private String clusterMode;
 
     @Param(name = "tcpIpMembers", optional = true)
     private String tcpipMembers;
+    
+    @Param(name = "dnsMembers", optional = true)
+    private String dnsMembers;
 
     @Param(name = "interfaces", optional = true)
     private String interfaces;
@@ -192,6 +194,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Param(name = "memberGroup", optional = true)
     private String memberGroup;
+    
+    @Param(name = "kubernetesNamespace", optional = true, alias = "kubernetesnamespace")
+    private String kubernetesNamespace;
+    
+    @Param(name = "kubernetesServiceName", optional = true, alias = "kubernetesservicename")
+    private String kubernetesServiceName;
 
     @Inject
     ServiceLocator serviceLocator;
@@ -262,8 +270,17 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         if (tcpipMembers != null) {
                             hazelcastRuntimeConfigurationProxy.setTcpipMembers(tcpipMembers);
                         }
+                        if (dnsMembers != null) {
+                            hazelcastRuntimeConfigurationProxy.setDnsMembers(dnsMembers);
+                        }
                         if (interfaces != null) {
                             hazelcastRuntimeConfigurationProxy.setInterface(interfaces);
+                        }
+                        if (kubernetesNamespace != null) {
+                            hazelcastRuntimeConfigurationProxy.setKubernetesNamespace(kubernetesNamespace);
+                        }
+                        if (kubernetesServiceName != null) {
+                            hazelcastRuntimeConfigurationProxy.setKubernetesServiceName(kubernetesServiceName);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

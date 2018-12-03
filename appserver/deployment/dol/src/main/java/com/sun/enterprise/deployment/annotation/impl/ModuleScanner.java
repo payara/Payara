@@ -44,6 +44,7 @@ package com.sun.enterprise.deployment.annotation.impl;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
@@ -61,7 +62,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.util.concurrent.*;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -85,7 +85,8 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     private boolean needScanAnnotation = false;
 
-    private static ExecutorService executorService = null;
+    @Inject
+    PayaraExecutorService executorService;
     
     private Set<String> entries = new HashSet<String>();
 
@@ -345,37 +346,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         return classParser.getContext().getTypes();
     }
 
-    protected synchronized ExecutorService getExecutorService() {
-        if (executorService != null) {
-            return executorService;
-        }
-
-        Runtime runtime = Runtime.getRuntime();
-        int nrOfProcessors = runtime.availableProcessors();
-
-        executorService = new ThreadPoolExecutor(0, nrOfProcessors,
-                30L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                new ThreadFactory() {
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread t = new Thread(r);
-                        t.setName("dol-jar-scanner");
-                        t.setDaemon(true);
-                        t.setContextClassLoader(getClass().getClassLoader());
-                        return t;
-                    }
-                });
-
-        return executorService;
-    }
-
     protected void setParser(Parser parser) {
         if (parser == null) {
             // if the passed in parser is null, it means no annotation scanning
             // has been done yet, we need to construct a new parser
             // and do the annotation scanning here
-            ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(getExecutorService()).build();
+            ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(executorService.getUnderlyingExecutorService()).build();
             parser = new Parser(pc);
             needScanAnnotation = true;
         }

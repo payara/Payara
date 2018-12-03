@@ -57,6 +57,7 @@ import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 import java.io.*;
 import java.lang.reflect.*;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -73,7 +74,7 @@ import com.sun.logging.LogDomains;
  *
  * Note that much of this code has to execute in the client so
  * it needs to be careful about which server-only resources it
- * uses and in which code paths.  
+ * uses and in which code paths.
  *
  */
 public class EJBUtils {
@@ -85,7 +86,7 @@ public class EJBUtils {
 
     // Internal property to force generated ejb container classes to
     // be created during deployment time instead of dynamically.  Note that
-    // this property does *not* cover RMI-IIOP stub generation.  
+    // this property does *not* cover RMI-IIOP stub generation.
     // See IASEJBC.java for more details.
     private static final String EJB_USE_STATIC_CODEGEN_PROP =
         "com.sun.ejb.UseStaticCodegen";
@@ -108,15 +109,15 @@ public class EJBUtils {
     private static final String GLASSFISH_JNDI_NAME_SEP = "#";
 
     /**
-     * Utility methods for serializing EJBs, primary keys and 
-     * container-managed fields, all of which may include Remote EJB 
+     * Utility methods for serializing EJBs, primary keys and
+     * container-managed fields, all of which may include Remote EJB
      * references,
      * Local refs, JNDI Contexts etc which are not Serializable.
      * This is not used for normal RMI-IIOP serialization.
-     * It has boolean replaceObject control, whether to call replaceObject 
+     * It has boolean replaceObject control, whether to call replaceObject
      * or not
      */
-    public static final byte[] serializeObject(Object obj, 
+    public static final byte[] serializeObject(Object obj,
                                                boolean replaceObject)
 	    throws IOException
     {
@@ -130,8 +131,8 @@ public class EJBUtils {
     }
 
     /**
-     * Utility method for deserializing EJBs, primary keys and 
-     * container-managed fields, all of which may include Remote 
+     * Utility method for deserializing EJBs, primary keys and
+     * container-managed fields, all of which may include Remote
      * EJB references,
      * Local refs, JNDI Contexts etc which are not Serializable.
      * @param data
@@ -141,7 +142,7 @@ public class EJBUtils {
      * @return object
      * @throws java.lang.Exception
      */
-    public static final Object deserializeObject(byte[] data, 
+    public static final Object deserializeObject(byte[] data,
             ClassLoader loader, boolean resolveObject, long appUniqueId)
         throws Exception
     {
@@ -159,33 +160,33 @@ public class EJBUtils {
             if( ejbUseStaticCodegen_ == null ) {
                 String ejbStaticCodegenProp = null;
                 if(System.getSecurityManager() == null) {
-                    ejbStaticCodegenProp = 
+                    ejbStaticCodegenProp =
                         System.getProperty(EJB_USE_STATIC_CODEGEN_PROP);
                 } else {
                     ejbStaticCodegenProp = (String)
                     java.security.AccessController.doPrivileged
                             (new java.security.PrivilegedAction() {
                         public java.lang.Object run() {
-                            return 
+                            return
                                 System.getProperty(EJB_USE_STATIC_CODEGEN_PROP);
                         }});
                 }
-                      
-                boolean useStaticCodegen = 
+
+                boolean useStaticCodegen =
                     ( (ejbStaticCodegenProp != null) &&
                       ejbStaticCodegenProp.equalsIgnoreCase("true"));
-                
+
                 ejbUseStaticCodegen_ = useStaticCodegen;
 
                 _logger.log(Level.FINE, "EJB Static codegen is " +
                             (useStaticCodegen ? "ENABLED" : "DISABLED") +
-                            " ejbUseStaticCodegenProp = " + 
+                            " ejbUseStaticCodegenProp = " +
                             ejbStaticCodegenProp);
             }
         }
 
         return ejbUseStaticCodegen_.booleanValue();
-        
+
     }
 
     private static String getClassPackageName(String intf) {
@@ -210,7 +211,7 @@ public class EJBUtils {
         String packageName = getClassPackageName(beanClass);
         String simpleName = getClassSimpleName(beanClass);
         String generatedSimpleName = "_" + simpleName + "_Serializable";
-        return (packageName != null) ? 
+        return (packageName != null) ?
             packageName + "." + generatedSimpleName : generatedSimpleName;
     }
 
@@ -218,7 +219,7 @@ public class EJBUtils {
         String packageName = getClassPackageName(businessIntf);
         String simpleName = getClassSimpleName(businessIntf);
         String generatedSimpleName = "_" + simpleName + "_Remote";
-        return (packageName != null) ? 
+        return (packageName != null) ?
             packageName + "." + generatedSimpleName : generatedSimpleName;
     }
 
@@ -226,7 +227,7 @@ public class EJBUtils {
         String packageName = getClassPackageName(businessIntf);
         String simpleName = getClassSimpleName(businessIntf);
         String generatedSimpleName = "_" + simpleName + "_Wrapper";
-        return (packageName != null) ? 
+        return (packageName != null) ?
             packageName + "." + generatedSimpleName : generatedSimpleName;
     }
 
@@ -243,18 +244,18 @@ public class EJBUtils {
      * developer can simply deal with a single physical jndi-name.  If the
      * target bean exposes both a Remote Home view and a Remote Business
      * view, the developer can still use the single physical jndi-name
-     * to resolve remote ejb-refs, and we will handle the distinction 
+     * to resolve remote ejb-refs, and we will handle the distinction
      * internally.  Of course, this is based on the assumption that the
      * internal name is generated in a way that will not clash with a
-     * separate top-level physical jndi-name chosen by the developer.  
-     * 
+     * separate top-level physical jndi-name chosen by the developer.
+     *
      * Note that it's better to delay this final jndi name translation as
      * much as possible and do it right before the NamingManager lookup,
      * as opposed to changing the jndi-name within the descriptor objects
      * themselves.  This way, the extra indirection will not be exposed
      * if the descriptors are written out and they won't complicate any
      * jndi-name equality logic.
-     * 
+     *
      */
     public static String getRemoteEjbJndiName(EjbReferenceDescriptor refDesc) {
 
@@ -329,7 +330,7 @@ public class EJBUtils {
             // Only in the portable global case, convert to a fully-qualified name
             if( jndiName.startsWith(JAVA_GLOBAL_PREFIX)) {
                 returnValue = checkFullyQualifiedJndiName(jndiName, portableFullyQualifiedPortion);
-            }                      
+            }
         }
 
         return returnValue;
@@ -354,19 +355,19 @@ public class EJBUtils {
 
 
     public static Object resolveEjbRefObject(EjbReferenceDescriptor refDesc,
-                                             Object jndiObj) 
+                                             Object jndiObj)
         throws NamingException {
 
         Object returnObject = jndiObj;
 
         if( refDesc.isLocal() ) {
 
-            EjbDescriptor target = refDesc.getEjbDescriptor();           
+            EjbDescriptor target = refDesc.getEjbDescriptor();
 
             BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(target.getUniqueId());
 
             if( refDesc.isEJB30ClientView() ) {
-                GenericEJBLocalHome genericLocalHome = 
+                GenericEJBLocalHome genericLocalHome =
                     container.getEJBLocalBusinessHome(refDesc.getEjbInterface());
                 returnObject = genericLocalHome.create(refDesc.getEjbInterface());
             } else {
@@ -375,8 +376,8 @@ public class EJBUtils {
 
         } else {
 
-            // For the Remote case, the only time we have to do 
-            // something extra with the given jndiObj is if the lookup 
+            // For the Remote case, the only time we have to do
+            // something extra with the given jndiObj is if the lookup
             // is for a Remote 3.0 object and it was made through a
             // corba interoperable name.  In that case,
             // the jndiObj refers to the internal Remote 3.0 Home so we
@@ -397,38 +398,38 @@ public class EJBUtils {
     public static Object lookupRemote30BusinessObject(Object jndiObj,
                                                       String businessInterface)
         throws NamingException
-        
+
     {
         Object returnObject = null;
 
         try {
-            
+
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
             Class genericEJBHome = loadGeneratedGenericEJBHomeClass
                 (loader);
-            
+
             final Object genericHomeObj =
                 PortableRemoteObject.narrow(jndiObj, genericEJBHome);
-            
+
             // The generated remote business interface and the
             // client wrapper for the business interface are produced
             // dynamically.  The following call must be made before
             // any EJB 3.0 Remote business interface runtime behavior
-            // is needed in a given JVM.  
+            // is needed in a given JVM.
             loadGeneratedRemoteBusinessClasses(businessInterface);
-            
+
             String generatedRemoteIntfName = EJBUtils.
                 getGeneratedRemoteIntfName(businessInterface);
-            
+
             Method createMethod = genericEJBHome.getMethod
                 ("create", String.class);
-            
+
             java.rmi.Remote delegate = (java.rmi.Remote)
-                createMethod.invoke(genericHomeObj, 
+                createMethod.invoke(genericHomeObj,
                                     generatedRemoteIntfName);
-                       
-            
+
+
             returnObject = createRemoteBusinessObject
                 (loader, businessInterface, delegate);
 
@@ -437,16 +438,16 @@ public class EJBUtils {
 
         } catch(Exception e) {
             NamingException ne = new NamingException
-                ("ejb ref resolution error for remote business interface" 
+                ("ejb ref resolution error for remote business interface"
                  + businessInterface);
-            
+
             ne.initCause(e instanceof InvocationTargetException ?
                          e.getCause() : e);
             throw ne;
         }
 
         return returnObject;
-               
+
     }
 
     public static Class loadGeneratedSerializableClass(ClassLoader loader, String className)
@@ -456,7 +457,7 @@ public class EJBUtils {
         Class developerClass = loader.loadClass(className);
         AsmSerializableBeanGenerator gen = new AsmSerializableBeanGenerator
                 (loader, developerClass, generatedSerializableClassName);
-                                     
+
         Class serializableClass = gen.generateSerializableSubclass();
 
         return serializableClass;
@@ -465,38 +466,26 @@ public class EJBUtils {
     public static void loadGeneratedRemoteBusinessClasses
         (String businessInterfaceName) throws Exception {
 
-        ClassLoader appClassLoader = 
+        ClassLoader appClassLoader =
             getBusinessIntfClassLoader(businessInterfaceName);
-        
-        loadGeneratedRemoteBusinessClasses(appClassLoader, 
+
+        loadGeneratedRemoteBusinessClasses(appClassLoader,
                                            businessInterfaceName);
     }
 
-    public static void loadGeneratedRemoteBusinessClasses
-        (ClassLoader appClassLoader, String businessInterfaceName) 
+    public static void loadGeneratedRemoteBusinessClasses(ClassLoader appClassLoader, String businessInterfaceName)
         throws Exception {
 
         String generatedRemoteIntfName = EJBUtils.
             getGeneratedRemoteIntfName(businessInterfaceName);
-        
+
         String wrapperClassName = EJBUtils.
             getGeneratedRemoteWrapperName(businessInterfaceName);
 
-        Class generatedRemoteIntf = null;
-        try {
-            generatedRemoteIntf = 
-                appClassLoader.loadClass(generatedRemoteIntfName);
-        } catch(Exception e) {
-        }
-        
-        Class generatedRemoteWrapper = null;
-        try {
-            generatedRemoteWrapper = 
-                appClassLoader.loadClass(wrapperClassName);
-        } catch(Exception e) {
-        }
-        
-        if( (generatedRemoteIntf != null) && 
+        Class generatedRemoteIntf = loadClassIgnoringExceptions(appClassLoader, generatedRemoteIntfName);
+        Class generatedRemoteWrapper = loadClassIgnoringExceptions(appClassLoader, wrapperClassName);
+
+        if( (generatedRemoteIntf != null) &&
             (generatedRemoteWrapper != null) ) {
             return;
         }
@@ -505,7 +494,7 @@ public class EJBUtils {
 
         try {
             if( generatedRemoteIntf == null ) {
-                
+
                 RemoteGenerator gen = new RemoteGenerator(appClassLoader,
                                                           businessInterfaceName);
 
@@ -515,11 +504,11 @@ public class EJBUtils {
             }
 
             if( generatedRemoteWrapper == null ) {
-                
+
                 Remote30WrapperGenerator gen = new Remote30WrapperGenerator
-                    (appClassLoader, businessInterfaceName, 
+                    (appClassLoader, businessInterfaceName,
                      generatedRemoteIntfName);
-                                          
+
                 Class developerClass = appClassLoader.loadClass(businessInterfaceName);
                 generateAndLoad(gen, wrapperClassName, appClassLoader, developerClass);
             }
@@ -531,25 +520,30 @@ public class EJBUtils {
         }
     }
 
+    /**
+     * Loads the a class by name using the provided classloader.
+     * @param clsLoader Classloader to use for loading
+     * @param clsName Name of the class to load.
+     * @return loaded class or null in case of an exception.
+     */
+    private static Class loadClassIgnoringExceptions(ClassLoader clsLoader, String clsName) {
+        try {
+            return clsLoader.loadClass(clsName);
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
     public static Class loadGeneratedGenericEJBHomeClass
         (ClassLoader appClassLoader) throws Exception {
 
         String className = getGenericEJBHomeClassName();
 
-        Class generatedGenericEJBHomeClass = null;
+        Class generatedGenericEJBHomeClass = loadClassIgnoringExceptions(appClassLoader, className);
 
-        try {
-            generatedGenericEJBHomeClass = appClassLoader.loadClass(className);
-        } catch(Exception e) {
-        }
-        
         if( generatedGenericEJBHomeClass == null ) {
-            
-            GenericHomeGenerator gen =new GenericHomeGenerator(appClassLoader);
-                
-
-            generatedGenericEJBHomeClass =generateAndLoad(gen, className,
-                    appClassLoader, EJBUtils.class);
+            GenericHomeGenerator gen = new GenericHomeGenerator(appClassLoader);
+            generatedGenericEJBHomeClass = generateAndLoad(gen, className, appClassLoader, EJBUtils.class);
         }
 
         return generatedGenericEJBHomeClass;
@@ -564,119 +558,127 @@ public class EJBUtils {
 
     }
 
-    
+
     private static Class generateAndLoad(ClassGeneratorFactory cgf,
                                          final String actualClassName,
                                          final ClassLoader loader,
                                          final Class protectionDomainBase) {
 
-        cgf.evaluate();
+        Class clazz = loadClassIgnoringExceptions(loader, actualClassName);
 
-        final Properties props = new Properties();
-        if( _logger.isLoggable(Level.FINE) ) {
-
-            props.put(DUMP_AFTER_SETUP_VISITOR, "true");
-            props.put(TRACE_BYTE_CODE_GENERATION, "true");
-            props.put(USE_ASM_VERIFIER, "true");
-
-            try {
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(baos);
-
-                _sourceCode(ps, props);
-                _logger.fine(baos.toString());
-
-            } catch(Exception e) {
-                _logger.log(Level.FINE, "exception generating src", e);
-            }
-
+        if (clazz != null) {
+            return clazz;
         }
-        
-        Class result = null;
-        try {
-            if(System.getSecurityManager() == null) {
-                result = _generate(loader, protectionDomainBase.getProtectionDomain(),
-                                   props);
-            } else {
-                result = (Class)  java.security.AccessController.doPrivileged
-                        (new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                    	return  _generate(loader, protectionDomainBase.getProtectionDomain(),
-                                          props);
-                    }});
+
+        // PAYARA-3087 LinkageError occurs when multiple threads generate classes
+        synchronized (EJBUtils.class) {
+
+            clazz = loadClassIgnoringExceptions(loader, actualClassName);
+
+            if (clazz != null) {
+                return clazz;
             }
-        } catch (RuntimeException | LinkageError runEx) {
-            //We would have got this exception if there were two (or more)
-            //  concurrent threads that attempted to define the same class
-            //  Lets try to load the class and if we are able to load it
-            //  then we can ignore the exception. Else throw the original exception
+
+            cgf.evaluate();
+
+            final Properties props = new Properties();
+            if( _logger.isLoggable(Level.FINE) ) {
+
+                props.put(DUMP_AFTER_SETUP_VISITOR, "true");
+                props.put(TRACE_BYTE_CODE_GENERATION, "true");
+                props.put(USE_ASM_VERIFIER, "true");
+
+                try {
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    PrintStream ps = new PrintStream(baos);
+
+                    _sourceCode(ps, props);
+                    _logger.fine(baos.toString());
+
+                } catch(Exception e) {
+                    _logger.log(Level.FINE, "exception generating src", e);
+                }
+
+            }
+
+            Class result;
             try {
-                result = loader.loadClass(actualClassName);
-                _logger.log(Level.FINE, "[EJBUtils] Got exception ex: " + runEx
-                        + " but loaded class: " + result.getName());
-            } catch (ClassNotFoundException cnfEx) {
-                throw runEx;
+                if(System.getSecurityManager() == null) {
+                    result = _generate(loader, protectionDomainBase.getProtectionDomain(),
+                                       props);
+                } else {
+                    result = java.security.AccessController.doPrivileged(
+                        (PrivilegedAction<Class>) () -> _generate(loader, protectionDomainBase.getProtectionDomain(), props)
+                    );
+                }
+            } catch (RuntimeException runEx) {
+                //We would have got this exception if there were two (or more)
+                //  concurrent threads that attempted to define the same class
+                //  Lets try to load the class and if we are able to load it
+                //  then we can ignore the exception. Else throw the original exception
+                try {
+                    result = loader.loadClass(actualClassName);
+                    _logger.log(Level.FINE, "[EJBUtils] Got exception ex: " + runEx
+                            + " but loaded class: " + result.getName());
+                } catch (ClassNotFoundException cnfEx) {
+                    throw runEx;
+                }
             }
+
+            return result;
         }
-        
-        return result;
     }
 
 
     public static RemoteBusinessWrapperBase createRemoteBusinessObject
-        (String businessInterface, java.rmi.Remote delegate) 
+        (String businessInterface, java.rmi.Remote delegate)
         throws Exception {
 
-        ClassLoader appClassLoader = 
+        ClassLoader appClassLoader =
             getBusinessIntfClassLoader(businessInterface);
-        
+
         return createRemoteBusinessObject(appClassLoader,
                                           businessInterface, delegate);
     }
 
 
-    public static RemoteBusinessWrapperBase createRemoteBusinessObject
-        (ClassLoader loader, String businessInterface, 
-         java.rmi.Remote delegate) 
-         
-        throws Exception {
+    public static RemoteBusinessWrapperBase createRemoteBusinessObject(
+            ClassLoader loader, String businessInterface, java.rmi.Remote delegate
+    ) throws Exception {
 
         String wrapperClassName = EJBUtils.getGeneratedRemoteWrapperName
             (businessInterface);
 
         Class clientWrapperClass = loader.loadClass(wrapperClassName);
 
-        Constructor ctors[] = clientWrapperClass.getConstructors();
-        
         Constructor ctor = null;
-        for(Constructor next : ctors) {
+        for(Constructor next : clientWrapperClass.getConstructors()) {
             if (next.getParameterTypes().length > 0 ) {
                 ctor = next;
                 break;
             }
         }
-        
-        Object obj = ctor.newInstance(new Object[] 
-            { delegate, businessInterface } );
 
-        return (RemoteBusinessWrapperBase) obj;
+        if (ctor == null) {
+            throw new IllegalStateException("Missing ctor with parameters in " + clientWrapperClass);
+        }
+
+        return (RemoteBusinessWrapperBase) ctor.newInstance(delegate, businessInterface);
     }
 
 
     private static ClassLoader getBusinessIntfClassLoader
         (String businessInterface) throws Exception {
-        
-        ClassLoader contextLoader = null;
+
+        ClassLoader contextLoader;
         if(System.getSecurityManager() == null) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             contextLoader = (cl != null) ? cl :
                 ClassLoader.getSystemClassLoader();
         } else {
-            contextLoader = (ClassLoader)
-            java.security.AccessController.doPrivileged
-                    (new java.security.PrivilegedAction() {
-                public java.lang.Object run() {
+            contextLoader = java.security.AccessController.doPrivileged(
+                (PrivilegedAction<ClassLoader>) () -> {
                     // Return context class loader.  If there is none,
                     // which could happen within Appclient container,
                     // return system class loader.
@@ -684,24 +686,21 @@ public class EJBUtils {
                             Thread.currentThread().getContextClassLoader();
                     return (cl != null) ? cl :
                         ClassLoader.getSystemClassLoader();
-                    
-                }});
+
+                }
+            );
         }
 
-        final Class businessInterfaceClass = 
+        final Class businessInterfaceClass =
             contextLoader.loadClass(businessInterface);
-        
-        ClassLoader appClassLoader = null;
+
+        ClassLoader appClassLoader;
         if(System.getSecurityManager() == null) {
             appClassLoader = businessInterfaceClass.getClassLoader();
         } else {
-            appClassLoader = (ClassLoader)
-            java.security.AccessController.doPrivileged
-                    (new java.security.PrivilegedAction() {
-                public java.lang.Object run() {
-                    return businessInterfaceClass.getClassLoader();
-                    
-                }});
+            appClassLoader = java.security.AccessController.doPrivileged(
+                (PrivilegedAction<ClassLoader>) () -> businessInterfaceClass.getClassLoader()
+            );
         }
 
         return appClassLoader;
@@ -709,7 +708,7 @@ public class EJBUtils {
 
     public static void serializeObjectFields(
                                              Object instance,
-                                             ObjectOutputStream oos) 
+                                             ObjectOutputStream oos)
         throws IOException {
 
         serializeObjectFields(instance, oos, true);
@@ -718,7 +717,7 @@ public class EJBUtils {
     public static void serializeObjectFields(
                                              Object instance,
                                              ObjectOutputStream oos,
-                                             boolean usesSuperClass) 
+                                             boolean usesSuperClass)
         throws IOException {
 
         Class clazz = (usesSuperClass)? instance.getClass().getSuperclass() : instance.getClass();
@@ -754,9 +753,9 @@ public class EJBUtils {
                 objOutStream.writeObject(value);
             } catch(Throwable t) {
                 if( _logger.isLoggable(Level.FINE) ) {
-                    _logger.log(Level.FINE, "=====> failed serializing field: " + nextField + 
-                             " =====> of class: " + clazz + " =====> using: " + oos.getClass() + 
-                             " =====> serializing value of type: " + ((value == null)? null : value.getClass().getName()) + 
+                    _logger.log(Level.FINE, "=====> failed serializing field: " + nextField +
+                             " =====> of class: " + clazz + " =====> using: " + oos.getClass() +
+                             " =====> serializing value of type: " + ((value == null)? null : value.getClass().getName()) +
                              " ===> Error: " + t);
                     _logger.log(Level.FINE, "", t);
                 }
@@ -771,7 +770,7 @@ public class EJBUtils {
 
     public static void deserializeObjectFields(
                                                Object instance,
-                                               ObjectInputStream ois) 
+                                               ObjectInputStream ois)
         throws IOException {
 
         deserializeObjectFields(instance, ois, null, true);
@@ -782,7 +781,7 @@ public class EJBUtils {
                                                Object instance,
                                                ObjectInputStream ois,
                                                Object replaceValue,
-                                               boolean usesSuperClass) 
+                                               boolean usesSuperClass)
         throws IOException {
 
         Class clazz = (usesSuperClass)? instance.getClass().getSuperclass() : instance.getClass();
@@ -815,7 +814,7 @@ public class EJBUtils {
                 }
                 final Object newValue = value;
                 final Object theInstance = instance;
-                
+
                 if(System.getSecurityManager() == null) {
                     if( !nextField.isAccessible() ) {
                         nextField.setAccessible(true);
@@ -852,7 +851,7 @@ public class EJBUtils {
         for(Field next : fields) {
 
             int modifiers = next.getModifiers();
-            if( Modifier.isStatic(modifiers) || 
+            if( Modifier.isStatic(modifiers) ||
                 Modifier.isTransient(modifiers) ) {
                 continue;
             }

@@ -46,22 +46,11 @@
 
 package org.glassfish.webservices.monitoring;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.tools.ws.spi.WSToolsObjectFactory;
+import com.sun.xml.bind.api.JAXBRIContext;
+import org.glassfish.webservices.LogUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -75,13 +64,18 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
-
-import org.glassfish.webservices.LogUtils;
-
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.tools.ws.spi.WSToolsObjectFactory;
-import com.sun.xml.bind.api.JAXBRIContext;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This servlet is responsible for testing web-services.
@@ -112,8 +106,7 @@ public class WebServiceTesterServlet extends HttpServlet {
                 servlet.doPost(request, response);
             }
         } catch (Exception e) {
-            try {
-                PrintWriter out = response.getWriter();
+            try (PrintWriter out = response.getWriter()){
                 out.print("<HTML lang="
                         + Locale.getDefault().getLanguage() + "><HEAD><TITLE>" + localStrings
                                 .getLocalString("enterprise.webservice.monitoring.methodInvocationException", "Method invocation exception")
@@ -124,10 +117,8 @@ public class WebServiceTesterServlet extends HttpServlet {
                 e.printStackTrace(out);
                 out.print("<HR>");
                 out.print("</HTML>");
-                out.close();
             } catch (Exception ex) {
             }
-            ;
         }
     }
 
@@ -455,7 +446,7 @@ public class WebServiceTesterServlet extends HttpServlet {
                 myEndpoint.getDescriptor().getWebService().getName());
 
         // construct the WSDL http url
-        StringBuffer sb = new StringBuffer(URLDecoder.decode(requestURL));
+        StringBuilder sb = new StringBuilder(URLDecoder.decode(requestURL));
         sb.append("?WSDL");
 
         URL[] urls = new URL[1];
@@ -481,8 +472,7 @@ public class WebServiceTesterServlet extends HttpServlet {
         // classes clashes.
         // the immediate classloader is the WebApp classloader, its parent is the
         // application classloader, we want the parent of that one
-        ClassLoader testerCL = new URLClassLoader(urls, currentLoader.getParent());
-        try {
+        try (URLClassLoader testerCL = new URLClassLoader(urls, currentLoader.getParent())) {
             Thread.currentThread().setContextClassLoader(testerCL);
             String serviceClassName = getServiceClass(JAXBRIContext.mangleNameToClassName(serviceName.getLocalPart()), classesDir);
             if (serviceClassName == null) {
@@ -585,7 +575,7 @@ public class WebServiceTesterServlet extends HttpServlet {
         }
         if (svcClass != null) {
             svcClass = svcClass.substring(0, svcClass.indexOf(".class"));
-            return svcClass.replaceAll("\\" + File.separator, ".");
+            return svcClass.replace(File.separator, ".");
         } else {
             return null;
         }
@@ -606,14 +596,15 @@ public class WebServiceTesterServlet extends HttpServlet {
     }
 
     private List<File> getListOfFiles(File path) {
-
         File[] files = path.listFiles();
-        List<File> result = new ArrayList<File>();
-        for (File f : files) {
-            if (f.isDirectory()) {
-                result.addAll(getListOfFiles(f));
-            } else {
-                result.add(f);
+        List<File> result = new ArrayList<>();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    result.addAll(getListOfFiles(f));
+                } else {
+                    result.add(f);
+                }
             }
         }
         return result;
@@ -623,11 +614,13 @@ public class WebServiceTesterServlet extends HttpServlet {
 
         if (path.exists() && path.isFile()) {
             File[] files = path.listFiles();
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    deleteDir(f);
+            if (files != null) {
+                for (File f : files) {
+                    if (f.isDirectory()) {
+                        deleteDir(f);
+                    }
+                    assert f.delete();
                 }
-                assert f.delete();
             }
             assert path.delete();
         }

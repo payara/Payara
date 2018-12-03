@@ -371,7 +371,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         pipeline.setBasic(swValve);
         requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
         openTracing = getDefaultHabitat().getService(OpenTracingService.class);
-        
+
         // suppress PWC6117 file not found errors
         Logger jspLog = Logger.getLogger("org.apache.jasper.servlet.JspServlet");
         if (!(jspLog.getFilter() instanceof NotFoundErrorSupressionFilter)) {
@@ -1231,7 +1231,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         synchronized (instancePool) {
             countAllocated.decrementAndGet();
             instancePool.push(servlet);
-            instancePool.notify();
+            instancePool.notifyAll();
         }
     }
 
@@ -1630,21 +1630,21 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     finally {
                         String applicationName = openTracing.getApplicationName(
                                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
-                                                
+
                         if (openTracing.getTracer(applicationName).activeSpan() != null) {
                             // Presumably held open by return being handled by another thread
                             openTracing.getTracer(applicationName).activeSpan().setTag(
-                                    Tags.HTTP_STATUS.getKey(), 
+                                    Tags.HTTP_STATUS.getKey(),
                                     Integer.toString(((HttpServletResponse) response).getStatus()));
                             openTracing.getTracer(applicationName).activeSpan().finish();
                         }
-                        
+
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
                             span.addSpanTag("ResponseStatus", Integer.toString(
                                     ((HttpServletResponse) response).getStatus()));
                             requestTracing.traceSpan(span);
                         }
-                        
+
                         isInSuppressFFNFThread.set(false);
                     }
                 }
@@ -1856,7 +1856,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     }
                 }
                 try {
-                    Thread.sleep(delay);
+                    wait(delay);
                 } catch (InterruptedException e) {
                     // Ignore
                 }

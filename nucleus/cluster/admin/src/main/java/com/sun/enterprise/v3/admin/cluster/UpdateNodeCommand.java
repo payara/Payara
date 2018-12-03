@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.sun.enterprise.util.net.NetUtils;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -63,7 +65,6 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
 
@@ -145,8 +146,7 @@ public class UpdateNodeCommand implements AdminCommand {
             return;
         }
         //validate installdir if passed and running on localhost
-        if (StringUtils.ok(nodehost)){
-            if (NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)){
+        if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)){
                 TokenResolver resolver = null;
 
                 // Create a resolver that can replace system properties in strings
@@ -154,7 +154,7 @@ public class UpdateNodeCommand implements AdminCommand {
                         new HashMap<String, String>((Map)(System.getProperties()));
                 resolver = new TokenResolver(systemPropsMap);
                 String resolvedInstallDir = resolver.resolve(installdir);
-                File actualInstallDir = new File( resolvedInstallDir+"/" + NodeUtils.LANDMARK_FILE);
+                File actualInstallDir = new File( resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
 
 
                 if (!actualInstallDir.exists()){
@@ -162,7 +162,6 @@ public class UpdateNodeCommand implements AdminCommand {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
-            }
         }
         // If the node is in use then we can't change certain attributes
         // like the install directory or node directory.
@@ -192,7 +191,7 @@ public class UpdateNodeCommand implements AdminCommand {
         try {
             updateNodeElement(name);
         } catch(TransactionFailure e) {
-            logger.warning("failed.to.update.node " + name);
+            logger.log(Level.WARNING, "failed.to.update.node {0}", name);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }

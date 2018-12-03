@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.ArrayList;
@@ -56,7 +58,6 @@ import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.PathnameParser;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.AMXProxyHandler;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -142,9 +143,8 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                     objectName = child;
                     break;
                 }
-            } else {
-                //cdebug( "No match on type: " + type + " != " + Util.getTypeProp(child) );
-            }
+            }  //cdebug( "No match on type: " + type + " != " + Util.getTypeProp(child) );
+
         }
 
         // limit the memory use; non-existent paths could otherwise build up
@@ -223,7 +223,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         } catch (final Exception e) {
             if (!isInstanceNotFound(e)) {
                 AMXLoggerInfo.getLogger().log(Level.WARNING,
-                        AMXLoggerInfo.cantGetChildren, 
+                        AMXLoggerInfo.cantGetChildren,
                         new Object[] {top.objectName(), ExceptionUtil.getRootCause(e).getLocalizedMessage()});
                 // just return, nothing we can do.  Typically it could be InstanceNotFoundException
             }
@@ -303,12 +303,12 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         }
 
         final AMXProxy topProxy = getProxyFactory().getProxy(top, AMXProxy.class);
-        final List<AMXProxy> list = new ArrayList<AMXProxy>();
+        final List<AMXProxy> list = new ArrayList<>();
         list.add(topProxy);
         listChildren(topProxy, list, true);
 
         final String NL = "\n";
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         for (final AMXProxy amx : list) {
             final String p = amx.path();
             buf.append(p);
@@ -319,7 +319,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                 buf.append("\t");
                 buf.append(e.getKey());
                 buf.append(" = ");
-                buf.append("").append(SmartStringifier.toString(e.getValue()));
+                buf.append(SmartStringifier.toString(e.getValue()));
                 buf.append(NL);
             }
             buf.append(NL);

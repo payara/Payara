@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -71,6 +71,7 @@ import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EJBTimerSchedule;
+import com.sun.ejb.containers.NonPersistentEJBTimerService;
 import com.sun.ejb.containers.RuntimeTimerState;
 import com.sun.ejb.containers.TimerPrimaryKey;
 import com.sun.enterprise.config.serverbeans.ServerTags;
@@ -97,9 +98,9 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Marina Vatkina
  */
-public class PersistentEJBTimerService extends EJBTimerService {
+public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
 
-    private TimerLocal timerLocal_;
+    private final TimerLocal timerLocal_;
 
     private static final Logger logger = EjbContainerUtilImpl.getLogger();
 
@@ -298,6 +299,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
 
     } //migrateTimers()
 
+    @Override
     public boolean isPersistent() {
         return true;
     }
@@ -375,7 +377,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
             }
         } catch (Exception ex) {
             // Problem accessing timer service so disable it.
-            EJBTimerService.setEJBTimerService(null);
+            EJBTimerService.setPersistentTimerService(null);
 
             logger.log(Level.WARNING, "ejb.timer_service_init_error", ex);
 
@@ -1346,7 +1348,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
     }
 
     static void initEJBTimerService(String target) {
-        EJBTimerService ts = null;
+        EJBTimerService timerService = null;
 
         EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
         EjbTimerService _ejbt = _ejbContainerUtil.getEjbTimerService(target);
@@ -1375,7 +1377,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
 
         if (available) {
             try {
-                ts = new PersistentEJBTimerService("java:global/" +
+                timerService = new PersistentEJBTimerService("java:global/" +
                         TIMER_SERVICE_APP_NAME + "/" + TIMER_SERVICE_BEAN_NAME,
                         removeOldTimers);
 
@@ -1385,7 +1387,7 @@ public class PersistentEJBTimerService extends EJBTimerService {
             }
         }
 
-        EJBTimerService.setEJBTimerService(ts);
+        EJBTimerService.setPersistentTimerService(timerService);
     }
 
     @Override

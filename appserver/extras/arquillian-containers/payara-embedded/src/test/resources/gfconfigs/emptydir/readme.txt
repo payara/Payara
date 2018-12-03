@@ -1,1 +1,0 @@
-This directory is meant to be empty, except it isn't (because Git doesn't allow empty directories in a repo, without hacking the .gitignore file).

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util;
 
@@ -57,7 +58,7 @@ public final class RegexUtil
     /**
     These characters will be escaped by wildcardToJavaRegex()
      */
-    public static final String REGEX_SPECIALS = BACKSLASH + "[]^$?+{}()|-!";
+    private static final String REGEX_SPECIALS = BACKSLASH + "[]^$?+{}()|-!";
 
     /**
     Converts each String to a Pattern using wildcardToJavaRegex
@@ -101,7 +102,7 @@ public final class RegexUtil
         if (input != null)
         {
             final int length = input.length();
-            final StringBuffer buf = new StringBuffer();
+            final StringBuilder buf = new StringBuilder();
 
             for (int i = 0; i < length; ++i)
             {

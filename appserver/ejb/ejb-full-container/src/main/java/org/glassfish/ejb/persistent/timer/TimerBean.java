@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -326,7 +326,7 @@ public class TimerBean implements TimerLocal {
         // containerId is not generated until after deployment.
         //
         try {
-            EJBTimerService.getEJBTimerService().addTimerSynchronization((EJBContextImpl)context_,
+            EJBTimerService.getPersistentTimerService().addTimerSynchronization((EJBContextImpl)context_,
                     timerId, initialExpiration, containerId, ownerId);
         } catch(Exception e) {
             CreateException ce = new CreateException();
@@ -339,7 +339,7 @@ public class TimerBean implements TimerLocal {
     }
 
     private String getOwnerIdOfThisServer() {
-        return EJBTimerService.getEJBTimerService().getOwnerIdOfThisServer();
+        return EJBTimerService.getPersistentTimerService().getOwnerIdOfThisServer();
     }
 
     public void remove(TimerPrimaryKey timerId) {
@@ -381,8 +381,14 @@ public class TimerBean implements TimerLocal {
 
         timer.setState(EJBTimerService.STATE_CANCELLED);
 
-        EJBTimerService.getEJBTimerService().cancelTimerSynchronization((EJBContextImpl)context_, timerId,
-                timer.getContainerId(), timer.getOwnerId());
+        EJBTimerService
+                .getPersistentTimerService()
+                .cancelTimerSynchronization(
+                        (EJBContextImpl) context_,
+                        timerId,
+                        timer.getContainerId(),
+                        timer.getOwnerId()
+                );
 
         // XXX ???? WHY WAS IT: NOTE that it's the caller's responsibility to call remove().
         em.remove(timer);

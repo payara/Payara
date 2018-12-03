@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
-import java.util.logging.Level;
-import javax.security.auth.Subject;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
@@ -158,8 +157,7 @@ public class NodeUtils {
         return output.toString().trim();
     }
 
-    void validate(Node node) throws
-            CommandValidationException {
+    void validate(Node node) throws CommandValidationException {
 
         // Put node values into parameter map and validate
         ParameterMap map = new ParameterMap();
@@ -180,7 +178,6 @@ public class NodeUtils {
         }
 
         validate(map);
-        return;
     }
 
     /**
@@ -189,8 +186,7 @@ public class NodeUtils {
      *              The map values can contain system property tokens.
      * @throws CommandValidationException
      */
-    void validate(ParameterMap map) throws
-            CommandValidationException {
+    void validate(ParameterMap map) throws CommandValidationException {
 
         validatePassword(map.getOne(PARAM_REMOTEPASSWORD));
         String nodehost = map.getOne(PARAM_NODEHOST);
@@ -204,8 +200,9 @@ public class NodeUtils {
         // guaranteed to either get a valid type -- or a CommandValidationException
         RemoteType type = parseType(map);
 
-        if (type == RemoteType.SSH)
-            validateSsh(map, nodehost);
+        if (type == RemoteType.SSH) {
+            validateSsh(map);
+        }
 
         // bn: shouldn't this be something more sophisticated than just the standard string?!?
         // i.e. check to see if the hostname is this machine?
@@ -227,8 +224,7 @@ public class NodeUtils {
      *              The map values can contain system property tokens.
      * @throws CommandValidationException
      */
-    private void validateSsh(ParameterMap map, String nodehost) throws
-            CommandValidationException {
+    private void validateSsh(ParameterMap map) throws CommandValidationException {
 
         String sshkeyfile = map.getOne(PARAM_SSHKEYFILE);
         if (StringUtils.ok(sshkeyfile)) {
@@ -502,28 +498,23 @@ public class NodeUtils {
                     // Landmark file to ensure valid GF install
                     LANDMARK_FILE,
                     logger);
-        }
-        catch (IOException e) {
+        } catch (FileNotFoundException ex) {
+            if (!installFlag) {
+                    logger.warning(StringUtils.cat(": ", ex.getMessage(), "", sshL.toString()));
+                    throw new CommandValidationException(ex.getMessage());
+                }
+            
+        } catch (IOException e) {
             String m1 = e.getMessage();
             String m2 = "";
             Throwable e2 = e.getCause();
             if (e2 != null) {
                 m2 = e2.getMessage();
             }
-            if (e instanceof FileNotFoundException) {
-                if (!installFlag) {
-                    logger.warning(StringUtils.cat(": ", m1, m2, sshL.toString()));
-                    throw new CommandValidationException(StringUtils.cat(NL,
-                            m1, m2));
-                }
-            }
-            else {
-                String msg = Strings.get("ssh.bad.connect", nodehost, "SSH");
-                logger.warning(StringUtils.cat(": ", msg, m1, m2,
-                        sshL.toString()));
-                throw new CommandValidationException(StringUtils.cat(NL,
-                        msg, m1, m2));
-            }
+            
+            String msg = Strings.get("ssh.bad.connect", nodehost, "SSH");
+            logger.warning(StringUtils.cat(": ", msg, m1, m2, sshL.toString()));
+            throw new CommandValidationException(StringUtils.cat(NL, msg, m1, m2));
         }
     }
 
@@ -643,8 +634,6 @@ public class NodeUtils {
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
 
-
-        return;
     }
 
     void runAdminCommandOnNode(Node node, List<String> command,

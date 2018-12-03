@@ -1394,6 +1394,10 @@ input[type="radio"]:checked {
     box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.25);
 }
 
+input[type="checkbox"]:checked:before {
+    color: #000000;
+}
+
 input[type="radio"]:before {
     background: #e5e5e5;
 }

@@ -48,25 +48,9 @@ import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.xml.bind.JAXB;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -79,9 +63,26 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.xml.bind.JAXB;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
 public class MetricsService implements EventListener {
+
+    private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
     @Inject
     Events events;
@@ -119,9 +120,27 @@ public class MetricsService implements EventListener {
         if (isMetricsEnabled()) {
             PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
             payaraExecutor.submit(() -> {
-                MBeanMetadataConfig metadataConfig = getConfig();
-                initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+                bootstrap();
             });
+        }
+    }
+
+    private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
+        // Could be constant but placed it in method as it is a workaround until fixed in JVM.
+        // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
+        String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
+        long count = metadataConfig.getBaseMetadata().stream()
+                .map(MBeanMetadata::getMBean)
+                .filter(mbeanSystemCPULoad::equalsIgnoreCase)
+                .count();
+
+        count += metadataConfig.getVendorMetadata().stream()
+                .map(MBeanMetadata::getMBean)
+                .filter(mbeanSystemCPULoad::equalsIgnoreCase)
+                .count();
+
+        if (count > 1) {
+            LOGGER.warning(String.format("Referencing the MBean value %s multiple times possibly leads to inconsistent values for the MBean value.", mbeanSystemCPULoad));
         }
     }
 
@@ -163,15 +182,18 @@ public class MetricsService implements EventListener {
      * service.
      */
     public void reregisterMetadataConfig() {
-        initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
+        // Initialise the metadata lists if they haven't yet
+        if (unresolvedBaseMetadataList == null || unresolvedVendorMetadataList == null) {
+            bootstrap();
+        } else {
+            initMetadataConfig(unresolvedBaseMetadataList, unresolvedVendorMetadataList, true);
+        }
     }
 
-    private MBeanMetadataConfig getConfig() {
-        
+    private MBeanMetadataConfig getConfig() {   
         InputStream defaultConfig = MetricsHelper.class.getResourceAsStream("/metrics.xml");
         MBeanMetadataConfig config = JAXB.unmarshal(defaultConfig, MBeanMetadataConfig.class);
-        
-        
+          
         File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
         if (metricsResource.exists()) {
             try {
@@ -333,4 +355,9 @@ public class MetricsService implements EventListener {
         return appName;
     }
 
+    private void bootstrap() {
+        MBeanMetadataConfig metadataConfig = getConfig();
+        checkSystemCpuLoadIssue(metadataConfig); // PAYARA 2938
+        initMetadataConfig(metadataConfig.getBaseMetadata(), metadataConfig.getVendorMetadata(), false);
+    }
 }

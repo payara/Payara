@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * PersistenceManagerFactoryImpl.java
@@ -46,6 +47,7 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.impl;
 
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Properties;
 import java.io.PrintWriter;
@@ -278,7 +280,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	/**
 	 * Sets Identifier. An identifier is a string that user can use to identify
 	 * the PersistenceManagerFactory in a given environment. Identifier can be
-	 * particularly useful in an environment where multiple 
+	 * particularly useful in an environment where multiple
 	 * PersistenceManagerFactories are initialized in a system.
 	 * @param identifier
 	 */
@@ -290,7 +292,7 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 	/**
 	 * Gets Identifier. An identifier is a string that user can use to identify
 	 * the PersistenceManagerFactory in a given environment. Identifier can be
-	 * particularly useful in an environment where multiple 
+	 * particularly useful in an environment where multiple
 	 * PersistenceManagerFactories are initialized in a system.
 	 * @return identifier
 	 */
@@ -943,10 +945,10 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
       	 * @return true if obj is equal to this PersistenceManagerFactoryImpl; false otherwise.
       	 */
 	public boolean equals(Object obj) {
-       		if ((obj == null) || !(obj instanceof PersistenceManagerFactoryImpl)) {
+		if (!(obj instanceof PersistenceManagerFactoryImpl)) {
 			return false;
 		}
-       		PersistenceManagerFactoryImpl pmf = (PersistenceManagerFactoryImpl)obj;
+		PersistenceManagerFactoryImpl pmf = (PersistenceManagerFactoryImpl)obj;
 
 		if (pmf.providedConnectionFactory == this.providedConnectionFactory) {
 			if (pmf.providedConnectionFactory == SET_AS_CONNECTIONFACTORY) {
@@ -963,12 +965,12 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 
 			}
 			return (pmf.URL.equals(this.URL) && pmf.userName.equals(this.userName) &&
-				pmf.password.equals(this.password) &&
-				pmf.driverName.equals(this.driverName) &&
-                                       equalBooleanProperties(pmf));
+					Arrays.equals(pmf.password, this.password) &&
+					pmf.driverName.equals(this.driverName) &&
+								   equalBooleanProperties(pmf));
 		}
 		return false;
-    	}
+	}
 
     	/**
          * Computes the hash code of this PersistenceManagerFactory.
@@ -982,9 +984,9 @@ public class PersistenceManagerFactoryImpl implements PersistenceManagerFactory
 			return dataSource.hashCode();
 		} else if (connectionFactoryName != null) {
 			return connectionFactoryName.hashCode();
-                }
-		return URL.hashCode() + userName.hashCode() + password.hashCode() + driverName.hashCode();
-        }
+		}
+		return URL.hashCode() + userName.hashCode() + Arrays.hashCode(password) + driverName.hashCode();
+	}
 
 	/**
 	 * INTERNAL

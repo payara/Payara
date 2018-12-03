@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -138,38 +139,17 @@ public class JarUtil {
                 getResourceAsStream(rarName + RAR_EXTENSION);
         if (is != null) {
             String fileName = installDir + File.separator + rarName + RAR_EXTENSION;
-            FileOutputStream os = null;
-            try {
-                os = new FileOutputStream(fileName);
-                Util.copy(is, os, is.available());
+            try (InputStream inputStream = is;
+                 FileOutputStream outputStream = new FileOutputStream(fileName)) {
+                Util.copy(inputStream, outputStream, inputStream.available());
             } catch (IOException e) {
                 LogFacade.log(logger,
                         Level.WARNING,
                         LogFacade.BOOTSTRAP_CANT_EXTRACT_ARCHIVE,
                         e,
                         rarName);
-                
-                return false;
-            } finally {
-                try {
-                    if (os != null) {
-                        os.close();
-                    }
-                } catch (IOException ioe) {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Exception while closing archive [ " +
-                                fileName + " ]", ioe);
-                    }
-                }
 
-                try {
-                    is.close();
-                } catch (IOException ioe) {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Exception while closing archive [ " +
-                                rarName + " ]", ioe);
-                    }
-                }
+                return false;
             }
 
             File file = new File(fileName);
@@ -193,47 +173,23 @@ public class JarUtil {
     }
 
     public static void extractJar(File jarFile, String destDir) throws IOException {
-        java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFile);
-        java.util.Enumeration enum1 = jar.entries();
-        while (enum1.hasMoreElements()) {
-            java.util.jar.JarEntry file = (java.util.jar.JarEntry) enum1.nextElement();
-            java.io.File f = new java.io.File(destDir + java.io.File.separator + file.getName());
-            if (file.isDirectory()) {
-                f.mkdir();
-                continue;
-            } else if (f.exists()) {
-                continue;
-            }
-            InputStream is = null;
-            FileOutputStream fos = null;
-            try {
-                is = jar.getInputStream(file);
-                fos = new FileOutputStream(f);
-                int count = 0;
-                byte[] buffer = new byte[8192];
-                while ((count = is.read(buffer, 0, buffer.length)) != -1) {
-                    fos.write(buffer, 0, count);
+        try (java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFile)) {
+            java.util.Enumeration enum1 = jar.entries();
+            while (enum1.hasMoreElements()) {
+                java.util.jar.JarEntry file = (java.util.jar.JarEntry) enum1.nextElement();
+                java.io.File f = new java.io.File(destDir + java.io.File.separator + file.getName());
+                if (file.isDirectory()) {
+                    f.mkdir();
+                    continue;
+                } else if (f.exists()) {
+                    continue;
                 }
-            } finally {
-                try {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                } catch (Exception e) {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "exception while closing archive [ " +
-                                f.getName() + " ]", e);
-                    }
-                }
-
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (Exception e) {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "exception while closing archive [ " +
-                                file.getName() + " ]", e);
+                try (InputStream is = jar.getInputStream(file);
+                     FileOutputStream fos = new FileOutputStream(f)) {
+                    int count = 0;
+                    byte[] buffer = new byte[8192];
+                    while ((count = is.read(buffer, 0, buffer.length)) != -1) {
+                        fos.write(buffer, 0, count);
                     }
                 }
             }

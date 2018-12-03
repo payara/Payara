@@ -156,8 +156,12 @@
         setPageSessionAttribute(key="isParentUrlEmpty", value="#{empty pageSession.parentUrl}");
         if (!#{pageSession.isParentUrlEmpty}){
             setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}");
-            gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
-            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");        
+            setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
+            py.onlyGetMicroProfileProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
+            py.convertToConfigProperties(props="#{pageSession.modifiedProps}" convertedProps="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.convertedProps}");
+            setPageSessionAttribute(key="isMicroProfileProps", value="#{true}");
         }
     />
 </event>
@@ -167,7 +171,7 @@
 #include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
     <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitle}"
                helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.property.pageTitleHelpText}" >
-#include "/common/appServer/instancePropertiesButtons.jsf"
+#include "/common/appServer/propertiesButtons.jsf"
     </sun:title>
 
 #include "/common/shared/alertMsg_1.inc"
@@ -238,7 +242,7 @@
 #include "/common/shared/propertyDescTable.inc"
 
         <sun:title id="bottomTitle">
-#include "/common/appServer/instancePropertiesButtons.jsf"
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
       <sun:hidden id="helpKey" value="$resource{help_common.instanceProperties}"/>
     </sun:form>

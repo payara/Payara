@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.stringifier;
 
@@ -51,7 +52,7 @@ package org.glassfish.admin.amx.util.stringifier;
 	- modifying toString() requires modifying the orignal class; a Stringifier
 	or many of them can exist independently, making it easy to apply many different
 	types of formatting to the same class.
-	
+
 	The intended use is generally to have a separate class implement Stringifier, rather
 	than the class to be stringified.
  */
@@ -63,9 +64,9 @@ public interface Stringifier
 		of user.
 		<p>
 		The resulting String should be suitable for display to a user.
-		
+
 		@param object	the Object for which a String should be produced
 	 */
-	public String	stringify( Object object );
+	String	stringify( Object object );
 }
 

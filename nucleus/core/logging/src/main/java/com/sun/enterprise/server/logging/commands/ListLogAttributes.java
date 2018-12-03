@@ -124,9 +124,9 @@ public class ListLogAttributes implements AdminCommand {
             boolean isDas = targetInfo.isDas();
             
             if (targetConfigName != null && !targetConfigName.isEmpty()) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
+                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName, false);
             } else if (isDas) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties();
+                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(false);
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 String msg = localStrings.getLocalString("invalid.target.sys.props",

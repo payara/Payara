@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -72,8 +73,7 @@ public final class JMXUtil
 
     public static MBeanServerDelegateMBean getMBeanServerDelegateMBean(final MBeanServerConnection server)
     {
-        final MBeanServerDelegateMBean delegate = newProxyInstance(server, newObjectName(MBEAN_SERVER_DELEGATE), MBeanServerDelegateMBean.class);
-        return delegate;
+        return newProxyInstance(server, newObjectName(MBEAN_SERVER_DELEGATE), MBeanServerDelegateMBean.class);
     }
 
     /** Create a new proxy supporting Notifications<p>
@@ -1802,7 +1802,7 @@ public final class JMXUtil
     public static String toString(final Descriptor d, final int indent)
     {
         final String NL = NL();
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         if (d != null && d.getFieldNames().length != 0)
         {
             buf.append(idt(indent)).append("Descriptor  = ").append(NL);
@@ -1812,11 +1812,6 @@ public final class JMXUtil
             }
             buf.append(NL);
         }
-        else
-        {
-            //buf.append( idt(indent) + "Descriptor = n/a" + NL );
-        }
-
         return buf.toString();
     }
 
@@ -1849,7 +1844,7 @@ public final class JMXUtil
     public static String toString(final MBeanOperationInfo info, final int indent)
     {
         final String NL = NL();
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
 
         final String idt = idt(indent + 2);
 
@@ -1870,7 +1865,7 @@ public final class JMXUtil
     public static String toString(final MBeanAttributeInfo info, final int indent)
     {
         final String NL = NL();
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
 
         final String idt = idt(indent + 2);
 
@@ -1916,7 +1911,7 @@ public final class JMXUtil
      */
     public static String toString(final MBeanInfo info)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         final String NL = NL();
 
         int indent = 2;
@@ -1959,7 +1954,7 @@ public final class JMXUtil
 
     private static String idt(final int num)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < num; ++i)
         {
             buf.append(" ");

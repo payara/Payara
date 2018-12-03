@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -377,6 +377,10 @@ public class JavaWebStartInfo implements ConfigListener {
             JWSAdapterManager.userFriendlyContextRoot(acServerApp)});
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private void processExtensionReferences() throws IOException {
         
         // TODO: needs to be expanded to handle signed library JARS, perhap signed by different certs
@@ -401,6 +405,10 @@ public class JavaWebStartInfo implements ConfigListener {
 
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private String extensionName(final File f) throws IOException {
         JarFile jf = null;
         try {
@@ -416,6 +424,10 @@ public class JavaWebStartInfo implements ConfigListener {
         }
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private File signedFileForDomainFile(final File unsignedFile) {
 
         final File rootForSignedFilesInDomain = jwsAdapterManager.rootForSignedFilesInDomain();
@@ -424,10 +436,18 @@ public class JavaWebStartInfo implements ConfigListener {
         return new File(signedFileURI);
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private URI relativeURIToDomainFile(final File domainFile) {
         return serverEnv.getDomainRoot().toURI().relativize(domainFile.toURI());
     }
 
+    /**
+     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
+     */
+    @Deprecated
     private String jarElementsForExtensions(final Set<Extension> exts) {
         final StringBuilder sb = new StringBuilder();
         for (Extension e : exts) {

@@ -137,6 +137,7 @@ public interface OpenIdConstant {
     public static final String MIDDLE_NAME = "middle_name";
     public static final String NICKNAME = "nickname";
     public static final String PREFERRED_USERNAME = "preferred_username";
+    public static final String GROUPS = "groups";
     public static final String PROFILE = "profile";
     public static final String PICTURE = "picture";
     public static final String WEBSITE = "website";

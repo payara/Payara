@@ -40,35 +40,14 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.channels.FileChannel;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.servlet.SingleThreadModel;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.tools.ws.util.xml.XmlUtil;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
@@ -91,22 +70,20 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebService;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
-import com.sun.enterprise.deployment.archivist.Archivist;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.tools.ws.util.xml.XmlUtil;
+import javax.inject.Inject;
+import javax.servlet.SingleThreadModel;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.net.*;
+import java.nio.channels.FileChannel;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Webservices module deployer. This is loaded from WebservicesContainer
@@ -160,16 +137,17 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
                 return false;
             }
             BundleDescriptor bundle = DOLUtils.getCurrentBundleForContext(dc);
+            if (bundle == null) {
+                logger.log(Level.SEVERE, LogUtils.FAILED_LOADING_DD);
+                return false;
+            }
 
             String moduleCP = getModuleClassPath(dc);
             final List<URL> moduleCPUrls = ASClassLoaderUtil.getURLsFromClasspath(moduleCP, File.pathSeparator, null);
             final ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
-            URLClassLoader newCl = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
-                @Override
-                public URLClassLoader run() {
-                    return new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl);
-                }
-            });
+            URLClassLoader newCl = AccessController.doPrivileged(
+                (PrivilegedAction<URLClassLoader>) () -> new URLClassLoader(ASClassLoaderUtil.convertURLListToArray(moduleCPUrls), oldCl)
+            );
 
             Thread.currentThread().setContextClassLoader(newCl);
             WebServicesDescriptor wsDesc = bundle.getWebServices();
@@ -399,33 +377,20 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             mkDirs(dest.getParentFile());
             mkFile(dest);
         }
-
-        FileChannel srcChannel = null;
-        FileChannel destChannel = null;
-        try {
-            srcChannel = new FileInputStream(src).getChannel();
-            destChannel = new FileOutputStream(dest).getChannel();
+        try (FileInputStream fileInputStream = new FileInputStream(src);
+             FileOutputStream fileOutputStream = new FileOutputStream(dest);
+             FileChannel srcChannel = fileInputStream.getChannel();
+             FileChannel destChannel = fileOutputStream.getChannel()) {
             destChannel.transferFrom(srcChannel, 0, srcChannel.size());
-        } finally {
-            if (srcChannel != null) {
-                srcChannel.close();
-            }
-            if (destChannel != null) {
-                destChannel.close();
-            }
         }
     }
 
     public void downloadFile(URL httpUrl, File toFile) throws Exception {
-        InputStream is = null;
-        FileOutputStream os = null;
-        try {
-            if (!toFile.createNewFile()) {
-                throw new Exception(format(resourceBundle.getString(LogUtils.FILECREATION_ERROR), toFile.getAbsolutePath()));
-            }
-            is = httpUrl.openStream();
-
-            os = new FileOutputStream(toFile, true);
+        if (!toFile.createNewFile()) {
+            throw new Exception(format(resourceBundle.getString(LogUtils.FILECREATION_ERROR), toFile.getAbsolutePath()));
+        }
+        try (InputStream is = httpUrl.openStream();
+             FileOutputStream os = new FileOutputStream(toFile, true)) {
             int readCount;
             byte[] buffer = new byte[10240]; // Read 10KB at a time
             while (true) {
@@ -437,16 +402,6 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
                 }
             }
             os.flush();
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } finally {
-                if (os != null) {
-                    os.close();
-                }
-            }
         }
     }
 
@@ -469,10 +424,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
         // buggy tools.
         factory.setExpandEntityReferences(false);
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        InputStream is = null;
-        try {
+        try (InputStream is = wsdlFileUrl.openStream()) {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            is = wsdlFileUrl.openStream();
             Document document = builder.parse(is);
             procesSchemaImports(document, schemaRelativeImports);
             procesWsdlImports(document, wsdlRelativeImports);
@@ -489,16 +442,6 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             logger.log(Level.SEVERE, LogUtils.ERROR_OCCURED, x);
         } catch (Exception sxe) {
             logger.log(Level.SEVERE, LogUtils.WSDL_PARSING_ERROR, sxe.getMessage());
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException io) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, io.getMessage());
-                }
-            }
         }
     }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * StringScanner.java
@@ -56,7 +57,7 @@ import java.util.*;
 //
 public class StringScanner
 {
-	private static String           intStrTable[]           = new String[2048];	
+	private static String           intStrTable[]           = new String[2048];
 
 	static int skipWhite(String s, int offset)
 	{
@@ -114,13 +115,13 @@ public class StringScanner
 		return offset;
 	}
 
-	public static String format(StringBuffer buf, String fmt, Object o1)
+	public static String format(StringBuilder buf, String fmt, Object o1)
 	{
 		return format(buf, fmt, 1, o1, null, null, null, null, null, null,
 				null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						Object o1,
 						Object o2)
 	{
@@ -128,7 +129,7 @@ public class StringScanner
 				null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3)
@@ -137,7 +138,7 @@ public class StringScanner
 					null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -147,7 +148,7 @@ public class StringScanner
 					null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -157,7 +158,7 @@ public class StringScanner
 		return format(buf, fmt, 5, o1, o2, o3, o4, o5, null, null, null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -168,7 +169,7 @@ public class StringScanner
 		return format(buf, fmt, 6, o1, o2, o3, o4, o5, o6, null, null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -180,7 +181,7 @@ public class StringScanner
 		return format(buf, fmt, 7, o1, o2, o3, o4, o5, o6, o7, null, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -193,7 +194,7 @@ public class StringScanner
 		return format(buf, fmt, 8, o1, o2, o3, o4, o5, o6, o7, o8, null);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 Object o1,
 						 Object o2,
 						 Object o3,
@@ -207,7 +208,7 @@ public class StringScanner
 		return format(buf, fmt, 9, o1, o2, o3, o4, o5, o6, o7, o8, o9);
 	}
 
-	public static String format(StringBuffer buf, String fmt,
+	public static String format(StringBuilder buf, String fmt,
 						 int argcnt,
 						 Object o1,
 						 Object o2,
@@ -225,11 +226,11 @@ public class StringScanner
 		int begSubstr = 0;
 		int percent;
 		int nextParam = 0;
-		StringBuffer msg;
+		StringBuilder msg;
 		int fmtLen;
 
 		if (buf == null)
-			msg = new StringBuffer();
+			msg = new StringBuilder();
 		else
 			msg = buf;
 
@@ -264,7 +265,7 @@ public class StringScanner
 					Object	p = params[nextParam++];
 					String	val = p.toString();
 					int		len = val.length();
-					
+
 					if (!raw)
 					{
 						if (!leftJustify && len < size)
@@ -410,7 +411,7 @@ public class StringScanner
 		// the pesty single quote escape character
 		int esc;
 		boolean foundEsc = false;
-		StringBuffer msg = new StringBuffer();
+		StringBuilder msg = new StringBuilder();
 
 		i = 0;
 		while ((esc = message.indexOf('\'', i)) >= 0)
@@ -430,7 +431,7 @@ public class StringScanner
 		char c;
 		i = 0;
 		int msglen = message.length();
-		msg = new StringBuffer();
+		msg = new StringBuilder();
 		while (   (lbrace = message.indexOf('{', i)) >= 0
 			   && lbrace < msglen-1)
 		{
@@ -491,12 +492,12 @@ public class StringScanner
 	}
 
 	/**
-	 * Return a string containing a "level" number of spaces. 
+	 * Return a string containing a "level" number of spaces.
 	 * <P>
 	 * 	Used for formatted print, this will return a string containing 4
 	 *  spaces for each specified level.
-	 * @return The requested string. 
-	 * @param level The level to fill to. 
+	 * @return The requested string.
+	 * @param level The level to fill to.
 	 */
 	//
 	// CHANGES
@@ -538,9 +539,9 @@ public class StringScanner
 	 * Split a string into sub-strings based on a given delimeter.
 	 * <P>
 	 *  Split str based on the delimeter and return as an array of Strings.
-	 * @return An array of sub-strings 
-	 * @param delimeter The string representing the delimeters. 
-	 * @param str The string to process. 
+	 * @return An array of sub-strings
+	 * @param delimeter The string representing the delimeters.
+	 * @param str The string to process.
 	 */
 	//
 	// CHANGES
@@ -556,7 +557,7 @@ public class StringScanner
 		int		start;
 		int		delLen;
     	Vector	list;
-	
+
 		list = new Vector();
 
     	if (str != null)
@@ -580,14 +581,14 @@ public class StringScanner
 	}
 
 	/**
-	 * Fills a string with blanks to a given size. 
+	 * Fills a string with blanks to a given size.
 	 * <P>
-	 *  Left or right fills the given string with spaces (' '). 
+	 *  Left or right fills the given string with spaces (' ').
 	 * @return A new filled string.
 	 * false.
 	 * @param left true when the text should be left justified, otherwise
-	 * @param len The desired length of the formatted string. 
-	 * @param str The string to process. 
+	 * @param len The desired length of the formatted string.
+	 * @param str The string to process.
 	 */
 	//
 	// CHANGES
@@ -724,7 +725,7 @@ public class StringScanner
 								obj5, obj6, obj7, obj8, obj9);
 	}
 
-	
+
 	public static String getIntStr(int num)
 	{
 		String	str;

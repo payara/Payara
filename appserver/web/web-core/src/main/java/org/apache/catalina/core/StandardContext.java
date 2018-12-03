@@ -218,7 +218,7 @@ public class StandardContext
     // have two similar messages
     // have two similar messages
     // have to similar messages
-	
+
 	private static final String DEFAULT_RESPONSE_CHARACTER_ENCODING = "ISO-8859-1";
 
     private static final ClassLoader standardContextClassLoader =
@@ -329,7 +329,7 @@ public class StandardContext
      * The Java class name of the CharsetMapper class to be created.
      */
     private String charsetMapperClass = CharsetMapper.class.getName();
-    
+
 	/**
 	 * The request character encoding.
 	 */
@@ -978,16 +978,14 @@ public class StandardContext
     /**
      * Returns true if the internal naming support is used.
      */
-    public boolean isUseNaming() {
-        synchronized (this) {
-            return useNaming;
-        }
+    public synchronized boolean isUseNaming() {
+        return useNaming;
     }
 
     /**
      * Enables or disables naming.
      */
-    public void setUseNaming(boolean useNaming) {
+    public synchronized void setUseNaming(boolean useNaming) {
         this.useNaming = useNaming;
     }
 
@@ -1092,7 +1090,7 @@ public class StandardContext
         support.firePropertyChange("charsetMapper", oldCharsetMapper,
                                    this.charsetMapper);
     }
-    
+
 	@Override
 	public String getRequestCharacterEncoding() {
 		return requestCharacterEncoding;
@@ -1360,7 +1358,9 @@ public class StandardContext
      */
     @Override
     public String getDocBase() {
-        return docBase;
+        synchronized (this) {
+            return docBase;
+        }
     }
 
     /**
@@ -1962,7 +1962,7 @@ public class StandardContext
 
         final DirContext oldResources = ContextsAdapterUtility.unwrap(
                 alternateDocBase.getWebappResources());
-        
+
         if (oldResources == resources)
             return;
 
@@ -2164,9 +2164,9 @@ public class StandardContext
      * Return the work directory for this Context.
      */
     public String getWorkDir() {
-
-        return (this.workDir);
-
+        synchronized (this) {
+            return (this.workDir);
+        }
     }
 
 
@@ -2495,7 +2495,7 @@ public class StandardContext
     /**
      * Add a filter definition to this Context.
      * @param filterDef The filter definition to be added
-     * @param isProgrammatic 
+     * @param isProgrammatic
      * @param createRegistration
      */
     public void addFilterDef(FilterDef filterDef, boolean isProgrammatic,
@@ -2973,7 +2973,7 @@ public class StandardContext
      */
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-        return sessionTrackingModes != null ? 
+        return sessionTrackingModes != null ?
             new HashSet<>(sessionTrackingModes) :
             getDefaultSessionTrackingModes();
     }
@@ -3095,8 +3095,8 @@ public class StandardContext
             listener = createListenerInstance(listenerClass);
         } catch(Throwable t) {
              throw new IllegalArgumentException(t);
-        }    
-        
+        }
+
         addListener(listener);
     }
 
@@ -3849,7 +3849,7 @@ public class StandardContext
     /**
      * Checks whether this context contains the given Servlet instance
      * @param servlet
-     * @return 
+     * @return
      */
     public boolean hasServlet(Servlet servlet) {
         for (Map.Entry<String, Container> e : children.entrySet()) {
@@ -3964,7 +3964,7 @@ public class StandardContext
      * the Java implementation class appropriate for this Context
      * implementation.  The constructor of the instantiated Wrapper
      * will have been called, but no properties will have been set.
-     * @return 
+     * @return
      */
     @Override
     public Wrapper createWrapper() {
@@ -4027,7 +4027,7 @@ public class StandardContext
 
     /**
      * Return the set of application parameters for this application.
-     * @return 
+     * @return
      */
     @Override
     public List<ApplicationParameter> findApplicationParameters() {
@@ -4036,7 +4036,7 @@ public class StandardContext
 
     /**
      * Gets the security constraints defined for this web application.
-     * @return 
+     * @return
      */
     @Override
     public List<SecurityConstraint> getConstraints() {
@@ -4046,7 +4046,7 @@ public class StandardContext
     /**
      * Checks whether this web application has any security constraints
      * defined.
-     * @return 
+     * @return
      */
     @Override
     public boolean hasConstraints() {
@@ -4058,7 +4058,7 @@ public class StandardContext
      * otherwise, return <code>null</code>.
      *
      * @param name Name of the desired EJB resource reference
-     * @return 
+     * @return
      */
     @Override
     public ContextEjb findEjb(String name) {
@@ -4068,7 +4068,7 @@ public class StandardContext
     /**
      * Return the defined EJB resource references for this application.
      * If there are none, a zero-length array is returned.
-     * @return 
+     * @return
      */
     @Override
     public ContextEjb[] findEjbs() {
@@ -4080,7 +4080,7 @@ public class StandardContext
      * otherwise, return <code>null</code>.
      *
      * @param name Name of the desired environment entry
-     * @return 
+     * @return
      */
     @Override
     public ContextEnvironment findEnvironment(String name) {
@@ -4091,7 +4091,7 @@ public class StandardContext
      * Return the set of defined environment entries for this web
      * application.  If none have been defined, a zero-length array
      * is returned.
-     * @return 
+     * @return
      */
     @Override
     public ContextEnvironment[] findEnvironments() {
@@ -4103,7 +4103,7 @@ public class StandardContext
      * if any; otherwise return <code>null</code>.
      *
      * @param errorCode Error code to look up
-     * @return 
+     * @return
      */
     @Override
     public ErrorPage findErrorPage(int errorCode) {
@@ -4119,7 +4119,7 @@ public class StandardContext
      * if any; otherwise return <code>null</code>.
      *
      * @param exceptionType Exception type to look up
-     * @return 
+     * @return
      */
     @Override
     public ErrorPage findErrorPage(String exceptionType) {
@@ -4147,7 +4147,7 @@ public class StandardContext
      * otherwise return <code>null</code>.
      *
      * @param filterName Filter name to look up
-     * @return 
+     * @return
      */
     @Override
     public FilterDef findFilterDef(String filterName) {
@@ -4169,7 +4169,7 @@ public class StandardContext
 
     /**
      * Return the list of filter mappings for this Context.
-     * @return 
+     * @return
      */
     @Override
     public List<FilterMap> findFilterMaps() {
@@ -5317,7 +5317,7 @@ public class StandardContext
             sc.setInitParameter(entry.getKey(), entry.getValue());
         }
     }
-    
+
     /**
      * Allocate resources, including proxy.
      * Return <code>true</code> if initialization was successfull,
@@ -5780,11 +5780,11 @@ public class StandardContext
     protected Types getTypes() {
         return null;
     }
-    
+
     protected boolean isStandalone() {
         return true;
     }
-    
+
     protected void callServletContainerInitializers()
             throws LifecycleException {
 
@@ -5806,7 +5806,7 @@ public class StandardContext
         // only within the scope of ServletContainerInitializer#onStartup
         isProgrammaticServletContextListenerRegistrationAllowed = true;
 
-        // We have the list of initializers and the classes that satisfy the condition. 
+        // We have the list of initializers and the classes that satisfy the condition.
         // Time to call the initializers
         ServletContext ctxt = this.getServletContext();
         try {
@@ -5815,19 +5815,19 @@ public class StandardContext
 
                 try {
                     if (log.isLoggable(FINE)) {
-                        log.log(FINE, 
+                        log.log(FINE,
                             "Calling ServletContainerInitializer [" + initializer + "] onStartup with classes " + e.getValue());
                     }
                     ServletContainerInitializer iniInstance = initializer.newInstance();
-                    
+
                     fireContainerEvent(BEFORE_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
-                    
+
                     iniInstance.onStartup(initializerList.get(initializer), ctxt);
-                    
+
                     fireContainerEvent(AFTER_CONTEXT_INITIALIZER_ON_STARTUP, iniInstance);
                 } catch (Throwable t) {
-                    log.log(SEVERE, 
-                        format(rb.getString(INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION), initializer.getCanonicalName()), 
+                    log.log(SEVERE,
+                        format(rb.getString(INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION), initializer.getCanonicalName()),
                         t
                     );
                     throw new LifecycleException(t);
@@ -6093,7 +6093,7 @@ public class StandardContext
         eventListeners.clear();
         contextListeners.clear();
         sessionListeners.clear();
-        
+
         requestCharacterEncoding = null;
         responseCharacterEncoding = DEFAULT_RESPONSE_CHARACTER_ENCODING;
 
@@ -7119,7 +7119,7 @@ public class StandardContext
         Wrapper wrapper = (Wrapper) findChild(name);
         if (wrapper == null)
             return null;
-        
+
         return new ApplicationDispatcher(wrapper, null, null, null, null, null, name);
 
     }
@@ -7691,7 +7691,7 @@ public class StandardContext
     /**
      * Checks if the context has been initialised.
      * If it has, then no servlets or servlet filters can be added to it.
-     * @return 
+     * @return
      */
     boolean isContextInitializedCalled() {
         return isContextInitializedCalled;
@@ -7732,7 +7732,7 @@ public class StandardContext
      * logic for classes that are normally not serializable (such as
      * javax.naming.Context).
      * @param os
-     * @return 
+     * @return
      */
     public ObjectOutputStream createObjectOutputStream(OutputStream os)
             throws IOException {
@@ -7768,11 +7768,11 @@ public class StandardContext
     /*
      * HTTP session related monitoring events
      */
-    
+
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider
-     * @param session 
+     * @param session
      */
     public void sessionCreatedEvent(HttpSession session) {
         // Deliberate noop
@@ -7781,7 +7781,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionDestroyedEvent
-     * @param session 
+     * @param session
      */
     public void sessionDestroyedEvent(HttpSession session) {
         // Deliberate noop
@@ -7790,7 +7790,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionRejectedEvent
-     * @param maxSessions 
+     * @param maxSessions
      */
     public void sessionRejectedEvent(int maxSessions) {
         // Deliberate noop
@@ -7799,7 +7799,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionExpiredEvent
-     * @param session 
+     * @param session
      */
     public void sessionExpiredEvent(HttpSession session) {
         // Deliberate noop
@@ -7808,7 +7808,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPersistedStartEvent
-     * @param session 
+     * @param session
      */
     public void sessionPersistedStartEvent(HttpSession session) {
         // Deliberate noop
@@ -7817,7 +7817,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPersistedEndEvent
-     * @param session 
+     * @param session
      */
     public void sessionPersistedEndEvent(HttpSession session) {
         // Deliberate noop
@@ -7826,7 +7826,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionActivatedStartEvent
-     * @param session 
+     * @param session
      */
     public void sessionActivatedStartEvent(HttpSession session) {
         // Deliberate noop
@@ -7835,7 +7835,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionActivatedEndEvent
-     * @param session 
+     * @param session
      */
     public void sessionActivatedEndEvent(HttpSession session) {
         // Deliberate noop
@@ -7844,7 +7844,7 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPassivatedStartEvent
-     * @param session 
+     * @param session
      */
     public void sessionPassivatedStartEvent(HttpSession session) {
         // Deliberate noop
@@ -7853,14 +7853,14 @@ public class StandardContext
     /**
      * Trigger for monitoring
      * @see org.glassfish.web.admin.monitor.SessionStatsProvider#sessionPassivatedEndEvent
-     * @param session 
+     * @param session
      */
     public void sessionPassivatedEndEvent(HttpSession session) {
         // Deliberate noop
     }
 
     /**
-     * 
+     *
      * @return 0
      */
     public long getUniqueId() {

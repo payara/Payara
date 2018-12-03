@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,49 +39,51 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
-import static com.nimbusds.jose.JWSAlgorithm.RS256;
-import static java.util.Arrays.asList;
-import static javax.json.Json.createObjectBuilder;
-import static org.eclipse.microprofile.jwt.Claims.exp;
-import static org.eclipse.microprofile.jwt.Claims.groups;
-import static org.eclipse.microprofile.jwt.Claims.iat;
-import static org.eclipse.microprofile.jwt.Claims.iss;
-import static org.eclipse.microprofile.jwt.Claims.jti;
-import static org.eclipse.microprofile.jwt.Claims.preferred_username;
-import static org.eclipse.microprofile.jwt.Claims.raw_token;
-import static org.eclipse.microprofile.jwt.Claims.sub;
-import static org.eclipse.microprofile.jwt.Claims.upn;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.SignedJWT;
+import org.eclipse.microprofile.jwt.Claims;
 
+import javax.json.*;
 import java.io.StringReader;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import javax.json.Json;
-import javax.json.JsonNumber;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-
-import org.eclipse.microprofile.jwt.Claims;
-
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
+import static com.nimbusds.jose.JWSAlgorithm.RS256;
+import static java.util.Arrays.asList;
+import static javax.json.Json.createObjectBuilder;
+import static org.eclipse.microprofile.jwt.Claims.*;
 
 /**
  * Parses a JWT bearer token and validates it according to the MP-JWT rules.
- * 
+ *
  * @author Arjan Tijms
  */
 public class JwtTokenParser {
     
+    private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
+    
     private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
+    
+    private final boolean enableNamespacedClaims;
+    private final Optional<String> customNamespace;
+
+    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
+        this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
+        this.customNamespace = customNamespace;
+    }
+
+    public JwtTokenParser() {
+        this(Optional.empty(), Optional.empty());
+    }
     
     public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(bearerToken);
-        
+
         // MP-JWT 1.0 4.1 typ
         if (!checkIsJWT(signedJWT.getHeader())) {
             throw new IllegalStateException("Not JWT");
@@ -91,42 +93,61 @@ public class JwtTokenParser {
         if (!signedJWT.getHeader().getAlgorithm().equals(RS256)) {
             throw new IllegalStateException("Not RS256");
         }
-        
-        Map<String, JsonValue> rawClaims = 
-                new HashMap<>(
-                        Json.createReader(new StringReader(signedJWT.getPayload().toString()))
-                            .readObject());
-        
-        // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
-        if (!checkRequiredClaimsPresent(rawClaims)) {
-            throw new IllegalStateException("Not all required claims present");
-        }
-        
-        // MP-JWT 1.0 4.1 upn - has fallbacks
-        String callerPrincipalName = getCallerPrincipalName(rawClaims);
-        if (callerPrincipalName == null) {
-            throw new IllegalStateException("One of upn, preferred_username or sub is required to be non null");
-        }
-        
-        // MP-JWT 1.0 6.1 2
-        if (!checkIssuer(rawClaims, issuer)) {
-            throw new IllegalStateException("Bad issuer");
-        }
-        
-        if (!checkNotExpired(rawClaims)) {
-            throw new IllegalStateException("Expired");
-        }
 
-        // MP-JWT 1.0 6.1 2
-        if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
-            throw new IllegalStateException("Signature invalid");
+        try (JsonReader reader = Json.createReader(new StringReader(signedJWT.getPayload().toString()))) {
+            Map<String, JsonValue> rawClaims = new HashMap<>(reader.readObject());
+            
+            // Vendor - Process namespaced claims
+            rawClaims = handleNamespacedClaims(rawClaims);
+            
+            // MP-JWT 1.0 4.1 Minimum MP-JWT Required Claims
+            if (!checkRequiredClaimsPresent(rawClaims)) {
+                throw new IllegalStateException("Not all required claims present");
+            }
+
+            // MP-JWT 1.0 4.1 upn - has fallbacks
+            String callerPrincipalName = getCallerPrincipalName(rawClaims);
+            if (callerPrincipalName == null) {
+                throw new IllegalStateException("One of upn, preferred_username or sub is required to be non null");
+            }
+
+            // MP-JWT 1.0 6.1 2
+            if (!checkIssuer(rawClaims, issuer)) {
+                throw new IllegalStateException("Bad issuer");
+            }
+
+            if (!checkNotExpired(rawClaims)) {
+                throw new IllegalStateException("Expired");
+            }
+
+            // MP-JWT 1.0 6.1 2
+            if (!signedJWT.verify(new RSASSAVerifier((RSAPublicKey) publicKey))) {
+                throw new IllegalStateException("Signature invalid");
+            }
+
+            rawClaims.put(
+                    raw_token.name(),
+                    createObjectBuilder().add("token", bearerToken).build().get("token"));
+
+            return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
-        
-        rawClaims.put(
-                raw_token.name(), 
-                createObjectBuilder().add("token", bearerToken).build().get("token"));
-        
-        return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
+    }
+    
+    private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
+        if(this.enableNamespacedClaims){
+            final String namespace = customNamespace.orElse(DEFAULT_NAMESPACE);
+            Map<String, JsonValue> processedClaims = new HashMap<>(currentClaims.size());
+            for(String claimName : currentClaims.keySet()){
+                JsonValue value = currentClaims.get(claimName);
+                if(claimName.startsWith(namespace)){
+                    claimName = claimName.substring(namespace.length());
+                }
+                processedClaims.put(claimName, value);
+            }
+            return processedClaims;
+        }else{
+            return currentClaims;
+        }
     }
         
     private boolean checkRequiredClaimsPresent(Map<String, JsonValue> presentedClaims) {
@@ -135,7 +156,6 @@ public class JwtTokenParser {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -160,22 +180,22 @@ public class JwtTokenParser {
     private boolean checkIsJWT(JWSHeader header) {
         return header.getType().toString().equals("JWT");
     }
-    
+
     private String getCallerPrincipalName(Map<String, JsonValue> rawClaims) {
         JsonString callerPrincipalClaim = (JsonString) rawClaims.get(upn.name());
-        
+
         if (callerPrincipalClaim == null) {
             callerPrincipalClaim = (JsonString) rawClaims.get(preferred_username.name());
         }
-        
+
         if (callerPrincipalClaim == null) {
             callerPrincipalClaim = (JsonString) rawClaims.get(sub.name());
         }
-        
+
         if (callerPrincipalClaim == null) {
             return null;
         }
-        
+
         return callerPrincipalClaim.getString();
     }
 
