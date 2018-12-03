@@ -68,6 +68,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.InjectionTargetFactory;
 import javax.enterprise.util.AnnotationLiteral;
 import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
@@ -207,7 +208,13 @@ public class TransactionScopedCDIUtil {
             this.beanClass = beanClass;
             Optional<JavaEEContextUtil> ctxUtil = Optional.empty();
             try {
-                ctxUtil = Optional.ofNullable(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class));
+                ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+                if (serviceLocator == null) {
+                    serviceLocator = Globals.getStaticHabitat();
+                }
+                if (serviceLocator != null) {
+                    ctxUtil = Optional.ofNullable(serviceLocator.getService(JavaEEContextUtil.class));
+                }
             }
             catch(MultiException e) {
                 log(e.getMessage());
