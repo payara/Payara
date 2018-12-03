@@ -318,7 +318,7 @@
 
         <org.apache.felix.main.version>5.6.10</org.apache.felix.main.version>
         <org.apache.felix.webconsole.version>4.3.4</org.apache.felix.webconsole.version>
-        <org.apache.felix.eventadmin.version>1.4.10</org.apache.felix.eventadmin.version>
+        <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.0.10</org.apache.felix.gogo.runtime.version>
         <org.apache.felix.gogo.shell.version>1.0.0</org.apache.felix.gogo.shell.version>
