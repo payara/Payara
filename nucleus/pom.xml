@@ -310,13 +310,14 @@
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.18</snakeyaml.version>
 
-        <jsonp.version>1.1</jsonp.version>
+        <jsonp.version>1.1.4</jsonp.version>
 
         <mimepull.version>1.9.7</mimepull.version>
         
         <opentracing.version>0.31.0</opentracing.version>
-
-        <org.apache.felix.main.version>5.6.10</org.apache.felix.main.version>
+        
+        <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
+        <org.apache.felix.main.version>6.0.1</org.apache.felix.main.version>
         <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.4.10</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
