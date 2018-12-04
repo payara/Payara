@@ -346,6 +346,7 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.1</ant.version>
         <ant-launcher.version>1.10.1</ant-launcher.version>
+        <metainf-services.version>1.8</metainf-services.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
@@ -1238,7 +1239,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
-                <version>1.1</version>
+                <version>${metainf-services.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
