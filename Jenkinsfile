@@ -68,8 +68,8 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
+                    branches: [[name: "*/Update-Jenkins-Branch"]],
+                    userRemoteConfigs: [[url: "https://github.com/Pandrex247/patched-src-javaee8-samples.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
@@ -125,8 +125,8 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/jenkins"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                    branches: [[name: "*/Update-Jenkins-Branch"]],
+                    userRemoteConfigs: [[url: "https://github.com/Pandrex247/patched-src-javaee7-samples.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
