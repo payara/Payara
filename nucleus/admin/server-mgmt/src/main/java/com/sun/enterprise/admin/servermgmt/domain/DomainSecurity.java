@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.glassfish.security.common.FileRealmHelper;
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.servermgmt.MasterPasswordFileManager;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.util.AdminConstants;
@@ -54,8 +55,8 @@ import com.sun.enterprise.util.i18n.StringManager;
 
 public class DomainSecurity extends MasterPasswordFileManager {
 
-    private static final StringManager _strMgr =
-            StringManager.getManager(DomainSecurity.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(DomainSecurity.class);
+
     /**
      * Modifies the contents of given keyfile with administrator's user-name and
      * password. Uses the FileRealm classes that application server's Runtime
@@ -77,19 +78,16 @@ public class DomainSecurity extends MasterPasswordFileManager {
     /**
      * Create the password alias keystore (initially empty)
      *
-     * @param pwFile File to store encrypted password.
+     * @param passwordFile File to store encrypted password.
      * @param password password protecting the keystore
      * @throws RepositoryException if any error occurs in creation.
      */
-    void createPasswordAliasKeystore(File pwFile, String password)
+    void createPasswordAliasKeystore(File passwordFile, String password)
             throws RepositoryException {
         try {
-            PasswordAdapter p = new PasswordAdapter(pwFile.getAbsolutePath(),
-                    password.toCharArray());
-            p.writeStore();
-        }
-        catch (Exception ex) {
-            throw new RepositoryException(_strMgr.getString("passwordAliasKeystoreNotCreated", pwFile), ex);
+            new PasswordAdapter(passwordFile.getAbsolutePath(), password.toCharArray()).writeStore();
+        } catch (Exception ex) {
+            throw new RepositoryException(STRING_MANAGER.getString("passwordAliasKeystoreNotCreated", passwordFile), ex);
         }
     }
 
@@ -102,10 +100,12 @@ public class DomainSecurity extends MasterPasswordFileManager {
      * @param masterPassword Master password.
      * @throws RepositoryException if any error occurs during keystore creation.
      */
-    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword)
-            throws RepositoryException {
-        createKeyStore(new File(configDir, DomainConstants.KEYSTORE_FILE), config, masterPassword);
-        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, new File(configDir, DomainConstants.TRUSTSTORE_FILE));
+    void createSSLCertificateDatabase(File configDir, DomainConfig config, String masterPassword) throws RepositoryException {
+        File trustStore = new File(configDir, DomainConstants.TRUSTSTORE_FILE);
+        File keyStore = new File(configDir, DomainConstants.KEYSTORE_FILE);
+        
+        createKeyStore(keyStore, config, masterPassword);
+        changeKeyStorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
         copyCertificates(configDir, config, masterPassword);
     }
 

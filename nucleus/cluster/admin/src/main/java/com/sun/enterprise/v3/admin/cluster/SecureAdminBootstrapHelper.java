@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
@@ -55,9 +57,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -92,9 +91,9 @@ public abstract class SecureAdminBootstrapHelper {
      * @param remoteNodeDir directory of the remote node on the remote system
      * @param instance name of the instance on the remote node to bootstrap
      * @param node Node from the domain configuration for the target node
-     * @param logger
+     * @param logger Logger to use
      * @return the remote helper
-     * @throws IOException
+     * @throws BootstrapException
      */
     public static SecureAdminBootstrapHelper getRemoteHelper(
             final ServiceLocator habitat,
@@ -194,7 +193,7 @@ public abstract class SecureAdminBootstrapHelper {
     /**
      * Bootstraps the instance for remote admin.
      *
-     * @throws IOException
+     * @throws BootstrapException
      */
     public void bootstrapInstance() throws BootstrapException {
         try {
@@ -216,7 +215,7 @@ public abstract class SecureAdminBootstrapHelper {
     /**
      * Implements the helper functionality for a remote instance.
      */
-    private static abstract class RemoteHelper extends SecureAdminBootstrapHelper {
+    private abstract static class RemoteHelper extends SecureAdminBootstrapHelper {
         final Logger logger;
         final File dasInstanceDir;
         final String instance;
@@ -238,9 +237,6 @@ public abstract class SecureAdminBootstrapHelper {
             remoteInstanceDir = remoteInstanceDir(this.remoteNodeDir);
         }
 
-//        private long dasDomainXMLTimestamp(final File dasInstanceDir) {
-//            return new File(dasInstanceDir.toURI().resolve(DOMAIN_XML_PATH)).lastModified();
-//        }
         abstract void writeToFile(final String path, final InputStream content) throws IOException;
 
         abstract void setLastModified(final String path, final long when) throws IOException;
@@ -313,7 +309,7 @@ public abstract class SecureAdminBootstrapHelper {
          * @return
          */
         Integer secondsSince_01_Jan_1970(final long milliseconds) {
-            return Integer.valueOf((int) (milliseconds) / 1000);
+            return (int) (milliseconds) / 1000;
         }
     }
 
@@ -353,9 +349,7 @@ public abstract class SecureAdminBootstrapHelper {
             catch (IOException ex) {
                 throw new IOException(remoteNodeDir, ex);
             }
-            logger.log(Level.FINE, "Creating remote bootstrap directory "
-                    + remoteDir + " with permissions "
-                    + instanceDirPermissions.toString());
+            logger.log(Level.FINE, "Creating remote bootstrap directory {0} with permissions {1}", new Object[]{remoteDir, instanceDirPermissions.toString()});
             try {
                 ftpClient.mkdirs(remoteDir, instanceDirPermissions);
             }
@@ -530,12 +524,11 @@ public abstract class SecureAdminBootstrapHelper {
         @Override
         protected void close() {
             // Nothing to do for local provider
-            return;
         }
     }
 
     public static class BootstrapException extends Exception {
-        private transient final SSHLauncher launcher;
+        private final transient SSHLauncher launcher;
 
         public BootstrapException(final SSHLauncher launcher, final Exception ex) {
             super(ex);

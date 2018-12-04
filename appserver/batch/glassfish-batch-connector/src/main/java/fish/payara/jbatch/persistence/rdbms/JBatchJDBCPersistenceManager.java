@@ -262,12 +262,13 @@ public class JBatchJDBCPersistenceManager implements
         logger.exiting(CLASSNAME, "createCheckpointData");
     }
 
-	/**
-	 * Set the default schema to the username obtained from the connection based
-	 * on the datasource
-	 * */
-
-	public String setDefaultSchema() throws SQLException {
+    /**
+     * Set the default schema to the username obtained from the connection based on the datasource
+     *
+     * @return the name of the default database schema
+     * @throws SQLException
+     */
+    public String setDefaultSchema() throws SQLException {
 		logger.finest("Entering setDefaultSchema");
 
 		logger.finest("Java EE mode, getting connection from data source");
@@ -275,9 +276,11 @@ public class JBatchJDBCPersistenceManager implements
 
 			DatabaseMetaData dbmd = connection.getMetaData();
 			schema = dbmd.getUserName();
-			if (dbmd.getDatabaseProductName().toLowerCase().contains("mysql")) {
-				schema = "test";
-			}
+                    if (dbmd.getDatabaseProductName().toLowerCase().contains("mysql")) {
+                        schema = "test";
+                    } else if (dbmd.getDatabaseProductName().toLowerCase().contains("postgres")) {
+                        schema = "public";
+                    }
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());

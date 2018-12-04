@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -88,7 +90,8 @@ import javax.inject.Inject;
         description="Create Instance")
 })
 public class CreateInstanceCommand implements AdminCommand {
-    private static final String NL = System.getProperty("line.separator");
+    private static final String NEWLINE = System.lineSeparator();
+    
     @Inject
     private CommandRunner cr;
     @Inject
@@ -223,13 +226,13 @@ public class CreateInstanceCommand implements AdminCommand {
             }
         }
 
-        if (!validateDasOptions(context)) {
+        if (!validateDasOptions()) {
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
             return;
         }
 
         // Then go create the instance filesystem on the node
-        createInstanceFilesystem(context);
+        createInstanceFilesystem();
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
@@ -322,11 +325,7 @@ public class CreateInstanceCommand implements AdminCommand {
             bootHelper.bootstrapInstance();
             bootHelper.close();
             return 0;
-        }
-        catch (IOException ex) {
-            return reportFailure(ex, report);
-        }
-        catch (SecureAdminBootstrapHelper.BootstrapException ex) {
+        } catch (IOException | SecureAdminBootstrapHelper.BootstrapException ex) {
             return reportFailure(ex, report);
         }
     }
@@ -392,7 +391,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
     }
 
-    private void createInstanceFilesystem(AdminCommandContext context) {
+    private void createInstanceFilesystem() {
         ActionReport report = ctx.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
@@ -430,7 +429,7 @@ public class CreateInstanceCommand implements AdminCommand {
         if (userManagedNodeType()) {
             String msg = Strings.get("create.instance.config",
                     instance, humanCommand);
-            msg = StringUtils.cat(NL, registerInstanceMessage, msg);
+            msg = StringUtils.cat(NEWLINE, registerInstanceMessage, msg);
             report.setMessage(msg);
             return;
         }
@@ -456,7 +455,7 @@ public class CreateInstanceCommand implements AdminCommand {
         String msg = Strings.get("create.instance.success",
                 instance, nodeHost);
         if (!terse) {
-            msg = StringUtils.cat(NL,
+            msg = StringUtils.cat(NEWLINE,
                     output.toString().trim(), registerInstanceMessage, msg);
         }
         report.setMessage(msg);
@@ -480,7 +479,7 @@ public class CreateInstanceCommand implements AdminCommand {
      * This ensures we don't step on another domain's node files on a remote
      * instance. See bug GLASSFISH-14985.
      */
-    private boolean validateDasOptions(AdminCommandContext context) {
+    private boolean validateDasOptions() {
         boolean isDasOptionsValid = true;
         if (theNode.isLocal() || (!theNode.isLocal() && theNode.getType().equals("SSH"))) {
             ActionReport report = ctx.getActionReport();

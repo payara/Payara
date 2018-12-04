@@ -89,7 +89,7 @@ public class MBeanMetadataConfig {
         this.vendorMetadata = vendorMetadata;
     }
     
-        public void addVendorMetadata(List<MBeanMetadata> vendorMetadata) {
+    public void addVendorMetadata(List<MBeanMetadata> vendorMetadata) {
         if (this.vendorMetadata == null) {
             this.vendorMetadata = new ArrayList<>();
         }

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt;
 
 import java.util.HashMap;
@@ -100,6 +102,9 @@ public class DomainConfig extends RepositoryConfig {
     /**
      * The DomainConfig always contains the K_DOMAINS_ROOT and K_HOST_NAME
      * attributes.
+     * @param domainName The name of the domain
+     * @param domainRoot The root directory of the domain
+     * @throws DomainException
      */
     public DomainConfig(String domainName, String domainRoot) throws DomainException {
         super(domainName, domainRoot);

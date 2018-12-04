@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
@@ -59,21 +59,19 @@ import java.util.Map;
 
 public class PEFileLayout
 {
-    private static final StringManager _strMgr =
-        StringManager.getManager(PEFileLayout.class);
+    private static final StringManager _STRINGS_MANAGER = StringManager.getManager(PEFileLayout.class);
 
-    public static final String DEFAULT_INSTANCE_NAME =
-        SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
+    public static final String DEFAULT_INSTANCE_NAME = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
    /* above field is taken from a central place */
-    protected final RepositoryConfig _config;
+    protected final RepositoryConfig config;
 
 
     public PEFileLayout(RepositoryConfig config) {
-        _config = config;
+        this.config = config;
     }
 
     protected RepositoryConfig getConfig() {
-        return _config;
+        return config;
     }
 
     public void createRepositoryRoot() throws RepositoryException
@@ -100,11 +98,11 @@ public class PEFileLayout
         if (!dir.exists()) {
             try {
                 if (!dir.mkdirs()) {
-                    throw new RepositoryException(_strMgr.getString("directoryCreationError",
+                    throw new RepositoryException(_STRINGS_MANAGER.getString("directoryCreationError",
                         dir));
                 }
 	    } catch (Exception e) {
-                throw new RepositoryException(_strMgr.getString("directoryCreationError",
+                throw new RepositoryException(_STRINGS_MANAGER.getString("directoryCreationError",
                         dir), e);
             }
         }
@@ -414,7 +412,7 @@ public class PEFileLayout
         return new File(getShareDir(), LIB_DIR);
     }
 
-//$INSTALL_ROOT/lib/install/templates
+    //$INSTALL_ROOT/lib/install/templates
     public static final String INSTALL_DIR         = "install";
     public static final String TEMPLATES_DIR       = "templates";
     public static final String COMMON_DIR       = "common";
@@ -424,7 +422,6 @@ public class PEFileLayout
     public File getTemplatesDir()
     {
         final File lib = new File(getInstallRootDir(), LIB_DIR);
-        //final File install = new File(lib, INSTALL_DIR);
         final File templates = new File(lib, TEMPLATES_DIR);
         return templates;
     }
@@ -436,8 +433,7 @@ public class PEFileLayout
          * common template directory */
         
         assert profileName != null : "Name of the profile can't be null";
-        final File pf = new File(getTemplatesDir(), profileName);        
-        return pf;
+        return new File(getTemplatesDir(), profileName);
     }
 
     public File getProfilePropertiesFile(final String profileName) {
@@ -614,8 +610,6 @@ public class PEFileLayout
     {
         return new File(getAutoDeployDir(), AUTO_DEPLOY_STATUS);
     }
-
-    private static final String AUTO_DEPLOY_OSGI_BUNDLES_DIR = "bundles";
 
     public static final String KEY_FILE_TEMPLATE = "keyfile";
     public File getKeyFileTemplate()
@@ -845,8 +839,9 @@ public class PEFileLayout
 
    /**
      * This method is used to create WSDLSL install root
+     * @throws RepositoryException
      */
-    public void createWSDLSLInstallRoot() throws Exception
+    public void createWSDLSLInstallRoot() throws RepositoryException
     {
        createDirectory(getWSDLSLDir());
        createDirectory(getWSDLSLInstallRoot());

@@ -130,6 +130,8 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
     public boolean preAuthorization(AdminCommandContext context) {
         config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
         if (config == null) {
+            // config can be null as this command executes on all instances
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return false;
         }
         securityService = config.getSecurityService();

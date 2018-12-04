@@ -189,6 +189,14 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         }
     }
     
+    public String getSpanTag(String tag) {
+        return spanTags.get(tag);
+    }
+    
+    public Map<String, String> getSpanTags() {
+        return spanTags;
+    }
+    
     public void addSpanLog(RequestTraceSpanLog spanLog) {
         spanLogs.add(spanLog);
     }

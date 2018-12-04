@@ -99,6 +99,10 @@ public class LocalRequestTraceStore implements RequestTraceStoreInterface {
     @Override
     public Collection<RequestTrace> getTraces(int limit) {
         List traces = Arrays.asList(store.toArray());
+        if (limit > store.size()) {
+            // When we limit the list to more elements then the size we get an IndexOutOfBoundException
+            return traces;
+        }
         return traces.subList(0, limit);
     }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.resourcebase.resources.api;
 
@@ -96,16 +97,31 @@ public interface ResourceConstants {
      * Represents the glassfish-resources.xml handling module name / type for .ear
      */
     public static final String GF_RESOURCES_MODULE_EAR = "resources_ear";
+    
+    /**
+     * Represents the payara-resources.xml handling module name / type for .ear
+     */
+    public static final String PY_RESOURCES_MODULE_EAR = "payara-resources_ear";
 
     /**
      * Represents the glassfish-resources.xml handling module name / type for standalone application
      */
     public static final String GF_RESOURCES_MODULE = "resources";
+    
+    /**
+     * Represents the payara-resources.xml handling module name / type for standalone application
+     */
+    public static final String PY_RESOURCES_MODULE = "payara-resources";
 
     /**
      * Represents the location where glassfish-resources.xml will be present in an archive
      */
     public static final String GF_RESOURCES_LOCATION ="META-INF/glassfish-resources.xml";
+    
+    /**
+     * Represents the location where glassfish-resources.xml will be present in an archive
+     */
+    public static final String PAYARA_RESOURCES_LOCATION ="META-INF/payara-resources.xml";
 
     /** resource type residing in an external JNDI repository */
     public static final String EXT_JNDI_RES_TYPE = "external-jndi-resource";

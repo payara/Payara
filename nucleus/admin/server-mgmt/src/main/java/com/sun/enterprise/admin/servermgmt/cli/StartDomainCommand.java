@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -99,8 +99,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     @Inject
     ServerEnvironment senv;
     
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(StartDomainCommand.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(StartDomainCommand.class);
     // the name of the master password option
     private StartServerHelper helper;
     private String newpwName = Environment.getPrefix() + "NEWPASSWORD";
@@ -156,7 +155,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             }
             
             if (!upgrade && launcher.needsManualUpgrade()) {
-                logger.info(strings.get("manualUpgradeNeeded"));
+                logger.info(STRINGS.get("manualUpgradeNeeded"));
                 return ERROR;
             }
             doAutoUpgrade(mpv);
@@ -185,14 +184,14 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
                     switch (returnValue) {
                         case CLIConstants.RESTART_NORMAL:
-                            logger.info(strings.get("restart"));
+                            logger.info(STRINGS.get("restart"));
                             break;
                         case CLIConstants.RESTART_DEBUG_ON:
-                            logger.info(strings.get("restartChangeDebug", "on"));
+                            logger.info(STRINGS.get("restartChangeDebug", "on"));
                             info.setDebug(true);
                             break;
                         case CLIConstants.RESTART_DEBUG_OFF:
-                            logger.info(strings.get("restartChangeDebug", "off"));
+                            logger.info(STRINGS.get("restartChangeDebug", "off"));
                             info.setDebug(false);
                             break;
                         default:
@@ -223,9 +222,11 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
     /**
      * Create a launcher for the domain specified by arguments to
-     * this command.  The launcher is for a server of the specified type.
-     * Sets the launcher and info fields.
+     * this command.The launcher is for a server of the specified type.
+     * Sets the launcher and info fields.  
      * It has to be public because it is part of an interface
+     * @throws GFLauncherException if the launcher fails to setup
+     * @throws MiniXmlParserException if the domain.xml cannot be processed
      */
     @Override
     public void createLauncher()
@@ -259,39 +260,19 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
         // now the start-domain specific arguments
         args.add(getName());    // the command name
-        args.add("--verbose=" + String.valueOf(verbose));
-        args.add("--watchdog=" + String.valueOf(watchdog));
-        args.add("--debug=" + String.valueOf(debug));
+        args.add("--verbose=" + verbose);
+        args.add("--watchdog=" + watchdog);
+        args.add("--debug=" + debug);
         args.add("--domaindir");
         args.add(getDomainsDir().toString());
         if (ok(getDomainName()))
             args.add(getDomainName());  // the operand
 
         if (logger.isLoggable(Level.FINER))
-            logger.log(Level.FINER, "Respawn args: {0}", args.toString());
+            logger.log(Level.FINER, "Respawn args: {0}", args);
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
-    }
-
-    /*
-     * This is useful for debugging restart-domain problems.
-     * In that case the Server process will run this class and it is fairly
-     * involved to attach a debugger (though not bad -- see RestartDomain on
-     * the server to see how).  Standard output disappears.  This is a
-     * generally useful method.  Feel free to copy & paste!
-     */
-    private void debug(String s) {
-        PrintStream ps = null;
-        try {
-            ps = new PrintStream(new FileOutputStream("startdomain.txt", true));
-            ps.println(new Date().toString() + ":  " + s);
-        } catch (FileNotFoundException ex) {
-            //
-        } finally {
-            if (ps != null)
-                ps.close();
-        }
     }
 
     /*
@@ -303,7 +284,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         if (upgrade || !launcher.needsAutoUpgrade())
             return;
 
-        logger.info(strings.get("upgradeNeeded"));
+        logger.info(STRINGS.get("upgradeNeeded"));
         info.setUpgrade(true);
         launcher.setup();
         launcher.launch();
@@ -321,13 +302,13 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             String output = psd.getOutErrString();
             if (ok(output))
                 throw new CommandException(
-                        strings.get("upgradeFailedOutput",
+                        STRINGS.get("upgradeFailedOutput",
                         info.getDomainName(), exitCode, output));
             else
-                throw new CommandException(strings.get("upgradeFailed",
+                throw new CommandException(STRINGS.get("upgradeFailed",
                         info.getDomainName(), exitCode));
         }
-        logger.info(strings.get("upgradeSuccessful"));
+        logger.info(STRINGS.get("upgradeSuccessful"));
 
         // need a new launcher to start the domain for real
         createLauncher();
@@ -351,17 +332,20 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     if (names == null || names.isEmpty()) {
                         throw new CommandException("no admin users");
                     }
-                    String auser = names.iterator().next();
-                    ParamModelData npwo = new ParamModelData(newpwName, String.class, false, null);
-                    npwo.prompt = strings.get("new.adminpw", auser);
-                    npwo.promptAgain = strings.get("new.adminpw.again", auser);
-                    npwo.param._password = true;
-                    logger.info(strings.get("new.adminpw.prompt"));
-                    String npw = super.getPassword(npwo, null, true);
-                    if (npw == null) {
-                        throw new CommandException(strings.get("no.console"));
+                    
+                    String adminUsername = names.iterator().next();
+                    ParamModelData paramModelData = new ParamModelData(newpwName, String.class, false, null);
+                    paramModelData.prompt = STRINGS.get("new.adminpw", adminUsername);
+                    paramModelData.promptAgain = STRINGS.get("new.adminpw.again", adminUsername);
+                    paramModelData.param._password = true;
+                    
+                    logger.info(STRINGS.get("new.adminpw.prompt"));
+                    
+                    String passwordCopy = super.getPassword(paramModelData, null, true);
+                    if (passwordCopy == null) {
+                        throw new CommandException(STRINGS.get("no.console"));
                     }
-                    ar.updateUser(auser, auser, npw.toCharArray(), null);
+                    ar.updateUser(adminUsername, adminUsername, passwordCopy.toCharArray(), null);
                     ar.persist();
                 }
             } catch (IOException ioe) {

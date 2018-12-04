@@ -54,7 +54,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     private String name;
     private State state;
-    private Optional<Map<String, Object>> data = Optional.of(new HashMap<>());
+    private final Optional<Map<String, Object>> data = Optional.of(new HashMap<>());
     
     @Override
     public HealthCheckResponseBuilder name(String name) {
@@ -70,7 +70,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, String value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!stringEmptyOrNull(name)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -81,7 +81,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, long value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!stringEmptyOrNull(name)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -92,7 +92,7 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
     @Override
     public HealthCheckResponseBuilder withData(String key, boolean value) {
         // If the provided string isn't empty or null, enter it into the Map, otherwise throw an exception.
-        if (!stringEmptyOrNull(name)) {
+        if (!stringEmptyOrNull(key)) {
             data.get().put(key, value);
             return this;
         } else {
@@ -125,18 +125,28 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponse build() {
+         validate();
         // Just use the basic HealthCheckResponse implementation
         HealthCheckResponse healthCheckResponse = new HealthCheckResponseImpl(name, state, data);
         return healthCheckResponse;
     }
     
+    private void validate() {
+        if (stringEmptyOrNull(name)) {
+            throw new IllegalArgumentException("Healthcheck name is not defined");
+        }
+        if (state == null) {
+            throw new IllegalArgumentException(String.format("Healthcheck [%s] state is not defined", name));
+        }
+    }
+
     /**
      * Helper method that checks whether or not the provided String is empty or null
+     *
      * @param string The String to evaluate
      * @return True if the String is empty or null
      */
     private boolean stringEmptyOrNull(String string) {
         return (string == null || string.isEmpty());
     }
-    
 }

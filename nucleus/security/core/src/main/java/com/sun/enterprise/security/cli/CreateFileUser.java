@@ -149,6 +149,9 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCo
     public boolean preAuthorization(AdminCommandContext context) {
         config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
         if (config == null) {
+            // command is executed on all instances and remote instances may not have the config
+            // however this is to be expected so do not show spurious error.
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return false;
         }
         securityService = config.getSecurityService();

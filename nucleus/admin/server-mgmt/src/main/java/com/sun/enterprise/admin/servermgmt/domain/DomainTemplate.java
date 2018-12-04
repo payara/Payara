@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt.domain;
 
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutor;
@@ -45,14 +47,14 @@ import com.sun.enterprise.admin.servermgmt.xml.templateinfo.TemplateInfo;
 
 public class DomainTemplate {
 
-    private StringSubstitutor _stringSubstitutor;
-    private String _location;
-    private TemplateInfoHolder _templateInfoHolder;
+    private final StringSubstitutor stringSubstitutor;
+    private final String location;
+    private final TemplateInfoHolder templateInfoHolder;
 
     public DomainTemplate(TemplateInfoHolder tInfoHolder, StringSubstitutor substitutor, String location) {
-        _templateInfoHolder = tInfoHolder;
-        _stringSubstitutor = substitutor;
-        _location = location;
+        this.templateInfoHolder = tInfoHolder;
+        this.stringSubstitutor = substitutor;
+        this.location = location;
     }
 
     /**
@@ -61,7 +63,7 @@ public class DomainTemplate {
      * @return <code>true</code> If template has stringsubs.xml file.
      */
     public boolean hasStringsubs() {
-        return _stringSubstitutor != null;
+        return stringSubstitutor != null;
     }
 
     /**
@@ -70,7 +72,7 @@ public class DomainTemplate {
      * @return The encapsulated string-subs
      */
     public StringSubstitutor getStringSubs() {
-        return _stringSubstitutor;
+        return stringSubstitutor;
     }
 
     /**
@@ -79,10 +81,10 @@ public class DomainTemplate {
      * @return Template location.
      */
     public String getLocation() {
-        return _location;
+        return location;
     }
 
     public TemplateInfo getInfo() {
-        return _templateInfoHolder.getTemplateInfo();
+        return templateInfoHolder.getTemplateInfo();
     }
 }

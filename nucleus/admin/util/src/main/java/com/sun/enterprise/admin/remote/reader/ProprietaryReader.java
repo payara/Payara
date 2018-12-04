@@ -41,7 +41,6 @@ package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 
 /**
  *
@@ -50,8 +49,6 @@ import java.net.HttpURLConnection;
 public interface ProprietaryReader<T> {
 
     public boolean isReadable(final Class<?> type, final String contentType);
-
-//    public T readFrom(final HttpURLConnection urlConnection) throws IOException;
     
     public T readFrom(final InputStream is, final String contentType) throws IOException;
     

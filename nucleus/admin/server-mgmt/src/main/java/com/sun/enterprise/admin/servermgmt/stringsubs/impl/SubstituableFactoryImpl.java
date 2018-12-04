@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
@@ -55,9 +55,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.FileEntry;
  * Default {@link SubstitutableFactory} implementation to retrieve the
  * {@link Substitutable} entries from a {@link FileEntry} or an {@link Archive}.
  */
-public class SubstituableFactoryImpl implements SubstitutableFactory {
-
-    private static final Logger _logger = SLogger.getLogger();            
+public class SubstituableFactoryImpl implements SubstitutableFactory {            
 
     @Override
     public List<? extends Substitutable> getFileEntrySubstituables(
@@ -71,7 +69,7 @@ public class SubstituableFactoryImpl implements SubstitutableFactory {
         try {
             return new ArchiveEntryWrapperImpl(archive).getSubstitutables();
         } catch (IOException e) {
-            _logger.log(Level.INFO, SLogger.ERR_RETRIEVING_SUBS_ENTRIES, archive.getName());
+            SLogger.getLogger().log(Level.INFO, SLogger.ERR_RETRIEVING_SUBS_ENTRIES, archive.getName());
         }
         return null;
     }

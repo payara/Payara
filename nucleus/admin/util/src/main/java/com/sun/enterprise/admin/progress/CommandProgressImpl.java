@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.progress;
 
 import com.sun.enterprise.util.StringUtils;
@@ -62,8 +64,8 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
 
     public class LastChangedMessage implements ProgressStatusMessage, Serializable {
         
-        private String sourceId;
-        private String message;
+        private final String sourceId;
+        private final String message;
         private String contextString;
 
         private LastChangedMessage(String sourceId, String message) {

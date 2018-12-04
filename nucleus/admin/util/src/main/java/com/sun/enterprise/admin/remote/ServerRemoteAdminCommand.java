@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
@@ -52,7 +53,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.services.impl.JCEKSDomainPasswordAliasStore;
 
 /**
  * RemoteAdminCommand which is sent from a server (DAS or instance).
@@ -73,7 +73,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private ServerEnvironment serverEnv;
 
-    private SSLUtils _sslUtils = null;
+    private SSLUtils sslUtils = null;
     
     private DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
 
@@ -157,9 +157,9 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     }
 
     private synchronized SSLUtils sslUtils() {
-        if (_sslUtils == null) {
-            _sslUtils = habitat.getService(SSLUtils.class);
+        if (sslUtils == null) {
+            sslUtils = habitat.getService(SSLUtils.class);
         }
-        return _sslUtils;
+        return sslUtils;
     }
 }

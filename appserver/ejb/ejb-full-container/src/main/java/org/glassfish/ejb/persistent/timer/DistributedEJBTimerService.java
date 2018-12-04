@@ -125,7 +125,7 @@ public class DistributedEJBTimerService
         }
 
         if (logger.isLoggable(Level.INFO)) {
-                logger.log(Level.INFO, "[DistributedEJBTimerService] afterRecovery event for instance " + instance);
+                logger.log(Level.INFO, "[DistributedEJBTimerService] afterRecovery event for instance {0}", instance);
         }
 
         if (instance != null && !instance.equals(ejbContainerUtil.getServerEnvironment().getInstanceName())) {
@@ -144,12 +144,12 @@ public class DistributedEJBTimerService
      */
     private int migrateTimers( String serverId ) {
         if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, "[DistributedEJBTimerService] migrating timers from " + serverId);
+            logger.log(Level.INFO, "[DistributedEJBTimerService] migrating timers from {0}", serverId);
         }
 
         int result = 0;
         // Force loading TimerService if it hadn't been started
-        EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
+        EJBTimerService ejbTimerService = EJBTimerService.getPersistentTimerService();
         if (ejbTimerService != null && ejbTimerService.isPersistent()) {
             result = ejbTimerService.migrateTimers( serverId );
         } else {

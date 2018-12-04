@@ -130,6 +130,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.sun.messaging.mq</groupId>
             <artifactId>imqjmx</artifactId>
             <scope>provided</scope>

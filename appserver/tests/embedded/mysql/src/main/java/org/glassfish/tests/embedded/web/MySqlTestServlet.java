@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.tests.embedded.web;
 
@@ -61,7 +62,7 @@ import java.sql.Connection;
  */
 @DataSourceDefinitions({
 @DataSourceDefinition(name = "java:app/mysql/MySQLDataSource",
-        className = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource",
+        className = "com.mysql.cj.jdbc.MysqlDataSource",
         portNumber = 3306,
         serverName = "localhost",
         databaseName = "testDB",

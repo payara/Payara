@@ -55,7 +55,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.FileEntry;
  */
 public interface SubstitutableFactory {
     /**
-     * Get's all the {@link Substitutable} entries from a {@link FileEntry}.
+     * Gets all the {@link Substitutable} entries from a {@link FileEntry}.
      * A file entry can point to a file/directory  or can contain pattern or
      * wild card characters.
      *
@@ -65,7 +65,7 @@ public interface SubstitutableFactory {
     List<? extends Substitutable> getFileEntrySubstituables(FileEntry fileEntry);
 
     /**
-     * Get's all the {@link Substitutable} entries from an {@link Archive}.
+     * Gets all the {@link Substitutable} entries from an {@link Archive}.
      * An archive entry can contain one or multiple member entries or can point the
      * entries from nested archives.
      *

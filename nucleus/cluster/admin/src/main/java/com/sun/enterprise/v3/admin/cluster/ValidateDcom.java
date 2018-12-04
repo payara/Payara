@@ -37,6 +37,8 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -96,11 +98,11 @@ public class ValidateDcom implements AdminCommand {
     @Param(optional = true, shortName = "v", defaultValue = "false")
     private boolean verbose;
     private boolean debug;
-    private TokenResolver resolver = new TokenResolver();
+    private final TokenResolver resolver = new TokenResolver();
     private ActionReport report;
     private WindowsRemoteFileSystem wrfs;
     private WindowsCredentials creds;
-    private StringBuilder out = new StringBuilder();
+    private final StringBuilder out = new StringBuilder();
     private WindowsRemoteFile wrf;
     private WindowsRemoteFile script;
     private static final String SCRIPT_NAME = "delete_me.bat";
@@ -322,11 +324,10 @@ public class ValidateDcom implements AdminCommand {
 
     private boolean testPort(int port, String description) {
         try {
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(host, port), 4000);
-            socket.close();
-            out.append(Strings.get("validate.dcom.connect",
-                    description, port, host)).append('\n');
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(host, port), 4000);
+            }
+            out.append(Strings.get("validate.dcom.connect", description, port, host)).append('\n');
             return true;
         }
         catch (IOException e) {

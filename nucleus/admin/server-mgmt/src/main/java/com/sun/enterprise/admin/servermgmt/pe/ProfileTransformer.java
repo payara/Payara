@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.*;
@@ -66,7 +68,7 @@ final class ProfileTransformer {
     private final File destDir;
     private final EntityResolver er;
     private final Properties op;
-    private static final StringManager sm = StringManager.getManager(ProfileTransformer.class);
+    private static final StringManager STRING_MANAGER = StringManager.getManager(ProfileTransformer.class);
     
     ProfileTransformer(final File baseXml, final List<File> styleSheets, final File destDir,
         final EntityResolver er, final Properties op) {
@@ -97,7 +99,6 @@ final class ProfileTransformer {
             int cnt       = 0;
             File   rfn    = null;
             for (final File ss : styleSheets) {
-                //System.out.println("ss = " + ss.getAbsolutePath());
                 if (cnt == 0)
                     doc = builder.parse(baseXml);
                 src             = new DOMSource(doc);
@@ -111,8 +112,8 @@ final class ProfileTransformer {
                 xf.transform(src, result);
                 doc = builder.parse(rfn);
                 cnt++;
-                final String msg = sm.getString("xformPhaseComplete", ss.getAbsolutePath(), rfn.getAbsolutePath());
-                System.out.println(msg);
+                final String msg = STRING_MANAGER.getString("xformPhaseComplete", ss.getAbsolutePath(), rfn.getAbsolutePath());
+                Logger.getLogger("com.sun.enterprise.admin.servermgmt.pe").log(Level.INFO, msg);
             }
             return ( rfn );
         } catch (final Exception e) {

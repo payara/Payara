@@ -37,18 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * RepositoryException.java
- *
- * Created on August 22, 2003, 11:21 AM
- */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
 /**
- *
+ * Exception for when there are problems accessing the domain or instance folder, files or config
  * @author  kebbs
+ * @since Created on August 22, 2003, 11:21 AM
  */
 public class RepositoryException extends java.lang.Exception {
     
@@ -101,6 +97,7 @@ public class RepositoryException extends java.lang.Exception {
 
     /** If there is a cause, appends the getCause().getMessage()
      *  to the original message.
+     * @return the message
      */    
     @Override
     public String getMessage()
@@ -115,6 +112,7 @@ public class RepositoryException extends java.lang.Exception {
     
     /** If there is a cause, appends the getCause().getMessage()
      *  to the original message.
+     * @return the message, localised
      */
     @Override
     public String getLocalizedMessage()
