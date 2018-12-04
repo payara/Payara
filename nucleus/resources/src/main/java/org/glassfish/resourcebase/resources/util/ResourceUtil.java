@@ -41,7 +41,6 @@
 package org.glassfish.resourcebase.resources.util;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.GenericResourceInfo;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
@@ -67,9 +66,6 @@ public class ResourceUtil {
 
     public static final String LOGGER = "javax.enterprise.resources.util";
     private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
-
-    private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
-    private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
 
     public static BindableResource getBindableResourceByName(Resources resources, String name) {
         Collection<BindableResource> typedResources = resources.getResources(BindableResource.class);

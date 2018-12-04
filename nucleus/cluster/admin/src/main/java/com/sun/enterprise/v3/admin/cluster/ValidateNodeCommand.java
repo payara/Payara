@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -55,9 +56,7 @@ import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
@@ -122,7 +121,15 @@ public class ValidateNodeCommand implements AdminCommand {
     @Param(name="sshkeyfile", optional=true)
     private String sshkeyfile;
 
-    private Set<String> excludeFromUpdate = new HashSet<String>();
+    private final Set<String> excludeFromUpdate = new HashSet<String>();
+    
+    private static final String INSTALLDIR = "installdir";
+    private static final String NODEHOST = "nodehost";
+    private static final String NODEDIR = "nodedir";
+    private static final String SSHPORT = "sshport";
+    private static final String SSHUSER = "sshuser";
+    private static final String SSHKEYFILE = "sshkeyfile";
+    private static final String ATTRIBUTE_MISMMATCH = "attribute.mismatch";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -152,31 +159,30 @@ public class ValidateNodeCommand implements AdminCommand {
         }
 
         if (logger.isLoggable(Level.FINE))
-            logger.fine(Strings.get(
-                            "Node {0} is valid. Updating if needed", name));
+            logger.fine(Strings.get("Node {0} is valid. Updating if needed", name));
 
         // What is there in the node is valid. Now go update anything that
         // was not there.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
-        if (! excludeFromUpdate.contains("installdir"))
-            map.add("installdir", installdir);
-        if (! excludeFromUpdate.contains("nodehost"))
-            map.add("nodehost", nodehost);
-        if (! excludeFromUpdate.contains("nodedir"))
-            map.add("nodedir", nodedir);
-        if (! excludeFromUpdate.contains("sshport"))
-            map.add("sshport", sshport);
-        if (! excludeFromUpdate.contains("sshuser"))
-            map.add("sshuser", sshuser);
-        if (! excludeFromUpdate.contains("sshkeyfile"))
-            map.add("sshkeyfile", sshkeyfile);
+        addIfNotExcluded(INSTALLDIR, installdir, map);
+        addIfNotExcluded(NODEHOST, nodehost, map);
+        addIfNotExcluded(NODEDIR, nodedir, map);
+        addIfNotExcluded(SSHPORT, sshport, map);
+        addIfNotExcluded(SSHUSER, sshuser, map);
+        addIfNotExcluded(SSHKEYFILE, sshkeyfile, map);
 
         // Only update if there is something to do
         if ( map.size() > 1) {
             ci.parameters(map);
             ci.execute();
+        }
+    }
+    
+    private void addIfNotExcluded(String key, String value, ParameterMap map){
+        if (!excludeFromUpdate.contains(key)){
+            map.add(key, value);
         }
     }
 
@@ -189,14 +195,12 @@ public class ValidateNodeCommand implements AdminCommand {
         if (!StringUtils.ok(nodedir) && StringUtils.ok(value)) {
             // If no nodedir was passed, but the config has a value, then
             // consider that an error (14887)
-            throw new CommandValidationException(
-                Strings.get("attribute.mismatch", name,
-                    "nodedir", nodedir, value));
+            throw new CommandValidationException(Strings.get(ATTRIBUTE_MISMMATCH, name, NODEDIR, nodedir, value));
         }
-        validatePathSimple("nodedir", nodedir, value);
+        validatePathSimple(NODEDIR, nodedir, value);
 
         value = node.getNodeHost();
-        validateHostname("nodehost", nodehost, value);
+        validateHostname(NODEHOST, nodehost, value);
 
         value = node.getInstallDir();
         validatePathSimple("installdir", installdir, value);
@@ -208,7 +212,7 @@ public class ValidateNodeCommand implements AdminCommand {
         }
 
         value = sshc.getSshPort();
-        validateString("sshport", sshport, value, false);
+        validateString(SSHPORT, sshport, value, false);
 
         value = sshc.getSshHost();
         validateHostname("sshnodehost", sshnodehost, value);
@@ -220,10 +224,10 @@ public class ValidateNodeCommand implements AdminCommand {
         }
 
         value = ssha.getUserName();
-        validateString("sshuser", sshuser, value, false);
+        validateString(SSHUSER, sshuser, value, false);
 
         value = ssha.getKeyfile();
-        validatePath("sshkeyfile", sshkeyfile, value);
+        validatePath(SSHKEYFILE, sshkeyfile, value);
     }
 
     private void validatePath(String propname, String value, String configValue)
@@ -247,7 +251,7 @@ public class ValidateNodeCommand implements AdminCommand {
 
         if ( !canonicalValueFile.equals(canonicalConfigValueFile) ) {
             throw new CommandValidationException(
-                Strings.get("attribute.mismatch", name,
+                Strings.get(ATTRIBUTE_MISMMATCH, name,
                            propname, canonicalValueFile, canonicalConfigValueFile));
         }
         // Don't update an attribute that is considered a match
@@ -289,11 +293,7 @@ public class ValidateNodeCommand implements AdminCommand {
         // Compares paths by just doing a string comparison. Some of the paths
         // we are comparing are valid on remote systems, so we can't do any
         // path processing
-        if (OS.isWindows()) {
-            validateString(propname, value, configValue, true);
-        } else {
-            validateString(propname, value, configValue, false);
-        }
+         validateString(propname, value, configValue, OS.isWindows());
     }
 
     private void validateHostname(String propname,
@@ -315,7 +315,7 @@ public class ValidateNodeCommand implements AdminCommand {
                 if ( ! (NetUtils.isThisHostLocal(value) &&
                         NetUtils.isThisHostLocal(configValue)) ) {
                     throw new CommandValidationException(
-                        Strings.get("attribute.mismatch", name,
+                        Strings.get(ATTRIBUTE_MISMMATCH, name,
                             propname, value, configValue));
                 }
             }
@@ -336,17 +336,15 @@ public class ValidateNodeCommand implements AdminCommand {
             return;
         }
 
-        boolean match = false;
+        boolean match;
         if (ignorecase) {
             match = value.equalsIgnoreCase(configValue);
         } else {
             match = value.equals(configValue);
         }
 
-        if ( !match ) {
-            throw new CommandValidationException(
-                Strings.get("attribute.mismatch", name,
-                            propname, value, configValue));
+        if (!match) {
+            throw new CommandValidationException(Strings.get(ATTRIBUTE_MISMMATCH, name, propname, value, configValue));
         }
         // Don't update an attribute that is considered a match
         excludeFromUpdate.add(propname);

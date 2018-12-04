@@ -1,1 +1,0 @@
-This directory is meant to be the config directory of a Payara instanceRoot. It does not contain any domain.xml file, so that a test could specify the configurationXml value without any warning.

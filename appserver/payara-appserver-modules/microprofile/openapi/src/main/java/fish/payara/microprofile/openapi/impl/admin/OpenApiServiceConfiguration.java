@@ -40,7 +40,6 @@
 package fish.payara.microprofile.openapi.impl.admin;
 
 import java.beans.PropertyVetoException;
-
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -59,5 +58,15 @@ public interface OpenApiServiceConfiguration extends ConfigBeanProxy, ConfigExte
     String getEnabled();
 
     void setEnabled(String value) throws PropertyVetoException;
+
+    /**
+     * String value defines the attached virtual servers.
+     *
+     * @return
+     */
+    @Attribute(dataType = String.class)
+    String getVirtualServers();
+
+    void setVirtualServers(String value) throws PropertyVetoException;
 
 }

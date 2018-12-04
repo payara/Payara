@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -69,7 +70,7 @@ public class RepositoryNameValidator extends StringValidator
     /**
      * i18n strings manager object
      */
-    private static final StringManager strMgr = 
+    private static final StringManager STRING_MANAGER = 
         StringManager.getManager(RepositoryNameValidator.class);
 
     /**
@@ -82,10 +83,12 @@ public class RepositoryNameValidator extends StringValidator
     }
 
     /**
-     * Validates the given value for the given entry. This method first invokes
+     * Validates the given value for the given entry.This method first invokes
      * its superclass's validate method and then performs additional validations.
-     * @throws InvalidConfigException
+     * @param str the string to validate 
+     * @throws InvalidConfigException if it is not a valid config
      */
+    @Override
     public void validate(Object str) throws InvalidConfigException
     {
         super.validate(str);
@@ -99,13 +102,15 @@ public class RepositoryNameValidator extends StringValidator
         if (!name.matches(VALID_CHAR))
         {
             throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_value", getName(), name));
+                STRING_MANAGER.getString("validator.invalid_value", getName(), name));
         }
     }
 
     /**
      * Implementation copied from 
      * com.sun.enterprise.admin.verifier.tests.StaticTest
+     * @param name The name to validate
+     * @throws InvalidConfigException If it is not a valid name
      */
     public void checkValidXmlToken(String name) throws InvalidConfigException
     {
@@ -123,7 +128,7 @@ public class RepositoryNameValidator extends StringValidator
         catch (Exception e)
         {
             throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_value", getName(), name));
+                STRING_MANAGER.getString("validator.invalid_value", getName(), name));
         }
     }
 
@@ -137,7 +142,7 @@ public class RepositoryNameValidator extends StringValidator
         catch (Exception e)
         {
             throw new InvalidConfigException(
-                strMgr.getString("validator.invalid_value", getName(), name));
+                STRING_MANAGER.getString("validator.invalid_value", getName(), name));
         }
     }
 }

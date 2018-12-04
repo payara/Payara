@@ -39,27 +39,25 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
-import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
-import static org.glassfish.config.support.CommandTarget.CONFIG;
-import static org.glassfish.config.support.CommandTarget.DAS;
-import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
-
+import com.sun.enterprise.util.ColumnFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.inject.Inject;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
+import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import static org.glassfish.config.support.CommandTarget.CLUSTER;
+import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
+import static org.glassfish.config.support.CommandTarget.CONFIG;
+import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
@@ -77,6 +75,8 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetOpenApiConfigurationCommand implements AdminCommand {
 
+    private final String OUTPUT_HEADERS[] = {"Enabled", "VirtualServers"};
+
     @Inject
     private Target targetUtil;
 
@@ -84,25 +84,35 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
     private String target;
 
     @Override
-    public void execute(AdminCommandContext adminCommandContext) {
+    public void execute(AdminCommandContext context) {
+        ActionReport actionReport = context.getActionReport();
+
         // Check for the existing config
         if (targetUtil.getConfig(target) == null) {
-            adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
-            adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            actionReport.setMessage("No such config name: " + targetUtil);
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
         OpenApiServiceConfiguration openApiConfig = targetUtil.getConfig(target)
                 .getExtensionByType(OpenApiServiceConfiguration.class);
 
-        adminCommandContext.getActionReport().appendMessage("Enabled: " + openApiConfig.getEnabled());
+        ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
+        Object[] outputValues = {
+            openApiConfig.getEnabled(),
+            openApiConfig.getVirtualServers()
+        };
+        columnFormatter.addRow(outputValues);
+
+        actionReport.appendMessage(columnFormatter.toString());
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
+        extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
 
         Properties extraProperties = new Properties();
         extraProperties.put("openApiConfiguration", extraPropertiesMap);
-        adminCommandContext.getActionReport().setExtraProperties(extraProperties);
+        actionReport.setExtraProperties(extraProperties);
     }
 
 }

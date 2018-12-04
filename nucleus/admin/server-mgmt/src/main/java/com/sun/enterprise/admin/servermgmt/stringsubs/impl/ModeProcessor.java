@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
@@ -61,7 +62,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.ModeType;
  */
 public class ModeProcessor {
 
-    private static final Logger _logger = SLogger.getLogger();
+    private static final Logger LOGGER = SLogger.getLogger();
     /**
      * Process the {@link ModeType} for a given string.
      * <li>
@@ -100,7 +101,7 @@ public class ModeProcessor {
                 input = input.replace(File.separator, "${/}");
                 break;
             default:
-                _logger.log(Level.WARNING, SLogger.NO_PROCESSOR_DEFINED, modeType.toString());
+                LOGGER.log(Level.WARNING, SLogger.NO_PROCESSOR_DEFINED, modeType.toString());
                 break;
         }
         return input;

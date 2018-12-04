@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -55,13 +56,13 @@ final class Strings {
         // no instances allowed!
     }
 
-    final static String get(String indexString) {
-        return strings.get(indexString);
+    public static final String get(String indexString) {
+        return STRINGS.get(indexString);
     }
 
-    final static String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
+    public static final String get(String indexString, Object... objects) {
+        return STRINGS.get(indexString, objects);
     }
 
-    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(Strings.class);
 }

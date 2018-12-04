@@ -48,7 +48,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-//import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -91,7 +90,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization,
         AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateResourceRef.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(CreateResourceRef.class);
 
     @Param(optional=true, defaultValue="true")
     private Boolean enabled;
@@ -113,7 +112,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
 
     private String commandName = null;
 
-    private CommandTarget targets[];
+    private CommandTarget[] targets;
     
     private boolean isTargetValid = false;
     
@@ -127,7 +126,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         final ActionReport report = context.getActionReport();
         resourceOfInterest = getResourceByIdentity(refName);
         if (resourceOfInterest == null) {
-            report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotExist",
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.resourceDoesNotExist",
                     "Resource {0} does not exist", refName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
@@ -135,7 +134,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         
         refContainer = chooseRefContainer(context); // also sets isTargetValid
         if ( ! isTargetValid) {
-            report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotHaveValidTarget",
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.resourceDoesNotHaveValidTarget",
                             "Resource {0} has Invalid target to create resource-ref on {1}.", refName, target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
@@ -164,7 +163,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         final ActionReport report = context.getActionReport();
         
         if (isResourceRefAlreadyPresent()) {
-            report.setMessage(localStrings.getLocalString(
+            report.setMessage(LOCAL_STRINGS.getLocalString(
                     "create.resource.ref.existsAlready",
                     "Resource ref {0} already exists for target {1}", 
                     refName, target));
@@ -182,11 +181,11 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
                 }
             }
             ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
-            report.setMessage(localStrings.getLocalString("create.resource.ref.success",
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.success",
                     "resource-ref {0} created successfully.", refName));
             report.setActionExitCode(ec);
         } catch (TransactionFailure tfe) {
-            report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.failed",
                     "Resource ref {0} creation failed", refName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
@@ -209,6 +208,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     private void createResourceRef() throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode<RefContainer>() {
 
+                @Override
                 public Object run(RefContainer param) throws PropertyVetoException, TransactionFailure {
 
                     ResourceRef newResourceRef = param.createChild(ResourceRef.class);
@@ -225,7 +225,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
 
         Class<?>[] allInterfaces = resourceOfInterest.getClass().getInterfaces();
         for (Class<?> resourceInterface : allInterfaces) {
-            ResourceConfigCreator resourceConfigCreator = (ResourceConfigCreator) resourceInterface.getAnnotation(ResourceConfigCreator.class);
+            ResourceConfigCreator resourceConfigCreator = resourceInterface.getAnnotation(ResourceConfigCreator.class);
             if (resourceConfigCreator != null) {
                 commandName = resourceConfigCreator.commandName();
             }
@@ -236,10 +236,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
                 @Override
                 public boolean matches(Descriptor arg0) {
                     String name = arg0.getName();
-                    if (name != null && name.equals(commandName)) {
-                        return true;
-                    }
-                    return false;
+                    return name != null && name.equals(commandName);
                 }
             });
             for (ServiceHandle<?> handle : serviceHandles) {
@@ -272,7 +269,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             Cluster cluster = domain.getClusterNamed(target);
             return cluster;
         } else {
-            report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
+            report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.failed",
                     "Resource ref {0} creation failed", refName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return null;
@@ -286,17 +283,6 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     private boolean isServerResource(String name) {
         return domain.getResources().getResourceByName(ServerResource.class, name) != null;
     }
-    
-//    private Resource getResourceByJndiName(String jndiName) {
-//        for (Resource resource : domain.getResources().getResources()) {
-//            if (resource instanceof BindableResource) {
-//                if (((BindableResource) resource).getJndiName().equals(jndiName)) {
-//                    return resource;
-//                }
-//            }
-//        }
-//        return null;
-//    }
 
     private Resource getResourceByIdentity(String id) {
         for (Resource resource : domain.getResources().getResources()) {

@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.remote;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.*;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.util.io.FileUtils;
@@ -65,8 +65,15 @@ import static com.sun.enterprise.util.StringUtils.ok;
  * @author bnevins
  */
 public class RemoteResponseManager implements ResponseManager {
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(RemoteResponseManager.class);
+    
+    private final int               code;
+    private final Logger            logger;
+    final InputStream               responseStream;
+    final String                    response;
+    private static final int        HTTP_SUCCESS_CODE = 200;
+    private Map<String, String>     mainAtts = Collections.emptyMap();
+    
+    private static final LocalStringsImpl STRINGS = new LocalStringsImpl(RemoteResponseManager.class);
 
     public RemoteResponseManager(InputStream in, int code, Logger logger)
                                 throws RemoteException, IOException {
@@ -82,13 +89,14 @@ public class RemoteResponseManager implements ResponseManager {
         response = baos.toString();
         
         if(!ok(response))
-            throw new RemoteFailureException(strings.get("emptyResponse"));
+            throw new RemoteFailureException(STRINGS.get("emptyResponse"));
         
         logger.finer("------- RAW RESPONSE  ---------");
         logger.finer(response);
         logger.finer("------- RAW RESPONSE  ---------");
     }
 
+    @Override
     public void process() throws RemoteException {
         checkCode();  // Exception == Goodbye!
         try { 
@@ -103,7 +111,7 @@ public class RemoteResponseManager implements ResponseManager {
         }
         // put a try around this if another type of response is added...
         handlePlainText();
-        throw new RemoteFailureException(strings.get("internal", response));
+        throw new RemoteFailureException(STRINGS.get("internal", response));
     }
 
     public Map<String,String> getMainAtts() {
@@ -111,7 +119,7 @@ public class RemoteResponseManager implements ResponseManager {
     }
     private void checkCode() throws RemoteFailureException {
         if(code != HTTP_SUCCESS_CODE) {
-            throw new RemoteFailureException(strings.get("badHttpCode", code));
+            throw new RemoteFailureException(STRINGS.get("badHttpCode", code));
         }
     }
     
@@ -125,12 +133,5 @@ public class RemoteResponseManager implements ResponseManager {
         PlainTextManager mgr = new PlainTextManager(response);
         mgr.process();
     }
-
-    private int                     code;
-    private Logger                  logger;
-    final InputStream               responseStream;
-    final String                    response;
-    private static final int        HTTP_SUCCESS_CODE = 200;
-    private Manifest                m;
-    private Map<String, String>     mainAtts = Collections.emptyMap();
+    
 }

@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
-
-
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -49,7 +48,6 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -92,16 +90,16 @@ public final class DeleteConfigCommand implements AdminCommand {
     Domain domain;
 
 
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(DeleteConfigCommand.class);
+    private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DeleteConfigCommand.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         //do not delete default-config
         if (destConfig.equals("default-config") ){
-            report.setMessage(localStrings.getLocalString(
+            report.setMessage(LOCAL_STRINGS.getLocalString(
                     "Config.defaultConfig", "The default configuration template " +
                             "named default-config cannot be deleted."
                     ));
@@ -114,7 +112,7 @@ public final class DeleteConfigCommand implements AdminCommand {
         //if not return
         final Config config = domain.getConfigNamed(destConfig);
         if (config == null ){
-            report.setMessage(localStrings.getLocalString(
+            report.setMessage(LOCAL_STRINGS.getLocalString(
                     "Config.noSuchConfig", "Config {0} does not exist.", destConfig));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -123,12 +121,12 @@ public final class DeleteConfigCommand implements AdminCommand {
         // check if the config in use by some other
         // ReferenceContainer -- if so just return...
         List<ReferenceContainer> refContainers = domain.getReferenceContainersOf(config);
-        if(refContainers.size() >= 1)  {
-            StringBuffer namesOfContainers = new StringBuffer();
+        if(!refContainers.isEmpty())  {
+            StringBuilder namesOfContainers = new StringBuilder();
             for (ReferenceContainer rc: refContainers)  {
                 namesOfContainers.append(rc.getReference()).append(',');
             }
-            report.setMessage(localStrings.getLocalString(
+            report.setMessage(LOCAL_STRINGS.getLocalString(
                     "Config.inUseConfig", "Config {0} is in use " +
                             "and must be referenced by no server instances or clusters",
                     destConfig,namesOfContainers));
@@ -149,7 +147,7 @@ public final class DeleteConfigCommand implements AdminCommand {
 
         } catch (TransactionFailure ex) {
             report.setMessage(
-                    localStrings.getLocalString("Config.deleteConfigFailed",
+                    LOCAL_STRINGS.getLocalString("Config.deleteConfigFailed",
                             "Unable to remove config {0} ", config) + " "
                             +ex.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
@@ -51,22 +52,31 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-/* jvm.compilation-system */
-// v2 mbean: com.sun.appserv:name=compilation-system,type=compilation-system,category=monitor,server=server
-// v3 mbean:
+/**
+ * Provides the MBean for JVM compilation statistics
+ * <p>
+ * The MBean will be of the format
+ * {@code amx:pp=/mon/server-mon[server],type=compilation-system-mon,name=jvm/compilation-system}
+ * and can be enabled by turning the Jvm monitoring level in the admin console to LOW
+ * @since v2
+ */
 @AMXMetadata(type="compilation-system-mon", group="monitoring")
 @ManagedObject
 @Description( "JVM Compilation Statistics" )
 public class JVMCompilationStatsProvider {
 
-    private CompilationMXBean compBean = ManagementFactory.getCompilationMXBean();
+    private final CompilationMXBean compBean = ManagementFactory.getCompilationMXBean();
 
-    private StringStatisticImpl compilerName = new StringStatisticImpl("Name", "String",
+    private final StringStatisticImpl compilerName = new StringStatisticImpl("Name", "String",
                 "Name of the Just-in-time (JIT) compiler" );
-    private CountStatisticImpl totalCompilationTime = new CountStatisticImpl(
+    private final CountStatisticImpl totalCompilationTime = new CountStatisticImpl(
             "TotalCompilationTime", CountStatisticImpl.UNIT_MILLISECOND,
                 "Approximate accumlated elapsed time (in milliseconds) spent in compilation" );
 
+    /**
+     * Gets the name of the Just-in-time (JIT) compiler
+     * @return a {@link StringStatistic} with the compiler name
+     */
     @ManagedAttribute(id="name-current")
     @Description( "name of the Just-in-time (JIT) compiler" )
     public StringStatistic getCompilerName() {
@@ -74,6 +84,10 @@ public class JVMCompilationStatsProvider {
         return compilerName;
     }
 
+    /**
+     * Gets the approximate accumulated elapsed time spent in compilation
+     * @return a {@link StringStatistic} with the elapsed time in milliseconds
+     */
     @ManagedAttribute(id="totalcompilationtime-current")
     @Description( "approximate accumlated elapsed time (in milliseconds) spent in compilation" )
     public CountStatistic getTotalCompilationTime() {

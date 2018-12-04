@@ -54,11 +54,8 @@ public interface DataProvider {
     
     public boolean accept(Class clazz);
     
-//    public byte[] toByteArray(Object o);
-    
     public void writeToStream(Object o, OutputStream stream) throws IOException;
     
-//    public Object toInstance(byte[] data, Class clazz);
     
     public Object toInstance(InputStream stream, Class clazz) throws IOException;
     

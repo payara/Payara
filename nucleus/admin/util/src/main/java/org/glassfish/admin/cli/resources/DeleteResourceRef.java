@@ -79,7 +79,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.resource.ref")
 public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteResourceRef.class);
+    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DeleteResourceRef.class);
 
     @Param(optional=true)
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
@@ -153,7 +153,7 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.success",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.success",
                 "resource-ref {0} deleted successfully from target {1}.", refName, target));
     }
     
@@ -170,13 +170,13 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     }
 
     private void setResourceRefDoNotExistMessage(ActionReport report) {
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.doesNotExist",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.doesNotExist",
                 "A resource ref named {0} does not exist for target {1}.", refName, target));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
     }
 
     private void setFailureMessage(ActionReport report, Exception e) {
-        report.setMessage(localStrings.getLocalString("delete.resource.ref.failed",
+        report.setMessage(LOCAL_STRINGS.getLocalString("delete.resource.ref.failed",
                 "Resource ref {0} deletion failed", refName));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setFailureCause(e);

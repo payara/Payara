@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara FoOundation and/or affiliates
+
 package com.sun.enterprise.admin.servermgmt.stringsubs;
 
 import java.io.BufferedReader;
@@ -67,22 +69,22 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Group;
  */
 public class TestStringSubstitutionFactory {
 
-    private final static String _stringSubsPath = TestStringSubstitutionEngine.class.getPackage().getName().replace(".", "/")
+    private final static String STRING_SUBS_PATH = TestStringSubstitutionEngine.class.getPackage().getName().replace(".", "/")
             + "/stringsubs.xml";
-    private Map<String, String> _substitutionMap = new HashMap<String, String>();
-    private static final String _testFileName = "testStringSubs.txt";
-    private static final String _testArchiveName = "testStringSubsArchive.jar";
+    private static final String TEST_FILE_NAME = "testStringSubs.txt";
+    private static final String TEST_ARCHIVE_NAME = "testStringSubsArchive.jar";
     private static final String VALID_GROUP_ID = "valid_group";
-    private String _testFileDirPath = null;
+    private String testFileDirPath = null;
+    private final Map<String, String> substitutionMap = new HashMap<String, String>();
 
     @BeforeClass
     public void init() throws Exception {
-        URL url = TestStringSubstitutionFactory.class.getClassLoader().getResource(_stringSubsPath);
-        _testFileDirPath = new File(url.getPath()).getParentFile().getAbsolutePath();
-        _substitutionMap.put("JAVA", "REPLACED_JAVA");
-        _substitutionMap.put("JAVA_HOME", "REPLACED_JAVA_HOME");
-        _substitutionMap.put("MW_HOME", "REPLACED_MW_HOME");
-        _substitutionMap.put("TEST_FILE_DIR_PATH", _testFileDirPath);
+        URL url = TestStringSubstitutionFactory.class.getClassLoader().getResource(STRING_SUBS_PATH);
+        testFileDirPath = new File(url.getPath()).getParentFile().getAbsolutePath();
+        substitutionMap.put("JAVA", "REPLACED_JAVA");
+        substitutionMap.put("JAVA_HOME", "REPLACED_JAVA_HOME");
+        substitutionMap.put("MW_HOME", "REPLACED_MW_HOME");
+        substitutionMap.put("TEST_FILE_DIR_PATH", testFileDirPath);
     }
 
     /**
@@ -90,7 +92,7 @@ public class TestStringSubstitutionFactory {
      */
     @Test
     public void testStringSubstitutorInvalidStream() {
-        StringBuffer pathBuffer = new StringBuffer();
+        StringBuilder pathBuffer = new StringBuilder();
         pathBuffer.append(TestStringSubstitutionFactory.class.getPackage().getName().replace(".", "/"));
         pathBuffer.append(File.separator);
         pathBuffer.append(this.getClass().getSimpleName());
@@ -123,18 +125,17 @@ public class TestStringSubstitutionFactory {
      */
     @Test
     public void testStringSubstitutorValidStream() {
-        InputStream invalidStream = TestStringSubstitutionFactory.class.getClassLoader().
-                getResourceAsStream(_stringSubsPath);
+        InputStream invalidStream = TestStringSubstitutionFactory.class.getClassLoader().getResourceAsStream(STRING_SUBS_PATH);
         try {
             StringSubstitutor substitutor = StringSubstitutionFactory.createStringSubstitutor(invalidStream);
-            substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(_substitutionMap));
+            substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(substitutionMap));
             backUpTestFile();
             substitutor.substituteAll();
             for (Group group : substitutor.getStringSubsDefinition().getGroup()) {
                 if (group.getId().equals(VALID_GROUP_ID)) {
                     validateSubstitutedArchiveEntries(group);
                     for (FileEntry fileEntry : group.getFileEntry()) {
-                        if (fileEntry.getName().equalsIgnoreCase(_testFileName) &&
+                        if (fileEntry.getName().equalsIgnoreCase(TEST_FILE_NAME) &&
                                 !validateTestFile(new File(fileEntry.getName()))) {
                             Assert.fail("Substitution failed in the test file.");
                             break;
@@ -203,11 +204,11 @@ public class TestStringSubstitutionFactory {
      */
     private void backUpTestFile() {
         try {
-            File testDir = new File(_testFileDirPath);
+            File testDir = new File(testFileDirPath);
             if (testDir.isDirectory()) {
                 for (File file : testDir.listFiles()) {
-                    if (file.getName().endsWith(_testArchiveName)
-                            || file.getName().endsWith(_testFileName)) {
+                    if (file.getName().endsWith(TEST_ARCHIVE_NAME)
+                            || file.getName().endsWith(TEST_FILE_NAME)) {
                         copy(file, new File(file.getAbsolutePath() + ".bkp") ,true);
                     }
                 }
@@ -219,11 +220,11 @@ public class TestStringSubstitutionFactory {
 
     private void restoreTestFile() {
         try {
-            File testDir = new File(_testFileDirPath);
+            File testDir = new File(testFileDirPath);
             if (testDir.isDirectory()) {
                 for (File file : testDir.listFiles()) {
-                    if (file.getName().endsWith(_testArchiveName)
-                            || file.getName().endsWith(_testFileName)) {
+                    if (file.getName().endsWith(TEST_ARCHIVE_NAME)
+                            || file.getName().endsWith(TEST_FILE_NAME)) {
                         file.delete();
                     }
                 }
@@ -272,18 +273,16 @@ public class TestStringSubstitutionFactory {
             }
         }
 
-        FileInputStream in = new FileInputStream(from);
-        FileChannel fin = in.getChannel();
-        FileOutputStream out = new FileOutputStream(to);
-        FileChannel fout = out.getChannel();
-
-        long size = fin.size();
-        long position = 0;
-        while (position < size) {
-            position += fin.transferTo(position, 1000, fout);
-        }
-        fin.close();
-        in.close();
+        FileOutputStream out;
+        FileChannel fout;
+        try (FileInputStream in = new FileInputStream(from); FileChannel fin = in.getChannel()) {
+            out = new FileOutputStream(to);
+            fout = out.getChannel();
+            long size = fin.size();
+            long position = 0;
+            while (position < size) {
+                position += fin.transferTo(position, 1000, fout);
+            }          }
         fout.close();
         out.close();
     }

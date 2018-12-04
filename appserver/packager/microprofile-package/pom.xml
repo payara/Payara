@@ -203,6 +203,11 @@
             <artifactId>microprofile-healthcheck</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>healthcheck-checker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- REST Client -->
         <dependency>

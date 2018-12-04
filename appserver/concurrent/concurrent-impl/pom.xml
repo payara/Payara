@@ -139,6 +139,11 @@
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>opentracing-adapter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

@@ -117,7 +117,9 @@ public class ResourcesXMLParser implements EntityResolver
     private static final String publicID_sjsas90 = "Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions";
     private static final String publicID_ges30 = "Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Resource Definitions";
     private static final String publicID_ges31 = "GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions";
+    private static final String publicId_py4 = "Payara.fish//DTD Payara Server 4 Resource Definitions";
 
+    private static final String DTD_1_6 = "payara-resources_1_6.dtd";
     private static final String DTD_1_5 = "glassfish-resources_1_5.dtd";
     private static final String DTD_1_4 = "sun-resources_1_4.dtd";
     private static final String DTD_1_3 = "sun-resources_1_3.dtd";
@@ -127,6 +129,7 @@ public class ResourcesXMLParser implements EntityResolver
     
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
+                    DTD_1_6,
                     DTD_1_5,
                     DTD_1_4,
                     DTD_1_3,
@@ -1597,6 +1600,8 @@ public class ResourcesXMLParser implements EntityResolver
                 dtdFileName = DTD_1_4;
             }else if(publicId.contains(publicID_ges31)){
                 dtdFileName = DTD_1_5;
+            } else if (publicId.contains(publicId_py4)) {
+                dtdFileName = DTD_1_6;
             }
         }
 

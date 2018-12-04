@@ -72,12 +72,12 @@ public class AverageImpl extends AbstractTreeNode implements Average {
     private long startTime = 0;
     private AtomicLong lastSampleTime = new AtomicLong(0);
     
-    private static final String NAME = "average";
-    private static final String DESCRIPTION = "Average RangeStatistic";
+    private static final String AVERAGE_NAME = "average";
+    private static final String AVERAGE_DESCRIPTION = "Average RangeStatistic";
     private static final String UNIT = java.lang.Long.class.toString();
     
     public AverageImpl() {
-        super.name = NAME;
+        super.name = AVERAGE_NAME;
         super.enabled = true;
         startTime = System.currentTimeMillis();
     }
@@ -171,7 +171,7 @@ public class AverageImpl extends AbstractTreeNode implements Average {
 
     @Override
     public String getDescription() {
-        return DESCRIPTION;
+        return AVERAGE_DESCRIPTION;
     }
 
     @Override

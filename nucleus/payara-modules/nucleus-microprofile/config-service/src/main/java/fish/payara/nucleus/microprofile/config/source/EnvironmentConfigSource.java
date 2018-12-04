@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,10 @@ public class EnvironmentConfigSource implements ConfigSource {
         
         // search environment variables as defined in the spec
         // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc 
-        String result = System.getenv(propertyName);
+
+        //Done this way to resolve PAYARA-3064 instead of genenv(propertyname)
+        //as windows is case-insensitive but Java is not
+        String result = System.getenv().get(propertyName);
         
         if (result == null) {
             // replace all non-alphanumeric characters
@@ -74,7 +77,7 @@ public class EnvironmentConfigSource implements ConfigSource {
         if (result == null) {
             propertyName = propertyName.toUpperCase();
         }
-        return System.getenv(propertyName);
+        return System.getenv().get(propertyName);
     }
 
     @Override

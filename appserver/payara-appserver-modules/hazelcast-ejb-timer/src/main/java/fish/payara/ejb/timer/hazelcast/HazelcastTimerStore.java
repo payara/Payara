@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import com.hazelcast.core.IMap;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.NonPersistentEJBTimerService;
 import com.sun.ejb.containers.RuntimeTimerState;
 import com.sun.ejb.containers.TimerPrimaryKey;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -72,7 +73,7 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
  *
  * @author steve
  */
-public class HazelcastTimerStore extends EJBTimerService {
+public class HazelcastTimerStore extends NonPersistentEJBTimerService {
 
     private static final String EJB_TIMER_CACHE_NAME = "HZEjbTmerCache";
     private static final String EJB_TIMER_CONTAINER_CACHE_NAME = "HZEjbTmerContainerCache";
@@ -88,7 +89,7 @@ public class HazelcastTimerStore extends EJBTimerService {
 
     static void init(HazelcastCore core) {
         try {
-                EJBTimerService.setEJBTimerService(new HazelcastTimerStore(core));
+                EJBTimerService.setPersistentTimerService(new HazelcastTimerStore(core));
         } catch (Exception ex) {
             Logger.getLogger(HazelcastTimerStore.class.getName()).log(Level.WARNING, "Problem when initialising Timer Store", ex);
         }
@@ -203,7 +204,7 @@ public class HazelcastTimerStore extends EJBTimerService {
                 if (localTx) {
                     tm.begin();
                 }
-                EJBTimerService.getEJBTimerService().cancelTimerSynchronization(null, timerId,
+                super.cancelTimerSynchronization(null, timerId,
                         timer.getContainerId(), timer.getOwnerId());
                 if (localTx) {
                     tm.commit();
@@ -1182,7 +1183,7 @@ public class HazelcastTimerStore extends EJBTimerService {
             }
         } catch (Exception ex) {
             // Problem accessing timer service so disable it.
-            EJBTimerService.setEJBTimerService(null);
+            EJBTimerService.setPersistentTimerService(null);
 
             logger.log(Level.WARNING, "ejb.timer_service_init_error", ex);
 

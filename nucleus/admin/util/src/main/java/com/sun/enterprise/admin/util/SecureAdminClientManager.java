@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -152,7 +153,7 @@ public class SecureAdminClientManager {
      * @param nodeDir directory of the node where domain.xml resides
      * @param node name of the node whose directory contains domain.xml
      */
-    public synchronized static void initClientAuthentication(
+    public static synchronized void initClientAuthentication(
             final char[] commandMasterPassword,
             final boolean isInteractive,
             final String serverName,
@@ -289,8 +290,7 @@ public class SecureAdminClientManager {
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);
             Dom domDomain = doc.getRoot();
-            Domain d = domDomain.createProxy(Domain.class);
-            return d;
+            return domDomain.createProxy(Domain.class);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

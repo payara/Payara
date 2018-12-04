@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -64,7 +65,6 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import static com.sun.enterprise.v3.admin.cluster.Constants.*;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import org.glassfish.api.admin.*;
 
@@ -103,6 +103,7 @@ public final class ListClustersCommand implements AdminCommand {
     @Inject
     private Clusters allClusters;
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -126,7 +127,7 @@ public final class ListClustersCommand implements AdminCommand {
             }
         }
         StringBuilder sb = new StringBuilder();
-        if (clusterList.size() < 1) {
+        if (clusterList.isEmpty()) {
             sb.append(NONE);
         }
 
@@ -201,8 +202,8 @@ public final class ListClustersCommand implements AdminCommand {
                 value = InstanceState.StateType.RUNNING.getDescription();
             }
             else {
-                display = PARTIALLY_RUNNING_DISPLAY;
-                value = PARTIALLY_RUNNING;
+                display = Constants.PARTIALLY_RUNNING_DISPLAY;
+                value = Constants.PARTIALLY_RUNNING;
             }
             sb.append(ci.getName()).append(display).append(EOL);
             top.addProperty(ci.getName(), value);

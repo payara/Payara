@@ -127,20 +127,17 @@ public class ListTimers implements AdminCommand {
         }
     }
 
-    private String[] listTimers( String[] serverIds ) {
+    private String[] listTimers(String[] serverIds) {
         String[] result = new String[serverIds.length];
-        if (EJBTimerService.isEJBTimerServiceLoaded()) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            if (ejbTimerService != null) {
-                result = ejbTimerService.listTimers( serverIds );
-            }
-        } else {
-            //FIXME: Should throw IllegalStateException
-            for (int i=0; i<serverIds.length; i++) {
-                result[i] = "0";
-            }
-            //throw new com.sun.enterprise.admin.common.exception.AFException("EJB Timer service is null. "
-                    //+ "Cannot list timers.");
+
+        EJBTimerService ejbTimerService = null;
+        if (EJBTimerService.isPersistentTimerServiceLoaded()) {
+            ejbTimerService = EJBTimerService.getPersistentTimerService();
+        } else if (EJBTimerService.isNonPersistentTimerServiceLoaded()) {
+            ejbTimerService = EJBTimerService.getNonPersistentTimerService();
+        }
+        if (ejbTimerService != null) {
+            result = ejbTimerService.listTimers(serverIds);
         }
 
         return result;
