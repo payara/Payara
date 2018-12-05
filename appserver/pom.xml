@@ -619,7 +619,7 @@
                                 <version>${javax.el.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
-                            <specVersion>${javax.el-api.version}</specVersion>
+                            <specVersion>3.0</specVersion>
                             <implVersion>${javax.el.version}</implVersion>
                             <apiPackage>javax.el</apiPackage>
                             <implNamespace>com.sun.el</implNamespace>
