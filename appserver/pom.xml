@@ -615,7 +615,7 @@
                             </artifact>
                             <jarType>impl</jarType>
                             <specVersion>3.0</specVersion>
-                            <implVersion>3.0.0</implVersion>
+                            <implVersion>${javax.el.version}</implVersion>
                             <apiPackage>javax.el</apiPackage>
                             <implNamespace>com.sun.el</implNamespace>
                         </spec>
