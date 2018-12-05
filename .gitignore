@@ -12,6 +12,7 @@ target/
 *nbactions.xml
 .vscode/
 .idea
+.DS_Store
 gfbuild.log
 /nucleus/payara-modules/requesttracing-core/nbproject/
 nb-configuration.xml

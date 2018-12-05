@@ -37,11 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.osgi.cli.remote;
 
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.UUID;
@@ -94,6 +100,10 @@ public class RemoteCommandSession {
         set(this.delegate, "in", in);
         set(this.delegate, "out", out);
         set(this.delegate, "err", err);
+        ReadableByteChannel inCh = Channels.newChannel(in);
+        WritableByteChannel outCh = Channels.newChannel(out);
+        WritableByteChannel errCh = out == err ? outCh : Channels.newChannel(err);
+        set(this.delegate, "channels", new Channel[] {inCh, outCh, errCh});
         return this.delegate;
     }
 
