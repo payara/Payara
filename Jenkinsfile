@@ -2,7 +2,6 @@
 // Jenkinsfile for building a PR and running a subset of tests against it
 def pom
 def DOMAIN_NAME
-def ASADMIN
 def payaraBuildNumber
 pipeline {
     options {
@@ -154,7 +153,8 @@ pipeline {
         }
     }
 }
-def void setupDomain() {
+
+void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
@@ -164,7 +164,8 @@ def void setupDomain() {
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database --dbtype derby || true"
 }
-def void teardownDomain() {
+
+void teardownDomain() {
     echo 'tidying up after tests:'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} stop-database --dbtype derby || true"
