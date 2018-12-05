@@ -304,6 +304,8 @@
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b002</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
+        
+        <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.9.6</jackson.version>
@@ -1272,7 +1274,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
