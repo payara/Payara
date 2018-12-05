@@ -29,7 +29,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Wiping Maven Repo  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "rm -rf ~/.m2/repository/*"
-                
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 //noinspection SpellCheckingInspection
                 sh "rm -rf /tmp/arquillian*; rm -rf /tmp/javaee*; rm -rf /tmp/fileinstall*; rm -rf /tmp/surefire*; rm -rf /tmp/payara*; rm -rf /tmp/cargo*"
@@ -77,7 +77,7 @@ pipeline {
                 sh "cp ./appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar ./payara-micro-prerelease.jar"
                 sh "cp ./appserver/extras/embedded/all/target/payara-embedded-all.jar ./payara-embedded-all-prerelease.jar"
                 sh "cp ./appserver/extras/embedded/web/target/payara-embedded-web.jar ./payara-embedded-web-prerelease.jar"
-                
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Uploading Distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withAWS(region:'eu-west-1', credentials: 'awsPayara') {
                     s3Upload bucket: 'payara.fish', file: 'payara-prerelease.zip'
@@ -164,6 +164,7 @@ pipeline {
                 sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -215,7 +216,7 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/payara-health-arquillian-extension/pom.xml \
                 -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-runner/pom.xml -Ppayara-micro-managed \
                 -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
@@ -233,7 +234,7 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/payara-jwt-auth-arquillian-extension/pom.xml \
                 -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-runner/pom.xml \
                 -Ppayara-micro-managed,full -Dsurefire.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
