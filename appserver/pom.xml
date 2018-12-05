@@ -90,7 +90,7 @@
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
-        <tyrus.version>1.13.1</tyrus.version>
+        <tyrus.version>1.14</tyrus.version>
 
         <!-- JAX-B -->
         <jaxb-api.version>2.3.0</jaxb-api.version>
@@ -99,11 +99,6 @@
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0.2</yasson.version>
-
-        <!-- JSON-P -->
-        <jsonp-api.version>1.1</jsonp-api.version>
-        <jsonp-ri.version>1.1</jsonp-ri.version>
-        <jsonp-jaxrs.version>1.1.1</jsonp-jaxrs.version>
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
@@ -319,12 +314,12 @@
                             <artifact>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>javax.json</artifactId>
-                                <version>${jsonp-ri.version}</version>
+                                <version>${jsonp.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>1.0</specVersion>
-                            <implVersion>${jsonp-ri.version}</implVersion>
+                            <specVersion>${jsonp.version}</specVersion>
+                            <implVersion>${jsonp.version}</implVersion>
                             <apiPackage>javax.json</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -979,17 +974,17 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
-                <version>${jsonp-ri.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.json</groupId>
                 <artifactId>javax.json-api</artifactId>
-                <version>${jsonp-api.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jsonp-jaxrs</artifactId>
-                <version>${jsonp-jaxrs.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
 
             <dependency>
