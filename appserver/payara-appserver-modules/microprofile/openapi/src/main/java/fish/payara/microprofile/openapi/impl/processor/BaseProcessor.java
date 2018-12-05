@@ -46,7 +46,9 @@ import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -139,7 +141,19 @@ public class BaseProcessor implements OASProcessor {
             }
         }
 
+        removeEmptyPaths(api, config);
+
         return api;
     }
 
+    private OpenAPI removeEmptyPaths(OpenAPI api, OpenApiConfiguration config) {
+        Iterator<Map.Entry<String, PathItem>> it = api.getPaths().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, PathItem> entry = it.next();
+            if (new PathItemImpl().equals(entry.getValue())) {
+                it.remove();
+            }
+        }
+        return api;
+    }
 }
