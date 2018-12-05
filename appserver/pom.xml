@@ -201,7 +201,7 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <wsdl4j.version>1.6.2</wsdl4j.version>
+        <wsdl4j.version>1.6.3</wsdl4j.version>
 
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 

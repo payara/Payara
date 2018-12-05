@@ -304,6 +304,8 @@
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0-b002</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
+        
+        <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
         <jackson.version>2.9.6</jackson.version>
@@ -312,7 +314,7 @@
 
         <jsonp.version>1.1.4</jsonp.version>
 
-        <mimepull.version>1.9.7</mimepull.version>
+        <mimepull.version>1.9.10</mimepull.version>
         
         <opentracing.version>0.31.0</opentracing.version>
 
@@ -322,7 +324,7 @@
         <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.0</org.apache.felix.gogo.runtime.version>
-        <org.apache.felix.gogo.shell.version>1.0.0</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.shell.version>1.1.0</org.apache.felix.gogo.shell.version>
         <org.apache.felix.gogo.command.version>1.0.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.6.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.8.16</org.apache.felix.configadmin.version>
@@ -1272,7 +1274,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
