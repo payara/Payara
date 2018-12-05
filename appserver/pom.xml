@@ -396,7 +396,7 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${jstl-api.version}</specVersion>
+                            <specVersion>1.2</specVersion>
                             <specImplVersion>${jstl-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp.jstl</apiPackage>
                         </spec>
