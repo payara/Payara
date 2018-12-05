@@ -293,7 +293,7 @@
                                 <version>${mail.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
-                            <specVersion>${mail.version}</specVersion>
+                            <specVersion>1.6</specVersion>
                             <implVersion>${mail.version}</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
