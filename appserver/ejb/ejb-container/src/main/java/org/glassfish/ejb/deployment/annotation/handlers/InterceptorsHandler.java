@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
@@ -159,16 +159,16 @@ public class InterceptorsHandler extends AbstractAttributeHandler {
         ComponentDefinition cdef = new ComponentDefinition(interceptorClass);
         for(Method m : cdef.getMethods()) {
             if( m.getAnnotation(AroundInvoke.class) != null ) {
-                aroundInvokeDescriptors.add(getLifecycleCallbackDescriptor(m));
+                aroundInvokeDescriptors.add(getLifecycleCallbackDescriptor(m, true));
             }
             if( m.getAnnotation(AroundTimeout.class) != null ) {
-                aroundTimeoutDescriptors.add(getLifecycleCallbackDescriptor(m));
+                aroundTimeoutDescriptors.add(getLifecycleCallbackDescriptor(m, true));
             }
             if( m.getAnnotation(PostActivate.class) != null ) {
-                postActivateDescriptors.add(getLifecycleCallbackDescriptor(m));
+                postActivateDescriptors.add(getLifecycleCallbackDescriptor(m, false));
             }
             if( m.getAnnotation(PrePassivate.class) != null ) {
-                prePassivateDescriptors.add(getLifecycleCallbackDescriptor(m));
+                prePassivateDescriptors.add(getLifecycleCallbackDescriptor(m, false));
             }
         }
         
@@ -218,10 +218,11 @@ public class InterceptorsHandler extends AbstractAttributeHandler {
         return getEjbAnnotationTypes();
     }
 
-    private LifecycleCallbackDescriptor getLifecycleCallbackDescriptor(Method m) {
+    private LifecycleCallbackDescriptor getLifecycleCallbackDescriptor(Method m, boolean requiresInvocationContextArgument) {
         LifecycleCallbackDescriptor lccDesc = new LifecycleCallbackDescriptor();
         lccDesc.setLifecycleCallbackClass(m.getDeclaringClass().getName());
         lccDesc.setLifecycleCallbackMethod(m.getName());
+        lccDesc.setRequiresInvocationContextArgument(requiresInvocationContextArgument);
         return lccDesc;
     }
 }
