@@ -67,7 +67,7 @@ public interface PayaraExecutorServiceConfiguration extends ConfigBeanProxy, Con
     String getThreadPoolExecutorKeepAliveTimeUnit();
     void setThreadPoolExecutorKeepAliveTimeUnit(String keepAliveTimeUnit);
 
-    @Attribute(defaultValue = "30", dataType = Integer.class)
+    @Attribute(defaultValue = "500", dataType = Integer.class)
     String getThreadPoolExecutorQueueSize();
     void setThreadPoolExecutorQueueSize(int queueSize);
 
