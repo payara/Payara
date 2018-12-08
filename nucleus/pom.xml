@@ -265,15 +265,15 @@
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.12.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.12.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.0.13.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.13.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
-        <javax.el.version>3.0.1-b04</javax.el.version>
+        <javax.el.version>3.0.1-b10</javax.el.version>
         <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.1</mail.version>
+        <mail.version>1.6.2</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
@@ -302,19 +302,35 @@
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.0.1-b002</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.0-b001</gmbal.version>
+        <gmbal.version>4.0.0-b002</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
+        
+        <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.6</jackson.version>
+        <jackson.version>2.9.7</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
-        <snakeyaml.version>1.18</snakeyaml.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
 
-        <jsonp.version>1.1</jsonp.version>
+        <jsonp.version>1.1.4</jsonp.version>
 
-        <mimepull.version>1.9.7</mimepull.version>
+        <mimepull.version>1.9.10</mimepull.version>
         
         <opentracing.version>0.31.0</opentracing.version>
+
+
+        <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
+        <org.apache.felix.main.version>6.0.1</org.apache.felix.main.version>
+        <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
+        <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
+        <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
+        <org.apache.felix.gogo.runtime.version>1.1.0</org.apache.felix.gogo.runtime.version>
+        <org.apache.felix.gogo.shell.version>1.1.0</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.command.version>1.0.2</org.apache.felix.gogo.command.version>
+        <org.apache.felix.fileinstall.version>3.6.4.payara-p1</org.apache.felix.fileinstall.version>
+        <org.apache.felix.configadmin.version>1.9.10</org.apache.felix.configadmin.version>
+        <org.apache.felix.scr.version>2.1.14</org.apache.felix.scr.version>
+        <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- Java Business Integration (JBI) is a specification for an approach to implementing a service-oriented architecture (SOA).  -->
         <jbi.version>1.0</jbi.version>
@@ -346,6 +362,7 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.1</ant.version>
         <ant-launcher.version>1.10.1</ant-launcher.version>
+        <metainf-services.version>1.8</metainf-services.version>
 
         <!-- Debug / analysis -->
         <findbugs.skip>true</findbugs.skip>
@@ -1060,66 +1077,66 @@ Parent is ${project.parent}</echo>
                 <version>5.0.0</version>
                 <scope>provided</scope>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.main</artifactId>
-                <version>5.6.10</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.webconsole</artifactId>
-                <version>4.3.4</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.eventadmin</artifactId>
-                <version>1.4.10</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.shell</artifactId>
-                <version>1.4.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                <version>1.0.10</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.gogo.shell</artifactId>
-               <version>1.0.0</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.gogo.command</artifactId>
-               <version>1.0.2</version>
-            </dependency>
-            <dependency> <!-- A utility to automatically install bundles from a directory.-->
-               <groupId>org.apache.felix</groupId>
-               <artifactId>org.apache.felix.fileinstall</artifactId>
-               <version>3.6.4.payara-p1</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
-               <artifactId>org.apache.felix.configadmin</artifactId>
-               <version>1.8.16</version>
-            </dependency>
-            <dependency>
-               <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
-               <artifactId>org.apache.felix.scr</artifactId>
-               <version>2.0.14</version>
-            </dependency>
             <dependency>
                 <groupId>org.osgi</groupId> <!-- OSGi Companion Code for org.osgi.dto Version 1.0.0. -->
                 <artifactId>org.osgi.dto</artifactId>
                 <version>1.0.0</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.main</artifactId>
+                <version>${org.apache.felix.main.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.webconsole</artifactId>
+                <version>${org.apache.felix.webconsole.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.eventadmin</artifactId>
+                <version>${org.apache.felix.eventadmin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.shell</artifactId>
+                <version>${org.apache.felix.shell.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.gogo.runtime</artifactId>
+                <version>${org.apache.felix.gogo.runtime.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.gogo.shell</artifactId>
+                <version>${org.apache.felix.gogo.shell.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.gogo.command</artifactId>
+                <version>${org.apache.felix.gogo.command.version}</version>
+            </dependency>
+            <dependency> <!-- A utility to automatically install bundles from a directory.-->
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.fileinstall</artifactId>
+                <version>${org.apache.felix.fileinstall.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
+               <artifactId>org.apache.felix.configadmin</artifactId>
+                <version>${org.apache.felix.configadmin.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId> <!-- Implementation of the Declarative Services specification 1.3 -->
+               <artifactId>org.apache.felix.scr</artifactId>
+               <version>${org.apache.felix.scr.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.felix</groupId> <!-- Bundle repository service. -->
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
-                <version>2.0.10</version>
+                <version>${org.apache.felix.bundlerepository.version}</version>
             </dependency>
 
 
@@ -1238,7 +1255,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
-                <version>1.1</version>
+                <version>${metainf-services.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -1258,7 +1275,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
