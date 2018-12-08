@@ -59,7 +59,6 @@ import org.xml.sax.helpers.NamespaceSupport;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
@@ -126,7 +125,7 @@ public class SaxParserHandler extends DefaultHandler {
     private boolean pushedNamespaceContext=false;
     private NamespaceSupport namespaces = new NamespaceSupport();
 
-    private Deque<String> elementStack = new ConcurrentLinkedDeque<>();
+    private Deque<String> elementStack = new ArrayDeque<>();
 
     private static final LocalStringManagerImpl localStrings=
 	    new LocalStringManagerImpl(SaxParserHandler.class);
@@ -418,7 +417,7 @@ public class SaxParserHandler extends DefaultHandler {
         String lastElement = null;
         try {
           lastElement = elementStack.pop();
-        } catch (EmptyStackException ex) {
+        } catch (NoSuchElementException ex) {
         }
         if (lastElement == null) {
           rootElement = localName;
@@ -513,7 +512,7 @@ public class SaxParserHandler extends DefaultHandler {
         String lastElement = null;
         try {
           lastElement = elementStack.peek();
-        } catch (EmptyStackException ex) {
+        } catch (NoSuchElementException ex) {
         }
 
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
@@ -622,7 +621,7 @@ public class SaxParserHandler extends DefaultHandler {
 
         try {
           lastElement = elementStack.pop();
-        } catch (EmptyStackException ex) {
+        } catch (NoSuchElementException ex) {
         }
         if (lastElement != null) {
           if (lastElement.lastIndexOf("/") >= 0) {
