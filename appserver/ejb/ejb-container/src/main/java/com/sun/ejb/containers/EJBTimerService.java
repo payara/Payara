@@ -244,18 +244,19 @@ public abstract class EJBTimerService {
         return getEJBTimerService(target, force, true);
     }
 
-    public static EJBTimerService getEJBTimerService(String target, boolean force, boolean persistent) {
+    public static EJBTimerService getEJBTimerService(String target, boolean force, boolean persistent) {       
+        // Always intialise the non-persistent timer service as it may also be needed
+        if (!nonPersistentTimerServiceVerified) {
+                initNonPersistentTimerService(target, force);
+        }
+        
         if (persistent) {
             if (!persistentTimerServiceVerified) {
                 initPersistentTimerService(target, force);
             }
             return persistentTimerService;
-        } else {
-            if (!nonPersistentTimerServiceVerified) {
-                initNonPersistentTimerService(target, force);
-            }
-            return nonPersistentTimerService;
-        }
+        } 
+        return nonPersistentTimerService;
     }
 
 
