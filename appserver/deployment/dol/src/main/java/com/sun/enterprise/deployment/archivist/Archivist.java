@@ -56,6 +56,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
 import org.glassfish.apf.*;
 import org.glassfish.apf.Scanner;
+import org.glassfish.apf.ErrorHandler;
 import org.glassfish.apf.impl.DefaultErrorHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
@@ -527,18 +528,18 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Returns the scanner for this archivist, usually it is the scanner regitered
+     * Returns the scanner for this archivist, usually it is the scanner registered
      * with the same module type as this archivist, but subclasses can return a
      * different version
      *
      */
     public ModuleScanner getScanner() {
         try {
-            Scanner scanner = habitat.getService(Scanner.class, getModuleType().toString());
+            org.glassfish.apf.Scanner scanner = habitat.getService(org.glassfish.apf.Scanner.class, getModuleType().toString());
             if (!(scanner instanceof ModuleScanner)) {
                 logger.log(Level.SEVERE, "Cannot find module scanner for " + this.getManifest());
             } else {
-                return (ModuleScanner)scanner;
+                return (ModuleScanner) scanner;
             }
         } catch (MultiException e) {
             // XXX To do
@@ -548,7 +549,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Process annotations in a bundle descriptor, the annoation processing
+     * Process annotations in a bundle descriptor, the annotation processing
      * is dependent on the type of descriptor being passed.
      */
     public ProcessingResult processAnnotations(T bundleDesc,
@@ -845,7 +846,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param out archive output stream to write to
      * @param entriesToSkip files to not write from the original archive
      */
-    protected void writeContents(ReadableArchive in, WritableArchive out, Vector entriesToSkip)
+    protected void writeContents(ReadableArchive in, WritableArchive out, List<String> entriesToSkip)
             throws IOException {
 
         // Copy original jarFile elements
@@ -1298,9 +1299,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @return the list of files that should not be copied from the old archive
      *         when a save is performed.
      */
-    public Vector getListOfFilesToSkip(ReadableArchive archive) throws IOException {
+    public List<String> getListOfFilesToSkip(ReadableArchive archive) throws IOException {
 
-        Vector filesToSkip = new Vector();
+        List<String> filesToSkip = new ArrayList<>();
         filesToSkip.add(getDeploymentDescriptorPath());
         if (manifest != null) {
             filesToSkip.add(JarFile.MANIFEST_NAME);
@@ -1375,9 +1376,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
      *
      * @param in  jar file
      * @param out jar file
-     * @param ignoreList vector of entry name to not copy from to source jar file
+     * @param ignoreList list of entry name to not copy from to source jar file
      */
-    protected void copyJarElements(ReadableArchive in, WritableArchive out, Vector ignoreList)
+    protected void copyJarElements(ReadableArchive in, WritableArchive out, List<String> ignoreList)
             throws IOException {
 
         Enumeration entries = in.entries();
@@ -1579,7 +1580,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param target        the target archive to copy to
      * @param entriesToSkip the entries that will be skipped by target archive
      */
-    public void copyInto(ReadableArchive source, WritableArchive target, Vector entriesToSkip)
+    public void copyInto(ReadableArchive source, WritableArchive target, List<String> entriesToSkip)
             throws IOException {
         copyInto(source, target, entriesToSkip, true);
     }
@@ -1594,7 +1595,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      *                          overwrites the one in target archive
      */
     public void copyInto(ReadableArchive source, WritableArchive target,
-                         Vector entriesToSkip, boolean overwriteManifest)
+                         List<String> entriesToSkip, boolean overwriteManifest)
             throws IOException {
 
         copyJarElements(source, target, entriesToSkip);
@@ -1685,8 +1686,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
         return (!isFull && annotationProcessingRequested && classLoader != null);
     }
 
-    public Vector getAllWebservicesDeploymentDescriptorPaths() {
-        Vector allDescPaths = new Vector();
+    public List<String> getAllWebservicesDeploymentDescriptorPaths() {
+        List<String> allDescPaths = new ArrayList<>();
         allDescPaths.add(WEB_WEBSERVICES_JAR_ENTRY);
         allDescPaths.add(EJB_WEBSERVICES_JAR_ENTRY);
 
