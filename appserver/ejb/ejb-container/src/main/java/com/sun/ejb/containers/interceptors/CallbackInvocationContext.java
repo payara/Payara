@@ -228,34 +228,29 @@ public class CallbackInvocationContext implements InvocationContext {
 
     private void checkSetParameters(Object[] params) {
        if( ctor != null) {
-
-            if ((params == null) && (ctorParamTypes.length != 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " constructor: " + ctor);
-            }
-            if (ctorParamTypes.length != (params != null ? params.length : 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " constructor: " + ctor);
+            Object[] parameter = params == null ? new Object[]{} : params;
+            if (ctorParamTypes.length != parameter.length) {
+                throw new IllegalArgumentException("Wrong number of parameters for constructor: " + ctor);
             }
             int index = 0 ;
             for (Class type : ctorParamTypes) {
-                if (params[index] == null) {
+                if (parameter[index] == null) {
                     if (type.isPrimitive()) {
                         throw new IllegalArgumentException("Parameter type mismatch for constructor "
                                 + ctor + ".  Attempt to set a null value for Arg["
                             + index + "]. Expected a value of type: " + type.getName());
                     }
                 } else if (type.isPrimitive()) {
-                    if (! InterceptorUtil.hasCompatiblePrimitiveWrapper(type, params[index].getClass())) {
+                    if (! InterceptorUtil.hasCompatiblePrimitiveWrapper(type, parameter[index].getClass())) {
                         throw new IllegalArgumentException("Parameter type mismatch for constructor "
                                 + ctor + ".  Arg["
-                            + index + "] type: " + params[index].getClass().getName()
+                            + index + "] type: " + parameter[index].getClass().getName()
                             + " is not compatible with the expected type: " + type.getName());
                     }
-                } else if (! type.isAssignableFrom(params[index].getClass())) {
+                } else if (! type.isAssignableFrom(parameter[index].getClass())) {
                     throw new IllegalArgumentException("Parameter type mismatch for constructor "
                             + ctor + ".  Arg["
-                        + index + "] type: " + params[index].getClass().getName()
+                        + index + "] type: " + parameter[index].getClass().getName()
                         + " does not match the expected type: " + type.getName());
                 }
                 index++;

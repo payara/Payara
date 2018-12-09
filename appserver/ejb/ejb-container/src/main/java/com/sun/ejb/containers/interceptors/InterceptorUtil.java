@@ -111,36 +111,31 @@ public class InterceptorUtil {
     public static void checkSetParameters(Object[] params, Method method) {
 
         if( method != null) {
-
+            Object[] parameter = params == null ? new Object[]{} : params;
             Class[] paramTypes = method.getParameterTypes();
-            if ((params == null) && (paramTypes.length != 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " method: " + method);
-            }
-            if (paramTypes.length != (params != null ? params.length : 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " method: " + method);
+            if (paramTypes.length != parameter.length) {
+                throw new IllegalArgumentException("Wrong number of parameters for method: " + method);
             }
             int index = 0 ;
             for (Class type : paramTypes) {
-                if (params[index] == null) {
+                if (parameter[index] == null) {
                     if (type.isPrimitive()) {
                         throw new IllegalArgumentException("Parameter type mismatch for method "
-                                + method.getName() + ".  Attempt to set a null value for Arg["
+                            + method.getName() + ".  Attempt to set a null value for Arg["
                             + index + "]. Expected a value of type: " + type.getName());
                     }
                 } else if (type.isPrimitive()) {
                     Set<Class> compatibles = compatiblePrimitiveWrapper.get(type);
-                    if (! compatibles.contains(params[index].getClass())) {
+                    if (! compatibles.contains(parameter[index].getClass())) {
                         throw new IllegalArgumentException("Parameter type mismatch for method "
-                                + method.getName() + ".  Arg["
-                            + index + "] type: " + params[index].getClass().getName()
+                            + method.getName() + ".  Arg[" + index + "] type: "
+                            + parameter[index].getClass().getName()
                             + " is not compatible with the expected type: " + type.getName());
                     }
-                } else if (! type.isAssignableFrom(params[index].getClass())) {
+                } else if (! type.isAssignableFrom(parameter[index].getClass())) {
                     throw new IllegalArgumentException("Parameter type mismatch for method "
-                            + method.getName() + ".  Arg["
-                        + index + "] type: " + params[index].getClass().getName()
+                        + method.getName() + ".  Arg[" + index + "] type: "
+                        + parameter[index].getClass().getName()
                         + " does not match the expected type: " + type.getName());
                 }
                 index++;
