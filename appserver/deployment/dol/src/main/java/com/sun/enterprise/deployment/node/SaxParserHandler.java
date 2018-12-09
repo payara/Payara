@@ -414,11 +414,7 @@ public class SaxParserHandler extends DefaultHandler {
         pushedNamespaceContext = false;
 
         doDelete = false;
-        String lastElement = null;
-        try {
-          lastElement = elementStack.pop();
-        } catch (NoSuchElementException ex) {
-        }
+        String lastElement = elementStack.pollFirst();
         if (lastElement == null) {
           rootElement = localName;
           versionUpgradeList = getVersionUpgrades(rootElement);
@@ -509,11 +505,7 @@ public class SaxParserHandler extends DefaultHandler {
 
     public void endElement(String uri, String localName, String qName) {
 
-        String lastElement = null;
-        try {
-          lastElement = elementStack.peek();
-        } catch (NoSuchElementException ex) {
-        }
+        String lastElement = elementStack.peek();
 
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
             DOLUtils.getDefaultLogger().finer("End of element " + uri + " local name "+ localName + " and " + qName + " value " + elementData);
@@ -619,10 +611,7 @@ public class SaxParserHandler extends DefaultHandler {
         namespaces.popContext();
         pushedNamespaceContext=false;
 
-        try {
-          lastElement = elementStack.pop();
-        } catch (NoSuchElementException ex) {
-        }
+        lastElement = elementStack.pollFirst();
         if (lastElement != null) {
           if (lastElement.lastIndexOf("/") >= 0) {
             lastElement = lastElement.substring(0, lastElement.lastIndexOf("/"));
