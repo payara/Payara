@@ -292,8 +292,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected boolean isWebServiceEndpoint = false;
 
     private boolean isTimedObject_ = false;
-    private boolean isPersistenceTimer;
-    private boolean isNonPersistenceTimer;
+    private boolean hasPersistenceTimer;
+    private boolean hasNonPersistenceTimer;
 
     /*****************************************
      *    Data members for Local views       *
@@ -773,8 +773,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // ignore.  Will happen for EJB 3.0 session beans
             }
 
-            isPersistenceTimer = false;
-            isNonPersistenceTimer = false;
+            hasPersistenceTimer = false;
+            hasNonPersistenceTimer = false;
             if ( ejbDescriptor.isTimedObject() ) {
 
                 warnIfNotFullProfile("use of persistent EJB Timer Service");
@@ -785,8 +785,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 if (ejbTimeoutMethodDesc != null) {
                     Method method = ejbTimeoutMethodDesc.getMethod(ejbDescriptor);
                     // timers defined in runtime
-                    isPersistenceTimer = true;
-                    isNonPersistenceTimer = true;
+                    hasPersistenceTimer = true;
+                    hasNonPersistenceTimer = true;
                     processEjbTimeoutMethod(method);
 
                     ejbTimeoutMethod = method;
@@ -807,9 +807,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         _logger.log(Level.FINE, "... processing {0}", method);
                     }
                     if(schd.getPersistent()) {
-                        isPersistenceTimer = true;
+                        hasPersistenceTimer = true;
                     } else {
-                        isNonPersistenceTimer = true;
+                        hasNonPersistenceTimer = true;
                     }
                     processEjbTimeoutMethod(method);
 
@@ -863,14 +863,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             if (!isStatefulSession) {
                 // EJBTimerService should be accessed only if needed
                 // not to cause it to be loaded if it's not used.
-                if (isPersistenceTimer) {
+                if (hasPersistenceTimer) {
                     EJBTimerService timerService = EJBTimerService.getEJBTimerService(null, true, true);
                     if (timerService != null) {
                         timerService.timedObjectCount();
                         timersStarted = true;
                     }
                 }
-                if (isNonPersistenceTimer) {
+                if (hasNonPersistenceTimer) {
                     EJBTimerService timerService = EJBTimerService.getEJBTimerService(null, true, false);
                     if (timerService != null) {
                         timerService.timedObjectCount();
@@ -2543,13 +2543,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if ( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            if (isPersistenceTimer) {
+            if (hasPersistenceTimer) {
                 EJBTimerService timerService = EJBTimerService.getPersistentTimerService();
                 if (timerService != null) {
                     timerService.cancelTimersByKey(getContainerId(), key);
                 }
             }
-            if (isNonPersistenceTimer) {
+            if (hasNonPersistenceTimer) {
                 EJBTimerService timerService = EJBTimerService.getNonPersistentTimerService();
                 if (timerService != null) {
                     timerService.cancelTimersByKey(getContainerId(), key);
@@ -2560,13 +2560,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void stopTimers() {
         if ( isTimedObject() && timersStarted ) {
-            if (isPersistenceTimer) {
+            if (hasPersistenceTimer) {
                 EJBTimerService ejbTimerService = EJBTimerService.getPersistentTimerService();
                 if (ejbTimerService != null) {
                     ejbTimerService.stopTimers(getContainerId());
                 }
             }
-             if (isNonPersistenceTimer) {
+             if (hasNonPersistenceTimer) {
                 EJBTimerService ejbTimerService = EJBTimerService.getNonPersistentTimerService();
                 if (ejbTimerService != null) {
                     ejbTimerService.stopTimers(getContainerId());
@@ -4100,7 +4100,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             scheduleIds.clear();
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            if (isPersistenceTimer) {
+            if (hasPersistenceTimer) {
                 Map<TimerPrimaryKey, Method> result;
                 EJBTimerService timerService = EJBTimerService.getPersistentTimerService();
                 if (timerService != null) {
@@ -4120,7 +4120,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     throw new RuntimeException("EJB Timer Service is not available");
                 }
             }
-            if (isNonPersistenceTimer) {
+            if (hasNonPersistenceTimer) {
                 Map<TimerPrimaryKey, Method> result;
                 EJBTimerService timerService = EJBTimerService.getNonPersistentTimerService();
                 if (timerService != null) {
