@@ -201,13 +201,6 @@ public class GFFileHandler extends StreamHandler implements
         int otherFormatter = 0;
         boolean mustRotate = false;
 
-        String propertyValue = manager.getProperty(className + ".logtoFile");
-        logToFile = true;
-
-        if (propertyValue != null) {
-            logToFile = Boolean.parseBoolean(propertyValue);
-        }
-
         try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
@@ -242,8 +235,12 @@ public class GFFileHandler extends StreamHandler implements
             currentFileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
-        // start the Queue consumer thread.
-        initializePump();
+        String propertyValue = manager.getProperty(className + ".logtoFile");
+        boolean logToFile = true;
+        if (propertyValue != null) {
+            logToFile = Boolean.parseBoolean(propertyValue);
+        }
+        setLogToFile(logToFile);
 
         logRecord.setParameters(new Object[]{Version.getFullVersion()});
         logRecord.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
@@ -569,18 +566,24 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     void initializePump() {
-        pumpFuture = payaraExecutorService.submit(
-            () -> {
-                while (!done.isSignalled()) {
-                    try {
-                        log();
-                    } catch (Exception e) {
-                        // GLASSFISH-19125
-                        // Continue the loop without exiting
+        if (pumpFuture != null) {
+            pumpFuture.cancel(true);
+            pumpFuture = null;
+        }
+        if (logToFile) {
+            pumpFuture = payaraExecutorService.submit(
+                () -> {
+                    while (!done.isSignalled()) {
+                        try {
+                            log();
+                        } catch (Exception e) {
+                            // GLASSFISH-19125
+                            // Continue the loop without exiting
+                        }
                     }
                 }
-            }
-        );
+            );
+        }
     }
 
     @Override
@@ -590,7 +593,9 @@ public class GFFileHandler extends StreamHandler implements
             LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
         }
         done.tryReleaseShared(1);
-        pumpFuture.cancel(true);
+        if (pumpFuture != null) {
+            pumpFuture.cancel(true);
+        }
 
         // drain and return
         final int size = pendingRecords.size();
@@ -913,17 +918,17 @@ public class GFFileHandler extends StreamHandler implements
             for (int j = 0; j < msgs; j++) {
                 super.publish(v.get(j));
             }
-        }
-        flush();
-        if ((rotationRequested.get())
-                || ((limitForFileRotation > 0)
-                && (meter.written >= limitForFileRotation))) {
-            // If we have written more than the limit set for the
-            // file, or rotation requested from the Timer Task or LogMBean
-            // start fresh with a new file after renaming the old file.
-            synchronized (rotationLock) {
-                rotate();
-                rotationRequested.set(false);
+            flush();
+            if ((rotationRequested.get())
+                    || ((limitForFileRotation > 0)
+                    && (meter.written >= limitForFileRotation))) {
+                // If we have written more than the limit set for the
+                // file, or rotation requested from the Timer Task or LogMBean
+                // start fresh with a new file after renaming the old file.
+                synchronized (rotationLock) {
+                    rotate();
+                    rotationRequested.set(false);
+                }
             }
         }
     }
@@ -961,14 +966,18 @@ public class GFFileHandler extends StreamHandler implements
             recordWrapper.setThreadName(Thread.currentThread().getName());
         }
 
-        try {
-            pendingRecords.add(recordWrapper);
-        } catch (IllegalStateException e) {
-            // queue is full, start waiting.
+        if (logToFile) {
             try {
-                pendingRecords.put(recordWrapper);
-            } catch (InterruptedException e1) {
-                // too bad, record is lost...
+                pendingRecords.add(recordWrapper);
+            } catch (IllegalStateException e) {
+                // queue is full, start waiting.
+                new ErrorManager().error("GFFileHandler: Queue full. Waiting to submit.", e, ErrorManager.GENERIC_FAILURE);
+                try {
+                    pendingRecords.put(recordWrapper);
+                } catch (InterruptedException e1) {
+                    // too bad, record is lost...
+                    new ErrorManager().error("GFFileHandler: Waiting was interrupted. Log record lost.", e1, ErrorManager.GENERIC_FAILURE);
+                }
             }
         }
 
@@ -1041,6 +1050,7 @@ public class GFFileHandler extends StreamHandler implements
 
     public synchronized void setLogToFile(boolean logToFile) {
         this.logToFile = logToFile;
+        initializePump();
     }
 
     public synchronized void setRotationOnDateChange(boolean rotationOnDateChange) {
