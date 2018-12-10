@@ -106,7 +106,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
 
     private static final int BACKLOG = 50;
     
-    private static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
+    protected static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
 
     
 
@@ -370,7 +370,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
 
                 // PAYARA-408
                 // Check if SO_KEEPALIVE property set
-                if (Boolean.getBoolean("fish.payara.SOKeepAlive")) {
+                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
                     if (_logger.isLoggable(Level.FINER)) {
                         _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                     }
@@ -520,7 +520,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                   
             // PAYARA-408
             // Check if SO_KEEPALIVE property set
-            if (Boolean.getBoolean("fish.payara.SOKeepAlive")) {
+            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
                 if (_logger.isLoggable(Level.FINER)) {
                     _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                 }
