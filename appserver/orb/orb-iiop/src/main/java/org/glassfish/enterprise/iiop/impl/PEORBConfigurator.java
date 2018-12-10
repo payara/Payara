@@ -56,6 +56,8 @@ import com.sun.corba.ee.spi.transport.TransportDefault;
 import com.sun.logging.LogDomains;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.grizzly.config.dom.Ssl;
+
+import java.net.SocketException;
 import java.util.logging.Logger;
 import org.glassfish.enterprise.iiop.api.IIOPConstants;
 import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
@@ -323,6 +325,26 @@ public class PEORBConfigurator implements ORBConfigurator {
         public void handleRequest(SelectableChannel channel) {
             SocketChannel sch = (SocketChannel)channel ;
             Socket socket = sch.socket() ;
+
+            // Enable or disable SO_KEEPALIVE for the socket as required
+            try {
+                if (Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+                    }
+                    socket.setKeepAlive(true);
+                } else if (System.getProperty(IIOPSSLSocketFactory.SO_KEEPALIVE) != null
+                        && !Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE)
+                        && socket.getKeepAlive()) {
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.log(Level.FINER, "Disabling SO_KEEPALIVE");
+                    }
+                    socket.setKeepAlive(false);
+                }
+            } catch (SocketException se) {
+                logger.log(Level.WARNING, "Could not enable SO_KEEPALIVE", se);
+            }
+
             acceptor.processSocket( socket ) ;
         }
     }
