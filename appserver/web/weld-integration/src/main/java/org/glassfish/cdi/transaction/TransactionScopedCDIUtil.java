@@ -67,6 +67,11 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.InjectionTargetFactory;
 import javax.enterprise.util.AnnotationLiteral;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -197,9 +202,24 @@ public class TransactionScopedCDIUtil {
 
         private Class<?> beanClass;
         private InjectionTarget<Object> injectionTarget = null;
+        private final Optional<JavaEEContextUtil> ctxUtil;
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
+            Optional<JavaEEContextUtil> ctxUtil = Optional.empty();
+            try {
+                ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+                if (serviceLocator == null) {
+                    serviceLocator = Globals.getStaticHabitat();
+                }
+                if (serviceLocator != null) {
+                    ctxUtil = Optional.ofNullable(serviceLocator.getService(JavaEEContextUtil.class));
+                }
+            }
+            catch(MultiException e) {
+                log(e.getMessage());
+            }
+            this.ctxUtil = ctxUtil;
         }
 
         private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
@@ -268,16 +288,20 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
-            Object instance = injectionTarget.produce(ctx);
-            injectionTarget.inject(instance, ctx);
-            injectionTarget.postConstruct(instance);
-            return instance;
+            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+                Object instance = injectionTarget.produce(ctx);
+                injectionTarget.inject(instance, ctx);
+                injectionTarget.postConstruct(instance);
+                return instance;
+            }
         }
 
         @Override
         public void destroy(Object instance, CreationalContext<Object> ctx) {
-            injectionTarget.preDestroy(instance);
-            injectionTarget.dispose(instance);
+            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+                injectionTarget.preDestroy(instance);
+                injectionTarget.dispose(instance);
+            }
             ctx.release();
         }
     }
