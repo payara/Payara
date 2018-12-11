@@ -573,7 +573,7 @@ public class GFFileHandler extends StreamHandler implements
         if (logToFile) {
             pumpFuture = payaraExecutorService.submit(
                 () -> {
-                    while (!done.isSignalled()) {
+                    while (!done.isSignalled() && logToFile) {
                         try {
                             log();
                         } catch (Exception e) {
