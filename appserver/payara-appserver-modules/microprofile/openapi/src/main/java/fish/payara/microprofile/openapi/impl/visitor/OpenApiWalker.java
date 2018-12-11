@@ -46,6 +46,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -92,7 +93,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import javassist.Modifier;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
