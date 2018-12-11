@@ -201,7 +201,7 @@ public abstract class EJBTimerService {
     }
 
     protected static void setPersistentTimerService(EJBTimerService timerService) {
-        persistentTimerService = timerService;
+         persistentTimerService = timerService;
     }
 
     protected static void setNonPersistentTimerService(EJBTimerService timerService) {
