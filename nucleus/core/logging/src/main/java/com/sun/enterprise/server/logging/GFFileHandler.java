@@ -611,10 +611,12 @@ public class GFFileHandler extends StreamHandler implements
      */
     private void drainPendingRecords(int flushAmount) {
         if (!pendingRecords.isEmpty()) {
-            Collection<LogRecord> records = new ArrayList<>();
+            Collection<LogRecord> records;
             if (flushAmount > 0) {
+                records = new ArrayList<>(flushAmount);
                 pendingRecords.drainTo(records, flushAmount);
             } else {
+                records = new ArrayList<>(pendingRecords.size());
                 pendingRecords.drainTo(records);
             }
             for (LogRecord record : records) {
