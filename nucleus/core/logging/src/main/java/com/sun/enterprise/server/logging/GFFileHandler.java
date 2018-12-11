@@ -189,13 +189,13 @@ public class GFFileHandler extends StreamHandler implements
         File logFile = new File(filename);
         absoluteServerLogName = filename;
         if (!logFile.isAbsolute()) {
-            logFile = new File(env.getDomainRoot(), filename);
-            absoluteServerLogName = env.getDomainRoot() + File.separator + filename;
+            logFile = new File(env.getInstanceRoot(), filename);
+            absoluteServerLogName = env.getInstanceRoot() + File.separator + filename;
         }
         changeFileName(logFile);
 
         // Reading just few lines of log file to get the log formatter used.
-        String strLine = "";
+        String strLine;
         int odlFormatter = 0;
         int uniformLogFormatter = 0;
         int otherFormatter = 0;
@@ -682,7 +682,7 @@ public class GFFileHandler extends StreamHandler implements
      */
     private static final class MeteredStream extends OutputStream {
 
-        private volatile boolean isOpen = false;
+        private volatile boolean isOpen;
 
         OutputStream out;
         long written;
@@ -700,13 +700,13 @@ public class GFFileHandler extends StreamHandler implements
         }
 
         @Override
-        public void write(byte buff[]) throws IOException {
+        public void write(byte[] buff) throws IOException {
             out.write(buff);
             written += buff.length;
         }
 
         @Override
-        public void write(byte buff[], int off, int len) throws IOException {
+        public void write(byte[] buff, int off, int len) throws IOException {
             out.write(buff, off, len);
             written += len;
         }
