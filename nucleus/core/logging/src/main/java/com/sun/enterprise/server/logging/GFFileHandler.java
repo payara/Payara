@@ -583,6 +583,8 @@ public class GFFileHandler extends StreamHandler implements
                     }
                 }
             );
+        } else {
+            drainPendingRecords(0);
         }
     }
 
@@ -597,16 +599,28 @@ public class GFFileHandler extends StreamHandler implements
             pumpFuture.cancel(true);
         }
 
-        // drain and return
-        final int size = pendingRecords.size();
-        if (size > 0) {
-            Collection<LogRecord> records = new ArrayList<>(size);
-            pendingRecords.drainTo(records, size);
+        // drain and return all
+        drainPendingRecords(0);
+
+    }
+
+    /**
+     * Drains the amount of {@link LogRecord}s in the pending records queue.
+     * If passed in the amount <= 0 all of the records get drained.
+     * @param flushAmount number of records to drain from the queue of pending records.
+     */
+    private void drainPendingRecords(int flushAmount) {
+        if (!pendingRecords.isEmpty()) {
+            Collection<LogRecord> records = new ArrayList<>();
+            if (flushAmount > 0) {
+                pendingRecords.drainTo(records, flushAmount);
+            } else {
+                pendingRecords.drainTo(records);
+            }
             for (LogRecord record : records) {
                 super.publish(record);
             }
         }
-
     }
 
     /**
@@ -912,12 +926,11 @@ public class GFFileHandler extends StreamHandler implements
                 return;
             }
 
-            // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-            List<LogRecord> v = new ArrayList<>();
-            int msgs = pendingRecords.drainTo(v, flushFrequency);
-            for (int j = 0; j < msgs; j++) {
-                super.publish(v.get(j));
+            if (flushFrequency > 1) {
+                // now try to read more.  we end up blocking on the above take call if nothing is in the queue
+                drainPendingRecords(flushFrequency - 1);
             }
+
             flush();
             if ((rotationRequested.get())
                     || ((limitForFileRotation > 0)
