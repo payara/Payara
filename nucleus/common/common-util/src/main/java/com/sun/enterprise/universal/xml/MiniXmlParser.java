@@ -186,7 +186,7 @@ public class MiniXmlParser {
 
     /**
      * Gets the log file name for the DAS
-     * 
+     *
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -207,10 +207,10 @@ public class MiniXmlParser {
         }
         return logFilename;
     }
-    
+
     /**
      * Gets the log file name for instances and clusters
-     * 
+     *
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -218,7 +218,7 @@ public class MiniXmlParser {
      */
     public String getInstanceLogFilename() {
         String logFilename = null;
-        
+
         try {
             Map<String, String> map = loggingConfig.getLoggingProperties(configRef);
             String logFileContains = "${com.sun.aas.instanceName}";
@@ -311,7 +311,7 @@ public class MiniXmlParser {
             final String aOldPattern,
             final String aNewPattern
     ) {
-        final StringBuffer result = new StringBuffer();
+        final StringBuilder result = new StringBuilder();
         //startIdx and idxOld delimit various chunks of aInput; these
         //chunks always end where aOldPattern begins
         int startIdx = 0;

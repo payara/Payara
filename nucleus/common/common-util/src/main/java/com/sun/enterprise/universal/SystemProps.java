@@ -46,9 +46,9 @@
 
 package com.sun.enterprise.universal;
 
-import java.util.*;
-
 import com.sun.enterprise.util.StringUtils;
+
+import java.util.*;
 
 /**
  *
@@ -64,42 +64,36 @@ public class SystemProps
         //Map sortedMap = new TreeMap(p);
         //Set sortedSet = sortedMap.entrySet();
         Set<Map.Entry<Object, Object>>  set  = p.entrySet();
-        List<Map.Entry>	list = new ArrayList<Map.Entry>(set);
-        
-        Collections.sort(list, new Comparator<Map.Entry>()
-        {
-            public int compare(Map.Entry me1, Map.Entry me2)
-            {
-                return ((String)me1.getKey()).compareToIgnoreCase((String)me2.getKey());
-            }
-        });
-        
+        List<Map.Entry>	list = new ArrayList<>(set);
+
+        Collections.sort(list, (me1, me2) -> ((String)me1.getKey()).compareToIgnoreCase((String)me2.getKey()));
+
         return list;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
-    
+
     public static String toStringStatic()
     {
         int             longestKey	= 0;
         List<Map.Entry>	list		= get();
-        StringBuffer	sb		= new StringBuffer();
-        
-        /* Go through the list twice.  
+        StringBuilder	sb		    = new StringBuilder();
+
+        /* Go through the list twice.
          * The first time through gets the maximum length entry
          * The second time through uses that info for 'pretty printing'
          */
-        
+
         for(Map.Entry entry : list)
         {
             int len = ((String)entry.getKey()).length();
-            
+
             if(len > longestKey)
                 longestKey = len;
         }
-        
+
         longestKey += 1;
-        
+
         for(Map.Entry entry : list)
         {
             sb.append(StringUtils.padRight((String)entry.getKey(), longestKey));
@@ -107,18 +101,18 @@ public class SystemProps
             sb.append((String)entry.getValue());
             sb.append("\n");
         }
-        
+
         return sb.toString();
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
-    
+
     private SystemProps()
     {
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
-    
+
     public static void main(String[] args)
     {
         System.out.println(toStringStatic());

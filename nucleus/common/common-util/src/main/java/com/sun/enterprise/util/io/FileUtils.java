@@ -1127,7 +1127,7 @@ public class FileUtils  {
             }
         }
     }
-    public static void appendText(String fileName, StringBuffer buffer)
+    public static void appendText(String fileName, StringBuilder buffer)
     throws IOException, FileNotFoundException
     {
         appendText(fileName, buffer.toString());
@@ -1151,22 +1151,12 @@ public class FileUtils  {
 
     public static String readSmallFile(final File file)
             throws IOException {
-        final BufferedReader bf = new BufferedReader(new FileReader(file));
         final StringBuilder sb = new StringBuilder(); //preferred over StringBuffer, no need to synchronize
-        String line = null;
-        try {
+        try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
             while ( (line = bf.readLine()) != null ) {
                 sb.append(line);
                 sb.append(System.getProperty("line.separator"));
-            }
-        }
-        finally {
-            try {
-                bf.close();
-            }
-            catch (Exception e) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);}
-            finally{
-            	 bf.close();
             }
         }
         return ( sb.toString() );
