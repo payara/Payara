@@ -584,7 +584,8 @@ public class GFFileHandler extends StreamHandler implements
                 }
             );
         } else {
-            drainPendingRecords(0);
+            drainAllPendingRecords();
+            flush();
         }
     }
 
@@ -600,8 +601,12 @@ public class GFFileHandler extends StreamHandler implements
         }
 
         // drain and return all
-        drainPendingRecords(0);
+        drainAllPendingRecords();
+        flush();
+    }
 
+    private void drainAllPendingRecords() {
+        drainPendingRecords(0);
     }
 
     /**
