@@ -146,7 +146,9 @@ public class GetHttpListener implements AdminCommand {
         properties.put("name", listener.getName());
         properties.put("enabled", listener.getEnabled());
         properties.put("port", listener.getPort());
-        properties.put("portRange", listener.getPortRange());
+        if (listener.getPortRange() != null ) {
+            properties.put("portRange", listener.getPortRange());
+        }
         properties.put("address", listener.getAddress());
         properties.put("protocol", listener.getProtocol());
         properties.put("transport", listener.getTransport());
