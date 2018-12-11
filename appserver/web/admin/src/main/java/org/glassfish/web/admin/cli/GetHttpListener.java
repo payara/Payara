@@ -132,9 +132,12 @@ public class GetHttpListener implements AdminCommand {
         report.appendMessage(String.format("Name: %s\n", foundListener.getName()));
         report.appendMessage(String.format("Enabled: %s\n", foundListener.getEnabled()));
         report.appendMessage(String.format("Port: %s\n", foundListener.getPort()));
-        report.appendMessage(String.format("Port Range: %s\n", foundListener.getPortRange()));
+        if (foundListener.getPortRange() != null) {
+            report.appendMessage(String.format("Port Range: %s\n", foundListener.getPortRange()));
+        }
         report.appendMessage(String.format("Address: %s\n", foundListener.getAddress()));
         report.appendMessage(String.format("Protocol: %s\n", foundListener.getProtocol()));
+        
         if (verbose) {
             report.appendMessage(String.format("Transport: %s\n", foundListener.getTransport()));
             report.appendMessage(String.format("Type: %s\n", foundListener.getType()));
@@ -148,7 +151,9 @@ public class GetHttpListener implements AdminCommand {
         properties.put("name", foundListener.getName());
         properties.put("enabled", foundListener.getEnabled());
         properties.put("port", foundListener.getPort());
-        properties.put("portRange", foundListener.getPortRange());
+        if (foundListener.getPortRange() != null) {
+            properties.put("portRange", foundListener.getPortRange());
+        }
         properties.put("address", foundListener.getAddress());
         properties.put("protocol", foundListener.getProtocol());
         properties.put("transport", foundListener.getTransport());
