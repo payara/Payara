@@ -91,7 +91,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import javassist.Modifier;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
@@ -130,8 +129,8 @@ public class OpenApiWalker implements ApiWalker {
     @Override
     public void accept(ApiVisitor visitor) {
         // OpenAPI necessary annotations
-        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI, true);
-        processAnnotations(Schema.class, visitor::visitSchema, true);
+        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI);
+        processAnnotations(Schema.class, visitor::visitSchema);
 
         // JAX-RS methods
         processAnnotations(GET.class, visitor::visitGET);
@@ -149,20 +148,20 @@ public class OpenApiWalker implements ApiWalker {
         processAnnotations(FormParam.class, visitor::visitFormParam);
 
         // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema, true);
-        processAnnotations(Server.class, visitor::visitServer, Servers.class, visitor::visitServers, true);
-        processAnnotations(Extension.class, visitor::visitExtension, true);
+        processAnnotations(Schema.class, visitor::visitSchema);
+        processAnnotations(Server.class, visitor::visitServer, Servers.class, visitor::visitServers);
+        processAnnotations(Extension.class, visitor::visitExtension);
         processAnnotations(Operation.class, visitor::visitOperation);
         processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class, visitor::visitCallbacks);
         processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class,
-                visitor::visitAPIResponses, true);
-        processAnnotations(Parameter.class, visitor::visitParameter, true);
-        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation, true);
-        processAnnotations(Tag.class, visitor::visitTag, Tags.class, visitor::visitTags, true);
+                visitor::visitAPIResponses);
+        processAnnotations(Parameter.class, visitor::visitParameter);
+        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation);
+        processAnnotations(Tag.class, visitor::visitTag, Tags.class, visitor::visitTags);
         processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class,
-                visitor::visitSecuritySchemes, true);
+                visitor::visitSecuritySchemes);
         processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class,
-                visitor::visitSecurityRequirements, true);
+                visitor::visitSecurityRequirements);
 
         // JAX-RS response types
         processAnnotations(Produces.class, visitor::visitProduces);
@@ -172,13 +171,8 @@ public class OpenApiWalker implements ApiWalker {
 
     private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
             Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction, boolean allowInterfaces) {
+            VisitorFunction<A2, E> altFunction) {
         for (Class<?> clazz : classes) {
-
-            // Don't read interfaces if the annotation should only be read from concrete classes
-            if (!allowInterfaces && (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface())) {
-                continue;
-            }
 
             processAnnotation(clazz, annotationClass, annotationFunction, altClass, altFunction,
                     new OpenApiContext(api, getResourcePath(clazz, resourceMapping)));
@@ -203,18 +197,7 @@ public class OpenApiWalker implements ApiWalker {
 
     private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
             VisitorFunction<A, E> function) {
-        processAnnotations(annotationClass, function, false);
-    }
-
-    private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
-            VisitorFunction<A, E> function, boolean allowInterfaces) {
-        processAnnotations(annotationClass, function, null, null, allowInterfaces);
-    }
-
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction) {
-        processAnnotations(annotationClass, annotationFunction, altClass, altFunction, false);
+        processAnnotations(annotationClass, function, null, null);
     }
 
     @SuppressWarnings("unchecked")
