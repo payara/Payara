@@ -152,6 +152,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
+import java.util.Map.Entry;
+import static java.util.logging.Level.FINE;
+import static java.util.stream.Collectors.toList;
 import javax.enterprise.inject.Vetoed;
 
 /**
@@ -288,7 +291,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected boolean isWebServiceEndpoint = false;
 
     private boolean isTimedObject_ = false;
-    private boolean isPersistenceTimer;
+    private boolean hasPersistenceTimer;
+    private boolean hasNonPersistenceTimer;
 
     /*****************************************
      *    Data members for Local views       *
@@ -452,11 +456,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected Map invocationInfoMap = new HashMap();
 
-    protected Map<TimerPrimaryKey, Method> scheduleIds =
-            new HashMap<TimerPrimaryKey, Method>();
+    protected Map<TimerPrimaryKey, Method> scheduleIds = new HashMap<>();
 
-    Map<Method, List<ScheduledTimerDescriptor>> schedules =
-            new HashMap<Method, List<ScheduledTimerDescriptor>>();
+    Map<Method, List<ScheduledTimerDescriptor>> schedules = new HashMap<>();
 
     // Need a separate map for web service methods since it's possible for
     // an EJB Remote interface to be a subtype of the Service Endpoint
@@ -770,7 +772,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // ignore.  Will happen for EJB 3.0 session beans
             }
 
-            isPersistenceTimer = false;
+            hasPersistenceTimer = false;
+            hasNonPersistenceTimer = false;
             if ( ejbDescriptor.isTimedObject() ) {
 
                 warnIfNotFullProfile("use of persistent EJB Timer Service");
@@ -780,7 +783,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // Can be a @Timeout or @Schedule or TimedObject
                 if (ejbTimeoutMethodDesc != null) {
                     Method method = ejbTimeoutMethodDesc.getMethod(ejbDescriptor);
-                    isPersistenceTimer = true; // timers defined in runtime
+                    // timers defined in runtime
+                    hasPersistenceTimer = true;
+                    hasNonPersistenceTimer = true;
                     processEjbTimeoutMethod(method);
 
                     ejbTimeoutMethod = method;
@@ -800,8 +805,10 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log(Level.FINE, "... processing {0}", method);
                     }
-                    if (!isPersistenceTimer) {
-                        isPersistenceTimer = schd.getPersistent();
+                    if(schd.getPersistent()) {
+                        hasPersistenceTimer = true;
+                    } else {
+                        hasNonPersistenceTimer = true;
                     }
                     processEjbTimeoutMethod(method);
 
@@ -855,10 +862,19 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             if (!isStatefulSession) {
                 // EJBTimerService should be accessed only if needed
                 // not to cause it to be loaded if it's not used.
-                EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
-                if (timerService != null) {
-                    timerService.timedObjectCount();
-                    timersStarted = true;
+                if (hasPersistenceTimer) {
+                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(null, true, true);
+                    if (timerService != null) {
+                        timerService.timedObjectCount();
+                        timersStarted = true;
+                    }
+                }
+                if (hasNonPersistenceTimer) {
+                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(null, true, false);
+                    if (timerService != null) {
+                        timerService.timedObjectCount();
+                        timersStarted = true;
+                    }
                 }
             } else {
                 isTimedObject_ = false;
@@ -2526,18 +2542,34 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         if ( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
-            if ( timerService != null ) {
-                timerService.cancelTimersByKey(getContainerId(), key);
+            if (hasPersistenceTimer) {
+                EJBTimerService timerService = EJBTimerService.getPersistentTimerService();
+                if (timerService != null) {
+                    timerService.cancelTimersByKey(getContainerId(), key);
+                }
+            }
+            if (hasNonPersistenceTimer) {
+                EJBTimerService timerService = EJBTimerService.getNonPersistentTimerService();
+                if (timerService != null) {
+                    timerService.cancelTimersByKey(getContainerId(), key);
+                }
             }
         }
     }
 
     private void stopTimers() {
         if ( isTimedObject() && timersStarted ) {
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
-            if ( ejbTimerService != null ) {
-                ejbTimerService.stopTimers(getContainerId());
+            if (hasPersistenceTimer) {
+                EJBTimerService ejbTimerService = EJBTimerService.getPersistentTimerService();
+                if (ejbTimerService != null) {
+                    ejbTimerService.stopTimers(getContainerId());
+                }
+            }
+             if (hasNonPersistenceTimer) {
+                EJBTimerService ejbTimerService = EJBTimerService.getNonPersistentTimerService();
+                if (ejbTimerService != null) {
+                    ejbTimerService.stopTimers(getContainerId());
+                }
             }
         }
     }
@@ -4058,33 +4090,98 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      * Called after all the components in the container's application
      * have deployed successfully.
      */
+    @Override
     public void startApplication(boolean deploy) {
-        _logger.log(Level.FINE,"Application deployment successful : " +
-                    this);
+        _logger.log(FINE, "Application deployment successful : {0}", this);
 
         // By now all existing timers should have been restored.
         if ( isTimedObject_ ) {
+            scheduleIds.clear();
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = EJBTimerService.getEJBTimerService(isPersistenceTimer);
-            if (timerService != null) {
-                boolean deploy0 = deploy;  //avoid modifying param
-                if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
-                    deploy0 = false;
-                    _logger.log(Level.INFO, KEEPSTATE_IS_TRUE);
+            if (hasPersistenceTimer) {
+                Map<TimerPrimaryKey, Method> result;
+                EJBTimerService timerService = EJBTimerService.getPersistentTimerService();
+                if (timerService != null) {
+                    boolean deploy0 = deploy;  //avoid modifying param
+                    if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
+                        deploy0 = false;
+                        _logger.log(Level.INFO, KEEPSTATE_IS_TRUE);
+                    }
+                    result = timerService.recoverAndCreateSchedules(
+                            getContainerId(),
+                            getApplicationId(),
+                            getPersistentSchedules(),
+                            deploy0
+                    );
+                    scheduleIds.putAll(result);
+                } else {
+                    throw new RuntimeException("EJB Timer Service is not available");
                 }
-                scheduleIds = timerService.recoverAndCreateSchedules(
-                        getContainerId(), getApplicationId(), schedules, deploy0);
-            } else {
-                throw new RuntimeException("EJB Timer Service is not available");
+            }
+            if (hasNonPersistenceTimer) {
+                Map<TimerPrimaryKey, Method> result;
+                EJBTimerService timerService = EJBTimerService.getNonPersistentTimerService();
+                if (timerService != null) {
+                    boolean deploy0 = deploy;
+                    if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
+                        deploy0 = false;
+                        _logger.log(Level.INFO, KEEPSTATE_IS_TRUE);
+                    }
+                    result = timerService.recoverAndCreateSchedules(
+                            getContainerId(),
+                            getApplicationId(),
+                            getNonPersistentSchedules(),
+                            deploy0
+                    );
+                    scheduleIds.putAll(result);
+                } else {
+                    throw new RuntimeException("EJB Timer Service is not available");
+                }
             }
         }
 
         setStartedState();
     }
 
+    private Map<Method, List<ScheduledTimerDescriptor>> getPersistentSchedules() {
+        Map<Method, List<ScheduledTimerDescriptor>> persistentSchedules = new HashMap<>();
+        for (Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
+            Method method = entry.getKey();
+            List<ScheduledTimerDescriptor> descriptors
+                    = entry.getValue()
+                            .stream()
+                            .filter(descriptor -> descriptor.getPersistent())
+                            .collect(toList());
+            if (!descriptors.isEmpty()) {
+                persistentSchedules.put(method, descriptors);
+            }
+        }
+        return persistentSchedules;
+    }
+
+    private Map<Method, List<ScheduledTimerDescriptor>> getNonPersistentSchedules() {
+        Map<Method, List<ScheduledTimerDescriptor>> nonPersistentSchedules = new HashMap<>();
+        for (Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
+            Method method = entry.getKey();
+            List<ScheduledTimerDescriptor> descriptors
+                    = entry.getValue()
+                            .stream()
+                            .filter(descriptor -> !descriptor.getPersistent())
+                            .collect(toList());
+            if (!descriptors.isEmpty()) {
+                nonPersistentSchedules.put(method, descriptors);
+            }
+        }
+        return nonPersistentSchedules;
+    }
+
     /**
      *
+     * @param timerState
+     * @param timerService
+     * @return
+     * @throws java.lang.Exception
      */
     protected boolean callEJBTimeout(RuntimeTimerState timerState,
                            EJBTimerService timerService) throws Exception {
