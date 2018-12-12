@@ -169,7 +169,7 @@
         <imqjmx.version>4.3</imqjmx.version>
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <dataprovider.version>1.0</dataprovider.version>
-        <prototype.version>1.5.0</prototype.version>
+        <prototype.version>1.7.3</prototype.version>
         <dojo-ajax-nodemo.version>0.4.4</dojo-ajax-nodemo.version>
         <json.version>1.0</json.version>
         <ddl.version>RELEASE65</ddl.version>
