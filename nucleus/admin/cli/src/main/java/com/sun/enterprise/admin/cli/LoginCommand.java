@@ -48,6 +48,8 @@ import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.Console;
+import java.io.IOException;
+
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.*;
@@ -95,7 +97,11 @@ public class LoginCommand extends CLICommand {
 
                 // maybe we need a password?
                 programOpts.setInteractive(interactive);
-                adminPassword = getAdminPassword();
+                try {
+                    adminPassword = getAdminPassword();
+                } catch (IOException e) {
+                    throw new CommandValidationException(e);
+                }
                 programOpts.setPassword(adminPassword, ProgramOptions.PasswordLocation.USER);
                 programOpts.setInteractive(false);
                 break;
@@ -142,7 +148,7 @@ public class LoginCommand extends CLICommand {
      *  @return admin password
      *  @throws CommandValidationException if adminpassword can't be fetched 
      */
-    private char[] getAdminPassword() {
+    private char[] getAdminPassword() throws IOException {
         final String prompt = strings.get("AdminPasswordPrompt");
 
         return readPassword(prompt);

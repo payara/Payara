@@ -46,6 +46,7 @@ import java.util.*;
 import java.lang.annotation.Annotation;
 import java.util.logging.*;
 
+import jline.console.ConsoleReader;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.InjectionManager;
@@ -1131,47 +1132,53 @@ public abstract class CLICommand implements PostConstruct {
             }
         }
 
-        char[] newpassword = readPassword(newprompt);
+        try {
+            char[] newpassword = readPassword(newprompt);
 
-        /*
-         * If we allow for a default password, and the user just hit "Enter",
-         * return the default password.  No need to prompt twice or check
-         * for validity.
-         */
-        if (defaultPassword != null) {
-            if (newpassword == null) {
-                newpassword = "".toCharArray();
+            /*
+             * If we allow for a default password, and the user just hit "Enter",
+             * return the default password.  No need to prompt twice or check
+             * for validity.
+             */
+            if (defaultPassword != null) {
+                if (newpassword == null) {
+                    newpassword = "".toCharArray();
+                }
+                if (newpassword.length == 0) {
+                    newpassword = defaultPassword.toCharArray();
+                    passwords.put(passwordName, new String(newpassword));
+                    return newpassword;
+                }
             }
-            if (newpassword.length == 0) {
-                newpassword = defaultPassword.toCharArray();
-                passwords.put(passwordName, new String(newpassword));
+
+            /*
+             * If not creating a new password, don't need to verify that
+             * the user typed it correctly by making them type it twice,
+             * and don't need to check it for validity.  Just return what
+             * we have.
+             */
+            if (!create) {
+                passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
                 return newpassword;
             }
-        }
 
-        /*
-         * If not creating a new password, don't need to verify that
-         * the user typed it correctly by making them type it twice,
-         * and don't need to check it for validity.  Just return what
-         * we have.
-         */
-        if (!create) {
+            String confirmationPrompt;
+            if (ok(promptAgain)) {
+                confirmationPrompt = strings.get("NewPasswordDescriptionPrompt", promptAgain);
+            } else {
+                confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
+            }
+
+            char[] newpasswordAgain = readPassword(confirmationPrompt);
+            if (!Arrays.equals(newpassword,newpasswordAgain)) {
+                throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
+            }
             passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
-            return newpassword;
-        }
 
-        String confirmationPrompt;
-        if (ok(promptAgain)) {
-            confirmationPrompt = strings.get("NewPasswordDescriptionPrompt", promptAgain);
-        } else {
-            confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
+            return newpassword;
+        } catch (IOException e) {
+            throw new CommandValidationException(e);
         }
-        char[] newpasswordAgain = readPassword(confirmationPrompt);
-        if (!Arrays.equals(newpassword,newpasswordAgain)) {
-            throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
-        }
-        passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
-        return newpassword;
     }
 
     private String passwordName(ParamModel opt) {
@@ -1184,12 +1191,14 @@ public abstract class CLICommand implements PostConstruct {
      * @param prompt
      * @return 
      */
-    protected char[] readPassword(String prompt) {
+    protected char[] readPassword(String prompt) throws IOException {
         char[] pc = null;
-        Console cons = System.console();
-        if (cons != null) {
-            pc = cons.readPassword("%s", prompt);
-            // yes, yes, yes, it would be safer to not keep it in a String
+        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null);
+        if (consoleReader != null) {
+            char echoCharacter = 0;
+            consoleReader.setEchoCharacter(echoCharacter);
+            String line = consoleReader.readLine(prompt);
+            pc = line.toCharArray();
         }
         return pc;
     }
