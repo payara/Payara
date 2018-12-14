@@ -293,8 +293,8 @@ public class SaxParserHandler extends DefaultHandler {
      */
      protected InputStream getDTDUrlFor(String dtdFileName) {
 
-        String dtdLoc = DTDRegistry.DTD_LOCATION.replace("/", File.separator);
-        File f = new File(dtdLoc + File.separator + dtdFileName);
+        String dtdLoc = DTDRegistry.DTD_LOCATION.replace('/', File.separatorChar);
+        File f = new File(dtdLoc +File.separatorChar+ dtdFileName);
 
         try {
             return new BufferedInputStream(new FileInputStream(f));
@@ -327,8 +327,8 @@ public class SaxParserHandler extends DefaultHandler {
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
             DOLUtils.getDefaultLogger().fine("Getting Schema " + schemaSystemID);
         }
-        String schemaLoc = DTDRegistry.SCHEMA_LOCATION.replace("/", File.separator);
-        File f = new File(schemaLoc +File.separator+ schemaSystemID);
+        String schemaLoc = DTDRegistry.SCHEMA_LOCATION.replace('/', File.separatorChar);
+        File f = new File(schemaLoc +File.separatorChar+ schemaSystemID);
         if (!f.exists()) {
             DOLUtils.getDefaultLogger().fine("Cannot find schema " + schemaSystemID);
             return null;
