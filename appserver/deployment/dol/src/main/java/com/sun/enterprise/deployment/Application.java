@@ -58,7 +58,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -1354,10 +1353,10 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Return the Vector of ejb deployment objects.
+     * Return the list of ejb deployment objects.
      */
-    public Vector<EjbDescriptor> getEjbDescriptors() {
-        Vector<EjbDescriptor> ejbDescriptors = new Vector<EjbDescriptor>();
+    public List<EjbDescriptor> getEjbDescriptors() {
+        List<EjbDescriptor> ejbDescriptors = new ArrayList<>();
         for (EjbBundleDescriptor ejbBundleDescriptor : getBundleDescriptors(EjbBundleDescriptor.class)) {
             ejbDescriptors.addAll(ejbBundleDescriptor.getEjbs());
         }
@@ -1374,32 +1373,23 @@ public class Application extends CommonResourceBundleDescriptor
      *
      * @return all ejb descriptors in ordered form
      */
-    public EjbDescriptor[] getSortedEjbDescriptors() {
-        Vector ejbDesc = getEjbDescriptors();
-        EjbDescriptor[] descs = (EjbDescriptor[]) ejbDesc.toArray(
-                new EjbDescriptor[ejbDesc.size()]);
-
+    public List<EjbDescriptor> getSortedEjbDescriptors() {
+        List<EjbDescriptor> ejbDesc = getEjbDescriptors();
         // The sorting algorithm used by this api is a modified mergesort.
         // This algorithm offers guaranteed n*log(n) performance, and
         // can approach linear performance on nearly sorted lists.
 
         // since ejb name is only unique within a module, add the module uri
         // as the additional piece of information for comparison
-        Arrays.sort(descs,
-                new Comparator() {
-                    @Override
-                    public int compare(Object o1, Object o2) {
-                        EjbDescriptor desc1 = (EjbDescriptor) o1;
-                        EjbDescriptor desc2 = (EjbDescriptor) o2;
-                        String moduleUri1 = desc1.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-                        String moduleUri2 = desc2.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-                        return (moduleUri1 + desc1.getName()).compareTo(
-                                moduleUri2 + desc2.getName());
-                    }
-                }
+        ejbDesc.sort(
+            (desc1, desc2) -> {
+                String moduleUri1 = desc1.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+                String moduleUri2 = desc2.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+                return (moduleUri1 + desc1.getName()).compareTo(
+                        moduleUri2 + desc2.getName());
+            }
         );
-
-        return descs;
+        return ejbDesc;
     }
 
     // END OF IASRI 4718761
@@ -1444,23 +1434,22 @@ public class Application extends CommonResourceBundleDescriptor
         _logger.log(Level.FINE, "[Application] " + getName() + " , uid: " + id);
         this.uniqueId = id;
 
-        EjbDescriptor[] descs = getSortedEjbDescriptors();
-
+        List<EjbDescriptor> sortedEjbDescriptors = getSortedEjbDescriptors();
         Set<Long> uniqueIds = new TreeSet<>();
-        for (int i = 0; i < descs.length; i++) {
+        for (EjbDescriptor ejbDescriptor : sortedEjbDescriptors) {
             // Maximum of 2^16 beans max per application
-            String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+            String module = ejbDescriptor.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
             long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst(Pattern.quote(ROLLING_UPGRADES_ID_DELIMITER) + ".*$", "")
-                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65536);
+                    + ejbDescriptor.getName()).getBytes()).getLeastSignificantBits() % 65536);
             // in case of an id collision, increment until find empty slot
             while(uniqueIds.contains(uid)) {
                 uid = ++uid % 65536;
             }
             uniqueIds.add(uid);
-            descs[i].setUniqueId((id | uid));
+            ejbDescriptor.setUniqueId((id | uid));
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
-                        descs[i].getUniqueId());
+                _logger.log(Level.FINE, "Ejb  " + module + ":" + ejbDescriptor.getName() + " id = " +
+                        ejbDescriptor.getUniqueId());
             }
         }
 

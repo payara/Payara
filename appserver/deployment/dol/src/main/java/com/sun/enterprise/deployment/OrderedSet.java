@@ -40,9 +40,10 @@
 
 package com.sun.enterprise.deployment;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.Vector;
+import java.util.TreeSet;
 
 /**
  * I am an ordered collection that does not allow duplicates.
@@ -50,7 +51,7 @@ import java.util.Vector;
  * @author Danny Coward
  */
 
-public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by srini - can we instead change the usage to be TreeSet based?
+public class OrderedSet<T> extends ArrayList<T> implements Set<T> { // FIXME by srini - can we instead change the usage to be TreeSet based?
 
     /**
      * Construct an empty collection.
@@ -70,6 +71,7 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
      * Add the given object to the Set if it is not equal (equals()) to
      * an element already in the set.
      */
+    @Override
     public boolean add(T o) {
         if (o != null && !this.contains(o)) {
             return super.add(o);
@@ -81,6 +83,7 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
      * Add all the elements in the given set that are not already
      * in this ordered set.
      */
+    @Override
     public boolean addAll(Collection<? extends T> c) {
         boolean setChanged = false;
         if (c != null) {
@@ -91,5 +94,5 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
             }
 	    }
 	    return setChanged;
-	}	
+	}
 }

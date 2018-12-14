@@ -64,14 +64,14 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This class is responsible for validating the loaded DOL classes and 
- * transform some of the raw XML information into refined values used 
+ * This class is responsible for validating the loaded DOL classes and
+ * transform some of the raw XML information into refined values used
  * by the DOL runtime
  *
  * @author Jerome Dochez
  */
 @Service(name="application_deploy")
-public class ApplicationValidator extends ComponentValidator 
+public class ApplicationValidator extends ComponentValidator
     implements ApplicationVisitor, ManagedBeanVisitor {
 
 
@@ -99,7 +99,7 @@ public class ApplicationValidator extends ComponentValidator
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ApplicationValidator.class);
-    
+
     @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
@@ -113,7 +113,7 @@ public class ApplicationValidator extends ComponentValidator
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
                         "Application validation fails for given application {0} for jndi-name {1}",application.getAppName(),inValidJndiName));
             }
-            
+
             //valdiate env entries
             validateEnvEntries(application);
 
@@ -152,7 +152,7 @@ public class ApplicationValidator extends ComponentValidator
                     next.validate();
                 }
             }
-            
+
             super.accept(descriptor);
         } else {
             super.accept(descriptor);
@@ -167,8 +167,8 @@ public class ApplicationValidator extends ComponentValidator
     public void accept(Application application) {
         this.application = application;
         if (application.getBundleDescriptors().size() == 0) {
-            throw new IllegalArgumentException("Application [" + 
-                application.getRegistrationName() + 
+            throw new IllegalArgumentException("Application [" +
+                application.getRegistrationName() +
                 "] contains no valid components");
         }
 
@@ -192,7 +192,7 @@ public class ApplicationValidator extends ComponentValidator
                 if (conflicted.contains(module2)) {
                     continue;
                 }
-                if ( !module.equals(module2) && 
+                if ( !module.equals(module2) &&
                     module.getModuleName().equals(module2.getModuleName())) {
                     conflicted.add(module2);
                     foundConflictedModule = true;
@@ -203,10 +203,10 @@ public class ApplicationValidator extends ComponentValidator
             }
         }
 
-        // append the conflicted module names with their module type to 
+        // append the conflicted module names with their module type to
         // make the names unique
         for (ModuleDescriptor cModule : conflicted) {
-            cModule.setModuleName(cModule.getModuleName() + 
+            cModule.setModuleName(cModule.getModuleName() +
                 cModule.getModuleType().toString());
         }
     }
@@ -238,7 +238,7 @@ public class ApplicationValidator extends ComponentValidator
     @Override
     public void accept(ManagedBeanDescriptor managedBean) {
         this.bundleDescriptor = managedBean.getBundle();
-        this.application = bundleDescriptor.getApplication(); 
+        this.application = bundleDescriptor.getApplication();
 
         for (Iterator itr = managedBean.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
             EjbReference aRef = (EjbReference) itr.next();
@@ -271,9 +271,9 @@ public class ApplicationValidator extends ComponentValidator
 
     @Override
     protected Collection<EjbDescriptor> getEjbDescriptors() {
-        if (application!=null) 
+        if (application!=null)
             return application.getEjbDescriptors();
-        return new HashSet<EjbDescriptor>();
+        return new HashSet<>();
     }
 
     @Override
@@ -317,13 +317,13 @@ public class ApplicationValidator extends ComponentValidator
      * name and web bundle name always returns the same name if not specified.
      * So my validation fails so to avoid the same appending difference prefix
      * with each module name.
-     * 
+     *
      * For two ejb-jar.xml in two different modules as part of the ear, they
      * must have unique module names (this is per spec requirement), so the
      * module scoped resources just needs to be unique within their modules. So
      * in that case all bundle name must be unique so appending extra string is
      * not fail anything.
-     * 
+     *
      * It is used for internal reference only.
      */
     final String APP_LEVEL = "AppLevel:";
@@ -496,7 +496,7 @@ public class ApplicationValidator extends ComponentValidator
     // validate env entries on resource definition descriptor at application
     // level
     envValidator.validateEnvEntries(application);
-    
+
     // validate env entries at application-client level
       Set<ApplicationClientDescriptor> appClientDescs = application
           .getBundleDescriptors(ApplicationClientDescriptor.class);
@@ -524,7 +524,7 @@ public class ApplicationValidator extends ComponentValidator
       }
 
   }
-    
+
     /**
      * * Method to validate MSD is unique or not
      * @param mailSessionDescriptors

@@ -599,7 +599,7 @@ public final class MethodDescriptor extends Descriptor {
     }
 
     /** My pretty format. */
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuffer) {
 	toStringBuffer.append("Method Descriptor").append((ejbName==null?"":" for ejb " + ejbName)).append(
                 " name: ").append(this.getName()).append(" params: ").append(this.getPrettyParameterString()).append(
                 " intf: ").append(this.ejbClassSymbol);

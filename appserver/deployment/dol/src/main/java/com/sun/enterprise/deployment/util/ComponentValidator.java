@@ -124,7 +124,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     }
 
     /**
-     * Visits a message destination referencer for the last J2EE 
+     * Visits a message destination referencer for the last J2EE
      * component visited
      * @param msgDestReferencer the message destination referencer
      */
@@ -135,14 +135,14 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         if( msgDestReferencer.isLinkedToMessageDestination() ) {
             return;
         // if it is referred to a physical destination
-        } else if (msgDestReferencer.ownedByMessageDestinationRef() && 
+        } else if (msgDestReferencer.ownedByMessageDestinationRef() &&
             msgDestReferencer.getMessageDestinationRefOwner().getJndiName() != null) {
             return;
         } else {
-            MessageDestinationDescriptor msgDest = 
+            MessageDestinationDescriptor msgDest =
                 msgDestReferencer.resolveLinkName();
             if( msgDest == null ) {
-                String linkName = 
+                String linkName =
                     msgDestReferencer.getMessageDestinationLinkName();
                 DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
                     new Object[] {"message-destination", linkName});
@@ -150,7 +150,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 if (msgDestReferencer instanceof MessageDestinationReferenceDescriptor) {
                     ((MessageDestinationReferenceDescriptor)msgDestReferencer).setJndiName(msgDest.getJndiName());
                 }
-            }                                                 
+            }
         }
     }
 
@@ -177,7 +177,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
         Set<EjbDescriptor> ejbs;
 
-        // Only set when there is one ejb in the set. 
+        // Only set when there is one ejb in the set.
         // Otherwise, value = NONE
         EjbIntfType intfType;
     }
@@ -187,7 +187,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     protected void accept(EjbReference ejbRef) {
 
         DOLUtils.getDefaultLogger().fine("Visiting Ref" + ejbRef);
-    if (ejbRef.getEjbDescriptor()!=null) 
+    if (ejbRef.getEjbDescriptor()!=null)
             return;
 
         // let's try to derive the ejb-ref-type first it is not defined
@@ -196,13 +196,13 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
             if (ejbRef.isEJB30ClientView()) {
                 ejbRef.setType("Session");
             } else {
-                // if home interface has findByPrimaryKey method, 
+                // if home interface has findByPrimaryKey method,
                 // it's entity, otherwise it's session
                 String homeIntf = ejbRef.getEjbHomeInterface();
                 BundleDescriptor referringJar = ejbRef.getReferringBundleDescriptor();
                 if (referringJar == null) {
                     referringJar = getBundleDescriptor();
-                }           
+                }
                 ClassLoader classLoader = referringJar.getClassLoader();
 
                 Class<?> clazz = null;
@@ -226,14 +226,14 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 }
             }
         }
-  
+
         //
         // NOTE : In the 3.0 local/remote business view, the local vs.
-        // remote designation is not always detectable from the interface 
+        // remote designation is not always detectable from the interface
         // itself.
         //
-        // That means 
-        // 
+        // That means
+        //
         // 1) we need to figure it out during this stage of the processing
         // 2) the EjbReferenceDescriptor.isLocal() operations shouldn't be
         //    be used before the post-application validation stage since its
@@ -242,8 +242,8 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         //    until the full application has been processed, including this
         //    validation stage.
         //
-        // During @EJB processing, setLocal() is set to false if 
-        // local vs. remote is ambiguous.  setLocal() is set to true within this 
+        // During @EJB processing, setLocal() is set to false if
+        // local vs. remote is ambiguous.  setLocal() is set to true within this
         // method upon successfuly resolution to a local business interface.
         //
 
@@ -252,7 +252,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
             // ok this is getting a little complicated here
             // the jndi name is not null, if this is a remote ref, proceed with resolution
-            // if this is a local ref, proceed with resolution only if ejb-link is null            
+            // if this is a local ref, proceed with resolution only if ejb-link is null
             if (!ejbRef.isLocal() || (ejbRef.isLocal() && ejbRef.getLinkName()==null)) {
                 DOLUtils.getDefaultLogger().fine("Ref " + ejbRef.getName() + " is bound to Ejb with JNDI Name " + ejbRef.getJndiName());
                 if (getEjbDescriptors() != null) {
@@ -261,7 +261,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                         if (ejbRef.getJndiName().equals(ejb.getJndiName())) {
                             ejbRef.setEjbDescriptor(ejb);
                             return;
-                        } 
+                        }
                     }
                 }
             }
@@ -271,7 +271,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         // with it, attempt to resolve it by checking against all the ejbs
         // within the application.  If no match is found, just fall through
         // and let the existing error-checking logic kick in.
-        if (( (ejbRef.getJndiName() == null) || 
+        if (( (ejbRef.getJndiName() == null) ||
               (ejbRef.getJndiName().length() == 0) )
             &&
             ( (ejbRef.getLinkName() == null) ||
@@ -299,7 +299,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                     if( numMatches == 1 ) {
                         EjbDescriptor target = intfInfo.ejbs.iterator().next();
 
-                        BundleDescriptor targetModule = 
+                        BundleDescriptor targetModule =
                             target.getEjbBundleDescriptor();
                         BundleDescriptor sourceModule =
                             ejbRef.getReferringBundleDescriptor();
@@ -317,7 +317,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                         // fully-qualified ejb-link name is required and is not
                         // written out, there could be non-deterministic
                         // behavior when the application is re-loaded.
-                        // Let the ejb-link processing logic handle the 
+                        // Let the ejb-link processing logic handle the
                         // conversion to ejb descriptor.
                         //
 
@@ -327,7 +327,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                         // whether the ejb-jar is within an .ear or is
                         // stand-alone.  The ejb-link processing
                         // logic will always check the current ejb-jar
-                        // first so there won't be any ambiguity.  
+                        // first so there won't be any ambiguity.
                         String ejbLinkName = target.getName();
                         if (!sourceModule.isPackagedAsSingleModule(targetModule)) {
                             String relativeUri = null;
@@ -354,17 +354,17 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                                 new Object[] {ejbRef, numMatches, interfaceToMatch});
                         throw new IllegalArgumentException(msg);
                     }
-                }                          
-            } 
+                }
+            }
         }
 
-        // now all cases fall back here, we need to resolve through the link-name    
+        // now all cases fall back here, we need to resolve through the link-name
         if (ejbRef.getLinkName()==null) {
 
 
             // if no link name if present, and this is a local ref, this is an
             // error (unless there is a lookup string) because we must resolve all
-            // local refs within the app and we cannot resolve it 
+            // local refs within the app and we cannot resolve it
             if (ejbRef.isLocal()) {
                 if( ejbRef.hasLookupName() ) {
                     return;
@@ -372,7 +372,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 DOLUtils.getDefaultLogger().severe("Cannot resolve reference " + ejbRef);
                 throw new RuntimeException("Cannot resolve reference " + ejbRef);
             } else {
-                // this is a remote interface, jndi will eventually contain the referenced 
+                // this is a remote interface, jndi will eventually contain the referenced
                 // ejb ref, apply default jndi name if there is none
                 if (!ejbRef.hasJndiName() && !ejbRef.hasLookupName()) {
                     String jndiName = getDefaultEjbJndiName(
@@ -383,45 +383,45 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 }
 
                 return;
-            }                          
-        }        
-        
+            }
+        }
+
         // Beginning of ejb-link resolution
-        
+
         // save anticipated types for checking if interfaces are compatible
         String homeClassName = ejbRef.getEjbHomeInterface();
         String intfClassName = ejbRef.getEjbInterface();
 
         // save anticipated type for checking if bean type is compatible
         String type = ejbRef.getType();
-        
+
         EjbDescriptor ejbReferee=null;
-            
+
         String linkName = ejbRef.getLinkName();
         int ind = linkName.lastIndexOf('#');
         if ( ind != -1 ) {
             // link has a relative path from referring EJB JAR,
             // of form "../products/product.jar#ProductEJB"
             String ejbName = linkName.substring(ind+1);
-            String jarPath = linkName.substring(0, ind);            
+            String jarPath = linkName.substring(0, ind);
             BundleDescriptor referringJar = ejbRef.getReferringBundleDescriptor();
             if (referringJar==null) {
                 ejbRef.setReferringBundleDescriptor(getBundleDescriptor());
                 referringJar = getBundleDescriptor();
-            }           
-            
+            }
+
             if (getApplication()!=null) {
                 BundleDescriptor refereeJar = null;
                 if( referringJar instanceof Application ) {
                     refereeJar = ((Application)referringJar).getModuleByUri(jarPath);
                 } else {
-                 refereeJar = 
+                 refereeJar =
                     getApplication().getRelativeBundle(referringJar, jarPath);
                 }
                 if( (refereeJar != null) &&
                     refereeJar instanceof EjbBundleDescriptor ) {
                     // this will throw an exception if ejb is not found
-                    ejbReferee = 
+                    ejbReferee =
                        ((EjbBundleDescriptor)refereeJar).getEjbByName(ejbName);
                 }
             }
@@ -456,14 +456,14 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                     DOLUtils.getDefaultLogger().warning("Unresolved <ejb-link>: "+linkName);
                     return;
                 }
-                    
+
             }
         }
 
         if (ejbReferee==null) {
-            // we could not resolve through the ejb-link. if this is a local ref, this 
-            // is an error, if this is a remote ref, this should be also an error at 
-            // runtime but maybe the jndi name will be specified by deployer so 
+            // we could not resolve through the ejb-link. if this is a local ref, this
+            // is an error, if this is a remote ref, this should be also an error at
+            // runtime but maybe the jndi name will be specified by deployer so
             // a warning should suffice
             if (ejbRef.isLocal()) {
                 DOLUtils.getDefaultLogger().severe("Unresolved <ejb-link>: "+linkName);
@@ -483,7 +483,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
             if( ejbRef.isEJB30ClientView() ) {
 
-                BundleDescriptor referringBundle = 
+                BundleDescriptor referringBundle =
                     ejbRef.getReferringBundleDescriptor();
 
                 // If we can verify that the current ejb 3.0 reference is defined
@@ -499,7 +499,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                     ejbRef.setLocal(false);
 
                     // Double-check that target has a remote business interface of this
-                    // type.  This will handle the common error case that the target 
+                    // type.  This will handle the common error case that the target
                     // EJB has intended to support a remote business interface but
                     // has not used @Remote to specify it, in which case
                     // the interface was assigned the default of local business.
@@ -507,7 +507,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                     if( !ejbReferee.getRemoteBusinessClassNames().contains
                         (intfClassName) ) {
                         String msg = "Target ejb " + ejbReferee.getName() + " for " +
-                            " remote ejb 3.0 reference " + ejbRef.getName() + 
+                            " remote ejb 3.0 reference " + ejbRef.getName() +
                             " does not expose a remote business interface of type " +
                             intfClassName;
                         throw new RuntimeException(msg);
@@ -557,7 +557,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
                     DOLUtils.getDefaultLogger().log(Level.WARNING,
                            "enterprise.deployment.backend.ejbRefTypeMismatch",
-                           new Object[] {ejbRef.getName() , intfClassName, 
+                           new Object[] {ejbRef.getName() , intfClassName,
                            ejbReferee.getName(), ( ejbRef.isLocal() ?
                            "Local Business" : "Remote Business"),
                                              targetBusinessIntfs.toString()});
@@ -573,16 +573,16 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
             } else {
 
-                String targetHome = ejbRef.isLocal() ? 
-                    ejbReferee.getLocalHomeClassName() : 
+                String targetHome = ejbRef.isLocal() ?
+                    ejbReferee.getLocalHomeClassName() :
                     ejbReferee.getHomeClassName();
 
                 if( !homeClassName.equals(targetHome) ) {
 
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, 
+                    DOLUtils.getDefaultLogger().log(Level.WARNING,
                        "enterprise.deployment.backend.ejbRefTypeMismatch",
-                       new Object[] {ejbRef.getName() , homeClassName, 
-                       ejbReferee.getName(), ( ejbRef.isLocal() ? 
+                       new Object[] {ejbRef.getName() , homeClassName,
+                       ejbReferee.getName(), ( ejbRef.isLocal() ?
                        "Local Home" : "Remote Home"), targetHome});
 
                     if( targetHome != null ) {
@@ -591,7 +591,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 }
 
                 String targetComponentIntf = ejbRef.isLocal() ?
-                    ejbReferee.getLocalClassName() : 
+                    ejbReferee.getLocalClassName() :
                     ejbReferee.getRemoteClassName();
 
                 // In some cases for 2.x style @EJBs that point to Entity beans
@@ -600,10 +600,10 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 if( (intfClassName != null) &&
                     !intfClassName.equals(targetComponentIntf) ) {
 
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, 
+                    DOLUtils.getDefaultLogger().log(Level.WARNING,
                        "enterprise.deployment.backend.ejbRefTypeMismatch",
-                       new Object[] {ejbRef.getName() , intfClassName, 
-                       ejbReferee.getName(), ( ejbRef.isLocal() ? 
+                       new Object[] {ejbRef.getName() , intfClassName,
+                       ejbReferee.getName(), ( ejbRef.isLocal() ?
                        "Local" : "Remote"), targetComponentIntf});
 
                     if( targetComponentIntf != null ) {
@@ -612,11 +612,11 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 }
             }
 
-            // set jndi name in ejb ref 
+            // set jndi name in ejb ref
             ejbRef.setJndiName(ejbReferee.getJndiName());
 
         if (!type.equals(ejbRef.getType())) {
-            // if they don't match 
+            // if they don't match
             // print a warning and reset the type in ejb ref
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
             new Object[] {ejbRef.getName() , type});
@@ -646,8 +646,8 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
     /**
      * Returns a map of interface name -> EjbIntfInfo based on all the ejbs
-     * within the application or stand-alone module.  Only RemoteHome, 
-     * RemoteBusiness, LocalHome, and LocalBusiness are eligible for map. 
+     * within the application or stand-alone module.  Only RemoteHome,
+     * RemoteBusiness, LocalHome, and LocalBusiness are eligible for map.
      */
     private Map<String, EjbIntfInfo> getEjbIntfMap() {
         Map<String, EjbIntfInfo> intfInfoMap = new HashMap<String, EjbIntfInfo>();
@@ -655,25 +655,25 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         for(Iterator iter = getEjbDescriptors().iterator(); iter.hasNext(); ) {
             EjbDescriptor next = (EjbDescriptor) iter.next();
             if( next.isRemoteInterfacesSupported() ) {
-                addIntfInfo(intfInfoMap, next.getHomeClassName(), 
+                addIntfInfo(intfInfoMap, next.getHomeClassName(),
                             EjbIntfType.REMOTE_HOME, next);
             }
 
             if( next.isRemoteBusinessInterfacesSupported() ) {
                 for(String nextIntf : next.getRemoteBusinessClassNames()) {
-                    addIntfInfo(intfInfoMap, nextIntf, 
+                    addIntfInfo(intfInfoMap, nextIntf,
                                 EjbIntfType.REMOTE_BUSINESS, next);
                 }
             }
 
             if( next.isLocalInterfacesSupported() ) {
-                addIntfInfo(intfInfoMap, next.getLocalHomeClassName(), 
+                addIntfInfo(intfInfoMap, next.getLocalHomeClassName(),
                             EjbIntfType.LOCAL_HOME, next);
             }
 
             if( next.isLocalBusinessInterfacesSupported() ) {
                 for(String nextIntf : next.getLocalBusinessClassNames()) {
-                    addIntfInfo(intfInfoMap, nextIntf, 
+                    addIntfInfo(intfInfoMap, nextIntf,
                                 EjbIntfType.LOCAL_BUSINESS, next);
                 }
             }
@@ -709,7 +709,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
     /**
      * Visits a service reference for the last J2EE component visited
-     * 
+     *
      * @param serviceRef the service reference
      */
     @Override
@@ -724,14 +724,14 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 !next.isLinkedToPortComponent() ) {
                 WebServiceEndpoint portComponentLink = next.resolveLinkName();
                 if( portComponentLink == null ) {
-                    String linkName = next.getPortComponentLinkName(); 
+                    String linkName = next.getPortComponentLinkName();
                     DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
                         new Object[] {"port-component" , linkName});
-                }                                                   
+                }
             }
 
         }
-    }    
+    }
 
     @Override
     protected void accept(ResourceReferenceDescriptor resRef) {
@@ -764,7 +764,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
     /**
      * Sets the JNDI name to default if not already set
-     * @param msgDestRef 
+     * @param msgDestRef
      */
     protected void accept(MessageDestinationReferenceDescriptor msgDestRef) {
         computeRuntimeDefault(msgDestRef);
