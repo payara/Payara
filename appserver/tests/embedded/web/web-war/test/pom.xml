@@ -138,7 +138,7 @@
         </dependency>        
         <dependency>
             <groupId>org.glassfish.security</groupId>
-            <artifactId>inmemory.jacc.provider</artifactId>
+            <artifactId>jacc.provider.inmemory</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>        

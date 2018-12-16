@@ -45,53 +45,71 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
-         <groupId>org.glassfish.main.security</groupId>
+        <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.191-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
-    </parent>    
-    <artifactId>security-all</artifactId>
-    <packaging>pom</packaging>
-    <name>Security Related Implementation for GlassFish</name>
+    </parent>
+        
+    <artifactId>jacc.provider.inmemory</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
+    <name>A Pluggable InMemory JACC Provider</name>
+    <description>
+    	This module implements a JACC provider (authorization module) that uses in-memory
+    	storage to put the Permissions instances in that are received from the JACC parser.
+    	
+    	This module is pluggable by the end-user and uses the standard JACC SPI to facilitate
+    	this pluggability, but the implementation is partially Payara specific.
+    </description>
+    
     <developers>
         <developer>
-            <id>kumarjayanti</id>
-            <name>V B Kumar Jayanti</name>
+            <id>monzillo</id>
+            <name>Ron Monzillo</name>
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
     </developers>
+    
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+    
     <dependencies>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>security</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>security-ee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>jacc.provider.inmemory</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.security</groupId>
-            <artifactId>jacc.provider.file</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>javax.security.jacc</groupId>
             <artifactId>javax.security.jacc-api</artifactId>
         </dependency>
-     </dependencies>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <!-- Don't set scope as provided. See issue #5992 -->
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
