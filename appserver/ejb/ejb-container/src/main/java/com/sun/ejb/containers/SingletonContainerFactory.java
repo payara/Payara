@@ -62,13 +62,11 @@ public class SingletonContainerFactory extends BaseContainerFactory
         // hence we can always cast
         assert ejbDescriptor instanceof EjbSessionDescriptor;
         EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
-        AbstractSingletonContainer container;
         SecurityManager sm = getSecurityManager(ejbDescriptor);
-        if (sd.hasContainerManagedConcurrency()) {
-            container = new CMCSingletonContainer(ejbDescriptor, loader, sm);
-        } else {
-            container = new BMCSingletonContainer(ejbDescriptor, loader, sm);
-        }
+        AbstractSingletonContainer container =
+            sd.hasContainerManagedConcurrency()
+                ? new CMCSingletonContainer(ejbDescriptor, loader, sm)
+                : new BMCSingletonContainer(ejbDescriptor, loader, sm);
         container.initializeHome();
         return container;
     }

@@ -65,6 +65,36 @@ final public class BeanMethodCalculatorImpl {
     // TODO - change logger if/when other EJB deployment classes are changed
     static final private Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
 
+    private static final String[] entityBeanHomeMethodsDisallowed = {
+       "getEJBMetaData", "getHomeHandle"
+    };
+    private static final String[] entityBeanRemoteMethodsDisallowed = {
+       "getEJBHome", "getHandle", "getPrimaryKey", "isIdentical"
+    };
+    private static final String[] entityBeanLocalHomeMethodsDisallowed = {};
+    private static final String[] entityBeanLocalInterfaceMethodsDisallowed = {
+       "getEJBLocalHome", "getPrimaryKey", "isIdentical"
+    };
+
+    private static final String[] sessionBeanMethodsDisallowed = {
+       "*"
+    };
+
+    private static final String[] sessionLocalBeanMethodsDisallowed = {
+       "*"
+    };
+
+    private static final Map<Class, String[]> disallowedMethodsPerInterface;
+
+    static {
+        Map<Class, String[]> methodsByClass = new HashMap<>();
+        methodsByClass.put(javax.ejb.EJBHome.class, entityBeanHomeMethodsDisallowed);
+        methodsByClass.put(javax.ejb.EJBObject.class, entityBeanRemoteMethodsDisallowed);
+        methodsByClass.put(javax.ejb.EJBLocalHome.class, entityBeanLocalHomeMethodsDisallowed);
+        methodsByClass.put(javax.ejb.EJBLocalObject.class, entityBeanLocalInterfaceMethodsDisallowed);
+        disallowedMethodsPerInterface = Collections.unmodifiableMap(methodsByClass);
+    }
+
     public List<FieldDescriptor> getPossibleCmpCmrFields(ClassLoader cl,
                                                  String className)
         throws ClassNotFoundException {
@@ -139,10 +169,10 @@ final public class BeanMethodCalculatorImpl {
 
     /**
      * @return a collection of MethodDescriptor for all the methods of my
-     * ejb which are elligible to have a particular transaction setting.
+     * ejb which are eligible to have a particular transaction setting.
      */
     public List<MethodDescriptor> getTransactionalMethodsFor(com.sun.enterprise.deployment.EjbDescriptor desc, ClassLoader loader)
-        throws ClassNotFoundException, NoSuchMethodException
+        throws ClassNotFoundException
     {
         EjbDescriptor ejbDescriptor = (EjbDescriptor) desc;
         // only set if desc is a stateful session bean.  NOTE that
@@ -165,16 +195,8 @@ final public class BeanMethodCalculatorImpl {
             }
 
             if( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
-
-                for(String intfName :
-                        ejbDescriptor.getRemoteBusinessClassNames() ) {
-
-                    Class businessIntf = loader.loadClass(intfName);
-                    Method[] busIntfMethods = businessIntf.getMethods();
-                    for (Method next : busIntfMethods ) {
-                        methods.add(new MethodDescriptor
-                                    (next, MethodDescriptor.EJB_REMOTE));
-                    }
+                for(String intfName : ejbDescriptor.getRemoteBusinessClassNames() ) {
+                    readMethodsFromClass(intfName, methods, loader, MethodDescriptor.EJB_REMOTE);
                 }
             }
 
@@ -186,39 +208,19 @@ final public class BeanMethodCalculatorImpl {
             }
 
             if( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
-
-                for(String intfName :
-                        ejbDescriptor.getLocalBusinessClassNames() ) {
-
-                    Class businessIntf = loader.loadClass(intfName);
-                    Method[] busIntfMethods = businessIntf.getMethods();
-                    for (Method next : busIntfMethods ) {
-                        methods.add(new MethodDescriptor
-                                    (next, MethodDescriptor.EJB_LOCAL));
-                    }
+                for(String intfName : ejbDescriptor.getLocalBusinessClassNames() ) {
+                    readMethodsFromClass(intfName, methods, loader, MethodDescriptor.EJB_LOCAL);
                 }
             }
 
             if( ejbDescriptor.isLocalBean() ) {
-                String intfName = ejbDescriptor.getEjbClassName();
-                Class businessIntf = loader.loadClass(intfName);
-                Method[] busIntfMethods = businessIntf.getMethods();
-                for (Method next : busIntfMethods ) {
-                    methods.add(new MethodDescriptor
-                                (next, MethodDescriptor.EJB_LOCAL));
-                }
+                String clazzName = ejbDescriptor.getEjbClassName();
+                readMethodsFromClass(clazzName, methods, loader, MethodDescriptor.EJB_LOCAL);
             }
 
             if (ejbDescriptor.hasWebServiceEndpointInterface()) {
-                Class webServiceClass = loader.loadClass
-                    (ejbDescriptor.getWebServiceEndpointInterfaceName());
-
-                Method[] webMethods = webServiceClass.getMethods();
-                for (Method webMethod : webMethods) {
-                    methods.add(new MethodDescriptor(webMethod,
-                            MethodDescriptor.EJB_WEB_SERVICE));
-
-                }
+                String clazzName = ejbDescriptor.getWebServiceEndpointInterfaceName();
+                readMethodsFromClass(clazzName, methods, loader, MethodDescriptor.EJB_WEB_SERVICE);
             }
 
             // SFSB and Singleton can have lifecycle callbacks transactional
@@ -238,14 +240,13 @@ final public class BeanMethodCalculatorImpl {
                 }
             }
 
-
         } else {
             // entity beans local interfaces
             String homeIntf = ejbDescriptor.getHomeClassName();
             if (homeIntf!=null) {
 
                 Class home = loader.loadClass(homeIntf);
-                Collection potentials = getTransactionMethodsFor(javax.ejb.EJBHome.class, home);
+                Collection<Method> potentials = getTransactionMethodsFor(javax.ejb.EJBHome.class, home);
                 transformAndAdd(potentials, MethodDescriptor.EJB_HOME, methods);
 
                 String remoteIntf = ejbDescriptor.getRemoteClassName();
@@ -258,7 +259,7 @@ final public class BeanMethodCalculatorImpl {
             String localHomeIntf = ejbDescriptor.getLocalHomeClassName();
             if (localHomeIntf!=null) {
                 Class home = loader.loadClass(localHomeIntf);
-                Collection potentials = getTransactionMethodsFor(javax.ejb.EJBLocalHome.class, home);
+                Collection<Method> potentials = getTransactionMethodsFor(javax.ejb.EJBLocalHome.class, home);
                 transformAndAdd(potentials, MethodDescriptor.EJB_LOCALHOME, methods);
 
                 String remoteIntf = ejbDescriptor.getLocalClassName();
@@ -282,9 +283,16 @@ final public class BeanMethodCalculatorImpl {
         return methods;
      }
 
-     private Collection<Method> getTransactionMethodsFor(ClassLoader loader, String interfaceName, Collection<Method> disallowedMethods)
-        throws ClassNotFoundException
-     {
+    private void readMethodsFromClass(String className, List<MethodDescriptor> methods, ClassLoader loader, String ejbType) throws ClassNotFoundException {
+        Class clazz = loader.loadClass(className);
+        Method[] clazzMethods = clazz.getMethods();
+        for (Method next : clazzMethods ) {
+            methods.add(new MethodDescriptor(next, ejbType));
+        }
+    }
+
+    private Collection<Method> getTransactionMethodsFor(ClassLoader loader, String interfaceName, Collection<Method> disallowedMethods)
+        throws ClassNotFoundException {
          Class clazz = loader.loadClass(interfaceName);
          return getTransactionMethodsFor(clazz, disallowedMethods);
      }
@@ -312,7 +320,7 @@ final public class BeanMethodCalculatorImpl {
          if (methodNames.length==0)
              return v;
 
-         Method methods[] = interfaceType.getMethods();
+         Method[] methods = interfaceType.getMethods();
 
          for (Method method : methods) {
              // all methods of the interface are disallowed
@@ -325,9 +333,9 @@ final public class BeanMethodCalculatorImpl {
      }
 
      /**
-      * utiliy method to transform our collection of Method objects into
+      * Utility method to transform our collection of Method objects into
       * MethodDescriptor objects and add them to our global list of
-      * elligible methods
+      * eligible methods
       * @param methods collection of acceptable method objects
       * @param methodIntf method-intf identifier for those methods
       * @param globalList global list of MethodDescriptors objects
@@ -352,36 +360,8 @@ final public class BeanMethodCalculatorImpl {
       * map is the interface type (e.g. EJBHome, EJBObject), the value
       * is an array of methods names disallowed to have transaction attributes
       */
-     protected Map<Class, String[]> getDisallowedMethodsNames() {
-         if (disallowedMethodsPerInterface==null) {
-            disallowedMethodsPerInterface = new HashMap<>();
-            disallowedMethodsPerInterface.put(javax.ejb.EJBHome.class, entityBeanHomeMethodsDisallowed);
-            disallowedMethodsPerInterface.put(javax.ejb.EJBObject.class, entityBeanRemoteMethodsDisallowed);
-            disallowedMethodsPerInterface.put(javax.ejb.EJBLocalHome.class, entityBeanLocalHomeMethodsDisallowed);
-            disallowedMethodsPerInterface.put(javax.ejb.EJBLocalObject.class, entityBeanLocalInterfaceMethodsDisallowed);
-         }
+     private Map<Class, String[]> getDisallowedMethodsNames() {
          return disallowedMethodsPerInterface;
      }
-
-     private final String entityBeanHomeMethodsDisallowed[] = {
-         "getEJBMetaData", "getHomeHandle"
-     };
-     private final String entityBeanRemoteMethodsDisallowed[] = {
-         "getEJBHome", "getHandle", "getPrimaryKey", "isIdentical"
-     };
-     private final String entityBeanLocalHomeMethodsDisallowed[] = {};
-     private final String entityBeanLocalInterfaceMethodsDisallowed[] = {
-        "getEJBLocalHome", "getPrimaryKey", "isIdentical"
-     };
-
-     private final String sessionBeanMethodsDisallowed[] = {
-         "*"
-     };
-
-     private final String sessionLocalBeanMethodsDisallowed[] = {
-         "*"
-     };
-
-     private Map<Class, String[]> disallowedMethodsPerInterface;
 
 }

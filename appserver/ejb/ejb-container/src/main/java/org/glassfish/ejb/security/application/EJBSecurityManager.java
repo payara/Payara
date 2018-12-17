@@ -491,11 +491,12 @@ public final class EJBSecurityManager implements SecurityManager {
         for (MethodDescriptor md : eDescriptor.getMethodDescriptors()) {
 
             Method mthd = md.getMethod(eDescriptor);
+            String mthdIntf = md.getEjbClassSymbol();
+
             if (mthd == null) {
                 continue;
             }
 
-            String mthdIntf = md.getEjbClassSymbol();
             if (mthdIntf == null || mthdIntf.equals("")) {
                 _logger.log(Level.SEVERE, "method_descriptor_not_defined",
                         new Object[]{eName, md.getName(), md.getParameterClassNames()});
