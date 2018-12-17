@@ -1,6 +1,0 @@
-[#|2018-12-16T13:54:32.990+0100|INFO||javax.enterprise.test.logging.events|_ThreadID=1;_ThreadName=main;_TimeMillis=1544964872990;_LevelValue=800;|Test message for testLogEventListenerNotifications|#]
-
-
-[#|2018-12-16T17:22:43.639+0100|INFO||javax.enterprise.test.logging.events|_ThreadID=1;_ThreadName=main;_TimeMillis=1544977363639;_LevelValue=800;|Test message for testLogEventListenerNotifications|#]
-
-
