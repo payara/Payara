@@ -97,11 +97,7 @@ public class LoginCommand extends CLICommand {
 
                 // maybe we need a password?
                 programOpts.setInteractive(interactive);
-                try {
-                    adminPassword = getAdminPassword();
-                } catch (IOException e) {
-                    throw new CommandValidationException(e);
-                }
+                adminPassword = getAdminPassword();
                 programOpts.setPassword(adminPassword, ProgramOptions.PasswordLocation.USER);
                 programOpts.setInteractive(false);
                 break;
@@ -148,7 +144,7 @@ public class LoginCommand extends CLICommand {
      *  @return admin password
      *  @throws CommandValidationException if adminpassword can't be fetched 
      */
-    private char[] getAdminPassword() throws IOException {
+    private char[] getAdminPassword() {
         final String prompt = strings.get("AdminPasswordPrompt");
 
         return readPassword(prompt);

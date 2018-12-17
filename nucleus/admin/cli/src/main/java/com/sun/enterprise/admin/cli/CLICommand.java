@@ -886,9 +886,9 @@ public abstract class CLICommand implements PostConstruct {
      * the environment.  It also supplies passwords from the password
      * file or prompts for them if interactive.
      *
-     * @throws CommandException if execution of the command fails
+     * @throws CommandException           if execution of the command fails
      * @throws CommandValidationException if there's something wrong
-     *          with the options or arguments
+     *                                    with the options or arguments
      */
     protected void prevalidate() throws CommandException {
         /*
@@ -898,7 +898,7 @@ public abstract class CLICommand implements PostConstruct {
          * Remote commands are checked on the server.
          */
         if (!(this instanceof RemoteCommand) && !(this instanceof RemoteCLICommand)) {
-        	Class<? extends Annotation> myScope = getScope(this.getClass());
+            Class<? extends Annotation> myScope = getScope(this.getClass());
             if (myScope == null) {
                 throw new CommandException(strings.get("NoScope", name));
             } else if (Singleton.class.equals(myScope)) {
@@ -913,41 +913,44 @@ public abstract class CLICommand implements PostConstruct {
          * Check for missing options and operands.
          */
         ConsoleReader cons = null;
-        try {
-            cons = programOpts.isInteractive() ? new ConsoleReader(System.in, System.out, null) : null;
-        } catch (IOException ioe) {
-            throw new CommandValidationException("Error instantiating console", ioe);
+        if (programOpts.isInteractive()) {
+            try {
+                cons = new ConsoleReader(System.in, System.out, null);
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error instantiating console", ioe);
+            }
         }
 
         boolean missingOption = false;
         for (ParamModel opt : commandModel.getParameters()) {
             if (opt.getParam().password())
                 continue;       // passwords are handled later
-	    if (opt.getParam().obsolete() && getOption(opt.getName()) != null)
-		logger.info(strings.get("ObsoleteOption", opt.getName()));
-            if (opt.getParam().optional())
-                continue;
-            if (opt.getParam().primary())
-                continue;
-            // if option isn't set, prompt for it (if interactive)
-            if (getOption(opt.getName()) == null && cons != null && !missingOption) {
-                cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
-                try {
-                    String val = cons.readLine();
-                    if (ok(val)) {
-                        options.set(opt.getName(), val);
+            if (opt.getParam().obsolete() && getOption(opt.getName()) != null) {
+                logger.info(strings.get("ObsoleteOption", opt.getName()));
+                if (opt.getParam().optional())
+                    continue;
+                if (opt.getParam().primary())
+                    continue;
+                // if option isn't set, prompt for it (if interactive)
+                if (getOption(opt.getName()) == null && cons != null && !missingOption) {
+                    cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
+                    try {
+                        String val = cons.readLine();
+                        if (ok(val)) {
+                            options.set(opt.getName(), val);
+                        }
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error reading input", ioe);
                     }
-                } catch(IOException ioe){
-                    throw new CommandValidationException("Error reading input", ioe);
+                }
+                // if it's still not set, that's an error
+                if (getOption(opt.getName()) == null) {
+                    missingOption = true;
+                    logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
                 }
             }
-            // if it's still not set, that's an error
-            if (getOption(opt.getName()) == null) {
-                missingOption = true;
-                logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
-            }
-	    if (opt.getParam().obsolete()){	// a required obsolete option?
-		logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
+            if (opt.getParam().obsolete()) {    // a required obsolete option?
+                logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
             }
         }
         if (missingOption)
@@ -973,7 +976,7 @@ public abstract class CLICommand implements PostConstruct {
                 throw new CommandValidationException("Error reading input", ioe);
             }
         }
-        if (operands.size() < operandMin){
+        if (operands.size() < operandMin) {
             throw new CommandValidationException(strings.get("notEnoughOperands", name, operandParam.getType()));
         }
         if (operands.size() > operandMax) {
@@ -1145,53 +1148,49 @@ public abstract class CLICommand implements PostConstruct {
             }
         }
 
-        try {
-            char[] newpassword = readPassword(newprompt);
+        char[] newpassword = readPassword(newprompt);
 
-            /*
-             * If we allow for a default password, and the user just hit "Enter",
-             * return the default password.  No need to prompt twice or check
-             * for validity.
-             */
-            if (defaultPassword != null) {
-                if (newpassword == null) {
-                    newpassword = "".toCharArray();
-                }
-                if (newpassword.length == 0) {
-                    newpassword = defaultPassword.toCharArray();
-                    passwords.put(passwordName, new String(newpassword));
-                    return newpassword;
-                }
+        /*
+         * If we allow for a default password, and the user just hit "Enter",
+         * return the default password.  No need to prompt twice or check
+         * for validity.
+         */
+        if (defaultPassword != null) {
+            if (newpassword == null) {
+                newpassword = "".toCharArray();
             }
-
-            /*
-             * If not creating a new password, don't need to verify that
-             * the user typed it correctly by making them type it twice,
-             * and don't need to check it for validity.  Just return what
-             * we have.
-             */
-            if (!create) {
-                passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
+            if (newpassword.length == 0) {
+                newpassword = defaultPassword.toCharArray();
+                passwords.put(passwordName, new String(newpassword));
                 return newpassword;
             }
-
-            String confirmationPrompt;
-            if (ok(promptAgain)) {
-                confirmationPrompt = strings.get("NewPasswordDescriptionPrompt", promptAgain);
-            } else {
-                confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
-            }
-
-            char[] newpasswordAgain = readPassword(confirmationPrompt);
-            if (!Arrays.equals(newpassword,newpasswordAgain)) {
-                throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
-            }
-            passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
-
-            return newpassword;
-        } catch (IOException e) {
-            throw new CommandValidationException(e);
         }
+
+        /*
+         * If not creating a new password, don't need to verify that
+         * the user typed it correctly by making them type it twice,
+         * and don't need to check it for validity.  Just return what
+         * we have.
+         */
+        if (!create) {
+            passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
+            return newpassword;
+        }
+
+        String confirmationPrompt;
+        if (ok(promptAgain)) {
+            confirmationPrompt = strings.get("NewPasswordDescriptionPrompt", promptAgain);
+        } else {
+            confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
+        }
+
+        char[] newpasswordAgain = readPassword(confirmationPrompt);
+        if (!Arrays.equals(newpassword, newpasswordAgain)) {
+            throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
+        }
+        passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
+
+        return newpassword;
     }
 
     private String passwordName(ParamModel opt) {
@@ -1204,15 +1203,18 @@ public abstract class CLICommand implements PostConstruct {
      * @param prompt
      * @return 
      */
-    protected char[] readPassword(String prompt) throws IOException {
+    protected char[] readPassword(String prompt) {
         char[] pc = null;
-        ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null);
-        if (consoleReader != null) {
+
+        try (ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null)) {
             char echoCharacter = 0;
             consoleReader.setEchoCharacter(echoCharacter);
             String line = consoleReader.readLine(prompt);
             pc = line.toCharArray();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "IOException reading password.", ioe);
         }
+
         return pc;
     }
 

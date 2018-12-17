@@ -138,12 +138,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                char[] pArr = new char[0];
-                try {
-                    pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
-                } catch (IOException ioe) {
-                    throw new CommandException(ioe);
-                }
+                char[] pArr = pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
                 password = pArr != null ? new String(pArr) : null;
             }
             else {
@@ -170,12 +165,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (passphrase == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                char[] pArr = new char[0];
-                try {
-                    pArr = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
-                } catch (IOException ioe) {
-                    throw new CommandException(ioe);
-                }
+                char[] pArr = readPassword(Strings.get("SSHPassphrasePrompt", getSshKeyFile()));
                 passphrase = pArr != null ? new String(pArr) : null;
             }
             else {
@@ -195,12 +185,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         if (masterPass == null) {
             if (programOpts.isInteractive()) {
                 //i18n
-                char[] mpArr = new char[0];
-                try {
-                    mpArr = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
-                } catch (IOException ioe) {
-                    throw new CommandException(ioe);
-                }
+                char[] mpArr = readPassword(Strings.get("DomainMasterPasswordPrompt", domain));
                 masterPass = mpArr != null ? new String(mpArr) : null;
             }
             else {

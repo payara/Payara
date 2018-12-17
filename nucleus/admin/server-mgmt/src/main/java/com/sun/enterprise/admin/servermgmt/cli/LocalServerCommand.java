@@ -566,12 +566,7 @@ public abstract class LocalServerCommand extends CLICommand {
         for (int i = 0; i < times; i++) {
             // XXX - I18N
             String prompt = STRINGS.get("mp.prompt", (times - i));
-            char[] mpvArr = new char[0];
-            try {
-                mpvArr = super.readPassword(prompt);
-            } catch (IOException ioe) {
-                throw new CommandException(ioe);
-            }
+            char[] mpvArr = super.readPassword(prompt);
             mpv = mpvArr != null ? new String(mpvArr) : null;
             if (mpv == null)
                 throw new CommandException(STRINGS.get("no.console"));
