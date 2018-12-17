@@ -337,11 +337,11 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     // Internal interface describing operation used to create an
     // instance of a local business object. (GenericEJBLocalHome)
-    protected Class localBusinessHomeIntf = null;
-    protected Class ejbOptionalLocalBusinessHomeIntf = null;
+    protected Class<?> localBusinessHomeIntf = null;
+    protected Class<?> ejbOptionalLocalBusinessHomeIntf = null;
 
     // Local business interface written by developer
-    protected Set<Class> localBusinessIntfs = new HashSet();
+    protected Set<Class<?>> localBusinessIntfs = new HashSet<>();
 
     // Client reference to internal local business home interface.
     // This is only seen by internal ejb code that instantiates local
@@ -414,7 +414,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     // Internal interface describing operation used to create an
     // instance of a remote business object.
-    protected Class remoteBusinessHomeIntf = null;
+    protected Class<?> remoteBusinessHomeIntf = null;
 
     // Container implementation of internal EJB Business Home. May or may
     // not be same object as ejbRemoteBusinessHome, for example in the
@@ -435,7 +435,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     // Holds information such as remote reference factory that are associated
     // with a particular remote business interface
     protected Map<String, RemoteBusinessIntfInfo> remoteBusinessIntfInfo
-        = new HashMap<String, RemoteBusinessIntfInfo>();
+        = new HashMap<>();
 
     //
     // END -- Data members for Remote views
@@ -458,7 +458,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected Map<TimerPrimaryKey, Method> scheduleIds = new HashMap<>();
 
-    Map<Method, List<ScheduledTimerDescriptor>> schedules = new HashMap<>();
+    private Map<Method, List<ScheduledTimerDescriptor>> schedules = new HashMap<>();
 
     // Need a separate map for web service methods since it's possible for
     // an EJB Remote interface to be a subtype of the Service Endpoint
@@ -523,7 +523,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         PrePassivate.class, PostActivate.class
     };
 
-    private Set<Class> monitoredGeneratedClasses = new HashSet<Class>();
+    private Set<Class<?>> monitoredGeneratedClasses = new HashSet<>();
 
     protected InvocationManager invocationManager;
 
@@ -541,14 +541,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected EjbOptionalIntfGenerator optIntfClassLoader;
 
-    private Set<String> publishedPortableGlobalJndiNames = new HashSet<String>();
+    private Set<String> publishedPortableGlobalJndiNames = new HashSet<>();
 
-    private Set<String> publishedNonPortableGlobalJndiNames = new HashSet<String>();
+    private Set<String> publishedNonPortableGlobalJndiNames = new HashSet<>();
 
-    private Set<String> publishedInternalGlobalJndiNames = new HashSet<String>();
+    private Set<String> publishedInternalGlobalJndiNames = new HashSet<>();
 
 
-    private Map<String, JndiInfo> jndiInfoMap = new HashMap<String, JndiInfo>();
+    private Map<String, JndiInfo> jndiInfoMap = new HashMap<>();
 
     private String optIntfClassName;
 
@@ -661,7 +661,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 homeIntf = loader.loadClass(homeClassName);
                 remoteIntf = loader.loadClass(ejbDescriptor.getRemoteClassName());
 
-                String id = Long.toString(ejbDescriptor.getUniqueId()) + "_RHome";
+                String id = ejbDescriptor.getUniqueId() + "_RHome";
 
                 remoteHomeRefFactory = getProtocolManager().getRemoteReferenceFactory(this, true, id);
 
@@ -695,7 +695,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     // One remote reference factory for each remote
                     // business interface.  Id must be unique across
                     // all ejb containers.
-                    String id = Long.toString(ejbDescriptor.getUniqueId())
+                    String id = ejbDescriptor.getUniqueId()
                              + "_RBusiness" + "_" + genRemoteIntf.getName();
 
                     info.referenceFactory = getProtocolManager().
@@ -742,7 +742,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                 this.optIntfClassName = EJBUtils.getGeneratedOptionalInterfaceName(ejbClass.getName());
                 optIntfClassLoader = new EjbOptionalIntfGenerator(loader);
-                ((EjbOptionalIntfGenerator) optIntfClassLoader).generateOptionalLocalInterface(ejbClass, optIntfClassName);
+                optIntfClassLoader.generateOptionalLocalInterface(ejbClass, optIntfClassName);
                 ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(optIntfClassName);
             }
 
@@ -812,12 +812,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     }
                     processEjbTimeoutMethod(method);
 
-                    List<ScheduledTimerDescriptor> list = schedules.get(method);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        schedules.put(method, list);
-                    }
-                    list.add(schd);
+                    schedules.computeIfAbsent(method, k -> new ArrayList<>())
+                            .add(schd);
                 }
 
             }
