@@ -912,7 +912,12 @@ public abstract class CLICommand implements PostConstruct {
         /*
          * Check for missing options and operands.
          */
-        Console cons = programOpts.isInteractive() ? System.console() : null;
+        ConsoleReader cons = null;
+        try {
+            cons = programOpts.isInteractive() ? new ConsoleReader(System.in, System.out, null) : null;
+        } catch (IOException ioe) {
+            throw new CommandValidationException("Error instantiating console", ioe);
+        }
 
         boolean missingOption = false;
         for (ParamModel opt : commandModel.getParameters()) {
@@ -926,10 +931,14 @@ public abstract class CLICommand implements PostConstruct {
                 continue;
             // if option isn't set, prompt for it (if interactive)
             if (getOption(opt.getName()) == null && cons != null && !missingOption) {
-                cons.printf("%s", strings.get("optionPrompt", lc(opt.getName())));
-                String val = cons.readLine();
-                if (ok(val)){
-                    options.set(opt.getName(), val);
+                cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
+                try {
+                    String val = cons.readLine();
+                    if (ok(val)) {
+                        options.set(opt.getName(), val);
+                    }
+                } catch(IOException ioe){
+                    throw new CommandValidationException("Error reading input", ioe);
                 }
             }
             // if it's still not set, that's an error
@@ -953,11 +962,15 @@ public abstract class CLICommand implements PostConstruct {
         }
 
         if (operands.size() < operandMin && cons != null) {
-            cons.printf("%s", strings.get("operandPrompt", operandParam.getName()));
-            String val = cons.readLine();
-            if (ok(val)) {
-                operands = new ArrayList<String>();
-                operands.add(val);
+            cons.setPrompt(strings.get("operandPrompt", operandParam.getName()));
+            try {
+                String val = cons.readLine();
+                if (ok(val)) {
+                    operands = new ArrayList<String>();
+                    operands.add(val);
+                }
+            } catch (IOException ioe) {
+                throw new CommandValidationException("Error reading input", ioe);
             }
         }
         if (operands.size() < operandMin){
