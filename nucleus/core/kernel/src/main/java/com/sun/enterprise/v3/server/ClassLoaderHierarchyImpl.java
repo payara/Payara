@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
 import com.sun.enterprise.module.common_impl.Tokenizer;
 

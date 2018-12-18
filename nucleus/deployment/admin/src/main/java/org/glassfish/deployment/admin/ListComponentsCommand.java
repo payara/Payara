@@ -43,7 +43,6 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -55,7 +54,8 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.annotations.Service;
-
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import java.util.*;

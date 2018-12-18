@@ -42,6 +42,7 @@
 package org.glassfish.resources.module;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.logging.LogDomains;

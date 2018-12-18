@@ -98,6 +98,7 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <runOrder>alphabetical</runOrder>
+                    <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
                 </configuration>
             </plugin>
         </plugins>

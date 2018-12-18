@@ -51,6 +51,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Optional;
