@@ -339,7 +339,7 @@
 
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
@@ -659,8 +659,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>${jdk.version}</version>
-                                    <message>You need JDK8 (${jdk.version}) or JDK9</message>
+                                    <version>[${jdk.version},18.9)</version>
+                                    <message>You need JDK8 (${jdk.version}) or JDK11</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,3.2.1],[3.2.3,)</version>
@@ -1278,11 +1278,6 @@ Parent is ${project.parent}</echo>
                 <groupId>com.sun</groupId>
                 <artifactId>ldapbp</artifactId>
                 <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-all</artifactId>
-                <version>${asm.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
