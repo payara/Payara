@@ -48,10 +48,10 @@ import javax.management.ObjectName;
 
 public final class MetadataImpl implements Metadata {
     private final ConcurrentMap<String,Object>  mData;
-    
+
     public MetadataImpl(final Map<String,Object> data )
     {
-        mData = new ConcurrentHashMap<String,Object>(data);
+        mData = new ConcurrentHashMap<>(data);
     }
 
     public MetadataImpl( final Metadata meta)
@@ -61,7 +61,7 @@ public final class MetadataImpl implements Metadata {
 
     public MetadataImpl()
     {
-        mData = new ConcurrentHashMap<String,Object>();
+        mData = new ConcurrentHashMap<>();
     }
 
     public Map<String,Object> getAll()
@@ -71,20 +71,24 @@ public final class MetadataImpl implements Metadata {
 
     public void add( final String key, final Object value)
     {
-        mData.put( key, value);
+        if (key != null && value != null) {
+            mData.put( key, value);
+        }
     }
-    
+
     public void remove( final String key)
     {
-        mData.remove( key );
+        if (key != null) {
+            mData.remove( key );
+        }
     }
-    
+
 
     public void setCorrespondingConfig( final ObjectName config)
     {
         add( CORRESPONDING_CONFIG, config);
     }
-    
+
     public ObjectName getCorrespondingConfig()
     {
         return getMetadata( CORRESPONDING_CONFIG, ObjectName.class);
@@ -99,7 +103,7 @@ public final class MetadataImpl implements Metadata {
     {
         add( CORRESPONDING_REF, config);
     }
-    
+
     public String getDeploymentDescriptor()
     {
         return getMetadata( DEPLOYMENT_DESCRIPTOR, String.class);
@@ -112,11 +116,13 @@ public final class MetadataImpl implements Metadata {
         }
         add( DEPLOYMENT_DESCRIPTOR, desc);
     }
-    
+
     public <T> T getMetadata(final String name, final Class<T> clazz)
     {
-        final Object value = mData.get(name);
-        
-        return clazz.cast(value);
+        if (name != null && clazz != null) {
+            final Object value = mData.get(name);
+            return clazz.cast(value);
+        }
+        return null;
     }
 }
