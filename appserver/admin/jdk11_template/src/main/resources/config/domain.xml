@@ -204,7 +204,6 @@
         <jvm-options>--illegal-access=permit</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
-        <jvm-options>-XX:+UseZGC</jvm-options>
         <jvm-options>-client</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
@@ -410,7 +409,6 @@
              <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
              <jvm-options>--illegal-access=permit</jvm-options>
              <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
-             <jvm-options>-XX:+UseZGC</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>

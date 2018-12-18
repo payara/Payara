@@ -198,7 +198,6 @@
         <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
         <jvm-options>--illegal-access=permit</jvm-options>
         <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
-        <jvm-options>-XX:+UseZGC</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -402,7 +401,6 @@
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
              <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
-             <jvm-options>-XX:+UseZGC</jvm-options>
              <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
              <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
              <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
