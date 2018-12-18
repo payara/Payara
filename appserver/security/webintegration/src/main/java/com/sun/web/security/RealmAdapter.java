@@ -656,12 +656,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 X509Certificate certificate = certs[0];
                 
                 
-                X500Principal x500principal = null;
+                Principal x500principal = null;
                 Principal principal = certificate.getSubjectDN();
                 if (principal instanceof sun.security.x509.X500Name) {
                     x500principal = ((sun.security.x509.X500Name) principal).asX500Principal();
                 } else {
-                    x500principal = (X500Principal) certificate.getSubjectDN();
+                    x500principal = certificate.getSubjectDN();
                 }
                 
                 subject.getPublicCredentials().add(x500principal);
