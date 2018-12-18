@@ -43,21 +43,7 @@ package com.sun.enterprise.deployment;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -1354,9 +1340,12 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Return the list of ejb deployment objects.
+     *
+     * This method is referenced by {@link org.glassfish.osgiejb.OSGiEJBDeployer.EJBTracker}
+     * and its signature may change.
      */
-    public List<EjbDescriptor> getEjbDescriptors() {
-        List<EjbDescriptor> ejbDescriptors = new ArrayList<>();
+    public Vector<EjbDescriptor> getEjbDescriptors() {
+        Vector<EjbDescriptor> ejbDescriptors = new Vector<>();
         for (EjbBundleDescriptor ejbBundleDescriptor : getBundleDescriptors(EjbBundleDescriptor.class)) {
             ejbDescriptors.addAll(ejbBundleDescriptor.getEjbs());
         }
