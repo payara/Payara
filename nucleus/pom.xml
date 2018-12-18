@@ -335,7 +335,7 @@
         <lombok.version>1.18.4</lombok.version>
         <guava.version>19.0</guava.version>
         <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
-        <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
+        <jaxb-impl.version>2.4.0-b180830.0438</jaxb-impl.version>
 
         <!-- Build -->
 
@@ -1363,7 +1363,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>${jaxb-runtime.version}</version>
+                <version>${jaxb-impl.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.openjdk-orb</groupId>
