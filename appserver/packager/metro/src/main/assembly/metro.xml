@@ -54,19 +54,7 @@
     <fileSets>
         <fileSet>
             <directory>${temp.dir}/glassfish</directory>
-            <excludes>
-                <exclude>modules/jakarta.xml.bind-api.jar</exclude>
-                <exclude>modules/webservices-api-osgi.jar</exclude>
-            </excludes>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${temp.dir}/glassfish/modules</directory>
-            <includes>
-                <include>jakarta.xml.bind-api.jar</include>
-                <include>webservices-api-osgi.jar</include>
-            </includes>
-            <outputDirectory>${install.dir.name}/glassfish/modules/endorsed</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>
