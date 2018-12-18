@@ -376,15 +376,11 @@
          <version>${project.version}</version>
      </dependency>
 
-     <!-- explicit dependencies for endorsed JARs the ACC needs -->
-
-     <!-- endorsed: javax.annotation-api.jar -->
      <dependency>
          <groupId>javax.annotation</groupId>
          <artifactId>javax.annotation-api</artifactId>
      </dependency>
 
-     <!-- endorsed: jaxb-api.jar -->
      <dependency>
          <groupId>javax.xml.bind</groupId>
          <artifactId>jaxb-api</artifactId>
@@ -401,13 +397,10 @@
          <artifactId>jaxb-extra-osgi</artifactId>
      </dependency>
 
-     <!-- endorsed: webservices-api-osgi.jar -->
      <dependency>
         <groupId>org.glassfish.metro</groupId>
         <artifactId>webservices-api-osgi</artifactId>
      </dependency>
-
-     <!-- end of endorsed JAR dependencies -->
 
      <!-- JAXR -JSR-93 Support-->
      <dependency>
