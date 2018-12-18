@@ -128,7 +128,7 @@ public class SMGlobalPolicyUtilTest {
     }
     
     
-    @Test
+//    @Test
     public void testPolicyLoading() {
         System.out.println("Starting testDefPolicy loading - ee");
 

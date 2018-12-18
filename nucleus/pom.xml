@@ -216,32 +216,32 @@
         <javase.version>1.8</javase.version>
         <javadoc.skip>false</javadoc.skip>
 
-        <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
-        <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
+        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.0.0-M1</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.0.2</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <maven.site.plugin.version>3.7</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
-        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <maven.jar.plugin.version>3.1.0</maven.jar.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
-        <maven.remote.resources.plugin.version>1.5</maven.remote.resources.plugin.version>
+        <maven.remote.resources.plugin.version>1.6.0</maven.remote.resources.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.0.1</maven.invoker.plugin.version>
-        <maven.war.plugin.version>3.2.0</maven.war.plugin.version>
+        <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
+        <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
-        <maven.jaxb2.plugin.version>0.13.3</maven.jaxb2.plugin.version>
-        <maven.bundle.plugin.version>3.5.0</maven.bundle.plugin.version>
+        <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
+        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.antlr.plugin.version>2.1</maven.antlr.plugin.version>
-        <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
-        <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
-        <maven.jaxws.plugin.version>1.12</maven.jaxws.plugin.version>
+        <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
+        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
+        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
+        <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.build.helper.plugin.version>1.7</maven.build.helper.plugin.version>
+        <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
 
         <deploy.skip>true</deploy.skip>
 
@@ -324,7 +324,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>6.2.1</asm.version>
+        <asm.version>7.0</asm.version>
         <ha-api.version>3.1.9</ha-api.version>
         <hazelcast.version>3.10.5</hazelcast.version>
         <smack.version>4.1.9</smack.version>
@@ -332,14 +332,17 @@
         <xpp3.version>1.1.4c_7</xpp3.version>
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
-        <lombok.version>1.16.14</lombok.version>
+        <lombok.version>1.18.4</lombok.version>
         <guava.version>19.0</guava.version>
+        <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
+        <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
+
         <!-- Build -->
 
-        <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.8</command-security-plugin.version>
+        <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
@@ -443,7 +446,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
-                        <additionalparam>${javadoc.options}</additionalparam>
+                        <additionalOptions>
+                            <additionalOption>${javadoc.options}</additionalOption>
+                        </additionalOptions>
                     </configuration>
                 </plugin>
 
@@ -654,7 +659,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},1.9.0)</version>
+                                    <version>${jdk.version}</version>
                                     <message>You need JDK8 (${jdk.version}) or JDK9</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
@@ -1237,7 +1242,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
-                <version>1.1</version>
+                <version>1.8</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -1247,12 +1252,12 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.5.2</version>
+                <version>6.14.3</version>
             </dependency>
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>1.32</version>
+                <version>1.40</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -1276,6 +1281,11 @@ Parent is ${project.parent}</echo>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-all</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-commons</artifactId>
                 <version>${asm.version}</version>
             </dependency>
@@ -1292,7 +1302,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.4</version>
+                <version>3.3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>
@@ -1348,6 +1358,22 @@ Parent is ${project.parent}</echo>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb-runtime.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.openjdk-orb</groupId>
+                <artifactId>openjdk-orb</artifactId>
+                <version>8.1.2.Final</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

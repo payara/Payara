@@ -45,7 +45,7 @@ import org.glassfish.resourcebase.resources.api.GenericResourceInfo;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
-
+import com.sun.enterprise.config.serverbeans.Module;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;

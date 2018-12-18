@@ -42,6 +42,7 @@
 package com.sun.enterprise.v3.admin.adapter;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;

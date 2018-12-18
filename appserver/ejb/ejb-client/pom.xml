@@ -94,5 +94,9 @@
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.openjdk-orb</groupId>
+            <artifactId>openjdk-orb</artifactId>
+        </dependency>
     </dependencies>
 </project>

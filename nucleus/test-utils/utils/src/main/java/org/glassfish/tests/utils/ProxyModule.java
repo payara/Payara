@@ -41,7 +41,7 @@
 package org.glassfish.tests.utils;
 
 import com.sun.enterprise.module.*;
-
+import com.sun.enterprise.module.Module;
 import java.util.List;
 import java.io.PrintStream;
 

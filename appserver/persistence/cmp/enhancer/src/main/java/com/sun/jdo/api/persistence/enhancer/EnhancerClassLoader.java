@@ -57,8 +57,9 @@ import java.util.Properties;
 import java.net.URLClassLoader;
 import java.net.URL;
 
-import sun.misc.Resource;
-import sun.misc.URLClassPath;
+import jdk.internal.loader.Resource;
+import jdk.internal.loader.URLClassPath;
+import sun.security.tools.PathList;
 
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
@@ -104,10 +105,6 @@ public class EnhancerClassLoader extends URLClassLoader {
         = FilterEnhancer.VERBOSE_LEVEL_VERBOSE;
     static public final String VERBOSE_LEVEL_DEBUG
         = FilterEnhancer.VERBOSE_LEVEL_DEBUG;
-
-    static public URL[] pathToURLs(String classpath) {
-        return URLClassPath.pathToURLs(classpath);
-    }
 
     // misc
     //@olsen: 4370739
@@ -157,7 +154,7 @@ public class EnhancerClassLoader extends URLClassLoader {
     protected EnhancerClassLoader(URL[] urls) {
         super(urls);
         acc = AccessController.getContext();
-        ucp = new URLClassPath(urls);
+        ucp = new URLClassPath(urls, null);
         checkUCP(urls);
     }
 
@@ -170,7 +167,7 @@ public class EnhancerClassLoader extends URLClassLoader {
                                   ClassLoader loader) {
         super(urls, loader);
         acc = AccessController.getContext();
-        ucp = new URLClassPath(urls);
+        ucp = new URLClassPath(urls, null);
         checkUCP(urls);
     }
 
@@ -182,7 +179,7 @@ public class EnhancerClassLoader extends URLClassLoader {
     public EnhancerClassLoader(String classpath,
                                Properties settings,
                                PrintWriter out) {
-        this(pathToURLs(classpath));
+        this(PathList.pathToURLs(classpath));
         JDOMetaData metaData = new JDOMetaDataModelImpl(Model.ENHANCER, out);
         init(metaData, settings, out);
     }
@@ -209,7 +206,7 @@ public class EnhancerClassLoader extends URLClassLoader {
                                JDOMetaData metaData,
                                Properties settings,
                                PrintWriter out) {
-        this(pathToURLs(classpath));
+        this(PathList.pathToURLs(classpath));
         init(metaData, settings, out);
     }
 

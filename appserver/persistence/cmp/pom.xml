@@ -59,7 +59,7 @@
         <module>ejb-mapping</module>
         <module>enhancer</module>
         <module>internal-api</module>
-		<module>support-sqlstore</module>
+        <module>support-sqlstore</module>
         <module>support-ejb</module>
         <module>cmp-scripts</module>
         <module>cmp-all</module>
