@@ -40,30 +40,41 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2018] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-     <modelVersion>4.0.0</modelVersion>
-     <parent>
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
         <artifactId>securitymodule</artifactId>
         <groupId>org.glassfish.main.security</groupId>
         <version>5.191-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
+    
     <artifactId>jaspic.provider.framework</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>Jaspic Provider Framework</name>
-    <description>JSR-196 Provider Framework Reference Implementation</description>
+    <description>
+    	JASPIC (JSR-196) Provider Framework Reference Implementation.
+    	
+    	This module contains a Payara/GlassFish independent partial reference implementation
+    	of JASPIC. Due to the way JASPIC works this does not implement a full RI, as JASPIC
+    	is not so much an independent library but an SPI for Servlet and SOAP container to call
+    	out to external authentication mechanisms.
+    	
+    	Despite that, this module's goal is to implement as much JASPIC general reference functionality 
+    	without any server specific dependencies.
+    </description>
     
     <dependencies>
+    	<!-- The main JASPIC API this module provides a partial implementation of -->
+    	<dependency>
+            <groupId>javax.security.auth.message</groupId>
+            <artifactId>javax.security.auth.message-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <!-- Don't set scope as provided. See issue #5992 -->
-        </dependency>
-        <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
         </dependency>
     </dependencies>
 </project>
