@@ -76,22 +76,22 @@
                             <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
                             <Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
                             <Export-Package>
- oracle.jdbc,
- oracle.jdbc.internal,
- oracle.jdbc.pool,
- oracle.xdb,
- oracle.xdb.dom,
- oracle.sql,
- oracle.spatial.geometry,
- oracle.dms.instrument,
- oracle.dms.spy,
- oracle.xml.jaxp,
- oracle.xml.parser.schema,
- oracle.xml.parser.v2,
- oracle.ucp.jdbc,
- oracle.jdbc.dcn,
- oracle.AQ,
- oracle.kv
+                                oracle.jdbc,
+                                oracle.jdbc.internal,
+                                oracle.jdbc.pool,
+                                oracle.xdb,
+                                oracle.xdb.dom,
+                                oracle.sql,
+                                oracle.spatial.geometry,
+                                oracle.dms.instrument,
+                                oracle.dms.spy,
+                                oracle.xml.jaxp,
+                                oracle.xml.parser.schema,
+                                oracle.xml.parser.v2,
+                                oracle.ucp.jdbc,
+                                oracle.jdbc.dcn,
+                                oracle.AQ,
+                                oracle.kv
                             </Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
