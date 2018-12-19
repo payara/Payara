@@ -152,7 +152,7 @@
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
 
         <!-- JAX-WS -->
-
+        <jaxws-api.version>2.3.1</jaxws-api.version>
         <!-- Metro Webservices is the JAX-WS impl -->
         <webservices.version>2.4.0</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
@@ -170,6 +170,11 @@
 
         <!-- Management API (JRS 77) -->
         <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+
+        <!-- JAF -->
+        <javax.activation-api.version>1.2.0</javax.activation-api.version>
+
+        <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
@@ -1256,17 +1261,17 @@
             <dependency>
                 <groupId>javax.xml.ws</groupId>
                 <artifactId>jaxws-api</artifactId>
-                <version>2.3.1</version>
+                <version>${jaxws-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
-                <version>3.0.7</version>
+                <version>${istack-commons-runtime.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>javax.activation-api</artifactId>
-                <version>1.2.0</version>
+                <version>${javax.activation-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
