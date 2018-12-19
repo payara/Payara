@@ -1156,8 +1156,8 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.fileinstall.version}</version>
             </dependency>
             <dependency>
-               <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
-               <artifactId>org.apache.felix.configadmin</artifactId>
+                <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
+                <artifactId>org.apache.felix.configadmin</artifactId>
                 <version>${org.apache.felix.configadmin.version}</version>
             </dependency>
             <dependency>
