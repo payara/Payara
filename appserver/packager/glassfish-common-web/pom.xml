@@ -203,10 +203,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.ha</groupId>
             <artifactId>ha-api</artifactId>
         </dependency>    

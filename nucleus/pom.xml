@@ -1365,11 +1365,6 @@ Parent is ${project.parent}</echo>
                 <artifactId>jaxb-runtime</artifactId>
                 <version>${jaxb-impl.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.jboss.openjdk-orb</groupId>
-                <artifactId>openjdk-orb</artifactId>
-                <version>8.1.2.Final</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
