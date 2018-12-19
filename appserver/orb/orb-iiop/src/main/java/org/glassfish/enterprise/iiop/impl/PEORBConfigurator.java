@@ -56,8 +56,6 @@ import com.sun.corba.ee.spi.transport.TransportDefault;
 import com.sun.logging.LogDomains;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.grizzly.config.dom.Ssl;
-
-import java.net.SocketException;
 import java.util.logging.Logger;
 import org.glassfish.enterprise.iiop.api.IIOPConstants;
 import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
@@ -325,7 +323,6 @@ public class PEORBConfigurator implements ORBConfigurator {
         public void handleRequest(SelectableChannel channel) {
             SocketChannel sch = (SocketChannel)channel ;
             Socket socket = sch.socket() ;
-
             acceptor.processSocket( socket ) ;
         }
     }
