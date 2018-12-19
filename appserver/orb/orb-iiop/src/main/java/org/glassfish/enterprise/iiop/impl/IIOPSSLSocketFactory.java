@@ -61,7 +61,6 @@ import java.nio.channels.SocketChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -79,6 +78,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
+import org.glassfish.enterprise.iiop.util.IIOPUtils;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.orb.admin.config.IiopListener;
@@ -352,14 +352,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     socket = new Socket(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
                 }
 
-                // PAYARA-408
-                // Check if SO_KEEPALIVE property set
-                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                    if (_logger.isLoggable(Level.FINER)) {
-                        _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                    }
-                    socket.setKeepAlive(true);
-                }
+                // Enable SO_KEEPALIVE if required
+                enableSOKeepAliveAsRequired(socket);
 
                 // Disable Nagle's algorithm (i.e. always send immediately).
                 socket.setTcpNoDelay(true);
@@ -383,13 +377,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             // Disable Nagle's algorithm (i.e., always send immediately).
             socket.setTcpNoDelay(true);
 
-            // Enable or disable SO_KEEPALIVE for the socket as required
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                if (_logger.isLoggable(Level.FINER)) {
-                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                }
-                socket.setKeepAlive(true);
-            }
+            // Enable SO_KEEPALIVE if required
+            enableSOKeepAliveAsRequired(socket);
         } catch (SocketException ex) {
             throw new RuntimeException(ex);
         }
@@ -507,14 +496,9 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                 socket.setEnabledCipherSuites(clientCiphers);
             }
 
-            // PAYARA-408
-            // Check if SO_KEEPALIVE property set
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                if (_logger.isLoggable(Level.FINER)) {
-                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                }
-                socket.setKeepAlive(true);
-            }
+            // Enable SO_KEEPALIVE if required
+            enableSOKeepAliveAsRequired(socket);
+
         } catch (Exception e) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "iiop.createsocket_exception", new Object[]{host, String.valueOf(port)});
@@ -653,6 +637,53 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                 ssl3Enabled && cipherInfo.isSSL3() ||
                 ssl2Enabled && cipherInfo.isSSL2());
     }
+
+    /**
+     * Checks whether SO_KEEPALIVE should be enabled on a Socket and enables it if it should be. Checks for the
+     * presence of a property on the IIOP listener and globally, preferring the value set in the listener.
+     *
+     * @param socket The socket to potentially enable SO_KEEPALIVE on
+     * @throws SocketException If there was an error enabling SO_KEEPALIVE on the socket.
+     */
+    private void enableSOKeepAliveAsRequired(Socket socket) throws SocketException {
+        boolean shouldSet = false;
+
+        // For each listener, find one with a matching port
+        for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
+            if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
+                // Check for the property globally before checking on the specific listener
+                if (Boolean.getBoolean(SO_KEEPALIVE)) {
+                    // If it's present globally, check if we've actually set the property on the listener
+                    if (iiopListener.getPropertyValue(SO_KEEPALIVE) != null) {
+                        // If it has been set, check if we should override
+                        if (Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE))) {
+                            shouldSet = true;
+                        }
+                    } else {
+                        // If the property wasn't set on the listener, go with the global setting
+                        shouldSet = true;
+                    }
+                    break;
+                } else {
+                    // If it wasn't set globally, just check if it's set on the listener
+                    if (iiopListener.getPropertyValue(SO_KEEPALIVE) != null
+                            && Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE))) {
+                        shouldSet = true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (shouldSet) {
+            if (_logger.isLoggable(Level.FINER)) {
+                _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+            }
+
+            socket.setKeepAlive(true);
+        }
+    }
+
 
     /**
      * This API get the format string from resource bundle of _logger.
