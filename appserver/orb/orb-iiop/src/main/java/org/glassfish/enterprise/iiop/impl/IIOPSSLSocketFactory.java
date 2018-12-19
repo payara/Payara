@@ -354,7 +354,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
                 // PAYARA-408
                 // Check if SO_KEEPALIVE property set
-                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                if (Boolean.getBoolean(SO_KEEPALIVE)) {
                     if (_logger.isLoggable(Level.FINER)) {
                         _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                     }
@@ -383,8 +383,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             // Disable Nagle's algorithm (i.e., always send immediately).
             socket.setTcpNoDelay(true);
 
-            // Enable or disable SO_KEEPALIVE for the socket as required
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+            // Check if SO_KEEPALIVE property set
+            if (Boolean.getBoolean(SO_KEEPALIVE)) {
                 if (_logger.isLoggable(Level.FINER)) {
                     _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                 }
@@ -509,7 +509,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
             // PAYARA-408
             // Check if SO_KEEPALIVE property set
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+            if (Boolean.getBoolean(SO_KEEPALIVE)) {
                 if (_logger.isLoggable(Level.FINER)) {
                     _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                 }
