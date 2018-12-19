@@ -326,25 +326,6 @@ public class PEORBConfigurator implements ORBConfigurator {
             SocketChannel sch = (SocketChannel)channel ;
             Socket socket = sch.socket() ;
 
-            // Enable or disable SO_KEEPALIVE for the socket as required
-            try {
-                if (Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                    }
-                    socket.setKeepAlive(true);
-                } else if (System.getProperty(IIOPSSLSocketFactory.SO_KEEPALIVE) != null
-                        && !Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE)
-                        && socket.getKeepAlive()) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.log(Level.FINER, "Disabling SO_KEEPALIVE");
-                    }
-                    socket.setKeepAlive(false);
-                }
-            } catch (SocketException se) {
-                logger.log(Level.WARNING, "Could not enable SO_KEEPALIVE", se);
-            }
-
             acceptor.processSocket( socket ) ;
         }
     }

@@ -107,7 +107,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
     private static final int BACKLOG = 50;
 
-    protected static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
+    private static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
 
 
     //private static SecureRandom sr = null;
@@ -378,9 +378,25 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             _logger.log(Level.FINE, "setAcceptedSocketOptions: " + acceptor
                     + " " + serverSocket + " " + socket);
         }
-        // Disable Nagle's algorithm (i.e., always send immediately).
+
         try {
+            // Disable Nagle's algorithm (i.e., always send immediately).
             socket.setTcpNoDelay(true);
+
+            // Enable or disable SO_KEEPALIVE for the socket as required
+            if (Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                if (_logger.isLoggable(Level.FINER)) {
+                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+                }
+                socket.setKeepAlive(true);
+            } else if (System.getProperty(IIOPSSLSocketFactory.SO_KEEPALIVE) != null
+                    && !Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE)
+                    && socket.getKeepAlive()) {
+                if (_logger.isLoggable(Level.FINER)) {
+                    _logger.log(Level.FINER, "Disabling SO_KEEPALIVE");
+                }
+                socket.setKeepAlive(false);
+            }
         } catch (SocketException ex) {
             throw new RuntimeException(ex);
         }
