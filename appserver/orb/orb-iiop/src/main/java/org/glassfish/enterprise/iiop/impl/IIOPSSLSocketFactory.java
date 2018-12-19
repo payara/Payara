@@ -384,7 +384,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             socket.setTcpNoDelay(true);
 
             // Enable or disable SO_KEEPALIVE for the socket as required
-            if (Boolean.getBoolean(IIOPSSLSocketFactory.SO_KEEPALIVE) && !socket.getKeepAlive()) {
+            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
                 if (_logger.isLoggable(Level.FINER)) {
                     _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
                 }
