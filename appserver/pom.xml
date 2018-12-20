@@ -168,6 +168,7 @@
 
         <!-- JAF -->
         <javax.activation-api.version>1.2.0</javax.activation-api.version>
+        <javax.activation-impl.version>1.2.0</javax.activation-impl.version>
 
         <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
 
@@ -1149,6 +1150,11 @@
                 <groupId>javax.activation</groupId>
                 <artifactId>javax.activation-api</artifactId>
                 <version>${javax.activation-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>javax.activation</artifactId>
+                <version>${javax.activation-impl.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
