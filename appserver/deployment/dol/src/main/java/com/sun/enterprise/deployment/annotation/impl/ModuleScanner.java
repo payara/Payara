@@ -44,7 +44,9 @@ package com.sun.enterprise.deployment.annotation.impl;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.JavaEEScanner;
@@ -81,14 +83,11 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     protected ClassLoader classLoader = null;
     protected Parser classParser = null;
 
-    private Set<URI> scannedURI = new HashSet<URI>();
+    private Set<URI> scannedURI = new HashSet<>();
 
     private boolean needScanAnnotation = false;
 
-    @Inject
-    PayaraExecutorService executorService;
-    
-    private Set<String> entries = new HashSet<String>();
+    private Set<String> entries = new HashSet<>();
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
@@ -255,7 +254,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                                           jarFile.getPath() });
         }
     }
-    
+
     /**
      * This add all classes in given jarFile to be scanned.
      * @param jarURI
@@ -273,8 +272,8 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         if (needScanAnnotation) {
             classParser.parse(directory, null);
         }
-    } 
-    
+    }
+
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -287,13 +286,13 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             deplLogger.log(Level.SEVERE,
                            NO_CLASSLOADER);
             return elements;
-        }        
+        }
 
         for (String className : entries) {
             if (deplLogger.isLoggable(Level.FINE)) {
                 deplLogger.fine("Getting " + className);
             }
-            try {                
+            try {
                 elements.add(classLoader.loadClass(className));
             } catch (NoClassDefFoundError err) {
                 deplLogger.log(Level.WARNING,
@@ -312,13 +311,13 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     /**
-     * 
+     *
      * @param bundleDesc
-     * @param moduleArchive 
+     * @param moduleArchive
      */
-    protected void addLibraryJars(T bundleDesc, 
+    protected void addLibraryJars(T bundleDesc,
         ReadableArchive moduleArchive) {
-        List<URI> libraryURIs = new ArrayList<URI>(); 
+        List<URI> libraryURIs = new ArrayList<URI>();
         try {
             if (bundleDesc instanceof BundleDescriptor) {
                 libraryURIs = DOLUtils.getLibraryJarURIs((BundleDescriptor)bundleDesc, moduleArchive);
@@ -333,12 +332,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                 }
             }
         } catch (Exception ex) {
-            // we log a warning and proceed for any problems in 
+            // we log a warning and proceed for any problems in
             // adding library jars to the scan list
             deplLogger.log(Level.WARNING,
                            LIBRARY_JAR_ERROR,
                            ex.getMessage());
-        }       
+        }
     }
 
     @Override
@@ -351,10 +350,34 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             // if the passed in parser is null, it means no annotation scanning
             // has been done yet, we need to construct a new parser
             // and do the annotation scanning here
-            ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(executorService.getUnderlyingExecutorService()).build();
-            parser = new Parser(pc);
+            //ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(executorService.getUnderlyingExecutorService()).build();
+            parser = new MultiThreadedParser(
+                new ParsingContext.Builder().logger(deplLogger),
+                Executors.newFixedThreadPool(Math.min(3, Runtime.getRuntime().availableProcessors()))
+            );
             needScanAnnotation = true;
         }
         classParser = parser;
     }
+
+    /**
+     * Extends the {@link Parser} to allow multithreaded parsing and still shutdown the
+     * used {@link ExecutorService} when parser is closed.
+     */
+    private static class MultiThreadedParser extends Parser {
+
+        private final ExecutorService executor;
+
+        MultiThreadedParser(ParsingContext.Builder builder, ExecutorService executor) {
+            super(builder.executorService(executor).build());
+            this.executor = executor;
+        }
+
+        @Override
+        public void close() {
+            super.close();
+            executor.shutdown();
+        }
+    }
+
 }

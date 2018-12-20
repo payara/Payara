@@ -64,22 +64,16 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
                        ServiceReferenceContainer,
                        MessageDestinationReferenceContainer
 {
-    private Set environmentProperties;
-    private Set ejbReferences;
-    private Set resourceEnvReferences;
-    private Set messageDestReferences;
-    private Set resourceReferences;
-    private Set serviceReferences;
-    private Set<EntityManagerFactoryReferenceDescriptor>
-        entityManagerFactoryReferences =
-        new HashSet<EntityManagerFactoryReferenceDescriptor>();
-    private Set<EntityManagerReferenceDescriptor>
-        entityManagerReferences =
-        new HashSet<EntityManagerReferenceDescriptor>();
-    private Set<LifecycleCallbackDescriptor> postConstructDescs =
-        new HashSet<LifecycleCallbackDescriptor>();
-    private Set<LifecycleCallbackDescriptor> preDestroyDescs =
-        new HashSet<LifecycleCallbackDescriptor>();
+    private Set<EnvironmentProperty> environmentProperties;
+    private Set<EjbReference> ejbReferences;
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences;
+    private Set<MessageDestinationReferenceDescriptor> messageDestReferences;
+    private Set<ResourceReferenceDescriptor> resourceReferences;
+    private Set<ServiceReferenceDescriptor> serviceReferences;
+    private Set<EntityManagerFactoryReferenceDescriptor> entityManagerFactoryReferences = new HashSet<>();
+    private Set<EntityManagerReferenceDescriptor> entityManagerReferences = new HashSet<>();
+    private Set<LifecycleCallbackDescriptor> postConstructDescs = new HashSet<>();
+    private Set<LifecycleCallbackDescriptor> preDestroyDescs = new HashSet<>();
     private String mainClassName=null;
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ApplicationClientDescriptor.class);
@@ -91,13 +85,13 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     * object that must be saved.
     */
     public boolean hasRuntimeInformation() {
-	for (Iterator itr = this.getNamedDescriptors().iterator(); itr.hasNext();) {
-	    NamedDescriptor next = (NamedDescriptor) itr.next();
-	    if (!"".equals(next.getJndiName())) {
-		return true;
-	    }
-	}
-	return false;
+        for (Object o : this.getNamedDescriptors()) {
+            NamedDescriptor next = (NamedDescriptor) o;
+            if (!"".equals(next.getJndiName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -116,10 +110,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     * Return the fq Java clasname of this application client [{0}].
     */
     public String getMainClassName() {
-	if (this.mainClassName == null) {
+        if (this.mainClassName == null) {
             this.mainClassName = "";
-	}
-	return this.mainClassName;
+    	}
+	    return this.mainClassName;
     }
 
     /**
@@ -127,8 +121,7 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
 
     public void setMainClassName(String mainClassName) {
-	this.mainClassName = mainClassName;
-
+	    this.mainClassName = mainClassName;
     }
 
     /**
@@ -142,16 +135,15 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
      * Set the classname of the callback handler.
      */
      public void setCallbackHandler(String handler) {
-	callbackHandler = handler;
-
+	    callbackHandler = handler;
      }
 
     /**
     * Return the set of named descriptors I reference.
     */
 
-    public Collection getNamedDescriptors() {
-	return super.getNamedDescriptorsFrom(this);
+    public Collection<NamedDescriptor> getNamedDescriptors() {
+	    return super.getNamedDescriptorsFrom(this);
     }
 
     /**
@@ -164,11 +156,11 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     /**
     * Returns the set of environment properties of this app client.
     */
-    public Set getEnvironmentProperties() {
-	if (this.environmentProperties == null) {
-	    this.environmentProperties = new OrderedSet();
-	}
-	return this.environmentProperties = new OrderedSet(this.environmentProperties);
+    public Set<EnvironmentProperty> getEnvironmentProperties() {
+        if (this.environmentProperties == null) {
+            this.environmentProperties = new OrderedSet<>();
+        }
+        return this.environmentProperties;
     }
 
     /**
@@ -176,17 +168,15 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
      * throws an illegal argument exception if no such environment property exists.
      */
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
-	for (Iterator itr = this.getEnvironmentProperties().iterator();
-             itr.hasNext();) {
-	    EnvironmentProperty ev = (EnvironmentProperty) itr.next();
-	    if (ev.getName().equals(name)) {
-		return ev;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "enterprise.deployment.exceptionappclienthasnoenvpropertybyname",
-            "This application client [{0}] has no environment property by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (EnvironmentProperty ev : this.getEnvironmentProperties()) {
+            if (ev.getName().equals(name)) {
+                return ev;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclienthasnoenvpropertybyname",
+                "This application client [{0}] has no environment property by the name of [{1}]",
+                getName(), name));
     }
 
 
@@ -195,26 +185,24 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
 
     public void addEnvironmentProperty(EnvironmentProperty environmentProperty) {
-	this.getEnvironmentProperties().add(environmentProperty);
-
+	    this.getEnvironmentProperties().add(environmentProperty);
     }
 
     /**
     * Remove the given environment property
     */
     public void removeEnvironmentProperty(EnvironmentProperty environmentProperty) {
-	this.getEnvironmentProperties().remove(environmentProperty);
-
+	    this.getEnvironmentProperties().remove(environmentProperty);
     }
 
     /**
     * Return the set of references to ejbs that I have.
     */
-    public Set getEjbReferenceDescriptors() {
-	if (this.ejbReferences == null) {
-	    this.ejbReferences = new OrderedSet();
-	}
-	return this.ejbReferences = new OrderedSet(this.ejbReferences);
+    public Set<EjbReference> getEjbReferenceDescriptors() {
+        if (this.ejbReferences == null) {
+            this.ejbReferences = new OrderedSet<>();
+        }
+        return this.ejbReferences;
     }
 
     /**
@@ -225,9 +213,8 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     }
 
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
-	this.getEjbReferenceDescriptors().add(ejbReference);
+	    this.getEjbReferenceDescriptors().add(ejbReference);
         ejbReference.setReferringBundleDescriptor(this);
-
     }
 
     /**
@@ -238,9 +225,8 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     }
 
     public void removeEjbReferenceDescriptor(EjbReference ejbReference) {
-	this.getEjbReferenceDescriptors().remove(ejbReference);
-	ejbReference.setReferringBundleDescriptor(null);
-
+        this.getEjbReferenceDescriptors().remove(ejbReference);
+        ejbReference.setReferringBundleDescriptor(null);
     }
 
     public Set<LifecycleCallbackDescriptor>
@@ -248,8 +234,7 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
         return postConstructDescs;
     }
 
-    public void addPostConstructDescriptor(LifecycleCallbackDescriptor
-        postConstructDesc) {
+    public void addPostConstructDescriptor(LifecycleCallbackDescriptor postConstructDesc) {
         String className = postConstructDesc.getLifecycleCallbackClass();
         boolean found = false;
         for (LifecycleCallbackDescriptor next :
@@ -300,24 +285,22 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
         return getInjectionInfoByClass(clazz, this);
     }
 
-    public Set getServiceReferenceDescriptors() {
+    public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if( this.serviceReferences == null ) {
-            this.serviceReferences = new OrderedSet();
+            this.serviceReferences = new OrderedSet<>();
         }
-        return this.serviceReferences = new OrderedSet(this.serviceReferences);
+        return this.serviceReferences;
     }
 
     public void addServiceReferenceDescriptor(ServiceReferenceDescriptor
                                               serviceRef) {
         serviceRef.setBundleDescriptor(this);
         this.getServiceReferenceDescriptors().add(serviceRef);
-
     }
 
     public void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
                                                  serviceRef) {
         this.getServiceReferenceDescriptors().remove(serviceRef);
-
     }
 
     /**
@@ -325,81 +308,67 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
      * Throws an IllegalArgumentException if it is not found.
      */
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
-	for (Iterator itr = this.getServiceReferenceDescriptors().iterator();
-             itr.hasNext();) {
-	    ServiceReferenceDescriptor srd = (ServiceReferenceDescriptor)
-                itr.next();
-	    if (srd.getName().equals(name)) {
-		return srd;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "enterprise.deployment.exceptionappclienthasnoservicerefbyname",
-            "This application client [{0}] has no service reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (ServiceReferenceDescriptor srd : this.getServiceReferenceDescriptors()) {
+            if (srd.getName().equals(name)) {
+                return srd;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclienthasnoservicerefbyname",
+                "This application client [{0}] has no service reference by the name of [{1}]",
+                getName(), name));
     }
 
-    public Set getMessageDestinationReferenceDescriptors() {
+    public Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         if( this.messageDestReferences == null ) {
-            this.messageDestReferences = new OrderedSet();
+            this.messageDestReferences = new OrderedSet<>();
         }
-        return this.messageDestReferences =
-            new OrderedSet(this.messageDestReferences);
+        return this.messageDestReferences;
     }
 
     public void addMessageDestinationReferenceDescriptor
         (MessageDestinationReferenceDescriptor messageDestRef) {
         messageDestRef.setReferringBundleDescriptor(this);
-
         this.getMessageDestinationReferenceDescriptors().add(messageDestRef);
-
     }
 
     public void removeMessageDestinationReferenceDescriptor
         (MessageDestinationReferenceDescriptor msgDestRef) {
         this.getMessageDestinationReferenceDescriptors().remove(msgDestRef);
-
     }
 
     /**
      * Looks up an message destination reference with the given name.
      * Throws an IllegalArgumentException if it is not found.
      */
-    public MessageDestinationReferenceDescriptor
-        getMessageDestinationReferenceByName(String name) {
-	for (Iterator itr =
-                 this.getMessageDestinationReferenceDescriptors().iterator();
-             itr.hasNext();) {
-	    MessageDestinationReferenceDescriptor mdr =
-                (MessageDestinationReferenceDescriptor) itr.next();
-	    if (mdr.getName().equals(name)) {
-		return mdr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-		"exceptionappclienthasnomsgdestrefbyname",
-                "This application client [{0}] has no message destination reference by the name of [{1}]",
-                new Object[] {getName(), name}));
+    public MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name) {
+        for (MessageDestinationReferenceDescriptor mdr : this.getMessageDestinationReferenceDescriptors()) {
+            if (mdr.getName().equals(name)) {
+                return mdr;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+            "exceptionappclienthasnomsgdestrefbyname",
+                    "This application client [{0}] has no message destination reference by the name of [{1}]",
+                getName(), name));
     }
 
    /**
 	* Return the set of resource environment references this ejb declares.
 	*/
-    public Set getResourceEnvReferenceDescriptors() {
-	if (this.resourceEnvReferences == null) {
-	    this.resourceEnvReferences = new OrderedSet();
-	}
-	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
+    public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
+        if (this.resourceEnvReferences == null) {
+            this.resourceEnvReferences = new OrderedSet<>();
+        }
+        return this.resourceEnvReferences;
     }
 
     public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
-	this.getResourceEnvReferenceDescriptors().add(resourceEnvReference);
-
+	    this.getResourceEnvReferenceDescriptors().add(resourceEnvReference);
     }
 
     public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
-	this.getResourceEnvReferenceDescriptors().remove(resourceEnvReference);
-
+	    this.getResourceEnvReferenceDescriptors().remove(resourceEnvReference);
     }
 
     /**
@@ -407,16 +376,16 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     * if it is not found.
     */
     public EjbReferenceDescriptor getEjbReferenceByName(String name) {
-	for (Iterator itr = this.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-	    EjbReferenceDescriptor ejr = (EjbReferenceDescriptor) itr.next();
-	    if (ejr.getName().equals(name)) {
-		return ejr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "exceptionappclienthasnoejbrefbyname",
-            "This application client [{0}] has no ejb reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (EjbReference ejbReference : this.getEjbReferenceDescriptors()) {
+            EjbReferenceDescriptor ejr = (EjbReferenceDescriptor) ejbReference;
+            if (ejr.getName().equals(name)) {
+                return ejr;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "exceptionappclienthasnoejbrefbyname",
+                "This application client [{0}] has no ejb reference by the name of [{1}]",
+                getName(), name));
     }
 
     public Set<EntityManagerFactoryReferenceDescriptor>
@@ -428,26 +397,24 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
      * Return the entity manager factory reference descriptor corresponding to
      * the given name.
      */
-    public EntityManagerFactoryReferenceDescriptor
-        getEntityManagerFactoryReferenceByName(String name) {
+    public EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name) {
         for (EntityManagerFactoryReferenceDescriptor next :
-             getEntityManagerFactoryReferenceDescriptors()) {
+                getEntityManagerFactoryReferenceDescriptors()) {
 
             if (next.getName().equals(name)) {
                 return next;
             }
         }
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "exceptionappclienthasnoentitymgrfactoryrefbyname",
-            "This application client [{0}] has no entity manager factory reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "exceptionappclienthasnoentitymgrfactoryrefbyname",
+                "This application client [{0}] has no entity manager factory reference by the name of [{1}]",
+                getName(), name));
     }
 
     public void addEntityManagerFactoryReferenceDescriptor
         (EntityManagerFactoryReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerFactoryReferenceDescriptors().add(reference);
-
     }
 
     public Set<EntityManagerReferenceDescriptor>
@@ -461,17 +428,16 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
      */
     public EntityManagerReferenceDescriptor
         getEntityManagerReferenceByName(String name) {
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "exceptionappclienthasnoentitymgrrefbyname",
-            "This application client [{0}] has no entity manager reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "exceptionappclienthasnoentitymgrrefbyname",
+                "This application client [{0}] has no entity manager reference by the name of [{1}]",
+                getName(), name));
     }
 
     public void addEntityManagerReferenceDescriptor
         (EntityManagerReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerReferenceDescriptors().add(reference);
-
     }
 
     public List<InjectionCapable>
@@ -484,42 +450,40 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     * if it is not found.
     */
     public EjbReference getEjbReference(String name) {
-	for (Iterator itr = this.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-	    EjbReference ejr = (EjbReference) itr.next();
-	    if (ejr.getName().equals(name)) {
-		return ejr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-            "exceptionappclienthasnoejbrefbyname",
-            "This application client [{0}] has no ejb reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (EjbReference ejr : this.getEjbReferenceDescriptors()) {
+            if (ejr.getName().equals(name)) {
+                return ejr;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "exceptionappclienthasnoejbrefbyname",
+                "This application client [{0}] has no ejb reference by the name of [{1}]",
+                getName(), name));
     }
 
     /**
     * Return a resource environment reference by the same name or throw an IllegalArgumentException.
     */
     public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
-	for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
-	    ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
-	    if (jdr.getName().equals(name)) {
-		return jdr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-	    "enterprise.deployment.exceptionappclienthasnoesourceenvrefbyname",
-	    "This application client [{0}] has no resource environment reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (ResourceEnvReferenceDescriptor jdr : this.getResourceEnvReferenceDescriptors()) {
+            if (jdr.getName().equals(name)) {
+                return jdr;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclienthasnoesourceenvrefbyname",
+                "This application client [{0}] has no resource environment reference by the name of [{1}]",
+                getName(), name));
     }
 
     /**
     * Return the set of references to resources that I have.
     */
-    public Set getResourceReferenceDescriptors() {
-	if (this.resourceReferences == null) {
-	    this.resourceReferences = new OrderedSet();
-	}
-	return this.resourceReferences = new OrderedSet(this.resourceReferences);
+    public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
+        if (this.resourceReferences == null) {
+            this.resourceReferences = new OrderedSet<>();
+        }
+        return this.resourceReferences;
     }
 
     /**
@@ -527,16 +491,15 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     * if no such descriptor is found.
     */
     public ResourceReferenceDescriptor getResourceReferenceByName(String name) {
-	for (Iterator itr = this.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
-	    ResourceReferenceDescriptor rr = (ResourceReferenceDescriptor) itr.next();
-	    if (rr.getName().equals(name)) {
-		return rr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-	    "exceptionappclienthasnoresourcerefbyname",
-	    "This application client [{0}] has no resource reference by the name of [{1}]",
-            new Object[] {getName(), name}));
+        for (ResourceReferenceDescriptor rr : this.getResourceReferenceDescriptors()) {
+            if (rr.getName().equals(name)) {
+                return rr;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+            "exceptionappclienthasnoresourcerefbyname",
+            "This application client [{0}] has no resource reference by the name of [{1}]",
+                getName(), name));
     }
 
     /**
@@ -544,25 +507,21 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
 
     public void addResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
-	this.getResourceReferenceDescriptors().add(resourceReference);
-
+	    this.getResourceReferenceDescriptors().add(resourceReference);
     }
 
     /**
     * Removes the given resource reference from this app client.
     */
     public void removeResourceReferenceDescriptor(ResourceReferenceDescriptor resourceReference) {
-	this.getResourceReferenceDescriptors().remove(resourceReference);
-
+	    this.getResourceReferenceDescriptors().remove(resourceReference);
     }
 
     /**
      * @return a set of class names that need to have full annotation processing
      */
     public Set<String> getComponentClassNames() {
-        Set set = new HashSet<String>();
-        set.add(getMainClassName());
-        return set;
+        return Collections.singleton(getMainClassName());
     }
 
 
@@ -582,10 +541,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 
     public void print(StringBuilder toStringBuffer) {
         toStringBuffer.append("Application Client Descriptor");
-	toStringBuffer.append("\n ");
+	    toStringBuffer.append("\n ");
         super.print(toStringBuffer);
-	toStringBuffer.append("\n environmentProperties ").append(environmentProperties);
-	toStringBuffer.append("\n ejbReferences ");
+	    toStringBuffer.append("\n environmentProperties ").append(environmentProperties);
+	    toStringBuffer.append("\n ejbReferences ");
         if(ejbReferences != null)
             printDescriptorSet(ejbReferences,toStringBuffer);
         toStringBuffer.append("\n resourceEnvReferences ");
@@ -594,14 +553,15 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
         toStringBuffer.append("\n messageDestReferences ");
         if(messageDestReferences != null)
             printDescriptorSet(messageDestReferences,toStringBuffer);
-	toStringBuffer.append("\n resourceReferences ");
+	    toStringBuffer.append("\n resourceReferences ");
         if(resourceReferences != null)
             printDescriptorSet(resourceReferences,toStringBuffer);
         toStringBuffer.append("\n serviceReferences ");
         if(serviceReferences != null)
             printDescriptorSet(serviceReferences,toStringBuffer);
-	toStringBuffer.append("\n mainClassName ").append(mainClassName);
+	    toStringBuffer.append("\n mainClassName ").append(mainClassName);
     }
+
     private void printDescriptorSet(Set descSet, StringBuilder sbuf){
         for (Object obj : descSet) {
             if (obj instanceof Descriptor)
@@ -657,7 +617,6 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     public void setJavaWebStartAccessDescriptor(JavaWebStartAccessDescriptor descr) {
         descr.setBundleDescriptor(this);
         jwsAccessDescriptor = descr;
-
     }
 
     /**
@@ -680,12 +639,12 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
                 throw new UnsupportedOperationException(localStrings.getLocalString(
                             "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
                             "The application client [{0}] do not support connection factory definitions",
-                                new Object[] {getName()}));
+                        getName()));
             case AODD:
                 throw new UnsupportedOperationException(localStrings.getLocalString(
                             "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
                             "The application client [{0}] do not support administered object definitions",
-                                new Object[] {getName()}));
+                        getName()));
 
         }
         return super.getResourceDescriptors(type);
@@ -696,14 +655,14 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 
         if(descriptor.getResourceType().equals(JavaEEResourceType.CFD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
-            			    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
-            			    "The application client [{0}] do not support connection factory definitions",
-            		            new Object[] {getName()}));
+                    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
+                    "The application client [{0}] do not support connection factory definitions",
+                    getName()));
         } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
             throw new UnsupportedOperationException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
-                            "The application client [{0}] do not support administered object definitions",
-                                new Object[] {getName()}));
+                    "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                    "The application client [{0}] do not support administered object definitions",
+                    getName()));
 
         } else {
             super.addResourceDescriptor(descriptor);
@@ -715,15 +674,15 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     public void removeResourceDescriptor(ResourceDescriptor descriptor) {
         if(descriptor.getResourceType().equals(JavaEEResourceType.CFD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
-            			    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
-            			    "The application client [{0}] do not support connection factory definitions",
-            		            new Object[] {getName()}));
+                    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
+                    "The application client [{0}] do not support connection factory definitions",
+                    getName()));
 
         } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
             throw new UnsupportedOperationException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
-                            "The application client [{0}] do not support administered object definitions",
-                                new Object[] {getName()}));
+                    "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                    "The application client [{0}] do not support administered object definitions",
+                    getName()));
         } else {
             super.removeResourceDescriptor(descriptor);
         }

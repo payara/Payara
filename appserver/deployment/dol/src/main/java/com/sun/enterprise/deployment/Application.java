@@ -111,7 +111,7 @@ public class Application extends CommonResourceBundleDescriptor
     private String generatedXMLDir;
 
     // Set of modules in this application
-    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<ModuleDescriptor<BundleDescriptor>>();
+    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<>();
 
     // True if unique id has been set.  Allows callers to avoid
     // applying unique ids to subcomponents multiple times.
@@ -1142,7 +1142,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (type==null) {
             throw new IllegalArgumentException("type cannot be null");
         }
-        LinkedList<ModuleDescriptor<BundleDescriptor>> results = new LinkedList<ModuleDescriptor<BundleDescriptor>>();
+        List<ModuleDescriptor<BundleDescriptor>> results = new LinkedList<>();
         for (ModuleDescriptor<BundleDescriptor> aModule : getModules()) {
             if (type.equals(aModule.getModuleType())) {
                 results.add(aModule);
@@ -1279,7 +1279,7 @@ public class Application extends CommonResourceBundleDescriptor
         }
         Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
         for (ModuleDescriptor aModule : getModules()) {
-            if (aModule.getDescriptor().getModuleType()== bundleType) {
+            if (bundleType.equals(aModule.getDescriptor().getModuleType())) {
                 bundleSet.add((BundleDescriptor)aModule.getDescriptor());
             }
             for (RootDeploymentDescriptor rd : aModule.getDescriptor().getExtensionsDescriptors()) {
@@ -1341,8 +1341,8 @@ public class Application extends CommonResourceBundleDescriptor
     /**
      * Return the list of ejb deployment objects.
      *
-     * This method is referenced by {@link org.glassfish.osgiejb.OSGiEJBDeployer.EJBTracker}
-     * and its signature may change.
+     * This methods signature may not change because it is referenced
+     * by {@link org.glassfish.osgiejb.OSGiEJBDeployer.EJBTracker}
      */
     public Vector<EjbDescriptor> getEjbDescriptors() {
         Vector<EjbDescriptor> ejbDescriptors = new Vector<>();

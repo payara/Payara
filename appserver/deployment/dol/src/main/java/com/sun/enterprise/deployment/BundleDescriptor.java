@@ -396,19 +396,19 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Utility method for iterating the set of named descriptors in the supplied nameEnvironment
      */
-    protected Collection getNamedDescriptorsFrom(JndiNameEnvironment nameEnvironment) {
-        Collection namedDescriptors = new ArrayList();
-        for (Iterator itr = nameEnvironment.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
-            ResourceReferenceDescriptor resourceReference = (ResourceReferenceDescriptor) itr.next();
+    protected Collection<NamedDescriptor> getNamedDescriptorsFrom(JndiNameEnvironment nameEnvironment) {
+        Collection<NamedDescriptor> namedDescriptors = new ArrayList<>();
+        for (Object o : nameEnvironment.getResourceReferenceDescriptors()) {
+            ResourceReferenceDescriptor resourceReference = (ResourceReferenceDescriptor) o;
             namedDescriptors.add(resourceReference);
         }
-        for (Iterator itr = nameEnvironment.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-            EjbReferenceDescriptor ejbReference = (EjbReferenceDescriptor) itr.next();
+        for (Object o : nameEnvironment.getEjbReferenceDescriptors()) {
+            EjbReferenceDescriptor ejbReference = (EjbReferenceDescriptor) o;
             namedDescriptors.add(ejbReference);
         }
-        for (Iterator itr = nameEnvironment.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+        for (Object o : nameEnvironment.getResourceEnvReferenceDescriptors()) {
             ResourceEnvReferenceDescriptor resourceEnvRef =
-                    (ResourceEnvReferenceDescriptor) itr.next();
+                    (ResourceEnvReferenceDescriptor) o;
             namedDescriptors.add(resourceEnvRef);
         }
 

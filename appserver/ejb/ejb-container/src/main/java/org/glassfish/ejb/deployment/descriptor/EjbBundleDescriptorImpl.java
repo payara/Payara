@@ -189,8 +189,8 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     /**
     * Return the set of NamedDescriptors that I have.
     */
-    public Collection getNamedDescriptors() {
-        Collection<EjbDescriptor> namedDescriptors = new ArrayList();
+    public Collection<NamedDescriptor> getNamedDescriptors() {
+        Collection<NamedDescriptor> namedDescriptors = new ArrayList<>();
         for (EjbDescriptor ejbDescriptor : getEjbs()) {
             namedDescriptors.add(ejbDescriptor);
             namedDescriptors.addAll(super.getNamedDescriptorsFrom(ejbDescriptor));

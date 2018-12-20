@@ -44,43 +44,35 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.EjbReferenceContainer;
 import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
 import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 /**
  * Contains information about jndiEnvironmentRefsGroup.
- */ 
+ */
 
 public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceDescriptor
         implements EjbReferenceContainer, ResourceReferenceContainer,
         MessageDestinationReferenceContainer, WritableJndiNameEnvironment
 {
-    private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(JndiEnvironmentRefsGroupDescriptor.class);
 
-    private static final Logger _logger = DOLUtils.getDefaultLogger();
-
-    protected Map<CallbackType,
-                Set<LifecycleCallbackDescriptor>> callbackDescriptors
-        = new HashMap<CallbackType, Set<LifecycleCallbackDescriptor>>();
+    private Map<CallbackType, Set<LifecycleCallbackDescriptor>> callbackDescriptors = new HashMap<>();
 
     protected BundleDescriptor bundleDescriptor;
 
-    protected Set environmentProperties;
-    protected Set ejbReferences;
-    protected Set resourceEnvReferences;
-    protected Set messageDestReferences;
-    protected Set resourceReferences;
-    protected Set serviceReferences;
-    protected Set<EntityManagerFactoryReferenceDescriptor> 
-        entityManagerFactoryReferences;
-    protected Set<EntityManagerReferenceDescriptor> 
-        entityManagerReferences;
+    private Set<EnvironmentProperty> environmentProperties;
+    private Set<EjbReference> ejbReferences;
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences;
+    private Set<MessageDestinationReferenceDescriptor> messageDestReferences;
+    private Set<ResourceReferenceDescriptor> resourceReferences;
+    private Set<ServiceReferenceDescriptor> serviceReferences;
+    private Set<EntityManagerFactoryReferenceDescriptor> entityManagerFactoryReferences;
+    private Set<EntityManagerReferenceDescriptor> entityManagerReferences;
 
     public void setBundleDescriptor(BundleDescriptor desc) {
         bundleDescriptor = desc;
@@ -93,14 +85,15 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     // callbacks
     public void addCallbackDescriptor(CallbackType type,
             LifecycleCallbackDescriptor llcDesc) {
-        Set<LifecycleCallbackDescriptor> llcDescs =
-            getCallbackDescriptors(type);
-        boolean found = false;       
-        for (LifecycleCallbackDescriptor llcD : llcDescs) {
-            if ((llcDesc.getLifecycleCallbackClass() != null) &&
-                llcDesc.getLifecycleCallbackClass().equals(
-                    llcD.getLifecycleCallbackClass())) {
-                found = true;
+        Set<LifecycleCallbackDescriptor> llcDescs = getCallbackDescriptors(type);
+        boolean found = false;
+        if (llcDesc.getLifecycleCallbackClass() != null) {
+            for (LifecycleCallbackDescriptor llcD : llcDescs) {
+                if ( llcDesc.getLifecycleCallbackClass().equals(
+                        llcD.getLifecycleCallbackClass())) {
+                    found = true;
+                    break;
+                }
             }
         }
 
@@ -109,7 +102,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         }
     }
 
-    public void addCallbackDescriptors(CallbackType type, 
+    public void addCallbackDescriptors(CallbackType type,
                                   Set<LifecycleCallbackDescriptor> lccSet) {
         for (LifecycleCallbackDescriptor lcc : lccSet) {
             addCallbackDescriptor(type, lcc);
@@ -117,19 +110,12 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     }
 
     public Set<LifecycleCallbackDescriptor> getCallbackDescriptors(
-            CallbackType type)
-    {
-        Set<LifecycleCallbackDescriptor> lccDescs =
-            callbackDescriptors.get(type);
-        if (lccDescs == null) {
-            lccDescs = new HashSet<LifecycleCallbackDescriptor>();
-            callbackDescriptors.put(type, lccDescs);
-        }
-        return lccDescs;
+            CallbackType type) {
+        return callbackDescriptors.computeIfAbsent(type, k -> new HashSet<>());
     }
 
     public boolean hasCallbackDescriptor(CallbackType type) {
-        return (getCallbackDescriptors(type).size() > 0);
+        return (!getCallbackDescriptors(type).isEmpty());
     }
 
     public void addPostConstructDescriptor(LifecycleCallbackDescriptor lcDesc) {
@@ -163,96 +149,88 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     }
 
     public EjbReference getEjbReference(String name) {
-	for (Iterator itr = this.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
-	    EjbReference er = (EjbReference) itr.next();
-	    if (er.getName().equals(name)) {
-		return er;   
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
+        for (EjbReference er : this.getEjbReferenceDescriptors()) {
+            if (er.getName().equals(name)) {
+                return er;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
                 "enterprise.deployment.exceptionhasnoejbrefbyname",
                 "This class has no ejb reference by the name of {0}",
-                new Object[] {name}));
+                name));
     }
 
-    public Set getEjbReferenceDescriptors() {
-	if (this.ejbReferences == null) {
-	    this.ejbReferences = new OrderedSet();
-	}
-	return this.ejbReferences = new OrderedSet(this.ejbReferences);
+    public Set<EjbReference> getEjbReferenceDescriptors() {
+        if (this.ejbReferences == null) {
+            this.ejbReferences = new OrderedSet<>();
+        }
+        return this.ejbReferences;
     }
 
     public void removeEjbReferenceDescriptor(EjbReference ejbReference) {
-	this.getEjbReferenceDescriptors().remove(ejbReference);
-	ejbReference.setReferringBundleDescriptor(null);
+        this.getEjbReferenceDescriptors().remove(ejbReference);
+        ejbReference.setReferringBundleDescriptor(null);
     }
 
     // message destination ref
     public void addMessageDestinationReferenceDescriptor(MessageDestinationReferenceDescriptor msgDestReference) {
         if( getBundleDescriptor() != null ) {
-            msgDestReference.setReferringBundleDescriptor
-                (getBundleDescriptor());
+            msgDestReference.setReferringBundleDescriptor(getBundleDescriptor());
         }
         this.getMessageDestinationReferenceDescriptors().add(msgDestReference);
     }
 
     public MessageDestinationReferenceDescriptor getMessageDestinationReferenceByName(String name) {
-	for (Iterator itr = 
-                 this.getMessageDestinationReferenceDescriptors().iterator(); 
-             itr.hasNext();) {
-	    MessageDestinationReferenceDescriptor mdr = 
-                (MessageDestinationReferenceDescriptor) itr.next();
-	    if (mdr.getName().equals(name)) {
-		return mdr;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionhasnomsgdestrefbyname",
-                "This class has no message destination reference by the name of {0}",
-                new Object[] {name}));
+        for (MessageDestinationReferenceDescriptor mdr : this.getMessageDestinationReferenceDescriptors()) {
+            if (mdr.getName().equals(name)) {
+                return mdr;
+            }
+        }
+    	throw new IllegalArgumentException(localStrings.getLocalString(
+            "enterprise.deployment.exceptionhasnomsgdestrefbyname",
+            "This class has no message destination reference by the name of {0}",
+            name));
     }
 
-    public Set getMessageDestinationReferenceDescriptors() {
+    public Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         if( this.messageDestReferences == null ) {
-            this.messageDestReferences = new OrderedSet();
+            this.messageDestReferences = new OrderedSet<>();
         }
-        return this.messageDestReferences = 
-            new OrderedSet(this.messageDestReferences);
+        return this.messageDestReferences;
     }
 
     public void removeMessageDestinationReferenceDescriptor
-        (MessageDestinationReferenceDescriptor msgDestRef) { 
+        (MessageDestinationReferenceDescriptor msgDestRef) {
         this.getMessageDestinationReferenceDescriptors().remove(msgDestRef);
     }
 
     // env property
     public void addEnvironmentProperty(EnvironmentProperty environmentProperty) {
-	this.getEnvironmentProperties().add(environmentProperty);
+	    this.getEnvironmentProperties().add(environmentProperty);
     }
 
-    public Set getEnvironmentProperties() {
-	if (this.environmentProperties == null) {
-	    this.environmentProperties = new OrderedSet();
-	}
-	return this.environmentProperties = new OrderedSet(this.environmentProperties);
+    public Set<EnvironmentProperty> getEnvironmentProperties() {
+        if (this.environmentProperties == null) {
+            this.environmentProperties = new OrderedSet<>();
+        }
+        return this.environmentProperties;
     }
 
     public EnvironmentProperty getEnvironmentPropertyByName(String name) {
-	for (Iterator itr = this.getEnvironmentProperties().iterator(); itr.hasNext();) {
-	    EnvironmentProperty ev = (EnvironmentProperty) itr.next();
-	    if (ev.getName().equals(name)) {
-		return ev;   
-	    }
-	}
+        for (EnvironmentProperty ev : this.getEnvironmentProperties()) {
+            if (ev.getName().equals(name)) {
+                return ev;
+            }
+        }
 	throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionhasnoenvpropertybyname",
-                "This class has no environment property by the name of {0}",
-                new Object[] {name}));
+            "enterprise.deployment.exceptionhasnoenvpropertybyname",
+            "This class has no environment property by the name of {0}",
+            name));
     }
 
     public void removeEnvironmentProperty(
 			EnvironmentProperty environmentProperty) {
-	this.getEnvironmentProperties().remove(environmentProperty);
+	    this.getEnvironmentProperties().remove(environmentProperty);
     }
 
     // service ref
@@ -262,26 +240,23 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
         this.getServiceReferenceDescriptors().add(serviceReference);
     }
 
-    public Set getServiceReferenceDescriptors() {
+    public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if( this.serviceReferences == null ) {
-            this.serviceReferences = new OrderedSet();
+            this.serviceReferences = new OrderedSet<>();
         }
-        return this.serviceReferences = new OrderedSet(this.serviceReferences);
+        return this.serviceReferences;
     }
 
     public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
-	for (Iterator itr = this.getServiceReferenceDescriptors().iterator(); 
-             itr.hasNext();) {
-	    ServiceReferenceDescriptor srd = (ServiceReferenceDescriptor) 
-                itr.next();
-	    if (srd.getName().equals(name)) {
-		return srd;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
+        for (ServiceReferenceDescriptor srd : this.getServiceReferenceDescriptors()) {
+            if (srd.getName().equals(name)) {
+                return srd;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
                 "enterprise.deployment.exceptionhasnoservicerefbyname",
                 "This class has no service reference by the name of {0}",
-                new Object[] {name}));
+                name));
     }
 
     public void removeServiceReferenceDescriptor(
@@ -292,27 +267,26 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     // resource ref
     public void addResourceReferenceDescriptor(
 			ResourceReferenceDescriptor resourceReference) {
-	this.getResourceReferenceDescriptors().add(resourceReference);
+	    this.getResourceReferenceDescriptors().add(resourceReference);
     }
 
-    public Set getResourceReferenceDescriptors() {
-	if (this.resourceReferences == null) {
-	    this.resourceReferences = new OrderedSet();
-	}
-	return this.resourceReferences = new OrderedSet(this.resourceReferences);
+    public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
+        if (this.resourceReferences == null) {
+            this.resourceReferences = new OrderedSet<>();
+        }
+        return this.resourceReferences;
     }
 
     public ResourceReferenceDescriptor getResourceReferenceByName(String name) {
-	for (Iterator itr = this.getResourceReferenceDescriptors().iterator(); itr.hasNext();) {
-	    ResourceReferenceDescriptor next = (ResourceReferenceDescriptor) itr.next();
-	    if (next.getName().equals(name)) {
-		return next;   
-	    }
-	}
+        for (ResourceReferenceDescriptor next : this.getResourceReferenceDescriptors()) {
+            if (next.getName().equals(name)) {
+                return next;
+            }
+        }
 	throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionhasnoresourcerefbyname",
-                "This class has no resource reference by the name of {0}",
-                new Object[] {name}));
+            "enterprise.deployment.exceptionhasnoresourcerefbyname",
+            "This class has no resource reference by the name of {0}",
+            name));
     }
 
     public void removeResourceReferenceDescriptor(
@@ -323,35 +297,34 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
     // resource environment ref
     public void addResourceEnvReferenceDescriptor(
 		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
-	this.getResourceEnvReferenceDescriptors().add(resourceEnvinationReference);
+	    this.getResourceEnvReferenceDescriptors().add(resourceEnvinationReference);
     }
 
-    public Set getResourceEnvReferenceDescriptors() {
-	if (this.resourceEnvReferences == null) {
-	    this.resourceEnvReferences = new OrderedSet();
-	}
-	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
+    public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
+        if (this.resourceEnvReferences == null) {
+            this.resourceEnvReferences = new OrderedSet<>();
+        }
+        return this.resourceEnvReferences;
     }
 
     public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
-	for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
-	    ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
-	    if (jdr.getName().equals(name)) {
-		return jdr;   
-	    }
-	}
+        for (ResourceEnvReferenceDescriptor jdr : this.getResourceEnvReferenceDescriptors()) {
+            if (jdr.getName().equals(name)) {
+                return jdr;
+            }
+        }
 	throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionhasnoresourceenvrefbyname",
-                "This class has no resource environment reference by the name of {0}",
-                new Object[] {name}));
+            "enterprise.deployment.exceptionhasnoresourceenvrefbyname",
+            "This class has no resource environment reference by the name of {0}",
+            name));
     }
 
     public void removeResourceEnvReferenceDescriptor(
 		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
-	this.getResourceEnvReferenceDescriptors().remove(resourceEnvinationReference);
+	    this.getResourceEnvReferenceDescriptors().remove(resourceEnvinationReference);
     }
 
-    // entity manager factory ref 
+    // entity manager factory ref
     public void addEntityManagerFactoryReferenceDescriptor(
                 EntityManagerFactoryReferenceDescriptor reference) {
         if( getBundleDescriptor() != null ) {
@@ -363,24 +336,21 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 
     public Set<EntityManagerFactoryReferenceDescriptor> getEntityManagerFactoryReferenceDescriptors() {
         if( this.entityManagerFactoryReferences == null ) {
-            this.entityManagerFactoryReferences = 
-                new HashSet<EntityManagerFactoryReferenceDescriptor>();
+            this.entityManagerFactoryReferences = new HashSet<>();
         }
-        return entityManagerFactoryReferences; 
+        return entityManagerFactoryReferences;
     }
 
     public EntityManagerFactoryReferenceDescriptor getEntityManagerFactoryReferenceByName(String name) {
-	for (EntityManagerFactoryReferenceDescriptor next :
-             getEntityManagerFactoryReferenceDescriptors()) {
-
-	    if (next.getName().equals(name)) {
-		return next;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
+        for (EntityManagerFactoryReferenceDescriptor next : getEntityManagerFactoryReferenceDescriptors()) {
+            if (next.getName().equals(name)) {
+                return next;
+            }
+    	}
+        throw new IllegalArgumentException(localStrings.getLocalString(
                 "enterprise.deployment.exceptionhasnoentitymgrfactoryrefbyname",
                 "This class has no entity manager factory reference by the name of {0}",
-                new Object[] {name}));
+                name));
     }
 
     //  entity manager ref
@@ -395,29 +365,26 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceD
 
     public Set<EntityManagerReferenceDescriptor> getEntityManagerReferenceDescriptors() {
         if( this.entityManagerReferences == null ) {
-            this.entityManagerReferences = 
-                new HashSet<EntityManagerReferenceDescriptor>();
+            this.entityManagerReferences = new HashSet<>();
         }
-        return entityManagerReferences; 
+        return entityManagerReferences;
     }
 
     public EntityManagerReferenceDescriptor getEntityManagerReferenceByName(String name) {
-	for (EntityManagerReferenceDescriptor next :
-             getEntityManagerReferenceDescriptors()) {
-
-	    if (next.getName().equals(name)) {
-		return next;
-	    }
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
+        for (EntityManagerReferenceDescriptor next : getEntityManagerReferenceDescriptors()) {
+            if (next.getName().equals(name)) {
+                return next;
+            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
                 "enterprise.deployment.exceptionhasnoentitymgrrefbyname",
                 "This class has no entity manager reference by the name of {0}",
-                new Object[] {name}));
+                name));
     }
 
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         throw new UnsupportedOperationException();
-    }    
+    }
 
     public InjectionInfo getInjectionInfoByClass(Class clazz) {
         throw new UnsupportedOperationException();
