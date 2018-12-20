@@ -194,6 +194,7 @@
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-client</jvm-options>
+        <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
         <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
         <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
         <jvm-options>--illegal-access=permit</jvm-options>
@@ -394,6 +395,7 @@
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-server</jvm-options>
+             <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
              <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
              <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
              <jvm-options>--illegal-access=permit</jvm-options>
