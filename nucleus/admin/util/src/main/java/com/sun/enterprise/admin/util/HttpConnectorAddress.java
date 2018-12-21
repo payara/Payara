@@ -57,6 +57,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 
 public final class HttpConnectorAddress {
@@ -64,7 +68,7 @@ public final class HttpConnectorAddress {
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
-    private static final String DEFAULT_PROTOCOL = "TLSv1.2";
+    private static final String DEFAULT_PROTOCOL = TLS13;
 
     private String host;
     private int    port;
@@ -180,19 +184,25 @@ public final class HttpConnectorAddress {
                 String clientHttpsProtocol = System.getProperty("fish.payara.clientHttpsProtocol");
                 if (clientHttpsProtocol != null) {
                     switch (clientHttpsProtocol) {
-                        case "TLSv1": protocol = "TLSV1";
+                        case TLS1: protocol = TLS1;
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                         
-                        case "TLSv1.1": protocol = "TLSv1.1";
+                        case TLS11: protocol = TLS11;
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                                         
-                        case "TLSv1.2": protocol = "TLSv1.2";
+                        case TLS12: protocol = TLS12;
+                                        logger.log(Level.FINE,
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+
+                        case TLS13: protocol = TLS13;
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);

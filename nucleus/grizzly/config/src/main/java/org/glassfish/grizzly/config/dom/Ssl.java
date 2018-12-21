@@ -60,6 +60,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean TLS_ENABLED = true;
     boolean TLS11_ENABLED = true;
     boolean TLS12_ENABLED = true;
+    boolean TLS13_ENABLED = true;
     boolean TLS_ROLLBACK_ENABLED = true;
     boolean RENEGOTIATE_ON_CLIENT_AUTH_WANT = true;
     int MAX_CERT_LENGTH = 5;
@@ -70,6 +71,16 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String SSL2_CIPHERS_PATTERN =
             "((\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3)(\\s*,\\s*(\\+|\\-)(rc2|rc2export|rc4|rc4export|idea|des|desede3))*)*";
     long HANDSHAKE_TIMEOUT_MILLIS = -1;
+
+    String TLS13 = "TLSv1.3";
+    String TLS12 = "TLSv1.2";
+    String TLS11 = "TLSv1.1";
+    String TLS1 = "TLSv1";
+    String TLS = "TLS";
+    String SSL3 = "SSLv3";
+    String SSL2 = "SSLv2";
+    String SSL = "SSL";
+    String SSL2_HELLO = "SSLv2Hello";
 
     /**
      * Nickname of the server certificate in the certificate database or the PKCS#11 token. In the certificate, the name
@@ -208,6 +219,14 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getTls12Enabled();
 
     void setTls12Enabled(String value);
+
+    /**
+     * Determines whether TLS 1.3 is enabled.
+     */
+    @Attribute(defaultValue = "" + TLS13_ENABLED, dataType = Boolean.class)
+    String getTls13Enabled();
+
+    void setTls13Enabled(String value);
 
     /**
      * Determines whether TLS rollback is enabled. TLS rollback should be enabled for Microsoft Internet Explorer 5.0
