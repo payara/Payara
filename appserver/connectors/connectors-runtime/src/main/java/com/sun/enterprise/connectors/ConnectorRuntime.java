@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.*;
