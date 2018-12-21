@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.*;
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEventListener;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.connectors.authentication.AuthenticationService;
 import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
