@@ -37,201 +37,167 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
 
-package com.sun.enterprise.security.perms;
-
-import java.security.Permission;
 import java.io.FilePermission;
+import java.net.URL;
+import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Enumeration;
-import java.net.URL;
 
-import junit.framework.Assert;
-
-import org.junit.Test;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
-//import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
-
-public class SMGlobalPolicyUtilTest {
+public class GlobalPolicyUtilTest {
 
     private static final String plfile = "server.policy";
-    
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        URL serverPF = SMGlobalPolicyUtilTest.class.getResource(plfile);
+        URL serverPF = GlobalPolicyUtilTest.class.getResource(plfile);
         System.out.println("policy file url = " + serverPF + ", path = " + serverPF.getPath());
-        System.setProperty(SMGlobalPolicyUtil.SYS_PROP_JAVA_SEC_POLICY, serverPF.getPath());
+        System.setProperty(GlobalPolicyUtil.SYS_PROP_JAVA_SEC_POLICY, serverPF.getPath());
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        
-    }
-
-    
     @Test
     public void testSystemPolicyPath() {
-        
-        System.out.println("path= " + SMGlobalPolicyUtil.domainCfgFolder);
-       
-        Assert.assertNotNull(SMGlobalPolicyUtil.domainCfgFolder);
+        System.out.println("path= " + GlobalPolicyUtil.domainCfgFolder);
+
+        Assert.assertNotNull(GlobalPolicyUtil.domainCfgFolder);
     }
-    
-    @Test    
+
+    @Test
     public void testTYpeConvert() {
-        
-        SMGlobalPolicyUtil.CommponentType t = SMGlobalPolicyUtil.convertComponentType("ejb");
+        CommponentType t = GlobalPolicyUtil.convertComponentType("ejb");
         System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be Ejb", SMGlobalPolicyUtil.CommponentType.ejb, t);
-        
-        t = SMGlobalPolicyUtil.convertComponentType("ear");
+        Assert.assertEquals("Converted type should be Ejb", CommponentType.ejb, t);
+
+        t = GlobalPolicyUtil.convertComponentType("ear");
         System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be ear", SMGlobalPolicyUtil.CommponentType.ear, t);
-        
-        t = SMGlobalPolicyUtil.convertComponentType("war");
+        Assert.assertEquals("Converted type should be ear", CommponentType.ear, t);
+
+        t = GlobalPolicyUtil.convertComponentType("war");
         System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be web", SMGlobalPolicyUtil.CommponentType.war, t);
-        
-        t = SMGlobalPolicyUtil.convertComponentType("rar");
+        Assert.assertEquals("Converted type should be web", CommponentType.war, t);
+
+        t = GlobalPolicyUtil.convertComponentType("rar");
         System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be rar", SMGlobalPolicyUtil.CommponentType.rar, t);
-        
-        t = SMGlobalPolicyUtil.convertComponentType("car");
+        Assert.assertEquals("Converted type should be rar", CommponentType.rar, t);
+
+        t = GlobalPolicyUtil.convertComponentType("car");
         System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be car", SMGlobalPolicyUtil.CommponentType.car, t);
-        
-        
-        
+        Assert.assertEquals("Converted type should be car", CommponentType.car, t);
+
         try {
-            t = SMGlobalPolicyUtil.convertComponentType("");
+            t = GlobalPolicyUtil.convertComponentType("");
             Assert.fail();
         } catch (IllegalArgumentException e) {
-            
+
         }
-        
+
         try {
-            t = SMGlobalPolicyUtil.convertComponentType("bla");
+            t = GlobalPolicyUtil.convertComponentType("bla");
             Assert.fail();
         } catch (IllegalArgumentException e) {
-            
+
         }
-        
+
         try {
-            t = SMGlobalPolicyUtil.convertComponentType(null);
+            t = GlobalPolicyUtil.convertComponentType(null);
             Assert.fail();
         } catch (NullPointerException e) {
-            
+
         }
-        
     }
-    
-    
+
     @Test
     public void testPolicyLoading() {
         System.out.println("Starting testDefPolicy loading - ee");
 
-        PermissionCollection defEjbGrantededPC 
-            = SMGlobalPolicyUtil.getEECompGrantededPerms(SMGlobalPolicyUtil.CommponentType.ejb);
+        PermissionCollection defEjbGrantededPC = GlobalPolicyUtil.getEECompGrantededPerms(CommponentType.ejb);
         int count = dumpPermissions("Grant", "Ejb", defEjbGrantededPC);
         Assert.assertEquals(5, count);
-        
-        PermissionCollection defWebGrantededPC 
-            = SMGlobalPolicyUtil.getEECompGrantededPerms(SMGlobalPolicyUtil.CommponentType.war);
+
+        PermissionCollection defWebGrantededPC = GlobalPolicyUtil.getEECompGrantededPerms(CommponentType.war);
         count = dumpPermissions("Grant", "Web", defWebGrantededPC);
         Assert.assertEquals(6, count);
-                
-        PermissionCollection defRarGrantededPC 
-            = SMGlobalPolicyUtil.getEECompGrantededPerms(SMGlobalPolicyUtil.CommponentType.rar); 
-        count = dumpPermissions("Grant", "Rar", defRarGrantededPC);        
+
+        PermissionCollection defRarGrantededPC = GlobalPolicyUtil.getEECompGrantededPerms(CommponentType.rar);
+        count = dumpPermissions("Grant", "Rar", defRarGrantededPC);
         Assert.assertEquals(5, count);
-        
-        PermissionCollection defClientGrantededPC 
-            = SMGlobalPolicyUtil.getEECompGrantededPerms(SMGlobalPolicyUtil.CommponentType.car);
+
+        PermissionCollection defClientGrantededPC = GlobalPolicyUtil.getEECompGrantededPerms(CommponentType.car);
         count = dumpPermissions("Grant", "Client", defClientGrantededPC);
         Assert.assertEquals(10, count);
-        
+
         System.out.println("Starting testDefPolicy loading - ee restrict");
-        
-        PermissionCollection defEjbRestrictedPC 
-            = SMGlobalPolicyUtil.getCompRestrictedPerms(SMGlobalPolicyUtil.CommponentType.ejb);
+
+        PermissionCollection defEjbRestrictedPC = GlobalPolicyUtil.getCompRestrictedPerms(CommponentType.ejb);
         count = dumpPermissions("Restricted", "Ejb", defEjbRestrictedPC);
-        Assert.assertEquals(2, count);        
-        
-        PermissionCollection defWebRestrictedPC 
-            = SMGlobalPolicyUtil.getCompRestrictedPerms(SMGlobalPolicyUtil.CommponentType.war);
+        Assert.assertEquals(2, count);
+
+        PermissionCollection defWebRestrictedPC = GlobalPolicyUtil.getCompRestrictedPerms(CommponentType.war);
         count = dumpPermissions("Restricted", "Web", defWebRestrictedPC);
         Assert.assertEquals(2, count);
 
-        PermissionCollection defRarRestrictedPC 
-            = SMGlobalPolicyUtil.getCompRestrictedPerms(SMGlobalPolicyUtil.CommponentType.rar);
+        PermissionCollection defRarRestrictedPC = GlobalPolicyUtil.getCompRestrictedPerms(CommponentType.rar);
         count = dumpPermissions("Restricted", "Rar", defRarRestrictedPC);
         Assert.assertEquals(1, count);
-        
-        PermissionCollection defClientRestrictedPC        
-            = SMGlobalPolicyUtil.getCompRestrictedPerms(SMGlobalPolicyUtil.CommponentType.car);
+
+        PermissionCollection defClientRestrictedPC = GlobalPolicyUtil.getCompRestrictedPerms(CommponentType.car);
         count = dumpPermissions("Restricted", "Client", defClientRestrictedPC);
         Assert.assertEquals(2, count);
-        
     }
-    
-    
+
     @Test
     public void testFilePermission() {
-        
         System.out.println("Starting testFilePermission");
 
-        
-        
         FilePermission fp1 = new FilePermission("-", "delete");
         FilePermission fp2 = new FilePermission("a/file.txt", "delete");
-        
+
         Assert.assertTrue(fp1.implies(fp2));
-        
+
         FilePermission fp3 = new FilePermission("*", "delete");
         FilePermission fp4 = new FilePermission("file.txt", "delete");
-        
+
         Assert.assertTrue(fp3.implies(fp4));
-        
-        
+
         FilePermission fp5 = new FilePermission("/scratch/xyz/*", "delete");
         FilePermission fp6 = new FilePermission("/scratch/xyz/deleteit.txt", "delete");
-        
+
         Assert.assertTrue(fp5.implies(fp6));
-        
 
         FilePermission fp7 = new FilePermission("/scratch/xyz/", "delete");
         FilePermission fp8 = new FilePermission("/scratch/xyz", "delete");
-        
+
         Assert.assertTrue(fp7.implies(fp8));
 
-        
         Permission fp9 = new java.security.UnresolvedPermission("VoidPermission", "", "", null);
         Permission fp10 = new java.security.AllPermission();
-        
+
         Assert.assertTrue(fp10.implies(fp9));
         Assert.assertTrue(!fp9.implies(fp10));
     }
-    
+
     private int dumpPermissions(String type, String component, PermissionCollection pc) {
-        
         int count = 0;
-        
+
         if (pc == null) {
-            System.out.println("Type= " + type + ", compnent= " + component  + ", Permission is empty ");
+            System.out.println("Type= " + type + ", compnent= " + component + ", Permission is empty ");
             return count;
         }
-        
-        
-        Enumeration<Permission> pen =  pc.elements();
+
+        Enumeration<Permission> pen = pc.elements();
         while (pen.hasMoreElements()) {
-            Permission p = pen.nextElement(); 
-            System.out.println("Type= " + type + ", compnent= " + component  + ", Permission p= " + p);
+            Permission p = pen.nextElement();
+            System.out.println("Type= " + type + ", compnent= " + component + ", Permission p= " + p);
             count += 1;
         }
-        
+
         return count;
     }
-    
+
 }

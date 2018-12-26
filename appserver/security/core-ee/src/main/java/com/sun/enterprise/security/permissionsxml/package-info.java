@@ -40,60 +40,16 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package org.glassfish.web.deployment.node.runtime.gf;
-
-import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
-import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
-import static com.sun.enterprise.deployment.xml.RuntimeTagNames.PAYARA_WEB_RUNTIME_TAG;
-
-import java.util.List;
-import java.util.Map;
-
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-
-import com.sun.enterprise.deployment.node.XMLElement;
 
 /**
- * This class is responsible for handling payara-web.xml in the web bundle
+ * This package contains the core classes for supporting the "permissions.xml"
+ * functionality of Java EE.
  * 
- * @author jonathan coustick
+ * Via this descriptor applications can declare their Java SE permissions
+ * requirements.
+ * 
+ * For more info, see:
+ * 
+ * https://web.archive.org/web/20160826055213/https://blogs.oracle.com/SecuritEE/entry/java_ee_7_permission_declarations
  */
-public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
-
-    public PayaraWebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
-        super(descriptor);
-    }
-
-    public PayaraWebBundleRuntimeNode() {
-        super(null);
-    }
-
-    @Override
-    protected XMLElement getXMLRootTag() {
-        return new XMLElement(PAYARA_WEB_RUNTIME_TAG);
-    }
-
-    @Override
-    public String getDocType() {
-        return PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
-    }
-
-    @Override
-    public String getSystemID() {
-        return PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
-    }
-
-    /**
-     * register this node as a root node capable of loading entire DD files
-     * 
-     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
-     * @param versionUpgrades The list of upgrades from older versions to the latest schema
-     * @return the doctype tag name
-     */
-    public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
-        publicIDToDTD.put(PAYARA_WEBAPP_4_DTD_PUBLIC_ID, PAYARA_WEBAPP_4_DTD_SYSTEM_ID);
-
-        return PAYARA_WEB_RUNTIME_TAG;
-    }
-
-}
+package com.sun.enterprise.security.permissionsxml;

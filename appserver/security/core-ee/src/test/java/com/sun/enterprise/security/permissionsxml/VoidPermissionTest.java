@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
@@ -38,63 +38,44 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package org.glassfish.appclient.common;
+package com.sun.enterprise.security.permissionsxml;
 
-import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.checkRestriction;
-import static java.lang.System.getSecurityManager;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientDeclaredPermissions;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientEEPolicy;
-import static org.glassfish.appclient.common.PermissionsUtil.getClientRestrictPolicy;
 
-import java.io.IOException;
-import java.net.URLClassLoader;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
+import java.io.FilePermission;
+import java.security.AllPermission;
+import java.security.Permission;
 
-import com.sun.enterprise.security.integration.PermsHolder;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class ClientClassLoaderDelegate {
-
-    protected static final String PERMISSIONS_XML = "META-INF/permissions.xml";
-
-    private URLClassLoader classLoader;
-    private PermsHolder permHolder;
-
-    public ClientClassLoaderDelegate(URLClassLoader cl) {
-        this.classLoader = cl;
-        loadPemissions();
+public class VoidPermissionTest {
+    
+    @Test
+    public void testImpliedByAllPermission() {
+        Permission allPerm = new AllPermission();
+        VoidPermission vPerm = new VoidPermission();
+        
+        
+        Assert.assertTrue(allPerm.implies(vPerm));
+        Assert.assertTrue(!vPerm.implies(allPerm));
     }
-
-    private void loadPemissions() {
-        try {
-            processDeclaredPermissions();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    
+    @Test
+    public void testNotImplied() {
+        VoidPermission vPerm = new VoidPermission();
+        FilePermission fPerm = new FilePermission("/scratch/test/*", "read");
+        
+        Assert.assertTrue(!vPerm.implies(fPerm));
+        Assert.assertTrue(!fPerm.implies(vPerm));
     }
-
-    private void processDeclaredPermissions() throws IOException {
-        if (getSecurityManager() == null) {
-            return;
-        }
-
-        PermissionCollection declaredPermissionCollection = getClientDeclaredPermissions(classLoader);
-
-        PermissionCollection eePc = getClientEEPolicy(classLoader);
-        PermissionCollection eeRestriction = getClientRestrictPolicy(classLoader);
-
-        checkRestriction(eePc, eeRestriction);
-        checkRestriction(declaredPermissionCollection, eeRestriction);
-
-        permHolder = new PermsHolder(eePc, declaredPermissionCollection, eeRestriction);
+    
+    @Test
+    public void testNoImplySelf() {
+        VoidPermission vPerm1 = new VoidPermission();
+        VoidPermission vPerm2 = new VoidPermission();
+        
+        Assert.assertTrue(!vPerm1.implies(vPerm2));
+        Assert.assertTrue(!vPerm2.implies(vPerm1));
+        Assert.assertTrue(!vPerm1.implies(vPerm1));
     }
-
-    public PermissionCollection getCachedPerms(CodeSource codesource) {
-        return permHolder.getCachedPerms(codesource);
-    }
-
-    public PermissionCollection getPermissions(CodeSource codesource, PermissionCollection parentPC) {
-        return permHolder.getPermissions(codesource, parentPC);
-    }
-
 }

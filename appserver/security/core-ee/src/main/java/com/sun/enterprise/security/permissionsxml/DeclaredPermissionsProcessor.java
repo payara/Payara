@@ -38,35 +38,42 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.perms;
+package com.sun.enterprise.security.permissionsxml;
 
-import java.security.BasicPermission;
-import java.security.Permission;
+import java.security.PermissionCollection;
+import java.net.MalformedURLException;
 
-/**
- * a class used on permission restriction list to imply "No 'AllPermission' allowed" in permissions.xml.
- *
- * This permission can not imply any other permission
- */
-public class VoidPermission extends BasicPermission {
+import org.glassfish.api.deployment.DeploymentContext;
 
-    private static final long serialVersionUID = 5535516010244462567L;
+public class DeclaredPermissionsProcessor extends BasePermissionsProcessor {
 
-    public VoidPermission() {
-        this("VoidPermmission");
+    private PermissionCollection orginalDeclaredPermissions;
+    private PermissionCollection declaredPermissions;
+
+    public DeclaredPermissionsProcessor(CommponentType type, DeploymentContext context, PermissionCollection orginalDeclaredPermissions) throws SecurityException {
+        super(type, context);
+        this.orginalDeclaredPermissions = orginalDeclaredPermissions;
+        convertPathDeclaredPermissions();
     }
 
-    public VoidPermission(String name) {
-        super(name);
+    /**
+     * get the declared permissions which have the file path adjusted for the right module
+     * 
+     * @return adjusted declared permissions
+     */
+    public PermissionCollection getAdjustedDeclaredPermissions() {
+        return declaredPermissions;
     }
 
-    public VoidPermission(String name, String actions) {
-        super(name, actions);
-    }
+    // Convert the path for permissions
+    private void convertPathDeclaredPermissions() throws SecurityException {
 
-    @Override
-    public boolean implies(Permission permission) {
-        // always return false
-        return false;
+        // Revise the file permission's path
+        try {
+            declaredPermissions = processPermisssonsForPath(orginalDeclaredPermissions, context);
+        } catch (MalformedURLException e) {
+            throw new SecurityException(e);
+        }
+
     }
 }

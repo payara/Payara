@@ -22,6 +22,8 @@ nb-configuration.xml
 /appserver/tests/quicklook/*.output
 /appserver/tests/quicklook/*.log
 /appserver/tests/quicklook/**/*.war
+logging/target/test-events.log
+logging:target:test-events.log
 /nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 /nucleus/payara-modules/service-exemplar/nbproject/

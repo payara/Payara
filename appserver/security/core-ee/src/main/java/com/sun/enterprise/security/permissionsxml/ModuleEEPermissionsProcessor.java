@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
@@ -37,64 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
 
-package com.sun.enterprise.security.perms;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.getEECompGrantededPerms;
+import static java.util.logging.Level.FINE;
 
+import java.net.MalformedURLException;
+import java.security.PermissionCollection;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.glassfish.api.deployment.DeploymentContext;
 
-import java.security.AllPermission;
-import java.security.Permission;
-import java.io.FilePermission;
+public class ModuleEEPermissionsProcessor extends BasePermissionsProcessor {
 
-import junit.framework.Assert;
+    private PermissionCollection eePermissionCollection;
 
-public class VoidPermissionTest {
+    public ModuleEEPermissionsProcessor(CommponentType type, DeploymentContext context) throws SecurityException {
+        super(type, context);
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+        try {
+            convertEEPermissionPaths();
+        } catch (MalformedURLException e) {
+            throw new SecurityException(e);
+        }
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    /**
+     * Get the EE permissions which have the file path adjusted for the right module
+     * 
+     * @return adjusted EE permissions
+     */
+    public PermissionCollection getAdjustedEEPermission() {
+        return eePermissionCollection;
     }
 
-    
-    @Test
-    public void testImpliedByAllPermission() {
-        
-        Permission allPerm = new AllPermission();
-        
-        VoidPermission vPerm = new VoidPermission();
-        
-        
-        Assert.assertTrue(allPerm.implies(vPerm));
-        
-        Assert.assertTrue(!vPerm.implies(allPerm));
-    }
-    
-    
-    @Test
-    public void testNotImplied() {
-        
-        VoidPermission vPerm = new VoidPermission();
-        FilePermission fPerm = new FilePermission("/scratch/test/*", "read");
-        
-        Assert.assertTrue(!vPerm.implies(fPerm));
-        Assert.assertTrue(!fPerm.implies(vPerm));
+    // Convert the path for permissions
+    private void convertEEPermissionPaths() throws MalformedURLException {
+        // Get server suppled default policy and revise the file permission's path
+        eePermissionCollection = processPermisssonsForPath(getEECompGrantededPerms(type), context);
+
+        if (logger.isLoggable(FINE)) {
+            logger.fine("Revised permissions = " + eePermissionCollection);
+        }
     }
 
-    
-    @Test
-    public void testNoImplySelf() {
-        VoidPermission vPerm1 = new VoidPermission();
-        VoidPermission vPerm2 = new VoidPermission();
-        
-        Assert.assertTrue(!vPerm1.implies(vPerm2));
-        Assert.assertTrue(!vPerm2.implies(vPerm1));
-        
-        Assert.assertTrue(!vPerm1.implies(vPerm1));
-    }
 }
