@@ -333,12 +333,10 @@ public abstract class CollectionLeafResource extends AbstractResource {
             if ("target".equals(key) || "profiler".equals(key)) {
                 results.put(key, entry.getValue());
             } else {
-//                options.append(sep).append(escapeOptionPart(entry.getKey()));
                 options.append(sep).append(entry.getKey());
 
                 String value = entry.getValue();
-                if ((value != null) && (!value.isEmpty())) {
-//                    options.append("=").append(escapeOptionPart(entry.getValue()));
+                if (value != null && !value.isEmpty() || key != null && key.startsWith("-D")) {
                     options.append("=").append(entry.getValue());
                 }
                 sep = ":";
