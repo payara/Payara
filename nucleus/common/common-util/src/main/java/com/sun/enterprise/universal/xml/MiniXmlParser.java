@@ -399,15 +399,9 @@ public class MiniXmlParser {
     //
 
     private XMLInputFactory getXmlInputFactory() {
-        Class clazz = XMLInputFactory.class;
-        ClassLoader cl = clazz.getClassLoader();
 
-        // jdk6+
-        if (cl == null)
-            return XMLInputFactory.newInstance();
+        return XMLInputFactory.newInstance();
 
-        // jdk5
-        return XMLInputFactory.newInstance(clazz.getName(), cl);
     }
 
     private void getConfigRefName() throws XMLStreamException, EndDocumentException {

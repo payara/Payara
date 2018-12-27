@@ -178,8 +178,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
     class DomainXmlSecurityParser {
 
         XMLStreamReader xmlReader;
-        XMLInputFactory xif = (XMLInputFactory.class.getClassLoader() == null) ? XMLInputFactory.newInstance()
-                : XMLInputFactory.newInstance(XMLInputFactory.class.getName(), XMLInputFactory.class.getClassLoader());
+        XMLInputFactory xif = XMLInputFactory.newInstance();
 
         private static final String AUTH_REALM = "auth-realm";
         private static final String CONFIG = "config";
