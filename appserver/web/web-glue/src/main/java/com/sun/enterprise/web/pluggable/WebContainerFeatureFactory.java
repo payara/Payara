@@ -83,17 +83,6 @@ public interface WebContainerFeatureFactory {
     public String getDefaultAccessLogDateStampPattern();
 
     /**
-     * Returns true if the first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation.
-     *
-     * @return true if first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation. 
-     */
-    public boolean getAddDateStampToFirstAccessLogFile();
-
-    /**
      * Gets the default rotation interval in minutes.
      *
      * @return The default rotation interval in minutes
