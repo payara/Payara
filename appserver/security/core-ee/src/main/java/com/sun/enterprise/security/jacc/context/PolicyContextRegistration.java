@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,25 +38,45 @@
  * holder.
  */
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.integration;
+package com.sun.enterprise.security.jacc.context;
 
-/**
- * Interface to facilitate Initialization of the injected Realm Instance with Application Descriptor info.
- * 
- * <p>
- * See com.sun.enterprise.web.WebContainer and com.sun.web.security.RealmAdapter
- */
-public interface RealmInitializer {
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.REUSE;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SOAP_MESSAGE;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SUBJECT;
+import static java.util.logging.Level.SEVERE;
+import static javax.security.jacc.PolicyContext.registerHandler;
 
-    void initializeRealm(Object bundledescriptor, boolean isSystemApp, String realmName);
+import java.util.logging.Logger;
 
-    // TODO: FIXME, dilution parameter type from Container to Object
-    void setVirtualServer(Object container);
+import javax.security.jacc.PolicyContextException;
+import javax.security.jacc.PolicyContextHandler;
 
-    void updateWebSecurityManager();
-
+public class PolicyContextRegistration {
+    
     /**
-     * Clean up security and policy context.
+     * This method registers the policy handlers, which provide objects JACC Providers
+     * and other code can use.
+     * 
+     * <p>
+     * Note, in a full EE environment with CDI, only the JACC unique SUBJECT is typically
+     * really useful. 
      */
-    void logout();
+    public static void registerPolicyHandlers() {
+        try {
+            PolicyContextHandler policyContextHandler = PolicyContextHandlerImpl.getInstance();
+            
+            registerHandler(ENTERPRISE_BEAN, policyContextHandler, true);
+            registerHandler(SUBJECT, policyContextHandler, true);
+            registerHandler(EJB_ARGUMENTS, policyContextHandler, true);
+            registerHandler(SOAP_MESSAGE, policyContextHandler, true);
+            registerHandler(HTTP_SERVLET_REQUEST, policyContextHandler, true);
+            registerHandler(REUSE, policyContextHandler, true);
+        } catch (PolicyContextException ex) {
+            Logger.getLogger(PolicyContextRegistration.class.getSimpleName()).log(SEVERE, null, ex);
+        }
+    }
+
 }

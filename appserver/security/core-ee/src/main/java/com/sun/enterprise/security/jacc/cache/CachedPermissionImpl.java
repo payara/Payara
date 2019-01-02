@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.cache;
 
 import java.security.Permission;
 
@@ -47,37 +47,36 @@ import java.security.Permission;
  * 
  * @author Ron Monzillo
  */
+public class CachedPermissionImpl implements CachedPermission {
 
-public class CachedPermissionImpl extends Object implements CachedPermission {
+    private PermissionCache permissionCache;
+    private Permission permission;
+    private Epoch epoch;
 
-    PermissionCache permissionCache;
-    Permission permission;
-    Epoch epoch;
-
-    public CachedPermissionImpl(PermissionCache c, Permission p) {
-        this.permissionCache = c;
-        this.permission = p;
+    public CachedPermissionImpl(PermissionCache permissionCache, Permission permission) {
+        this.permissionCache = permissionCache;
+        this.permission = permission;
         epoch = new Epoch();
     }
 
     @Override
     public Permission getPermission() {
-        return this.permission;
+        return permission;
     }
 
     @Override
     public PermissionCache getPermissionCache() {
-        return this.permissionCache;
+        return permissionCache;
     }
 
     // synchronization done in PermissionCache
     @Override
     public boolean checkPermission() {
-        boolean granted = false;
-        if (permissionCache != null) {
-            granted = permissionCache.checkPermission(this.permission, this.epoch);
+        if (permissionCache == null) {
+            return false;
         }
-        return granted;
+        
+        return permissionCache.checkPermission(permission, epoch);
     }
 
     // used to hold last result obtained from cache and cache epoch.
