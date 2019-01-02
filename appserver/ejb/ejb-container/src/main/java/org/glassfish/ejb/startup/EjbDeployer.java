@@ -333,18 +333,6 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             String uniqueAppId = appProps.getProperty(APP_UNIQUE_ID_PROP);
             try {
                 if (getTimeoutStatusFromApplicationInfo(params.name()) && uniqueAppId != null) {
-                    String target = ((params.origin.isDeploy()) ? dc.getCommandParameters(DeployCommandParameters.class).target
-                            : dc.getCommandParameters(UndeployCommandParameters.class).target);
-
-                    if (DeploymentUtils.isDomainTarget(target)) {
-                        List<String> targets = (List<String>) dc.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
-                        if (targets == null) {
-                            targets = domain.getAllReferencedTargetsForApplication(params.name());
-                        }
-                        if (targets != null && targets.size() > 0) {
-                            target = targets.get(0);
-                        }
-                    }
                     EJBTimerService persistentTimerService = null;
                     EJBTimerService nonPersistentTimerService = null;
                     boolean tsInitialized = false;

@@ -2867,10 +2867,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
             if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase(iorDesc.getConfidentiality())) {
                 continue;
 
-            } else if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase(iorDesc.getConfidentiality())) {
-
-                continue;
-
             } else if (EjbIORConfigurationDescriptor.REQUIRED.equalsIgnoreCase(iorDesc.getEstablishTrustInTarget())) {
                 continue;
 
