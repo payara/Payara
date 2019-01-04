@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affilates
  */
+// Portions Copyright [2017-2019] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -55,7 +55,12 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +69,8 @@ import java.util.regex.Pattern;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class GlassFishMain {
+
+    private static final Logger LOG = Logger.getLogger(GlassFishMain.class.getName());
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
@@ -110,8 +117,6 @@ public class GlassFishMain {
          */
         private volatile GlassFish gf;
         private volatile GlassFishRuntime gfr;
-        private final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
-        private final static int MAX_SUBSTITUTION_DEPTH = 100;
 
         public Launcher() {
         }
@@ -261,49 +266,20 @@ public class GlassFishMain {
          * @param file 
          */
         private void doBootCommands(String file) {
-            if (file == null){
+            if (file == null) {
                 return;
             }
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                
+            try {
+                BootCommands bootCommands = new BootCommands();
                 System.out.println("Reading in commandments from " + file);
-                String line = reader.readLine();
-                CommandRunner cmdRunner = gf.getCommandRunner();
-                
-                while (line != null) {
-                    line = getEnvironmentSubstitution(line);
-                    runCommand(cmdRunner, line);
-                    line = reader.readLine();
-                }
+                bootCommands.parseCommandScript(new File(file));
+                bootCommands.executeCommands(gf.getCommandRunner());
             } catch (IOException ex) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "Error reading from file");
+                LOG.log(SEVERE, "Error reading from file");
             } catch (Throwable ex) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(SEVERE, null, ex);
             }
         }
-        
-        
-        private String getEnvironmentSubstitution(String value){
-             String origValue = value;
-            int i = 0;            // Perform Environment variable substitution
-            Matcher m2 = p.matcher(value);
-
-            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m2.group(2).trim();
-                String newValue = System.getenv(matchValue);
-                if (newValue != null) {
-                    value = m2.replaceFirst(
-                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
-                    m2.reset(value);
-                } 
-                i++;     
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "System property substitution exceeded maximum of " + MAX_SUBSTITUTION_DEPTH);
-            }
-            return value;
-        }
-        
 
     }
 
