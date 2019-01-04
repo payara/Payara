@@ -150,6 +150,11 @@ public final class PEAccessLogValve
     private boolean rotatable;
 
     /**
+     * Should we rotate our log file on date change?
+     */
+    private boolean rotationOnDateChange;
+
+    /**
      * The suffix that is added to log file filenames.
      */
     private String suffix = "";
@@ -444,6 +449,14 @@ public final class PEAccessLogValve
 
     }
 
+    public boolean isRotationOnDateChange() {
+        return rotationOnDateChange;
+    }
+
+    public void setRotationOnDateChange(boolean rotationOnDateChange) {
+        this.rotationOnDateChange = rotationOnDateChange;
+    }
+
     /**
      * Return the log file suffix.
      * @return
@@ -602,7 +615,7 @@ public final class PEAccessLogValve
      */
     public void log() throws IOException {
 
-        if (rotatable) {
+        if (rotatable && rotationOnDateChange) {
             synchronized (lock) {
                 rotateOnDateChange();
             }
@@ -791,6 +804,14 @@ public final class PEAccessLogValve
         } else {
             setRotatable(Boolean.valueOf(
                     ConfigBeansUtilities.getDefaultRotationEnabled()));
+        }
+
+        // rotation-on-date-change
+        if (accessLogConfig != null) {
+            setRotationOnDateChange(Boolean.valueOf(accessLogConfig.getRotationOnDateChange()));
+        } else {
+            setRotationOnDateChange(Boolean.valueOf(
+                    ConfigBeansUtilities.getDefaultRotationOnDateChange()));
         }
         // rotation-interval
         interval = 0;

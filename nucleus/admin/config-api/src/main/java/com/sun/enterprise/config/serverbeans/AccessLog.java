@@ -264,5 +264,10 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setDateStampToFirstAccessLogFileEnabled(String tf) throws PropertyVetoException;
+
+    @Attribute (defaultValue="true", dataType=Boolean.class)
+    String getRotationOnDateChange();
+
+    void setRotationOnDateChange(String tf) throws PropertyVetoException;
 }
 
