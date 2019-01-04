@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -77,8 +78,8 @@ import org.glassfish.internal.api.LogManager;
  * Apache <code>mod_log_config</code> module.  As an additional feature,
  * automatic rollover of log files at a specified interval is also supported.
  *
- * </p>This class uses a direct <code>ByteBuffer</code> to store and write 
- * logs. 
+ * </p>This class uses a direct <code>ByteBuffer</code> to store and write
+ * logs.
  *
  * @author Jean-Francois Arcand
  * @author Charlie J. Hunt
@@ -107,7 +108,7 @@ public final class PEAccessLogValve
      * be reset after each rotation.
      * If undefined, all access log history files will be preserved.
      */
-    private static final String LOGGING_MAX_HISTORY_FILES = 
+    private static final String LOGGING_MAX_HISTORY_FILES =
         "com.sun.enterprise.server.logging.max_history_files";
 
     /**
@@ -125,7 +126,7 @@ public final class PEAccessLogValve
 
     private static final SimpleDateFormat LOG_ROTATION_TIME_FORMATTER
             = new SimpleDateFormat(LOG_ROTATION_TIME_FORMAT);
-    
+
     // ----------------------------------------------------- Instance Variables
     /**
      * The directory in which log files are created.
@@ -147,6 +148,11 @@ public final class PEAccessLogValve
      * Should we rotate our log file?
      */
     private boolean rotatable;
+
+    /**
+     * Should we rotate our log file on date change?
+     */
+    private boolean rotationOnDateChange;
 
     /**
      * The suffix that is added to log file filenames.
@@ -210,7 +216,7 @@ public final class PEAccessLogValve
      * The interval between rotating the logs
      */
     private int rotationInterval;
-    
+
     /**
      * Maximum size a log file can be before rotating
      */
@@ -237,7 +243,7 @@ public final class PEAccessLogValve
     private int bufferSize = MIN_BUFFER_SIZE;
 
     /**
-     * If the writer interval is equals to zero, then always flush the 
+     * If the writer interval is equals to zero, then always flush the
      * direct byte buffer after every request.
      */
     private boolean flushRealTime = true;
@@ -443,6 +449,14 @@ public final class PEAccessLogValve
 
     }
 
+    public boolean isRotationOnDateChange() {
+        return rotationOnDateChange;
+    }
+
+    public void setRotationOnDateChange(boolean rotationOnDateChange) {
+        this.rotationOnDateChange = rotationOnDateChange;
+    }
+
     /**
      * Return the log file suffix.
      * @return
@@ -586,7 +600,7 @@ public final class PEAccessLogValve
                         _logger.log(
                                 Level.SEVERE,
                                 LogFacade.ACCESS_LOG_UNABLE_TO_WRITE,
-                            new Object[] {ex});   
+                            new Object[] {ex});
                         return;
                     }
                 }
@@ -603,7 +617,7 @@ public final class PEAccessLogValve
 
         if (rotatable) {
             synchronized (lock) {
-                rotateOnDateChange();
+                rotateLog();
             }
         }
 
@@ -791,6 +805,14 @@ public final class PEAccessLogValve
             setRotatable(Boolean.valueOf(
                     ConfigBeansUtilities.getDefaultRotationEnabled()));
         }
+
+        // rotation-on-date-change
+        if (accessLogConfig != null) {
+            setRotationOnDateChange(Boolean.valueOf(accessLogConfig.getRotationOnDateChange()));
+        } else {
+            setRotationOnDateChange(Boolean.valueOf(
+                    ConfigBeansUtilities.getDefaultRotationOnDateChange()));
+        }
         // rotation-interval
         interval = 0;
         if (accessLogConfig != null) {
@@ -822,8 +844,8 @@ public final class PEAccessLogValve
         // rotation-suffix
         setSuffix(fac.getDefaultAccessLogSuffix());
 
-        setAddDateStampToFirstAccessLogFile(
-                fac.getAddDateStampToFirstAccessLogFile());
+        setAddDateStampToFirstAccessLogFile(Boolean.valueOf(
+                accessLogConfig.getDateStampToFirstAccessLogFileEnabled()));
 
         // max-history-files
         deleteAllHistoryFiles = false;
@@ -865,7 +887,7 @@ public final class PEAccessLogValve
         }
 
         // log to console
-        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());   
+        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
     }
 
     // -------------------------------------------------------- Private Methods
@@ -874,7 +896,7 @@ public final class PEAccessLogValve
      */
     private synchronized void close() {
 
-        try{            
+        try{
             // Make sure the byteBuffer is clean
             log();
             fileChannel.close();
@@ -1040,39 +1062,34 @@ public final class PEAccessLogValve
     }
 
     /**
-     * Rotates the old log file and creates a new log file on date change.
+     * Rotates the old log file and creates a new log file on date change regardless of the interval.
+     * If the interval is exceeded and if it's a new day it also rotates the file.
      */
-    private void rotateOnDateChange(){
+    private void rotateLog(){
         long systime = System.currentTimeMillis();
-        long rotationIntervalLong = rotationInterval * 1000L;
-        if (systime - lastAccessLogCreationTime > rotationIntervalLong) {
-            synchronized (this) {
-                systime = System.currentTimeMillis();
-                if (systime - lastAccessLogCreationTime
-                        > rotationIntervalLong) {
+        synchronized (this) {
+            if (rotationOnDateChange || (systime - lastAccessLogCreationTime > rotationInterval * 1000L)) {
+                // Rotate only if the formatted datestamps are
+                // different
+                String lastDateStamp = dateFormatter.get().format(
+                        new Date(lastAccessLogCreationTime));
+                String newDateStamp = dateFormatter.get().format(
+                        new Date(systime));
 
-                    // Rotate only if the formatted datestamps are
-                    // different
-                    String lastDateStamp = dateFormatter.get().format(
-                            new Date(lastAccessLogCreationTime));
-                    String newDateStamp = dateFormatter.get().format(
-                            new Date(systime));
+                lastAccessLogCreationTime = systime;
 
-                    lastAccessLogCreationTime = systime;
-
-                    if (!lastDateStamp.equals(newDateStamp)) {
-                        try {
-                            close();
-                            open(newDateStamp, false);
-                        } catch (IOException ex) {
-                            _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
-                        }
+                if (!lastDateStamp.equals(newDateStamp)) {
+                    try {
+                        close();
+                        open(newDateStamp, false);
+                    } catch (IOException ex) {
+                        _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
                     }
                 }
             }
         }
     }
-   
+
     /**
      * Rotates the old log file and creates a new log file.
      */
@@ -1129,7 +1146,7 @@ public final class PEAccessLogValve
             }
         }
     }
-    
+
     // ------------------------------------------------------ Lifecycle Methods
     /**
      * Add a lifecycle event listener to this component.

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -155,6 +155,11 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      */
     void setRotationEnabled(String value) throws PropertyVetoException;
 
+    @Attribute (defaultValue="true", dataType=Boolean.class)
+    String getRotationOnDateChange();
+
+    void setRotationOnDateChange(String tf) throws PropertyVetoException;
+
     /**
      * Size in bytes of the buffer where access log calls are stored. If the value is less than 5120, a warning
      *  message is issued, and the value is set to 5120
@@ -222,6 +227,7 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      */
     @Attribute (defaultValue="false", dataType=Boolean.class)
     String getLogToConsoleEnabled();
+
     /**
      * specifies whether to display access logs to console
      * 
@@ -229,19 +235,39 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      */
     void setLogToConsoleEnabled(boolean tf);
     
-    /*
+    /**
      * Conditional logging filter
      *
      * @return the condition filter for the log
      */
     @Attribute
     String getCondition();
-    /*
+
+    /**
      * Condition logging filter
      *
      * @param condition the condition filter for the log 
     */
     void setCondition(String condition);
 
+    /**
+     * Returns true if the first access log file and all subsequently rotated
+     * ones are supposed to be date-stamped, and false if datestamp is to be
+     * added only starting with the first rotation.
+     *
+     * @return true if first access log file and all subsequently rotated
+     * ones are supposed to be date-stamped, and false if datestamp is to be
+     * added only starting with the first rotation.
+     */
+    @Attribute (defaultValue="true", dataType=Boolean.class)
+    String getDateStampToFirstAccessLogFileEnabled();
+
+    /**
+     * Specifies whether date will be added to the first access log file or not
+     *
+     * @param tf true/false
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
+    void setDateStampToFirstAccessLogFileEnabled(String tf) throws PropertyVetoException;
 }
 
