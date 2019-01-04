@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.boot.runtime;
+package fish.payara.boot.runtime;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,8 +48,10 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.glassfish.embeddable.CommandRunner;
 
 /**
@@ -59,7 +61,12 @@ import org.glassfish.embeddable.CommandRunner;
  */
 public class BootCommands {
 
-    private List<BootCommand> commands;
+    private final List<BootCommand> commands;
+
+    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
+    private static final int MAX_SUBSTITUTION_DEPTH = 100;
+
+    private static final Logger LOG = Logger.getLogger(BootCommands.class.getName());
 
     public BootCommands() {
         commands = new LinkedList<>();
@@ -75,27 +82,49 @@ public class BootCommands {
 
     public void parseCommandScript(URL scriptURL) throws IOException {
         try (InputStream scriptStream = scriptURL.openStream()) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(scriptStream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream));
 
-            String commandStr = br.readLine();
-            while (commandStr != null) {                
-                commandStr.trim();
+            String commandStr = reader.readLine();
+            while (commandStr != null) {
+                commandStr = commandStr.trim();
                 // # is a comment
                 if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
+                    commandStr = getEnvironmentSubstitution(commandStr);
                     String command[] = commandStr.split(" ");
                     if (command.length > 1) {
-                        commands.add(new BootCommand(command[0],Arrays.copyOfRange(command, 1, command.length)));
+                        commands.add(new BootCommand(command[0], Arrays.copyOfRange(command, 1, command.length)));
                     } else if (command.length == 1) {
                         commands.add(new BootCommand(command[0]));
                     }
                 }
-                commandStr = br.readLine();
+                commandStr = reader.readLine();
             }
         } catch (IOException ex) {
-            Logger.getLogger(BootCommands.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(SEVERE, null, ex);
         }
     }
     
+    private String getEnvironmentSubstitution(String value) {
+        // Perform Environment variable substitution
+        int i = 0;
+        Matcher m2 = ENV_VAR_PATTERN.matcher(value);
+
+        while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
+            String matchValue = m2.group(2).trim();
+            String newValue = System.getenv(matchValue);
+            if (newValue != null) {
+                value = m2.replaceFirst(
+                        Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
+                m2.reset(value);
+            }
+            i++;
+        }
+        if (i >= MAX_SUBSTITUTION_DEPTH) {
+            LOG.log(SEVERE, "System property substitution exceeded maximum of {0}", MAX_SUBSTITUTION_DEPTH);
+        }
+        return value;
+    }
+
     public boolean executeCommands(CommandRunner runner) {
         return executeCommands(runner, false);
     }
