@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
-// Portions Copyright [2016-2017] [Payara Foundation Ltd and/or its affiliates]
 package org.glassfish.api.admin;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -63,13 +63,6 @@ public interface ServerEnvironment {
     /** folder where the compiled JSP pages reside */
     public static final String kCompileJspDirName = "jsp";
     String DEFAULT_INSTANCE_NAME = "default-instance-name";
-
-    /**
-     * @return the instance root
-     * @deprecated  As of GlassFish 3.1 replaced with {@link #getInstanceRoot() }
-     */
-    @Deprecated
-    File getDomainRoot();
 
     String getDomainName();
 

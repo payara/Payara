@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -82,7 +83,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
 
     /** Creates a new instance of ServerContextImpl */
     public void postConstruct() {
-        this.instanceRoot = env.getDomainRoot();
+        this.instanceRoot = env.getInstanceRoot();
         this.args = new String[startupContext.getArguments().size()*2];
         int i=0;
         for (Map.Entry<Object, Object> entry : startupContext.getArguments().entrySet()) {

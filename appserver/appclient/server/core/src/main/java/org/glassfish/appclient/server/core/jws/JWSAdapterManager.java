@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -170,8 +170,8 @@ public class JWSAdapterManager implements PostConstruct {
         iiopService = config.getExtensionByType(IiopService.class);
         umbrellaRoot = new File(installRootURI).getParentFile();
         umbrellaRootURI = umbrellaRoot.toURI();
-        systemLevelSignedJARsRoot = new File(serverEnv.getDomainRoot(), JWS_SIGNED_SYSTEM_JARS_ROOT);
-        domainLevelSignedJARsRoot = new File(serverEnv.getDomainRoot(), JWS_SIGNED_DOMAIN_JARS_ROOT);
+        systemLevelSignedJARsRoot = new File(serverEnv.getInstanceRoot(), JWS_SIGNED_SYSTEM_JARS_ROOT);
+        domainLevelSignedJARsRoot = new File(serverEnv.getInstanceRoot(), JWS_SIGNED_DOMAIN_JARS_ROOT);
     }
 
     public static String signingAlias(final DeploymentContext dc) {
@@ -208,7 +208,7 @@ public class JWSAdapterManager implements PostConstruct {
             AppClientHTTPAdapter sysAdapter = new AppClientHTTPAdapter(
                     NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX,
                     new Properties(),
-                    serverEnv.getDomainRoot(), 
+                    serverEnv.getInstanceRoot(),
                     new File(installRootURI),
                     iiopService,
                     orbFactory);
@@ -462,7 +462,7 @@ public class JWSAdapterManager implements PostConstruct {
         final AppClientHTTPAdapter adapter = new AppClientHTTPAdapter(
                 contextRoot, staticContent,
                 dynamicContent, tokens,
-                serverEnv.getDomainRoot(), 
+                serverEnv.getInstanceRoot(),
                 new File(installRootURI),
                 iiopService,
                 orbFactory);

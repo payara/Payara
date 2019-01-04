@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -441,7 +441,7 @@ public class JavaWebStartInfo implements ConfigListener {
      */
     @Deprecated
     private URI relativeURIToDomainFile(final File domainFile) {
-        return serverEnv.getDomainRoot().toURI().relativize(domainFile.toURI());
+        return serverEnv.getInstanceRoot().toURI().relativize(domainFile.toURI());
     }
 
     /**

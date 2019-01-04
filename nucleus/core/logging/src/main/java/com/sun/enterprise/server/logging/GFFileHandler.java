@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -189,8 +189,8 @@ public class GFFileHandler extends StreamHandler implements
         File logFile = new File(filename);
         absoluteServerLogName = filename;
         if (!logFile.isAbsolute()) {
-            logFile = new File(env.getDomainRoot(), filename);
-            absoluteServerLogName = env.getDomainRoot() + File.separator + filename;
+            logFile = new File(env.getInstanceRoot(), filename);
+            absoluteServerLogName = env.getInstanceRoot() + File.separator + filename;
         }
         changeFileName(logFile);
 

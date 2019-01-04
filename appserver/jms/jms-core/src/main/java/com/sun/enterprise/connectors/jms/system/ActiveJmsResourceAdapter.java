@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -1303,7 +1303,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private String getMQVarDir(){
-        String asInstanceRoot = getServerEnvironment().getDomainRoot().getPath();
+        String asInstanceRoot = getServerEnvironment().getInstanceRoot().getPath();
                             /*ApplicationServer.getServerContext().
                                   getInstanceEnvironment().getInstancesRoot();   */
         String mqInstanceDir =  asInstanceRoot + java.io.File.separator
@@ -1333,7 +1333,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 java.io.File.separator + "imq" ;
                 //java.io.File.separator + "bin"; hack until MQ RA changes
             //XXX: This doesn't work in clustered instances.
-            brokerHomeDir = getServerEnvironment().getDomainRoot()//ApplicationServer.getServerContext().getInstallRoot()
+            brokerHomeDir = getServerEnvironment().getInstanceRoot()//ApplicationServer.getServerContext().getInstallRoot()
                                 + IMQ_INSTALL_SUBDIR;
         } else {
             //hack until MQ RA changes
