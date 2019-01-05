@@ -38,7 +38,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.common;
 
 import java.io.File;
@@ -126,11 +126,10 @@ public class PermissionsUtil {
     }
 
     private static PermissionCollection getEEPolicyPermissions(URL fileUrl) throws IOException {
-        PolicyFile pf = new PolicyFile(fileUrl);
+        PolicyFile policyFile = new PolicyFile(fileUrl);
 
-        CodeSource cs = new CodeSource(new URL(GlobalPolicyUtil.CLIENT_TYPE_CODESOURCE), (Certificate[]) null);
-
-        return pf.getPermissions(cs);
+        return policyFile.getPermissions(
+                new CodeSource(new URL(GlobalPolicyUtil.CLIENT_TYPE_CODESOURCE), (Certificate[]) null));
     }
 
     private static PermissionCollection getPolicyPermissions(String policyFilename) throws IOException {

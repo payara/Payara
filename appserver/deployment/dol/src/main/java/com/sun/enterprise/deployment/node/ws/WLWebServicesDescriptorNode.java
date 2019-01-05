@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node.ws;
 
 import static com.sun.enterprise.deployment.node.ws.WLDescriptorConstants.WL_WEBSERVICES_SCHEMA_LOCATION;
@@ -196,10 +196,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
             bundleNode = appendChild(parent, getXMLRootTag().getQName());
         }
 
-        // TODO is this needed?
-        // appendTextChild(bundleNode, TagNames.MODULE_NAME, descriptor.getModuleDescriptor().getModuleName());
-
-        // description, display-name, icons...
+        // Description, display-name, icons...
         writeDisplayableComponentInfo(bundleNode, descriptor);
 
         if (descriptor instanceof WebServicesDescriptor) {

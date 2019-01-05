@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.permissionsxml;
 
 import static com.sun.enterprise.security.permissionsxml.PermissionsXMLParser.PERMISSIONS_XML;
@@ -128,35 +128,40 @@ public class PermissionsXMLLoader {
     }
     
     private void loadAppPermissionsFromStream(InputStream permissionsInput) throws XMLStreamException, FileNotFoundException {
-        if (permissionsInput != null) {
-            // this one has no schema check (for client)
-            PermissionsXMLParser parser = new PermissionsXMLParser(permissionsInput, restrictedPermissionCollection);
-            declaredPermissionXml = parser.getPermissions();
-            
-            if (logger.isLoggable(FINE)) {
-                logger.fine("App declared permission = " + declaredPermissionXml);
-            }
+        if (permissionsInput == null) {
+            return;
+        }
+        
+        // this one has no schema check (for client)
+        PermissionsXMLParser parser = new PermissionsXMLParser(permissionsInput, restrictedPermissionCollection);
+        declaredPermissionXml = parser.getPermissions();
+        
+        if (logger.isLoggable(FINE)) {
+            logger.fine("App declared permission = " + declaredPermissionXml);
         }
     }
     
     private PermissionsDeploymentDescriptorFile getPermissionsDeploymentDescriptorFile() {
-        PermissionsDeploymentDescriptorFile pddf = new PermissionsDeploymentDescriptorFile();
+        PermissionsDeploymentDescriptorFile descriptorFile = new PermissionsDeploymentDescriptorFile();
+        
+        if (serviceLocator == null) {
+            return descriptorFile;
+        }
 
-        if (serviceLocator != null) {
-            dasConfig = serviceLocator.getService(DasConfig.class);
-            if (dasConfig != null) {
-                String xmlValidationLevel = dasConfig.getDeployXmlValidation();
-                if (xmlValidationLevel.equals("none")) {
-                    pddf.setXMLValidation(false);
-                } else {
-                    pddf.setXMLValidation(true);
-                }
-                
-                pddf.setXMLValidationLevel(xmlValidationLevel);
-            }
+        dasConfig = serviceLocator.getService(DasConfig.class);
+        if (dasConfig == null) {
+            return descriptorFile;
         }
         
-        return pddf;
+        String xmlValidationLevel = dasConfig.getDeployXmlValidation();
+        if (xmlValidationLevel.equals("none")) {
+            descriptorFile.setXMLValidation(false);
+        } else {
+            descriptorFile.setXMLValidation(true);
+        }
+        descriptorFile.setXMLValidationLevel(xmlValidationLevel);
+        
+        return descriptorFile;
     }
 
     // Check the app declared permissions against server restricted policy

@@ -70,42 +70,28 @@ public class GlobalPolicyUtilTest {
 
     @Test
     public void testTYpeConvert() {
-        CommponentType t = GlobalPolicyUtil.convertComponentType("ejb");
-        System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be Ejb", CommponentType.ejb, t);
-
-        t = GlobalPolicyUtil.convertComponentType("ear");
-        System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be ear", CommponentType.ear, t);
-
-        t = GlobalPolicyUtil.convertComponentType("war");
-        System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be web", CommponentType.war, t);
-
-        t = GlobalPolicyUtil.convertComponentType("rar");
-        System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be rar", CommponentType.rar, t);
-
-        t = GlobalPolicyUtil.convertComponentType("car");
-        System.out.println("Converted type = " + t);
-        Assert.assertEquals("Converted type should be car", CommponentType.car, t);
-
+        for (CommponentType commponentType : CommponentType.values()) {
+            CommponentType convertedType = GlobalPolicyUtil.convertComponentType(commponentType.name());
+            System.out.println("Converted type = " + convertedType);
+            Assert.assertEquals("Converted type should be " + commponentType.name(), commponentType, convertedType);
+        }
+        
         try {
-            t = GlobalPolicyUtil.convertComponentType("");
+            GlobalPolicyUtil.convertComponentType("");
             Assert.fail();
         } catch (IllegalArgumentException e) {
 
         }
 
         try {
-            t = GlobalPolicyUtil.convertComponentType("bla");
+            GlobalPolicyUtil.convertComponentType("bla");
             Assert.fail();
         } catch (IllegalArgumentException e) {
 
         }
 
         try {
-            t = GlobalPolicyUtil.convertComponentType(null);
+            GlobalPolicyUtil.convertComponentType(null);
             Assert.fail();
         } catch (NullPointerException e) {
 
