@@ -138,7 +138,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         //get password from user if not found in password file
         if (password == null) {
             if (programOpts.isInteractive()) {
-                char[] pArr = pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
+                char[] pArr = readPassword(Strings.get("SSHPasswordPrompt", getRemoteUser(), node));
                 password = pArr != null ? new String(pArr) : null;
             }
             else {
