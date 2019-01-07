@@ -927,34 +927,37 @@ public abstract class CLICommand implements PostConstruct {
                 continue;       // passwords are handled later
             if (opt.getParam().obsolete() && getOption(opt.getName()) != null) {
                 logger.info(strings.get("ObsoleteOption", opt.getName()));
-                if (opt.getParam().optional())
-                    continue;
-                if (opt.getParam().primary())
-                    continue;
-                // if option isn't set, prompt for it (if interactive)
-                if (getOption(opt.getName()) == null && cons != null && !missingOption) {
-                    cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
-                    try {
-                        String val = cons.readLine();
-                        if (ok(val)) {
-                            options.set(opt.getName(), val);
-                        }
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error reading input", ioe);
+            }
+            if (opt.getParam().optional()) {
+                continue;
+            }
+            if (opt.getParam().primary()) {
+                continue;
+            }
+            // if option isn't set, prompt for it (if interactive)
+            if (getOption(opt.getName()) == null && cons != null && !missingOption) {
+                cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
+                try {
+                    String val = cons.readLine();
+                    if (ok(val)) {
+                        options.set(opt.getName(), val);
                     }
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error reading input", ioe);
                 }
-                // if it's still not set, that's an error
-                if (getOption(opt.getName()) == null) {
-                    missingOption = true;
-                    logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
-                }
+            }
+            // if it's still not set, that's an error
+            if (getOption(opt.getName()) == null) {
+                missingOption = true;
+                logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
             }
             if (opt.getParam().obsolete()) {    // a required obsolete option?
                 logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
             }
         }
-        if (missingOption)
+        if (missingOption) {
             throw new CommandValidationException(strings.get("missingOptions", name));
+        }
 
         int operandMin = 0;
         int operandMax = 0;
@@ -1207,8 +1210,10 @@ public abstract class CLICommand implements PostConstruct {
         char[] pc = null;
 
         try (ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null)) {
+            // Don't echo anything when reading
             char echoCharacter = 0;
             consoleReader.setEchoCharacter(echoCharacter);
+
             String line = consoleReader.readLine(prompt);
             pc = line.toCharArray();
         } catch (IOException ioe) {
