@@ -222,7 +222,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.0.2</maven.dependency.plugin.version>
-        <maven.site.plugin.version>3.7</maven.site.plugin.version>
+        <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
         <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
