@@ -107,7 +107,9 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
     private static final int BACKLOG = 50;
 
-    private static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
+    private static final String SO_KEEPALIVE = "fish.payara.SO_KEEPALIVE";
+    // Deprecated as of 5.191
+    private static final String SO_KEEPALIVE_DEPRECATED = "fish.payara.SOKeepAlive";
 
 
     //private static SecureRandom sr = null;
@@ -652,6 +654,67 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                 tlsEnabled12 && cipherInfo.isTLS() ||
                 ssl3Enabled && cipherInfo.isSSL3() ||
                 ssl2Enabled && cipherInfo.isSSL2());
+    }
+
+    /**
+     * Checks whether SO_KEEPALIVE should be enabled on a Socket and enables it if it should be. Checks for the
+     * presence of a property on the IIOP listener and globally, preferring the value set in the listener.
+     *
+     * @param socket The socket to potentially enable SO_KEEPALIVE on
+     * @throws SocketException If there was an error enabling SO_KEEPALIVE on the socket.
+     */
+    private void enableSOKeepAliveAsRequired(Socket socket) throws SocketException {
+        boolean shouldSet = false;
+
+        // For each listener, find one with a matching port
+        for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
+            if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
+                // Check for the property globally before checking on the specific listener, giving precedence to the
+                // new property
+                if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
+                        || Boolean.getBoolean(SO_KEEPALIVE)) {
+                    // Check if we should override the global value
+                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                        shouldSet = true;
+                    } else {
+                        // If the property wasn't set on the listener, go with the global setting
+                        shouldSet = true;
+                    }
+                    break;
+                } else {
+                    // If it wasn't set globally, just check if it's set on the listener
+                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                        shouldSet = true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (shouldSet) {
+            _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+            socket.setKeepAlive(true);
+        }
+    }
+
+    /**
+     * Helper method that checks if either the deprecated or new SO_KEEPALIVE property is present and enabled on an IIOP
+     * listener, giving precedence to the new property if both are present.
+     * @param iiopListener The IIOP listener to check if the SO_KEEPALIVE property is set on
+     * @return True if the SO_KEEPALIVE property is present and enabled on the IIOP listener
+     */
+    private boolean soKeepAliveEnabledOnIiopListener(IiopListener iiopListener) {
+        boolean soKeepAliveEnabledOnListener = false;
+
+        // If the new property isn't present and the deprecated one is set to true, or if the new property is set to
+        // true, then register SO_KEEPALIVE as enabled on the listener
+        if ((iiopListener.getPropertyValue(SO_KEEPALIVE) == null
+                && Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE_DEPRECATED)))
+                || Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE))) {
+            soKeepAliveEnabledOnListener = true;
+        }
+
+        return soKeepAliveEnabledOnListener;
     }
 
     /**
