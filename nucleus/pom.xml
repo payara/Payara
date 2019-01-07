@@ -226,7 +226,7 @@
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
         <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
         <maven.antrun.plugin.version>1.8</maven.antrun.plugin.version>
-        <maven.remote.resources.plugin.version>1.5</maven.remote.resources.plugin.version>
+        <maven.remote.resources.plugin.version>1.6.0</maven.remote.resources.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.0.1</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.2.0</maven.war.plugin.version>
