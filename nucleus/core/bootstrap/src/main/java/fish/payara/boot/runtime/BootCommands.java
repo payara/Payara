@@ -50,8 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.embeddable.CommandRunner;
 
 /**
@@ -63,10 +62,7 @@ public class BootCommands {
 
     private final List<BootCommand> commands;
 
-    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
-    private static final int MAX_SUBSTITUTION_DEPTH = 100;
-
-    private static final Logger LOG = Logger.getLogger(BootCommands.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BootCommands.class.getName());
 
     public BootCommands() {
         commands = new LinkedList<>();
@@ -89,7 +85,7 @@ public class BootCommands {
                 commandStr = commandStr.trim();
                 // # is a comment
                 if (commandStr.length() > 0 && !commandStr.startsWith("#")) {
-                    commandStr = getEnvironmentSubstitution(commandStr);
+                    commandStr = (String) TranslatedConfigView.getTranslatedValue(commandStr);
                     String command[] = commandStr.split(" ");
                     if (command.length > 1) {
                         commands.add(new BootCommand(command[0], Arrays.copyOfRange(command, 1, command.length)));
@@ -100,29 +96,8 @@ public class BootCommands {
                 commandStr = reader.readLine();
             }
         } catch (IOException ex) {
-            LOG.log(SEVERE, null, ex);
+            LOGGER.log(SEVERE, null, ex);
         }
-    }
-    
-    private String getEnvironmentSubstitution(String value) {
-        // Perform Environment variable substitution
-        int i = 0;
-        Matcher m2 = ENV_VAR_PATTERN.matcher(value);
-
-        while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-            String matchValue = m2.group(2).trim();
-            String newValue = System.getenv(matchValue);
-            if (newValue != null) {
-                value = m2.replaceFirst(
-                        Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
-                m2.reset(value);
-            }
-            i++;
-        }
-        if (i >= MAX_SUBSTITUTION_DEPTH) {
-            LOG.log(SEVERE, "System property substitution exceeded maximum of {0}", MAX_SUBSTITUTION_DEPTH);
-        }
-        return value;
     }
 
     public boolean executeCommands(CommandRunner runner) {

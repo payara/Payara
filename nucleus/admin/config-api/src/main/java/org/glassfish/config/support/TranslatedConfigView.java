@@ -214,14 +214,16 @@ public class TranslatedConfigView implements ConfigView {
     
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
-        domainPasswordAliasStore = AccessController.doPrivileged(
-                new PrivilegedAction<DomainScopedPasswordAliasStore>() {
-                    @Override
-                    public DomainScopedPasswordAliasStore run() {
-                        return habitat.getService(DomainScopedPasswordAliasStore.class);
+        if (habitat != null) {
+            domainPasswordAliasStore = AccessController.doPrivileged(
+                    new PrivilegedAction<DomainScopedPasswordAliasStore>() {
+                        @Override
+                        public DomainScopedPasswordAliasStore run() {
+                            return habitat.getService(DomainScopedPasswordAliasStore.class);
+                        }
                     }
-                }
-        );
+            );
+        }
         return domainPasswordAliasStore;
     }
     

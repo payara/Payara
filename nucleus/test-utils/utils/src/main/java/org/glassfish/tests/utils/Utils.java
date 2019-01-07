@@ -65,8 +65,10 @@ import com.sun.enterprise.module.single.StaticModulesRegistry;
  */
 public class Utils {
 
-    final static String habitatName = "default";
-    final static String inhabitantPath = "META-INF/inhabitants";
+    private static final String habitatName = "default";
+    private static final String inhabitantPath = "META-INF/inhabitants";
+    private static final String INSTANCE_ROOT_PROP_NAME = "com.sun.aas.instanceRoot";
+    private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
 
     private static Map<String, ServiceLocator> habitats = new HashMap<String, ServiceLocator>();
     public static final Utils instance = new Utils();
@@ -118,10 +120,10 @@ public class Utils {
 
     public static ServiceLocator getNewHabitat(String root) {
  
-        Properties p = new Properties();
-        p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTALL_ROOT_PROP_NAME, root);
-        p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_PROP_NAME, root);
-        ModulesRegistry registry = new StaticModulesRegistry(Utils.class.getClassLoader(), new StartupContext(p));
+        Properties properties = new Properties();
+        properties.put(INSTALL_ROOT_PROP_NAME, root);
+        properties.put(INSTANCE_ROOT_PROP_NAME, root);
+        ModulesRegistry registry = new StaticModulesRegistry(Utils.class.getClassLoader(), new StartupContext(properties));
         ServiceLocator defaultSL = registry.createServiceLocator("default");
         return defaultSL;
     }
