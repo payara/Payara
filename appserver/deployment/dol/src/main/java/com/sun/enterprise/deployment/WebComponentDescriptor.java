@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.web.InitializationParameter;
@@ -52,7 +52,7 @@ import java.util.Set;
 
 /**
  * Common data and behavior of the deployment
- * information about a JSP or JavaServlet in J2EE.
+ * information about a JSP or JavaServlet in EE.
  *
  * @author Jerome Dochez
  */
@@ -135,8 +135,6 @@ public abstract class WebComponentDescriptor extends Descriptor {
     public abstract boolean isConflict();
 
     public abstract Method[] getUserDefinedHttpMethods();
-
-    //public abstract void print(StringBuffer toStringBuffer);
 
     public abstract boolean equals(Object other);
 

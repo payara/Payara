@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,64 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.context;
 
-package com.sun.enterprise.security.perms;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.jvnet.hk2.annotations.Contract;
 
+import java.lang.reflect.Method;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+@Contract
+public interface PolicyContextDelegate {
+    Object getEnterpriseBean(ComponentInvocation inv);
 
-import java.security.AllPermission;
-import java.security.Permission;
-import java.io.FilePermission;
+    Object getEJbArguments(ComponentInvocation inv);
 
-import junit.framework.Assert;
+    Object getSOAPMessage(ComponentInvocation inv);
 
-public class VoidPermissionTest {
+    void setSOAPMessage(Object message, ComponentInvocation invocation);
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
-    
-    @Test
-    public void testImpliedByAllPermission() {
-        
-        Permission allPerm = new AllPermission();
-        
-        VoidPermission vPerm = new VoidPermission();
-        
-        
-        Assert.assertTrue(allPerm.implies(vPerm));
-        
-        Assert.assertTrue(!vPerm.implies(allPerm));
-    }
-    
-    
-    @Test
-    public void testNotImplied() {
-        
-        VoidPermission vPerm = new VoidPermission();
-        FilePermission fPerm = new FilePermission("/scratch/test/*", "read");
-        
-        Assert.assertTrue(!vPerm.implies(fPerm));
-        Assert.assertTrue(!fPerm.implies(vPerm));
-    }
-
-    
-    @Test
-    public void testNoImplySelf() {
-        VoidPermission vPerm1 = new VoidPermission();
-        VoidPermission vPerm2 = new VoidPermission();
-        
-        Assert.assertTrue(!vPerm1.implies(vPerm2));
-        Assert.assertTrue(!vPerm2.implies(vPerm1));
-        
-        Assert.assertTrue(!vPerm1.implies(vPerm1));
-    }
+    boolean authorize(ComponentInvocation invocation, Method method) throws Exception;
 }

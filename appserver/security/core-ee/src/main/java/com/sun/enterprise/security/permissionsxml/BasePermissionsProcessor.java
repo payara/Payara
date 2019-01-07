@@ -37,7 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.security.perms;
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
+
+import static java.util.logging.Level.FINE;
 
 import java.io.File;
 import java.io.FilePermission;
@@ -46,101 +49,104 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.Enumeration;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.deployment.DeploymentContext;
 
 import com.sun.logging.LogDomains;
 
-public class PermissionsProcessor {
-
+/**
+ * Base class for the concrete permissions processors.
+ * 
+ * <p>
+ * These classes process the declared permissions and modify them where necessary.
+ * For instance, permissions for relative paths are changed into absolute paths.
+ */
+public class BasePermissionsProcessor {
+    
+    protected static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
+    
     public static final String CURRENT_FOLDER = "*";
-
     public static final String TEMP_FOLDER = "SERVLET-CONTEXT-TEMPDIR";
 
     protected DeploymentContext context;
-    protected SMGlobalPolicyUtil.CommponentType type;
+    protected CommponentType type;
 
-    protected static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
-
-    public PermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) throws SecurityException {
-
+    public BasePermissionsProcessor(CommponentType type, DeploymentContext context) throws SecurityException {
         this.type = type;
-        this.context = dc;
-
+        this.context = context;
     }
 
-    protected static PermissionCollection processPermisssonsForPath(PermissionCollection originalPC, DeploymentContext dc)
-            throws MalformedURLException {
+    protected static PermissionCollection processPermisssonsForPath(PermissionCollection originalPermissions, DeploymentContext context) throws MalformedURLException {
+        if (originalPermissions == null) {
+            return originalPermissions;
+        }
+            
+        Permissions revisedPermissions = new Permissions();
 
-        if (originalPC == null)
-            return originalPC;
-
-        Permissions revisedPC = new Permissions();
-
-        Enumeration<Permission> pcEnum = originalPC.elements();
+        Enumeration<Permission> pcEnum = originalPermissions.elements();
         while (pcEnum.hasMoreElements()) {
-            Permission perm = pcEnum.nextElement();
-            if (perm instanceof FilePermission) {
-                processFilePermission(revisedPC, dc, (FilePermission) perm);
-            } else
-                revisedPC.add(perm);
+            Permission permissions = pcEnum.nextElement();
+            if (permissions instanceof FilePermission) {
+                processFilePermission(revisedPermissions, context, (FilePermission) permissions);
+            } else {
+                revisedPermissions.add(permissions);
+            }
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Revised permissions = " + revisedPC);
+        if (logger.isLoggable(FINE)) {
+            logger.fine("Revised permissions = " + revisedPermissions);
         }
 
-        return revisedPC;
+        return revisedPermissions;
     }
 
-    // for file permission, make the necessary path change, then add permssion to classloader
-    protected static void processFilePermission(PermissionCollection revisedPC, DeploymentContext dc, FilePermission fp)
-            throws MalformedURLException {
-
-        if (isFilePermforCurrentDir(fp)) {
-            addFilePermissionsForCurrentDir(revisedPC, dc, fp);
-        } else if (isFilePermforTempDir(fp)) {
-            convertTempDirPermission(revisedPC, dc, fp);
+    // For file permission, make the necessary path change, then add the permission to the classloader
+    protected static void processFilePermission(PermissionCollection revisedPC, DeploymentContext deploymentContext, FilePermission filePermission) throws MalformedURLException {
+        if (isFilePermforCurrentDir(filePermission)) {
+            addFilePermissionsForCurrentDir(revisedPC, deploymentContext, filePermission);
+        } else if (isFilePermissionForTempDir(filePermission)) {
+            convertTempDirPermission(revisedPC, deploymentContext, filePermission);
         } else {
-            revisedPC.add(fp);
+            revisedPC.add(filePermission);
         }
     }
 
-    // check if a FilePermssion with target path as the "current"
-    protected static boolean isFilePermforCurrentDir(FilePermission fp) {
-
-        if (fp == null)
+    // Check if a FilePermssion with target path as the "current"
+    protected static boolean isFilePermforCurrentDir(FilePermission filePermission) {
+        if (filePermission == null) {
             return false;
+        }
 
-        String name = fp.getName();
-        if (!CURRENT_FOLDER.equals(name))
+        String name = filePermission.getName();
+        
+        if (!CURRENT_FOLDER.equals(name)) {
             return false;
+        }
 
         return true;
     }
 
     // check if a FilePermssion with target path as the "servlet temp dir"
-    protected static boolean isFilePermforTempDir(FilePermission fp) {
-
-        if (fp == null)
+    protected static boolean isFilePermissionForTempDir(FilePermission filePermission) {
+        if (filePermission == null) {
             return false;
+        }
 
-        String name = fp.getName();
-        if (!TEMP_FOLDER.equals(name))
+        String name = filePermission.getName();
+        
+        if (!TEMP_FOLDER.equals(name)) {
             return false;
+        }
 
         return true;
     }
 
-    // add the current folder for the file permission
-    protected static void addFilePermissionsForCurrentDir(PermissionCollection revisedPC, DeploymentContext context, FilePermission perm)
-            throws MalformedURLException {
-
+    // Add the current folder for the file permission
+    protected static void addFilePermissionsForCurrentDir(PermissionCollection revisedPermissions, DeploymentContext context, FilePermission perm) throws MalformedURLException {
         if (!isFilePermforCurrentDir(perm)) {
             // not recognized, add it as is
-            revisedPC.add(perm);
+            revisedPermissions.add(perm);
             return;
         }
 
@@ -148,47 +154,46 @@ public class PermissionsProcessor {
 
         String rootDir = context.getSource().getURI().toURL().toString();
         Permission rootDirPerm = new FilePermission(rootDir, actions);
-        revisedPC.add(rootDirPerm);
+        revisedPermissions.add(rootDirPerm);
         Permission rootPerm = new FilePermission(rootDir + File.separator + "-", actions);
-        revisedPC.add(rootPerm);
+        revisedPermissions.add(rootPerm);
 
         if (context.getScratchDir("ejb") != null) {
             String ejbTmpDir = context.getScratchDir("ejb").toURI().toURL().toString();
             Permission ejbDirPerm = new FilePermission(ejbTmpDir, actions);
-            revisedPC.add(ejbDirPerm);
+            revisedPermissions.add(ejbDirPerm);
             Permission ejbPerm = new FilePermission(ejbTmpDir + File.separator + "-", actions);
-            revisedPC.add(ejbPerm);
+            revisedPermissions.add(ejbPerm);
         }
 
         if (context.getScratchDir("jsp") != null) {
             String jspdir = context.getScratchDir("jsp").toURI().toURL().toString();
             Permission jpsDirPerm = new FilePermission(jspdir, actions);
-            revisedPC.add(jpsDirPerm);
+            revisedPermissions.add(jpsDirPerm);
             Permission jpsPerm = new FilePermission(jspdir + File.separator + "-", actions);
-            revisedPC.add(jpsPerm);
+            revisedPermissions.add(jpsPerm);
         }
     }
 
-    // convert 'temp' dir to the absolute path for permission of 'temp' path
-    protected static Permission convertTempDirPermission(PermissionCollection revisedPC, DeploymentContext context, FilePermission perm)
-            throws MalformedURLException {
-
-        if (!isFilePermforTempDir(perm)) {
-            return perm;
+    // Convert 'temp' dir to the absolute path for permission of 'temp' path
+    protected static Permission convertTempDirPermission(PermissionCollection revisedPermissions, DeploymentContext context, FilePermission filePermission) throws MalformedURLException {
+        if (!isFilePermissionForTempDir(filePermission)) {
+            return filePermission;
         }
 
-        String actions = perm.getActions();
+        String actions = filePermission.getActions();
 
         if (context.getScratchDir("jsp") != null) {
             String jspdir = context.getScratchDir("jsp").toURI().toURL().toString();
             Permission jspDirPerm = new FilePermission(jspdir, actions);
-            revisedPC.add(jspDirPerm);
-            Permission jspPerm = new FilePermission(jspdir + File.separator + "-", actions);
-            revisedPC.add(jspPerm);
-            return jspPerm;
+            revisedPermissions.add(jspDirPerm);
+            Permission jspPermission = new FilePermission(jspdir + File.separator + "-", actions);
+            revisedPermissions.add(jspPermission);
+            
+            return jspPermission;
         }
 
-        return perm;
+        return filePermission;
     }
 
 }

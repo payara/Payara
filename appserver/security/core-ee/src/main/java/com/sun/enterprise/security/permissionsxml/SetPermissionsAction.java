@@ -38,43 +38,49 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.perms;
+package com.sun.enterprise.security.permissionsxml;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.getDeclaredPermissions;
+
 import java.security.PermissionCollection;
 import java.security.PrivilegedExceptionAction;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 
-public class PermsArchiveDelegate {
+/**
+ * Action to get declared permissions for a given module type, process them if needed, and attempt
+ * to set them in a class loader.
+ * 
+ * <p>
+ * This action will only actually do work if there's a security manager installed. If there is no such
+ * manager this will be a NO-OP.
+ * 
+ * <p>
+ * If the client VM doesn't have the required privileges for the requested permissions an AccessControlException
+ * will be thrown.
+ *
+ */
+public class SetPermissionsAction implements PrivilegedExceptionAction<Object> {
 
-    /**
-     * Get the application or module packaged permissions
-     *
-     * @param type the type of the module, this is used to check the configured restriction for the type
-     * @param context the deployment context
-     * @return the module or app declared permissions
-     * @throws SecurityException if permissions.xml has syntax failure, or failed for restriction check
-     */
-    public static PermissionCollection getDeclaredPermissions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context)
-            throws SecurityException {
+    private final CommponentType type;
+    private final DeploymentContext context;
+    private final ClassLoader classLoader;
 
-        try {
-            PermissionCollection declaredPerms = new XMLPermissionsHandler(new File(context.getSource().getURI()), type).getAppDeclaredPermissions();
-
-            // Further process the permissions for file path adjustment
-            return new DeclaredPermissionsProcessor(type, context, declaredPerms).getAdjustedDeclaredPermissions();
-        } catch (XMLStreamException | SecurityException | FileNotFoundException e) {
-            throw new SecurityException(e);
-        }
+    public SetPermissionsAction(CommponentType type, DeploymentContext deploymentContext, ClassLoader classLoader) {
+        this.type = type;
+        this.context = deploymentContext;
+        this.classLoader = classLoader;
     }
 
+    @Override
+    public Object run() throws SecurityException {
+        processModuleDeclaredAndEEPermissions(type, context, classLoader);
+        return null;
+    }
+    
     /**
      * Get the declared permissions and EE permissions, then add them to the classloader
      *
@@ -82,7 +88,7 @@ public class PermsArchiveDelegate {
      * @param context deployment context
      * @param classloader throws AccessControlException if caller has no privilege
      */
-    public static void processModuleDeclaredAndEEPemirssions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext context, ClassLoader classloader) throws SecurityException {
+    private static void processModuleDeclaredAndEEPermissions(CommponentType type, DeploymentContext context, ClassLoader classloader) throws SecurityException {
         if (System.getSecurityManager() != null) {
 
             if (!(classloader instanceof DDPermissionsLoader)) {
@@ -93,13 +99,13 @@ public class PermsArchiveDelegate {
                 return;
             }
 
-            DDPermissionsLoader ddcl = (DDPermissionsLoader) classloader;
+            DDPermissionsLoader permissionsLoader = (DDPermissionsLoader) classloader;
 
             if (((ExtendedDeploymentContext) context).getParentContext() == null) {
-                ddcl.addDeclaredPermissions(getDeclaredPermissions(type, context));
+                permissionsLoader.addDeclaredPermissions(getDeclaredPermissions(type, context));
             }
 
-            ddcl.addEEPermissions(processEEPermissions(type, context));
+            permissionsLoader.addEEPermissions(processEEPermissions(type, context));
         }
     }
 
@@ -107,30 +113,12 @@ public class PermsArchiveDelegate {
      * Get the EE permissions for the specified module type
      *
      * @param type module type
-     * @param dc the deployment context
+     * @param context the deployment context
      * @return the ee permissions
      */
-    public static PermissionCollection processEEPermissions(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) {
-        return new ModuleEEPermissionsProcessor(type, dc).getAdjustedEEPermission();
+    private static PermissionCollection processEEPermissions(CommponentType type, DeploymentContext context) {
+        return new ModuleEEPermissionsProcessor(type, context).getAdjustedEEPermission();
     }
-
-    public static class SetPermissionsAction implements PrivilegedExceptionAction<Object> {
-
-        private SMGlobalPolicyUtil.CommponentType type;
-        private DeploymentContext context;
-        private ClassLoader cloader;
-
-        public SetPermissionsAction(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc, ClassLoader cl) {
-            this.type = type;
-            this.context = dc;
-            this.cloader = cl;
-        }
-
-        @Override
-        public Object run() throws SecurityException {
-            processModuleDeclaredAndEEPemirssions(type, context, cloader);
-            return null;
-        }
-    }
-
+    
+    
 }

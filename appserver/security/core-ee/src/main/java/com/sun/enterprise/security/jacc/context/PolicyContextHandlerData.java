@@ -37,43 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.authorize;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.context;
 
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.EJB_ARGUMENTS;
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST;
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.REUSE;
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.SOAP_MESSAGE;
-import static com.sun.enterprise.security.authorize.PolicyContextHandlerImpl.SUBJECT;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.EJB_ARGUMENTS;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.ENTERPRISE_BEAN;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.HTTP_SERVLET_REQUEST;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.REUSE;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SOAP_MESSAGE;
+import static com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl.SUBJECT;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.sun.enterprise.security.ee.PermissionCacheFactory;
 import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
+
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.internal.api.Globals;
 
 /**
- * This class implements a thread scoped data used for PolicyContext.
+ * This class implements thread scoped data used for the JACC PolicyContext.
+ * 
+ * <p>
+ * Here the handlers for e.g. HTTP_SERVLET_REQUEST and SUBJECT are essentially implemented.
  * 
  * @author Harry Singh
  * @author Jyri Virkki
  * @author Shing Wai Chan
  *
  */
-public class HandlerData {
+public class PolicyContextHandlerData {
 
     private HttpServletRequest httpServletRequest;
     private ComponentInvocation invocation;
     private PolicyContextDelegate ejbDelegate;
 
-    private HandlerData() {
+    private PolicyContextHandlerData() {
         ejbDelegate = Globals.getDefaultHabitat().getService(PolicyContextDelegate.class, "EJB");
     }
 
-    public static HandlerData getInstance() {
-        return new HandlerData();
+    public static PolicyContextHandlerData getInstance() {
+        return new PolicyContextHandlerData();
     }
 
     public void setHttpServletRequest(HttpServletRequest httpReq) {

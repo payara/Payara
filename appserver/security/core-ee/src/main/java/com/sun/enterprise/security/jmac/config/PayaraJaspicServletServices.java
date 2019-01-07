@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jmac.config;
 
 import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
@@ -57,8 +57,8 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
 import com.sun.enterprise.security.jmac.WebServicesDelegate;
-import com.sun.enterprise.security.web.integration.WebSecurityManager;
 
 public class PayaraJaspicServletServices extends PayaraJaspicServices {
     
@@ -87,7 +87,7 @@ public class PayaraJaspicServletServices extends PayaraJaspicServices {
         init(HTTPSERVLET, appContext, map, callbackHandler, Globals.get(WebServicesDelegate.class));
 
         if (webBundle != null) {
-            String policyContextId = WebSecurityManager.getContextID(webBundle);
+            String policyContextId = JaccWebAuthorizationManager.getContextID(webBundle);
             map.put(POLICY_CONTEXT, policyContextId);
 
             SunWebApp sunWebApp = webBundle.getSunDescriptor();
