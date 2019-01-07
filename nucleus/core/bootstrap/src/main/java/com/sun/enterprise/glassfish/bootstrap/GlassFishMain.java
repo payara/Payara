@@ -46,20 +46,16 @@ import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Properties;
-
-import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Properties;
+import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
+import fish.payara.boot.runtime.BootCommands;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -70,7 +66,7 @@ import java.util.regex.Pattern;
  */
 public class GlassFishMain {
 
-    private static final Logger LOG = Logger.getLogger(GlassFishMain.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GlassFishMain.class.getName());
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
@@ -275,9 +271,9 @@ public class GlassFishMain {
                 bootCommands.parseCommandScript(new File(file));
                 bootCommands.executeCommands(gf.getCommandRunner());
             } catch (IOException ex) {
-                LOG.log(SEVERE, "Error reading from file");
+                LOGGER.log(SEVERE, "Error reading from file");
             } catch (Throwable ex) {
-                LOG.log(SEVERE, null, ex);
+                LOGGER.log(SEVERE, null, ex);
             }
         }
 

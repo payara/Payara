@@ -58,7 +58,7 @@ public class BootCommand {
     private final String command;
     private final String[] arguments;
 
-    private static final Logger LOG = Logger.getLogger(BootCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BootCommand.class.getName());
 
     public BootCommand(String command, String ... arguments) {
         this.command = command;
@@ -69,10 +69,10 @@ public class BootCommand {
         boolean result = true;
         CommandResult asadminResult = runner.run(command, arguments);
         if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
-            LOG.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()));
+            LOGGER.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()));
             result = false;
         } else {
-            LOG.log(INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));
+            LOGGER.log(INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));
         }
         return result;
     }
