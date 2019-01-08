@@ -37,15 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.authorize;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.context;
 
 import java.security.SecurityPermission;
 import javax.security.jacc.PolicyContextHandler;
 
 /**
- * This class is created by the container and handed over to the JACC provider. This lets the jacc provider to use the
+ * This class is created by the container and handed over to the JACC provider. This lets the JACC provider use the
  * information in making authorization decisions, if it wishes to do so.
+ * 
+ * <p>
+ * Instead of having separate classes for each handler, we only implement one handler that handles all
+ * requests for the context objects. This class implements the PolicyContextHandler interface, but resolving
+ * of the actual objects is delegated to {@link PolicyContextHandlerData}.
  * 
  * @author Harpreet Singh
  * @author Shing Wai Chan
@@ -59,24 +64,25 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
     public static final String SUBJECT = "javax.security.auth.Subject.container";
     public static final String REUSE = "java.security.Policy.supportsReuse";
 
-    private static PolicyContextHandlerImpl pchimpl = null;
+    private static PolicyContextHandlerImpl policyContextHandler;
 
-    private ThreadLocal thisHandlerData = new ThreadLocal();
+    private ThreadLocal<PolicyContextHandlerData> thisHandlerData = new ThreadLocal<>();
 
     private PolicyContextHandlerImpl() {
     }
 
     private synchronized static PolicyContextHandlerImpl _getInstance() {
-        if (pchimpl == null) {
-            pchimpl = new PolicyContextHandlerImpl();
+        if (policyContextHandler == null) {
+            policyContextHandler = new PolicyContextHandlerImpl();
         }
-        return pchimpl;
+        
+        return policyContextHandler;
     }
 
     public static PolicyContextHandler getInstance() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new SecurityPermission("setPolicy"));
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(new SecurityPermission("setPolicy"));
         }
 
         return _getInstance();
@@ -105,20 +111,22 @@ public class PolicyContextHandlerImpl implements PolicyContextHandler {
         return getHandlerData().get(key);
     }
 
-    public HandlerData getHandlerData() {
-        HandlerData handlerData = (HandlerData) thisHandlerData.get();
+    public PolicyContextHandlerData getHandlerData() {
+        PolicyContextHandlerData handlerData = thisHandlerData.get();
         if (handlerData == null) {
-            handlerData = HandlerData.getInstance();
+            handlerData = PolicyContextHandlerData.getInstance();
             thisHandlerData.set(handlerData);
         }
+        
         return handlerData;
     }
 
     public void reset() {
-        HandlerData handlerData = (HandlerData) thisHandlerData.get();
+        PolicyContextHandlerData handlerData = thisHandlerData.get();
         if (handlerData != null) {
             handlerData.reset();
         }
+        
         thisHandlerData.set(null);
     }
 }

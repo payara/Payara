@@ -37,49 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.security.perms;
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
 
-import java.security.PermissionCollection;
-import java.util.logging.Level;
-import java.net.MalformedURLException;
-
-import org.glassfish.api.deployment.DeploymentContext;
-
-public class ModuleEEPermissionsProcessor extends PermissionsProcessor {
-
-    private PermissionCollection eePc;
-
-    public ModuleEEPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc) throws SecurityException {
-        super(type, dc);
-
-        try {
-            convertEEPermissionPaths();
-        } catch (MalformedURLException e) {
-            throw new SecurityException(e);
-        }
-    }
-
-    /**
-     * get the EE permissions which have the file path adjusted for the right module
-     * 
-     * @return adjusted EE permissions
-     */
-    public PermissionCollection getAdjustedEEPermission() {
-        return eePc;
-    }
-
-    // conver the path for permissions
-    private void convertEEPermissionPaths() throws MalformedURLException {
-        // get server suppled default policy
-        PermissionCollection defWarPc = SMGlobalPolicyUtil.getEECompGrantededPerms(type);
-
-        // revise the filepermission's path
-        eePc = processPermisssonsForPath(defWarPc, context);
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Revised permissions = " + eePc);
-        }
-
-    }
-
+/**
+ *
+ * Java EE Component type supporting the use of declared permissions
+ *
+ */
+public enum CommponentType {
+    ear, ejb, war, rar, car
 }

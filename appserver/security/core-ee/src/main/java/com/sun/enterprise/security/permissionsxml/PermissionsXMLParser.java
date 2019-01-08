@@ -38,7 +38,13 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.perms;
+package com.sun.enterprise.security.permissionsxml;
+
+import static javax.xml.stream.XMLInputFactory.IS_NAMESPACE_AWARE;
+import static javax.xml.stream.XMLInputFactory.SUPPORT_DTD;
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,21 +59,20 @@ import java.security.Permissions;
 //import java.text.MessageFormat;
 
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 //import com.sun.enterprise.deploy.shared.LogMessageInfo;
 import com.sun.enterprise.security.integration.PermissionCreator;
 
 /**
- * Parser to parse <code>permissions.xml</code> packaged in a ear or in a standalone module
+ * Parser to parse <code>permissions.xml</code> packaged in an EAR or in a standalone module.
+ * 
+ * <p>
+ * This class is primarily used via {@link PermissionsXMLLoader}.
+ * 
  */
-public class PermissionXMLParser {
+public class PermissionsXMLParser {
 
     protected static final String PERMISSIONS_XML = "META-INF/permissions.xml";
     protected static final String RESTRICTED_PERMISSIONS_XML = "META-INF/restricted-permissions.xml";
@@ -81,35 +86,41 @@ public class PermissionXMLParser {
 
     static {
         xmlInputFactory = XMLInputFactory.newInstance();
-        xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-        xmlInputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+        xmlInputFactory.setProperty(SUPPORT_DTD, false);
+        xmlInputFactory.setProperty(IS_NAMESPACE_AWARE, true);
 
-        // set an zero-byte XMLResolver as IBM JDK does not take SUPPORT_DTD=false
+        // Set an zero-byte XMLResolver as IBM JDK does not take SUPPORT_DTD=false
         // unless there is a jvm option com.ibm.xml.xlxp.support.dtd.compat.mode=false
-        xmlInputFactory.setXMLResolver(new XMLResolver() {
-            @Override
-            public Object resolveEntity(String publicID, String systemID, String baseURI, String namespace) throws XMLStreamException {
-                return new ByteArrayInputStream(new byte[0]);
-            }
-        });
+        xmlInputFactory.setXMLResolver((p,s,b,n) -> new ByteArrayInputStream(new byte[0]));
     }
 
-    public PermissionXMLParser(File permissionsXmlFile, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
-
+    public PermissionsXMLParser(File permissionsXmlFile, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
         try (FileInputStream inputStream = new FileInputStream(permissionsXmlFile)) {
             this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
             init(inputStream);
         } catch (IOException e) {
         }
-
     }
 
-    public PermissionXMLParser(InputStream input, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
+    public PermissionsXMLParser(InputStream input, PermissionCollection permissionCollectionToBeRestricted) throws XMLStreamException, FileNotFoundException {
         this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
         init(input);
     }
+    
+    /**
+     * Returns the permissions that have been loaded and parsed from the <code>File</code> or <code>Stream</code>
+     * given in the constructor of this class.
+     * 
+     * @return Permissions parsed from input
+     */
+    public PermissionCollection getPermissions() {
+        return permissions;
+    }
 
-    protected static XMLInputFactory getXMLInputFactory() {
+    
+    // ### Private methods
+    
+    private static XMLInputFactory getXMLInputFactory() {
         return xmlInputFactory;
     }
 
@@ -120,7 +131,7 @@ public class PermissionXMLParser {
      * @exception XMLStreamException;
      */
     // @Override
-    protected void read(InputStream input) throws XMLStreamException {
+    private void read(InputStream input) throws XMLStreamException {
         parser = getXMLInputFactory().createXMLStreamReader(input);
 
         int event = 0;
@@ -156,7 +167,7 @@ public class PermissionXMLParser {
         }
     }
 
-    protected void init(InputStream input) throws XMLStreamException {
+    private void init(InputStream input) throws XMLStreamException {
         try {
             read(input);
         } finally {
@@ -170,20 +181,7 @@ public class PermissionXMLParser {
         }
     }
 
-    protected void skipRoot(String name) throws XMLStreamException {
-        while (true) {
-            int event = parser.next();
-            if (event == START_ELEMENT) {
-                String localName = parser.getLocalName();
-                if (!name.equals(localName)) {
-                    throw new XMLStreamException("Unexpected element with name " + name);
-                }
-                return;
-            }
-        }
-    }
-
-    protected void skipSubTree(String name) throws XMLStreamException {
+    private void skipSubTree(String name) throws XMLStreamException {
         while (true) {
             int event = parser.next();
             if (event == END_DOCUMENT) {
@@ -201,17 +199,13 @@ public class PermissionXMLParser {
             if (permission != null) {
                 if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(permission)) {
                     throw new SecurityException("Restricted Permission Declared - fail deployment!");
-                } else {
-                    permissions.add(permission);
                 }
+                
+                permissions.add(permission);
             }
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new SecurityException(e);
         }
-    }
-
-    protected PermissionCollection getPermissions() {
-        return permissions;
     }
 
 }
