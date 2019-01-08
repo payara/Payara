@@ -221,7 +221,7 @@
         <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.0.2</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.1.1</maven.dependency.plugin.version>
         <maven.site.plugin.version>3.7</maven.site.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
         <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
