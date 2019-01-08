@@ -233,7 +233,7 @@
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.13.3</maven.jaxb2.plugin.version>
         <maven.bundle.plugin.version>3.5.0</maven.bundle.plugin.version>
-        <maven.antlr.plugin.version>2.1</maven.antlr.plugin.version>
+        <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
         <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
         <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
