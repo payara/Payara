@@ -37,31 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.web;
 
 import java.util.Enumeration;
 
 /**
- * This is the descriptor for the authorization constraint element in
- * the DTD.
+ * This is the descriptor for the authorization constraint element in the DTD.
+ * 
  * @author Danny Coward
  */
-
 public interface AuthorizationConstraint extends WebDescriptor {
-    public static String BASIC_METHOD = "basic";
-    public static String FORM_METHOD = "form";
-    public static String MUTUAL_METHOD = "mutual";
+    
+    String BASIC_METHOD = "basic";
+    String FORM_METHOD = "form";
+    String MUTUAL_METHOD = "mutual";
 
-    /** 
-     * Return the security roles involved in this constraint. 
+    /**
+     * Return the security roles involved in this constraint.
+     * 
      * @return the enumeration of security roles.
      */
-    public Enumeration getSecurityRoles();
+    Enumeration getSecurityRoles();
 
     /**
      * Add a security role to the constraint.
+     * 
      * @param the security role.
      */
-    public void addSecurityRole(SecurityRole securityRole);
+    void addSecurityRole(SecurityRole securityRole);
 }

@@ -42,6 +42,7 @@ package com.sun.enterprise.security.factory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,7 +83,6 @@ public class SecurityManagerFactory {
                     }
                 }
             }
-
         }
 
         return manager;
@@ -118,7 +118,7 @@ public class SecurityManagerFactory {
 
     /**
      * Get (Web or EJB) SecurityManagers associated with an application. Note that the WebSecurityManager and
-     * EJBSecurityManager classes manage separate maps for their respectibe security manager types.
+     * EJBSecurityManager classes manage separate maps for their respective security manager types.
      *
      * @param iD2sMmap maps policy context id (as key) to subordinate map (as value) of (module) name (as key) to
      * SecurityManagers (as value).
@@ -128,8 +128,7 @@ public class SecurityManagerFactory {
      * aiD2sMmap.
      * @return a non-empty ArrayList containing the selected managers, or null.
      */
-    public <T> ArrayList<T> getManagersForApp(Map<String, Map<String, T>> iD2sMmap, Map<String, ArrayList<String>> app2iDmap,
-            String appName, boolean remove) {
+    public <T> List<T> getManagersForApp(Map<String, Map<String, T>> iD2sMmap, Map<String, List<String>> app2iDmap, String appName, boolean remove) {
 
         ArrayList<T> managerList = null;
         String[] ctxIds = getContextsForApp(app2iDmap, appName, remove);
@@ -159,16 +158,16 @@ public class SecurityManagerFactory {
      * @param remove boolean indicating whether the corresponding mappings are to be removed from the app2iDmap.
      * @return a non-zero length array containing the selected policy context identifiers, or null.
      */
-    public <T> String[] getContextsForApp(Map<String, ArrayList<String>> app2iDmap, String appName, boolean remove) {
+    public <T> String[] getContextsForApp(Map<String, List<String>> app2iDmap, String appName, boolean remove) {
         String[] ctxIds = null;
 
         synchronized (app2iDmap) {
 
-            ArrayList<String> ctxList = app2iDmap.get(appName);
+            List<String> ctxList = app2iDmap.get(appName);
             if (ctxList != null && !ctxList.isEmpty()) {
                 ctxIds = ctxList.toArray(new String[ctxList.size()]);
             }
-            
+
             if (remove) {
                 app2iDmap.remove(appName);
             }
@@ -188,8 +187,8 @@ public class SecurityManagerFactory {
      * @param appName the application name
      * @param manager the SecurityManager
      */
-    public <T> void addManagerToApp(Map<String, Map<String, T>> iD2sMmap, Map<String, ArrayList<String>> app2iDmap, String ctxId,
-            String name, String appName, T manager) {
+    public <T> void addManagerToApp(Map<String, Map<String, T>> iD2sMmap, Map<String, List<String>> app2iDmap, String ctxId, String name, String appName,
+            T manager) {
 
         synchronized (iD2sMmap) {
             Map<String, T> managerMap = iD2sMmap.get(ctxId);
@@ -201,14 +200,9 @@ public class SecurityManagerFactory {
 
             managerMap.put(name, manager);
         }
-        
-        synchronized (app2iDmap) {
-            ArrayList<String> ctxList = app2iDmap.get(appName);
 
-            if (ctxList == null) {
-                ctxList = new ArrayList<String>();
-                app2iDmap.put(appName, ctxList);
-            }
+        synchronized (app2iDmap) {
+            List<String> ctxList = app2iDmap.computeIfAbsent(appName, e -> new ArrayList<>());
 
             if (!ctxList.contains(ctxId)) {
                 ctxList.add(ctxId);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
@@ -81,7 +81,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     public ApplicationRuntimeNode(Application descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
-        habitat.getService(ApplicationNode.class);
+        serviceLocator.getService(ApplicationNode.class);
     }   
     
     /**
@@ -114,7 +114,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     * @return the doctype tag name
     */
   public static String registerBundle(Map publicIDToDTD,
-                                      Map<String, List<Class>> versionUpgrades) {    
+                                      Map<String, List<Class<?>>> versionUpgrades) {    
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_130_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_130_DTD_SYSTEM_ID);
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_140_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_140_DTD_SYSTEM_ID);       
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_141_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_141_DTD_SYSTEM_ID);       

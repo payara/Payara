@@ -37,30 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.common;
 
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.checkRestriction;
+import static java.lang.System.getSecurityManager;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientDeclaredPermissions;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientEEPolicy;
+import static org.glassfish.appclient.common.PermissionsUtil.getClientRestrictPolicy;
+
 import java.io.IOException;
+import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
-import java.net.URLClassLoader;
 
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.integration.PermsHolder;
 
 public class ClientClassLoaderDelegate {
 
     protected static final String PERMISSIONS_XML = "META-INF/permissions.xml";
 
-    private URLClassLoader cl;
-    
+    private URLClassLoader classLoader;
     private PermsHolder permHolder;
 
     public ClientClassLoaderDelegate(URLClassLoader cl) {
-        this.cl = cl;
+        this.classLoader = cl;
         loadPemissions();
     }
-    
-    
+
     private void loadPemissions() {
         try {
             processDeclaredPermissions();
@@ -68,33 +72,28 @@ public class ClientClassLoaderDelegate {
             throw new RuntimeException(e);
         }
     }
-    
-    private void processDeclaredPermissions() throws IOException  {
 
-        if (System.getSecurityManager() == null)
+    private void processDeclaredPermissions() throws IOException {
+        if (getSecurityManager() == null) {
             return;
-        
-        PermissionCollection declaredPermissionCollection = 
-            PermissionsUtil.getClientDeclaredPermissions(cl);
-        
-        PermissionCollection eePc = PermissionsUtil.getClientEEPolicy(cl);
-        PermissionCollection eeRestriction = PermissionsUtil.getClientRestrictPolicy(cl); 
+        }
 
-        SMGlobalPolicyUtil.checkRestriction(eePc, eeRestriction);
-        SMGlobalPolicyUtil.checkRestriction(declaredPermissionCollection, eeRestriction);
-        
+        PermissionCollection declaredPermissionCollection = getClientDeclaredPermissions(classLoader);
+
+        PermissionCollection eePc = getClientEEPolicy(classLoader);
+        PermissionCollection eeRestriction = getClientRestrictPolicy(classLoader);
+
+        checkRestriction(eePc, eeRestriction);
+        checkRestriction(declaredPermissionCollection, eeRestriction);
+
         permHolder = new PermsHolder(eePc, declaredPermissionCollection, eeRestriction);
-        
-    }    
+    }
 
     public PermissionCollection getCachedPerms(CodeSource codesource) {
-        
         return permHolder.getCachedPerms(codesource);
     }
-    
-    public PermissionCollection getPermissions(CodeSource codesource, 
-            PermissionCollection parentPC ) {
 
+    public PermissionCollection getPermissions(CodeSource codesource, PermissionCollection parentPC) {
         return permHolder.getPermissions(codesource, parentPC);
     }
 
