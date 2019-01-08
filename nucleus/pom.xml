@@ -360,8 +360,8 @@
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.1</ant.version>
-        <ant-launcher.version>1.10.1</ant-launcher.version>
+        <ant.version>1.10.5</ant.version>
+        <ant-launcher.version>1.10.5</ant-launcher.version>
         <metainf-services.version>1.8</metainf-services.version>
 
         <!-- Debug / analysis -->
@@ -1280,12 +1280,12 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant</artifactId>
-                <version>1.8.2</version>
+                <version>${ant.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant-launcher</artifactId>
-                <version>1.8.2</version>
+                <version>${ant-launcher.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun</groupId>
