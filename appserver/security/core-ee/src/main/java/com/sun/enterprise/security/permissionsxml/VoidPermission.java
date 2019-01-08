@@ -37,43 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.security.perms;
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
 
-import java.security.PermissionCollection;
-import java.net.MalformedURLException;
+import java.security.BasicPermission;
+import java.security.Permission;
 
-import org.glassfish.api.deployment.DeploymentContext;
+/**
+ * A class used in the permission restriction list to imply "No 'AllPermission' allowed" in permissions.xml.
+ *
+ * This permission can not imply any other permission
+ */
+public class VoidPermission extends BasicPermission {
 
-public class DeclaredPermissionsProcessor extends PermissionsProcessor {
+    private static final long serialVersionUID = 5535516010244462567L;
 
-    private PermissionCollection orginalDeclaredPc;
-    private PermissionCollection declaredPc;
-
-    public DeclaredPermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, DeploymentContext dc, PermissionCollection declPc)
-            throws SecurityException {
-        super(type, dc);
-        orginalDeclaredPc = declPc;
-        convertPathDeclaredPerms();
+    public VoidPermission() {
+        this("VoidPermmission");
     }
 
-    /**
-     * get the declared permissions which have the file path adjusted for the right module
-     * 
-     * @return adjusted declared permissions
-     */
-    public PermissionCollection getAdjustedDeclaredPermissions() {
-        return declaredPc;
+    public VoidPermission(String name) {
+        super(name);
     }
 
-    // conver the path for permissions
-    private void convertPathDeclaredPerms() throws SecurityException {
+    public VoidPermission(String name, String actions) {
+        super(name, actions);
+    }
 
-        // revise the filepermission's path
-        try {
-            declaredPc = processPermisssonsForPath(orginalDeclaredPc, context);
-        } catch (MalformedURLException e) {
-            throw new SecurityException(e);
-        }
-
+    @Override
+    public boolean implies(Permission permission) {
+        // always return false
+        return false;
     }
 }

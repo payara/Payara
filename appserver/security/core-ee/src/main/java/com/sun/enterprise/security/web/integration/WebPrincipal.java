@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web.integration;
 
 import java.security.Principal;
@@ -55,7 +55,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
     private char[] password;
     private X509Certificate[] certs;
     private boolean useCertificate;
-    private SecurityContext secCtx;
+    private SecurityContext securityContext;
     private Principal customPrincipal;
 
     public WebPrincipal(Principal p, SecurityContext context) {
@@ -64,35 +64,34 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
             customPrincipal = p;
         }
         this.useCertificate = false;
-        this.secCtx = context;
+        this.securityContext = context;
     }
-    
+
     public WebPrincipal(String user, String password, SecurityContext context) {
-        this(user, password == null? null : password.toCharArray(), context);
+        this(user, password == null ? null : password.toCharArray(), context);
     }
 
     public WebPrincipal(String user, char[] pwd, SecurityContext context) {
         super(user);
+        
         // Copy the password to another reference before storing it to the
         // instance field.
-        this.password = (pwd == null) ? null : Arrays.copyOf(pwd, pwd.length);
+        this.password = pwd == null ? null : Arrays.copyOf(pwd, pwd.length);
 
         this.useCertificate = false;
-        this.secCtx = context;
+        this.securityContext = context;
     }
 
     public WebPrincipal(X509Certificate[] certs, SecurityContext context) {
         super(certs[0].getSubjectDN().getName());
         this.certs = certs;
         this.useCertificate = true;
-        this.secCtx = context;
+        this.securityContext = context;
     }
 
     public char[] getPassword() {
         // Copy the password to another reference and return the reference
-        char[] passwordCopy = (password == null) ? null : Arrays.copyOf(password, password.length);
-
-        return passwordCopy;
+        return password == null ? null : Arrays.copyOf(password, password.length);
     }
 
     public X509Certificate[] getCertificates() {
@@ -105,24 +104,24 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
 
     @Override
     public SecurityContext getSecurityContext() {
-        return secCtx;
+        return securityContext;
     }
 
     @Override
     public String getName() {
         if (customPrincipal == null) {
             return super.getName();
-        } else {
-            return customPrincipal.getName();
         }
+            
+        return customPrincipal.getName();
     }
 
     @Override
     public boolean equals(Object another) {
-
         if (customPrincipal == null) {
             return super.equals(another);
         }
+        
         return customPrincipal.equals(another);
     }
 
@@ -131,6 +130,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.hashCode();
         }
+        
         return customPrincipal.hashCode();
     }
 
@@ -139,6 +139,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         if (customPrincipal == null) {
             return super.toString();
         }
+        
         return customPrincipal.toString();
     }
 

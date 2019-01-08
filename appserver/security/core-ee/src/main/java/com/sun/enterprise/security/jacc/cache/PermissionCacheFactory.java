@@ -37,32 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.cache;
 
-import com.sun.enterprise.security.ee.J2EESecurityManager;
+import java.net.SocketPermission;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Policy;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.PropertyPermission;
+
+import com.sun.enterprise.security.ee.J2EESecurityManager;
 
 /**
  * This class is the factory for creating and managing PermissionCache.
  * 
  * @author Shing Wai Chan
  */
-
 public class PermissionCacheFactory {
 
     private static final Hashtable cacheMap = new Hashtable();
-    private static int factoryKey = 0;
-    private static boolean supportsReuse = false;
+    private static int factoryKey;
+    private static boolean supportsReuse;
 
-    private static Permission[] protoPerms = {
-            new java.net.SocketPermission("localhost", "connect"),
-            new java.util.PropertyPermission("x", "read")
-    };
+    private static Permission[] protoPerms = { new SocketPermission("localhost", "connect"), new PropertyPermission("x", "read") };
 
     private static PermissionCache securityManagerCache = createSecurityManagerCache();
 
@@ -85,7 +84,6 @@ public class PermissionCacheFactory {
      * @return the key as an Integer object.
      */
     private static Integer getNextKey() {
-
         Integer key = Integer.valueOf(factoryKey++);
 
         while (cacheMap.get(key) != null) {
@@ -96,14 +94,7 @@ public class PermissionCacheFactory {
     }
 
     private static synchronized PermissionCache createSecurityManagerCache() {
-
-        Integer key = getNextKey();
-
-        PermissionCache cache =
-
-                new PermissionCache(key, null, null, protoPerms, null);
-
-        return registerPermissionCache(cache);
+        return registerPermissionCache(new PermissionCache(getNextKey(), null, null, protoPerms, null));
     }
 
     /**
@@ -118,9 +109,7 @@ public class PermissionCacheFactory {
      * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
      * dos not factor into the permission caching.
      */
-    public static synchronized PermissionCache createPermissionCache(String pcID,
-            CodeSource codesource, Permission[] perms, String name) {
-
+    public static synchronized PermissionCache createPermissionCache(String pcID, CodeSource codesource, Permission[] perms, String name) {
         if (!supportsReuse) {
             return null;
         }
@@ -144,18 +133,12 @@ public class PermissionCacheFactory {
      * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
      * dos not factor into the permission caching.
      */
-    public static synchronized PermissionCache createPermissionCache(String pcID,
-            CodeSource codesource, Class clazz, String name) {
-
+    public static synchronized PermissionCache createPermissionCache(String pcID, CodeSource codesource, Class clazz, String name) {
         if (!supportsReuse) {
             return null;
         }
 
-        Integer key = getNextKey();
-
-        PermissionCache cache = new PermissionCache(key, pcID, codesource, clazz, name);
-
-        return registerPermissionCache(cache);
+        return registerPermissionCache(new PermissionCache(getNextKey(), pcID, codesource, clazz, name));
     }
 
     /**
@@ -172,7 +155,6 @@ public class PermissionCacheFactory {
     }
 
     public static synchronized PermissionCache removePermissionCache(PermissionCache cache) {
-
         PermissionCache rvalue = null;
 
         if (cache != null) {
@@ -184,6 +166,7 @@ public class PermissionCacheFactory {
                 rvalue.reset();
             }
         }
+        
         return rvalue;
     }
 
@@ -191,10 +174,9 @@ public class PermissionCacheFactory {
      * This resets all caches inside the factory.
      */
     public static synchronized void resetCaches() {
-
         supportsReuse = true;
 
-        java.lang.SecurityManager sm = System.getSecurityManager();
+        SecurityManager sm = System.getSecurityManager();
         if (sm != null && sm instanceof J2EESecurityManager) {
             if (!((J2EESecurityManager) sm).cacheEnabled()) {
                 ((J2EESecurityManager) sm).enablePermissionCache(securityManagerCache);

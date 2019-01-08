@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
+import static com.sun.enterprise.security.jauth.AuthConfig.SOAP;
 import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.CLIENT_CERT_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.EJB_SEC_CONFIG_FAILURE;
@@ -82,8 +83,8 @@ import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
+import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jauth.AuthConfig;
 import com.sun.enterprise.security.jauth.AuthException;
 import com.sun.enterprise.security.jauth.ServerAuthContext;
@@ -104,23 +105,22 @@ import com.sun.xml.ws.assembler.ClientPipelineHook;
 @Service
 @Singleton
 public class SecurityServiceImpl implements SecurityService {
-
-    @Inject
-    private AppServerAuditManager auditManager;
-
+    
     protected static final Logger _logger = LogUtils.getLogger();
 
     private static final String AUTHORIZATION_HEADER = "authorization";
 
     private static ThreadLocal<WeakReference<SOAPMessage>> req = new ThreadLocal<WeakReference<SOAPMessage>>();
 
+    @Inject
+    private AppServerAuditManager auditManager;
+
     @Override
     public Object mergeSOAPMessageSecurityPolicies(MessageSecurityBindingDescriptor desc) {
         try {
             // Merge message security policy from domain.xml and sun-specific
             // deployment descriptor
-            ServerAuthConfig serverAuthConfig = ServerAuthConfig.getConfig(AuthConfig.SOAP, desc, null);
-            return serverAuthConfig;
+            return ServerAuthConfig.getConfig(AuthConfig.SOAP, desc, null);
         } catch (Exception ae) {
             _logger.log(SEVERE, EJB_SEC_CONFIG_FAILURE, ae);
         }
@@ -219,11 +219,9 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public SystemHandlerDelegate getSecurityHandler(WebServiceEndpoint endpoint) {
-
         if (!endpoint.hasAuthMethod()) {
             try {
-                ServerAuthConfig config = ServerAuthConfig.getConfig(AuthConfig.SOAP,
-                        endpoint.getMessageSecurityBinding(), null);
+                ServerAuthConfig config = ServerAuthConfig.getConfig(SOAP, endpoint.getMessageSecurityBinding(), null);
                 if (config != null) {
                     return new ServletSystemHandlerDelegate(config, endpoint);
                 }
@@ -238,7 +236,7 @@ public class SecurityServiceImpl implements SecurityService {
     public HandlerInfo getMessageSecurityHandler(MessageSecurityBindingDescriptor binding, QName serviceName) {
         HandlerInfo rvalue = null;
         try {
-            ClientAuthConfig config = ClientAuthConfig.getConfig(AuthConfig.SOAP, binding, null);
+            ClientAuthConfig config = ClientAuthConfig.getConfig(SOAP, binding, null);
             if (config != null) {
                 // get understood headers from auth module.
                 QName[] headers = config.getMechanisms();
@@ -307,23 +305,24 @@ public class SecurityServiceImpl implements SecurityService {
                     req.set(null);
                 }
             }
-
         }
     }
 
     @Override
     public Principal getUserPrincipal(boolean isWeb) {
         // This is a servlet endpoint
-        SecurityContext ctx = SecurityContext.getCurrent();
-        if (ctx == null) {
+        SecurityContext securityContext = SecurityContext.getCurrent();
+        if (securityContext == null) {
             return null;
         }
-        if (ctx.didServerGenerateCredentials()) {
+        
+        if (securityContext.didServerGenerateCredentials()) {
             if (isWeb) {
                 return null;
             }
         }
-        return ctx.getCallerPrincipal();
+        
+        return securityContext.getCallerPrincipal();
     }
 
     @Override
@@ -332,6 +331,7 @@ public class SecurityServiceImpl implements SecurityService {
             RealmAdapter realmAdapter = (RealmAdapter) webModule.getRealm();
             return realmAdapter.hasRole(servletName, principal, role);
         }
+        
         return false;
     }
 

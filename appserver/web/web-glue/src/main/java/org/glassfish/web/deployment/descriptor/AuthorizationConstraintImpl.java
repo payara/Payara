@@ -37,99 +37,100 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.descriptor;
+
+import static java.util.Collections.enumeration;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.glassfish.deployment.common.Descriptor;
 
 import com.sun.enterprise.deployment.SecurityRoleDescriptor;
 import com.sun.enterprise.deployment.web.AuthorizationConstraint;
 import com.sun.enterprise.deployment.web.SecurityRole;
-import org.glassfish.deployment.common.Descriptor;
-
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
 
 /**
- * This descriptor represents an authorization contraint on a security 
- * constraint in a web application.
+ * This descriptor represents an authorization constraint on a security constraint in a web application.
  *
  * @author Danny Coward
  */
-
-public class AuthorizationConstraintImpl extends Descriptor implements
-		AuthorizationConstraint {
-    private Set<SecurityRole> securityRoles;
+public class AuthorizationConstraintImpl extends Descriptor implements AuthorizationConstraint {
     
+    private static final long serialVersionUID = -9221963350304406520L;
+    
+    private Set<SecurityRole> securityRoles;
+
     /**
-     * Default constructor that creates an AuthorizationConstraint 
-     * with no roles.
+     * Default constructor that creates an AuthorizationConstraint with no roles.
      */
     public AuthorizationConstraintImpl() {
     }
-    
+
     /**
      * Copy constructor.
      */
     public AuthorizationConstraintImpl(AuthorizationConstraintImpl other) {
-	this.securityRoles = new HashSet<SecurityRole>(other.getSecurityRoleSet());
+        securityRoles = new HashSet<SecurityRole>(other.getSecurityRoleSet());
     }
-    
+
     /**
      * Return the set of roles.
      */
     private Set<SecurityRole> getSecurityRoleSet() {
-	if (this.securityRoles == null) {
-	    this.securityRoles = new HashSet<SecurityRole>();
-	}
-	return this.securityRoles;
+        if (securityRoles == null) {
+            securityRoles = new HashSet<>();
+        }
+        
+        return securityRoles;
     }
 
-    /** 
-     * Return the security roles involved in this constraint. The 
-     * enumeration is empty if there are none.
+    /**
+     * Return the security roles involved in this constraint. The enumeration is empty if there are none.
+     * 
      * @return the enumeration of security roles in this constraint.
      */
-    public Enumeration getSecurityRoles() {
-	if (this.securityRoles == null) {
-	    this.securityRoles = new HashSet<SecurityRole>();
-	}
-	return (new Vector<SecurityRole>(this.getSecurityRoleSet())).elements();
+    public Enumeration<SecurityRole> getSecurityRoles() {
+        return enumeration(new ArrayList<>(getSecurityRoleSet()));
     }
-    
+
     /**
      * Adds a role to the authorization constraint.
+     * 
      * @param the role to be added.
      */
     public void addSecurityRole(SecurityRole securityRole) {
-	this.getSecurityRoleSet().add(securityRole);
+        getSecurityRoleSet().add(securityRole);
     }
-    
+
     /**
      * Adds a role to the authorization constraint
+     * 
      * @param the role name to be added
-     */ 
+     */
     public void addSecurityRole(String roleName) {
-        SecurityRoleDescriptor sr = new SecurityRoleDescriptor();
-        sr.setName(roleName);
-        addSecurityRole(sr);
+        addSecurityRole(new SecurityRoleDescriptor(roleName));
     }
-    
+
     /**
      * Removes the given role from the autrhorization constraint.
+     * 
      * @param the role to be removed.
      */
     public void removeSecurityRole(SecurityRole securityRole) {
-	this.getSecurityRoleSet().remove(securityRole);
+        getSecurityRoleSet().remove(securityRole);
     }
 
     /**
      * Prints a formatted representation of this object.
      */
     public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("AuthorizationConstraint ");
-	super.print(toStringBuffer);
-	toStringBuffer.append(" securityRoles ").append(this.securityRoles);
+        toStringBuffer.append("AuthorizationConstraint ");
+        super.print(toStringBuffer);
+        toStringBuffer.append(" securityRoles ").append(securityRoles);
     }
-    
+
 }

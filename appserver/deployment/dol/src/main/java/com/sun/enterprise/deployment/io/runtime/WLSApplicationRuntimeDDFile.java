@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.io.runtime;
 
 import org.glassfish.deployment.common.Descriptor;
@@ -55,63 +55,59 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the WebLogic Application Container
+ * This class is responsible for handling the XML configuration information for the WebLogic Application Container
  *
  */
 @ConfigurationDeploymentDescriptorFileFor(EarType.ARCHIVE_TYPE)
 @PerLookup
 @Service
-public class WLSApplicationRuntimeDDFile extends 
-        ConfigurationDeploymentDescriptorFile {  
-   
+public class WLSApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
+
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
+     * @return the location of the DeploymentDescriptor file for a particular type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.WLS_APPLICATION_JAR_ENTRY;        
+        return DescriptorConstants.WLS_APPLICATION_JAR_ENTRY;
     }
-    
+
     /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
+     * @return a RootXMLNode responsible for handling the deployment descriptors associated with this J2EE module
      *
      * @param the descriptor for which we need the node
      */
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         if (descriptor instanceof Application) {
-            Application application = (Application)descriptor;
-            RootXMLNode node = application.getRootNode(getDeploymentDescriptorPath());  
+            Application application = (Application) descriptor;
+            RootXMLNode node = application.getRootNode(getDeploymentDescriptorPath());
             if (node == null) {
                 node = new WeblogicApplicationNode(application);
                 application.addRootNode(getDeploymentDescriptorPath(), node);
             }
             return node;
         }
+        
         return new WeblogicApplicationNode();
     }
 
     /**
-     * Register the root node for this runtime deployment descriptor file
-     * in the root nodes map, and also in the dtd map which will be used for
-     * dtd validation.
+     * Register the root node for this runtime deployment descriptor file in the root nodes map, and also in the dtd map
+     * which will be used for dtd validation.
      *
      * @param rootNodesMap the map for storing all the root nodes
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
      * @param versionUpgrades The list of upgrades from older versions
      */
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {
-      rootNodesMap.put(WeblogicApplicationNode.registerBundle(publicIDToDTDMap, versionUpgrades), WeblogicApplicationNode.class);
+    public void registerBundle(Map<String, Class<?>> rootNodesMap, Map<String, String> publicIDToDTDMap,
+            Map<String, List<Class<?>>> versionUpgrades) {
+        rootNodesMap.put(WeblogicApplicationNode.registerBundle(publicIDToDTDMap, versionUpgrades), WeblogicApplicationNode.class);
     }
 
-  /**
-   * Return whether this configuration file can be validated.
-   * @return whether this configuration file can be validated.
-   */
-  public boolean isValidating() {
-    return true;
-  }
+    /**
+     * Return whether this configuration file can be validated.
+     * 
+     * @return whether this configuration file can be validated.
+     */
+    public boolean isValidating() {
+        return true;
+    }
 }

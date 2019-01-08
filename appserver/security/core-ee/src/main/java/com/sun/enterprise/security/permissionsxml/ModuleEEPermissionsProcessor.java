@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,22 +38,47 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.authorize;
+package com.sun.enterprise.security.permissionsxml;
 
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.jvnet.hk2.annotations.Contract;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.getEECompGrantededPerms;
+import static java.util.logging.Level.FINE;
 
-import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.security.PermissionCollection;
 
-@Contract
-public interface PolicyContextDelegate {
-    Object getEnterpriseBean(ComponentInvocation inv);
+import org.glassfish.api.deployment.DeploymentContext;
 
-    Object getEJbArguments(ComponentInvocation inv);
+public class ModuleEEPermissionsProcessor extends BasePermissionsProcessor {
 
-    Object getSOAPMessage(ComponentInvocation inv);
+    private PermissionCollection eePermissionCollection;
 
-    void setSOAPMessage(Object message, ComponentInvocation inv);
+    public ModuleEEPermissionsProcessor(CommponentType type, DeploymentContext context) throws SecurityException {
+        super(type, context);
 
-    boolean authorize(ComponentInvocation inv, Method m) throws Exception;
+        try {
+            convertEEPermissionPaths();
+        } catch (MalformedURLException e) {
+            throw new SecurityException(e);
+        }
+    }
+
+    /**
+     * Get the EE permissions which have the file path adjusted for the right module
+     * 
+     * @return adjusted EE permissions
+     */
+    public PermissionCollection getAdjustedEEPermission() {
+        return eePermissionCollection;
+    }
+
+    // Convert the path for permissions
+    private void convertEEPermissionPaths() throws MalformedURLException {
+        // Get server suppled default policy and revise the file permission's path
+        eePermissionCollection = processPermisssonsForPath(getEECompGrantededPerms(type), context);
+
+        if (logger.isLoggable(FINE)) {
+            logger.fine("Revised permissions = " + eePermissionCollection);
+        }
+    }
+
 }
