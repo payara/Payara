@@ -369,7 +369,8 @@
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
-        <findbugs.version>3.0.5</findbugs.version>
+        <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
+        <findbugs.version>1.7</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
@@ -882,7 +883,7 @@ Parent is ${project.parent}</echo>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs.version}</version>
+                <version>${findbugs-maven-plugin.version}</version>
                 <configuration>
                     <skip>${findbugs.skip}</skip>
                     <threshold>${findbugs.threshold}</threshold>
@@ -890,20 +891,20 @@ Parent is ${project.parent}</echo>
                     <excludeFilterFile>
                         ${findbugs.common},${findbugs.exclude}
                     </excludeFilterFile>
-		            <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=${findbugs.glassfish.logging.validLoggerPrefixes}</jvmArgs>
-		            <plugins>
-            		        <plugin>
-                			    <groupId>org.glassfish.findbugs</groupId>
-                			    <artifactId>findbugs-logging-detectors</artifactId>
-                			    <version>1.6</version>
-            		        </plugin>
-	                </plugins>
+                    <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=${findbugs.glassfish.logging.validLoggerPrefixes}</jvmArgs>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.glassfish.findbugs</groupId>
+                            <artifactId>findbugs-logging-detectors</artifactId>
+                            <version>${findbugs.version}</version>
+                        </plugin>
+                    </plugins>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.glassfish.findbugs</groupId>
                         <artifactId>findbugs</artifactId>
-                        <version>1.6</version>
+                        <version>${findbugs.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -1612,7 +1613,7 @@ Parent is ${project.parent}</echo>
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs.version}</version>
+                            <version>${findbugs-maven-plugin.version}</version>
                             <configuration>
                                 <skip>${findbugs.skip}</skip>
                                 <threshold>${findbugs.threshold}</threshold>
