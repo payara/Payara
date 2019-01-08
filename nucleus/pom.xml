@@ -369,7 +369,7 @@
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
-        <findbugs.version>2.5.2</findbugs.version>
+        <findbugs.version>3.0.5</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
