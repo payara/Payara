@@ -237,7 +237,7 @@
         <maven.enforcer.plugin.version>1.4.1</maven.enforcer.plugin.version>
         <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
         <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
-        <maven.jaxws.plugin.version>1.12</maven.jaxws.plugin.version>
+        <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
         <maven.build.helper.plugin.version>1.7</maven.build.helper.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
