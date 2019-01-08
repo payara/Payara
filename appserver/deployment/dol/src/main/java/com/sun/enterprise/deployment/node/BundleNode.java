@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
 
 import java.util.Collection;
@@ -51,47 +52,42 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface BundleNode {
-    
+
     /**
      * Registers the standard bundle node in the map.
      * <p>
-     * The implementation class must add to the map an entry with the key
-     * equal to the public ID of the DTD and the value the system ID. 
+     * The implementation class must add to the map an entry with the key equal to the public ID of the DTD and the value
+     * the system ID.
      * 
      * @param publicIDToSystemIDMapping map prepared by the caller
      * @param versionUpgrades The list of upgrades from older versions
      * @return top-level element name for the standard descriptor
      */
-  String registerBundle(final Map<String,String> publicIDToSystemIDMapping);
-    
+    String registerBundle(Map<String, String> publicIDToSystemIDMapping);
+
     /**
-     * Registers all appropriate runtime bundle nodes for this standard node
-     * into the map.
+     * Registers all appropriate runtime bundle nodes for this standard node into the map.
      * <p>
-     * The implementation class must add to the map one entry for each associated
-     * runtime descriptor node, with the entry key equal to the public ID of the 
-     * runtime DTD and the value the system ID of the runtime DTD.  The 
-     * implementation must also return a map containing one entry for each
-     * associated runtime node, with the entry key equal to the top-level 
-     * element name for the runtime descriptor and the entry value equal to the
-     * class of the runtime node.
+     * The implementation class must add to the map one entry for each associated runtime descriptor node, with the entry
+     * key equal to the public ID of the runtime DTD and the value the system ID of the runtime DTD. The implementation must
+     * also return a map containing one entry for each associated runtime node, with the entry key equal to the top-level
+     * element name for the runtime descriptor and the entry value equal to the class of the runtime node.
      * 
      * @param publicIDToSystemIDMapping
-     * @param versionUpgrades The list of upgrades from older versions
-     * to the latest schema
+     * @param versionUpgrades The list of upgrades from older versions to the latest schema
      * @return map from top-level runtime descriptor element name to the corresponding runtime node class
      */
-    Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToSystemIDMapping, final Map<String, List<Class>> versionUpgrades);
-    
+    Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, Map<String, List<Class<?>>> versionUpgrades);
+
     /**
-     * Returns the element names related to the standard or related runtime nodes 
-     * for which the parser should allow empty values.
+     * Returns the element names related to the standard or related runtime nodes for which the parser should allow empty
+     * values.
      */
     Collection<String> elementsAllowingEmptyValue();
-    
+
     /**
-     * Returns the element names related to the standard or related runtime nodes 
-     * for which the parser should preserve whitespace.
+     * Returns the element names related to the standard or related runtime nodes for which the parser should preserve
+     * whitespace.
      */
     Collection<String> elementsPreservingWhiteSpace();
 }

@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.authorize;
 
 import java.lang.reflect.Method;
 
-import com.sun.enterprise.security.authorize.PolicyContextDelegate;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.api.EJBInvocation;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.security.jacc.context.PolicyContextDelegate;
 
 /**
  * This class is primarily a delegate for PolicyContextHandler related queries

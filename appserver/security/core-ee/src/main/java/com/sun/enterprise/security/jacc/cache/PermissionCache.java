@@ -37,28 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.cache;
 
-import com.sun.enterprise.security.common.AppservAccessController;
-import java.security.CodeSource;
+import static java.util.Collections.list;
+import static java.util.logging.Level.SEVERE;
+
 import java.security.AllPermission;
+import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.security.Policy;
-import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
-import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
 
 import javax.security.jacc.PolicyContext;
-import com.sun.enterprise.security.ee.CachedPermissionImpl.Epoch;
 
+import com.sun.enterprise.security.common.AppservAccessController;
+import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl.Epoch;
 import com.sun.logging.LogDomains;
 
 /**
@@ -66,7 +67,6 @@ import com.sun.logging.LogDomains;
  * 
  * @author Ron Monzillo
  */
-
 public class PermissionCache extends Object {
 
     private static Logger _logger = LogDomains.getLogger(PermissionCache.class, LogDomains.SECURITY_LOGGER);
@@ -76,7 +76,7 @@ public class PermissionCache extends Object {
     private Permissions cache;
     private CodeSource codesource;
     private Permission[] protoPerms;
-    private Class[] classes;
+    private Class<? extends Permission>[] classes;
     private String name;
     private String pcID;
     private final Integer factoryKey;
@@ -85,64 +85,28 @@ public class PermissionCache extends Object {
     private ReadWriteLock rwLock;
     private Lock rLock;
     private Lock wLock;
-
-    /*
-     * USE OF THIS CONSTRUCTOR WITH IS DISCOURAGED PLEASE USE THE Permission (object) based CONSTRUCTOR.
-     * @param key - Integer that uniquely identifies the cache at the factory
-     * @param pcID - a string identifying the policy context and which must be set when getPermissions is called
-     * (internally). this value may be null, in which case the permisions of the default policy context will be cached.
-     * @param codesource - the codesource argument to be used in the call to getPermissions. this value may be null.
-     * @param class - a single Class object that identifies the permission type that will be managed by the cache. This
-     * value may be null. When this argument is not null, only permissions of the identified type or that resolve to the
-     * identified type, will be managed within the cache. When null is passed to this argument, permission type will not be
-     * a factor in determining the cached permissions.
-     * @param name - a string corresponding to a value returned by Permission.getName(). Only permissions whose getName()
-     * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
-     * does not factor into the permission caching.
-     */
-    public PermissionCache(Integer key, String pcID, CodeSource codesource,
-            Class clazz, String name) {
-        if (codesource == null) {
-            this.codesource = new CodeSource(null,
-                    (java.security.cert.Certificate[]) null);
-        } else {
-            this.codesource = codesource;
-        }
-        this.factoryKey = key;
-        this.cache = null;
-        this.pcID = pcID;
-        this.protoPerms = null;
-        if (clazz != null) {
-            this.classes = new Class[] { clazz };
-        } else {
-            this.classes = null;
-        }
-        this.name = name;
-        this.epoch = 1;
-        this.loading = false;
-        this.rwLock = new ReentrantReadWriteLock(true);
-        this.rLock = rwLock.readLock();
-        this.wLock = rwLock.writeLock();
-    }
+   
 
     /*
      * @param key - Integer that uniquely identifies the cache at the factory
+     * 
      * @param pcID - a string identifying the policy context and which must be set when getPermissions is called
      * (internally). this value may be null, in which case the permisions of the default policy context will be cached.
+     * 
      * @param codesource - the codesource argument to be used in the call to getPermissions. this value may be null.
+     * 
      * @param perms - an array of permission objects identifying the permission types that will be managed by the cache.
      * This value may be null. When this argument is not null, only permissions of the types passed in the array or that
      * resolve to the types identified in the will be managed within the cache. When null is passed to this argument,
      * permission type will not be a factor in determining the cached permissions.
+     * 
      * @param name - a string corresponding to a value returned by Permission.getName(). Only permissions whose getName()
      * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
      * does not factor into the permission caching.
      */
-    public PermissionCache(Integer key, String pcID, CodeSource codesource,
-            Permission[] perms, String name) {
+    public PermissionCache(Integer key, String pcID, CodeSource codesource, Permission[] perms, String name) {
         if (codesource == null) {
-            this.codesource = new CodeSource(null,
-                    (java.security.cert.Certificate[]) null);
+            this.codesource = new CodeSource(null, (java.security.cert.Certificate[]) null);
         } else {
             this.codesource = codesource;
         }
@@ -165,34 +129,79 @@ public class PermissionCache extends Object {
         this.rLock = rwLock.readLock();
         this.wLock = rwLock.writeLock();
     }
+    
+    /*
+     * USE OF THIS CONSTRUCTOR WITH IS DISCOURAGED PLEASE USE THE Permission (object) based CONSTRUCTOR.
+     * 
+     * @param key - Integer that uniquely identifies the cache at the factory
+     * 
+     * @param pcID - a string identifying the policy context and which must be set when getPermissions is called
+     * (internally). this value may be null, in which case the permisions of the default policy context will be cached.
+     * 
+     * @param codesource - the codesource argument to be used in the call to getPermissions. this value may be null.
+     * 
+     * @param class - a single Class object that identifies the permission type that will be managed by the cache. This
+     * value may be null. When this argument is not null, only permissions of the identified type or that resolve to the
+     * identified type, will be managed within the cache. When null is passed to this argument, permission type will not be
+     * a factor in determining the cached permissions.
+     * 
+     * @param name - a string corresponding to a value returned by Permission.getName(). Only permissions whose getName()
+     * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
+     * does not factor into the permission caching.
+     */
+    public PermissionCache(Integer key, String pcID, CodeSource codesource, Class<? extends Permission> clazz, String name) {
+        if (codesource == null) {
+            this.codesource = new CodeSource(null, (java.security.cert.Certificate[]) null);
+        } else {
+            this.codesource = codesource;
+        }
+        this.factoryKey = key;
+        this.cache = null;
+        this.pcID = pcID;
+        this.protoPerms = null;
+        if (clazz != null) {
+            this.classes = new Class[] { clazz };
+        } else {
+            this.classes = null;
+        }
+        this.name = name;
+        this.epoch = 1;
+        this.loading = false;
+        this.rwLock = new ReentrantReadWriteLock(true);
+        this.rLock = rwLock.readLock();
+        this.wLock = rwLock.writeLock();
+    }
 
     public Integer getFactoryKey() {
-        return this.factoryKey;
+        return factoryKey;
     }
 
-    private boolean checkLoadedCache(Permission p, Epoch e) {
+    private boolean checkLoadedCache(Permission permission, Epoch e) {
         if (e == null) {
-            return cache.implies(p);
-        } else {
-            if (e.epoch != epoch) {
-                e.granted = cache.implies(p);
-                e.epoch = epoch;
-            }
-            return e.granted;
+            return cache.implies(permission);
         }
+        
+        if (e.epoch != epoch) {
+            e.granted = cache.implies(permission);
+            e.epoch = epoch;
+        }
+        
+        return e.granted;
     }
 
-    private boolean checkCache(Permission p, Epoch e) {
+    private boolean checkCache(Permission permissionToCheck, Epoch epoch) {
 
-        // test-and-set to guard critical section
+        // Test-and-set to guard critical section
         rLock.lock();
         try {
             if (loading) {
                 return false;
-            } else if (cache != null) {
-                // cache is loaded and readlock is held
-                // check permission and return
-                return checkLoadedCache(p, e);
+            }
+            
+            if (cache != null) {
+                // Cache is loaded and read lock is held.
+                // Check permission and return.
+                return checkLoadedCache(permissionToCheck, epoch);
             }
         } finally {
             rLock.unlock();
@@ -200,11 +209,13 @@ public class PermissionCache extends Object {
 
         wLock.lock();
         if (loading) {
-            // another thread started the load
+            // Another thread started the load
             // release the writelock and return
             wLock.unlock();
             return false;
-        } else if (cache != null) {
+        }
+        
+        if (cache != null) {
             // another thread loaded the cache
             // get readlock inside writelock.
             // check permission and return
@@ -213,18 +224,18 @@ public class PermissionCache extends Object {
             try {
                 // cache is loaded and readlock is held
                 // check permission and return
-                return checkLoadedCache(p, e);
+                return checkLoadedCache(permissionToCheck, epoch);
             } finally {
                 rLock.unlock();
             }
-        } else {
-            // set the load indicators so that readers will
-            // bypass the cache until it is loaded
-            // release the writelock and return
-            cache = null;
-            loading = true;
-            wLock.unlock();
         }
+        
+        // Set the load indicators so that readers will bypass the cache until it is loaded
+        // release the writelock and return
+        cache = null;
+        loading = true;
+        wLock.unlock();
+        
 
         // cache will be null if we proceed past this point
         // NO LOCKS ARE HELD AT THIS POINT
@@ -235,44 +246,40 @@ public class PermissionCache extends Object {
         String oldpcID = null;
         try {
             oldpcID = PolicyContext.getContextID();
-            if (this.pcID == null || !this.pcID.equals(oldpcID)) {
+            if (pcID == null || !pcID.equals(oldpcID)) {
                 setPc = true;
             }
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "JACC: Unexpected security exception on access decision", ex);
+            _logger.log(SEVERE, "JACC: Unexpected security exception on access decision", ex);
             return false;
         }
 
         PermissionCollection pc = null;
         try {
             if (setPc) {
-                setPolicyContextID(this.pcID);
+                setPolicyContextID(pcID);
             }
 
-            pc = policy.getPermissions(this.codesource);
+            pc = policy.getPermissions(codesource);
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "JACC: Unexpected security exception on access decision", ex);
+            _logger.log(SEVERE, "JACC: Unexpected security exception on access decision", ex);
             return false;
         } finally {
             if (setPc) {
                 try {
                     setPolicyContextID(oldpcID);
                 } catch (Exception ex) {
-                    _logger.log(Level.SEVERE, "JACC: Unexpected security exception on access decision", ex);
+                    _logger.log(SEVERE, "JACC: Unexpected security exception on access decision", ex);
                     return false;
                 }
             }
         }
 
-        // force resolution of unresolved permissions
-        // so that we can filter out all but the permissions
+        // Force resolution of unresolved permissions so that we can filter out all but the permissions
         // that are supposed to be in the cache.
+        resolvePermissions(pc, permissionToCheck);
 
-        resolvePermissions(pc, p);
-
-        Enumeration granted = pc.elements();
-        while (granted.hasMoreElements()) {
-            Permission i = (Permission) granted.nextElement();
+        for (Permission i : list(pc.elements())) {
             if (i.equals(allPermission)) {
                 nextCache.add(i);
             } else {
@@ -287,6 +294,7 @@ public class PermissionCache extends Object {
                         }
                     }
                 }
+                
                 if (classMatch) {
                     if (this.name != null) {
                         String iName = i.getName();
@@ -300,28 +308,28 @@ public class PermissionCache extends Object {
             }
         }
 
-        // get the writelock to mark cache as loaded
+        // Get the writelock to mark cache as loaded
         wLock.lock();
         cache = nextCache;
         loading = false;
         try {
-            // get readlock inside writelock.
+            // Get readlock inside writelock.
             rLock.lock();
             wLock.unlock();
             // cache is loaded and readlock is held
             // check permission and return
-            return checkLoadedCache(p, e);
+            return checkLoadedCache(permissionToCheck, epoch);
         } finally {
             rLock.unlock();
         }
     }
 
-    boolean checkPermission(Permission p, Epoch e) {
-        return checkCache(p, e);
+    boolean checkPermission(Permission permission, Epoch e) {
+        return checkCache(permission, e);
     }
 
-    public boolean checkPermission(Permission p) {
-        return checkCache(p, null);
+    public boolean checkPermission(Permission permission) {
+        return checkCache(permission, null);
     }
 
     public synchronized void reset() {
@@ -338,27 +346,26 @@ public class PermissionCache extends Object {
         }
     }
 
-    private void setPolicyContextID(final String newID)
-            throws PrivilegedActionException {
-        AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+    private void setPolicyContextID(final String newID) throws PrivilegedActionException {
+        AppservAccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
             @Override
-            public java.lang.Object run() throws Exception {
+            public Object run() throws Exception {
                 PolicyContext.setContextID(newID);
                 return null;
             }
         });
     }
 
-    // use implies to resolve unresolved permissions
-    private void resolvePermissions(PermissionCollection pc, Permission p) {
-        // each call to implies will resolve permissions of the
+    // Use implies to resolve unresolved permissions
+    private void resolvePermissions(PermissionCollection permissionCollection, Permission permission) {
+        // Each call to implies will resolve permissions of the
         // argument permission type
-        if (this.protoPerms != null && this.protoPerms.length > 0) {
-            for (int i = 0; i < this.protoPerms.length; i++) {
-                pc.implies(this.protoPerms[i]);
+        if (protoPerms != null && protoPerms.length > 0) {
+            for (int i = 0; i < protoPerms.length; i++) {
+                permissionCollection.implies(protoPerms[i]);
             }
         } else {
-            pc.implies(p);
+            permissionCollection.implies(permission);
         }
     }
 }

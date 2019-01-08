@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.io;
 
 import java.util.List;
@@ -47,7 +47,7 @@ import org.jvnet.hk2.annotations.Contract;
 
 /**
  * This class is responsible for handling the XML configuration information
- * for the J2EE Reference Implementation runtime descriptors.
+ * for the Java EE Reference Implementation runtime descriptors.
  *
  * @author Jerome Dochez
  */
@@ -63,9 +63,9 @@ public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDe
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
      * @param versionUpgrades The list of upgrades from older versions
      */
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {}
+    public void registerBundle(Map<String, Class<?>> rootNodesMap,
+                               Map<String, String> publicIDToDTDMap,
+                               Map<String, List<Class<?>>> versionUpgrades) {}
 
   /**
    * Return whether this configuration file can be validated.

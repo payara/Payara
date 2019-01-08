@@ -37,27 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.cache;
 
 import java.security.Permission;
 
 /**
- * This class is
+ * This class is.
  * 
  * @author Ron Monzillo
  */
-
 public interface CachedPermission {
 
-    // every implementation class should implement a constructor that
-    // takes 2 arguments as follows
-    // public CachedPermissionImpl(PermissionCache c, Permission p);
+    // Every implementation class should implement a constructor that
+    // takes 2 arguments as follows:
+    //
+    // public CachedPermissionImpl(PermissionCache cache, Permission permission);
 
-    public Permission getPermission();
-
-    public PermissionCache getPermissionCache();
-
-    public boolean checkPermission();
+    Permission getPermission();
+    PermissionCache getPermissionCache();
+    boolean checkPermission();
 
 }
