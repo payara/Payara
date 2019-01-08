@@ -38,43 +38,26 @@
  * holder.
  */
 // Portions Copyright [2016-2018] [Payara Foundation]
-
 package com.sun.enterprise.glassfish.web;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
-import com.sun.enterprise.security.perms.PermsArchiveDelegate;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.apache.naming.resources.WebDirContext;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.web.loader.LogFacade;
-import org.glassfish.web.loader.WebappClassLoader;
-import org.glassfish.web.sniffer.WarDetector;
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.annotations.Service;
+import static java.security.AccessController.doPrivileged;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,9 +65,36 @@ import java.util.ResourceBundle;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.security.PrivilegedActionException;
 
-import static javax.xml.stream.XMLStreamConstants.*;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.apache.naming.resources.WebDirContext;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.glassfish.web.loader.LogFacade;
+import org.glassfish.web.loader.WebappClassLoader;
+import org.glassfish.web.sniffer.WarDetector;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.security.permissionsxml.CommponentType;
+import com.sun.enterprise.security.permissionsxml.SetPermissionsAction;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 
 /**
  * Implementation of the ArchiveHandler for war files.
@@ -178,26 +188,23 @@ public class WarHandler extends AbstractArchiveHandler {
             configureContextXmlAttribute(cloader, base, context);
             
             try {
-                final DeploymentContext dc = context;
-                final ClassLoader cl = cloader;
-                
-                AccessController.doPrivileged(
-                        new PermsArchiveDelegate.SetPermissionsAction(
-                                SMGlobalPolicyUtil.CommponentType.war, dc, cl));
+                doPrivileged(
+                        new SetPermissionsAction(
+                                CommponentType.war, context, cloader));
             } catch (PrivilegedActionException e) {
                 throw new SecurityException(e.getException());
             }
 
         } catch(XMLStreamException xse) {
-            logger.log(Level.SEVERE, xse.getMessage());
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, xse.getMessage(), xse);
+            logger.log(SEVERE, xse.getMessage());
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, xse.getMessage(), xse);
             }
             xse.printStackTrace();
         } catch(IOException ioe) {
-            logger.log(Level.SEVERE, ioe.getMessage());
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ioe.getMessage(), ioe);
+            logger.log(SEVERE, ioe.getMessage());
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, ioe.getMessage(), ioe);
             }
             ioe.printStackTrace();
         }

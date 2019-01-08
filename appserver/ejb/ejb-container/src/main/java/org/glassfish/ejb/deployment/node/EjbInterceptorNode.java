@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.deployment.node;
 
 import java.util.Map;
@@ -99,7 +99,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
                EnvEntryNode.class, "addEnvironmentProperty");
         registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);
         registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
-        JndiEnvRefNode serviceRefNode = habitat.getService(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
+        JndiEnvRefNode serviceRefNode = serviceLocator.getService(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }

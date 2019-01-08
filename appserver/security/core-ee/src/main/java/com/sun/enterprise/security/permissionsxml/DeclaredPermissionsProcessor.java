@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,59 +38,42 @@
  * holder.
  */
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee;
+package com.sun.enterprise.security.permissionsxml;
 
-import java.security.Permission;
+import java.security.PermissionCollection;
+import java.net.MalformedURLException;
 
-/**
- * This class is
- * 
- * @author Ron Monzillo
- */
+import org.glassfish.api.deployment.DeploymentContext;
 
-public class CachedPermissionImpl extends Object implements CachedPermission {
+public class DeclaredPermissionsProcessor extends BasePermissionsProcessor {
 
-    PermissionCache permissionCache;
-    Permission permission;
-    Epoch epoch;
+    private PermissionCollection orginalDeclaredPermissions;
+    private PermissionCollection declaredPermissions;
 
-    public CachedPermissionImpl(PermissionCache c, Permission p) {
-        this.permissionCache = c;
-        this.permission = p;
-        epoch = new Epoch();
+    public DeclaredPermissionsProcessor(CommponentType type, DeploymentContext context, PermissionCollection orginalDeclaredPermissions) throws SecurityException {
+        super(type, context);
+        this.orginalDeclaredPermissions = orginalDeclaredPermissions;
+        convertPathDeclaredPermissions();
     }
 
-    @Override
-    public Permission getPermission() {
-        return this.permission;
+    /**
+     * get the declared permissions which have the file path adjusted for the right module
+     * 
+     * @return adjusted declared permissions
+     */
+    public PermissionCollection getAdjustedDeclaredPermissions() {
+        return declaredPermissions;
     }
 
-    @Override
-    public PermissionCache getPermissionCache() {
-        return this.permissionCache;
-    }
+    // Convert the path for permissions
+    private void convertPathDeclaredPermissions() throws SecurityException {
 
-    // synchronization done in PermissionCache
-    @Override
-    public boolean checkPermission() {
-        boolean granted = false;
-        if (permissionCache != null) {
-            granted = permissionCache.checkPermission(this.permission, this.epoch);
+        // Revise the file permission's path
+        try {
+            declaredPermissions = processPermisssonsForPath(orginalDeclaredPermissions, context);
+        } catch (MalformedURLException e) {
+            throw new SecurityException(e);
         }
-        return granted;
+
     }
-
-    // used to hold last result obtained from cache and cache epoch.
-    // epoch is used by PermissionCache to determine when result is out of date.
-    static class Epoch {
-
-        int epoch;
-        boolean granted;
-
-        Epoch() {
-            this.epoch = 0;
-            this.granted = false;
-        }
-    }
-
 }
