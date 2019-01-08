@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
@@ -64,7 +64,7 @@ public class AppClientRuntimeNode extends
     public AppClientRuntimeNode(ApplicationClientDescriptor descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
-        habitat.getService(AppClientNode.class);
+        serviceLocator.getService(AppClientNode.class);
     }
     
     public AppClientRuntimeNode() {

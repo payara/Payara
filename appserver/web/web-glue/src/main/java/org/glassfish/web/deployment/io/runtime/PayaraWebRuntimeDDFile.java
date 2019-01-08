@@ -42,31 +42,35 @@
  */
 package org.glassfish.web.deployment.io.runtime;
 
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
+import static com.sun.enterprise.deployment.io.DescriptorConstants.PAYARA_WEB_JAR_ENTRY;
+import static org.glassfish.web.WarType.ARCHIVE_TYPE;
+
 import java.util.List;
 import java.util.Map;
+
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.runtime.gf.PayaraWebBundleRuntimeNode;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
+import com.sun.enterprise.deployment.node.RootXMLNode;
+
 /**
  * Handles the XML Configuration for Payara
+ * 
  * @author jonathan coustick
  */
-@ConfigurationDeploymentDescriptorFileFor(WarType.ARCHIVE_TYPE)
+@ConfigurationDeploymentDescriptorFileFor(ARCHIVE_TYPE)
 @Service
 @PerLookup
 public class PayaraWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     @Override
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.PAYARA_WEB_JAR_ENTRY;
+        return PAYARA_WEB_JAR_ENTRY;
     }
 
     @Override
@@ -74,14 +78,12 @@ public class PayaraWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFil
         if (descriptor instanceof WebBundleDescriptorImpl) {
             return new PayaraWebBundleRuntimeNode((WebBundleDescriptorImpl) descriptor);
         }
+
         return null;
     }
-    
-    @Override
-    public void registerBundle(final Map<String, Class> registerMap,
-                               final Map<String, String> publicIDToDTD,
-                               final Map<String, List<Class>> versionUpgrades) {
 
+    @Override
+    public void registerBundle(Map<String, Class<?>> registerMap, Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
         registerMap.put(PayaraWebBundleRuntimeNode.registerBundle(publicIDToDTD, versionUpgrades), PayaraWebBundleRuntimeNode.class);
     }
 }

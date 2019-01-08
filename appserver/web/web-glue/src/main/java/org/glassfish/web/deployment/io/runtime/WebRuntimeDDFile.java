@@ -37,29 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.io.runtime;
+
+import static com.sun.enterprise.deployment.io.DescriptorConstants.S1AS_WEB_JAR_ENTRY;
 
 import java.util.List;
 import java.util.Map;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
-
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
+import com.sun.enterprise.deployment.node.RootXMLNode;
+
 /**
- * This class is responsible for handling the XML configuration information
- * for the SunOne AppServer Web Container
+ * This class is responsible for handling the XML configuration information for the SunOne AppServer Web Container
  *
  * @author Jerome Dochez
  */
@@ -67,38 +65,31 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @PerLookup
 public class WebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
-   
+
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
+     * @return the location of the DeploymentDescriptor file for a particular type of EE Archive
      */
     @Override
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.S1AS_WEB_JAR_ENTRY;        
+        return S1AS_WEB_JAR_ENTRY;
     }
-    
+
     /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
+     * @return a RootXMLNode responsible for handling the deployment descriptors associated with this J2EE module
      *
      * @param descriptor the descriptor for which we need the node
      */
     @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
         if (descriptor instanceof WebBundleDescriptorImpl) {
             return new WebBundleRuntimeNode((WebBundleDescriptorImpl) descriptor);
         }
+
         return null;
     }
 
     @Override
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {
-
-        rootNodesMap.put(WebBundleRuntimeNode.registerBundle(publicIDToDTDMap,
-                                                             versionUpgrades),
-                WebBundleRuntimeNode.class);
+    public void registerBundle(Map<String, Class<?>> rootNodesMap, Map<String, String> publicIDToDTDMap, Map<String, List<Class<?>>> versionUpgrades) {
+        rootNodesMap.put(WebBundleRuntimeNode.registerBundle(publicIDToDTDMap, versionUpgrades), WebBundleRuntimeNode.class);
     }
 }
