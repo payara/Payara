@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.perms;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jacc.cache;
 
-import java.security.BasicPermission;
 import java.security.Permission;
 
 /**
- * a class used on permission restriction list to imply "No 'AllPermission' allowed" in permissions.xml.
- *
- * This permission can not imply any other permission
+ * This class is
+ * 
+ * @author Ron Monzillo
  */
-public class VoidPermission extends BasicPermission {
+public class CachedPermissionImpl implements CachedPermission {
 
-    private static final long serialVersionUID = 5535516010244462567L;
+    private PermissionCache permissionCache;
+    private Permission permission;
+    private Epoch epoch;
 
-    public VoidPermission() {
-        this("VoidPermmission");
-    }
-
-    public VoidPermission(String name) {
-        super(name);
-    }
-
-    public VoidPermission(String name, String actions) {
-        super(name, actions);
+    public CachedPermissionImpl(PermissionCache permissionCache, Permission permission) {
+        this.permissionCache = permissionCache;
+        this.permission = permission;
+        epoch = new Epoch();
     }
 
     @Override
-    public boolean implies(Permission permission) {
-        // always return false
-        return false;
+    public Permission getPermission() {
+        return permission;
     }
+
+    @Override
+    public PermissionCache getPermissionCache() {
+        return permissionCache;
+    }
+
+    // synchronization done in PermissionCache
+    @Override
+    public boolean checkPermission() {
+        if (permissionCache == null) {
+            return false;
+        }
+        
+        return permissionCache.checkPermission(permission, epoch);
+    }
+
+    // used to hold last result obtained from cache and cache epoch.
+    // epoch is used by PermissionCache to determine when result is out of date.
+    static class Epoch {
+
+        int epoch;
+        boolean granted;
+
+        Epoch() {
+            this.epoch = 0;
+            this.granted = false;
+        }
+    }
+
 }
