@@ -37,31 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.permissionsxml;
 
-package com.sun.enterprise.security.perms;
+import static java.util.logging.Level.FINE;
 
+import java.net.MalformedURLException;
+import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
-import java.security.Permission;
-
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Enumeration;
-import java.util.logging.Level;
-import java.net.MalformedURLException;
 
 import org.glassfish.api.deployment.DeploymentContext;
 
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil.CommponentType;
+public class EarEEPermissionsProcessor extends BasePermissionsProcessor {
 
-public class EarEEPermissionsProcessor extends PermissionsProcessor {
-
-    // map recording the 'Java EE component type' to its EE adjusted granted permissions
-    private static final Map<CommponentType, PermissionCollection> compTypeToEEGarntsMap = new HashMap<CommponentType, PermissionCollection>();
+    // Map recording the 'Java EE component type' to its EE adjusted granted permissions
+    private static final Map<CommponentType, PermissionCollection> compTypeToEEGrantedPermissions = new HashMap<CommponentType, PermissionCollection>();
 
     public EarEEPermissionsProcessor(DeploymentContext dc) throws SecurityException {
-
-        super(SMGlobalPolicyUtil.CommponentType.ear, dc);
+        super(CommponentType.ear, dc);
 
         try {
             convertEEPermissionPaths(CommponentType.ejb);
@@ -69,13 +66,12 @@ public class EarEEPermissionsProcessor extends PermissionsProcessor {
             convertEEPermissionPaths(CommponentType.rar);
             convertEEPermissionPaths(CommponentType.car);
 
-            // combine all ee permissions then assign to ear
+            // Combine all EE permissions then assign to ear
             combineAllEEPermisssonsForEar();
 
         } catch (MalformedURLException e) {
             throw new SecurityException(e);
         }
-
     }
 
     /**
@@ -84,56 +80,53 @@ public class EarEEPermissionsProcessor extends PermissionsProcessor {
      * @return adjusted EE permissions
      */
     public PermissionCollection getAdjustedEEPermission(CommponentType type) {
-        return compTypeToEEGarntsMap.get(type);
+        return compTypeToEEGrantedPermissions.get(type);
     }
 
     public Map<CommponentType, PermissionCollection> getAllAdjustedEEPermission() {
-        return compTypeToEEGarntsMap;
+        return compTypeToEEGrantedPermissions;
     }
 
-    // conver the path for permissions
+    // Convert the path for permissions
     private void convertEEPermissionPaths(CommponentType cmpType) throws MalformedURLException {
-        // get server suppled default policy
-        PermissionCollection defWarPc = SMGlobalPolicyUtil.getEECompGrantededPerms(cmpType);
+        // Get server suppled default policy
+        PermissionCollection defWarPc = GlobalPolicyUtil.getEECompGrantededPerms(cmpType);
 
-        // revise the filepermission's path
+        // Revise the file permission's path
         PermissionCollection eePc = processPermisssonsForPath(defWarPc, context);
 
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isLoggable(FINE)) {
             logger.fine("Revised permissions = " + eePc);
         }
 
-        compTypeToEEGarntsMap.put(cmpType, eePc);
+        compTypeToEEGrantedPermissions.put(cmpType, eePc);
     }
 
     private PermissionCollection combineAllEEPermisssonsForEar() {
-
-        if (compTypeToEEGarntsMap == null)
+        if (compTypeToEEGrantedPermissions == null) {
             return null;
-
-        Permissions allEEPerms = new Permissions();
-
-        addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.war));
-        addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.ejb));
-        addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.rar));
-        // addPermissions(allEEPerms, getAdjustedEEPermission(CommponentType.car));
-
-        compTypeToEEGarntsMap.put(CommponentType.ear, allEEPerms);
-
-        return allEEPerms;
-    }
-
-    private void addPermissions(Permissions combined, PermissionCollection toAdd) {
-
-        if (toAdd == null)
-            return;
-
-        Enumeration<Permission> enumAdd = toAdd.elements();
-        while (enumAdd.hasMoreElements()) {
-            Permission p = enumAdd.nextElement();
-            combined.add(p);
         }
 
+        Permissions allEEPermissions = new Permissions();
+
+        addPermissions(allEEPermissions, getAdjustedEEPermission(CommponentType.war));
+        addPermissions(allEEPermissions, getAdjustedEEPermission(CommponentType.ejb));
+        addPermissions(allEEPermissions, getAdjustedEEPermission(CommponentType.rar));
+
+        compTypeToEEGrantedPermissions.put(CommponentType.ear, allEEPermissions);
+
+        return allEEPermissions;
+    }
+
+    private void addPermissions(Permissions combinedPermissions, PermissionCollection toAdd) {
+        if (toAdd == null) {
+            return;
+        }
+
+        Enumeration<Permission> permissionsToAdd = toAdd.elements();
+        while (permissionsToAdd.hasMoreElements()) {
+            combinedPermissions.add(permissionsToAdd.nextElement());
+        }
     }
 
 }

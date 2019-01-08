@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb;
 
 import java.lang.reflect.Method;
 
 import com.sun.ejb.containers.interceptors.InterceptorManager;
-import com.sun.enterprise.security.ee.CachedPermission;
+import com.sun.enterprise.security.jacc.cache.CachedPermission;
+
 import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
 
 /**
