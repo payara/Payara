@@ -92,10 +92,6 @@
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.14</tyrus.version>
 
-        <!-- JAX-B -->
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0</jaxb.version>
-
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0.2</yasson.version>
@@ -144,9 +140,6 @@
         <javax.batch-api.version>1.0.1</javax.batch-api.version>
         <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
-
-        <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
 
         <!-- JAX-WS -->
 
