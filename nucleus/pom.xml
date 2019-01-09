@@ -242,6 +242,7 @@
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
+        <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
 
         <deploy.skip>true</deploy.skip>
 
