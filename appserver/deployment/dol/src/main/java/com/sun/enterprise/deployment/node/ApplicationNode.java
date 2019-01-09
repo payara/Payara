@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
+
+import static com.sun.enterprise.deployment.xml.ApplicationTagNames.APPLICATION_NAME;
+import static com.sun.enterprise.deployment.xml.ApplicationTagNames.LIBRARY_DIRECTORY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,24 +125,27 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     }
 
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
-        final Map<String,Class> result = new HashMap<String,Class>();
-        for (ConfigurationDeploymentDescriptorFile confDD : DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE)) {
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        Map<String,Class<?>> result = new HashMap<String,Class<?>>();
+        
+        for (ConfigurationDeploymentDescriptorFile confDD : DOLUtils.getConfigurationDeploymentDescriptorFiles(serviceLocator, EarType.ARCHIVE_TYPE)) {
           confDD.registerBundle(result, publicIDToDTD, versionUpgrades);
         }
+        
         return result;
     }
 
     @Override
     public Collection<String> elementsAllowingEmptyValue() {
-        final Set<String> result = new HashSet<String>();
-        result.add(ApplicationTagNames.LIBRARY_DIRECTORY);
+        Set<String> result = new HashSet<String>();
+        result.add(LIBRARY_DIRECTORY);
+        
         return result;
     }
 
     @Override
     protected String topLevelTagName() {
-        return ApplicationTagNames.APPLICATION_NAME;
+        return APPLICATION_NAME;
     }
 
     @Override
@@ -155,7 +161,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvEntryNode.class, "addEnvironmentProperty");
         registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);
         registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
-        JndiEnvRefNode serviceRefNode = habitat.getService(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF); 
+        JndiEnvRefNode serviceRefNode = serviceLocator.getService(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF); 
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }

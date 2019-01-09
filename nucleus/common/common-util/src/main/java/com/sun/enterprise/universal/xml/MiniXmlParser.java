@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -399,15 +399,9 @@ public class MiniXmlParser {
     //
 
     private XMLInputFactory getXmlInputFactory() {
-        Class clazz = XMLInputFactory.class;
-        ClassLoader cl = clazz.getClassLoader();
 
-        // jdk6+
-        if (cl == null)
-            return XMLInputFactory.newInstance();
+        return XMLInputFactory.newInstance();
 
-        // jdk5
-        return XMLInputFactory.newInstance(clazz.getName(), cl);
     }
 
     private void getConfigRefName() throws XMLStreamException, EndDocumentException {
