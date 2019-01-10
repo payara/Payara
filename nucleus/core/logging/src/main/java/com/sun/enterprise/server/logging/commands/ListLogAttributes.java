@@ -65,7 +65,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -96,7 +96,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 public class ListLogAttributes implements AdminCommand {
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -124,9 +124,9 @@ public class ListLogAttributes implements AdminCommand {
             boolean isDas = targetInfo.isDas();
             
             if (targetConfigName != null && !targetConfigName.isEmpty()) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName, false);
+                props = (HashMap<String, String>) loggingConfigFactory.provide(targetConfigName).getLoggingProperties(false);
             } else if (isDas) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(false);
+                props = (HashMap<String, String>) loggingConfigFactory.provide().getLoggingProperties(false);
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 String msg = localStrings.getLocalString("invalid.target.sys.props",
@@ -154,7 +154,7 @@ public class ListLogAttributes implements AdminCommand {
             }
             Properties restData = new Properties();
             restData.put("logAttributes", logAttributes);
-            restData.put("defaultLoggingProperties", loggingConfig.getDefaultLoggingProperties());
+            restData.put("defaultLoggingProperties", loggingConfigFactory.provide().getLoggingProperties());
             report.setExtraProperties(restData);
 
         } catch (IOException ex) {

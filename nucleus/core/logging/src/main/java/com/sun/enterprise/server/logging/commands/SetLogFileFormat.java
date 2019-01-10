@@ -63,6 +63,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.common.util.logging.LoggingConfig;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -100,7 +101,7 @@ public class SetLogFileFormat implements AdminCommand {
     String formatter = ODL_FORMATTER_NAME;
 
     @Inject
-    LoggingConfig loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     Domain domain;
@@ -171,10 +172,10 @@ public class SetLogFileFormat implements AdminCommand {
             }
 
             if (isDas) {
-                loggingConfig.updateLoggingProperties(loggingProperties);
+                loggingConfigFactory.provide(targetConfigName).setLoggingProperties(loggingProperties);
             } else if ((targetConfigName != null && !targetConfigName.isEmpty()) && 
                     (isCluster || isInstance || isConfig)) {
-                loggingConfig.updateLoggingProperties(loggingProperties, targetConfigName);
+                        loggingConfigFactory.provide(targetConfigName).setLoggingProperties(loggingProperties);
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 String msg = LOCAL_STRINGS.getLocalString(

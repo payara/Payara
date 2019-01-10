@@ -40,18 +40,22 @@
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.inject.Inject;
+
+import com.sun.common.util.logging.LoggingConfig;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import javax.inject.Inject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -69,24 +73,21 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 
 /**
-* Set Log Attributes Command
-*
-* Updates one or more loggers' attributes
-* @author naman mehta
-* @since 3.1
+ * Set Log Attributes Command
+ *
+ * Updates one or more loggers' attributes
+ * 
+ * @author naman mehta
+ * @since 3.1
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
 @CommandLock(CommandLock.LockType.NONE)
 @Service(name = "set-log-attributes")
 @PerLookup
 @I18n("set.log.attributes")
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "set-log-attributes",
-            description = "set-log-attributes")
-})
+        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.POST, path = "set-log-attributes", description = "set-log-attributes") })
 public class SetLogAttributes implements AdminCommand {
 
     private static final String LINE_SEP = System.lineSeparator();
@@ -105,7 +106,7 @@ public class SetLogAttributes implements AdminCommand {
     boolean validate;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     Domain domain;
@@ -225,13 +226,8 @@ public class SetLogAttributes implements AdminCommand {
             String targetConfigName = targetInfo.getConfigName();
             boolean isDas = targetInfo.isDas();
 
-            if (targetConfigName != null && !targetConfigName.isEmpty()) {
-                loggingConfig.updateLoggingProperties(m, targetConfigName);
-                success = true;
-            } else if (isDas) {
-                loggingConfig.updateLoggingProperties(m);
-                success = true;
-            }
+            loggingConfigFactory.provide(targetConfigName).setLoggingProperties(m);
+            success = true;
 
             if (success) {
                 String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);

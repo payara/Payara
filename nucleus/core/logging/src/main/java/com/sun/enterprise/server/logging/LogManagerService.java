@@ -42,7 +42,7 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.common.util.logging.LoggingOutputStream;
 import com.sun.common.util.logging.LoggingXMLNames;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
@@ -108,7 +108,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     FileMonitoring fileMonitoring;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     UnprocessedConfigListener ucl;
@@ -237,16 +237,16 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         if (targetServer != null) {
             if (targetServer.isDas()) {
-                props = loggingConfig.getLoggingProperties();
+                props = loggingConfigFactory.provide().getLoggingProperties();
             } else if (targetServer.getCluster() != null) {
-                props = loggingConfig.getLoggingProperties(targetServer.getCluster().getConfigRef());
+                props = loggingConfigFactory.provide(targetServer.getCluster().getConfigRef()).getLoggingProperties();
             } else if (targetServer.isInstance()) {
-                props = loggingConfig.getLoggingProperties(targetServer.getConfigRef());
+                props = loggingConfigFactory.provide(targetServer.getConfigRef()).getLoggingProperties();
             } else {
-                props = loggingConfig.getLoggingProperties();
+                props = loggingConfigFactory.provide().getLoggingProperties();
             }
         } else {
-            props = loggingConfig.getLoggingProperties();
+            props = loggingConfigFactory.provide().getLoggingProperties();
         }
 
         return props;
