@@ -41,7 +41,39 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.enterprise.util.PropertyPlaceholderHelper;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
+import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.validation.ValidationException;
+
+import com.sun.common.util.logging.LoggingConfig;
 import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.common.util.logging.LoggingOutputStream;
 import com.sun.common.util.logging.LoggingXMLNames;
@@ -50,22 +82,10 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
+import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
-import fish.payara.enterprise.server.logging.JSONLogFormatter;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.*;
-import java.util.logging.Formatter;
-import javax.inject.Inject;
 
-import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import java.lang.reflect.Field;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -82,6 +102,9 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import fish.payara.enterprise.server.logging.JSONLogFormatter;
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 
 /**
  * Reinitialise the log manager using our logging.properties file.
@@ -233,27 +256,87 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         Server targetServer = domain.getServerNamed(env.getInstanceName());
 
-        Map<String, String> props = null;
-
-        if (targetServer != null) {
-            if (targetServer.isDas()) {
-                props = loggingConfigFactory.provide().getLoggingProperties();
-            } else if (targetServer.getCluster() != null) {
-                props = loggingConfigFactory.provide(targetServer.getCluster().getConfigRef()).getLoggingProperties();
+        // Find the logging config
+        LoggingConfig loggingConfig = loggingConfigFactory.provide();
+        if (targetServer != null && !targetServer.isDas()) {
+            if (targetServer.getCluster() != null) {
+                loggingConfig = loggingConfigFactory.provide(targetServer.getCluster().getConfigRef());
             } else if (targetServer.isInstance()) {
-                props = loggingConfigFactory.provide(targetServer.getConfigRef()).getLoggingProperties();
-            } else {
-                props = loggingConfigFactory.provide().getLoggingProperties();
+                loggingConfig = loggingConfigFactory.provide(targetServer.getConfigRef());
             }
-        } else {
-            props = loggingConfigFactory.provide().getLoggingProperties();
+        }
+
+        // Validate the properties
+        Map<String, String> props = loggingConfig.getLoggingProperties();
+        try {
+            validateProps(props);
+        } catch (ValidationException ex) {
+            LOGGER.log(Level.WARNING, "Error validating log properties.", ex);
         }
 
         return props;
     }
 
     /**
-     *  Returns logging file to be monitor during server is running.
+     * Validates the map of logging properties. Will remove any properties from the
+     * map that don't pass the validation, and then throw an exception at the very
+     * end.
+     * 
+     * @param props the map of properties to validate. WILL BE MODIFIED.
+     * @throws ValidationException if validation fails.
+     */
+    public void validateProps(Map<String, String> props) {
+        String validationMessage = "";
+        Iterator<Entry<String, String>> propertyIterator = props.entrySet().iterator();
+        while (propertyIterator.hasNext()) {
+            Entry<String, String> propertyEntry = propertyIterator.next();
+
+            try {
+                validateProp(propertyEntry.getKey(), propertyEntry.getValue());
+            } catch (ValidationException ex) {
+                propertyIterator.remove();
+                validationMessage += "\n" + ex.getMessage();
+            }
+        }
+        if (!validationMessage.isEmpty()) {
+            throw new ValidationException(validationMessage);
+        }
+    }
+
+    /**
+     * Validates a property. Throws an exception if validation fails.
+     * 
+     * @param key   the attribute name to validate.
+     * @param value the attribute value to validate.
+     * @throws ValidationException if validation fails.
+     */
+    public void validateProp(String key, String value) {
+        if (key.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
+            int rotationSizeLimit = Integer.parseInt(value);
+            if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE
+                    && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        ROTATIONLIMITINBYTES_PROPERTY, GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE, rotationSizeLimit));
+            }
+        } else if (key.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+            int rotationTimeLimit = Integer.parseInt(value);
+            if (rotationTimeLimit < 0) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        ROTATIONTIMELIMITINMINUTES_PROPERTY, 0, rotationTimeLimit));
+            }
+
+        } else if (key.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+            int PayaraNotificationRotationTimeLimit = Integer.parseInt(value);
+            if (PayaraNotificationRotationTimeLimit < 0) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, 0,
+                        PayaraNotificationRotationTimeLimit));
+            }
+        }
+    }
+
+    /**
+     * Returns logging file to be monitor during server is running.
      */
     @Override
     public File getLoggingFile() throws IOException {
