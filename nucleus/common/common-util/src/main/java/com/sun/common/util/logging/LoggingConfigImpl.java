@@ -59,6 +59,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -80,6 +81,22 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @Contract
 public class LoggingConfigImpl implements LoggingConfig {
+  
+    static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
+    static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
+
+    public static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
+    static {
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
+    }
 
     @Inject
     private FileMonitoring fileMonitoring;
@@ -183,6 +200,7 @@ public class LoggingConfigImpl implements LoggingConfig {
     @Override
     public synchronized Map<String, String> setLoggingProperties(Map<String, String> properties) throws IOException {
         loadLoggingProperties();
+        checkForLoggingProperties(properties);
         // need to map the name given to the new name in logging.properties file
         Map<String, String> m = getMap(properties);
         closePropFile();
@@ -249,49 +267,11 @@ public class LoggingConfigImpl implements LoggingConfig {
 
     public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties) throws IOException {
 
-        if (!loggingProperties.containsKey(Constants.GF_HANDLER_LOG_TO_FILE)) {
-            loggingProperties.put(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-            setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_TO_FILE)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FILE)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_MAXIMUM_FILES)) {
-            loggingProperties.put(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_COMPRESS_ON_ROTATION)) {
-            loggingProperties.put(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FORMATTER)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
-            setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
+        for (Entry<String, String> entry : DEFAULT_LOG_PROPERTIES.entrySet()) {
+            if (!loggingProperties.containsKey(entry.getKey())) {
+                loggingProperties.put(entry.getKey(), entry.getValue());
+                setLoggingProperty(entry.getKey(), entry.getValue());
+            }
         }
 
         return loggingProperties;
