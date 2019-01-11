@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2018-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deploy.shared;
@@ -63,6 +63,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -799,7 +801,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     return;
                 }
 
-                final URI archiveURI = archiveFile.toURI();
+                final Path archivePath = archiveFile.toPath();
                 PrintStream ps = null;
                 try {
                     ps = new PrintStream(markerFile(archiveFile));
@@ -807,7 +809,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     throw new RuntimeException(ex);
                 }
                 for ( ; staleFileIt.hasNext(); ) {
-                    final URI relativeURI = archiveURI.relativize(staleFileIt.next().toURI());
+                    final Path relativeURI = archivePath.relativize(staleFileIt.next().toPath());
                     ps.println(relativeURI);
                     deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
                 }
@@ -939,15 +941,15 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      */
     private static class StaleFileManagerImpl implements StaleFileManager {
 
-        private final static String LINE_SEP = System.getProperty("line.separator");
+        private final static String LINE_SEP = System.lineSeparator();
         private final File archiveFile;
-        private final URI archiveURI;
+        private final Path archivePath;
         private final Collection<String> staleEntryNames;
         private final File markerFile;
 
         private StaleFileManagerImpl(final File archive) throws FileNotFoundException, IOException {
             archiveFile = archive;
-            archiveURI = archive.toURI();
+            archivePath = archive.toPath();
             markerFile = StaleFileManager.Util.markerFile(archive);
             staleEntryNames = readStaleEntryNames(markerFile);
         }
@@ -964,13 +966,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             if ( ! markerFile.exists()) {
                 return result;
             }
-            LineNumberReader reader = null;
-            try {
-                reader = new LineNumberReader(new FileReader(markerFile));
+            try (LineNumberReader reader = new LineNumberReader(new FileReader(markerFile))) {
 
                 // Avoid some work if logging is coarser than FINE.
                 final boolean isShowEntriesToBeSkipped = deplLogger.isLoggable(DEBUG_LEVEL);
-                final StringBuffer entriesToSkip = isShowEntriesToBeSkipped ? new StringBuffer() : null;
+                final StringBuilder entriesToSkip = isShowEntriesToBeSkipped ? new StringBuilder() : null;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     result.add(line);
@@ -983,10 +983,6 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                             new Object[] {LINE_SEP, entriesToSkip.toString()});
                 }
                 return result;
-            } finally {
-                if (reader != null) {
-                    reader.close();
-                }
             }
         }
 
@@ -998,12 +994,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
         @Override
         public boolean isEntryValid(final File f, final boolean isLogging, final Logger logger) {
-            final boolean result = ( ! isEntryMarkerFile(f)) &&
-                    ( ! staleEntryNames.contains(archiveURI.relativize(f.toURI()).getPath()));
-            if ( ! result && ! isEntryMarkerFile(f) && isLogging) {
+            final boolean result = ( ! isEntryMarkerFile(f)) && ( !staleEntryNames.contains(archivePath.relativize(f.toPath()).toString()));
+            if (!result && !isEntryMarkerFile(f) && isLogging) {
                 deplLogger.log(Level.WARNING,
                                STALE_FILES_SKIPPED,
-                               new Object[] {archiveURI.relativize(f.toURI()).toASCIIString(), archiveFile.getAbsolutePath()});
+                               new Object[] {archivePath.relativize(f.toPath()).toString(), archiveFile.getAbsolutePath()});
             }
             return result;
         }
@@ -1057,7 +1052,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         }
 
         private boolean isStaleEntryInDir(final File dir) {
-            final String dirURIPath = archiveURI.relativize(dir.toURI()).getPath();
+            final String dirURIPath = archivePath.relativize(dir.toPath()).toString();
             for (String staleEntryName : staleEntryNames) {
                 if (staleEntryName.startsWith(dirURIPath) && ! staleEntryName.equals(dirURIPath)) {
                     deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.isStaleEntryInDir found remaining stale entry {0} in {1}",
@@ -1074,7 +1069,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 return false;
             }
 
-            final String entryName = archiveURI.relativize(f.toURI()).toASCIIString();
+            final String entryName = archivePath.relativize(f.toPath()).toString();
             final boolean wasStale = staleEntryNames.remove(entryName);
             if (wasStale) {
                 deplLogger.log(DEBUG_LEVEL, msg,
