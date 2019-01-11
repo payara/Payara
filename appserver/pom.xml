@@ -76,8 +76,8 @@
 
 
         <!-- JSP -->
-        <jsp-api.version>2.3.2-b01</jsp-api.version>
-        <jsp-impl.version>2.3.3-b02</jsp-impl.version>
+        <jsp-api.version>2.3.3</jsp-api.version>
+        <jsp-impl.version>2.3.4</jsp-impl.version>
 
         <!-- JSTL -->
         <jstl-api.version>1.2.2</jstl-api.version>
@@ -597,7 +597,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.3</specVersion>
-                            <specImplVersion>2.3.1</specImplVersion>
+                            <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp</apiPackage>
                         </spec>
                         <spec>
