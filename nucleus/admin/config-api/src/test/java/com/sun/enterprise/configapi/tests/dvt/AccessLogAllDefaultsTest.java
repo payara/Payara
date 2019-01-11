@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.configapi.tests.dvt;
 
@@ -79,6 +75,7 @@ public class AccessLogAllDefaultsTest extends ConfigApiTest {
     }
     @Test 
     public void testAllDefaults() {
+        assertEquals("true", al.getDateStampToFirstAccessLogFileEnabled());
         assertEquals("true", al.getRotationEnabled());
         assertEquals("1440", al.getRotationIntervalInMinutes());
         assertEquals("time", al.getRotationPolicy());
