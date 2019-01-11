@@ -823,8 +823,8 @@ public final class PEAccessLogValve
         // rotation-suffix
         setSuffix(fac.getDefaultAccessLogSuffix());
 
-        setAddDateStampToFirstAccessLogFile(
-                fac.getAddDateStampToFirstAccessLogFile());
+        setAddDateStampToFirstAccessLogFile(Boolean.valueOf(
+                accessLogConfig.getDateStampToFirstAccessLogFileEnabled()));
 
         // max-history-files
         deleteAllHistoryFiles = false;

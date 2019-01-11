@@ -37,27 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
-import java.security.Principal;
-
 /**
- * Interface to facilitate Initialization of the injected Realm Instance with Application Descriptor info 
- *  see com.sun.enterprise.web.WebContainer  and com.sun.web.security.RealmAdapter
+ * Interface to facilitate Initialization of the injected Realm Instance with Application Descriptor info.
+ * 
+ * <p>
+ * See com.sun.enterprise.web.WebContainer and com.sun.web.security.RealmAdapter
  */
-public interface RealmInitializer  {
+public interface RealmInitializer {
 
-    public void initializeRealm(Object bundledescriptor, boolean isSystemApp,String realmName);
+    void initializeRealm(Object bundledescriptor, boolean isSystemApp, String realmName);
 
-    //TODO: FIXME, dilution paramater type from Container to Object
-    public void setVirtualServer(Object container);
+    // TODO: FIXME, dilution parameter type from Container to Object
+    void setVirtualServer(Object container);
+
+    void updateWebSecurityManager();
 
     /**
      * Clean up security and policy context.
      */
-    public void logout();
-
-    public void updateWebSecurityManager();
-
+    void logout();
 }
