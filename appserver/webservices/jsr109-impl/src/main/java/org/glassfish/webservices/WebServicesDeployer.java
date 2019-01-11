@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -171,9 +172,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             bean.deploy(wsDesc, notifier);
             return true;
         } catch (Exception ex) {
-            RuntimeException re = new RuntimeException(ex.getMessage());
-            re.initCause(ex);
-            throw re;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -182,8 +181,14 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
     }
 
     protected void setupJaxWSServiceForDeployment(DeploymentContext dc, WebService ws) throws DeploymentException {
-
-        BundleDescriptor bundle = dc.getModuleMetaData(BundleDescriptor.class);
+        
+        Collection<Object> allMetaData = dc.getModuleMetadata();
+        List<BundleDescriptor> bundleDescriptors = new ArrayList<>(2);
+        for (Object metaData :  allMetaData.toArray()) {
+            if (metaData instanceof BundleDescriptor) {
+                bundleDescriptors.add((BundleDescriptor) metaData);
+            }
+        }
 
         // for modules this is domains/<domain-name>/j2ee-modules/<module-name>
         // for apps this is domains/<domain-name>/j2ee-apps/<app-name>/<foo_war> (in case of embedded wars)
@@ -200,43 +205,48 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
         File stubsDir = dc.getScratchDir("ejb");
         mkDirs(stubsDir);
 
-        if (!DOLUtils.warType().equals(bundle.getModuleType()) && !DOLUtils.ejbType().equals(bundle.getModuleType())) {
-            // unknown module type with @WebService, just ignore...
-            return;
-        }
+        for (BundleDescriptor bundle : bundleDescriptors) {
+            
+            if (!DOLUtils.warType().equals(bundle.getModuleType()) && !DOLUtils.ejbType().equals(bundle.getModuleType())) {
+                // unknown module type with @WebService, just ignore...
+                continue;
+            }
+            
+            wsdlDir = new File(wsdlDir, bundle.getWsdlDir().replaceAll("/", "\\" + File.separator));
+            
 
-        wsdlDir = new File(wsdlDir, bundle.getWsdlDir().replaceAll("/", "\\" + File.separator));
-
-        // Check if catalog file is present, if so get mapped WSDLs
-        String wsdlFileUri;
-        File wsdlFile;
-        try {
-            checkCatalog(bundle, ws, moduleDir);
-        } catch (DeploymentException e) {
-            logger.log(Level.SEVERE, LogUtils.ERROR_RESOLVING_CATALOG);
-        }
-        if (ws.hasWsdlFile()) {
-            // If wsdl file is an http URL, download that WSDL and all embedded relative wsdls, schemas
-            if (ws.getWsdlFileUri().startsWith("http")) {
-                try {
-                    wsdlFileUri = downloadWsdlsAndSchemas(new URL(ws.getWsdlFileUri()), wsdlDir);
-                } catch (Exception e) {
-                    throw new DeploymentException(e.toString(), e);
+            // Check if catalog file is present, if so get mapped WSDLs
+            String wsdlFileUri;
+            File wsdlFile;
+            try {
+                checkCatalog(bundle, ws, moduleDir);
+            } catch (DeploymentException e) {
+                logger.log(Level.SEVERE, LogUtils.ERROR_RESOLVING_CATALOG);
+            }
+            if (ws.hasWsdlFile()) {
+                // If wsdl file is an http URL, download that WSDL and all embedded relative wsdls, schemas
+                if (ws.getWsdlFileUri().startsWith("http")) {
+                    try {
+                        wsdlFileUri = downloadWsdlsAndSchemas(new URL(ws.getWsdlFileUri()), wsdlDir);
+                    } catch (Exception e) {
+                        throw new DeploymentException(e.toString(), e);
+                    }
+                    wsdlFile = new File(wsdlDir, wsdlFileUri);
+                } else {
+                    wsdlFileUri = ws.getWsdlFileUri();
+                    File wsdlFileAbs = new File(wsdlFileUri);
+                    wsdlFile = wsdlFileAbs.isAbsolute() ? wsdlFileAbs : new File(moduleDir, wsdlFileUri);
                 }
-                wsdlFile = new File(wsdlDir, wsdlFileUri);
-            } else {
-                wsdlFileUri = ws.getWsdlFileUri();
-                File wsdlFileAbs = new File(wsdlFileUri);
-                wsdlFile = wsdlFileAbs.isAbsolute() ? wsdlFileAbs : new File(moduleDir, wsdlFileUri);
-            }
 
-            if (!wsdlFile.exists()) {
-                String errorMessage = format(logger.getResourceBundle().getString(LogUtils.WSDL_NOT_FOUND), ws.getWsdlFileUri(),
-                        bundle.getModuleDescriptor().getArchiveUri());
-                logger.log(Level.SEVERE, errorMessage);
-                throw new DeploymentException(errorMessage);
+                if (!wsdlFile.exists()) {
+                    String errorMessage = format(logger.getResourceBundle().getString(LogUtils.WSDL_NOT_FOUND), ws.getWsdlFileUri(),
+                            bundle.getModuleDescriptor().getArchiveUri());
+                    logger.log(Level.SEVERE, errorMessage);
+                    throw new DeploymentException(errorMessage);
+                }
             }
         }
+        
     }
 
     /**
