@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
 import java.io.IOException;
@@ -48,12 +48,10 @@ import java.util.Properties;
 import javax.inject.Inject;
 import javax.validation.ValidationException;
 
-import com.sun.common.util.logging.LoggingConfig;
 import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
