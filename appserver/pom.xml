@@ -128,7 +128,7 @@
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
 
         <!-- JASPIC -->
-        <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
+        <jakarta.security.auth.message-api.version>1.1.2</jakarta.security.auth.message-api.version>
 
         <!-- JMS -->
         <jms-api.version>2.0.1</jms-api.version>
@@ -364,14 +364,14 @@
                         <!-- JASPIC -->
                         <spec>
                             <artifact>
-                                <groupId>javax.security.auth.message</groupId>
-                                <artifactId>javax.security.auth.message-api</artifactId>
-                                <version>${javax.security.auth.message-api.version}</version>
+                                <groupId>jakarta.security.auth.message</groupId>
+                                <artifactId>jakarta.security.auth.message-api</artifactId>
+                                <version>1.1.2</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.security.auth.message-api.version}</specVersion>
-                            <specImplVersion>${javax.security.auth.message-api.version}</specImplVersion>
+                            <specVersion>${jakarta.security.auth.message-api.version}</specVersion>
+                            <specImplVersion>${jakarta.security.auth.message-api.version}</specImplVersion>
                             <apiPackage>javax.security.auth.message</apiPackage>
                         </spec>
 
@@ -646,11 +646,6 @@
                 <version>${javax.xml.rpc-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>javax.faces-api</artifactId>
-                <version>${javax.faces-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
                 <version>${cdi-api.version}</version>
@@ -660,7 +655,7 @@
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
             </dependency>
-    	        <dependency>
+    	    <dependency>
                 <groupId>javax.resource</groupId>
     		        <artifactId>javax.resource-api</artifactId>
     		        <version>${javax.resource-api.version}</version>
@@ -669,6 +664,23 @@
                 <groupId>javax.enterprise.deploy</groupId>
                 <artifactId>javax.enterprise.deploy-api</artifactId>
                 <version>${javax.enterprise.deploy-api.version}</version>
+            </dependency>
+            
+            <!-- JSF - JavaServer Faces -->
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>javax.faces-api</artifactId>
+                <version>${javax.faces-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.faces</artifactId>
+                <version>${mojarra.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>woodstox-core-asl</artifactId>
+                <version>${woodstox.version}</version>
             </dependency>
 
             <!-- Java EE Security API -->
@@ -692,14 +704,9 @@
 
             <!-- JASPIC -->
             <dependency>
-                <groupId>javax.security.auth.message</groupId>
-                <artifactId>javax.security.auth.message-api</artifactId>
-                <version>${javax.security.auth.message-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.faces</artifactId>
-                <version>${mojarra.version}</version>
+                <groupId>jakarta.security.auth.message</groupId>
+                <artifactId>jakarta.security.auth.message-api</artifactId>
+                <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
 
             <!-- JPA -->
@@ -752,11 +759,6 @@
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
                 <version>${eclipselink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-                <version>${woodstox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
