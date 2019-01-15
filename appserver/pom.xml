@@ -139,7 +139,7 @@
         <weld-api.version>2.4.Final</weld-api.version>
         <weld.version>2.4.7.Final</weld.version>
         <jboss.classfilewriter.version>1.2.1.Final</jboss.classfilewriter.version>
-        <wsdl4j.version>1.6.2</wsdl4j.version>
+        <wsdl4j.version>1.6.3</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.13.1</tyrus.version>
         <jsonp-api.version>1.0</jsonp-api.version>
