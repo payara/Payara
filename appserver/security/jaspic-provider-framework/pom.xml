@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
@@ -69,8 +69,8 @@
     <dependencies>
     	<!-- The main JASPIC API this module provides a partial implementation of -->
     	<dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
