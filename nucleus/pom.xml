@@ -243,6 +243,7 @@
         <ant.version>1.8.2</ant.version>
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
+        <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
         <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
@@ -465,7 +466,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
