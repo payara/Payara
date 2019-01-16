@@ -243,6 +243,7 @@
         <ant.version>1.8.2</ant.version>
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
+        <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
         <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
@@ -425,7 +426,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxws-maven-plugin</artifactId>
-                    <version>1.12</version>
+                    <version>${maven.jaxws.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
