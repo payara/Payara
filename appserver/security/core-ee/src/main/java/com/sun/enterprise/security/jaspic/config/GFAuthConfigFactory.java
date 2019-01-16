@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package com.sun.enterprise.security.jmac.config;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.config;
 
 import static java.util.Arrays.asList;
 
 import java.util.List;
 
 import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
+import com.sun.enterprise.security.jaspic.WebServicesDelegate;
 import com.sun.jaspic.config.factory.BaseAuthConfigFactory;
 import com.sun.jaspic.config.factory.EntryInfo;
 import com.sun.jaspic.config.factory.RegStoreFileParser;

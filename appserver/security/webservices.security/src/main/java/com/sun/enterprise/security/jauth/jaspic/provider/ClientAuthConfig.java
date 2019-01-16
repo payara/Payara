@@ -37,24 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.provider;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
 
-import com.sun.enterprise.security.jauth.*;
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.AUTH_LAYER;
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.PROVIDER_ID;
+
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.security.auth.callback.CallbackHandler;
-
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-
-import com.sun.xml.rpc.spi.runtime.StreamingHandler;
-
 import javax.xml.soap.SOAPMessage;
 
+import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
+import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
+import com.sun.enterprise.security.jauth.AuthConfig;
+import com.sun.enterprise.security.jauth.AuthException;
+import com.sun.enterprise.security.jauth.AuthPolicy;
+import com.sun.enterprise.security.jauth.ClientAuthContext;
+import com.sun.xml.rpc.spi.runtime.StreamingHandler;
+
 /**
- * This class is the client container's interface to the AuthConfig subsystem to get AuthContext
- * objects on which to invoke message layer authentication providers. It is not intended to be layer
- * or web services specific (see getMechanisms method at end).
+ * This class is the client container's interface to the AuthConfig subsystem to get AuthContext objects on which to
+ * invoke message layer authentication providers. It is not intended to be layer or web services specific (see
+ * getMechanisms method at end).
  */
 public class ClientAuthConfig extends BaseAuthConfig {
 
@@ -62,23 +68,23 @@ public class ClientAuthConfig extends BaseAuthConfig {
         super(defaultContext);
     }
 
-    private ClientAuthConfig(ArrayList descriptors, ArrayList authContexts) {
+    private ClientAuthConfig(List<MessageSecurityDescriptor> descriptors, ArrayList authContexts) {
         super(descriptors, authContexts);
     }
 
-    public static ClientAuthConfig getConfig(String authLayer, MessageSecurityBindingDescriptor binding, CallbackHandler cbh)
-            throws AuthException {
+    public static ClientAuthConfig getConfig(String authLayer, MessageSecurityBindingDescriptor binding, CallbackHandler cbh) throws AuthException {
         ClientAuthConfig rvalue = null;
         String provider = null;
-        ArrayList descriptors = null;
+        List<MessageSecurityDescriptor> descriptors = null;
         ClientAuthContext defaultContext = null;
         if (binding != null) {
-            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+            String layer = binding.getAttributeValue(AUTH_LAYER);
             if (authLayer != null && layer.equals(authLayer)) {
-                provider = binding.getAttributeValue(MessageSecurityBindingDescriptor.PROVIDER_ID);
+                provider = binding.getAttributeValue(PROVIDER_ID);
                 descriptors = binding.getMessageSecurityDescriptors();
             }
         }
+        
         if (descriptors == null || descriptors.size() == 0) {
             defaultContext = getAuthContext(authLayer, provider, null, null, cbh);
             if (defaultContext != null) {
@@ -105,8 +111,8 @@ public class ClientAuthConfig extends BaseAuthConfig {
         return rvalue;
     }
 
-    private static ClientAuthContext getAuthContext(String layer, String provider, AuthPolicy requestPolicy, AuthPolicy responsePolicy,
-            CallbackHandler cbh) throws AuthException {
+    private static ClientAuthContext getAuthContext(String layer, String provider, AuthPolicy requestPolicy, AuthPolicy responsePolicy, CallbackHandler cbh)
+            throws AuthException {
         AuthConfig authConfig = AuthConfig.getAuthConfig();
         return authConfig.getClientAuthContext(layer, provider, requestPolicy, responsePolicy, cbh);
     }

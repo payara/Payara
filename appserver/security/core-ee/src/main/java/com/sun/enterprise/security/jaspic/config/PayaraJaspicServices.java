@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.config;
 
-package com.sun.enterprise.security.jmac.provider;
+import java.util.Map;
 
-import javax.security.auth.message.MessageInfo;
-import com.sun.xml.ws.api.message.Packet;
+import javax.security.auth.callback.CallbackHandler;
+
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
+import com.sun.jaspic.services.JaspicServices;
 
 /**
- * 
+ * This is based Helper class for 196 Configuration.
  */
-public interface PacketMessageInfo extends MessageInfo {
+public abstract class PayaraJaspicServices extends JaspicServices {
 
-    public SOAPAuthParam getSOAPAuthParam();
+    /**
+     * Get the default callback handler
+     */
+    public CallbackHandler getCallbackHandler() {
+        CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
 
-    public Packet getRequestPacket();
+        if (callbackHandler instanceof CallbackHandlerConfig) {
+            ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
+        }
 
-    public Packet getResponsePacket();
+        return callbackHandler;
+    }
 
-    public void setRequestPacket(Packet p);
-
-    public void setResponsePacket(Packet p);
+    /**
+     * This method is invoked by the constructor and should be overridden by a subclass.
+     */
+    protected HandlerContext getHandlerContext(Map<String, ?> map) {
+        return null;
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-

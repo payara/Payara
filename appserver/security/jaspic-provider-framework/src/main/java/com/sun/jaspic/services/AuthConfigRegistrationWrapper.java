@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.services;
 
 import java.util.concurrent.locks.Lock;
@@ -47,13 +47,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.security.auth.message.config.RegistrationListener;
 
 // Adding package private class because specializing the listener implementation class would
-// make the GF 196 implementation non-replaceable.
+// make the Payara JASPIC (JSR 196) implementation non-replaceable.
+//
 // This class would hold a RegistrationListener within.
 public class AuthConfigRegistrationWrapper {
 
     private String layer;
-    private String appCtxt;
-    private String jmacProviderRegisID;
+    private String applicationContextId;
+    private String jaspicProviderRegistrationId;
     private boolean enabled;
     private ConfigData data;
 
@@ -64,15 +65,15 @@ public class AuthConfigRegistrationWrapper {
     private int referenceCount = 1;
     private RegistrationWrapperRemover removerDelegate;
 
-    public AuthConfigRegistrationWrapper(String layer, String appCtxt, RegistrationWrapperRemover removerDelegate) {
+    public AuthConfigRegistrationWrapper(String layer, String applicationContextId, RegistrationWrapperRemover removerDelegate) {
         this.layer = layer;
-        this.appCtxt = appCtxt;
+        this.applicationContextId = applicationContextId;
         this.removerDelegate = removerDelegate;
         this.rwLock = new ReentrantReadWriteLock(true);
         this.wLock = rwLock.writeLock();
 
         enabled = JaspicServices.factory != null;
-        listener = new AuthConfigRegistrationListener(layer, appCtxt);
+        listener = new AuthConfigRegistrationListener(layer, applicationContextId);
     }
 
     public AuthConfigRegistrationListener getListener() {
@@ -94,9 +95,9 @@ public class AuthConfigRegistrationWrapper {
         }
 
         if (JaspicServices.factory != null) {
-            JaspicServices.factory.detachListener(this.listener, layer, appCtxt);
-            if (getJmacProviderRegisID() != null) {
-                JaspicServices.factory.removeRegistration(getJmacProviderRegisID());
+            JaspicServices.factory.detachListener(this.listener, layer, applicationContextId);
+            if (getJaspicProviderRegistrationId() != null) {
+                JaspicServices.factory.removeRegistration(getJaspicProviderRegistrationId());
             }
         }
     }
@@ -136,12 +137,12 @@ public class AuthConfigRegistrationWrapper {
         this.enabled = enabled;
     }
 
-    public String getJmacProviderRegisID() {
-        return this.jmacProviderRegisID;
+    public String getJaspicProviderRegistrationId() {
+        return this.jaspicProviderRegistrationId;
     }
 
-    public void setRegistrationId(String jmacProviderRegisID) {
-        this.jmacProviderRegisID = jmacProviderRegisID;
+    public void setRegistrationId(String jaspicProviderRegistrationId) {
+        this.jaspicProviderRegistrationId = jaspicProviderRegistrationId;
     }
 
     public ConfigData getConfigData() {

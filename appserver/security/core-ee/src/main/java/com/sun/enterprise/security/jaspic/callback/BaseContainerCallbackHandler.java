@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 /*
  * BaseContainerCallbackHandler.java
  *
  * Created on April 21, 2004, 11:56 AM
  */
 
-package com.sun.enterprise.security.jmac.callback;
+package com.sun.enterprise.security.jaspic.callback;
 
 import static com.sun.enterprise.security.SecurityContext.getDefaultCallerPrincipal;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
@@ -101,8 +101,8 @@ import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.common.AppservAccessController;
-import com.sun.enterprise.security.jmac.config.CallbackHandlerConfig;
-import com.sun.enterprise.security.jmac.config.HandlerContext;
+import com.sun.enterprise.security.jaspic.config.CallbackHandlerConfig;
+import com.sun.enterprise.security.jaspic.config.HandlerContext;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
@@ -209,7 +209,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             // sanity check =- should never come here.
             // the isSupportedCallback method already takes care of this case
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "JMAC: UnsupportedCallback : " + callback.getClass().getName());
+                _logger.log(Level.FINE, "JASPIC: UnsupportedCallback : " + callback.getClass().getName());
             }
             throw new UnsupportedCallbackException(callback);
         }
@@ -472,7 +472,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             pwdCallback.setResult(true);
         } catch (LoginException le) {
             // login failed
-            _logger.log(INFO, "jmac.loginfail", username);
+            _logger.log(INFO, "jaspic.loginfail", username);
             pwdCallback.setResult(false);
         }
     }
@@ -743,7 +743,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             // Principal p = secretKeyCallback.getPrincipal();
             secretKeyCallback.setKey(null);
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, "jmac.unsupportreadprinciple");
+                _logger.log(Level.WARNING, "jaspic.unsupportreadprinciple");
             }
         }
     }

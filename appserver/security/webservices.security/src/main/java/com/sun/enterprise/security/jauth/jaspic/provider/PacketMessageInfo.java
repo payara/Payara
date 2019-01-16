@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,20 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
 
-package com.sun.enterprise.security.jmac.config;
+import javax.security.auth.message.MessageInfo;
+import com.sun.xml.ws.api.message.Packet;
 
 /**
- * This is used to do HttpServlet security for app server
+ * 
  */
-public class HttpServletConstants {
-    public static final String AUTH_TYPE = "javax.servlet.http.authType";
-    public static final String WEB_BUNDLE = "WEB_BUNDLE";
-    public static final String POLICY_CONTEXT = "javax.security.jacc.PolicyContext";
-    public static final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
-    public static final String REGISTER_SESSION = "javax.servlet.http.registerSession";
-    @Deprecated public static final String REGISTER_WITH_AUTHENTICATOR = "com.sun.web.RealmAdapter.register";
+public interface PacketMessageInfo extends MessageInfo {
 
-    private HttpServletConstants() {
-    }
+    public SOAPAuthParam getSOAPAuthParam();
+
+    public Packet getRequestPacket();
+
+    public Packet getResponsePacket();
+
+    public void setRequestPacket(Packet p);
+
+    public void setResponsePacket(Packet p);
+
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.provider;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,7 +86,7 @@ public class BaseAuthConfig {
 
     private ArrayList contexts_;
 
-    private ArrayList messageSecurityDescriptors_;
+    private List<MessageSecurityDescriptor> messageSecurityDescriptors_;
 
     private ArrayList contextsForOpcodes_;
 
@@ -115,7 +116,7 @@ public class BaseAuthConfig {
         }
     }
 
-    protected BaseAuthConfig(ArrayList descriptors, ArrayList authContexts) {
+    protected BaseAuthConfig(List<MessageSecurityDescriptor> descriptors, ArrayList authContexts) {
 
         defaultContext_ = null;
         superMSD_ = null;
@@ -148,7 +149,6 @@ public class BaseAuthConfig {
             MessageSecurityDescriptor msd = (MessageSecurityDescriptor) descriptors.get(i);
 
             AuthPolicy requestPolicy = getAuthPolicy(msd.getRequestProtectionDescriptor());
-
             AuthPolicy responsePolicy = getAuthPolicy(msd.getResponseProtectionDescriptor());
 
             boolean noProtection = (!requestPolicy.authRequired() && !responsePolicy.authRequired());
@@ -160,7 +160,7 @@ public class BaseAuthConfig {
                 break;
             }
 
-            ArrayList mDs = msd.getMessageDescriptors();
+            List<MessageDescriptor> mDs = msd.getMessageDescriptors();
 
             for (int j = 0; mDs != null && j < mDs.size(); j++) {
 
@@ -235,9 +235,10 @@ public class BaseAuthConfig {
     }
 
     private static boolean isMatchingMSD(MethodDescriptor targetMD, MessageSecurityDescriptor mSD) {
-        ArrayList messageDescriptors = mSD.getMessageDescriptors();
+        List<MessageDescriptor> messageDescriptors = mSD.getMessageDescriptors();
         if (messageDescriptors.isEmpty()) {
-            // If this happens the dd is invalid.
+            // If this happens the deployment descriptor is invalid.
+            //
             // Unfortunately the deployment system does not catch such problems.
             // This case will be treated the same as if there was an empty message
             // element, and the deployment will be allowed to succeed.
@@ -465,7 +466,7 @@ public class BaseAuthConfig {
 
                     MessageSecurityDescriptor mSD = (MessageSecurityDescriptor) messageSecurityDescriptors_.get(i);
 
-                    ArrayList mDs = mSD.getMessageDescriptors();
+                    List<MessageDescriptor> mDs = mSD.getMessageDescriptors();
 
                     for (int j = 0; mDs != null && j < mDs.size(); j++) {
 
