@@ -268,10 +268,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         // Validate the properties
         Map<String, String> props = loggingConfig.getLoggingProperties();
-        try {
-            validateProps(props);
-        } catch (ValidationException ex) {
-            LOGGER.log(Level.WARNING, "Error validating log properties.", ex);
+        Map<String, String> invalidProps = validateProps(props);
+        if (!invalidProps.isEmpty()) {
+            loggingConfig.deleteLoggingProperties(invalidProps);
+            props = loggingConfig.getLoggingProperties();
         }
 
         return props;
@@ -283,10 +283,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
      * end.
      * 
      * @param props the map of properties to validate. WILL BE MODIFIED.
-     * @throws ValidationException if validation fails.
+     * @return a map of invalid properties. Will never be null.
      */
-    public void validateProps(Map<String, String> props) {
-        String validationMessage = "";
+    public Map<String, String> validateProps(Map<String, String> props) {
+        Map<String, String> invalidProps = new HashMap<>();
         Iterator<Entry<String, String>> propertyIterator = props.entrySet().iterator();
         while (propertyIterator.hasNext()) {
             Entry<String, String> propertyEntry = propertyIterator.next();
@@ -294,13 +294,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             try {
                 validateProp(propertyEntry.getKey(), propertyEntry.getValue());
             } catch (ValidationException ex) {
+                LOGGER.log(Level.WARNING, "Error validating log property.", ex);
                 propertyIterator.remove();
-                validationMessage += "\n" + ex.getMessage();
+                invalidProps.put(propertyEntry.getKey(), propertyEntry.getValue());
             }
         }
-        if (!validationMessage.isEmpty()) {
-            throw new ValidationException(validationMessage);
-        }
+        return invalidProps;
     }
 
     /**
@@ -442,16 +441,26 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             //setting default attributes value for all properties
             setDefaultLoggingProperties(props);
 
+            Collection<Handler> handlers = getHandlerServices(props);
+            if (handlers != null && handlers.size() > 0) {
+                // add the new handlers to the root logger
+                for (Handler handler : handlers) {
+                    addHandler(handler);
+                }
+            }
+
+            // add the filter if there is one
+            String filterClassName = props.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
+            if (filterClassName != null) {
+                Filter filterClass = habitat.getService(Filter.class, filterClassName);
+                Logger rootLogger = Logger.getLogger("");
+                if (rootLogger != null) {
+                    rootLogger.setFilter(filterClass);
+                }
+            }
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
-        }
-
-        Collection<Handler> handlers = getHandlerServices();
-        if (handlers != null && handlers.size() > 0) {
-            // add the new handlers to the root logger
-            for (Handler handler : handlers) {
-                addHandler(handler);
-            }
         }
 
         // Need to lock Logger.class first before locking LogManager to avoid deadlock.
@@ -477,23 +486,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     }
                 }
             }
-        }
-        
-        // add the filter if there is one
-        try {
-
-            Map<String, String> map = getLoggingProperties();
-
-            String filterClassName = map.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
-            if (filterClassName != null) {
-                Filter filterClass = habitat.getService(Filter.class, filterClassName);
-                Logger rootLogger = Logger.getLogger("");
-                if (rootLogger != null) {
-                    rootLogger.setFilter(filterClass);
-                }
-            }
-        } catch (java.io.IOException ex) {
-
         }
 
         // redirect stderr and stdout, a better way to do this
@@ -1010,7 +1002,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
 
-    private Collection<Handler> getHandlerServices() {
+    private Collection<Handler> getHandlerServices(Map<String, String> props) {
         Set<String> handlerServicesSet = new HashSet<String>();
         handlerServicesSet.add(GFFileHandler.class.getName());
         String[] handlerServicesArray = handlerServices.split(",");
@@ -1036,18 +1028,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         
         // Set formatter on custom handler service if configured
         for (Handler handler : customHandlers) {
-            try {
-                Map<String, String> props = getLoggingProperties();
-                String handlerClassName = handler.getClass().getName();
-                String formatterClassName = props.get(handlerClassName+".formatter");
-                Formatter formatter = getCustomFormatter(formatterClassName, gfFileHandler);
-                if (formatter != null) {
-                    handler.setFormatter(formatter);
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
+            String handlerClassName = handler.getClass().getName();
+            String formatterClassName = props.get(handlerClassName+".formatter");
+            Formatter formatter = getCustomFormatter(formatterClassName, gfFileHandler);
+            if (formatter != null) {
+                handler.setFormatter(formatter);
             }
-        }        
+        }
         return result;
     }
 

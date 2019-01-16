@@ -91,6 +91,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
@@ -283,6 +284,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         // need to map the name given to the new name in logging.properties file
         remove(properties);
         closePropFile();
+        checkForLoggingProperties(getLoggingProperties());
         return properties;
     }
 
