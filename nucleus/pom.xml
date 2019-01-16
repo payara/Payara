@@ -252,7 +252,7 @@
         <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
-        <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
+        <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
         <org.apache.felix.shell.version>1.4.1</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>0.8.0</org.apache.felix.gogo.runtime.version>
         <org.apache.felix.gogo.shell.version>0.8.0</org.apache.felix.gogo.shell.version>
