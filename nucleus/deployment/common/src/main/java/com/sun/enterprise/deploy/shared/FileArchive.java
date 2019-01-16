@@ -744,6 +744,16 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     public String getName() {
         return Util.getURIName(getURI());
     }
+    
+    /**
+     * Empty the cache of file entries
+     * 
+     * This should be called at the end of deployment to ensure that it isn't retained
+     * if an application is redeployed and to clear up the memory
+     */
+    public static void clearCache() {
+        entriesCache.clear();
+    }
 
     /**
      * API which FileArchive methods should use for dealing with the StaleFileManager
