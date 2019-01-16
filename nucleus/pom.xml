@@ -229,6 +229,7 @@
         <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
         <sjsxp.version>1.0</sjsxp.version>
@@ -447,7 +448,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.7</version>
+                    <version>${maven.deploy.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
