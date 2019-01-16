@@ -244,6 +244,7 @@
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
         <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
         <org.apache.felix.shell.version>1.4.1</org.apache.felix.shell.version>
@@ -480,7 +481,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>${maven.invoker.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
