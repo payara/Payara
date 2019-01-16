@@ -226,7 +226,7 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
 
         <javadoc.skip>false</javadoc.skip>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
@@ -367,7 +367,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
-                        <additionalparam>${javadoc.options}</additionalparam>
+                        <additionalOptions>
+                            <additionalOption>${javadoc.options}</additionalOption>
+                        </additionalOptions>
                     </configuration>
                 </plugin>
                 <plugin>
