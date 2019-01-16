@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -430,8 +430,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         public static String setLoggingProperty(Config c, String property, String value) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
-            LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
-            loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
+            LoggingConfigImpl loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
 
             String prop = null;
             try {
@@ -444,8 +443,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         public static Map<String, String> getLoggingProperties(Config c) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
-            LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
-            loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
+            LoggingConfigImpl loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
 
             Map<String, String> map = new HashMap<String, String>();
             try {
@@ -458,12 +456,11 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         public static Map<String, String> updateLoggingProperties(Config c, Map<String, String> properties) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
-            LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
-            loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
+            LoggingConfigImpl loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
 
             Map<String, String> map = new HashMap<String, String>();
             try {
-                map = loggingConfig.updateLoggingProperties(properties);
+                map = loggingConfig.setLoggingProperties(properties);
             } catch (IOException ex) {
             }
             return map;
