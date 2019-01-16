@@ -64,7 +64,6 @@ import java.util.jar.Manifest;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -140,6 +139,12 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * be sure that the staleFileManager field has been set.
      */
     private boolean isOpenedOrCreated = false;
+    
+    /**
+     * Cache for {@link #entries()}. This is done as a static variable instead of a service
+     * because FileArchive is commonly created by constructor rather than through injection.
+     */
+    private static Map<Integer, Enumeration> entriesCache = new HashMap<Integer, Enumeration>();
 
     /**
      * Open an abstract archive
@@ -298,12 +303,19 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * @return an enumeration of the archive file entries.
      */
     @Override
-    public Enumeration<String> entries(String prefix) {
+    public Enumeration<String> entries(String prefix) {        
         prefix = prefix.replace('/', File.separatorChar);
         File file = new File(archive, prefix);
-        List<String> namesList = new ArrayList<>();
-        getListOfFiles(file, namesList, null);
-        return Collections.enumeration(namesList);
+        
+        if (entriesCache.containsKey(file.hashCode())) {
+            return entriesCache.get(file.hashCode());
+        } else {
+            List<String> namesList = new ArrayList<String>();
+            getListOfFiles(file, namesList, null);
+            Enumeration entries = Collections.enumeration(namesList);
+            entriesCache.put(file.hashCode(), entries);
+            return entries;
+        }
     }
 
     /**
@@ -577,14 +589,14 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
          */
         if (!Files.isSymbolicLink(directory.toPath())) {
             File[] entries = directory.listFiles();
-            for (int i = 0;entries != null && i < entries.length;i++) {
-                if (entries[i].isDirectory()) {
-                    allDeletesSucceeded &= deleteDir(entries[i]);
+            for (File entrie : entries) {
+                if (entrie.isDirectory()) {
+                    allDeletesSucceeded &= deleteDir(entrie);
                 } else {
-                    if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
-                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entries[i]);
+                    if (!entrie.equals(StaleFileManager.Util.markerFile(archive))) {
+                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entrie);
                         if (fileDeleteOK) {
-                            myStaleFileManager().recordDeletedEntry(entries[i]);
+                            myStaleFileManager().recordDeletedEntry(entrie);
                         }
                         allDeletesSucceeded &= fileDeleteOK;
                     }
