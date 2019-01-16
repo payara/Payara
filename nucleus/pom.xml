@@ -226,9 +226,10 @@
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
 
         <javadoc.skip>false</javadoc.skip>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
         <sjsxp.version>1.0</sjsxp.version>
         <org.apache.felix.main.version>4.2.1</org.apache.felix.main.version>
@@ -244,8 +245,10 @@
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
+        <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
         <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
@@ -368,7 +371,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
-                        <additionalparam>${javadoc.options}</additionalparam>
+                        <additionalOptions>
+                            <additionalOption>${javadoc.options}</additionalOption>
+                        </additionalOptions>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -428,7 +433,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxws-maven-plugin</artifactId>
-                    <version>1.12</version>
+                    <version>${maven.jaxws.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -448,7 +453,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>${maven.install.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -483,7 +488,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>${maven.invoker.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
