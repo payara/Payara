@@ -183,7 +183,9 @@
                             <docencoding>UTF-8</docencoding>
                             <includeDependencySources>false</includeDependencySources>
                             <!-- This parameter is to be added when using JDK8 -->
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalOptions>
+                                <additionalOption>-Xdoclint:none</additionalOption>
+                            </additionalOptions>
                         </configuration>
                         <executions>
                             <execution>
