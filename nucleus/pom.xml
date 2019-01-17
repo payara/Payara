@@ -246,6 +246,7 @@
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
+        <maven.bundle.plugin.version>4.1.0</maven.bundle.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
@@ -340,7 +341,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.3.4</version>
+                    <version>${maven.bundle.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
