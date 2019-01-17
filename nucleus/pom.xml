@@ -186,7 +186,7 @@
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.1-b002</pfl.version>
-        <gmbal.version>4.0.0-b001</gmbal.version>
+        <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
         <jersey.version>2.25.1</jersey.version>
         <jackson.version>2.9.7</jackson.version>
@@ -229,6 +229,7 @@
         <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <osgi-resource-locator.version>1.0.1</osgi-resource-locator.version>
         <sjsxp.version>1.0</sjsxp.version>
@@ -245,12 +246,14 @@
         <ant-launcher.version>1.8.2</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
+        <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
         <maven-processor-plugin.version>2.0.4</maven-processor-plugin.version>
-        <maven-dependency-plugin.version>3.0.2</maven-dependency-plugin.version>
+        <maven-dependency-plugin.version>3.1.1</maven-dependency-plugin.version>
         <org.apache.felix.shell.version>1.4.1</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>0.8.0</org.apache.felix.gogo.runtime.version>
         <org.apache.felix.gogo.shell.version>0.8.0</org.apache.felix.gogo.shell.version>
@@ -402,7 +405,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
-                    <version>2.1</version>
+                    <version>${maven.antlr.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jvnet.updatecenter2</groupId>
@@ -447,7 +450,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.7</version>
+                    <version>${maven.deploy.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -487,7 +490,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>${maven.invoker.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
