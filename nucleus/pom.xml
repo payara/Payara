@@ -242,8 +242,8 @@
         <testng.version>6.5.2</testng.version>
         <jmockit.version>0.999.15</jmockit.version>
         <commons-io.version>2.6</commons-io.version>
-        <ant.version>1.8.2</ant.version>
-        <ant-launcher.version>1.8.2</ant-launcher.version>
+        <ant.version>1.9.13</ant.version>
+        <ant-launcher.version>1.9.13</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
