@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
 
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -75,7 +74,7 @@ public class ValidateDasOptions extends LocalInstanceCommand {
     }
 
     @Override
-    final protected void validate() throws CommandException {
+    protected final void validate() throws CommandException {
         instanceName = instanceName0;
         super.validate();
 
@@ -91,7 +90,7 @@ public class ValidateDasOptions extends LocalInstanceCommand {
     /**
      */
     @Override
-    final protected int executeCommand() throws CommandException {
+    protected final int executeCommand() throws CommandException {
         return SUCCESS;
     }
 }

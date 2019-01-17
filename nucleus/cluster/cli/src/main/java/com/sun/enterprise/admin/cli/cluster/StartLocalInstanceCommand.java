@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -54,7 +54,6 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -123,8 +122,6 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
         
     }
 
-    /**
-     */
     @Override
     protected int executeCommand() throws CommandException {
 
@@ -135,8 +132,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
             logger.info(Strings.get("Instance.nosync"));
         } else {
             if (!synchronizeInstance()) {
-                File domainXml =
-                    new File(new File(instanceDir, "config"), "domain.xml");
+                File domainXml = new File(new File(instanceDir, "config"), "domain.xml");
                 if (!domainXml.exists()) {
                     logger.info(Strings.get("Instance.nodomainxml"));
                     return ERROR;
@@ -146,7 +142,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
         }
 
         try {
-                 // createLauncher needs to go before the helper is created!!
+            // createLauncher needs to go before the helper is created!!
             createLauncher();
             final String mpv = getMasterPassword();
 
@@ -221,8 +217,8 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
      * Sets the launcher and info fields.
      */
     @Override
-    public void createLauncher()
-                        throws GFLauncherException, MiniXmlParserException {
+    public void createLauncher() throws GFLauncherException, MiniXmlParserException {
+        
             setLauncher(GFLauncherFactory.getInstance(getType()));
             setInfo(getLauncher().getInfo());
             getInfo().setInstanceName(instanceName);
@@ -247,9 +243,9 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
 
         // now the start-local-instance specific arguments
         args.add(getName());    // the command name
-        args.add("--verbose=" + String.valueOf(verbose));
-        args.add("--watchdog=" + String.valueOf(watchdog));
-        args.add("--debug=" + String.valueOf(debug));
+        args.add("--verbose=" + verbose);
+        args.add("--watchdog=" + watchdog);
+        args.add("--debug=" + debug);
 
         // IT 14015
         // We now REQUIRE all restarted instance to do a sync.
@@ -285,16 +281,18 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
     }
 
     private GFLauncherInfo getInfo() {
-        if(info == null)
+        if (info == null) {
             throw new RuntimeException(Strings.get("internal.error", "GFLauncherInfo was not initialized"));
+        }
 
-            return info;
+        return info;
     }
 
     private void setInfo(GFLauncherInfo inf) {
             info = inf;
     }
 
+    @Override
     public String toString() {
         return ObjectAnalyzer.toStringWithSuper(this);
     }
