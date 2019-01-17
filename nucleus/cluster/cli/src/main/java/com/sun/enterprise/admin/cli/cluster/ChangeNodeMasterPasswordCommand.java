@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -85,8 +84,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     private static final String MASTER_PASSWORD_ALIAS="master-password";
 
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ChangeNodeMasterPasswordCommand.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(ChangeNodeMasterPasswordCommand.class);
 
     private String newPassword;
 
@@ -184,8 +182,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
-            throw new CommandException(strings.get("masterPasswordFileNotCreated", pwdFile),
-                ex);
+            throw new CommandException(strings.get("masterPasswordFileNotCreated", pwdFile),ex);
         }
     }
 
@@ -202,8 +199,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             km.encryptKeystore(nodeConfig,oldPassword,newPassword);
 
         } catch (Exception e) {
-             throw new CommandException(strings.get("Keystore.not.encrypted"),
-                e);
+             throw new CommandException(strings.get("Keystore.not.encrypted"), e);
         }
 
     }
@@ -218,6 +214,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
          ArrayList<String> instancesList = new ArrayList<String>();
          File[] files = parent.listFiles(new FileFilter() {
+             @Override
              public boolean accept(File f) {
                  return f.isDirectory();
              }
@@ -242,12 +239,14 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             File serverDir = new File(nodeDirChild, serverName);
             File configDir = new File(serverDir, "config");
             File domainXml = new File(configDir, "domain.xml");
-            if (!domainXml.exists())
+            if (!domainXml.exists()) {
                 return false;
+            }
             MiniXmlParser parser = new MiniXmlParser(domainXml, serverName);
             List<HostAndPort> addrSet = parser.getAdminAddresses();
-            if (addrSet.size() <= 0)
+            if (addrSet.isEmpty()) {
                 throw new CommandException(strings.get("NoAdminPort"));
+            }
             HostAndPort addr = addrSet.get(0);
             return isRunning(addr.getHost(), addr.getPort());
         } catch (MiniXmlParserException ex) {

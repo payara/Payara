@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import java.util.logging.Level;
@@ -49,7 +51,6 @@ import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
@@ -67,7 +68,7 @@ public final class SetupLocalDcom extends CLICommand {
     boolean verbose;
     @Param(name = "force", shortName = "f", primary = false, optional = true)
     boolean force;
-    private final static String[] DEPENDENCIES = new String[]{
+    private static final String[] DEPENDENCIES = new String[]{
         "advapi32.dll",
         "kernel32.dll", //"test32.dll",
     };
@@ -107,8 +108,9 @@ public final class SetupLocalDcom extends CLICommand {
 
             int ret = pm.getExitValue();
 
-            if (verbose || ret != 0)
-                logger.info(pm.getStdout() + pm.getStderr());
+            if (verbose || ret != 0) {
+                logger.log(Level.INFO, "{0}{1}", new Object[]{pm.getStdout(), pm.getStderr()});
+            }
 
             return ret;
         }
@@ -178,16 +180,14 @@ public final class SetupLocalDcom extends CLICommand {
             if (out != null) {
                 try {
                     out.close();
-                }
-                catch (Exception e) {
+                } catch (IOException e) {
                     // ignore
                 }
             }
             if (in != null) {
                 try {
                     in.close();
-                }
-                catch (Exception e) {
+                } catch (IOException e) {
                     // ignore
                 }
             }
