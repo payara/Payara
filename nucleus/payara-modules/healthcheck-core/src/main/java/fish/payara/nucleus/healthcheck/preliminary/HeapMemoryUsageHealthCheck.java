@@ -91,7 +91,7 @@ public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthC
         return result;
     }
 
-    private Double calculatePercentage(MemoryUsage usage) {
+    private static Double calculatePercentage(MemoryUsage usage) {
         if (usage.getMax() > 0) {
             return Math.floor(((double)usage.getUsed() / (double)usage.getMax()) * 100);
         }
