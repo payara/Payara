@@ -37,12 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic;
 
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.AUTH_LAYER;
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.PROVIDER_ID;
 import static com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor.AUTH_RECIPIENT;
 import static com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor.AUTH_SOURCE;
-import static com.sun.enterprise.security.jmac.config.GFServerConfigProvider.SOAP;
+import static com.sun.enterprise.deployment.runtime.web.SunWebApp.HTTPSERVLET_SECURITY_PROVIDER;
+import static com.sun.enterprise.security.common.AppservAccessController.doPrivileged;
+import static com.sun.enterprise.security.jaspic.config.GFServerConfigProvider.SOAP;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
 import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_CONTENT;
 import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_RECIPIENT;
 import static javax.security.auth.message.MessagePolicy.ProtectionPolicy.AUTHENTICATE_SENDER;
@@ -67,55 +72,52 @@ import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescri
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
 import com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.security.common.AppservAccessController;
-import com.sun.enterprise.security.jmac.config.HttpServletConstants;
 
 /**
- * Utility class for JMAC appserver implementation.
+ * Utility class for JASPIC appserver implementation.
  */
 public class AuthMessagePolicy {
 
     private static final String SENDER = "sender";
     private static final String CONTENT = "content";
     private static final String BEFORE_CONTENT = "before-content";
-    private static final String HANDLER_CLASS_PROPERTY = "security.jmac.config.ConfigHelper.CallbackHandler";
-    private static final String DEFAULT_HANDLER_CLASS = "com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler";
+    private static final String HANDLER_CLASS_PROPERTY = "security.jaspic.config.ConfigHelper.CallbackHandler";
+    private static final String DEFAULT_HANDLER_CLASS = "com.sun.enterprise.security.jaspic.callback.ContainerCallbackHandler";
 
     // for HttpServlet profile
     private static final MessagePolicy MANDATORY_POLICY = getMessagePolicy(SENDER, null, true);
     private static final MessagePolicy OPTIONAL_POLICY = getMessagePolicy(SENDER, null, false);
 
-    private static String handlerClassName = null;
+    private static String handlerClassName;
 
     private AuthMessagePolicy() {
     }
 
     public static MessageSecurityBindingDescriptor getMessageSecurityBinding(String layer, Map<String, ?> properties) {
-
         if (properties == null) {
             return null;
         }
 
-        MessageSecurityBindingDescriptor binding = null;
+        MessageSecurityBindingDescriptor messageSecurityBinding = null;
 
-        WebServiceEndpoint e = (WebServiceEndpoint) properties.get("SERVICE_ENDPOINT");
+        WebServiceEndpoint webServiceEndpoint = (WebServiceEndpoint) properties.get("SERVICE_ENDPOINT");
 
-        if (e != null) {
-            binding = e.getMessageSecurityBinding();
+        if (webServiceEndpoint != null) {
+            messageSecurityBinding = webServiceEndpoint.getMessageSecurityBinding();
         } else {
-            ServiceReferenceDescriptor s = (ServiceReferenceDescriptor) properties.get("SERVICE_REF");
-            if (s != null) {
-                WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
-                if (delegate != null) {
-                    binding = delegate.getBinding(s, properties);
+            ServiceReferenceDescriptor serviceReference = (ServiceReferenceDescriptor) properties.get("SERVICE_REF");
+            if (serviceReference != null) {
+                WebServicesDelegate webServicesDelegate = Globals.get(WebServicesDelegate.class);
+                if (webServicesDelegate != null) {
+                    messageSecurityBinding = webServicesDelegate.getBinding(serviceReference, properties);
                 }
             }
         }
 
-        if (binding != null) {
-            String bindingLayer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+        if (messageSecurityBinding != null) {
+            String bindingLayer = messageSecurityBinding.getAttributeValue(AUTH_LAYER);
             if (bindingLayer == null || layer.equals(bindingLayer)) {
-                return binding;
+                return messageSecurityBinding;
             }
         }
 
@@ -176,11 +178,12 @@ public class AuthMessagePolicy {
     public static String getProviderID(MessageSecurityBindingDescriptor binding) {
         String providerID = null;
         if (binding != null) {
-            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+            String layer = binding.getAttributeValue(AUTH_LAYER);
             if (SOAP.equals(layer)) {
-                providerID = binding.getAttributeValue(MessageSecurityBindingDescriptor.PROVIDER_ID);
+                providerID = binding.getAttributeValue(PROVIDER_ID);
             }
         }
+        
         return providerID;
     }
 
@@ -190,24 +193,24 @@ public class AuthMessagePolicy {
         MessagePolicy responsePolicy = null;
 
         if (binding != null) {
-            ArrayList<MessageSecurityDescriptor> msgSecDescs = null;
-            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+            List<MessageSecurityDescriptor> messageSecurityDescriptors = null;
+            String layer = binding.getAttributeValue(AUTH_LAYER);
             if (SOAP.equals(layer)) {
-                msgSecDescs = binding.getMessageSecurityDescriptors();
+                messageSecurityDescriptors = binding.getMessageSecurityDescriptors();
             }
 
-            if (msgSecDescs != null) {
+            if (messageSecurityDescriptors != null) {
                 if (onePolicy) {
-                    if (msgSecDescs.size() > 0) {
-                        MessageSecurityDescriptor msd = msgSecDescs.get(0);
+                    if (messageSecurityDescriptors.size() > 0) {
+                        MessageSecurityDescriptor msd = messageSecurityDescriptors.get(0);
                         requestPolicy = getMessagePolicy(msd.getRequestProtectionDescriptor());
                         responsePolicy = getMessagePolicy(msd.getResponseProtectionDescriptor());
                     }
                 } else { // try to match
                     MessageSecurityDescriptor matchMsd = null;
-                    for (int i = 0; i < msgSecDescs.size(); i++) {
-                        MessageSecurityDescriptor msd = msgSecDescs.get(i);
-                        ArrayList msgDescs = msd.getMessageDescriptors();
+                    for (int i = 0; i < messageSecurityDescriptors.size(); i++) {
+                        MessageSecurityDescriptor msd = messageSecurityDescriptors.get(i);
+                        List<MessageDescriptor> msgDescs = msd.getMessageDescriptors();
                         for (int j = i + 1; j < msgDescs.size(); j++) {
                             // XXX don't know how to get JavaMethod from operation
                             MessageDescriptor msgDesc = (MessageDescriptor) msgDescs.get(j);
@@ -233,30 +236,29 @@ public class AuthMessagePolicy {
     }
 
     public static boolean oneSOAPPolicy(MessageSecurityBindingDescriptor binding) {
-
         boolean onePolicy = true;
-        ArrayList msgSecDescs = null;
+        List<MessageSecurityDescriptor> messageSecurityDescriptor = null;
+        
         if (binding != null) {
-            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
-            if (SOAP.equals(layer)) {
-                msgSecDescs = binding.getMessageSecurityDescriptors();
+            if (SOAP.equals(binding.getAttributeValue(AUTH_LAYER))) {
+                messageSecurityDescriptor = binding.getMessageSecurityDescriptors();
             }
         }
 
-        if (msgSecDescs == null) {
+        if (messageSecurityDescriptor == null) {
             return true;
         }
 
-        for (int i = 0; i < msgSecDescs.size(); i++) {
+        for (int i = 0; i < messageSecurityDescriptor.size(); i++) {
 
-            MessageSecurityDescriptor msd = (MessageSecurityDescriptor) msgSecDescs.get(i);
+            MessageSecurityDescriptor msd = messageSecurityDescriptor.get(i);
 
-            // determine if all the different messageSecurityDesriptors have the
+            // Determine if all the different messageSecurityDesriptors have the
             // same policy which will help us interpret the effective policy if
             // we cannot determine the opcode of a request at runtime.
 
-            for (int j = 0; j < msgSecDescs.size(); j++) {
-                if (j != i && !policiesAreEqual(msd, ((MessageSecurityDescriptor) msgSecDescs.get(j)))) {
+            for (int j = 0; j < messageSecurityDescriptor.size(); j++) {
+                if (j != i && !policiesAreEqual(msd, messageSecurityDescriptor.get(j))) {
                     onePolicy = false;
                 }
             }
@@ -265,47 +267,46 @@ public class AuthMessagePolicy {
         return onePolicy;
     }
 
-    public static SunWebApp getSunWebApp(Map properties) {
+    public static SunWebApp getSunWebApp(Map<String, ?> properties) {
         if (properties == null) {
             return null;
         }
 
-        WebBundleDescriptor webBundle = (WebBundleDescriptor) properties.get(HttpServletConstants.WEB_BUNDLE);
-        return webBundle.getSunDescriptor();
+        return ((WebBundleDescriptor) properties.get(WEB_BUNDLE)).getSunDescriptor();
     }
 
     public static String getProviderID(SunWebApp sunWebApp) {
         String providerID = null;
         if (sunWebApp != null) {
-            providerID = sunWebApp.getAttributeValue(SunWebApp.HTTPSERVLET_SECURITY_PROVIDER);
+            providerID = sunWebApp.getAttributeValue(HTTPSERVLET_SECURITY_PROVIDER);
         }
+        
         return providerID;
     }
 
     public static MessagePolicy[] getHttpServletPolicies(String authContextID) {
         if (Boolean.valueOf(authContextID)) {
             return new MessagePolicy[] { MANDATORY_POLICY, null };
-        } else {
-            return new MessagePolicy[] { OPTIONAL_POLICY, null };
         }
+            
+        return new MessagePolicy[] { OPTIONAL_POLICY, null };
     }
 
     public static CallbackHandler getDefaultCallbackHandler() {
-        // get the default handler class
+        // Get the default handler class
         try {
-            CallbackHandler rvalue = (CallbackHandler) AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+            return (CallbackHandler) doPrivileged(new PrivilegedExceptionAction<Object>() {
                 @Override
                 public Object run() throws Exception {
                     ClassLoader loader = Thread.currentThread().getContextClassLoader();
                     if (handlerClassName == null) {
                         handlerClassName = System.getProperty(HANDLER_CLASS_PROPERTY, DEFAULT_HANDLER_CLASS);
                     }
-                    final String className = handlerClassName;
-                    Class c = Class.forName(className, true, loader);
-                    return c.newInstance();
+                    
+                    return Class.forName(handlerClassName, true, loader)
+                                .newInstance();
                 }
             });
-            return rvalue;
 
         } catch (PrivilegedActionException pae) {
             throw new RuntimeException(pae.getException());
@@ -318,11 +319,11 @@ public class AuthMessagePolicy {
     }
 
     private static boolean protectionDescriptorsAreEqual(ProtectionDescriptor pd1, ProtectionDescriptor pd2) {
-        String authSource1 = pd1.getAttributeValue(ProtectionDescriptor.AUTH_SOURCE);
-        String authRecipient1 = pd1.getAttributeValue(ProtectionDescriptor.AUTH_RECIPIENT);
+        String authSource1 = pd1.getAttributeValue(AUTH_SOURCE);
+        String authRecipient1 = pd1.getAttributeValue(AUTH_RECIPIENT);
 
-        String authSource2 = pd2.getAttributeValue(ProtectionDescriptor.AUTH_SOURCE);
-        String authRecipient2 = pd2.getAttributeValue(ProtectionDescriptor.AUTH_RECIPIENT);
+        String authSource2 = pd2.getAttributeValue(AUTH_SOURCE);
+        String authRecipient2 = pd2.getAttributeValue(AUTH_RECIPIENT);
 
         boolean sameAuthSource = (authSource1 == null && authSource2 == null) || (authSource1 != null && authSource1.equals(authSource2));
         boolean sameAuthRecipient = (authRecipient1 == null && authRecipient2 == null)

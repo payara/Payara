@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * ClientContainerCallbackHandler.java
@@ -45,7 +45,7 @@
  * Created on September 14, 2004, 12:20 PM
  */
 
-package com.sun.enterprise.security.jmac.callback;
+package com.sun.enterprise.security.jaspic.callback;
 
 import com.sun.enterprise.security.SecurityServicesUtil;
 import java.io.IOException;

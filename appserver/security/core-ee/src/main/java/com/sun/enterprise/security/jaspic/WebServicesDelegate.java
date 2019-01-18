@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic;
 
 import java.util.Map;
 
@@ -53,43 +53,53 @@ import com.sun.enterprise.security.jauth.AuthParam;
 import com.sun.jaspic.services.RegistrationWrapperRemover;
 
 /**
- * A Delegate Interface for handling WebServices Specific Security and JSR 196 Providers This insulates the GF
- * Web-Bundle from any WebServices Dependencies.
+ * A Delegate interface for handling WebServices specific security and JASPIC (JSR 196) providers. 
+ * 
+ * <p>
+ * This insulates the Payara Web-Bundle from any WebServices dependencies. This interface is implemented
+ * in the web-services security project (webservices.security).
  * 
  * @author kumar.jayanti
  */
 @Contract
 public interface WebServicesDelegate extends RegistrationWrapperRemover {
+     
     /**
      * 
-     * @param svcRef The ServiceReferenceDescriptor
+     * @param serviceReference The ServiceReferenceDescriptor
      * @param properties The Properties Map passed to WebServices Code Via PipeCreator
      * @return The MessageSecurityBindingDescriptor
      */
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties);
+    MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor serviceReference, Map<String, ?> properties);
 
     /**
-     * @return the classname of the Default JSR 196 WebServices Security Provider (A.k.a Metro Security Provider)
+     * This method returns the class name of the default JASPIC (JSR 196) WebServices security provider.
+     * 
+     * <p>
+     * In practice this typically the Metro Security Provider, which is 
+     * <code>"com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider"</code>
+     * 
+     * @return the class name of the default JASPIC (JSR 196) WebServices security provider.
      */
-    public String getDefaultWebServicesProvider();
+    String getDefaultWebServicesProvider();
 
     /**
      * @param messageInfo The MessageInfo
      * @return the AuthContextID computed from the argument MessageInfo
      */
-    public String getAuthContextID(MessageInfo messageInfo);
+    String getAuthContextID(MessageInfo messageInfo);
 
     /**
      * @param messageInfo TheMessageInfo
      * @return a new instance of SOAPAuthParam
      */
-    public AuthParam newSOAPAuthParam(MessageInfo messageInfo);
+    AuthParam newSOAPAuthParam(MessageInfo messageInfo);
 
     /**
-     * return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
+     * Return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
      * 
-     * @param inv the invocation
+     * @param componentInvocation the invocation
      * @return the SOAP Message
      */
-    public Object getSOAPMessage(ComponentInvocation inv);
+    Object getSOAPMessage(ComponentInvocation componentInvocation);
 }

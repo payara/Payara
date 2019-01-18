@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package com.sun.enterprise.security.jmac.config;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import static java.util.logging.Level.FINE;
@@ -64,7 +64,7 @@ import com.sun.enterprise.config.serverbeans.ProviderConfig;
 import com.sun.enterprise.config.serverbeans.RequestPolicy;
 import com.sun.enterprise.config.serverbeans.ResponsePolicy;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
 import com.sun.logging.LogDomains;
 
 import sun.security.util.PropertyExpander;
@@ -194,7 +194,7 @@ public class ConfigDomainParser implements ConfigParser {
                     // log warning and give the provider a chance to
                     // interpret value itself.
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, "jmac.unexpandedproperty");
+                        _logger.log(Level.FINE, "jaspic.unexpandedproperty");
                     }
                     options.put(property.getName(), property.getValue());
                 }

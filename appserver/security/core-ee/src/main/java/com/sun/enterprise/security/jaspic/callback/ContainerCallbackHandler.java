@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,79 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
-package com.sun.enterprise.security.jmac.provider;
+/*
+ * ContainerCallbackHandler
+ *
+ * Created on April 21, 2004, 11:56 AM
+ */
 
-import java.util.Map;
-import javax.xml.soap.SOAPMessage;
-import com.sun.xml.ws.api.message.Packet;
+package com.sun.enterprise.security.jaspic.callback;
 
+import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.jaspic.config.CallbackHandlerConfig;
+import com.sun.enterprise.security.jaspic.config.HandlerContext;
+
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * 
+ * @author Shing Wai Chan
  */
-public class PacketMapMessageInfo implements PacketMessageInfo {
+@Service
+@ContractsProvided({ ContainerCallbackHandler.class, CallbackHandler.class })
+public final class ContainerCallbackHandler implements CallbackHandler, CallbackHandlerConfig {
+    
+    private final CallbackHandler handler;
 
-    private SOAPAuthParam soapAuthParam;
-
-    private Map infoMap;
-
-    public PacketMapMessageInfo(Packet reqPacket, Packet resPacket) {
-	soapAuthParam = new SOAPAuthParam(reqPacket,resPacket,0);
+    public ContainerCallbackHandler() {
+        if (Globals.getDefaultHabitat() == null || SecurityServicesUtil.getInstance().isACC()) {
+            handler = new ClientContainerCallbackHandler();
+        } else {
+            handler = new ServerContainerCallbackHandler();
+        }
     }
 
-    public Map getMap() {
-	if (this.infoMap == null) {
-	    this.infoMap = soapAuthParam.getMap();
-	}
-	return this.infoMap;
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        handler.handle(callbacks);
     }
 
-    public Object getRequestMessage() {
-	return soapAuthParam.getRequest();
+    public void setHandlerContext(HandlerContext handlerContext) {
+        ((CallbackHandlerConfig) handler).setHandlerContext(handlerContext);
     }
 
-    public Object getResponseMessage() {
-	return soapAuthParam.getResponse();
+    public void setHandlerContext(String realm) {
+        ((BaseContainerCallbackHandler) handler).setHandlerContext(() -> realm);
     }
-
-    public void setRequestMessage(Object request) {
-	soapAuthParam.setRequest((SOAPMessage)request);
-    }
-
-    public void setResponseMessage(Object response) {
-	soapAuthParam.setResponse((SOAPMessage)response);
-    }
-
-    public SOAPAuthParam getSOAPAuthParam() {
-	return soapAuthParam;
-    }
-
-    public Packet getRequestPacket() {
-	return (Packet) soapAuthParam.getRequestPacket();
-    }
-
-    public Packet getResponsePacket() {
-	return (Packet) soapAuthParam.getResponsePacket();
-    }
-
-    public void setRequestPacket(Packet p) {
-	soapAuthParam.setRequestPacket(p);
-    }
-
-    public void setResponsePacket(Packet p) {
-	soapAuthParam.setResponsePacket(p);
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
-

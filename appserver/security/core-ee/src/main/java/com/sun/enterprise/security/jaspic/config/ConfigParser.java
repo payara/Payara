@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,40 +37,65 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.callback;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.config;
 
-import static com.sun.enterprise.security.common.AppservAccessController.privileged;
-import static java.util.Arrays.stream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
-
-import org.glassfish.security.common.Group;
 
 /**
+ * AuthConfigImpl relies on a ConfigParser to read
+ * the module configuration.
  *
- * @author vbkumarjayanti
+ * <p> The ConfigParser is expected to parse that information
+ * into the HashMap described below.
+ *
+ * @version %I%, %G%
  */
-public class ServerLoginCBHUtil {
+public interface ConfigParser {
 
-    private static void processGP(GroupPrincipalCallback groupCallback) {
-        Subject subject = groupCallback.getSubject();
-        String[] groups = groupCallback.getGroups();
+    /**
+     * Initialize the parser.
+     * Passing null as argument means the parser is to find 
+     * configuration object as necessary.
+     */
+    public void initialize(Object config) throws IOException;
+    
+    /**
+     * Get the module configuration information.
+     * The information is returned as a HashMap.
+     *
+     * <p> The key is an intercept:
+     * <ul>
+     * <li>SOAP
+     * <li>HttpServlet
+     * </ul>
+     *
+     * <p>The value is a AuthConfigImpl.InterceptEntry, which contains:
+     * <ul>
+     * <li> default provider ID
+     * <li> default type (client or server)
+     * <li> HashMap, where
+     *		key	= provider ID
+     *		value	= BaseAuthConfigImpl.IDEntry
+     * </ul>
+     *
+     * <p> An IDEntry contains:
+     * <ul>
+     * <li> type (client or server)
+     * <li> moduleClassName
+     * <li> default requestPolicy
+     * <li> default responsePolicy
+     * <li> options
+     * <li> 
+     * </ul>
+     */
+    public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap();
 
-        if (groups != null && groups.length > 0) {
-            privileged(() -> stream(groups).forEach(group -> subject.getPrincipals().add(new Group(group))));
-        } else if (groups == null) {
-            privileged(() -> subject.getPrincipals().removeAll(subject.getPrincipals(Group.class)));
-        }
-    }
-
-    // NOTE: this method is called by reflection from ServerLoginCallbackHandler
-    public static void processGroupPrincipal(Callback groupCallback) {
-        if (groupCallback instanceof GroupPrincipalCallback) {
-            processGP((GroupPrincipalCallback) groupCallback);
-        }
-    }
-
+    /**
+     * Get the name of layers with default set in domain.xml.
+     */
+    public Set<String> getLayersWithDefault();
 }

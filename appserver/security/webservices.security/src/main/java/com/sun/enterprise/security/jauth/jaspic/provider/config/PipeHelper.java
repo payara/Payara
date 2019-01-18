@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.provider.config;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider.config;
 
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getMessageSecurityBinding;
 import static com.sun.enterprise.security.webservices.PipeConstants.BINDING;
 import static com.sun.enterprise.security.webservices.PipeConstants.ENDPOINT;
 import static com.sun.enterprise.security.webservices.PipeConstants.SEI_MODEL;
+import static com.sun.enterprise.security.webservices.PipeConstants.SERVICE_ENDPOINT;
+import static com.sun.enterprise.security.webservices.PipeConstants.SOAP_LAYER;
 import static com.sun.xml.ws.api.SOAPVersion.SOAP_11;
 
 import java.lang.reflect.Method;
@@ -85,12 +88,10 @@ import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorize.EJBPolicyContextDelegate;
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
-import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
-import com.sun.enterprise.security.jmac.config.HandlerContext;
-//TODO: replace the one below with the one above later
-import com.sun.enterprise.security.jmac.config.PayaraJaspicServices;
+import com.sun.enterprise.security.jaspic.WebServicesDelegate;
+import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
+import com.sun.enterprise.security.jaspic.config.HandlerContext;
+import com.sun.enterprise.security.jaspic.config.PayaraJaspicServices;
 import com.sun.enterprise.security.webservices.PipeConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -401,30 +402,32 @@ public class PipeHelper extends PayaraJaspicServices {
     }
 
     private boolean processSunDeploymentDescriptor() {
-
         if (factory == null) {
             return false;
         }
 
-        MessageSecurityBindingDescriptor binding = AuthMessagePolicy.getMessageSecurityBinding(PipeConstants.SOAP_LAYER, map);
+        MessageSecurityBindingDescriptor binding = getMessageSecurityBinding(SOAP_LAYER, map);
 
         if (binding != null) {
             if (!hasExactMatchAuthProvider()) {
-                String jmacProviderRegisID = factory.registerConfigProvider(new GFServerConfigProvider(null, null), layer, appCtxt,
-                        "GF AuthConfigProvider bound by Sun Specific Descriptor");
-                this.setRegistrationId(jmacProviderRegisID);
+                String jaspicProviderRegisID = factory.registerConfigProvider(
+                    new GFServerConfigProvider(null, null), 
+                    layer, appCtxt, "GF AuthConfigProvider bound by Sun Specific Descriptor");
+                
+                setRegistrationId(jaspicProviderRegisID);
             }
         }
 
-        WebServiceEndpoint e = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
+        WebServiceEndpoint webServiceEndpoint = (WebServiceEndpoint) map.get(SERVICE_ENDPOINT);
 
-        return (e == null ? false : e.implementedByEjbComponent());
+        return webServiceEndpoint == null ? false : webServiceEndpoint.implementedByEjbComponent();
     }
 
     private static String getAppCtxt(Map map) {
 
         String rvalue;
-        WebServiceEndpoint wse = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
+        WebServiceEndpoint wse = (WebServiceEndpoint) map.get(SERVICE_ENDPOINT);
+        
         // endpoint
         if (wse != null) {
             rvalue = getServerName(wse) + " " + getEndpointURI(wse);

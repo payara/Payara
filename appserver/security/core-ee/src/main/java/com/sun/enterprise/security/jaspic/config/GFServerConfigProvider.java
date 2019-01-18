@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.config;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.config;
 
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.getHttpServletPolicies;
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.getMessageSecurityBinding;
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.getProviderID;
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.getSOAPPolicies;
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.getSunWebApp;
-import static com.sun.enterprise.security.jmac.AuthMessagePolicy.oneSOAPPolicy;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.IS_MANDATORY;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getHttpServletPolicies;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getMessageSecurityBinding;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getProviderID;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getSOAPPolicies;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getSunWebApp;
+import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.oneSOAPPolicy;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.IS_MANDATORY;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
@@ -85,9 +85,8 @@ import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
+import com.sun.enterprise.security.jaspic.WebServicesDelegate;
 import com.sun.logging.LogDomains;
 
 /**
@@ -107,7 +106,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     protected static final String SERVER = "server";
     protected static final String MANAGES_SESSIONS_OPTION = "managessessions";
     
-    private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jmac.config.ConfigDomainParser";
+    private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jaspic.config.ConfigDomainParser";
 
     // since old api does not have subject in PasswordValdiationCallback,
     // this is for old modules to pass group info back to subject
@@ -450,7 +449,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
                             .newInstance(ARGS);
             } catch (Exception e) {
                 if (logger.isLoggable(WARNING)) {
-                    logger.log(WARNING, "jmac.provider_unable_to_load_authmodule", new String[] { moduleClassName, e.toString() });
+                    logger.log(WARNING, "jaspic.provider_unable_to_load_authmodule", new String[] { moduleClassName, e.toString() });
                 }
 
                 AuthException ae = new AuthException();
@@ -797,8 +796,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
             return entry != null ? createModuleInfo(entry, handler, type, properties) : null;
         }
 
-        // lazy initialize this as SunWebApp is not available in
-        // RealmAdapter creation
+        // Lazy initialize this as SunWebApp is not available in RealmAdapter creation
         private void initialize(Map<String, ?> properties) {
             if (!init) {
                 if (HTTPSERVLET.equals(layer)) {

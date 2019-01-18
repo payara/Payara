@@ -131,8 +131,10 @@ public class SecurityContext extends AbstractSecurityContext {
     }
 
     /**
-     * Create a SecurityContext with given subject having DistinguishedPrincipalCredential. This is used for JMAC
-     * environment.
+     * Create a SecurityContext with the given subject having a DistinguishedPrincipalCredential. 
+     * 
+     * <p>
+     * This is used for a JASPIC environment.
      * 
      * @param subject
      */

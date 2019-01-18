@@ -47,9 +47,9 @@
                         com.sun.enterprise.security.auth.realm.jdbc; \
                         com.sun.enterprise.security.ee.authorize; \
                         com.sun.enterprise.security.jauth; \
-                        com.sun.enterprise.security.jmac; \
-                        com.sun.enterprise.security.jmac.callback; \
-                        com.sun.enterprise.security.jmac.config; \
+                        com.sun.enterprise.security.jaspic; \
+                        com.sun.enterprise.security.jaspic.callback; \
+                        com.sun.enterprise.security.jaspic.config; \
                         com.sun.enterprise.security.auth.realm.pam; \
                         com.sun.enterprise.security.jacc; \
                         com.sun.enterprise.security.jacc.cache; \

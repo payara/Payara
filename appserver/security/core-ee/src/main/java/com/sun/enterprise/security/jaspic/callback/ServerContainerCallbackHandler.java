@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.config;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
-import java.util.Map;
+/*
+ * ServerContainerCallbackHandler.java
+ *
+ * Created on September 14, 2004, 12:56 PM
+ */
 
-import javax.security.auth.callback.CallbackHandler;
+package com.sun.enterprise.security.jaspic.callback;
 
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
-import com.sun.jaspic.services.JaspicServices;
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
+import javax.security.auth.message.callback.CertStoreCallback;
+import javax.security.auth.message.callback.GroupPrincipalCallback;
+import javax.security.auth.message.callback.PasswordValidationCallback;
+import javax.security.auth.message.callback.PrivateKeyCallback;
+import javax.security.auth.message.callback.SecretKeyCallback;
+import javax.security.auth.message.callback.TrustStoreCallback;
 
 /**
- * This is based Helper class for 196 Configuration.
+ * Callback Handler for ServerContainer
+ * 
+ * @author Harpreet Singh
+ * @author Shing Wai Chan
  */
-public abstract class PayaraJaspicServices extends JaspicServices {
+final class ServerContainerCallbackHandler extends BaseContainerCallbackHandler {
 
-    /**
-     * Get the default callback handler
-     */
-    public CallbackHandler getCallbackHandler() {
-        CallbackHandler callbackHandler = AuthMessagePolicy.getDefaultCallbackHandler();
+    ServerContainerCallbackHandler() {
+    }
 
-        if (callbackHandler instanceof CallbackHandlerConfig) {
-            ((CallbackHandlerConfig) callbackHandler).setHandlerContext(getHandlerContext(map));
+    protected void handleSupportedCallbacks(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        for (Callback callback : callbacks) {
+            processCallback(callback);
         }
-
-        return callbackHandler;
     }
 
-    /**
-     * This method is invoked by the constructor and should be overridden by a subclass.
-     */
-    protected HandlerContext getHandlerContext(Map<String, ?> map) {
-        return null;
+    protected boolean isSupportedCallback(Callback callback) {
+        return callback instanceof CertStoreCallback 
+                || callback instanceof PasswordValidationCallback
+                || callback instanceof CallerPrincipalCallback 
+                || callback instanceof GroupPrincipalCallback
+                || callback instanceof SecretKeyCallback 
+                || callback instanceof PrivateKeyCallback
+                || callback instanceof TrustStoreCallback; 
     }
-
 }

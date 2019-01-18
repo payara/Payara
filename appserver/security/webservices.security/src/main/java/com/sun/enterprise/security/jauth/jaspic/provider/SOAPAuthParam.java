@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package com.sun.enterprise.security.jmac.provider;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
 
 import com.sun.enterprise.security.jauth.AuthParam;
 import java.util.Map;

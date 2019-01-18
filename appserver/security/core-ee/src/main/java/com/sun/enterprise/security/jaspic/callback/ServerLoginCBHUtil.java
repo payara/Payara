@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,56 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jaspic.callback;
 
-/*
- * ContainerCallbackHandler
- *
- * Created on April 21, 2004, 11:56 AM
- */
+import static com.sun.enterprise.security.common.AppservAccessController.privileged;
+import static java.util.Arrays.stream;
 
-package com.sun.enterprise.security.jmac.callback;
-
-import com.sun.enterprise.security.SecurityServicesUtil;
-import java.io.IOException;
-
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.message.callback.GroupPrincipalCallback;
 
-//V3:Commented import com.sun.enterprise.Switch;
-import com.sun.enterprise.security.jmac.config.CallbackHandlerConfig;
-import com.sun.enterprise.security.jmac.config.HandlerContext;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.security.common.Group;
 
 /**
- * @author Shing Wai Chan
+ *
+ * @author vbkumarjayanti
  */
-@Service
-@ContractsProvided({ ContainerCallbackHandler.class, CallbackHandler.class })
-public final class ContainerCallbackHandler implements CallbackHandler, CallbackHandlerConfig {
-    
-    private final CallbackHandler handler;
+public class ServerLoginCBHUtil {
 
-    public ContainerCallbackHandler() {
-        if (Globals.getDefaultHabitat() == null || SecurityServicesUtil.getInstance().isACC()) {
-            handler = new ClientContainerCallbackHandler();
-        } else {
-            handler = new ServerContainerCallbackHandler();
+    private static void processGP(GroupPrincipalCallback groupCallback) {
+        Subject subject = groupCallback.getSubject();
+        String[] groups = groupCallback.getGroups();
+
+        if (groups != null && groups.length > 0) {
+            privileged(() -> stream(groups).forEach(group -> subject.getPrincipals().add(new Group(group))));
+        } else if (groups == null) {
+            privileged(() -> subject.getPrincipals().removeAll(subject.getPrincipals(Group.class)));
         }
     }
 
-    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        handler.handle(callbacks);
+    // NOTE: this method is called by reflection from ServerLoginCallbackHandler
+    public static void processGroupPrincipal(Callback groupCallback) {
+        if (groupCallback instanceof GroupPrincipalCallback) {
+            processGP((GroupPrincipalCallback) groupCallback);
+        }
     }
 
-    public void setHandlerContext(HandlerContext handlerContext) {
-        ((CallbackHandlerConfig) handler).setHandlerContext(handlerContext);
-    }
-
-    public void setHandlerContext(String realm) {
-        ((BaseContainerCallbackHandler) handler).setHandlerContext(() -> realm);
-    }
 }

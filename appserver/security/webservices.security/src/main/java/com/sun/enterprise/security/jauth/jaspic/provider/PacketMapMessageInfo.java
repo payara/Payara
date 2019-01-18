@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,79 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
 
-package com.sun.enterprise.security.jmac.config;
-
-import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
+import javax.xml.soap.SOAPMessage;
+import com.sun.xml.ws.api.message.Packet;
 
 
 /**
- * AuthConfigImpl relies on a ConfigParser to read
- * the module configuration.
- *
- * <p> The ConfigParser is expected to parse that information
- * into the HashMap described below.
- *
- * @version %I%, %G%
+ * 
  */
-public interface ConfigParser {
+public class PacketMapMessageInfo implements PacketMessageInfo {
 
-    /**
-     * Initialize the parser.
-     * Passing null as argument means the parser is to find 
-     * configuration object as necessary.
-     */
-    public void initialize(Object config) throws IOException;
-    
-    /**
-     * Get the module configuration information.
-     * The information is returned as a HashMap.
-     *
-     * <p> The key is an intercept:
-     * <ul>
-     * <li>SOAP
-     * <li>HttpServlet
-     * </ul>
-     *
-     * <p>The value is a AuthConfigImpl.InterceptEntry, which contains:
-     * <ul>
-     * <li> default provider ID
-     * <li> default type (client or server)
-     * <li> HashMap, where
-     *		key	= provider ID
-     *		value	= BaseAuthConfigImpl.IDEntry
-     * </ul>
-     *
-     * <p> An IDEntry contains:
-     * <ul>
-     * <li> type (client or server)
-     * <li> moduleClassName
-     * <li> default requestPolicy
-     * <li> default responsePolicy
-     * <li> options
-     * <li> 
-     * </ul>
-     */
-    public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap();
+    private SOAPAuthParam soapAuthParam;
 
-    /**
-     * Get the name of layers with default set in domain.xml.
-     */
-    public Set<String> getLayersWithDefault();
+    private Map infoMap;
+
+    public PacketMapMessageInfo(Packet reqPacket, Packet resPacket) {
+	soapAuthParam = new SOAPAuthParam(reqPacket,resPacket,0);
+    }
+
+    public Map getMap() {
+	if (this.infoMap == null) {
+	    this.infoMap = soapAuthParam.getMap();
+	}
+	return this.infoMap;
+    }
+
+    public Object getRequestMessage() {
+	return soapAuthParam.getRequest();
+    }
+
+    public Object getResponseMessage() {
+	return soapAuthParam.getResponse();
+    }
+
+    public void setRequestMessage(Object request) {
+	soapAuthParam.setRequest((SOAPMessage)request);
+    }
+
+    public void setResponseMessage(Object response) {
+	soapAuthParam.setResponse((SOAPMessage)response);
+    }
+
+    public SOAPAuthParam getSOAPAuthParam() {
+	return soapAuthParam;
+    }
+
+    public Packet getRequestPacket() {
+	return (Packet) soapAuthParam.getRequestPacket();
+    }
+
+    public Packet getResponsePacket() {
+	return (Packet) soapAuthParam.getResponsePacket();
+    }
+
+    public void setRequestPacket(Packet p) {
+	soapAuthParam.setRequestPacket(p);
+    }
+
+    public void setResponsePacket(Packet p) {
+	soapAuthParam.setResponsePacket(p);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+

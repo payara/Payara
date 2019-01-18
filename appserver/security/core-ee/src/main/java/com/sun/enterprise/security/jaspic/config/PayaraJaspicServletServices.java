@@ -38,12 +38,12 @@
  * holder.
  */
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.config;
+package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
-import static com.sun.enterprise.security.jmac.config.GFServerConfigProvider.HTTPSERVLET;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.POLICY_CONTEXT;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.WEB_BUNDLE;
+import static com.sun.enterprise.security.jaspic.config.GFServerConfigProvider.HTTPSERVLET;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.POLICY_CONTEXT;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +58,7 @@ import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
+import com.sun.enterprise.security.jaspic.WebServicesDelegate;
 
 public class PayaraJaspicServletServices extends PayaraJaspicServices {
     

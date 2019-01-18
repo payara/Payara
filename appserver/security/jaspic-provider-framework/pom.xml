@@ -45,8 +45,8 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <artifactId>securitymodule</artifactId>
         <groupId>org.glassfish.main.security</groupId>
+        <artifactId>securitymodule</artifactId>
         <version>5.191-SNAPSHOT</version>
     </parent>
     

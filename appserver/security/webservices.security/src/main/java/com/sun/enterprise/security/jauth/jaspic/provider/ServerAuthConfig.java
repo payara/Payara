@@ -37,10 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jmac.provider;
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.jauth.jaspic.provider;
+
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.AUTH_LAYER;
+import static com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor.PROVIDER_ID;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.xml.soap.SOAPMessage;
@@ -54,9 +58,9 @@ import com.sun.enterprise.security.jauth.ServerAuthContext;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 
 /**
- * This class is the client container's interface to the AuthConfig subsystem to get AuthContext
- * objects on which to invoke message layer authentication providers. It is not intended to be layer
- * or web services specific (see getMechanisms method at end).
+ * This class is the client container's interface to the AuthConfig subsystem to get AuthContext objects on which to
+ * invoke message layer authentication providers. It is not intended to be layer or web services specific (see
+ * getMechanisms method at end).
  */
 public class ServerAuthConfig extends BaseAuthConfig {
 
@@ -64,20 +68,19 @@ public class ServerAuthConfig extends BaseAuthConfig {
         super(defaultContext);
     }
 
-    private ServerAuthConfig(ArrayList descriptors, ArrayList authContexts) {
+    private ServerAuthConfig(List<MessageSecurityDescriptor> descriptors, ArrayList authContexts) {
         super(descriptors, authContexts);
     }
 
-    public static ServerAuthConfig getConfig(String authLayer, MessageSecurityBindingDescriptor binding, CallbackHandler cbh)
-            throws AuthException {
+    public static ServerAuthConfig getConfig(String authLayer, MessageSecurityBindingDescriptor binding, CallbackHandler cbh) throws AuthException {
         ServerAuthConfig rvalue = null;
         String provider = null;
-        ArrayList descriptors = null;
+        List<MessageSecurityDescriptor> descriptors = null;
         ServerAuthContext defaultContext = null;
         if (binding != null) {
-            String layer = binding.getAttributeValue(MessageSecurityBindingDescriptor.AUTH_LAYER);
+            String layer = binding.getAttributeValue(AUTH_LAYER);
             if (authLayer != null && layer.equals(authLayer)) {
-                provider = binding.getAttributeValue(MessageSecurityBindingDescriptor.PROVIDER_ID);
+                provider = binding.getAttributeValue(PROVIDER_ID);
                 descriptors = binding.getMessageSecurityDescriptors();
             }
         }
@@ -110,8 +113,7 @@ public class ServerAuthConfig extends BaseAuthConfig {
         return rvalue;
     }
 
-    private static ServerAuthContext getAuthContext(String layer, String provider, AuthPolicy requestPolicy, AuthPolicy responsePolicy,
-            CallbackHandler cbh) throws AuthException {
+    private static ServerAuthContext getAuthContext(String layer, String provider, AuthPolicy requestPolicy, AuthPolicy responsePolicy, CallbackHandler cbh) throws AuthException {
         AuthConfig authConfig = AuthConfig.getAuthConfig();
         return authConfig.getServerAuthContext(layer, provider, requestPolicy, responsePolicy, cbh);
     }
@@ -124,8 +126,7 @@ public class ServerAuthConfig extends BaseAuthConfig {
         return (ServerAuthContext) getContext(context);
     }
 
-    public ServerAuthContext getAuthContextForOpCode(StreamingHandler handler, int opcode)
-            throws ClassNotFoundException, NoSuchMethodException {
+    public ServerAuthContext getAuthContextForOpCode(StreamingHandler handler, int opcode) throws ClassNotFoundException, NoSuchMethodException {
         return (ServerAuthContext) getContextForOpCode(handler, opcode);
     }
 
