@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
 import java.io.*;
 import java.util.*;
+
+import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
@@ -56,7 +58,10 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 public class Parser {
     /** MultiMap of options and values from command-line */
     private ParameterMap optionsMap = new ParameterMap();
-    
+
+    /** Set of invalid options' names from command-line */
+    private Set<String> invalidOptions = new HashSet<>();
+
     /** Array of operands from command-line */
     private List<String> operands = new ArrayList<String>();
 
@@ -176,7 +181,7 @@ public class Parser {
                             opt = lookupShortOption(arg.charAt(i));
                             if (opt == null) {
                                 if (!ignoreUnknown) {
-                                    throw new CommandValidationException(strings.get("parser.invalidOption", Character.toString(arg.charAt(i))));
+                                    invalidOptions.add(arg);
                                 }
                                 // unknown option, skip all the rest
                                 operands.add(arg);
@@ -202,7 +207,7 @@ public class Parser {
             // is it a known option?
             if (opt == null) {
                 if (!ignoreUnknown){
-                    throw new CommandValidationException(strings.get("parser.invalidOption", arg));
+                    invalidOptions.add(arg);
                 }
                 // unknown option, skip it
                 operands.add(arg);
@@ -240,7 +245,16 @@ public class Parser {
                     }
                 }
             }
-            setOption(opt, value);
+            if (invalidOptions.isEmpty()) {
+                setOption(opt, value);
+            }
+        }
+
+        if (invalidOptions.size() == 1) {
+            throw new CommandValidationException(strings.get("parser.invalidOption", invalidOptions.iterator().next()));
+        }
+        else if (invalidOptions.size() > 1) {
+            throw new CommandValidationException(strings.get("parser.invalidOptions", StringUtils.cat(" ", invalidOptions.toArray(new String[0]))));
         }
     }
 
