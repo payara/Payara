@@ -165,7 +165,8 @@
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
-        <findbugs.version>2.5.2</findbugs.version>
+        <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
+        <findbugs.version>1.7</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
         <glassfish-corba.version>4.0.1.payara-p10</glassfish-corba.version>
@@ -646,7 +647,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs.version}</version>
+                <version>${findbugs-maven-plugin.version}</version>
                 <configuration>
                     <skip>${findbugs.skip}</skip>
                     <threshold>${findbugs.threshold}</threshold>
@@ -654,20 +655,20 @@
                     <excludeFilterFile>
                         ${findbugs.common},${findbugs.exclude}
                     </excludeFilterFile>
-		    <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=${findbugs.glassfish.logging.validLoggerPrefixes}</jvmArgs>
-		    <plugins>
-		        <plugin>
-			    <groupId>org.glassfish.findbugs</groupId>
-			    <artifactId>findbugs-logging-detectors</artifactId>
-			    <version>1.6</version>
-		        </plugin>
-		    </plugins>
+                    <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=${findbugs.glassfish.logging.validLoggerPrefixes}</jvmArgs>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.glassfish.findbugs</groupId>
+                            <artifactId>findbugs-logging-detectors</artifactId>
+                            <version>${findbugs.version}</version>
+                        </plugin>
+                    </plugins>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.glassfish.findbugs</groupId>
                         <artifactId>findbugs</artifactId>
-                        <version>1.6</version>
+                        <version>${findbugs.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -1338,7 +1339,7 @@
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>${findbugs.version}</version>
+                            <version>${findbugs-maven-plugin.version}</version>
                             <configuration>
                                 <skip>${findbugs.skip}</skip>
                                 <threshold>${findbugs.threshold}</threshold>
