@@ -251,6 +251,7 @@
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
+        <maven.site.plugin.version>3.7.1</maven.site.plugin.version>
         <maven.remote.resources.plugin.version>1.6.0</maven.remote.resources.plugin.version>
         <maven.invoker.plugin.version>3.1.0</maven.invoker.plugin.version>
         <maven.jaxb2.plugin.version>0.14.0</maven.jaxb2.plugin.version>
@@ -442,7 +443,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.6</version>
+                    <version>${maven.site.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
