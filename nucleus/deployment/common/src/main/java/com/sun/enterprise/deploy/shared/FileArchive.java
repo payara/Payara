@@ -143,8 +143,10 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     /**
      * Cache for {@link #entries()}. This is done as a static variable instead of a service
      * because FileArchive is commonly created by constructor rather than through injection.
+     * This is not a WeakHashMap because instances of {@link File} pointing to the same location
+     * may be created and used.
      */
-    private static Map<Integer, Enumeration> entriesCache = new HashMap<Integer, Enumeration>();
+    private static final Map<File, Enumeration> entriesCache = new HashMap<File, Enumeration>();
 
     /**
      * Open an abstract archive
@@ -307,13 +309,13 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         prefix = prefix.replace('/', File.separatorChar);
         File file = new File(archive, prefix);
         
-        if (entriesCache.containsKey(file.hashCode())) {
-            return entriesCache.get(file.hashCode());
+        if (entriesCache.containsKey(file)) {
+            return entriesCache.get(file);
         } else {
             List<String> namesList = new ArrayList<String>();
             getListOfFiles(file, namesList, null);
             Enumeration entries = Collections.enumeration(namesList);
-            entriesCache.put(file.hashCode(), entries);
+            entriesCache.put(file, entries);
             return entries;
         }
     }
@@ -589,14 +591,14 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
          */
         if (!Files.isSymbolicLink(directory.toPath())) {
             File[] entries = directory.listFiles();
-            for (File entrie : entries) {
-                if (entrie.isDirectory()) {
-                    allDeletesSucceeded &= deleteDir(entrie);
+            for (File entry : entries) {
+                if (entry.isDirectory()) {
+                    allDeletesSucceeded &= deleteDir(entry);
                 } else {
-                    if (!entrie.equals(StaleFileManager.Util.markerFile(archive))) {
-                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entrie);
+                    if (!entry.equals(StaleFileManager.Util.markerFile(archive))) {
+                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entry);
                         if (fileDeleteOK) {
-                            myStaleFileManager().recordDeletedEntry(entrie);
+                            myStaleFileManager().recordDeletedEntry(entry);
                         }
                         allDeletesSucceeded &= fileDeleteOK;
                     }
@@ -824,18 +826,16 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 }
 
                 final Path archivePath = archiveFile.toPath();
-                PrintStream ps = null;
-                try {
-                    ps = new PrintStream(markerFile(archiveFile));
+
+                try (PrintStream ps = new PrintStream(markerFile(archiveFile))) {
+                    for ( ; staleFileIt.hasNext(); ) {
+                        final Path relativeURI = archivePath.relativize(staleFileIt.next().toPath());
+                        ps.println(relativeURI);
+                        deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
+                    }
                 } catch (FileNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
-                for ( ; staleFileIt.hasNext(); ) {
-                    final Path relativeURI = archivePath.relativize(staleFileIt.next().toPath());
-                    ps.println(relativeURI);
-                    deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
-                }
-                ps.close();
             }
 
             /**
