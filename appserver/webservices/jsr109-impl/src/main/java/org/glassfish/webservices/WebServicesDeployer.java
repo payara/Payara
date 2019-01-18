@@ -184,7 +184,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
         
         Collection<Object> allMetaData = dc.getModuleMetadata();
         List<BundleDescriptor> bundleDescriptors = new ArrayList<>(2);
-        for (Object metaData :  allMetaData.toArray()) {
+        for (Object metaData :  allMetaData) {
             if (metaData instanceof BundleDescriptor) {
                 bundleDescriptors.add((BundleDescriptor) metaData);
             }
@@ -549,7 +549,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
         // swap the deployment descriptors context-root with the one
         // provided in the deployment request.
         // do not do for ejb in war case
-        if (webBundleDesc != null && webBundleDesc.getExtensionsDescriptors(EjbBundleDescriptor.class).size() == 0) {
+        if (webBundleDesc != null && webBundleDesc.getExtensionsDescriptors(EjbBundleDescriptor.class).isEmpty()) {
             if (dc.getAppProps().get("context-root") != null && app.isVirtual()) {
 
                 String contextRoot = ((String) dc.getAppProps().get("context-root"));
