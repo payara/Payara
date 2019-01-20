@@ -351,7 +351,7 @@
         <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
-        <asm.version>6.2.1</asm.version>
+        <asm.version>7.0</asm.version>
         <ha-api.version>3.1.11</ha-api.version>
         <hazelcast.version>3.11.1</hazelcast.version>
         <hazelcast.kubernetes.version>1.3.1</hazelcast.kubernetes.version>
