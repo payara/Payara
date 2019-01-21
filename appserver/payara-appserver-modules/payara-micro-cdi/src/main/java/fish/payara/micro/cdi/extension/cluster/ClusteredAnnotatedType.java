@@ -46,12 +46,14 @@ import com.google.common.collect.Iterables;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.util.AnnotationLiteral;
-import lombok.experimental.Delegate;
 
 /**
  * Adds @ClusteredScoped annotation to the @Clusteded beans
@@ -64,31 +66,59 @@ class ClusteredAnnotatedType<TT> implements AnnotatedType<TT> {
     private static final ClusteredAnnotationLiteral clusteredScopedLiteral = new ClusteredAnnotationLiteral();
     private static final ClusteredInterceptorAnnotationLiteral clusteredScopedInterceptorLiteral = new ClusteredInterceptorAnnotationLiteral();
 
-    private @Delegate(types = {AnnotatedType.class, Annotated.class}, excludes = Exclusions.class) final AnnotatedType<TT> wrapped;
+    private final AnnotatedType<TT> wrapped;
 
     public ClusteredAnnotatedType(AnnotatedType<TT> wrapped) {
         this.wrapped = wrapped;
     }
-
 
     @Override
     public Set<Annotation> getAnnotations() {
         return FluentIterable.from(Iterables.filter(wrapped.getAnnotations(), Predicates.not(appScopedFilter)))
                              .append(clusteredScopedLiteral).append(clusteredScopedInterceptorLiteral).toSet();
     }
-
-    interface Exclusions {
-        Set<Annotation> getAnnotations();
+    @Override
+    public Type getBaseType() {
+        return wrapped.getBaseType();
+    }
+    @Override
+    public Set<Type> getTypeClosure() {
+        return wrapped.getTypeClosure();
+    }
+    @Override
+    public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
+        return wrapped.getAnnotation(annotationType);
+    }
+    @Override
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
+        return wrapped.isAnnotationPresent(annotationType);
+    }
+    @Override
+    public Class<TT> getJavaClass() {
+        return wrapped.getJavaClass();
+    }
+    @Override
+    public Set<AnnotatedConstructor<TT>> getConstructors() {
+        return wrapped.getConstructors();
+    }
+    @Override
+    public Set<AnnotatedMethod<? super TT>> getMethods() {
+        return wrapped.getMethods();
+    }
+    @Override
+    public Set<AnnotatedField<? super TT>> getFields() {
+        return wrapped.getFields();
     }
 
     @SuppressWarnings("serial")
     private static class ClusteredAnnotationLiteral extends AnnotationLiteral<ClusterScoped> implements ClusterScoped {}
     @SuppressWarnings("serial")
-    private static class ClusteredInterceptorAnnotationLiteral extends AnnotationLiteral<ClusterScopedIntercepted> implements ClusterScopedIntercepted {};
+    private static class ClusteredInterceptorAnnotationLiteral extends AnnotationLiteral<ClusterScopedIntercepted> implements ClusterScopedIntercepted {}
     private static class ApplicationScopedFilter implements Predicate<Annotation> {
         @Override
         public boolean apply(Annotation input) {
             return input.annotationType().equals(ApplicationScoped.class);
         }
     }
+
 }

@@ -42,8 +42,8 @@ package fish.payara.nucleus.hazelcast.contextproxy;
 import java.net.URI;
 import java.util.Properties;
 import javax.cache.CacheManager;
+import javax.cache.configuration.OptionalFeature;
 import javax.cache.spi.CachingProvider;
-import lombok.experimental.Delegate;
 import org.glassfish.internal.api.ServerContext;
 
 /**
@@ -70,13 +70,41 @@ public class CachingProviderProxy implements CachingProvider {
         this.delegate = delegate;
         this.serverContext = serverContext;
     }
+    private final CachingProvider delegate;
+    private final ServerContext serverContext;
 
-    private interface Exclusions {
-        CacheManager getCacheManager();
-        CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts);
-        CacheManager getCacheManager(URI uri, ClassLoader cl);
+    @Override
+    public ClassLoader getDefaultClassLoader() {
+        return delegate.getDefaultClassLoader();
     }
 
-    private final @Delegate(excludes = Exclusions.class) CachingProvider delegate;
-    private final ServerContext serverContext;
+    @Override
+    public URI getDefaultURI() {
+        return delegate.getDefaultURI();
+    }
+
+    @Override
+    public Properties getDefaultProperties() {
+        return delegate.getDefaultProperties();
+    }
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public void close(ClassLoader classLoader) {
+        delegate.close(classLoader);
+    }
+
+    @Override
+    public void close(URI uri, ClassLoader classLoader) {
+        delegate.close(uri, classLoader);
+    }
+
+    @Override
+    public boolean isSupported(OptionalFeature optionalFeature) {
+        return delegate.isSupported(optionalFeature);
+    }
 }
