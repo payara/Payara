@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.util;
 
 import com.sun.enterprise.util.i18n.StringManager;
+
 import java.io.File;
 
 public class SystemPropertyConstants {
@@ -226,7 +227,7 @@ public class SystemPropertyConstants {
 
     /**
      * A method that returns the passed String as a property that can be replaced at run time.
-     * 
+     *
      * @param name String that represents a property, e.g INSTANCE_ROOT_PROPERTY in this class. The String may not be null.
      * @return a String that represents the replaceable value of passed String. Generally speaking it will be decorated with
      * a pair of braces with $ in the front (e.g. "a" will be returned as "${a}").
@@ -238,7 +239,7 @@ public class SystemPropertyConstants {
             final String pv = "property";
             throw new IllegalArgumentException(sm.getString(pn, pv));
         }
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append(OPEN).append(name).append(CLOSE);
         return (sb.toString());
     }
@@ -276,7 +277,7 @@ public class SystemPropertyConstants {
      * of the path on a file system.
      */
     public static final String getDocRootDefaultValue() {
-        final StringBuffer sb = new StringBuffer(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
+        final StringBuilder sb = new StringBuilder(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
         return (sb.append("/docroot").toString());
     }
 
@@ -286,19 +287,19 @@ public class SystemPropertyConstants {
      * <b> not <b> the absolute value of the path on a file system.
      */
     public static final String getAccessLogDefaultValue() {
-        final StringBuffer sb = new StringBuffer(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
+        final StringBuilder sb = new StringBuilder(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
         return (sb.append("/logs/access").toString());
     }
 
     /**
      * Returns the system specific file.separator delimited path to the asadmin script. Any changes to file layout should
-     * 
+     *
      * be reflected here. The path will contain '/' as the separator character, regardless of operating platform. Never
      * returns a null. Assumes the the property "INSTALL_ROOT_PROPERTY" is set in the VM before calling this. As of now
      * (September 2005) all the server instances and asadmin VM itself has this property set. The method does not guarantee
      * that the script exists on the given system. It should only be used when caller wants to know the location of the
      * script. Caller should make sure it exists.
-     * 
+     *
      * @return String representing the Path to asadmin script. Might return a string beginning with "null", if the
      * INSTALL_ROOT_PROPERTY is not defined
      */
@@ -327,7 +328,7 @@ public class SystemPropertyConstants {
     /**
      * Returns the component identifier associated with the INSTALL_ROOT. For example if INSTALL_ROOT is
      * /home/glassfish4/glassfish the component name will "glassfish".
-     * 
+     *
      * @return String representing the component identifier.
      */
     public static final String getComponentName() {

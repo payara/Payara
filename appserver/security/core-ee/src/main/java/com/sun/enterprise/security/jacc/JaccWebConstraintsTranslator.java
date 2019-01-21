@@ -40,50 +40,30 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc;
 
-import static com.sun.enterprise.security.jacc.MethodValue.methodArrayToSet;
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.Collections.list;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
-
-import java.security.Permission;
-import java.security.Permissions;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
-import javax.security.jacc.WebUserDataPermission;
-
-import org.glassfish.security.common.Role;
-
 import com.sun.enterprise.deployment.SecurityRoleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.web.AuthorizationConstraint;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.SecurityRoleReference;
-import com.sun.enterprise.deployment.web.UserDataConstraint;
-import com.sun.enterprise.deployment.web.WebResourceCollection;
+import com.sun.enterprise.deployment.web.*;
+import org.glassfish.security.common.Role;
+
+import javax.security.jacc.*;
+import java.security.Permission;
+import java.security.Permissions;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.security.jacc.MethodValue.methodArrayToSet;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.Collections.list;
+import static java.util.logging.Level.*;
 
 /**
  * This class is used for translating security constrains from <code>web.xml</code> and corresponding
  * annotations into JACC permissions, and writing this to the pluggable {@link PolicyConfiguration} (which is
  * EE standard permission repository).
- * 
+ *
  * @author Harpreet Singh
  * @author Jean-Francois Arcand
  * @author Ron Monzillo
@@ -98,14 +78,14 @@ public class JaccWebConstraintsTranslator {
     private static final int PT_EXTENSION = 1;
     private static final int PT_PREFIX = 2;
     private static final int PT_EXACT = 3;
-    
+
     private JaccWebConstraintsTranslator() {
     }
-    
+
     /**
      * Translate the security constraints presents in the given <code>WebBundleDescriptor</code> to JACC permissions
      * and store those in the given <code>PolicyConfiguration</code>.
-     * 
+     *
      * @param webBundleDescriptor the source of the security constraints
      * @param policyConfiguration the target of the security permissions
      * @throws PolicyContextException
@@ -114,7 +94,7 @@ public class JaccWebConstraintsTranslator {
         createResourceAndDataPermissions(webBundleDescriptor, policyConfiguration);
         createWebRoleRefPermission(webBundleDescriptor, policyConfiguration);
     }
-    
+
     private static void createResourceAndDataPermissions(WebBundleDescriptor webBundleDescriptor, PolicyConfiguration policyConfiguration) throws PolicyContextException {
         if (logger.isLoggable(FINE)) {
             logger.entering(JaccWebConstraintsTranslator.class.getSimpleName(), "processConstraints");
@@ -122,37 +102,37 @@ public class JaccWebConstraintsTranslator {
         }
 
         // ### 1 ###
-        
+
         // Parse the constraints in the webBundleDescriptor (representing web.xml and annotations) into
         // a number of raw pattern builders. From these pattern builders we'll generate and write out
         // permissions below
-        
+
         Map<String, PatternBuilder> patternBuilderMap = parseConstraints(webBundleDescriptor);
 
         // Permissions for resources that can't be accessed by anyone
         Permissions excluded = new Permissions();
-        
+
         // Permissions for resources that are open to be accessed by everyone
         Permissions unchecked = new Permissions();
-        
+
         // Permissions for resources that require a role
         Map<String, Permissions> perRole = new HashMap<String, Permissions>();
 
         boolean deny = webBundleDescriptor.isDenyUncoveredHttpMethods();
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine(
-                "JACC: constraint capture: begin processing qualified url patterns" + 
-                " - uncovered http methods will be " + 
+                "JACC: constraint capture: begin processing qualified url patterns" +
+                " - uncovered http methods will be " +
                 (deny ? "denied" : "permitted"));
         }
-        
-        
+
+
         // ### 2 ###
-        
+
         // For all patterns that were created by the "parseConstraints" methods above, we now
         // create permissions and add these to the various collections defined above.
-        
+
         for (PatternBuilder patternBuilder : patternBuilderMap.values()) {
             if (!patternBuilder.irrelevantByQualifier) {
 
@@ -178,26 +158,26 @@ public class JaccWebConstraintsTranslator {
                 handleConnections(unchecked, patternBuilder, urlPatternSpec);
             }
         }
-        
+
         // ### 3 ###
 
         // Now that we have created and added permissions to the various collections, we'll write them
         // out to the policyConfiguration
-        
+
 
         // Write out the translated/generated excluded permissions
         policyConfiguration.addToExcludedPolicy(excluded);
 
         // Write out the translated/generated unchecked permissions
         policyConfiguration.addToUncheckedPolicy(unchecked);
-        
+
         logExcludedUncheckedPermissionsWritten(excluded, unchecked);
 
         // Write out the translated/generated per role permissions
         for (Entry<String, Permissions> roleEntry : perRole.entrySet()) {
             String role = roleEntry.getKey();
             Permissions permissions = roleEntry.getValue();
-            
+
             policyConfiguration.addToRole(role, permissions);
 
             logPerRolePermissionsWritten(role, permissions);
@@ -207,7 +187,7 @@ public class JaccWebConstraintsTranslator {
             logger.exiting(JaccWebConstraintsTranslator.class.getSimpleName(), "processConstraints");
         }
     }
-    
+
     private static Map<String, PatternBuilder> parseConstraints(WebBundleDescriptor webBundleDescriptor) {
         if (logger.isLoggable(FINE)) {
             logger.entering(JaccWebConstraintsTranslator.class.getSimpleName(), "parseConstraints");
@@ -344,7 +324,7 @@ public class JaccWebConstraintsTranslator {
 
                 logger.fine("JACC: constraint translation: end parsing web resource collection");
             }
-            
+
             logger.fine("JACC: constraint translation: end parsing security constraint");
         }
 
@@ -354,11 +334,11 @@ public class JaccWebConstraintsTranslator {
 
         return patternBuilderMap;
     }
-    
+
     private static void handleExcluded(Permissions collection, PatternBuilder patternBuilder, String name) {
         String actions = null;
         BitSet excludedMethods = patternBuilder.getExcludedMethods();
-        
+
         if (patternBuilder.otherConstraint.isExcluded()) {
             BitSet methods = patternBuilder.getMethodSet();
             methods.andNot(excludedMethods);
@@ -378,36 +358,36 @@ public class JaccWebConstraintsTranslator {
             logger.fine("JACC: constraint capture: adding excluded methods: " + actions);
         }
     }
-    
+
     private static void handlePerRole(Map<String, Permissions> map, PatternBuilder patternBuilder, String urlPatternSpec) {
         Map<String, BitSet> roleMap = patternBuilder.getRoleMap();
         List<String> roleList = null;
-        
+
         // Handle the roles for the omitted methods
         if (!patternBuilder.otherConstraint.isExcluded() && patternBuilder.otherConstraint.isAuthConstrained()) {
             roleList = patternBuilder.otherConstraint.roleList;
-            
+
             for (String roleName : roleList) {
                 BitSet methods = patternBuilder.getMethodSet();
-                
+
                 // Reduce omissions for explicit methods granted to role
                 BitSet roleMethods = roleMap.get(roleName);
                 if (roleMethods != null) {
                     methods.andNot(roleMethods);
                 }
-                
+
                 String httpMethodSpec = null;
                 if (!methods.isEmpty()) {
                     httpMethodSpec = "!" + MethodValue.getActions(methods);
                 }
-                
+
                 addToRoleMap(map, roleName, new WebResourcePermission(urlPatternSpec, httpMethodSpec));
             }
         }
-        
+
         // Handle explicit methods, skip roles that were handled above
         BitSet methods = patternBuilder.getMethodSet();
-        
+
         if (!methods.isEmpty()) {
             for (Entry<String, BitSet> roleEntry : roleMap.entrySet()) {
                 String roleName = roleEntry.getKey();
@@ -420,11 +400,11 @@ public class JaccWebConstraintsTranslator {
             }
         }
     }
-    
+
     private static void handleUnchecked(Permissions collection, PatternBuilder patternBuilder, String urlPatternSpec) {
         String httpMethodSpec = null;
         BitSet noAuthMethods = patternBuilder.getNoAuthMethods();
-        
+
         if (!patternBuilder.otherConstraint.isAuthConstrained()) {
             BitSet methods = patternBuilder.getMethodSet();
             methods.andNot(noAuthMethods);
@@ -443,7 +423,7 @@ public class JaccWebConstraintsTranslator {
             logger.fine("JACC: constraint capture: adding unchecked (for authorization) methods: " + httpMethodSpec);
         }
     }
-    
+
     private static void handleConnections(Permissions permissions, PatternBuilder patternBuilder, String name) {
         BitSet allConnectMethods = null;
         boolean allConnectAtOther = patternBuilder.otherConstraint.isConnectAllowed(ConstraintValue.connectTypeNone);
@@ -457,22 +437,22 @@ public class JaccWebConstraintsTranslator {
             if (i == 0) {
                 allConnectMethods = connectMethods;
             } else {
-                
+
                 // If connect type protected, remove methods that accept any connect
                 connectMethods.andNot(allConnectMethods);
             }
 
             if (patternBuilder.otherConstraint.isConnectAllowed(1 << i)) {
                 if (i != 0 && allConnectAtOther) {
-                    
+
                     // If all connect allowed at other
-                    
+
                     if (connectMethods.isEmpty()) {
-                        
+
                         // Skip, if remainder is empty, because methods that accept any connect were handled at i==0.
                         continue;
                     }
-                    
+
                     // Construct actions using methods with specific connection requirements
                     actions = MethodValue.getActions(connectMethods);
                 } else {
@@ -495,28 +475,28 @@ public class JaccWebConstraintsTranslator {
 
             if (logger.isLoggable(FINE)) {
                 logger.fine(
-                    "JACC: constraint capture: adding methods that accept connections with protection: " + 
-                    transport + 
+                    "JACC: constraint capture: adding methods that accept connections with protection: " +
+                    transport +
                     " methods: " + actions);
             }
         }
     }
-    
+
     static int patternType(Object urlPattern) {
         String pattern = urlPattern.toString();
-        
+
         if (pattern.startsWith("*.")) {
             return PT_EXTENSION;
         }
-        
+
         if (pattern.startsWith("/") && pattern.endsWith("/*")) {
             return PT_PREFIX;
         }
-        
+
         if (pattern.equals("/")) {
             return PT_DEFAULT;
         }
-        
+
         return PT_EXACT;
     }
 
@@ -547,7 +527,7 @@ public class JaccWebConstraintsTranslator {
             if ((slash >= 0) && (period > slash) && path.endsWith(pattern.substring(1))) {
                 return true;
             }
-            
+
             return false;
         }
 
@@ -562,7 +542,7 @@ public class JaccWebConstraintsTranslator {
     private static void addToRoleMap(Map<String, Permissions> roleMap, String roleName, Permission permission) {
         roleMap.computeIfAbsent(roleName, e -> new Permissions())
                .add(permission);
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine("JACC: constraint capture: adding methods to role: " + roleName + " methods: " + permission.getActions());
         }
@@ -573,39 +553,39 @@ public class JaccWebConstraintsTranslator {
             logger.entering(JaccWebConstraintsTranslator.class.getSimpleName(), "createWebRoleRefPermission");
             logger.log(FINE, "JACC: role-reference translation: Processing WebRoleRefPermission : CODEBASE = " + policyConfiguration.getContextID());
         }
-        
+
         List<Role> servletScopedRoleNames = new ArrayList<>();
         Collection<Role> allRoles = webBundleDescriptor.getRoles();
-        
+
         Role anyAuthUserRole = new Role("**");
         boolean rolesetContainsAnyAuthUserRole = allRoles.contains(anyAuthUserRole);
-        
+
         // Iterate through all Servlets in the application and write out role ref permissions for each
-        
+
         for (WebComponentDescriptor componentDescriptor : webBundleDescriptor.getWebComponentDescriptors()) {
 
             // Name of Servlet being processed in this iteration
             String servletName = componentDescriptor.getCanonicalName();
 
             writeOutPermissionsForRoleRefRoles(componentDescriptor.getSecurityRoleReferenceSet(), servletScopedRoleNames, servletName, policyConfiguration);
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.fine("JACC: role-reference translation: Going through the list of roles not present in RoleRef elements and creating WebRoleRefPermissions ");
             }
-            
+
             // For every role in the application for which there is no mapping (role reference) defined for the current servlet
-            // we insert a 1:1 role mapping. E.g global role "foo" maps to an identical named role "foo" in the scope of Servlet 
+            // we insert a 1:1 role mapping. E.g global role "foo" maps to an identical named role "foo" in the scope of Servlet
             // "MyServlet"
             //
             // Note this is the most common situation as mapping roles per Servlet is quite rare in practice
             writeOutPermissionsForNonRoleRefRoles(allRoles, servletScopedRoleNames, servletName, policyConfiguration);
-            
+
             // JACC MR8 add WebRoleRefPermission for the any authenticated user role '**'
             if ((!servletScopedRoleNames.contains(anyAuthUserRole)) && !rolesetContainsAnyAuthUserRole) {
                 addAnyAuthenticatedUserRoleRef(policyConfiguration, servletName);
             }
         }
-        
+
         // After looking at roles per Servlet, look at global concerns
 
         // For every security role in the web application add a WebRoleRefPermission to the corresponding role. The name of all
@@ -619,21 +599,21 @@ public class JaccWebConstraintsTranslator {
         //
         // See also S1AS8PE 4966609
         writeOutGlobalPermissionsForAllRoles(allRoles, policyConfiguration);
-        
+
         // JACC MR8 add WebRoleRefPermission for the any authenticated user role '**'
         if (!rolesetContainsAnyAuthUserRole) {
             addAnyAuthenticatedUserRoleRef(policyConfiguration, "");
         }
-        
+
         if (logger.isLoggable(FINE)) {
             logger.exiting(JaccWebConstraintsTranslator.class.getName(), "createWebRoleRefPermission");
         }
     }
-    
+
     /**
      * Writes out global <code>WebRoleRefPermission</code>s to the <code>PolicyConfiguration</code>, one for each role in
      * the given role collection.
-     * 
+     *
      * @param allRoles collection of all roles in the web application
      * @param policyConfiguration the target that receives the security permissions created by this method
      * @throws PolicyContextException If the policy configuration throws an exception
@@ -643,48 +623,48 @@ public class JaccWebConstraintsTranslator {
             if (logger.isLoggable(FINE)) {
                 logger.fine("JACC: role-reference translation: Looking at Role =  " + role.getName());
             }
-            
+
             String roleName = role.getName();
             policyConfiguration.addToRole(roleName, new WebRoleRefPermission("", roleName));
-            
+
             if (logger.isLoggable(FINE)) {
                 logger.fine("JACC: role-reference translation: RoleRef  = " + roleName + " is added for jsp's that can't be mapped to servlets");
                 logger.fine("JACC: role-reference translation: Permission added for above role-ref =" + roleName + " " + "");
             }
         }
     }
-    
+
     private static void writeOutPermissionsForRoleRefRoles(Collection<SecurityRoleReference> securityRoleReferences, Collection<Role> servletScopedRoleNames, String servletName, PolicyConfiguration policyConfiguration) throws PolicyContextException {
         for (SecurityRoleReference roleReference : securityRoleReferences) {
             if (roleReference != null) {
-                
+
                 // The name of a role, local (scoped) to a single Servlet
                 String servletScopedRoleName = roleReference.getRoleName();
                 servletScopedRoleNames.add(new Role(servletScopedRoleName));
-                
+
                 // The name of the global role to which the local Servlet scoped role links (is mapped)
                 String globalRoleName = roleReference.getSecurityRoleLink().getName();
-                
+
                 // Write the role reference to the target policy configuration
                 policyConfiguration.addToRole(
-                    globalRoleName, 
+                    globalRoleName,
                     new WebRoleRefPermission(servletName, servletScopedRoleName));
-                
+
                 if (logger.isLoggable(FINE)) {
                     logger.fine(
-                        "JACC: role-reference translation: " + 
-                         "RoleRefPermission created with name (servlet-name) = " + servletName + 
-                         " and action (role-name tag) = " + servletScopedRoleName + 
+                        "JACC: role-reference translation: " +
+                         "RoleRefPermission created with name (servlet-name) = " + servletName +
+                         " and action (role-name tag) = " + servletScopedRoleName +
                          " added to role (role-link tag) = " + globalRoleName);
                 }
             }
         }
     }
-    
+
     /**
-     * 
+     *
      * @param allRoles collection of all roles in the web application
-     * @param roleRefRoles collection of roles for which there were role references (mappings from global roles) 
+     * @param roleRefRoles collection of roles for which there were role references (mappings from global roles)
      * @param componentName name of the (servlet) component for which the permissions are created
      * @param policyConfiguration the target that receives the security permissions created by this method
      * @throws PolicyContextException If the policy configuration throws an exception
@@ -694,14 +674,14 @@ public class JaccWebConstraintsTranslator {
             if (logger.isLoggable(FINE)) {
                 logger.fine("JACC: role-reference translation: Looking at Role =  " + role.getName());
             }
-            
+
             // For every role for which we didn't already create a role reference role, create a 1:1 mapping
             // from the global roles.
             if (!roleRefRoles.contains(role)) {
-                
+
                 String roleName = role.getName();
                 policyConfiguration.addToRole(roleName, new WebRoleRefPermission(componentName, roleName));
-                
+
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("JACC: role-reference translation: RoleRef  = " + roleName + " is added for servlet-resource = " + componentName);
                     logger.fine("JACC: role-reference translation: Permission added for above role-ref =" + componentName + " " + roleName);
@@ -716,12 +696,12 @@ public class JaccWebConstraintsTranslator {
     private static void addAnyAuthenticatedUserRoleRef(PolicyConfiguration policyConfiguration, String name) throws PolicyContextException {
         String action = "**";
         policyConfiguration.addToRole(action, new WebRoleRefPermission(name, action));
-        
+
         if (logger.isLoggable(FINE)) {
             logger.fine("JACC: any authenticated user role-reference translation: Permission added for role-ref =" + name + " " + action);
         }
     }
-    
+
     private static void logExcludedUncheckedPermissionsWritten(Permissions excluded, Permissions unchecked) {
         if (logger.isLoggable(FINE)) {
             logger.fine("JACC: constraint capture: end processing qualified url patterns");
@@ -737,12 +717,12 @@ public class JaccWebConstraintsTranslator {
             }
         }
     }
-    
+
     private static void logPerRolePermissionsWritten(String role, Permissions permissions) {
         if (logger.isLoggable(FINE)) {
             for (Permission p :  list(permissions.elements())) {
                 String ptype = (p instanceof WebResourcePermission) ? "WRP  " : "WUDP ";
-                
+
                 logger.fine("JACC: permission(" + role + ") type: " + ptype + " name: " + p.getName() + " actions: " + p.getActions());
             }
 
@@ -807,7 +787,7 @@ class ConstraintValue {
             if (bit == null) {
                 throw new IllegalArgumentException("constraint translation error-illegal trx guarantee");
             }
-            
+
             b = bit.intValue();
         }
 
@@ -835,7 +815,7 @@ class ConstraintValue {
         if (excluded || (connectSet != 0 && !bitIsSet(connectSet, connectTypeNone))) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -958,11 +938,11 @@ class MethodValue extends ConstraintValue {
             return null;
         }
 
-        StringBuffer actions = null;
+        StringBuilder actions = null;
 
         for (int i = methodSet.nextSetBit(0); i >= 0; i = methodSet.nextSetBit(i + 1)) {
             if (actions == null) {
-                actions = new StringBuffer();
+                actions = new StringBuilder();
             } else {
                 actions.append(",");
             }
@@ -1013,17 +993,17 @@ class PatternBuilder {
 
     final int patternType;
     final int patternLength;
-    final StringBuffer urlPatternSpec;
+    final StringBuilder urlPatternSpec;
     final ConstraintValue otherConstraint;
     final Map<String, MethodValue> methodValues = new HashMap<>();
-    
+
     boolean committed;
     boolean irrelevantByQualifier;
 
     PatternBuilder(String urlPattern) {
         patternType = JaccWebConstraintsTranslator.patternType(urlPattern);
         patternLength = urlPattern.length();
-        urlPatternSpec = new StringBuffer(urlPattern);
+        urlPatternSpec = new StringBuilder(urlPattern);
         otherConstraint = new ConstraintValue();
     }
 
@@ -1031,13 +1011,13 @@ class PatternBuilder {
         if (JaccWebConstraintsTranslator.implies(urlPattern, urlPatternSpec.substring(0, patternLength))) {
             irrelevantByQualifier = true;
         }
-        
+
         urlPatternSpec.append(":" + urlPattern);
     }
 
     MethodValue getMethodValue(int methodIndex) {
         String methodName = MethodValue.getMethodName(methodIndex);
-        
+
         synchronized (methodValues) {
             MethodValue methodValue = methodValues.get(methodName);
             if (methodValue == null) {
@@ -1048,7 +1028,7 @@ class PatternBuilder {
                     JaccWebConstraintsTranslator.logger.log(FINE, "JACC: created MethodValue: " + methodValue);
                 }
             }
-            
+
             return methodValue;
         }
     }
@@ -1063,7 +1043,7 @@ class PatternBuilder {
                 }
             }
         }
-        
+
         return methodSet;
     }
 
@@ -1077,7 +1057,7 @@ class PatternBuilder {
                 }
             }
         }
-        
+
         return methodSet;
     }
 
@@ -1091,7 +1071,7 @@ class PatternBuilder {
                 }
             }
         }
-        
+
         return methodSet;
     }
 
@@ -1105,7 +1085,7 @@ class PatternBuilder {
                 }
             }
         }
-        
+
         return methodSet;
     }
 
@@ -1198,10 +1178,10 @@ class PatternBuilder {
     }
 
     void handleUncovered(boolean deny) {
-        
+
         // Bypass any uncommitted patterns (e.g. the default pattern) which were entered in the map, but that were not named in
         // a security constraint
-        
+
         if (!committed) {
             return;
         }
@@ -1209,7 +1189,7 @@ class PatternBuilder {
         boolean otherIsUncovered = false;
         synchronized (methodValues) {
             BitSet uncoveredMethodSet = new BitSet();
-            
+
             // For all the methods in the mapValue
             for (MethodValue methodValue : methodValues.values()) {
                 // If the method is uncovered add its id to the uncovered set
@@ -1220,38 +1200,38 @@ class PatternBuilder {
                     uncoveredMethodSet.set(methodValue.index);
                 }
             }
-            
+
             // If the constraint on all other methods is uncovered
             if (otherConstraint.isUncovered()) {
-                
-                // This is the case where the problem is most severe, since a non-enumerable set of HTTP methods has 
+
+                // This is the case where the problem is most severe, since a non-enumerable set of HTTP methods has
                 // been left uncovered.
                 // The set of method will be logged and denied.
-                
+
                 otherIsUncovered = true;
                 if (deny) {
                     otherConstraint.setPredefinedOutcome(false);
                 }
-                
+
                 // Ensure that the methods that are reported as uncovered includes any enumerated methods that were found to be
                 // uncovered.
                 BitSet otherMethodSet = getMethodSet();
                 if (!uncoveredMethodSet.isEmpty()) {
-                    
+
                     // UncoveredMethodSet contains methods that otherConstraint pertains to, so remove them from otherMethodSet
                     // which is the set to which the otherConstraint does not apply
                     otherMethodSet.andNot(uncoveredMethodSet);
                 }
-                
-                
+
+
                 // When otherIsUncovered, uncoveredMethodSet contains methods to which otherConstraint does NOT apply
                 uncoveredMethodSet = otherMethodSet;
             }
-            
+
             if (otherIsUncovered || !uncoveredMethodSet.isEmpty()) {
                 String uncoveredMethods = MethodValue.getActions(uncoveredMethodSet);
                 Object[] args = new Object[] { urlPatternSpec, uncoveredMethods };
-                
+
                 if (deny) {
                     if (otherIsUncovered) {
                         JaccWebConstraintsTranslator.logger.log(INFO, "JACC: For the URL pattern {0}, all but the following methods have been excluded: {1}", args);

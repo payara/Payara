@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JDOCodeGenerator.java
@@ -45,19 +46,6 @@
  */
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
@@ -88,6 +76,11 @@ import org.netbeans.modules.dbschema.DBException;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+
 //import com.sun.enterprise.deployment.backend.Deployer;
 
 /*
@@ -110,7 +103,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
 
      /** The resource bundle used for validation */
     private static final ResourceBundle validationBundle = new MergedBundle(
-        I18NHelper.loadBundle(DeploymentDescriptorModel.class), 
+        I18NHelper.loadBundle(DeploymentDescriptorModel.class),
         I18NHelper.loadBundle(Model.class));
 
     private ArrayList<File> files = new ArrayList<File>();
@@ -129,7 +122,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     private String appName;
     private File classout;
     private MappingGenerator mappingGenerator = null;
-        
+
     /**
      * Flag set to <code>true</code> if code generation should proceed
      * even if model validation fails
@@ -143,7 +136,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * @see CMPGenerator#init(org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl, DeploymentContext, String, String)
      */
     public void init(EjbBundleDescriptorImpl bundle, DeploymentContext ctx,
-        String bundlePathName, String generatedXmlsPathName) 
+        String bundlePathName, String generatedXmlsPathName)
         throws GeneratorException {
 
         if (logger.isLoggable(Logger.FINE))
@@ -181,7 +174,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * @see CMPGenerator#init(org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl, ClassLoader, String)
      */
     public void init(EjbBundleDescriptorImpl bundle, ClassLoader loader,
-            String bundlePathName, boolean ignoreSunDeploymentDescriptors) 
+            String bundlePathName, boolean ignoreSunDeploymentDescriptors)
             throws GeneratorException {
         if (logger.isLoggable(Logger.FINE))
             logger.fine("cmp gen init"); // NOI18N
@@ -222,7 +215,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
         if (logger.isLoggable(Logger.FINE)) {
             for (Iterator i = c.iterator(); i.hasNext();) {
                 logger.log(Logger.FINE, "validation exception: ", //NOI18N
-                        (Exception)i.next()); 
+                        (Exception)i.next());
             }
         }
 
@@ -230,18 +223,18 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     }
 
     /**
-     * Validate the mapping file for the given class. First check if 
-     * the mapping for the class exists in the sun-cmp-mappings.  If so, 
-     * continue to validate using {@link Model#validate(String, ClassLoader, 
-     * ResourceBundle)}.  If the resulting collection returned is not empty, 
+     * Validate the mapping file for the given class. First check if
+     * the mapping for the class exists in the sun-cmp-mappings.  If so,
+     * continue to validate using {@link Model#validate(String, ClassLoader,
+     * ResourceBundle)}.  If the resulting collection returned is not empty,
      * it means it failed the test.
-     * The user should edit the mapping information, either in the 
-     * IDE or the deploytool, or directly update 
+     * The user should edit the mapping information, either in the
+     * IDE or the deploytool, or directly update
      * the sun-cmp-mapping file.
      *
      * @param descr the IASEjbCMPEntityDescriptor for this CMP bean.
-     * @return a Collection of one GeneratorException if the mapping is 
-     * totally missing or Collection of ModelException instances 
+     * @return a Collection of one GeneratorException if the mapping is
+     * totally missing or Collection of ModelException instances
      * for each found validation error.
      */
     private Collection validateModel(IASEjbCMPEntityDescriptor descr) {
@@ -258,10 +251,10 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     }
 
     /**
-     * Checks a collection as returned by 
-     * {@link #validateModel(IASEjbCMPEntityDescriptor)} to see if 
-     * it contains (only) the {@link GeneratorException} used when the  
-     * entire mapping definition is missing.  In that case, we will 
+     * Checks a collection as returned by
+     * {@link #validateModel(IASEjbCMPEntityDescriptor)} to see if
+     * it contains (only) the {@link GeneratorException} used when the
+     * entire mapping definition is missing.  In that case, we will
      * want to skip other checks.
      *
      * @param c a collection of validation exceptions as returned by
@@ -281,13 +274,13 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     }
 
     /**
-     * Validate the bean. For now, validate EJBQL for all finders and 
+     * Validate the bean. For now, validate EJBQL for all finders and
      * selectors of this bean.
-     *   
+     *
      * @param descr the IASEjbCMPEntityDescriptor for this CMP bean.
      * @return a Collection of Exception instances for each found
      * validation error.
-     */  
+     */
     private Collection validateEJB(IASEjbCMPEntityDescriptor descr) {
         Collection c = null;
         try {
@@ -301,13 +294,13 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
         return c;
     }
 
-    /**  
-     * Validate if this bean is of a supported type. 
-     *   
+    /**
+     * Validate if this bean is of a supported type.
+     *
      * @param descr the IASEjbCMPEntityDescriptor for this CMP bean.
      * @return a Collection of Exception instances for each found
      * validation error.
-     */  
+     */
     private Collection validateSupported(IASEjbCMPEntityDescriptor descr) {
         Collection rc = new ArrayList();
         /*
@@ -320,28 +313,28 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     /**
      * @see CMPGenerator#generate(IASEjbCMPEntityDescriptor, File, File)
      */
-    public void generate(IASEjbCMPEntityDescriptor ejbcmp, File srcout, 
-        File classout) 
+    public void generate(IASEjbCMPEntityDescriptor ejbcmp, File srcout,
+        File classout)
         throws GeneratorException {
 
         String beanName = ejbcmp.getName();
 
-        // StringBuffer to store validation exception messages if there are any.
+        // StringBuilder to store validation exception messages if there are any.
         // If there are no validation exceptions, the reference will be null.
-        StringBuffer validateex = null;
-    
+        StringBuilder validateex = null;
+
         boolean debug = logger.isLoggable(Logger.FINE);
         if (debug)
             logger.fine("gen file in " + srcout.getAbsolutePath()); // NOI18N
-    
-        // We need to create a new ArrayList because model validation 
-        // returns an unmodifiable list.  This may be a place to look 
-        // for a performance improvement later for the case of empty 
+
+        // We need to create a new ArrayList because model validation
+        // returns an unmodifiable list.  This may be a place to look
+        // for a performance improvement later for the case of empty
         // or singleton collection (extra copies).
         Collection c = new ArrayList(validateModel(ejbcmp));
 
-        // if the mapping info is not present, throw the exception and 
-        // stop the generation process 
+        // if the mapping info is not present, throw the exception and
+        // stop the generation process
         GeneratorException mappingMissingEx = getMappingMissingException(c);
         if (mappingMissingEx != null)
             throw mappingMissingEx;
@@ -354,32 +347,32 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
 
         if (!c.isEmpty()) {
             // Validation failed the test. We will try to display all the
-            // exceptions in a concatenated message and a GeneratorException 
+            // exceptions in a concatenated message and a GeneratorException
             // is thrown.
-            validateex = new StringBuffer();
+            validateex = new StringBuilder();
             Iterator iter = c.iterator();
-    
+
             while (iter.hasNext()) {
                 Exception ex = (Exception)iter.next();
                 if (debug)
                     logger.log(Logger.FINE,"validation exception: " , ex); //NOI18N
                 validateex.append(ex.getMessage()).append('\n'); //NOI18N
             }
-    
+
             if (!ignoreValidationResults)
                 throw JDOCodeGeneratorHelper.createGeneratorException(
                         "CMG.ExceptionInValidate", //NOI18N
-                        beanName, bundle, validateex.toString());    
+                        beanName, bundle, validateex.toString());
         }
 
         try {
             Collection<File> newfiles = null;
-    
+
             if (!ejbcmp.isEJB20())
                 ejbcmp.setQueryParser(jdoqlParamDeclParser);
-    
+
             // IMPORTANT:
-            // Concrete impl class generation must happen before generation of 
+            // Concrete impl class generation must happen before generation of
             // PC class as cmpGenerator will override cascadeDelete (DeleteAction)
             // property if it is set, and generatePC() saves .mapping file.
             newfiles = cmpGenerator.generate(mh, beanName, appName, srcout, classout);
@@ -397,21 +390,21 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
             // messages if there are any.
             throw JDOCodeGeneratorHelper.createGeneratorException(
                     "CMG.ExceptionInGenerate", //NOI18N
-                    beanName, bundle, e, validateex); 
+                    beanName, bundle, e, validateex);
 
         } catch (EJBQLException e) {
             // EJBQL parsing error found. Append this exception's message to
             // validation messages if there are any.
             throw JDOCodeGeneratorHelper.createGeneratorException(
                     "CMG.ExceptionInGenerate", //NOI18N
-                    beanName, bundle, e, validateex); 
+                    beanName, bundle, e, validateex);
 
         } catch (IOException e) {
-            // Problems generating file(s). Append this exception's message to 
+            // Problems generating file(s). Append this exception's message to
             // validation messages if there are any.
             throw JDOCodeGeneratorHelper.createGeneratorException(
                     "CMG.IOExceptionInGenerate", //NOI18N
-                    beanName, bundle, e, validateex); 
+                    beanName, bundle, e, validateex);
         }
 
     }
@@ -454,11 +447,11 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
                         mapOut.close();
                     } catch(Exception ex) {
                         if (logger.isLoggable(Logger.FINE))
-                            logger.fine(ex.getMessage());  
+                            logger.fine(ex.getMessage());
                     }
                 }
             }
-            
+
         }
         return fileList;
     }
@@ -466,7 +459,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
    /*
     * @see CMPGenerator#cleanup()
     */
-    public Collection cleanup() throws GeneratorException { 
+    public Collection cleanup() throws GeneratorException {
         // Remove the strong references to MappingClassElements
         // needed during deployment. The mapping class cache
         // can now be cleaned up by the garbage collector.
@@ -538,14 +531,14 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
     /**
      * Add required signatures to the generator instance.
      */
-    private void addSignatures(JDOConcreteBeanGenerator cmpGenerator) 
+    private void addSignatures(JDOConcreteBeanGenerator cmpGenerator)
             throws IOException {
 
         // Add the code generation signature of the input files
         // Note, this is per bundle, so it needs to be set per
         // cmpGenerator instance.
         cmpGenerator.addCodeGenInputFilesSignature(getSignaturesOfInputFiles());
-    
+
         // Add the code generation signature of the S1AS-specific generator classes.
         cmpGenerator.addCodeGeneratorClassSignature(
                 getS1ASSpecificGeneratorClassesSignature());
@@ -556,46 +549,46 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * involved in the codegen for S1AS specific part.
      * @return The signatures as a string.
      */
-    private static synchronized String 
-            getS1ASSpecificGeneratorClassesSignature() 
+    private static synchronized String
+            getS1ASSpecificGeneratorClassesSignature()
     {
         if (signatures == null) {
-            StringBuffer sb = new StringBuffer().
-        
+            StringBuilder sb = new StringBuilder().
+
             // adding signature of JDOCodeGenerator
             append(JDOCodeGenerator.SIGNATURE).
             append(CMPTemplateFormatter.signatureDelimiter_).
-        
+
             // adding signature of NameMapper
             append(NameMapper.SIGNATURE);
-        
-            signatures = sb.toString();       
+
+            signatures = sb.toString();
         }
         return signatures;
     }
 
     /**
      * Returns the signatures (file length) of the input files for the codegen.
-     * Inputfiles are ejb-jar.xml, sun-ejb-jar.xml, sun-cmp-mappings.xml. 
+     * Inputfiles are ejb-jar.xml, sun-ejb-jar.xml, sun-cmp-mappings.xml.
      * @return The signatures as a string.
      * @throws IOException
-     */    
+     */
     private String getSignaturesOfInputFiles() throws IOException
     {
-        StringBuffer sb = new StringBuffer().
-                       
+        StringBuilder sb = new StringBuilder().
+
             append(getFileInfoOfInputFile(inputFilesPath +
                 File.separator + DescriptorConstants.EJB_JAR_ENTRY)).
             append(CMPTemplateFormatter.signatureDelimiter_).
-               
+
             append(getFileInfoOfInputFile(inputFilesPath +
                 File.separator + DescriptorConstants.S1AS_EJB_JAR_ENTRY)).
             append(CMPTemplateFormatter.signatureDelimiter_).
 
             append(getFileInfoOfInputFile(inputFilesPath +
-                File.separator + DescriptorConstants.S1AS_CMP_MAPPING_JAR_ENTRY));               
-               
-        return sb.toString();        
+                File.separator + DescriptorConstants.S1AS_CMP_MAPPING_JAR_ENTRY));
+
+        return sb.toString();
     }
 
     /**
@@ -607,16 +600,16 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * @throws IOException
      */
     private String getFileInfoOfInputFile(String pathname) throws IOException
-    {   
+    {
         File inputFile = new File(pathname);
-        
-        StringBuffer inputFileInfo = new StringBuffer().
+
+        StringBuilder inputFileInfo = new StringBuilder().
             append(inputFile.getCanonicalPath().replace('\\', '/')).
             append(CMPTemplateFormatter.space_).
             append(String.valueOf(inputFile.length())).
             append(" bytes");
 
-        return inputFileInfo.toString();               
+        return inputFileInfo.toString();
     }
 
     /**
@@ -626,10 +619,10 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * Generates *.dbschema and sun-cmp-mappings.xml in application dir if it is
      * in creating mapping classes mode
      *
-     * @param ignoreSunDeploymentDescriptors Will force java2db generation 
+     * @param ignoreSunDeploymentDescriptors Will force java2db generation
      * if <code>true</code>.
      */
-    private void loadOrCreateMappingClasses(boolean ignoreSunDeploymentDescriptors) 
+    private void loadOrCreateMappingClasses(boolean ignoreSunDeploymentDescriptors)
         throws IOException, GeneratorException {
 
         try {
@@ -637,7 +630,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
                     ctx, inputFilesPath, generatedXmlsPath, classout,
                     ignoreSunDeploymentDescriptors);
             // If this is from verify, do not create DDL.
-            if (ctx != null 
+            if (ctx != null
                     && mappingGenerator.isJavaToDatabase()) {
                 createDDLs(schema, mappingGenerator.getDatabaseVendorName(), null);
             }

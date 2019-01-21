@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * HAStoreBase.java
@@ -47,19 +48,22 @@
 
 package org.glassfish.web.ha.session.management;
 
-import java.io.*;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import org.apache.catalina.Container;
+import org.apache.catalina.Manager;
+import org.apache.catalina.Session;
+import org.apache.catalina.session.StoreBase;
+import org.glassfish.web.ha.LogFacade;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
-
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import org.apache.catalina.*;
-import org.apache.catalina.session.StoreBase;
-import com.sun.enterprise.web.ServerConfigLookup;
-
-import org.glassfish.web.ha.LogFacade;
 
 /**
  *
@@ -77,25 +81,25 @@ public abstract class HAStoreBase extends StoreBase {
     public HAStoreBase(JavaEEIOUtils ioUtils) {
         this.ioUtils =  ioUtils;
     }
-    
+
     /**
      * Controls the verbosity of the web container subsystem's debug messages.
      *
      * This value is non-zero only when the level is one of FINE, FINER
      * or FINEST.
-     * 
+     *
      */
     protected int _debug = 0;
-    
+
     protected void debug(String message) {
         log(message);
     }
-    
+
     /**
      * The current level of logging verbosity for this object.
      */
-    protected Level _logLevel = Level.FINE;    
-    
+    protected Level _logLevel = Level.FINE;
+
     /**
      * Set _debug flag and _logLevel based on the log level.
      */
@@ -115,18 +119,18 @@ public abstract class HAStoreBase extends StoreBase {
             _debug = 5;
         else
             _debug = 0;
-    }    
-    
+    }
+
     /**
     * The application id
-    */  
+    */
     protected String applicationId = null;
-  
+
     public String getApplicationId() {
         if(applicationId != null)
             return applicationId;
         Container container = manager.getContainer();
-        StringBuffer sb = new StringBuffer(50);
+        StringBuilder sb = new StringBuilder(50);
         sb.append(this.getClusterId());
         List<String> list = new ArrayList<String>();
         while (container != null) {
@@ -142,10 +146,10 @@ public abstract class HAStoreBase extends StoreBase {
         applicationId = sb.toString();
         return applicationId;
     }
-    
+
     /**
     * Return the cluster id for this Store as defined in server.xml.
-    */  
+    */
     protected String getClusterIdFromConfig() {
 
         return null;
@@ -153,20 +157,20 @@ public abstract class HAStoreBase extends StoreBase {
 
     /**
     * The cluster id
-    */  
+    */
     protected String clusterId = null;
-  
+
     /**
     * Return the cluster id for this Store
-    */ 
+    */
     protected String getClusterId() {
         if(clusterId == null)
             clusterId = getClusterIdFromConfig();
         return clusterId;
-    }    
-    
+    }
+
     //possible generic methods begin
-    
+
     /**
     * Create serialized byte[] for <code>obj</code>.
     *
@@ -176,8 +180,8 @@ public abstract class HAStoreBase extends StoreBase {
     public byte[] getByteArray(Session session)
       throws IOException {
         return getByteArray(session, false);
-    } 
-    
+    }
+
     /**
     * Create an byte[] for the session that we can then pass to
     * the HA Store.
@@ -197,8 +201,8 @@ public abstract class HAStoreBase extends StoreBase {
         try {
             bos = new ByteArrayOutputStream();
             // ObjectInputOutputStreamFactory oiosf = ObjectInputOutputStreamFactoryFactory.getFactory();
-            
-            
+
+
             try {
                 if (compress) {
                     oos = ioUtils.createObjectOutputStream(
@@ -215,7 +219,7 @@ public abstract class HAStoreBase extends StoreBase {
                 } else {
                     oos = new ObjectOutputStream(new BufferedOutputStream(bos));
                 }
-            }             
+            }
 
             writeSession(session, oos);
             oos.close();
@@ -232,7 +236,7 @@ public abstract class HAStoreBase extends StoreBase {
 
         return obs;
     }
-    
+
     //SJSAS 6406580 START
     /**
     * Remove the Session with the specified session identifier from
@@ -263,7 +267,7 @@ public abstract class HAStoreBase extends StoreBase {
             this.removeSynchronized(id);
         }
     }
-    
+
     /**
     * Remove the Session with the specified session identifier from
     * this Store, if present.  If no such Session is present, this method
@@ -277,8 +281,8 @@ public abstract class HAStoreBase extends StoreBase {
     */
     public void doRemove(String id) throws IOException  {
         //over-ridden in sub-classes
-    }    
-    
+    }
+
     /**
     * Remove the Session with the specified session identifier from
     * this Store, if present.  If no such Session is present, this method
@@ -295,19 +299,19 @@ public abstract class HAStoreBase extends StoreBase {
     /**
     * return the size of the store cache
     * will be over-ridden in subclasses
-    */    
+    */
     public int getSize() throws IOException {
         //FIXME
-        return 0; 
-    }    
-    
+        return 0;
+    }
+
     /**
      * get the utility class used to call into services from IOUtils
      */
 
     //possible generic methods end
-    
 
-    
+
+
 
 }

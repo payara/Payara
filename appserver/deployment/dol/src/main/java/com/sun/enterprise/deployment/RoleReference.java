@@ -40,20 +40,19 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment;
 
-import org.glassfish.security.common.Role;
-
 import com.sun.enterprise.deployment.web.SecurityRole;
 import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import org.glassfish.security.common.Role;
 
 /**
  * Special kind of environment property that encapsulates the primitive roles as defined by the bean developer. The name
  * of a primitive role will appear in the bean code, the value will be mapped to the name of a Role chosen by the
  * application assembler which is referenced by the EjbBundle being assembled.
- * 
+ *
  * @author Danny Coward
  */
 public class RoleReference extends EnvironmentProperty implements SecurityRoleReference {
-    
+
     private static final long serialVersionUID = 7032796941662457189L;
 
     /**
@@ -71,7 +70,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Construct the role reference with the same name and rolename the same as the environment property value.
-     * 
+     *
      * @param the environment property instance.
      */
     public RoleReference(EnvironmentProperty environmentProperty) {
@@ -81,7 +80,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Set the value for the reference.
-     * 
+     *
      * @param the role
      */
     void setRole(Role role) {
@@ -90,7 +89,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Return the role object from this descriptor.
-     * 
+     *
      * @return the role.
      */
     public Role getRole() {
@@ -99,7 +98,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Return the rolename.
-     * 
+     *
      * @return the role name.
      */
     public SecurityRole getSecurityRoleLink() {
@@ -108,7 +107,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Sets the rolename.
-     * 
+     *
      * @param the rolename.
      */
     public void setSecurityRoleLink(SecurityRole securityRole) {
@@ -117,7 +116,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Return the coded name.
-     * 
+     *
      * @return the role name used in the bean code.
      */
     public String getRoleName() {
@@ -126,7 +125,7 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
 
     /**
      * Sets the coded name.
-     * 
+     *
      * @param the role name used in the bean code.
      */
     public void setRoleName(String rolename) {
@@ -136,8 +135,8 @@ public class RoleReference extends EnvironmentProperty implements SecurityRoleRe
     /**
      * Returns a formatted version of this object as a String.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Role-Ref-Env-Prop: ").append(super.getName()).append("@").append(this.getRole()).append("@").append(super.getDescription());
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Role-Ref-Env-Prop: ").append(super.getName()).append("@").append(this.getRole()).append("@").append(super.getDescription());
     }
 
 }

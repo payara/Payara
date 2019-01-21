@@ -40,30 +40,19 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.descriptor;
 
-import static java.util.Collections.enumeration;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.OrderedSet;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.MultipartConfig;
 import com.sun.enterprise.deployment.web.SecurityRoleReference;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
+import static java.util.Collections.enumeration;
 
 /**
  * Common data and behavior of the deployment information about a JSP or JavaServlet in J2EE.
@@ -80,32 +69,32 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      * Constant for Basic authentication.
      */
     public static final String BASIC_AUTHENTICATION = "basic";
-    
+
     /**
      * Constant for Form authentication.
      */
     public static final String FORM_AUTHENTICATION = "form";
-    
+
     /**
      * Constant for Secure authentication.
      */
     public static final String SSL_AUTHENTICATION = "ssl";
-    
+
     /**
      * Constant for the htpp GET method.
      */
     public static final String GET = "GET";
-    
+
     /**
      * Constant for the http PUT method.
      */
     public static final String PUT = "PUT";
-    
+
     /**
      * Constant for the http POST method.
      */
     public static final String POST = "POST";
-    
+
     /**
      * Constant for the http DELETE method.
      */
@@ -123,10 +112,10 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     private Boolean asyncSupported;
     private MultipartConfig multipartConfig;
     private transient List<Method> httpMethods;
-    
+
     private boolean conflict;
     private Set<String> conflictedInitParameterNames;
-    
+
     private String implFile = "";
     private boolean isServlet;
 
@@ -163,7 +152,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (initializationParameters == null) {
             initializationParameters = new OrderedSet<>();
         }
-        
+
         return initializationParameters;
     }
 
@@ -191,7 +180,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Adds a servlet initialization parameter to this component.
-     * 
+     *
      * @param initializationParameter
      */
     @Override
@@ -201,7 +190,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes the given servlet initialization parameter from this component.
-     * 
+     *
      * @param initializationParameter
      */
     @Override
@@ -214,7 +203,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (conflictedInitParameterNames == null) {
             conflictedInitParameterNames = new HashSet<>();
         }
-        
+
         return conflictedInitParameterNames;
     }
 
@@ -226,7 +215,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (urlPatterns == null) {
             urlPatterns = new OrderedSet<String>() {
                 /**
-                 * 
+                 *
                  */
                 private static final long serialVersionUID = -43840281980324986L;
 
@@ -271,7 +260,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Adds an alias to this web component.
-     * 
+     *
      * @param urlPattern
      */
     @Override
@@ -281,7 +270,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes a URL pattern from this web component.
-     * 
+     *
      * @param urlPattern
      */
     @Override
@@ -304,7 +293,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * The canonical name for the web component.
-     * 
+     *
      * @return
      */
     @Override
@@ -312,13 +301,13 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (canonicalName == null) {
             canonicalName = getName();
         }
-        
+
         return canonicalName;
     }
 
     /**
      * Sets the canonical name of this web component.
-     * 
+     *
      * @param canonicalName
      */
     @Override
@@ -336,7 +325,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Sets the order on which this component will be loaded by the web server.
-     * 
+     *
      * @param loadOnStartUp
      */
     @Override
@@ -346,7 +335,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Sets the order on which this component will be loaded by the web server.
-     * 
+     *
      * @param loadOnStartUp
      */
     @Override
@@ -382,13 +371,13 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                 return scurityRoleReference;
             }
         }
-        
+
         return null;
     }
 
     /**
      * Adds a security role reference to this web component.
-     * 
+     *
      * @param securityRoleReference
      */
     @Override
@@ -398,7 +387,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes the given security role reference from this web component.
-     * 
+     *
      * @param securityRoleReference
      */
     @Override
@@ -454,7 +443,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * DeploymentDescriptorNode.addNodeDescriptor(node) need this.
-     * 
+     *
      * @param multipartConfigDesc
      */
     public void setMultipartConfig(MultipartConfigDescriptor multipartConfigDesc) {
@@ -466,7 +455,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (getWebBundleDescriptor() != null) {
             return getWebBundleDescriptor().getApplication();
         }
-        
+
         return null;
     }
 
@@ -481,10 +470,10 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (!isServlet && !implFile.startsWith("/")) {
             implFile = "/" + implFile;
         }
-        
+
         this.implFile = implFile;
     }
-    
+
     @Override
     public String getWebComponentImplementation() {
         return implFile;
@@ -533,7 +522,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     /**
      * This method return an array of user defined http doDelete, doGet, doHead, doOptions, doPost, doPut, doTrace methods.
      * It is used for processing web security annotations.
-     * 
+     *
      * @return an array of methods.
      */
     @Override
@@ -602,25 +591,25 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * A formatted string representing my state.
-     * 
-     * @param toStringBuffer
+     *
+     * @param toStringBuilder
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append("WebComponentDescriptor\n");
-        toStringBuffer.append("\n initializationParameters ").append(initializationParameters);
-        toStringBuffer.append("\n urlPatterns ").append(urlPatterns);
-        toStringBuffer.append("\n canonicalName ").append(canonicalName);
-        toStringBuffer.append("\n loadOnStartUp ").append(loadOnStartUp);
-        toStringBuffer.append("\n enabled ").append(enabled);
-        toStringBuffer.append("\n asyncSupported ").append(asyncSupported);
-        toStringBuffer.append("\n securityRoleReferences ").append(securityRoleReferences);
-        toStringBuffer.append("\n multipartConfig ").append(multipartConfig);
+    public void print(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append("WebComponentDescriptor\n");
+        toStringBuilder.append("\n initializationParameters ").append(initializationParameters);
+        toStringBuilder.append("\n urlPatterns ").append(urlPatterns);
+        toStringBuilder.append("\n canonicalName ").append(canonicalName);
+        toStringBuilder.append("\n loadOnStartUp ").append(loadOnStartUp);
+        toStringBuilder.append("\n enabled ").append(enabled);
+        toStringBuilder.append("\n asyncSupported ").append(asyncSupported);
+        toStringBuilder.append("\n securityRoleReferences ").append(securityRoleReferences);
+        toStringBuilder.append("\n multipartConfig ").append(multipartConfig);
         if (isServlet()) {
-            toStringBuffer.append("\n servlet className ").append(getWebComponentImplementation());
+            toStringBuilder.append("\n servlet className ").append(getWebComponentImplementation());
         } else {
-            toStringBuffer.append("\n jspFileName ").append(getWebComponentImplementation());
+            toStringBuilder.append("\n jspFileName ").append(getWebComponentImplementation());
         }
     }
 
@@ -651,7 +640,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      * value // is not existed in the Set already // // If combineUrlPatterns is false, then the first one take priority, //
      * otherwise take the second one. // // If combineConflict is true, it will combine the init parameter // conflict
      * information in #getConflictedInitParameterSet. // // And the conflict boolean will not be set.
-     * 
+     *
      * @param other
      * @param combineUrlPatterns
      * @param combineConflict

@@ -40,8 +40,8 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 
@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 
 /**
  * A deployment object representing a single method or a collection of methods on Enterprise Bean classes.
- * 
+ *
  * @author Danny Coward
  */
 
@@ -204,7 +204,7 @@ public final class MethodDescriptor extends Descriptor {
 
     /**
      * <p>
-     * 
+     *
      * @return the style level of this method descriptors. According to the J2EE spec, methods can be described byt using
      * style 1, style 2 or style 3 xml tags.
      * </p>
@@ -561,8 +561,8 @@ public final class MethodDescriptor extends Descriptor {
     }
 
     /** My pretty format. */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Method Descriptor").append((ejbName == null ? "" : " for ejb " + ejbName)).append(" name: ").append(this.getName())
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Method Descriptor").append((ejbName == null ? "" : " for ejb " + ejbName)).append(" name: ").append(this.getName())
                 .append(" params: ").append(this.getPrettyParameterString()).append(" intf: ").append(this.ejbClassSymbol);
     }
 
@@ -655,7 +655,7 @@ public final class MethodDescriptor extends Descriptor {
         int lastIndexOf = param.lastIndexOf(']');
         int dimension = lastIndexOf - indexOfArray + 1;
         dimension = dimension / 2;
-        StringBuffer fs = new StringBuffer();
+        StringBuilder fs = new StringBuilder();
         for (int i = 0; i < dimension; i++) {
             fs.append("[");
         }
@@ -672,7 +672,7 @@ public final class MethodDescriptor extends Descriptor {
 
     /**
      * Computes the mapping between java primitive type and class loaders identifier for such types.
-     * 
+     *
      * @return the mapping with the java primitive type identifier as keys
      */
     public synchronized static Map getJavaPrimitiveTypes() {
@@ -729,7 +729,7 @@ public final class MethodDescriptor extends Descriptor {
             default:
                 newparam = null;
             }
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(newparam);
             for (int j = 0; j < dimensions; j++)
                 buf.append("[]");

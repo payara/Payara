@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util;
 
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 
@@ -81,7 +83,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
      *
      * <p>This simplifies access to resources, at the cost of checking for
      * the resource bundle of several classes upon each call. However, due
-     * to the caching performed by <tt>ResourceBundle</tt> this seems 
+     * to the caching performed by <tt>ResourceBundle</tt> this seems
      * reasonable.
      *
      * <p>Due to that, sub-classes <strong>must</strong> make sure they don't
@@ -98,18 +100,18 @@ public class LocalStringManagerImpl implements LocalStringManager {
 	String defaultValue
     ) {
 	Class stopClass  = defaultClass.getSuperclass();
-	Class startClass = ((callerClass != null) ? callerClass : 
+	Class startClass = ((callerClass != null) ? callerClass :
 			    defaultClass);
 	ResourceBundle resources  = null;
 	boolean globalDone = false;
-	for (Class c = startClass; 
+	for (Class c = startClass;
 	     c != stopClass && c != null;
 	     c = c.getSuperclass()) {
 	    globalDone = (c == defaultClass);
 	    try {
 		// Construct the bundle name as LocalStrings in the
 		// caller class's package.
-		StringBuffer resFileName = new StringBuffer(
+		StringBuilder resFileName = new StringBuilder(
 		    c.getName().substring(0, c.getName().lastIndexOf(".")));
 		resFileName.append(".LocalStrings");
 
@@ -121,7 +123,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
 		}
 	    } catch (Exception ex) {
 	    }
-	} 
+	}
 
 	// Look for a global resource (defined by defaultClass)
 	if ( ! globalDone ) {

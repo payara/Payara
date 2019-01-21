@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -54,19 +55,19 @@ import java.util.Iterator;
  * @author Kenneth Saks
  */
 public class WebServiceHandler extends Descriptor {
-    
+
     private String handlerName = null;
 
     private String handlerClass = null;
 
     private Collection initParams = new HashSet();
-    
+
     private Collection soapHeaders = new HashSet();
-    
+
     private Collection soapRoles = new HashSet();
 
     private Collection portNames = new HashSet();
-    
+
     /**
     * copy constructor.
     */
@@ -93,14 +94,14 @@ public class WebServiceHandler extends Descriptor {
         handlerClass = className;
 
     }
-    
+
     /**
      * @return the class name for this handler
      */
     public String getHandlerClass() {
         return handlerClass;
-    }   
-    
+    }
+
     public void setHandlerName(String name) {
         handlerName = name;
 
@@ -109,7 +110,7 @@ public class WebServiceHandler extends Descriptor {
     public String getHandlerName() {
         return handlerName;
     }
-  
+
     /**
      * add an init param to this handler
      * @param the init param
@@ -118,7 +119,7 @@ public class WebServiceHandler extends Descriptor {
         initParams.add(newInitParam);
 
     }
-  
+
     /**
      * remove an init param from this handler
      * @param the init param
@@ -134,7 +135,7 @@ public class WebServiceHandler extends Descriptor {
     public Collection getInitParams() {
         return initParams;
     }
-    
+
     public void addSoapHeader(QName soapHeader) {
         soapHeaders.add(soapHeader);
 
@@ -178,15 +179,15 @@ public class WebServiceHandler extends Descriptor {
     public Collection getPortNames() {
         return portNames;
     }
-    
+
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nHandler name = ").append(handlerName).append( 
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nHandler name = ").append(handlerName).append(
             "Handler class name = ").append(handlerClass);
         for (Iterator i=getInitParams().iterator(); i.hasNext(); ) {
-            toStringBuffer.append("\n").append(i.next().toString());
+            toStringBuilder.append("\n").append(i.next().toString());
         }
     }
 

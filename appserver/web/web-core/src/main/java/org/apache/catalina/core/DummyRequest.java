@@ -55,46 +55,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
 
+import org.apache.catalina.*;
+import org.glassfish.grizzly.http.util.DataChunk;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-import javax.servlet.http.HttpUpgradeHandler;
-
-import org.apache.catalina.Connector;
-import org.apache.catalina.Context;
-import org.apache.catalina.Host;
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.Response;
-import org.apache.catalina.Session;
-import org.apache.catalina.Wrapper;
-import org.glassfish.grizzly.http.util.DataChunk;
+import java.util.*;
 
 /**
  * Dummy request object, used for request dispatcher mapping, as well as
@@ -310,7 +287,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public void setRequestedSessionCookiePath(String cookiePath) {}
     public boolean isUserInRole(String role) { return false; }
     public Principal getUserPrincipal() { return null; }
-    public String getLocalAddr() { return null; }    
+    public String getLocalAddr() { return null; }
     public String getLocalName() { return null; }
     public int getLocalPort() { return -1; }
     public int getRemotePort() { return -1; }
@@ -359,10 +336,10 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
 
     // START SJSAS 6346226
     /**
-     * Gets the jroute id of this request, which may have been 
+     * Gets the jroute id of this request, which may have been
      * sent as a separate <code>JROUTE</code> cookie or appended to the
      * session identifier encoded in the URI (if cookies have been disabled).
-     * 
+     *
      * @return The jroute id of this request, or null if this request does not
      * carry any jroute id
      */
@@ -370,7 +347,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
         return null;
     }
     // END SJSAS 6346226
-    
+
     /**
      * This object does not implement a session ID generator. Provide
      * a dummy implementation so that the default one will be used.

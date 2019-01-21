@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -92,7 +92,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     private Set<ManagedBeanDescriptor> managedBeans = new HashSet<ManagedBeanDescriptor>();
 
-    // Physical entity manager factory corresponding to the unit name of 
+    // Physical entity manager factory corresponding to the unit name of
     // each module-level persistence unit.  Only available at runtime.
     private Map<String, EntityManagerFactory> entityManagerFactories =
             new HashMap<String, EntityManagerFactory>();
@@ -106,7 +106,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
     private String compatValue;
 
-    private boolean keepState = false; 
+    private boolean keepState = false;
     private boolean defaultGroupPrincipalMapping = true;
 
     protected HashMap<String, RootXMLNode> rootNodes = new HashMap<String, RootXMLNode>();
@@ -614,13 +614,13 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     /**
      * Prints a formatted string representing my state.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\n");
-        super.print(toStringBuffer);
-        toStringBuffer.append("\n Roles[] = ").append(roles);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\n");
+        super.print(toStringBuilder);
+        toStringBuilder.append("\n Roles[] = ").append(roles);
         if (getWebServices().hasWebServices()) {
-            toStringBuffer.append("\n WebServices ");
-            ((Descriptor) (getWebServices())).print(toStringBuffer);
+            toStringBuilder.append("\n WebServices ");
+            ((Descriptor) (getWebServices())).print(toStringBuilder);
         }
     }
 
@@ -654,7 +654,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
             return moduleID;
         }
         if (application != null && !application.isVirtual()) {
-            return application.getRegistrationName() + "#" + 
+            return application.getRegistrationName() + "#" +
                 getModuleDescriptor().getArchiveUri();
         } else {
             return moduleID;
@@ -1001,7 +1001,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     public void setDefaultGroupPrincipalMapping(boolean defaultGroupPrincipalMapping) {
         this.defaultGroupPrincipalMapping = defaultGroupPrincipalMapping;
     }
-    
+
     /**
      * Sets the full flag of the bundle descriptor. Once set, the annotations
      * of the classes contained in the archive described by this bundle

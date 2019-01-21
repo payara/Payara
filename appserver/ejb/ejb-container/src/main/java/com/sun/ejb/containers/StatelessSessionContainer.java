@@ -37,29 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
-
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBObject;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-import javax.ejb.SessionBean;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
@@ -74,16 +54,29 @@ import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.security.SecurityManager;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 
-/** This class provides container functionality specific to stateless 
+import javax.ejb.*;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+
+/** This class provides container functionality specific to stateless
  *  SessionBeans.
  *  At deployment time, one instance of the StatelessSessionContainer is created
- *  for each stateless SessionBean type (i.e. deployment descriptor) in a JAR. 
+ *  for each stateless SessionBean type (i.e. deployment descriptor) in a JAR.
  * <P>
  * The 3 states of a Stateless EJB (an EJB can be in only 1 state at a time):
  * 1. POOLED : ready for invocations, no transaction in progress
  * 2. INVOKING : processing an invocation
- * 3. DESTROYED : does not exist  
+ * 3. DESTROYED : does not exist
  * <P>
  * This container services invocations using a pool of EJB instances.
  * An instance is returned to the pool immediately after the invocation
@@ -94,18 +87,18 @@ import com.sun.enterprise.security.SecurityManager;
  * multiple incomplete transactions on the same
  * connection.
  *
- */    
+ */
 
 public class StatelessSessionContainer
-    extends BaseContainer 
+    extends BaseContainer
 {
     private static final byte[] statelessInstanceKey = {0, 0, 0, 1};
 
     // All stateless EJBs have the same instanceKey, since all stateless EJBs
     // are identical. Note: the first byte of instanceKey must be left empty.
 
-    // All stateless EJB instances of a particular class (i.e. all bean 
-    // instances created by this container instance) have the same 
+    // All stateless EJB instances of a particular class (i.e. all bean
+    // instances created by this container instance) have the same
     // EJBObject/EJBLocalObject instance since they are all identical.
     private EJBLocalObjectImpl theEJBLocalObjectImpl = null;
     private EJBLocalObjectImpl theEJBLocalBusinessObjectImpl = null;
@@ -150,7 +143,7 @@ public class StatelessSessionContainer
     }
 
     public String getMonitorAttributeValues() {
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         sbuf.append("STATELESS ").append(ejbDescriptor.getName());
         sbuf.append(pool.getAllAttrValues());
         sbuf.append("]");
@@ -192,25 +185,25 @@ public class StatelessSessionContainer
         super.initializeHome();
 
         if ( isRemote ) {
-            
+
             if( hasRemoteHomeView ) {
                 // Create theEJBObjectImpl
                 theEJBObjectImpl = instantiateEJBObjectImpl();
 
-                // connect the EJBObject to the ProtocolManager 
-                // (creates the stub 
-                // too). Note: cant do this in constructor above because 
+                // connect the EJBObject to the ProtocolManager
+                // (creates the stub
+                // too). Note: cant do this in constructor above because
                 // beanId is not set at that time.
-                theEJBStub = (EJBObject) 
+                theEJBStub = (EJBObject)
                     remoteHomeRefFactory.createRemoteReference
                        (statelessInstanceKey);
-                
+
                 theEJBObjectImpl.setStub(theEJBStub);
             }
 
             if( hasRemoteBusinessView ) {
 
-                theRemoteBusinessObjectImpl = 
+                theRemoteBusinessObjectImpl =
                     instantiateRemoteBusinessObjectImpl();
 
                 for(RemoteBusinessIntfInfo next :
@@ -232,7 +225,7 @@ public class StatelessSessionContainer
                 theEJBLocalObjectImpl = instantiateEJBLocalObjectImpl();
             }
             if( hasLocalBusinessView ) {
-                theEJBLocalBusinessObjectImpl = 
+                theEJBLocalBusinessObjectImpl =
                     instantiateEJBLocalBusinessObjectImpl();
             }
             if (hasOptionalLocalBusinessView) {
@@ -241,7 +234,7 @@ public class StatelessSessionContainer
             }
         }
 
-        
+
         createBeanPool();
 
         registerMonitorableComponents();
@@ -300,7 +293,7 @@ public class StatelessSessionContainer
                 getContainerId(), containerInfo.appName, containerInfo.modName,
                 containerInfo.ejbName);
     }
-	
+
     /**
      *
      */
@@ -318,7 +311,7 @@ public class StatelessSessionContainer
         */
 	ejbBeanCreatedEvent();
 
-        // For stateless EJBs, EJB2.0 Section 7.8 says that 
+        // For stateless EJBs, EJB2.0 Section 7.8 says that
         // Home.create() need not do any real creation.
         // If necessary, a stateless bean is created below during getContext().
         return theEJBObjectImpl;
@@ -329,7 +322,7 @@ public class StatelessSessionContainer
      */
     public EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
-    {	
+    {
         // Need to do access control check here because BaseContainer.preInvoke
         // is not called for stateless sessionbean creates.
         authorizeLocalMethod(EJBLocalHome_create);
@@ -341,7 +334,7 @@ public class StatelessSessionContainer
         */
 	ejbBeanCreatedEvent();
 
-        // For stateless EJBs, EJB2.0 Section 7.8 says that 
+        // For stateless EJBs, EJB2.0 Section 7.8 says that
         // Home.create() need not do any real creation.
         // If necessary, a stateless bean is created below during getContext().
         return theEJBLocalObjectImpl;
@@ -352,7 +345,7 @@ public class StatelessSessionContainer
      */
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
-    {	
+    {
 	ejbBeanCreatedEvent();
 
         // No access checks needed because this is called as a result
@@ -402,7 +395,7 @@ public class StatelessSessionContainer
     protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return theEJBObjectImpl;
     }
-    
+
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] instanceKey) {
         return theRemoteBusinessObjectImpl;
     }
@@ -438,7 +431,7 @@ public class StatelessSessionContainer
     */
     protected ComponentContext _getContext(EjbInvocation inv) {
         try {
-            SessionContextImpl sessionCtx = 
+            SessionContextImpl sessionCtx =
                 (SessionContextImpl) pool.getObject(null);
             sessionCtx.setState(EJBContextImpl.BeanState.INVOKING);
             return sessionCtx;
@@ -458,14 +451,14 @@ public class StatelessSessionContainer
     */
     private SessionContextImpl createStatelessEJB()
         throws CreateException
-    { 
+    {
         EjbInvocation ejbInv = null;
         SessionContextImpl context;
 
         try {
 
 	    context = (SessionContextImpl) createEjbInstanceAndContext();
-	    
+
             Object ejb = context.getEJB();
 
             // this allows JNDI lookups from setSessionContext, ejbCreate
@@ -512,12 +505,12 @@ public class StatelessSessionContainer
             }
 
             // all stateless beans have the same id and same InstanceKey
-            context.setInstanceKey(statelessInstanceKey); 
+            context.setInstanceKey(statelessInstanceKey);
 
             //Call ejbCreate() or @PostConstruct method
             intercept(CallbackType.POST_CONSTRUCT, context);
 
-            // Set the state to POOLED after ejbCreate so that 
+            // Set the state to POOLED after ejbCreate so that
             // EJBContext methods not allowed will throw exceptions
             context.setState(EJBContextImpl.BeanState.POOLED);
         } catch ( Throwable th ) {
@@ -626,7 +619,7 @@ public class StatelessSessionContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
-    protected void checkExists(EJBLocalRemoteObject ejbObj) 
+    protected void checkExists(EJBLocalRemoteObject ejbObj)
     {
         // For stateless session beans, EJBObject/EJBLocalObj are never removed.
         // So do nothing.
@@ -653,13 +646,13 @@ public class StatelessSessionContainer
     // default
     public boolean passivateEJB(ComponentContext context) {
         return false;
-    }   
-    
+    }
+
     // default
     public void activateEJB(Object ctx, Object instanceKey) {}
 
 /** TODO ???
-    public void appendStats(StringBuffer sbuf) {
+    public void appendStats(StringBuilder sbuf) {
 	sbuf.append("\nStatelessContainer: ")
 	    .append("CreateCount=").append(statCreateCount).append("; ")
 	    .append("RemoveCount=").append(statRemoveCount).append("; ")
@@ -675,11 +668,11 @@ public class StatelessSessionContainer
                     // destroy EJBObject refs
                     // XXX invocations still in progress will get exceptions ??
                 remoteHomeRefFactory.destroyReference
-                    (theEJBObjectImpl.getStub(), 
+                    (theEJBObjectImpl.getStub(),
                      theEJBObjectImpl.getEJBObject());
             }
             if ( hasRemoteBusinessView ) {
-                for(RemoteBusinessIntfInfo next : 
+                for(RemoteBusinessIntfInfo next :
                         remoteBusinessIntfInfo.values()) {
                     next.referenceFactory.destroyReference
                         (theRemoteBusinessObjectImpl.getStub
@@ -733,8 +726,8 @@ public class StatelessSessionContainer
                     // NOTE : Context class-loader is already set by Pool
                     ejbInv = createEjbInvocation(sb, sessionCtx);
                     invocationManager.preInvoke(ejbInv);
-                    sessionCtx.setInEjbRemove(true);        
-   
+                    sessionCtx.setInEjbRemove(true);
+
                     intercept(CallbackType.PRE_DESTROY, sessionCtx);
 
                 } catch ( Throwable t ) {
@@ -752,10 +745,10 @@ public class StatelessSessionContainer
                 // mark the context's transaction for rollback
                 Transaction tx = sessionCtx.getTransaction();
                 try {
-                    if ( (tx != null) && 
+                    if ( (tx != null) &&
                         (tx.getStatus() != Status.STATUS_NO_TRANSACTION ) )  {
                         tx.setRollbackOnly();
-                    }	
+                    }
                 } catch ( Exception ex ) {
                      _logger.log(Level.FINE,"forceDestroyBean exception", ex);
                 }
@@ -764,7 +757,7 @@ public class StatelessSessionContainer
             cleanupInstance(sessionCtx);
 
             // tell the TM to release resources held by the bean
-            transactionManager.componentDestroyed(sessionCtx);   
+            transactionManager.componentDestroyed(sessionCtx);
 
             sessionCtx.setTransaction(null);
 

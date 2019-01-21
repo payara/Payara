@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -60,8 +61,8 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     private BundleDescriptor bundleDesc;
 
     private Collection<WebService> webServices;
-    /** 
-     * Default constructor. 
+    /**
+     * Default constructor.
      */
     public WebServicesDescriptor() {
         webServices = new HashSet<WebService>();
@@ -167,35 +168,35 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
         }
         return allEndpoints;
     }
-    
+
     public ArchiveType getModuleType() {
         if (bundleDesc!=null) {
-          return bundleDesc.getModuleType();  
-        } 
-        return null; 
+          return bundleDesc.getModuleType();
+        }
+        return null;
     }
 
-    
+
     //
     // Dummy RootDeploymentDescriptor implementations for methods that
     // do not apply to WebServicesDescriptor.
     //
-    public String getModuleID() { return ""; } 
+    public String getModuleID() { return ""; }
     public ClassLoader getClassLoader() { return null; }
     public boolean isApplication() {return false; }
 
     /**
      * Returns a formatted String of the attributes of this object.
      */
-    public void print(StringBuffer toStringBuffer) {
-	super.print(toStringBuffer);
+    public void print(StringBuilder toStringBuilder) {
+	super.print(toStringBuilder);
         if (hasWebServices()) {
             for (Iterator itr = getWebServices().iterator();itr.hasNext();) {
                 WebService aWebService = (WebService) itr.next();
-                toStringBuffer.append("\n Web Service : ");
-                aWebService.print(toStringBuffer);
+                toStringBuilder.append("\n Web Service : ");
+                aWebService.print(toStringBuilder);
             }
         }
     }
-    
-}    
+
+}

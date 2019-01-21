@@ -37,33 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.loadbalancer.admin.cli.reader.impl;
 
-import java.net.UnknownHostException;
-import org.glassfish.loadbalancer.admin.cli.transform.Visitor;
-import org.glassfish.loadbalancer.admin.cli.transform.InstanceVisitor;
-
-import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
-import org.glassfish.loadbalancer.admin.cli.reader.api.LbReaderException;
-import com.sun.enterprise.config.serverbeans.ServerRef;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.grizzly.config.dom.Protocol;
-import org.glassfish.grizzly.config.dom.Protocols;
-import java.net.InetAddress;
-import java.util.Iterator;
+import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
+import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
+import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.LbReaderException;
 import org.glassfish.loadbalancer.admin.cli.reader.api.LoadbalancerReader;
+import org.glassfish.loadbalancer.admin.cli.transform.InstanceVisitor;
+import org.glassfish.loadbalancer.admin.cli.transform.Visitor;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Iterator;
 
 /**
  * Provides instance information relavant to Load balancer tier.
@@ -111,7 +102,7 @@ public class InstanceReaderImpl implements InstanceReader {
 
     /**
      * This is used in quicescing. Timeouts after this interval and disables the
-     * instance in the load balancer. 
+     * instance in the load balancer.
      *
      * @return String           Disable time out in minutes
      */
@@ -141,7 +132,7 @@ public class InstanceReaderImpl implements InstanceReader {
      */
     @Override
     public String getListeners() throws LbReaderException {
-        StringBuffer listenerStr = new StringBuffer();
+        StringBuilder listenerStr = new StringBuilder();
 
         Config config = _domain.getConfigNamed(_server.getConfigRef());
         NetworkConfig networkConfig = config.getNetworkConfig();

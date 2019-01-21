@@ -37,34 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2018-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deploy.shared;
 
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
 import java.io.*;
+import java.net.URI;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.net.URI;
-import java.nio.file.Files;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This implementation of the Archive interface maps to a directory/file
@@ -970,7 +965,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
                 // Avoid some work if logging is coarser than FINE.
                 final boolean isShowEntriesToBeSkipped = deplLogger.isLoggable(DEBUG_LEVEL);
-                final StringBuffer entriesToSkip = isShowEntriesToBeSkipped ? new StringBuffer() : null;
+                final StringBuilder entriesToSkip = isShowEntriesToBeSkipped ? new StringBuilder() : null;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     result.add(line);

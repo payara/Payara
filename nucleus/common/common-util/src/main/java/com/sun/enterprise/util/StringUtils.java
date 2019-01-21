@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.util;
 
 /* WBN Valentine's Day, 2000 -- place for handy String utils.
  */
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class StringUtils {
     public static final String NEWLINE = System.getProperty("line.separator");
@@ -59,7 +60,7 @@ public class StringUtils {
     /**
      * return the length of the String - or 0 if it's null
      * @param s
-     * @return 
+     * @return
      */
     public static int safeLength(String s) {
         if (s == null) {
@@ -73,7 +74,7 @@ public class StringUtils {
     /**
      * Returns true if a string is not null and has a non-zero length, false otherwise
      * @param s
-     * @return 
+     * @return
      */
     public static boolean ok(String s) {
         return s != null && s.length() > 0;
@@ -83,7 +84,7 @@ public class StringUtils {
     /**
      * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
      * @param ex
-     * @return 
+     * @return
      */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
@@ -105,7 +106,7 @@ public class StringUtils {
     /**
      * Find longest String in a vector of Strings...
      * @param v
-     * @return 
+     * @return
      */
     public static int maxWidth(Vector v) {
         int max = 0;
@@ -149,7 +150,7 @@ public class StringUtils {
      * <p>
      * Can be upper or lower case
      * @param c
-     * @return 
+     * @return
      */
     public static boolean isHex(char c) {
 
@@ -169,7 +170,7 @@ public class StringUtils {
     /**
      * e.g.  input: "a/b/c/d/foobar.txt"   output: "d"
      * @param s
-     * @return 
+     * @return
      */
     public static String getPenultimateDirName(String s) {
 
@@ -206,7 +207,7 @@ public class StringUtils {
      * <p>
      * i.e. java.lang.String would return String
      * @param className The classname to convert. Note that there is no checking that this is a valid classname.
-     * @return 
+     * @return
      */
     public static String toShortClassName(String className) {
         int index = className.lastIndexOf('.');
@@ -268,7 +269,7 @@ public class StringUtils {
     /**
      * Converts a String into an array where every \n is a new used to signal a new element in the array
      * @param s
-     * @return 
+     * @return
      */
     public static String[] toLines(String s) {
         if (s == null) {
@@ -314,7 +315,7 @@ public class StringUtils {
     /**
      * Converts the first letter of a string to upper case
      * @param s
-     * @return 
+     * @return
      */
     public static String upperCaseFirstLetter(String s) {
         if (s == null || s.length() <= 0) {
@@ -333,7 +334,7 @@ public class StringUtils {
      * @return
      * @deprecated Now part of {@link String} since JDK 1.5
      * @see String#replace(CharSequence, CharSequence)
-     * @see String#replaceFirst(String, String) 
+     * @see String#replaceFirst(String, String)
      */
     public static String replace(String s, String token, String replace) {
         if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
@@ -361,7 +362,7 @@ public class StringUtils {
      * If there it is empty then this will return "No entries".
      * Otherwise it will be in the form of "key= value" with each property on a new line.
      * @param props
-     * @return 
+     * @return
      */
     public static String toString(Properties props) {
         if (props == null || props.size() <= 0) {
@@ -369,7 +370,7 @@ public class StringUtils {
         }
 
         Set entries = props.entrySet();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         // first -- to line things up nicely -- find the longest key...
         int keyWidth = 0;
@@ -478,7 +479,7 @@ public class StringUtils {
     an empty string.
      */
     public static String makeFilePath(String[] strings, boolean addTrailing) {
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         String separator = System.getProperty("file.separator");
         if (strings != null) {
             for (int i = 0; i < strings.length; i++) {
@@ -614,7 +615,7 @@ public class StringUtils {
     /**
      * Gets a String version of the stack trace of an exception
      * @param t
-     * @return 
+     * @return
      */
     public static String getStackTrace(Throwable t) {
         StringWriter sw = new StringWriter();
@@ -627,7 +628,7 @@ public class StringUtils {
     /**
      * Returns true is the given string is of the form "${text}"
      * @param s
-     * @return 
+     * @return
      */
     public static final boolean isToken(String s) {
         return s != null && s.startsWith("${") && s.endsWith("}") && s.length() > 3;
@@ -636,7 +637,7 @@ public class StringUtils {
     /**
      * Removes preceding <code>${</code> and trailing <code>}</code> from a String
      * @param s
-     * @return 
+     * @return
      */
     public static final String stripToken(String s) {
         if (isToken(s))
@@ -746,7 +747,7 @@ public class StringUtils {
      * <tr><td> \t </td><td> &#009;</td></tr>
      * </table>
      * @param str
-     * @return 
+     * @return
      */
     public static String escapeForHtml(String str) {
         if (str == null) {
@@ -777,11 +778,11 @@ public class StringUtils {
         }
         return result.toString();
     }
-    
+
     /** If given {@code String} is {@code null} then returns empty {@code String}
      * otherwise returns given {@code String}
      * @param str
-     * @return 
+     * @return
      */
     public static String nvl(String str) {
         return str == null ? "" : str;

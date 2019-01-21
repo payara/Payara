@@ -39,7 +39,7 @@
  */
 
 /*
- * Portions Copyright [2016-2018] [Payara Foundation]
+ * Portions Copyright [2016-2019] [Payara Foundation]
  */
 package com.sun.enterprise.util.io;
 
@@ -1127,7 +1127,7 @@ public class FileUtils  {
             }
         }
     }
-    public static void appendText(String fileName, StringBuffer buffer)
+    public static void appendText(String fileName, StringBuilder buffer)
     throws IOException, FileNotFoundException
     {
         appendText(fileName, buffer.toString());
@@ -1152,7 +1152,7 @@ public class FileUtils  {
     public static String readSmallFile(final File file)
             throws IOException {
         final BufferedReader bf = new BufferedReader(new FileReader(file));
-        final StringBuilder sb = new StringBuilder(); //preferred over StringBuffer, no need to synchronize
+        final StringBuilder sb = new StringBuilder(); //preferred over StringBuilder, no need to synchronize
         String line = null;
         try {
             while ( (line = bf.readLine()) != null ) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package jaxb1.impl.runtime;
 
@@ -64,11 +65,11 @@ import com.sun.xml.bind.serializer.Util;
 
 /**
  * XMLSerializer that produces SAX2 events.
- * 
+ *
  * To marshal an object, create an instance of SAXMarshaller
  * and call the serializeElements method of the XMLSerializable
  * object that you want to marshal.
- * 
+ *
  * @author  Kohsuke Kawaguchi
  */
 public class SAXMarshaller implements XMLSerializer
@@ -78,22 +79,22 @@ public class SAXMarshaller implements XMLSerializer
      * One object is reused throughout the marshalling.
      */
     private final AttributesImpl attributes = new AttributesImpl();
- 
+
     /** This object receives SAX2 events generated from the marshaller. */
     private final ContentHandler writer;
-    
+
     /** Marshaller object to which this object belongs. */
     private final MarshallerImpl owner;
-    
+
     /** Objects referenced through IDREF. */
     private final Set idReferencedObjects = new HashSet();
-    
+
     /** Objects with ID. */
     private final Set objectsWithId = new HashSet();
-    
+
     /** Object currently marshalling itself. */
     private JAXBObject currentTarget;
-    
+
     /**
      * Creates a marshalling context by designating the ContentHandler
      * that receives generated SAX2 events.
@@ -104,24 +105,24 @@ public class SAXMarshaller implements XMLSerializer
         this.nsContext = new NamespaceContextImpl(
             prefixMapper!=null?prefixMapper:defaultNamespacePrefixMapper);
     }
-    
+
     /** namespace context. */
     private final NamespaceContextImpl nsContext;
-    
+
     public NamespaceContext2 getNamespaceContext() { return nsContext; }
-    
+
     //
     //
     // name stack
     //
     //
-    
+
     /** Element name stack implemented as an array of (uri,local) pairs. */
     private String[] elementStack = new String[16];;
     private int elementLen=0;
-    
-    
-    
+
+
+
     private void pushElement( String uri, String local ) {
         if(elementStack.length==elementLen) {
             // reallocate buffer
@@ -132,16 +133,16 @@ public class SAXMarshaller implements XMLSerializer
         elementStack[elementLen++] = uri;
         elementStack[elementLen++] = local;
     }
-    
+
     private void popElement() { elementLen-=2;  }
-    
+
     private String getCurrentElementUri()   { return elementStack[elementLen-2]; }
     private String getCurrentElementLocal() { return elementStack[elementLen-1]; }
-    
-    
-    
-    
-    
+
+
+
+
+
     /**
      * Starts marshalling of an element.
      * Calling this method will push the internal state into the
@@ -155,14 +156,14 @@ public class SAXMarshaller implements XMLSerializer
             // this is the root element. suggest this as the default namespace
             suggestion = "";
         }
-        
+
         writePendingText();
         nsContext.startElement();
         pushElement(uri,local); // memorize element name
-                
+
         // declare this uri
         nsContext.declareNamespace(uri,suggestion,false);
-        
+
         // if this is the root element, declare user-specified namespace URIs.
         if( isRoot ) {
             // work defensively. we are calling an user-defined method.
@@ -175,8 +176,8 @@ public class SAXMarshaller implements XMLSerializer
             }
         }
     }
-    
-    
+
+
     private final PrefixCallback startPrefixCallback = new PrefixCallback() {
         public void onPrefixMapping( String prefix, String nsUri ) throws SAXException {
             writer.startPrefixMapping(prefix,nsUri);
@@ -187,11 +188,11 @@ public class SAXMarshaller implements XMLSerializer
             writer.endPrefixMapping(prefix);
         }
     };
-    
+
     public void endNamespaceDecls() throws SAXException {
         nsContext.endNamespaceDecls();
     }
-    
+
     /**
      * Switches to the "marshal child texts/elements" mode.
      * This method has to be called after the 1st pass is completed.
@@ -200,90 +201,90 @@ public class SAXMarshaller implements XMLSerializer
         // calculate QName of the element
         String uri = getCurrentElementUri();
         String local = getCurrentElementLocal();
-        
+
         String prefix = nsContext.getPrefix(uri);
         _assert(prefix!=null);  // since we've declared it, it should be available
-        
+
         String qname;
-        if(prefix.length()!=0 ) 
+        if(prefix.length()!=0 )
             qname = prefix+':'+local;
         else
             qname = local;
 
         // fire startPrefixMapping events
         nsContext.iterateDeclaredPrefixes(startPrefixCallback);
-        
+
         // fire the startElement event
         writer.startElement( uri, local, qname, attributes );
-        
-        
+
+
         // reset attributes
         attributes.clear();
-        
+
         // prepare to collect texts
         textBuf.setLength(0);
     }
-    
+
     /**
      * Ends marshalling of an element.
      * Pops the internal stack.
      */
     public void endElement() throws SAXException {
         writePendingText();
-        
+
         String uri = getCurrentElementUri();
         String local = getCurrentElementLocal();
-        
+
         String prefix = nsContext.getPrefix(uri);
         _assert(prefix!=null);      // we've declared it earlier.
-        
+
         String qname;
         if(prefix.length()!=0)
             qname = prefix+':'+local;
         else
             qname = local;
-        
+
         writer.endElement( uri, local, qname );
 
         // pop namespace bindings and
         // fire endPrefixMapping events
         nsContext.iterateDeclaredPrefixes(endPrefixCallback);
-        
+
         popElement();
-        
+
         // prepare to collect texts
         textBuf.setLength(0);
-        
+
         nsContext.endElement();
     }
-    
-    
+
+
     /** Buffer for collecting characters. */
-    private final StringBuffer textBuf = new StringBuffer();
-    
+    private final StringBuilder textBuf = new StringBuilder();
+
     /**
      * Marshalls text.
-     * 
+     *
      * <p>
      * This method can be called (i) after the startAttribute method
      * and (ii) before the endAttribute method, to marshal attribute values.
      * If the method is called more than once, those texts are considered
      * as separated by whitespaces. For example,
-     * 
+     *
      * <pre>
      * c.startAttribute();
      * c.text("abc");
      * c.text("def");
      * c.endAttribute("","foo");
      * </pre>
-     * 
+     *
      * will generate foo="abc def".
-     * 
+     *
      * <p>
      * Similarly, this method can be called after the endAttributes
      * method to marshal texts inside elements. The same rule about
      * multiple invokations apply to this case, too. For example,
-     * 
+     *
      * <pre>
      * c.startElement("","foo");
      * c.endAttributes();
@@ -295,7 +296,7 @@ public class SAXMarshaller implements XMLSerializer
      * c.text("ghi");
      * c.endElement();
      * </pre>
-     * 
+     *
      * will generate <code>&lt;foo>abc def&lt;bar/>ghi&lt;/foo></code>.
      */
     public void text( String text, String fieldName ) throws SAXException {
@@ -305,12 +306,12 @@ public class SAXMarshaller implements XMLSerializer
             reportError(Util.createMissingObjectError(currentTarget,fieldName));
             return;
         }
-    
+
         if(textBuf.length()!=0)
             textBuf.append(' ');
         textBuf.append(text);
     }
-    
+
     /**
      * Writes pending text (characters inside elements) to the writer.
      * This method is called from startElement and endElement.
@@ -318,21 +319,21 @@ public class SAXMarshaller implements XMLSerializer
     private void writePendingText() throws SAXException {
         // assert(textBuf!=null);
         int len = textBuf.length();
-        
+
         if(len!=0)
             writer.characters( textBuf.toString().toCharArray(), 0, len );
     }
-    
+
     /**
      * Starts marshalling of an attribute.
-     * 
+     *
      * The marshalling of an attribute will be done by
      * <ol>
      *  <li>call the startAttribute method
      *  <li>call the text method (several times if necessary)
      *  <li>call the endAttribute method
      * </ol>
-     * 
+     *
      * No two attributes can be marshalled at the same time.
      * Note that the whole attribute marshalling must be happened
      * after the startElement method and before the endAttributes method.
@@ -340,12 +341,12 @@ public class SAXMarshaller implements XMLSerializer
     public void startAttribute( String uri, String local ) {
         // initialize the buffer to collect attribute value
         textBuf.setLength(0);
-        
+
         // remember the attribute name. We'll use this value later.
         this.attNamespaceUri = uri;
         this.attLocalName = local;
     }
-    
+
     // used to keep attribute names until the endAttribute method is called.
     private String attNamespaceUri;
     private String attLocalName;
@@ -361,7 +362,7 @@ public class SAXMarshaller implements XMLSerializer
         // uses this type value.
         //
         // in any way, CDATA type is the safest choice here.
-        
+
         String qname;
         if(attNamespaceUri.length()==0) {
             // default namespace. don't need prefix
@@ -372,7 +373,7 @@ public class SAXMarshaller implements XMLSerializer
 
         attributes.addAttribute(attNamespaceUri,attLocalName,qname,"CDATA",textBuf.toString());
     }
-    
+
     public String onID( IdentifiableObject owner, String value ) throws SAXException {
         objectsWithId.add(owner);
         return value;
@@ -388,11 +389,11 @@ public class SAXMarshaller implements XMLSerializer
         }
         return id;
     }
-    
+
     void reconcileID() throws AbortSerializationException {
-        // find objects that were not a part of the object graph 
+        // find objects that were not a part of the object graph
         idReferencedObjects.removeAll(objectsWithId);
-        
+
         for( Iterator itr=idReferencedObjects.iterator(); itr.hasNext(); ) {
             IdentifiableObject o = (IdentifiableObject)itr.next();
             reportError( new NotIdentifiableEventImpl(
@@ -400,7 +401,7 @@ public class SAXMarshaller implements XMLSerializer
                 Messages.format(Messages.ERR_DANGLING_IDREF,o.____jaxb____getId()),
                 new ValidationEventLocatorImpl(o) ) );
         }
-        
+
         // clear the garbage
         idReferencedObjects.clear();
         objectsWithId.clear();
@@ -417,15 +418,15 @@ public class SAXMarshaller implements XMLSerializer
             // this document by skipping this missing object.
             return;
         }
-        
+
         JAXBObject oldTarget = currentTarget;
         currentTarget = o;
-        
+
         owner.context.getGrammarInfo().castToXMLSerializable(o).serializeBody(this);
-        
+
         currentTarget = oldTarget;
     }
-    
+
     public void childAsAttributes( JAXBObject o, String fieldName ) throws SAXException {
         if(o==null) {
             reportMissingObjectError(fieldName);
@@ -434,36 +435,36 @@ public class SAXMarshaller implements XMLSerializer
 
         JAXBObject oldTarget = currentTarget;
         currentTarget = o;
-        
+
         owner.context.getGrammarInfo().castToXMLSerializable(o).serializeAttributes(this);
-        
+
         currentTarget = oldTarget;
     }
-    
+
     public void childAsURIs( JAXBObject o, String fieldName ) throws SAXException {
         if(o==null) {
             reportMissingObjectError(fieldName);
             return;
         }
-        
+
         JAXBObject oldTarget = currentTarget;
         currentTarget = o;
-        
+
         owner.context.getGrammarInfo().castToXMLSerializable(o).serializeURIs(this);
-        
+
         currentTarget = oldTarget;
     }
-    
+
 
     public void reportError( ValidationEvent ve ) throws AbortSerializationException {
         ValidationEventHandler handler;
-        
+
         try {
             handler = owner.getEventHandler();
         } catch( JAXBException e ) {
             throw new AbortSerializationException(e);
         }
-        
+
         if(!handler.handleEvent(ve)) {
             if(ve.getLinkedException() instanceof Exception)
                 throw new AbortSerializationException((Exception)ve.getLinkedException());
@@ -471,18 +472,18 @@ public class SAXMarshaller implements XMLSerializer
                 throw new AbortSerializationException(ve.getMessage());
         }
     }
-    
-    
+
+
     public void reportMissingObjectError(String fieldName) throws SAXException {
         reportError(Util.createMissingObjectError(currentTarget,fieldName));
     }
-    
-    
+
+
     private static void _assert( boolean b ) {
         if(!b)
             throw new JAXBAssertionError();
     }
-    
+
     /**
      * Default {@link NamespacePrefixMapper} implementation used when
      * it is not specified by the user.

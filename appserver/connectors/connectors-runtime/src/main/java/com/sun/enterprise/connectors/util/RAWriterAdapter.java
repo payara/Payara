@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -53,7 +54,7 @@ public class RAWriterAdapter extends Writer {
     //by default, autoFlush will be ON.
     private boolean autoFlush = true;
     //buffer used when autoFlush is OFF
-    private StringBuffer log;
+    private StringBuilder log;
 
     public RAWriterAdapter(Logger logger) {
         this.logger = logger;
@@ -71,7 +72,7 @@ public class RAWriterAdapter extends Writer {
         } else {
             String s = new String(cbuf, off, len);
             if (log == null) {
-                log = new StringBuffer(s);
+                log = new StringBuilder(s);
             } else {
                 log = log.append(s);
             }

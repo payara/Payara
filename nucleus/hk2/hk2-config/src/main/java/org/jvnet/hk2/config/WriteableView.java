@@ -37,27 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import org.jvnet.hk2.config.ConfigModel.Property;
+
+import javax.validation.*;
+import javax.validation.metadata.ConstraintDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-
-import javax.validation.*;
-import javax.validation.metadata.ConstraintDescriptor;
-
-import org.jvnet.hk2.config.ConfigModel.Property;
 
 /**
  * A WriteableView is a view of a ConfigBean object that allow access to the
@@ -78,11 +73,11 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                 Path pathToTraversableObject, ElementType elementType) {
                     return true;
         }
-        
+
     };
-    
+
     private final static Validator beanValidator;
-    
+
     static {
         ClassLoader cl = System.getSecurityManager()==null?Thread.currentThread().getContextClassLoader():
             AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
@@ -91,20 +86,20 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                    return Thread.currentThread().getContextClassLoader();
                }
             });
-   
-       try {      
+
+       try {
            Thread.currentThread().setContextClassLoader(org.hibernate.validator.HibernateValidator.class.getClassLoader());
-       
+
            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
            ValidatorContext validatorContext = validatorFactory.usingContext();
-           validatorContext.messageInterpolator(new MessageInterpolatorImpl());                
+           validatorContext.messageInterpolator(new MessageInterpolatorImpl());
            beanValidator = validatorContext.traversableResolver(
                        TRAVERSABLE_RESOLVER).getValidator();
        } finally {
            Thread.currentThread().setContextClassLoader(cl);
        }
     }
-    
+
     // private final Validator beanValidator;
     private final ConfigBean bean;
     private final ConfigBeanProxy defaultView;
@@ -112,12 +107,12 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
     private final Map<String, ProtectedList> changedCollections;
     Transaction currentTx;
     private boolean isDeleted;
-    
+
 
     private final static ResourceBundle i18n = ResourceBundle.getBundle("org.jvnet.hk2.config.LocalStrings");
-    
+
     public Transaction getTransaction() { return currentTx; }
-    
+
     public WriteableView(ConfigBeanProxy readView) {
         this.bean = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(readView)).getMasterView();
         this.defaultView = bean.createProxy();
@@ -129,14 +124,14 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
 
         if (method.getName().equals("hashCode"))
             return super.hashCode();
-        
+
         if (method.getName().equals("equals"))
             return super.equals(args[0]);
 
         if(method.getAnnotation(DuckTyped.class)!=null) {
             return bean.invokeDuckMethod(method,proxy,args);
         }
-        
+
         ConfigModel.Property property = bean.model.toProperty(method);
 
         if(property==null)
@@ -192,7 +187,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
 
     public synchronized void setter(ConfigModel.Property property,
         Object newValue, java.lang.reflect.Type t)  {
-        
+
         // are we still in a transaction
         if (currentTx==null) {
             throw new IllegalStateException("Not part of a transaction");
@@ -311,7 +306,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
 
             Set constraintViolations =
                 beanValidator.validate(this.getProxy(this.getProxyType()));
-    
+
             try {
                 handleValidationException(constraintViolations);
             } catch (ConstraintViolationException constraintViolationException) {
@@ -342,7 +337,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
             throw new ConstraintViolationException(sb.toString(), constraintViolations);
         }
     }
-     
+
     /** remove @ or <> eg "@foo" => "foo" or "<foo>" => "foo" */
     public static String stripMarkers(final String s ) {
         if ( s.startsWith("@") ) {
@@ -353,7 +348,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         }
         return s;
     }
-    
+
     /**
      * Commit this Transaction.
      *
@@ -365,7 +360,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         if (currentTx==t) {
             currentTx=null;
         }
-        
+
         // a key attribute must be non-null and have length >= 1
         final ConfigBean master = getMasterView();
         final String keyStr = master.model.key;
@@ -469,7 +464,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *
      * @param type the request configuration object type
      * @return the propertly constructed configuration object
-     * @throws TransactionFailure if the allocation failed 
+     * @throws TransactionFailure if the allocation failed
      */
 
     public <T extends ConfigBeanProxy> T allocateProxy(Class<T> type) throws TransactionFailure {
@@ -495,7 +490,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         return bean.getProxyType();
     }
 
-    @SuppressWarnings("unchecked")    
+    @SuppressWarnings("unchecked")
     public <T extends ConfigBeanProxy> T getProxy(final Class<T> type) {
         final ConfigBean sourceBean = getMasterView();
         if (!(type.getName().equals(sourceBean.model.targetTypeName))) {
@@ -678,7 +673,7 @@ private class ProtectedList extends AbstractList {
             remove( item );
         }
     }
-    
+
     @Override
     public synchronized boolean retainAll( final Collection keepers ) {
         final List toRemoveList = new ArrayList();
@@ -688,10 +683,10 @@ private class ProtectedList extends AbstractList {
             }
         }
         final boolean changed = removeAll(toRemoveList);
-        
+
         return changed;
     }
-    
+
     @Override
     public synchronized boolean removeAll( final Collection goners ) {
         boolean listChanged = false;
@@ -757,20 +752,20 @@ private class ProtectedList extends AbstractList {
 
     private String toCamelCase(String xmlName) {
         StringTokenizer st =  new StringTokenizer(xmlName, "-");
-        StringBuffer camelCaseName = null;
+        StringBuilder camelCaseName = null;
         if (st.hasMoreTokens()) {
-            camelCaseName = new StringBuffer(st.nextToken());
+            camelCaseName = new StringBuilder(st.nextToken());
         }
-        StringBuffer sb = null;
+        StringBuilder sb = null;
         while (st.hasMoreTokens()) {
-            sb = new StringBuffer(st.nextToken());
+            sb = new StringBuilder(st.nextToken());
             char startChar = sb.charAt(0);
             sb.setCharAt(0,Character.toUpperCase(startChar));
             camelCaseName.append(sb);
         }
         return (camelCaseName == null) ? null : camelCaseName.toString();
     }
-    
+
     private void handleValidation(ConfigModel.Property property, Object value)
     throws ConstraintViolationException {
 
@@ -815,7 +810,7 @@ private class ProtectedList extends AbstractList {
         else if ("char".equals(al.dataType) ||
                  "java.lang.Character".equals(al.dataType))
             isValid = representsChar(value);
-        if (!isValid) {            
+        if (!isValid) {
             return new ConstraintViolation() {
                 @Override
                 public String getMessage() {
@@ -824,7 +819,7 @@ private class ProtectedList extends AbstractList {
 
                 @Override
                 public String getMessageTemplate() {
-                    return null; 
+                    return null;
                 }
 
                 @Override
@@ -878,12 +873,12 @@ private class ProtectedList extends AbstractList {
 
                         @Override
                         public ElementKind getKind() {
-                            return null;  
+                            return null;
                         }
 
                         @Override
                         public <T extends Path.Node> T as(Class<T> tClass) {
-                            return null;  
+                            return null;
                         }
                     });
                     return new javax.validation.Path() {
@@ -891,7 +886,7 @@ private class ProtectedList extends AbstractList {
                         public Iterator<Node> iterator() {
                             return nodes.iterator();
                         }
-                        
+
                         @Override
                         public String toString() {
                            return nodes.iterator().next().getName();
@@ -911,7 +906,7 @@ private class ProtectedList extends AbstractList {
 
                 @Override
                 public Object unwrap(Class type) {
-                    return null;  
+                    return null;
                 }
 
 
@@ -919,9 +914,9 @@ private class ProtectedList extends AbstractList {
         };
         return null;
     }
-    
+
     private boolean representsBoolean(String value) {
-        boolean isBoolean = 
+        boolean isBoolean =
            "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value);
         return (isBoolean);
     }
@@ -967,7 +962,7 @@ private class ProtectedList extends AbstractList {
         public Type getOwnerType() {
             return null;
         }
-        
+
     };
 
 }

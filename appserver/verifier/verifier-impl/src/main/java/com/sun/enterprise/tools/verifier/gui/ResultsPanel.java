@@ -37,37 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.tools.verifier.gui;
 
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.Vector;
-import java.util.logging.LogRecord;
 
 import com.sun.enterprise.tools.verifier.CheckMgr;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.StringManagerHelper;
 import com.sun.enterprise.tools.verifier.VerifierEventsListener;
 import com.sun.enterprise.tools.verifier.util.VerifierConstants;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Enumeration;
+import java.util.EventObject;
+import java.util.Vector;
+import java.util.logging.LogRecord;
 
 public class ResultsPanel extends JPanel implements VerifierEventsListener {
 
@@ -106,7 +97,7 @@ public class ResultsPanel extends JPanel implements VerifierEventsListener {
                                             "Error during verification"); // NOI18N
     final String errStr1 = smh.getLocalString(getClass().getName()+".errStr1", // NOI18N
                                             "ERROR"); // NOI18N
-    
+
 
     public ResultsPanel() {
 
@@ -233,7 +224,7 @@ public class ResultsPanel extends JPanel implements VerifierEventsListener {
         //add the components to the panel
         add("Center", tableScrollPane); // NOI18N
         add("South", textScrollPane); // NOI18N
-	
+
         // Register a listener for the report level radio buttons.
         // to allow post-processing filtering
         RadioListener myListener = new RadioListener();
@@ -369,7 +360,7 @@ public class ResultsPanel extends JPanel implements VerifierEventsListener {
         // update display approriately
         for (int i = 0; i < results.size(); i++) {
             Result r = ((Result) results.elementAt(i));
-            StringBuffer s = new StringBuffer(
+            StringBuilder s = new StringBuilder(
                     "Assertion:" + r.getAssertion() + "\n"); // NOI18N
             switch (r.getStatus()) {
                 case Result.PASSED:
@@ -601,7 +592,7 @@ public class ResultsPanel extends JPanel implements VerifierEventsListener {
     // We are a ChangeListener of the test harness CheckMgrs
     public void testFinished(EventObject evt) {
         Result r = (Result) evt.getSource();
-        StringBuffer s = new StringBuffer("Assertion:" + r.getAssertion() + "\n"); // NOI18N
+        StringBuilder s = new StringBuilder("Assertion:" + r.getAssertion() + "\n"); // NOI18N
         String status;
         switch (r.getStatus()) {
             case Result.PASSED:

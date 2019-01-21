@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.contextpropagation.weblogic.workarea;
 
@@ -53,7 +54,7 @@ import java.io.Serializable;
  *
  * @author Copyright (c) 2003 by BEA Systems Inc. All Rights Reserved.
  */
-public class PrimitiveContextFactory 
+public class PrimitiveContextFactory
 {
   /**
    * Creates a short {@link WorkContext} key based on
@@ -65,7 +66,7 @@ public class PrimitiveContextFactory
    */
   public static String createEncodedKey(String key) {
     int hash = key.hashCode();
-    StringBuffer code = new StringBuffer();
+    StringBuilder code = new StringBuilder();
     while (hash != 0) {
       code.append((char)(59 + (hash & 0x3F)));
       hash >>>= 6;
@@ -114,20 +115,20 @@ public class PrimitiveContextFactory
   public static WorkContext create(Serializable ctx) throws IOException {
     return new SerializableWorkContext(ctx);
   }
-  
+
   /**
    * Creates a new {@link WorkContext} containing opaque
-   * Serializable context data. The context data is not serialized at the time 
-   * of creation of WorkContext but only when the WorkContextMap needs to 
-   * propagate the WorkContext entries. This allows the Serializable context 
-   * data to be updated even after it is put in the WorkContextMap. 
+   * Serializable context data. The context data is not serialized at the time
+   * of creation of WorkContext but only when the WorkContextMap needs to
+   * propagate the WorkContext entries. This allows the Serializable context
+   * data to be updated even after it is put in the WorkContextMap.
    * <b>CAUTION: use with care</b>. Data
    * propagated in this way will be opaque to underlying protocol
    * implementations and will generally be less efficient.
    *
    * @see org.glassfish.contextpropagation.weblogic.workarea.WorkContextMap#put
    */
-  public static WorkContext createMutable(Serializable ctx) 
+  public static WorkContext createMutable(Serializable ctx)
     throws IOException {
     return new SerializableWorkContext(ctx, true /*enableUpdate*/);
   }

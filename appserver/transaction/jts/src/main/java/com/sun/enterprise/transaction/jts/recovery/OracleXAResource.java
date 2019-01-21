@@ -37,19 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 //Source File Name:   OracleXAResource.java
 
 package com.sun.enterprise.transaction.jts.recovery;
 
-import java.sql.*;
-import javax.transaction.xa.*;
-
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.util.i18n.StringManager;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import com.sun.logging.LogDomains;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -62,19 +68,19 @@ import com.sun.logging.LogDomains;
 public class OracleXAResource extends XAResourceWrapper
 {
 
-    // Use superclass for Sting Manager 
+    // Use superclass for Sting Manager
     private static final StringManager sm = StringManager.getManager(XAResourceWrapper.class);
 
-    // Use JTA_LOGGER for backward compatibility, so use a class from 
+    // Use JTA_LOGGER for backward compatibility, so use a class from
     // 'jta' bundle to load it.
     private static final Logger _logger = LogDomains.getLogger(
-            com.sun.enterprise.transaction.JavaEETransactionManagerSimplified.class, 
+            com.sun.enterprise.transaction.JavaEETransactionManagerSimplified.class,
             LogDomains.JTA_LOGGER);
 
     public XAResourceWrapper getInstance() {
         return new OracleXAResource();
     }
-	
+
   /**
    * Recovers list of xids in transaction table. Recover on oracle ignores flags sent to it, this method
    * takes care of flags in addition to calling recoverList for xid list.
@@ -225,13 +231,13 @@ public class OracleXAResource extends XAResourceWrapper
    * @return a <code>String</code> value
    */
   private static String toHexString(byte abyte0[]) {
-        StringBuffer stringbuffer = new StringBuffer();
+        StringBuilder StringBuilder = new StringBuilder();
         if(null != abyte0 && 0 < abyte0.length) {
             for(int i = 0; i < abyte0.length; i++) {
-                stringbuffer.append(HEX_DIGITS[(abyte0[i] & 0xf0) >> 4]);
-                stringbuffer.append(HEX_DIGITS[abyte0[i] & 0xf]);
+                StringBuilder.append(HEX_DIGITS[(abyte0[i] & 0xf0) >> 4]);
+                StringBuilder.append(HEX_DIGITS[abyte0[i] & 0xf]);
             }
-            return stringbuffer.toString();
+            return StringBuilder.toString();
          } else {
             return "";
          }
