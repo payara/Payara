@@ -45,7 +45,6 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.MutableEntry;
-import lombok.Cleanup;
 
 /**
  * push Java EE environment before invoking delegate
@@ -58,8 +57,9 @@ import lombok.Cleanup;
 public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
     @Override
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        @Cleanup Context ctx = ctxUtil.pushContext();
-        return delegate.process(me, os);
+        try (Context ctx = ctxUtil.pushContext()) {
+            return delegate.process(me, os);
+        }
     }
 
     public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil ctxUtil) {

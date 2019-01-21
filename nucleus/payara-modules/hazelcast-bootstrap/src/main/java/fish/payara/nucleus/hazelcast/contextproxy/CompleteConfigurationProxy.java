@@ -51,7 +51,6 @@ import javax.cache.integration.CacheLoader;
 import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
-import lombok.Cleanup;
 
 /**
  * Proxy all applicable factory calls
@@ -79,9 +78,10 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheLoader<K, V>>() {
             @Override
             public CacheLoader<K, V> create() {
-                @Cleanup Context ctx = ctxUtil.pushContext();
-                final CacheLoader<K, V> loader = fact.create();
-                return new CacheLoaderImpl(loader);
+                try (Context ctx = ctxUtil.pushContext()) {
+                    final CacheLoader<K, V> loader = fact.create();
+                    return new CacheLoaderImpl(loader);
+                }
             }
 
             class CacheLoaderImpl implements CacheLoader<K, V> {
@@ -91,14 +91,16 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
 
                 @Override
                 public V load(K k) throws CacheLoaderException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    return loader.load(k);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        return loader.load(k);
+                    }
                 }
 
                 @Override
                 public Map<K, V> loadAll(Iterable<? extends K> itrbl) throws CacheLoaderException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    return loader.loadAll(itrbl);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        return loader.loadAll(itrbl);
+                    }
                 }
 
                 private final CacheLoader<K, V> loader;
@@ -112,35 +114,40 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheWriter<? super K, ? super V>>() {
             @Override
             public CacheWriter<K, V> create() {
-                @Cleanup Context ctx = ctxUtil.pushContext();
-                @SuppressWarnings("unchecked")
-                final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
-                return new CacheWriterImpl(delegate);
+                try (Context ctx = ctxUtil.pushContext()) {
+                    @SuppressWarnings("unchecked")
+                    final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
+                    return new CacheWriterImpl(delegate);
+                }
             }
 
             class CacheWriterImpl implements CacheWriter<K, V> {
                 @Override
                 public void write(Cache.Entry<? extends K, ? extends V> entry) throws CacheWriterException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    delegate.write(entry);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        delegate.write(entry);
+                    }
                 }
 
                 @Override
                 public void writeAll(Collection<Cache.Entry<? extends K, ? extends V>> clctn) throws CacheWriterException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    delegate.writeAll(clctn);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        delegate.writeAll(clctn);
+                    }
                 }
 
                 @Override
                 public void delete(Object o) throws CacheWriterException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    delegate.delete(o);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        delegate.delete(o);
+                    }
                 }
 
                 @Override
                 public void deleteAll(Collection<?> clctn) throws CacheWriterException {
-                    @Cleanup Context context = ctxUtil.pushRequestContext();
-                    delegate.deleteAll(clctn);
+                    try (Context context = ctxUtil.pushRequestContext()) {
+                        delegate.deleteAll(clctn);
+                    }
                 }
 
                 public CacheWriterImpl(CacheWriter<K, V> delegate) {
