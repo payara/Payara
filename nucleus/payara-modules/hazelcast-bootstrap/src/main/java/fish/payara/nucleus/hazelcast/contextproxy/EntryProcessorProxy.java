@@ -46,7 +46,6 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.MutableEntry;
 import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
 
 /**
  * push Java EE environment before invoking delegate
@@ -56,12 +55,16 @@ import lombok.RequiredArgsConstructor;
  * @param <V>
  * @param <T>
  */
-@RequiredArgsConstructor
 public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
     @Override
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
         @Cleanup Context ctx = ctxUtil.pushContext();
         return delegate.process(me, os);
+    }
+
+    public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil ctxUtil) {
+        this.delegate = delegate;
+        this.ctxUtil = ctxUtil;
     }
 
     private final EntryProcessor<K, V, T> delegate;

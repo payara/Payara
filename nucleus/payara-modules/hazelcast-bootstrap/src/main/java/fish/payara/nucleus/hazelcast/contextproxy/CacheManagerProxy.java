@@ -54,7 +54,6 @@ import org.glassfish.internal.api.ServerContext;
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public class CacheManagerProxy implements CacheManager {
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException {
@@ -91,6 +90,10 @@ public class CacheManagerProxy implements CacheManager {
         public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType);
     }
 
+    public CacheManagerProxy(CacheManager delegate, ServerContext serverContext) {
+        this.delegate = delegate;
+        this.serverContext = serverContext;
+    }
 
     private final @Delegate(excludes = Exclusions.class ) CacheManager delegate;
     private final ServerContext serverContext;

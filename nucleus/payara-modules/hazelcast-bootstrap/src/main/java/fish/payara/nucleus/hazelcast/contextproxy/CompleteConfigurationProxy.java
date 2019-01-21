@@ -119,7 +119,6 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 return new CacheWriterImpl(delegate);
             }
 
-            @RequiredArgsConstructor
             class CacheWriterImpl implements CacheWriter<K, V> {
                 @Override
                 public void write(Cache.Entry<? extends K, ? extends V> entry) throws CacheWriterException {
@@ -143,6 +142,10 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 public void deleteAll(Collection<?> clctn) throws CacheWriterException {
                     @Cleanup Context context = ctxUtil.pushRequestContext();
                     delegate.deleteAll(clctn);
+                }
+
+                public CacheWriterImpl(CacheWriter<K, V> delegate) {
+                    this.delegate = delegate;
                 }
 
                 private final CacheWriter<K, V> delegate;

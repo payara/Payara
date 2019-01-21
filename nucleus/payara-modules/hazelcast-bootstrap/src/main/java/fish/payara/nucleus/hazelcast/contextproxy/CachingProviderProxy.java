@@ -51,7 +51,6 @@ import org.glassfish.internal.api.ServerContext;
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public class CachingProviderProxy implements CachingProvider {
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts) {
@@ -68,6 +67,10 @@ public class CachingProviderProxy implements CachingProvider {
         return new CacheManagerProxy(delegate.getCacheManager(), serverContext);
     }
 
+    public CachingProviderProxy(CachingProvider delegate, ServerContext serverContext) {
+        this.delegate = delegate;
+        this.serverContext = serverContext;
+    }
 
     private interface Exclusions {
         CacheManager getCacheManager();

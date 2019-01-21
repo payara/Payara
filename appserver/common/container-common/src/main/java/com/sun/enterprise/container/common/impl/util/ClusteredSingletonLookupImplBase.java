@@ -57,7 +57,6 @@ import org.glassfish.internal.api.Globals;
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
@@ -67,6 +66,10 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String lockKey = makeLockKey();
     private final @Getter(lazy = true, value = AccessLevel.PUBLIC) String sessionHzKey = makeSessionHzKey();
 
+    public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
+        this.componentId = componentId;
+        this.singletonType = singletonType;
+    }
 
     @Override
     public ILock getDistributedLock() {
