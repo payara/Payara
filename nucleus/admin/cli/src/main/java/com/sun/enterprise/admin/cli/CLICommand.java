@@ -1164,8 +1164,8 @@ public abstract class CLICommand implements PostConstruct {
             confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
         }
 
-        char[] newpasswordAgain = readPassword(confirmationPrompt);
-        if (!Arrays.equals(newpassword, newpasswordAgain)) {
+        String newpasswordAgain = readPassword(confirmationPrompt);
+        if (newpassword.equals(newpasswordAgain)) {
             throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
         }
         passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
@@ -1183,7 +1183,7 @@ public abstract class CLICommand implements PostConstruct {
      * @param prompt
      * @return
      */
-    protected char[] readPassword(String prompt) {
+    protected String readPassword(String prompt) {
         char[] pc = null;
 
         try (ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null)) {
@@ -1197,7 +1197,7 @@ public abstract class CLICommand implements PostConstruct {
             logger.log(Level.WARNING, "IOException reading password.", ioe);
         }
 
-        return pc;
+        return String.valueOf(pc);
     }
 
     /**
