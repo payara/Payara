@@ -1165,7 +1165,7 @@ public abstract class CLICommand implements PostConstruct {
         }
 
         String newpasswordAgain = readPassword(confirmationPrompt);
-        if (newpassword.equals(newpasswordAgain)) {
+        if (!newpassword.equals(newpasswordAgain)) {
             throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
         }
         passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
