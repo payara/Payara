@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,10 +45,7 @@ import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
-import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.glassfish.internal.api.Globals;
 
@@ -62,11 +59,26 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String keyPrefix = makeKeyPrefix();
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String mapKey = makeMapKey();
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String lockKey = makeLockKey();
-    private final @Getter(lazy = true, value = AccessLevel.PUBLIC) String sessionHzKey = makeSessionHzKey();
+    private final String keyPrefix = makeKeyPrefix();
+    private final String mapKey = makeMapKey();
+    private final String lockKey = makeLockKey();
+    private final String sessionHzKey = makeSessionHzKey();
 
+    protected String getKeyPrefix() {
+        return keyPrefix;
+    }
+
+    protected String getLockKey() {
+        return lockKey;
+    }
+
+    protected String getMapKey() {
+        return mapKey;
+    }
+
+    public String getSessionHzKey() {
+        return sessionHzKey;
+    }
 
     @Override
     public ILock getDistributedLock() {
