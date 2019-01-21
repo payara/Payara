@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -46,11 +47,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -86,17 +85,14 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     private Properties dasProperties;
     protected boolean setDasDefaultsOnly = false;
 
-    /**
-     */
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
 
-        if(ok(instanceName0))
+        if(ok(instanceName0)) {
             instanceName = instanceName0;
-        else
+        } else {
             throw new CommandException(Strings.get("Instance.badInstanceName"));
-
+        }
         isCreateInstanceFilesystem = true;
 
         super.validate();
@@ -118,8 +114,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!setDasDefaultsOnly) {
                 String nodeDirChildName = nodeDirChild != null ? nodeDirChild.getName() : "";
                 String nodeName = node != null ? node : nodeDirChildName;
-                logger.info(Strings.get("Instance.existingDasPropertiesWarning",
-                    programOpts.getHost(), "" + programOpts.getPort(), nodeName));
+                logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
             }
         }
 
@@ -130,11 +125,8 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     }
 
-    /**
-     */
     @Override
-    protected int executeCommand()
-            throws CommandException {
+    protected int executeCommand() throws CommandException {
 
         // Even though this is a local only command, we don't want to
         // bake the DAS host and port into das.properties if it does not
@@ -181,14 +173,8 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             dasProperties.setProperty(K_DAS_PORT, String.valueOf(DASPort));
             dasProperties.setProperty(K_DAS_IS_SECURE, String.valueOf(dasIsSecure));
             dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(dasPropsFile);
+            try (FileOutputStream fos = new FileOutputStream(dasPropsFile)) {
                 dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
-            } finally {
-                if (fos != null) { 
-                    fos.close();
-                }
             }
         }
     }
@@ -210,8 +196,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             InetAddress.getByName(DASHost);
         } catch (UnknownHostException e) {
             String thisHost = NetUtils.getHostName();
-            String msg = Strings.get("Instance.DasHostUnknown",
-                    DASHost, thisHost);
+            String msg = Strings.get("Instance.DasHostUnknown", DASHost, thisHost);
             throw new CommandException(msg, e);
         }
 
@@ -219,8 +204,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
         if (! NetUtils.isRunning(DASHost, DASPort)) {
             // DAS provided host and port
             String thisHost = NetUtils.getHostName();
-            String msg = Strings.get("Instance.DasHostUnreachable",
-                    DASHost, Integer.toString(DASPort), thisHost);
+            String msg = Strings.get("Instance.DasHostUnreachable", DASHost, Integer.toString(DASPort), thisHost);
             throw new CommandException(msg);
         }
     }
