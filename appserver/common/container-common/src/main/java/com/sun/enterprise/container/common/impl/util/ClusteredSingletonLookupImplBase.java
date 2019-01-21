@@ -45,10 +45,7 @@ import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
-import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import lombok.AccessLevel;
-import lombok.Getter;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -60,14 +57,30 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String keyPrefix = makeKeyPrefix();
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String mapKey = makeMapKey();
-    private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String lockKey = makeLockKey();
-    private final @Getter(lazy = true, value = AccessLevel.PUBLIC) String sessionHzKey = makeSessionHzKey();
+    private final String keyPrefix = makeKeyPrefix();
+    private final String mapKey = makeMapKey();
+    private final String lockKey = makeLockKey();
+    private final String sessionHzKey = makeSessionHzKey();
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
         this.singletonType = singletonType;
+    }
+
+    protected String getKeyPrefix() {
+        return keyPrefix;
+    }
+
+    protected String getLockKey() {
+        return lockKey;
+    }
+
+    protected String getMapKey() {
+        return mapKey;
+    }
+
+    public String getSessionHzKey() {
+        return sessionHzKey;
     }
 
     @Override

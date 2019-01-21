@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,8 +51,6 @@ import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
-import lombok.AccessLevel;
-import lombok.Getter;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.PerLookup;
@@ -63,19 +61,18 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * utility to create / push Java EE thread context
- * 
+ *
  * @author lprimak
  */
 @Service
 @PerLookup
 public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
-    private transient @Getter(AccessLevel.PACKAGE) ServerContext serverContext;
+    private transient ServerContext serverContext;
     private transient ComponentEnvManager compEnvMgr;
     private transient ComponentInvocation capturedInvocation;
-    private @Getter(onMethod = @__(@Override)) String instanceComponentId;
+    private String instanceComponentId;
     private static final String EMPTY_COMPONENT = "___EMPTY___";
     private static final long serialVersionUID = 1L;
-
 
     @PostConstruct
     void init() {
@@ -83,6 +80,15 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         compEnvMgr = Globals.getDefaultHabitat().getService(ComponentEnvManager.class);
 
         doSetInstanceContext();
+    }
+
+    public ServerContext getServerContext() {
+        return serverContext;
+    }
+
+    @Override
+    public String getInstanceComponentId() {
+        return instanceComponentId;
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
