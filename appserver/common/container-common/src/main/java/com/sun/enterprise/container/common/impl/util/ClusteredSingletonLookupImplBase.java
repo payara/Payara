@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,6 @@ import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.Singleto
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -57,7 +56,6 @@ import org.glassfish.internal.api.Globals;
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
@@ -67,6 +65,10 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final @Getter(lazy = true, value = AccessLevel.PROTECTED) String lockKey = makeLockKey();
     private final @Getter(lazy = true, value = AccessLevel.PUBLIC) String sessionHzKey = makeSessionHzKey();
 
+    public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
+        this.componentId = componentId;
+        this.singletonType = singletonType;
+    }
 
     @Override
     public ILock getDistributedLock() {

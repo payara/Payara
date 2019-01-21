@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import java.net.URI;
 import java.util.Properties;
 import javax.cache.CacheManager;
 import javax.cache.spi.CachingProvider;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import org.glassfish.internal.api.ServerContext;
 
@@ -51,7 +50,6 @@ import org.glassfish.internal.api.ServerContext;
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public class CachingProviderProxy implements CachingProvider {
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts) {
@@ -68,6 +66,10 @@ public class CachingProviderProxy implements CachingProvider {
         return new CacheManagerProxy(delegate.getCacheManager(), serverContext);
     }
 
+    public CachingProviderProxy(CachingProvider delegate, ServerContext serverContext) {
+        this.delegate = delegate;
+        this.serverContext = serverContext;
+    }
 
     private interface Exclusions {
         CacheManager getCacheManager();
