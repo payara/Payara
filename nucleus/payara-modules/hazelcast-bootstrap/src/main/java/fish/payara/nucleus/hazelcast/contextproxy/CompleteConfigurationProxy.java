@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,6 @@ import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CacheWriterException;
 import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Proxy all applicable factory calls
@@ -84,7 +83,7 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
                 final CacheLoader<K, V> loader = fact.create();
                 return new CacheLoaderImpl(loader);
             }
-            
+
             class CacheLoaderImpl implements CacheLoader<K, V> {
                 public CacheLoaderImpl(CacheLoader<K, V> loader) {
                     this.loader = loader;
