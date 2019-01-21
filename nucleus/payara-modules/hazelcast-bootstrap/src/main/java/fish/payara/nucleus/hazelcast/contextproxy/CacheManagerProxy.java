@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,17 @@
 package fish.payara.nucleus.hazelcast.contextproxy;
 
 import org.glassfish.internal.api.JavaEEContextUtil;
+
+import java.net.URI;
+import java.util.Properties;
+
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
+import javax.cache.spi.CachingProvider;
+
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 import org.glassfish.internal.api.ServerContext;
 
 /**
@@ -85,13 +90,61 @@ public class CacheManagerProxy implements CacheManager {
     }
 
 
-    private interface Exclusions {
-        public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String string, C config) throws IllegalArgumentException;
-        public <K, V> Cache<K, V> getCache(String cacheName);
-        public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType);
+    private final CacheManager delegate;
+    private final ServerContext serverContext;
+
+    @Override
+    public CachingProvider getCachingProvider() {
+        return delegate.getCachingProvider();
     }
 
+    @Override
+    public URI getURI() {
+        return delegate.getURI();
+    }
 
-    private final @Delegate(excludes = Exclusions.class ) CacheManager delegate;
-    private final ServerContext serverContext;
+    @Override
+    public ClassLoader getClassLoader() {
+        return delegate.getClassLoader();
+    }
+
+    @Override
+    public Properties getProperties() {
+        return delegate.getProperties();
+    }
+
+    @Override
+    public Iterable<String> getCacheNames() {
+        return delegate.getCacheNames();
+    }
+
+    @Override
+    public void destroyCache(String cacheName) {
+        delegate.destroyCache(cacheName);
+    }
+
+    @Override
+    public void enableManagement(String cacheName, boolean enabled) {
+        delegate.enableManagement(cacheName, enabled);
+    }
+
+    @Override
+    public void enableStatistics(String cacheName, boolean enabled) {
+        delegate.enableStatistics(cacheName, enabled);
+    }
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> clazz) {
+        return delegate.unwrap(clazz);
+    }
 }
