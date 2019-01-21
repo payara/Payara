@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.MutableEntry;
-import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -60,8 +59,9 @@ import lombok.RequiredArgsConstructor;
 public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
     @Override
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        @Cleanup Context ctx = ctxUtil.pushContext();
-        return delegate.process(me, os);
+        try (Context ctx = ctxUtil.pushContext()) {
+            return delegate.process(me, os);
+        }
     }
 
     private final EntryProcessor<K, V, T> delegate;
