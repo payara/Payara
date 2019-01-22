@@ -354,14 +354,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     socket = new Socket(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
                 }
 
-                // PAYARA-408
-                // Check if SO_KEEPALIVE property set
-                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                    if (_logger.isLoggable(Level.FINER)) {
-                        _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                    }
-                    socket.setKeepAlive(true);
-                }
+                // Enable SO_KEEPALIVE if required
+                enableSOKeepAliveAsRequired(socket);
 
                 // Disable Nagle's algorithm (i.e. always send immediately).
                 socket.setTcpNoDelay(true);
@@ -385,13 +379,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             // Disable Nagle's algorithm (i.e., always send immediately).
             socket.setTcpNoDelay(true);
 
-            // Enable or disable SO_KEEPALIVE for the socket as required
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                if (_logger.isLoggable(Level.FINER)) {
-                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                }
-                socket.setKeepAlive(true);
-            }
+            // Enable SO_KEEPALIVE if required
+            enableSOKeepAliveAsRequired(socket);
         } catch (SocketException ex) {
             throw new RuntimeException(ex);
         }
@@ -509,14 +498,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                 socket.setEnabledCipherSuites(clientCiphers);
             }
 
-            // PAYARA-408
-            // Check if SO_KEEPALIVE property set
-            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                if (_logger.isLoggable(Level.FINER)) {
-                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
-                }
-                socket.setKeepAlive(true);
-            }
+            // Enable SO_KEEPALIVE if required
+            enableSOKeepAliveAsRequired(socket);
         } catch (Exception e) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "iiop.createsocket_exception", new Object[]{host, String.valueOf(port)});
@@ -666,28 +649,44 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     private void enableSOKeepAliveAsRequired(Socket socket) throws SocketException {
         boolean shouldSet = false;
 
-        // For each listener, find one with a matching port
-        for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
-            if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
-                // Check for the property globally before checking on the specific listener, giving precedence to the
-                // new property
-                if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
-                        || Boolean.getBoolean(SO_KEEPALIVE)) {
-                    // Check if we should override the global value
-                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
-                        shouldSet = true;
+        try {
+            // Try to get the IIOP Service as this does a check for if we are a server or not (save checking twice)
+            IiopService iiopService = IIOPUtils.getInstance().getIiopService();
+
+            // For each listener, find one with a matching port
+            for (IiopListener iiopListener : iiopService.getIiopListener()) {
+                if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
+                    // Check for the property globally before checking on the specific listener, giving precedence to the
+                    // new property
+                    if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
+                            || Boolean.getBoolean(SO_KEEPALIVE)) {
+                        // Check if we should override the global value
+                        if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                            shouldSet = true;
+                        } else {
+                            // If the property wasn't set on the listener, go with the global setting
+                            shouldSet = true;
+                        }
+                        break;
                     } else {
-                        // If the property wasn't set on the listener, go with the global setting
-                        shouldSet = true;
+                        // If it wasn't set globally, just check if it's set on the listener
+                        if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                            shouldSet = true;
+                        }
+                        break;
                     }
-                    break;
-                } else {
-                    // If it wasn't set globally, just check if it's set on the listener
-                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
-                        shouldSet = true;
-                    }
-                    break;
                 }
+            }
+        } catch (IllegalStateException ise) {
+            // Check if the exception is the one we expect to get if we aren't a server
+            if (ise.getMessage().equals("Only available in Server mode")) {
+                // Enable or disable SO_KEEPALIVE for the socket as required
+                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                    shouldSet = true;
+                }
+            } else {
+                // If we got an unexpected IllegalStateException, just propagate it
+                throw ise;
             }
         }
 
