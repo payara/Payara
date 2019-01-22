@@ -650,28 +650,44 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     private void enableSOKeepAliveAsRequired(Socket socket) throws SocketException {
         boolean shouldSet = false;
 
-        // For each listener, find one with a matching port
-        for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
-            if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
-                // Check for the property globally before checking on the specific listener, giving precedence to the
-                // new property
-                if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
-                        || Boolean.getBoolean(SO_KEEPALIVE)) {
-                    // Check if we should override the global value
-                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
-                        shouldSet = true;
+        try {
+            // Try to get the IIOP Service as this does a check for if we are a server or not (save checking twice)
+            IiopService iiopService = IIOPUtils.getInstance().getIiopService();
+
+            // For each listener, find one with a matching port
+            for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
+                if (Integer.valueOf(iiopListener.getPort()) == socket.getPort()) {
+                    // Check for the property globally before checking on the specific listener, giving precedence to the
+                    // new property
+                    if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
+                            || Boolean.getBoolean(SO_KEEPALIVE)) {
+                        // Check if we should override the global value
+                        if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                            shouldSet = true;
+                        } else {
+                            // If the property wasn't set on the listener, go with the global setting
+                            shouldSet = true;
+                        }
+                        break;
                     } else {
-                        // If the property wasn't set on the listener, go with the global setting
-                        shouldSet = true;
+                        // If it wasn't set globally, just check if it's set on the listener
+                        if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
+                            shouldSet = true;
+                        }
+                        break;
                     }
-                    break;
-                } else {
-                    // If it wasn't set globally, just check if it's set on the listener
-                    if (soKeepAliveEnabledOnIiopListener(iiopListener)) {
-                        shouldSet = true;
-                    }
-                    break;
                 }
+            }
+        } catch (IllegalStateException ise) {
+            // Check if the exception is the one we expect to get if we aren't a server
+            if (ise.getMessage().equals("Only available in Server mode")) {
+                // Enable or disable SO_KEEPALIVE for the socket as required
+                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                    shouldSet = true;
+                }
+            } else {
+                // If we got an unexpected IllegalStateException, just propagate it
+                throw ise;
             }
         }
 
