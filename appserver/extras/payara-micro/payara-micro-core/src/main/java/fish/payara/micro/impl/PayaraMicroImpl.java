@@ -476,7 +476,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     /**
      * Set the certificate alias in the keystore to use for the server cert
      * @param alias name of the certificate in the keystore
-     * @return
+     * @return 
      */
     @Override
     public PayaraMicroImpl setSslCert(String alias) {
@@ -1641,7 +1641,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 
             } catch (SecurityException | IOException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
-            }
+            } 
         } else {  // system property was not set on the command line using the command option or via -D
             // we are likely using our default properties file so see if we need to rewrite it
             if (logToFile) {
@@ -1807,7 +1807,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.sni-enabled=true"));
         }
         if (sslCert != null) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));            
         }
     }
 
@@ -1860,7 +1860,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
             
             if (publicAddress != null && !publicAddress.isEmpty()) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));                
             }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
             
@@ -1900,7 +1900,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
             
             if (interfaces != null) {
-                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));                
             }
         }
     }
@@ -2623,7 +2623,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void configureSecrets() {
         if (secretsDir != null) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));            
         }
     }
 
