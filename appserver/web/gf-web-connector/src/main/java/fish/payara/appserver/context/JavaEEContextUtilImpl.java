@@ -82,7 +82,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         doSetInstanceContext();
     }
 
-    public ServerContext getServerContext() {
+    protected ServerContext getServerContext() {
         return serverContext;
     }
 
