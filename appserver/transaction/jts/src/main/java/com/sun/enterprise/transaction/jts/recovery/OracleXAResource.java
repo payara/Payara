@@ -231,13 +231,13 @@ public class OracleXAResource extends XAResourceWrapper
    * @return a <code>String</code> value
    */
   private static String toHexString(byte abyte0[]) {
-        StringBuilder StringBuilder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         if(null != abyte0 && 0 < abyte0.length) {
             for(int i = 0; i < abyte0.length; i++) {
-                StringBuilder.append(HEX_DIGITS[(abyte0[i] & 0xf0) >> 4]);
-                StringBuilder.append(HEX_DIGITS[abyte0[i] & 0xf]);
+                builder.append(HEX_DIGITS[(abyte0[i] & 0xf0) >> 4]);
+                builder.append(HEX_DIGITS[abyte0[i] & 0xf]);
             }
-            return StringBuilder.toString();
+            return builder.toString();
          } else {
             return "";
          }
