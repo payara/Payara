@@ -54,17 +54,22 @@ import org.glassfish.internal.api.Globals;
  * @author lprimak
  */
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
+
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
-    private final String keyPrefix = makeKeyPrefix();
-    private final String mapKey = makeMapKey();
-    private final String lockKey = makeLockKey();
-    private final String sessionHzKey = makeSessionHzKey();
+    private final String keyPrefix;
+    private final String mapKey;
+    private final String lockKey;
+    private final String sessionHzKey;
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
         this.singletonType = singletonType;
+        this.keyPrefix = makeKeyPrefix();
+        this.mapKey = makeMapKey();
+        this.lockKey = makeLockKey();
+        this.sessionHzKey = makeSessionHzKey();
     }
 
     protected String getKeyPrefix() {
