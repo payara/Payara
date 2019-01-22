@@ -79,6 +79,7 @@ import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
+import org.glassfish.enterprise.iiop.util.NotServerException;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.orb.admin.config.IiopListener;
@@ -677,16 +678,10 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     }
                 }
             }
-        } catch (IllegalStateException ise) {
-            // Check if the exception is the one we expect to get if we aren't a server
-            if (ise.getMessage().equals("Only available in Server mode")) {
-                // Enable or disable SO_KEEPALIVE for the socket as required
-                if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
-                    shouldSet = true;
-                }
-            } else {
-                // If we got an unexpected IllegalStateException, just propagate it
-                throw ise;
+        } catch (NotServerException nse) {
+            // Enable or disable SO_KEEPALIVE for the socket as required
+            if (Boolean.getBoolean(SO_KEEPALIVE) && !socket.getKeepAlive()) {
+                shouldSet = true;
             }
         }
 
