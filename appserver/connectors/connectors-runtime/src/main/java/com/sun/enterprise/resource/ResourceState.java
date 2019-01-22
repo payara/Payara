@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource;
 
@@ -44,6 +45,7 @@ public class ResourceState {
     private boolean enlisted;
     private boolean busy;
     private long timestamp;
+    private TwiceBusyException busyException;
 
     public boolean isEnlisted() {
         return enlisted;
@@ -67,6 +69,20 @@ public class ResourceState {
 
     public void setBusy(boolean busy) {
         this.busy = busy;
+        if (!busy) {
+            busyException = new TwiceBusyException();
+        }
+    }
+    
+    /**
+     * Gets an exception with a stack trace of when the resource was previously
+     * set to not busy.
+     * @return a TwiceBusyException used to create a MultiException when setBusy
+     * is set to false twice
+     * @see com.sun.enterprise.resource.pool.ConnectionPool#resourceClosed(com.sun.enterprise.resource.ResourceHandle) 
+     */
+    public TwiceBusyException getBusyStackException(){
+        return busyException;
     }
 
     public long getTimestamp() {
@@ -81,7 +97,11 @@ public class ResourceState {
         touchTimestamp();
     }
 
+    @Override
     public String toString() {
         return "Enlisted :" + enlisted + " Busy :" + busy;
     }
+    
+    public class TwiceBusyException extends Exception {}
+    
 }
