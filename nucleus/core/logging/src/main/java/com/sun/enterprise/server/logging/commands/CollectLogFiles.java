@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -68,7 +69,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -113,7 +113,7 @@ public class CollectLogFiles implements AdminCommand {
     private ServiceLocator habitat;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     public void execute(AdminCommandContext context) {
 
@@ -131,7 +131,7 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
                 // getting log file values from logging.propertie file.
-                logFileDetails = loggingConfig.getLoggingFileDetails();
+                logFileDetails = loggingConfigFactory.provide().getLoggingFileDetails();
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
@@ -165,7 +165,7 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
                 String zipFilePath = getZipFilePath().getAbsolutePath();
-                zipFile = loggingConfig.createZipFile(zipFilePath);
+                zipFile = loggingConfigFactory.provide().createZipFile(zipFilePath);
                 if (zipFile == null || new File(zipFile) == null) {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
@@ -239,7 +239,7 @@ public class CollectLogFiles implements AdminCommand {
             try {
                 // Creating zip file and returning zip file absolute path.
                 String zipFilePath = getZipFilePath().getAbsolutePath();
-                zipFile = loggingConfig.createZipFile(zipFilePath);
+                zipFile = loggingConfigFactory.provide().createZipFile(zipFilePath);
                 if (zipFile == null || new File(zipFile) == null) {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
@@ -278,7 +278,7 @@ public class CollectLogFiles implements AdminCommand {
             String logFileDetails = "";
             try {
                 // getting log file values from logging.propertie file.
-                logFileDetails = loggingConfig.getLoggingFileDetails();
+                logFileDetails = loggingConfigFactory.provide().getLoggingFileDetails();
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
@@ -368,7 +368,7 @@ public class CollectLogFiles implements AdminCommand {
                 try {
                     String zipFilePath = getZipFilePath().getAbsolutePath();
                     // Creating zip file and returning zip file absolute path.
-                    zipFile = loggingConfig.createZipFile(zipFilePath);
+                    zipFile = loggingConfigFactory.provide().createZipFile(zipFilePath);
                     if (zipFile == null || new File(zipFile) == null) {
                         // Failure during zip
                         final String errorMsg = localStrings.getLocalString(
@@ -561,7 +561,7 @@ public class CollectLogFiles implements AdminCommand {
             targetConfigName = targetServer.getConfigRef();
         }
 
-        logFileDetailsForServer = loggingConfig.getLoggingFileDetails(targetConfigName);
+        logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
 
         return logFileDetailsForServer;
 

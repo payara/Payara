@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019[ Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
@@ -76,14 +78,10 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Inject
     private ServiceLocator habitat;
 
-    public SetupSshKey() {
-    }
-
     /**
      */
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
         super.validate();
         Globals.setDefaultHabitat(habitat);
 
@@ -96,8 +94,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                 if (promptForKeyGeneration()) {
                     generatekey = true;
                 }
-            }
-            else {
+            } else {
                 //there is a key that requires to be distributed, hence need password
                 promptPass = true;
                 sshkeyfile = existingKey;
@@ -106,8 +103,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                     sshkeypassphrase = getSSHPassphrase(false);
                 }
             }
-        }
-        else {
+        } else {
             promptPass = SSHUtil.validateKeyFile(sshkeyfile);
             if (SSHUtil.isEncryptedKey(sshkeyfile)) {
                 sshkeypassphrase = getSSHPassphrase(false);
@@ -120,11 +116,8 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
 
     }
 
-    /**
-     */
     @Override
-    protected int executeCommand()
-            throws CommandException {
+    protected int executeCommand() throws CommandException {
 
         SSHLauncher sshL = habitat.getService(SSHLauncher.class);
 
@@ -151,9 +144,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
 
             try {
                 sshL.setupKey(node, sshpublickeyfile, generatekey, sshpassword);
-            }
-            catch (IOException ce) {
-                //logger.fine("SSH key setup failed: " + ce.getMessage());
+            } catch (IOException ce) {
                 throw new CommandException(Strings.get("KeySetupFailed", ce.getMessage()));
             }
             catch (Exception e) {
@@ -192,12 +183,10 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                         logger.finer("Generate key!");
                     }
                     return true;
-                }
-                else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
+                } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
                     break;
                 }
-            }
-            while (val != null && !isValidAnswer(val));
+            } while (val != null && !isValidAnswer(val));
         }
         return false;
     }

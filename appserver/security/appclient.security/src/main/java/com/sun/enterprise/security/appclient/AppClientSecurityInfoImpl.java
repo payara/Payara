@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
 import com.sun.enterprise.security.ee.J2EESecurityManager;
@@ -49,7 +49,7 @@ import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.jmac.config.GFAuthConfigFactory;
+import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
 import com.sun.enterprise.security.integration.AppClientSSL;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.logging.LogDomains;
@@ -150,7 +150,7 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
 	    }
 
 	} catch (Exception e) {
-	    _logger.log(Level.WARNING, "main.jmac_default_factory");
+	    _logger.log(Level.WARNING, "main.jaspic_default_factory");
 	}
 
         //TODO:V3 LoginContextDriver has a static variable dependency on AuditManager

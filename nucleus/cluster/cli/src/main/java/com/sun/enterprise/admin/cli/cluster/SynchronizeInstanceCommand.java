@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -75,7 +76,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
 
     private RemoteCLICommand syncCmd = null;
 
-    private static enum SyncLevel { TOP, FILES, DIRECTORY, RECURSIVE };
+    private enum SyncLevel { TOP, FILES, DIRECTORY, RECURSIVE }
 
     // the name of the sync state file, relative to the instance directory
     private static final String SYNC_STATE_FILE = ".syncstate";
@@ -92,9 +93,9 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
     @Override
     protected int executeCommand() throws CommandException {
         
-        if (synchronizeInstance())
+        if (synchronizeInstance()) {
             return SUCCESS;
-        else {
+        } else {
             logger.info(Strings.get("Sync.failed",
                                     programOpts.getHost(),
                                     Integer.toString(programOpts.getPort())));
@@ -204,8 +205,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine(Strings.get("Sync.alreadySynced"));
                 if (!syncState.delete())
-                    logger.warning(
-                        Strings.get("Sync.cantDeleteSyncState", syncState));
+                    logger.warning(Strings.get("Sync.cantDeleteSyncState", syncState));
                 /*
                  * Note that we earlier marked the token for reuse.  It's OK
                  * to return immediately here with the DAS still willing to
@@ -232,15 +232,14 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             for (File adir : FileUtils.listFiles(archiveDir)) {
                 File[] af = FileUtils.listFiles(adir);
                 if (af.length != 1) {
-                    if (logger.isLoggable(Level.FINER))
-                        logger.finer("IGNORING " + adir + ", # files " +
-                                                                    af.length);
+                    if (logger.isLoggable(Level.FINER)) 
+                        logger.log(Level.FINER, "IGNORING {0}, # files {1}", new Object[]{adir, af.length});
                     continue;
                 }
                 File archive = af[0];
                 File appDir = new File(appsDir, adir.getName());
                 if (logger.isLoggable(Level.FINER))
-                    logger.finer("UNZIP " + archive + " TO " + appDir);
+                    logger.log(Level.FINER, "UNZIP {0} TO {1}", new Object[]{archive, appDir});
                 try {
                     expand(appDir, archive);
                 } catch (Exception ex) { }
@@ -298,8 +297,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * it was a connect failure and will list the closest matching
              * local command.  Not what we want here.
              */
-            exc = new CommandException(
-                        Strings.get("Sync.connectFailed", cex.getMessage()));
+            exc = new CommandException(Strings.get("Sync.connectFailed", cex.getMessage()));
         } catch (CommandException ex) {
             if (logger.isLoggable(Level.FINER))
                 logger.finer("Exception during synchronization: " + ex);
@@ -425,8 +423,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         } catch (CommandException cex) {
             Throwable cause = cex.getCause();
             if (logger.isLoggable(Level.FINER)) {
-                logger.finer("Got exception: " + cex);
-                logger.finer("  cause: " + cause);
+                logger.log(Level.FINER, "Got exception: {0}", cex);
+                logger.log(Level.FINER, "  cause: {0}", cause);
             }
             if (cause instanceof ConnectException)
                 throw (ConnectException)cause;
@@ -458,32 +456,24 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
      * but it's good enough for now for some performance testing
      */
     private static void expand(File dir, File archive) throws Exception {
-        if (!dir.mkdir())
-            logger.warning(
-                Strings.get("Sync.cantCreateDirectory", dir));
+        if (!dir.mkdir()) {
+            logger.warning(Strings.get("Sync.cantCreateDirectory", dir));
+        }
         long modtime = archive.lastModified();
-        ZipFile zf = new ZipFile(archive);
-	try {
+	try (ZipFile zf = new ZipFile(archive)) {
 	    Enumeration<? extends ZipEntry> e = zf.entries();
 	    while (e.hasMoreElements()) {
 		ZipEntry ze = e.nextElement();
 		File entry = new File(dir, ze.getName());
 		if (ze.isDirectory()) {
 		    if (!entry.mkdir())
-			logger.warning(
-			    Strings.get("Sync.cantCreateDirectory", dir));
+			logger.warning(Strings.get("Sync.cantCreateDirectory", dir));
 		} else {
-		    FileUtils.copy(zf.getInputStream(ze),
-				    new FileOutputStream(entry), 0);
+		    FileUtils.copy(zf.getInputStream(ze), new FileOutputStream(entry), 0);
 		}
 	    }
-	} finally {
-	    try {
-		zf.close();
-	    } catch (IOException ex) { }
 	}
         if (!dir.setLastModified(modtime))
-            logger.warning(
-                Strings.get("Sync.cantSetModTime", dir));
+            logger.warning(Strings.get("Sync.cantSetModTime", dir));
     }
 }

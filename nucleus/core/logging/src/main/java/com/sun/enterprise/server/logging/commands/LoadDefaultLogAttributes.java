@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
@@ -64,7 +65,7 @@ import java.util.*;
 public class LoadDefaultLogAttributes implements AdminCommand {
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LoadDefaultLogAttributes.class);
 
@@ -74,7 +75,7 @@ public class LoadDefaultLogAttributes implements AdminCommand {
 
         try {
             HashMap<String, String> props = null;
-            props = (HashMap<String, String>) loggingConfig.getDefaultLoggingProperties();
+            props = (HashMap<String, String>) loggingConfigFactory.provide().getLoggingProperties();
 
             List<String> keys = new ArrayList<String>();
             keys.addAll(props.keySet());
@@ -95,7 +96,7 @@ public class LoadDefaultLogAttributes implements AdminCommand {
             Properties restData = new Properties();
             restData.put("logAttributes", logAttributes);
             report.setExtraProperties(restData);
-            
+
         } catch (IOException ex) {
             report.setMessage(localStrings.getLocalString("get.log.attribute.failed",
                     "Could not get logging attributes for {0}.", target));
