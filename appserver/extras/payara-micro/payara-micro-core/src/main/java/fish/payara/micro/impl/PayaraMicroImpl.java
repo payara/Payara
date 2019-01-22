@@ -439,7 +439,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public File getUberJar() {
         return uberJar;
     }
-    
+
     /**
      * The configured port for HTTPS requests
      *
@@ -466,7 +466,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         this.sslPort = sslPort;
         return this;
     }
-    
+
     @Override
     public PayaraMicroImpl setSniEnabled(boolean value) {
         sniEnabled = value;
@@ -476,19 +476,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     /**
      * Set the certificate alias in the keystore to use for the server cert
      * @param alias name of the certificate in the keystore
-     * @return 
+     * @return
      */
     @Override
     public PayaraMicroImpl setSslCert(String alias) {
         sslCert = alias;
         return this;
     }
-    
+
     @Override
     public String getSslCert() {
         return sslCert;
     }
-    
+
     /**
      * Gets the logical name for this PayaraMicro Server within the server
      * cluster
@@ -1021,7 +1021,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 // Execute post boot commands
                 postBootCommands.executeCommands(gf.getCommandRunner());
-                
+
                 this.runtime = new PayaraMicroRuntimeImpl(gf, gfruntime);
 
                 // load all applications, but do not start them until Hazelcast gets a chance to initialize
@@ -1231,7 +1231,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case enablerequesttracing:
                         enableRequestTracing = true;
-            
+
                         // Check if a value has actually been given
                         // Split strings from numbers
                         if (value != null) {
@@ -1242,7 +1242,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 if (requestTracing[0].matches("\\d+")) {
                                     try {
                                         requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
-                                        
+
                                     } catch (NumberFormatException e) {
                                         LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
                                                 + "threshold value", requestTracing[0]);
@@ -1544,11 +1544,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         // Deploy from deployment directory
         if (deploymentRoot != null) {
-            
+
             // Get all files in the directory, and sort them by file type
             List<File> deploymentDirEntries = Arrays.asList(deploymentRoot.listFiles());
             deploymentDirEntries.sort(new DeploymentComparator());
-            
+
             for (File entry : deploymentDirEntries) {
                 String entryPath = entry.getAbsolutePath();
                 if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
@@ -1629,7 +1629,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
             try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())){
                 LogManager.getLogManager().readConfiguration(is);
-                
+
                 // go through all root handlers and set formatters based on properties
                 Logger rootLogger = LogManager.getLogManager().getLogger("");
                 for (Handler handler : rootLogger.getHandlers()) {
@@ -1638,10 +1638,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         handler.setFormatter((Formatter) Class.forName(formatter).newInstance());
                     }
                 }
-                
+
             } catch (SecurityException | IOException | ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
-            } 
+            }
         } else {  // system property was not set on the command line using the command option or via -D
             // we are likely using our default properties file so see if we need to rewrite it
             if (logToFile) {
@@ -1802,12 +1802,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port-range=" + Integer.toString(minPort) + "," + Integer.toString(maxPort)));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
         }
-        
+
         if (sniEnabled) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.sni-enabled=true"));
         }
         if (sslCert != null) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));            
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.protocols.protocol.https-listener.ssl.cert-nickname=" + sslCert));
         }
     }
 
@@ -1858,12 +1858,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             if (instanceGroup != null) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-group=" + instanceGroup));
             }
-            
+
             if (publicAddress != null && !publicAddress.isEmpty()) {
-                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));                
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.public-address=" + publicAddress));
             }
             preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.host-aware-partitioning=" + hostAware));
-            
+
             if (clustermode != null) {
                 if (clustermode.startsWith("tcpip:")) {
                     String tcpipmembers = clustermode.substring(6);
@@ -1885,8 +1885,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     }
                 } else if (clustermode.startsWith("kubernetes")) {
                     String[] kubernetesInfo = clustermode.substring(11).split(",");
+                    preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=kubernetes"));
                     if (kubernetesInfo.length == 2) {
-                        preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=kubernetes"));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-namespace=" + kubernetesInfo[0]));
                         preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.kubernetes-service-name=" + kubernetesInfo[1]));
                     }
@@ -1898,9 +1898,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             } else {
                     preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.discovery-mode=multicast"));
             }
-            
+
             if (interfaces != null) {
-                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));                
+                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.interface=" + interfaces));
             }
         }
     }
@@ -1938,8 +1938,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      */
     private void getGAVURLs() throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
-        
-        
+
+
 
         for (String gav : GAVs) {
             try {
@@ -2248,11 +2248,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (hzClusterPassword != null) {
             props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
         }
-        
+
         if (clustermode != null) {
             props.setProperty("payaramicro.clusterMode", clustermode);
         }
-        
+
         if (interfaces != null) {
             props.setProperty("payaramicro.interfaces", interfaces);
         }
@@ -2260,7 +2260,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (secretsDir != null) {
             props.setProperty("payaramicro.secretsDir", secretsDir);
         }
-        
+
         if (sslCert != null) {
             props.setProperty("payaramicro.sslCert", sslCert);
         }
@@ -2280,7 +2280,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
         props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
         props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
-        
+
         if (publicAddress != null) {
             props.setProperty("payaramicro.publicAddress", publicAddress);
         }
@@ -2460,7 +2460,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             LOGGER.log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
         }
     }
-    
+
     private void configureNotificationService() {
         if (enableHealthCheck || enableRequestTracing) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.notification-service-configuration.enabled=true"));
@@ -2550,7 +2550,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return "true".equals(property);
     }
-    
+
     private Boolean getBooleanProperty(String value, String defaultValue) {
         String property;
         property = System.getProperty(value);
@@ -2623,7 +2623,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void configureSecrets() {
         if (secretsDir != null) {
-            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));            
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.microprofile-config.secret-dir=" + secretsDir));
         }
     }
 
