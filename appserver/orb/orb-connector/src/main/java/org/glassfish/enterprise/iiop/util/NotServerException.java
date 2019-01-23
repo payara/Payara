@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,32 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-package com.sun.enterprise.admin.cli.cluster;
-
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+package org.glassfish.enterprise.iiop.util;
 
 /**
- * Strings -- Get your Strings here.
- * One file with Strings
- * So one class for messing with them!
- * Nothing in here is public protected.  Only for use by this one java package.
- * @author Byron Nevins
+ * Exception extension solely used as an indicator of whether an IllegalStateException was caused due to the
+ * process environment not being a server
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * @since 5.191
  */
+public class NotServerException extends IllegalStateException {
 
-final class Strings {
-    private Strings() {
-        // no instances allowed!
+    private static final String message = "Only available in Server mode";
+
+    public NotServerException() {
+        super(message);
     }
 
-    static final String get(String indexString) {
-        return strings.get(indexString);
-    }
-
-    static final String get(String indexString, Object... objects) {
-        return strings.get(indexString, objects);
-    }
-
-    private static final LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }
