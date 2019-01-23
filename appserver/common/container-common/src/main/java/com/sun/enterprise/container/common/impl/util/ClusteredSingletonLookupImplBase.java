@@ -46,6 +46,9 @@ import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -60,32 +63,35 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final SingletonType singletonType;
     private final String keyPrefix;
     private final String mapKey;
-    private final String lockKey;
-    private final String sessionHzKey;
+    private final AtomicReference<String> sessionHzKey = new AtomicReference<>();
+    private final AtomicReference<String> lockKey = new AtomicReference<>();
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
         this.singletonType = singletonType;
         this.keyPrefix = makeKeyPrefix();
         this.mapKey = makeMapKey();
-        this.lockKey = makeLockKey();
-        this.sessionHzKey = makeSessionHzKey();
     }
 
-    protected String getKeyPrefix() {
+    protected final String getKeyPrefix() {
         return keyPrefix;
     }
 
-    protected String getLockKey() {
-        return lockKey;
-    }
-
-    protected String getMapKey() {
+    protected final String getMapKey() {
         return mapKey;
     }
 
-    public String getSessionHzKey() {
-        return sessionHzKey;
+    protected final String getLockKey() {
+        return lockKey.updateAndGet(v -> v != null ? v : makeLockKey());
+    }
+
+    public final String getSessionHzKey() {
+        return sessionHzKey.updateAndGet(v -> v != null ? v : makeSessionHzKey());
+    }
+
+    protected final void update() {
+        sessionHzKey.set(null);
+        lockKey.set(null);
     }
 
     @Override

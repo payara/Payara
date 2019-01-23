@@ -53,9 +53,9 @@ import javax.enterprise.inject.spi.BeanManager;
  * @author lprimak
  */
 public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+
     private final BeanManager beanManager;
     private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
-
 
     public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
         super(componentId, CDI);
@@ -71,6 +71,7 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
         Bean<?> bean = Iterables.getOnlyElement(beanManager.getBeans(beanClass), null);
         if (bean != null) {
             sessionKey.set(getBeanName(bean, getAnnotation(beanManager, bean)));
+            update();
         }
     }
 }
