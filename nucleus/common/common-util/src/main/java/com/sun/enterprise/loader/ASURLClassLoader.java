@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -969,7 +969,7 @@ public class ASURLClassLoader
          *Invokes fillTable for subdirectories which in turn invokes processFile
          *recursively.
          *@param fileToProcess the File to be processed
-         *@param t the Hashtable that holds the files the loader knows about
+         *@param t the Map that holds the files the loader knows about
          *@param parentLocalName prefix to be used for the full path; should be
          *non-empty only for recursive invocations
          *@throws IOException in case of errors working with the fileToProcess

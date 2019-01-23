@@ -368,24 +368,24 @@ class FieldInfo {
 ////////////////////////////////////////////////////////////////////////////
 class FieldInfoVector // { extends Vector
 {
-    List<FieldInfo> v;
+    List<FieldInfo> fieldInfos;
 
     FieldInfoVector() {
-        v = new ArrayList<>();
+        fieldInfos = new ArrayList<>();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     /**
      * @param o  */
     void addElement(FieldInfo o) {
-        v.add(o);
+        fieldInfos.add(o);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     /**
      * @return  */
     public String toString() {
-        int veclen = v.size();
+        int veclen = fieldInfos.size();
         StringBuilder s = new StringBuilder();
 
         setLongestNames();
@@ -413,12 +413,12 @@ class FieldInfoVector // { extends Vector
 
     ////////////////////////////////////////////////////////////////////////////
     private FieldInfo fetch(int i) {
-        return v.get(i);
+        return fieldInfos.get(i);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     private void setLongestNames() {
-        int veclen = v.size();
+        int veclen = fieldInfos.size();
 
         classNameLength = 5;
         fieldNameLength = 5;

@@ -82,8 +82,8 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
-     * @param ex
-     * @return
+     * @param ex the exception to format
+     * @return formatted exception
      */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
@@ -103,19 +103,19 @@ public class StringUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     /**
-     * Find longest String in a vector of Strings...
-     * @param v
-     * @return
+     * Find longest String in a List of Strings...
+     * @param strings the list of strings
+     * @return the index of the longest string
      */
-    public static int maxWidth(List v) {
+    public static int maxWidth(List strings) {
         int max = 0;
 
-        if (v == null || v.isEmpty() || !(v.get(0) instanceof String)) {
+        if (strings == null || strings.isEmpty() || !(strings.get(0) instanceof String)) {
             return 0;
         }
 
-        for (int i = v.size() - 1; i >= 0; i--) {
-            int len = ((String) v.get(i)).length();
+        for (int i = strings.size() - 1; i >= 0; i--) {
+            int len = ((String) strings.get(i)).length();
 
             if (len > max) {
                 max = len;
@@ -259,29 +259,29 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Converts a String into an array where every \n is a new used to signal a new element in the array
-     * @param s
-     * @return
+     * @param s string to split into lines
+     * @return the resulting lines array
      */
     public static String[] toLines(String s) {
         if (s == null) {
             return new String[0];
         }
 
-        List<String> v = new ArrayList<>();
+        List<String> lines = new ArrayList<>();
 
         int start = 0;
         int end = 0;
 
         for (end = s.indexOf('\n', start); end >= 0 && start < s.length(); end = s.indexOf('\n', start)) {
-            v.add(s.substring(start, end));	// does NOT include the '\n'
+            lines.add(s.substring(start, end));	// does NOT include the '\n'
             start = end + 1;
         }
 
         if (start < s.length()) {
-            v.add(s.substring(start));
+            lines.add(s.substring(start));
         }
 
-        return v.toArray(new String[0]);
+        return lines.toArray(new String[0]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
