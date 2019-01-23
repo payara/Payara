@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.web.security.realmadapter;
 
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.AUTH_TYPE;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.IS_MANDATORY;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGISTER_SESSION;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
-import static com.sun.enterprise.security.jmac.config.HttpServletConstants.WEB_BUNDLE;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.AUTH_TYPE;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.IS_MANDATORY;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.REGISTER_SESSION;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
+import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
 import static com.sun.logging.LogDomains.WEB_LOGGER;
 import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.INFO;
@@ -93,7 +93,7 @@ import org.apache.catalina.deploy.LoginConfig;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.jmac.config.PayaraJaspicServletServices;
+import com.sun.enterprise.security.jaspic.config.PayaraJaspicServletServices;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.jaspic.config.servlet.HttpMessageInfo;
 import com.sun.logging.LogDomains;

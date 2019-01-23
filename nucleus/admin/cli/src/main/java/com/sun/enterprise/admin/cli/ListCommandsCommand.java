@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
 import java.util.*;
 import java.util.regex.*;
 
+import com.sun.enterprise.admin.cli.remote.DASUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -94,6 +95,9 @@ public class ListCommandsCommand extends CLICommand {
 
     @Override
     public int executeCommand() throws CommandException, CommandValidationException {
+        if (!DASUtils.pingDASQuietly(programOpts, env)) {
+            localOnly = true;
+        }
 
         // convert the patterns to regular expressions
         if (cmds != null) {

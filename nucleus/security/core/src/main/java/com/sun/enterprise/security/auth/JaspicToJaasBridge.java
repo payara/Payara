@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -166,7 +166,7 @@ public class JaspicToJaasBridge {
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("jmac cert login succeeded for: " + callerPrincipalName);
+            _logger.fine("JASPIC certificate login succeeded for: " + callerPrincipalName);
         }
 
         auditAuthenticate(callerPrincipalName, CertificateRealm.AUTH_TYPE, true);

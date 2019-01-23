@@ -47,7 +47,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
 import java.io.*;
-import java.net.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
@@ -59,7 +58,6 @@ import org.glassfish.internal.api.Globals;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -111,18 +109,14 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             precopy();
             zipFile = createZipFileIfNeeded(binDirFiles);
             copyToHosts(zipFile, binDirFiles);
-        }
-        catch (CommandException e) {
+        } catch (CommandException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new CommandException(e);
-        }
-        finally {
+        } finally {
             if (!save && delete) {
-                if (zipFile != null) {
-                    if (!zipFile.delete())
-                        zipFile.deleteOnExit();
+                if (zipFile != null && !zipFile.delete()) {
+                    zipFile.deleteOnExit();
                 }
             }
         }
@@ -152,12 +146,12 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         if (archive != null) {
             archive = archive.replace('\\', '/');
-            archiveName = archive.substring(archive.lastIndexOf("/") + 1, archive.length());
-            zipFileLocation = new File(archive.substring(0, archive.lastIndexOf("/")));
+            archiveName = archive.substring(archive.lastIndexOf('/') + 1, archive.length());
+            zipFileLocation = new File(archive.substring(0, archive.lastIndexOf('/')));
             glassFishZipFile = new File(archive);
             if (glassFishZipFile.exists() && !create) {
                 if (logger.isLoggable(Level.FINER))
-                    logger.finer("Found " + archive);
+                    logger.log(Level.FINER, "Found {0}", archive);
                 delete = false;
                 return glassFishZipFile;
             }
@@ -173,7 +167,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             glassFishZipFile = File.createTempFile("glassfish", ".zip", zipFileLocation);
             String filePath = glassFishZipFile.getCanonicalPath();
             filePath = filePath.replaceAll("\\\\", "/");
-            archiveName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+            archiveName = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
         }
 
         FileListerRelative lister = new FileListerRelative(installRoot);
@@ -183,24 +177,21 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         List<String> resultFiles1 = Arrays.asList(files);
         ArrayList<String> resultFiles = new ArrayList<String>(resultFiles1);
 
-        if (logger.isLoggable(Level.FINER))
-            logger.finer("Number of files to be zipped = " +
-                                                            resultFiles.size());
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("Number of files to be zipped = " + resultFiles.size());
+        }
 
-        Iterator<String> iter = resultFiles.iterator();
-        while (iter.hasNext()) {
-            String fileName = iter.next();
-            String fPath = fileName.substring(fileName.lastIndexOf("/") + 1);
+        for (String fileName: resultFiles) {
+            String fPath = fileName.substring(fileName.lastIndexOf('/') + 1);
             if (fPath.equals(glassFishZipFile.getName())) {
                 if (logger.isLoggable(Level.FINER))
                     logger.finer("Removing file = " + fileName);
-                iter.remove();
+                //iter.remove();
                 continue;
             }
             if (fileName.contains("domains") || fileName.contains("nodes")) {
-                iter.remove();
-            }
-            else if (isFileWithinBinDirectory(fileName)) {
+                //iter.remove();
+            } else if (isFileWithinBinDirectory(fileName)) {
                 binDirFiles.add(fileName);
             }
         }
@@ -214,7 +205,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         ZipWriter writer = new ZipWriter(FileUtils.safeGetCanonicalPath(glassFishZipFile), installRoot.toString(), filesToZip);
         writer.safeWrite();
-        logger.info("Created installation zip " + FileUtils.safeGetCanonicalPath(glassFishZipFile));
+        logger.log(Level.INFO, "Created installation zip {0}", FileUtils.safeGetCanonicalPath(glassFishZipFile));
 
         return glassFishZipFile;
     }
@@ -240,8 +231,9 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         char[] buffer = new char[4096];
         int n;
-        while ((n = reader.read(buffer)) >= 0)
+        while ((n = reader.read(buffer)) >= 0) {
             sw.write(buffer, 0, n);
+        }
 
         return sw.toString();
     }

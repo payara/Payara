@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -63,7 +63,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -108,7 +108,7 @@ public class SetLogLevel implements AdminCommand {
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     Domain domain;
@@ -162,10 +162,10 @@ public class SetLogLevel implements AdminCommand {
             boolean isDas = targetInfo.isDas();
             
             if (targetConfigName != null && !targetConfigName.isEmpty()) {
-                loggingConfig.updateLoggingProperties(m, targetConfigName);
+                loggingConfigFactory.provide(targetConfigName).setLoggingProperties(m);
                 success = true;
             } else if (isDas) {
-                loggingConfig.updateLoggingProperties(m);
+                loggingConfigFactory.provide().setLoggingProperties(m);
                 success = true;
             } 
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.embedded;
 
 import java.io.File;
@@ -123,11 +123,7 @@ public class DomainXmlTransformer {
         FileOutputStream fos = null;
         XMLEventReader parser = null;
         XMLEventWriter writer = null;
-        XMLInputFactory xif =
-                (XMLInputFactory.class.getClassLoader() == null) ?
-                XMLInputFactory.newInstance() :
-                XMLInputFactory.newInstance(XMLInputFactory.class.getName(),
-                        XMLInputFactory.class.getClassLoader());
+        XMLInputFactory xif =XMLInputFactory.newInstance();
         
         Set<String> empty_elements = (keepPorts)? EMPTY_ELEMENTS_KEEP_PORTS : EMPTY_ELEMENTS;
         try {

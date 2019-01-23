@@ -43,14 +43,17 @@
 <!-- Portions Copyright [2016-2018] [Payara Foundation and/or affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.191-SNAPSHOT</version>
     </parent>
-    <packaging>pom</packaging>
+    
     <groupId>org.glassfish.main.distributions</groupId>
     <artifactId>distributions</artifactId>
+    <packaging>pom</packaging>
+    
     <name>Glassfish distributions</name>
 
     <developers>
@@ -205,6 +208,34 @@
     </build>
     
     <profiles>
+        
+        <!-- Default build profile -->
+        <profile>
+            <id>DefaultBuild</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>payara</module>
+                <module>payara-ml</module>
+                <module>payara-web</module>
+                <module>payara-web-ml</module>
+            </modules>
+        </profile>
+        
+        <!-- Profile to just build main Payara Distribution -->
+        <profile>
+            <id>QuickBuild</id>
+            <activation>
+                <property>
+                    <name>QuickBuild</name>
+                </property>
+            </activation>
+            <modules>
+                <module>payara</module>
+            </modules>
+        </profile>
+    
         <profile>
             <id>ips</id>
             <build>
@@ -284,36 +315,5 @@
             </dependencies>
         </profile>
         
-        <!-- Profile to just build main Payara Distribution -->
-        <profile>
-            <id>QuickBuild</id>
-            <activation>
-                <property>
-                    <name>QuickBuild</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara</module>
-            </modules>
-        </profile>
-        
-        <!-- Default build profile -->
-        <profile>
-            <id>DefaultBuild</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <!-- <module>minnow</module> -->
-                <!-- <module>web</module> -->
-                <!-- <module>glassfish</module> -->
-                <module>payara</module>
-                <module>payara-ml</module>
-                <module>payara-web</module>
-                <module>payara-web-ml</module>
-                <!-- disable appclient distribution build since we're not using it yet -->
-                <!--    <module>appclient</module> -->
-            </modules>
-        </profile>
     </profiles>  
 </project>

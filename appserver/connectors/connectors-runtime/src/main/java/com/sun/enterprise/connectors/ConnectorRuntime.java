@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.*;
@@ -59,7 +59,7 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
 import com.sun.enterprise.resource.pool.monitor.PoolMonitoringLevelListener;
 import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
+import com.sun.enterprise.security.jaspic.callback.ContainerCallbackHandler;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.monitor.MonitoringBootstrap;

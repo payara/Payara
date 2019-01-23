@@ -46,6 +46,7 @@ import java.util.*;
 import java.lang.annotation.Annotation;
 import java.util.logging.*;
 
+import jline.console.ConsoleReader;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.InjectionManager;
@@ -885,9 +886,9 @@ public abstract class CLICommand implements PostConstruct {
      * the environment.  It also supplies passwords from the password
      * file or prompts for them if interactive.
      *
-     * @throws CommandException if execution of the command fails
+     * @throws CommandException           if execution of the command fails
      * @throws CommandValidationException if there's something wrong
-     *          with the options or arguments
+     *                                    with the options or arguments
      */
     protected void prevalidate() throws CommandException {
         /*
@@ -897,7 +898,7 @@ public abstract class CLICommand implements PostConstruct {
          * Remote commands are checked on the server.
          */
         if (!(this instanceof RemoteCommand) && !(this instanceof RemoteCLICommand)) {
-        	Class<? extends Annotation> myScope = getScope(this.getClass());
+            Class<? extends Annotation> myScope = getScope(this.getClass());
             if (myScope == null) {
                 throw new CommandException(strings.get("NoScope", name));
             } else if (Singleton.class.equals(myScope)) {
@@ -911,24 +912,38 @@ public abstract class CLICommand implements PostConstruct {
         /*
          * Check for missing options and operands.
          */
-        Console cons = programOpts.isInteractive() ? System.console() : null;
+        ConsoleReader cons = null;
+        if (programOpts.isInteractive()) {
+            try {
+                cons = new ConsoleReader(System.in, System.out, null);
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error instantiating console", ioe);
+            }
+        }
 
         boolean missingOption = false;
         for (ParamModel opt : commandModel.getParameters()) {
             if (opt.getParam().password())
                 continue;       // passwords are handled later
-	    if (opt.getParam().obsolete() && getOption(opt.getName()) != null)
-		logger.info(strings.get("ObsoleteOption", opt.getName()));
-            if (opt.getParam().optional())
+            if (opt.getParam().obsolete() && getOption(opt.getName()) != null) {
+                logger.info(strings.get("ObsoleteOption", opt.getName()));
+            }
+            if (opt.getParam().optional()) {
                 continue;
-            if (opt.getParam().primary())
+            }
+            if (opt.getParam().primary()) {
                 continue;
+            }
             // if option isn't set, prompt for it (if interactive)
             if (getOption(opt.getName()) == null && cons != null && !missingOption) {
-                cons.printf("%s", strings.get("optionPrompt", lc(opt.getName())));
-                String val = cons.readLine();
-                if (ok(val)){
-                    options.set(opt.getName(), val);
+                cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
+                try {
+                    String val = cons.readLine();
+                    if (ok(val)) {
+                        options.set(opt.getName(), val);
+                    }
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error reading input", ioe);
                 }
             }
             // if it's still not set, that's an error
@@ -936,12 +951,13 @@ public abstract class CLICommand implements PostConstruct {
                 missingOption = true;
                 logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
             }
-	    if (opt.getParam().obsolete()){	// a required obsolete option?
-		logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
+            if (opt.getParam().obsolete()) {    // a required obsolete option?
+                logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
             }
         }
-        if (missingOption)
+        if (missingOption) {
             throw new CommandValidationException(strings.get("missingOptions", name));
+        }
 
         int operandMin = 0;
         int operandMax = 0;
@@ -952,14 +968,18 @@ public abstract class CLICommand implements PostConstruct {
         }
 
         if (operands.size() < operandMin && cons != null) {
-            cons.printf("%s", strings.get("operandPrompt", operandParam.getName()));
-            String val = cons.readLine();
-            if (ok(val)) {
-                operands = new ArrayList<String>();
-                operands.add(val);
+            cons.setPrompt(strings.get("operandPrompt", operandParam.getName()));
+            try {
+                String val = cons.readLine();
+                if (ok(val)) {
+                    operands = new ArrayList<String>();
+                    operands.add(val);
+                }
+            } catch (IOException ioe) {
+                throw new CommandValidationException("Error reading input", ioe);
             }
         }
-        if (operands.size() < operandMin){
+        if (operands.size() < operandMin) {
             throw new CommandValidationException(strings.get("notEnoughOperands", name, operandParam.getType()));
         }
         if (operands.size() > operandMax) {
@@ -1166,11 +1186,13 @@ public abstract class CLICommand implements PostConstruct {
         } else {
             confirmationPrompt = strings.get("NewPasswordConfirmationPrompt", passwordName);
         }
+
         char[] newpasswordAgain = readPassword(confirmationPrompt);
-        if (!Arrays.equals(newpassword,newpasswordAgain)) {
+        if (!Arrays.equals(newpassword, newpasswordAgain)) {
             throw new CommandValidationException(strings.get("OptionsDoNotMatch", ok(prompt) ? prompt : passwordName));
         }
         passwords.put(passwordName, newpassword != null ? new String(newpassword) : null);
+
         return newpassword;
     }
 
@@ -1186,11 +1208,18 @@ public abstract class CLICommand implements PostConstruct {
      */
     protected char[] readPassword(String prompt) {
         char[] pc = null;
-        Console cons = System.console();
-        if (cons != null) {
-            pc = cons.readPassword("%s", prompt);
-            // yes, yes, yes, it would be safer to not keep it in a String
+
+        try (ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null)) {
+            // Don't echo anything when reading
+            char echoCharacter = 0;
+            consoleReader.setEchoCharacter(echoCharacter);
+
+            String line = consoleReader.readLine(prompt);
+            pc = line.toCharArray();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "IOException reading password.", ioe);
         }
+
         return pc;
     }
 

@@ -45,6 +45,7 @@ package fish.payara.nucleus.hazelcast.test;
 import fish.payara.nucleus.hazelcast.DnsDiscoveryService;
 import java.util.Iterator;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -59,6 +60,7 @@ public class DNSDiscoveryTest {
     //chosen as it has a single A record
     private static final String DOMAIN_PAYARA = "payara.fish:4900";
     
+    @Ignore("Unstable. Env name service dependant")
     @Test
     public void multipleRecordTest() {
         DnsDiscoveryService service = new DnsDiscoveryService(new String[]{DOMAIN_YAHOO});
@@ -78,6 +80,7 @@ public class DNSDiscoveryTest {
         Assert.assertFalse(nodes.hasNext());
     }
     
+    @Ignore("Unstable. Env name service dependant")
     @Test
     public void multipleDomainTest() {
         DnsDiscoveryService service = new DnsDiscoveryService(new String[]{DOMAIN_PAYARA, DOMAIN_YAHOO});

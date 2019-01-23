@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import java.util.ArrayList;
@@ -154,7 +154,7 @@ public final class EntryInfo {
      * registration entries - the classnames are equal or are both null - the property maps are equal or are both null If
      * the entry is a registration entry, registration contexts are not considered for our purposes. For instance, we may
      * want to get a certain registration entry in order to add a registration context to it.
-     * @see com.sun.enterprise.security.jmac.config.RegStoreFileParser
+     * @see com.sun.enterprise.security.jaspic.config.RegStoreFileParser
      */
     boolean matchConstructors(EntryInfo target) {
         if (target == null) {

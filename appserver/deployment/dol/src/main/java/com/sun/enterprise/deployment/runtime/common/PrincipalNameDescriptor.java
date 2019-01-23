@@ -37,28 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common;
+
+import java.security.Principal;
 
 import org.glassfish.deployment.common.Descriptor;
 
-import java.lang.reflect.Constructor;
-import java.security.Principal;
-
 /**
- * This is an in memory representation of the principal-name with its name of 
- * the implementation class.
+ * This is an in memory representation of the principal-name with its name of the implementation class.
+ * 
  * @author deployment dev team
  */
 public class PrincipalNameDescriptor extends Descriptor {
 
-    private static final String defaultClassName =
-                "org.glassfish.security.common.PrincipalImpl";
-    private String principalName = null;
-    private String className = null;
-    private transient ClassLoader cLoader = null;
-
-    public PrincipalNameDescriptor() {}
+    private static final long serialVersionUID = 884693766288296132L;
+    private static final String DEFAULT_CLASSNAME = "org.glassfish.security.common.PrincipalImpl";
+    
+    private String principalName;
+    private String className;
+    private transient ClassLoader classLoader;
 
     public String getName() {
         return principalName;
@@ -66,8 +64,9 @@ public class PrincipalNameDescriptor extends Descriptor {
 
     public String getClassName() {
         if (className == null) {
-            return defaultClassName;
+            return DEFAULT_CLASSNAME;
         }
+        
         return className;
     }
 
@@ -80,23 +79,22 @@ public class PrincipalNameDescriptor extends Descriptor {
     }
 
     public void setClassLoader(ClassLoader c) {
-        cLoader = c;
+        classLoader = c;
     }
 
     public Principal getPrincipal() {
         try {
-            if (cLoader == null) {
-                cLoader = Thread.currentThread().getContextClassLoader();
+            if (classLoader == null) {
+                classLoader = Thread.currentThread().getContextClassLoader();
             }
-            Class clazz = Class.forName(getClassName(), true, cLoader);
-            Constructor constructor = 
-                            clazz.getConstructor(new Class[]{String.class});
-            Object o = constructor.newInstance(new Object[]{principalName});
-            return (Principal) o;
-        } catch(Exception ex) {
-            RuntimeException e = new RuntimeException();
-            e.initCause(ex);
-            throw e;
+            
+            return (Principal) 
+                Class.forName(getClassName(), true, classLoader)
+                     .getConstructor(new Class<?>[] { String.class })
+                     .newInstance(new Object[] { principalName });
+            
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

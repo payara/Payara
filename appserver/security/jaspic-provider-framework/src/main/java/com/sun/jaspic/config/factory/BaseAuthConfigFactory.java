@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -422,7 +422,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
                         .newInstance(new Object[] { properties, factory });
             } catch (Throwable t) {
                 Throwable cause = t.getCause();
-                logger.log(WARNING, "jmac.factory_unable_to_load_provider",
+                logger.log(WARNING, "jaspic.factory_unable_to_load_provider",
                         new Object[] { className, t.toString(), cause == null ? "cannot determine" : cause.toString() });
             }
         }
@@ -549,7 +549,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             }
         } catch (Exception e) {
             if (logger.isLoggable(WARNING)) {
-                logger.log(WARNING, "jmac.factory_auth_config_loader_failure", e);
+                logger.log(WARNING, "jaspic.factory_auth_config_loader_failure", e);
             }
         }
     }

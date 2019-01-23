@@ -37,8 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common;
+
+import static java.util.logging.Level.WARNING;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -46,37 +53,30 @@ import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class MessageDescriptor extends RuntimeDescriptor {
+    
+    private static final long serialVersionUID = 6097863237384161130L;
+    
     public static final String JAVA_METHOD = "JavaMethod";
     public static final String OPERATION_NAME = "OperationName";
-
     private static final String ALL_METHODS = "*";
 
-    private String operationName = null;
-    private MethodDescriptor methodDescriptor = null;
-    private ArrayList convertedMethodDescs = new ArrayList();
+    private String operationName;
+    private MethodDescriptor methodDescriptor;
+    private List<MethodDescriptor> convertedmethodDescriptors = new ArrayList<>();
 
-    // when this message is defined from client side
-    private ServiceRefPortInfo portInfo = null;
+    // When this message is defined from client side
+    private ServiceRefPortInfo portInfo;
 
-    // when this message is defined from server side
-    private WebServiceEndpoint endPoint = null;
-
-    private BundleDescriptor bundleDesc = null; 
-
-    private boolean isConverted = false;
-
-    public MessageDescriptor() {}
+    // When this message is defined from server side
+    private WebServiceEndpoint webServiceEndpoint;
+    private BundleDescriptor bundleDescriptor;
+    private boolean isConverted;
 
     public void setOperationName(String operationName) {
         this.operationName = operationName;
     }
-    
+
     public String getOperationName() {
         return operationName;
     }
@@ -88,7 +88,7 @@ public class MessageDescriptor extends RuntimeDescriptor {
     public MethodDescriptor getMethodDescriptor() {
         return methodDescriptor;
     }
-    
+
     public void setServiceRefPortInfo(ServiceRefPortInfo portInfo) {
         this.portInfo = portInfo;
     }
@@ -97,108 +97,115 @@ public class MessageDescriptor extends RuntimeDescriptor {
         return portInfo;
     }
 
-    public void setWebServiceEndpoint(WebServiceEndpoint endPoint){
-        this.endPoint = endPoint;
+    public void setWebServiceEndpoint(WebServiceEndpoint endPoint) {
+        this.webServiceEndpoint = endPoint;
     }
 
     public WebServiceEndpoint getWebServiceEndpoint() {
-        return endPoint;
+        return webServiceEndpoint;
     }
 
-    public void setBundleDescriptor(BundleDescriptor bundleDesc){
-        this.bundleDesc = bundleDesc; 
+    public void setBundleDescriptor(BundleDescriptor bundleDesc) {
+        this.bundleDescriptor = bundleDesc;
     }
-        
+
     public BundleDescriptor getBundleDescriptor() {
-        return bundleDesc;
+        return bundleDescriptor;
     }
 
     /**
      * Return all methods defined in this message.
      *
-     * In the case of an empty message, it will return all methods 
-     * defined in the SEI.
+     * In the case of an empty message, it will return all methods defined in the SEI.
      *
-     * In the case of methods overloading, it will return all methods
-     * defined in the SEI that match with the specified method name.
+     * In the case of methods overloading, it will return all methods defined in the SEI that match with the specified
+     * method name.
      *
-     * In the case of DII, i.e the client doesn't have the SEI info,
-     * it will return an empty list for client side defined message.
+     * In the case of DII, i.e the client doesn't have the SEI info, it will return an empty list for client side defined
+     * message.
      *
      **/
-    public ArrayList getAllDefinedMethodsInMessage() {
-       // only do the conversion if it hasn't done it yet
-       if (!isConverted) {
-           doStyleConversion();
-       }
-       return convertedMethodDescs;
+    public List<MethodDescriptor> getAllDefinedMethodsInMessage() {
+        // Only do the conversion if it hasn't been done yet
+        if (!isConverted) {
+            doStyleConversion();
+        }
+        
+        return convertedmethodDescriptors;
     }
 
     private void doStyleConversion() {
         if (operationName == null && methodDescriptor == null) {
-            // this is the empty message case
-            // and we need to expand to all methods 
-            convertedMethodDescs =  getAllSEIMethodsOf(ALL_METHODS);
+            // This is the empty message case and we need to expand to all methods
+            
+            convertedmethodDescriptors = getAllSEIMethodsOf(ALL_METHODS);
         } else if (methodDescriptor != null) {
-            if (methodDescriptor.getName() != null  &&
-                methodDescriptor.getParameterClassNames() != null) {
-                // this is the exact case, so no conversion needed
-                convertedMethodDescs.add(methodDescriptor);
-            } else if (methodDescriptor.getName() != null  &&
-                methodDescriptor.getParameterClassNames() == null) { 
-                // we need to check for overloading methods
-                convertedMethodDescs = 
-                    getAllSEIMethodsOf(methodDescriptor.getName());
+            if (methodDescriptor.getName() != null && methodDescriptor.getParameterClassNames() != null) {
+                // This is the exact case, so no conversion needed
+                
+                convertedmethodDescriptors.add(methodDescriptor);
+            } else if (methodDescriptor.getName() != null && methodDescriptor.getParameterClassNames() == null) {
+                // We need to check for overloading methods
+                
+                convertedmethodDescriptors = getAllSEIMethodsOf(methodDescriptor.getName());
             }
         }
+        
         isConverted = true;
     }
 
-    private ArrayList getAllSEIMethodsOf(String methodName) {
+    private List<MethodDescriptor> getAllSEIMethodsOf(String methodName) {
         String serviceInterfaceName = null;
-        ArrayList allMethodsInSEI = new ArrayList();
-
-        // this is a server side message
-        if (endPoint != null) {
-            serviceInterfaceName = endPoint.getServiceEndpointInterface();
-        // this is a client side message
+        List<MethodDescriptor> allMethodsInSEI = new ArrayList<>();
+        
+        if (webServiceEndpoint != null) {
+            
+            // This is a server side message
+            
+            serviceInterfaceName = webServiceEndpoint.getServiceEndpointInterface();
+            
         } else if (portInfo != null) {
+            
+            // This is a client side message
+            
             serviceInterfaceName = portInfo.getServiceEndpointInterface();
         }
-        
+
         // In the case of DII, client doesn't know the SEI name
         // return an empty list
-        if (serviceInterfaceName == null) { 
+        if (serviceInterfaceName == null) {
             return allMethodsInSEI;
         }
 
-        ClassLoader classLoader = null; 
-        if (bundleDesc != null) {
-            classLoader = bundleDesc.getClassLoader();
+        ClassLoader classLoader = null;
+        if (bundleDescriptor != null) {
+            classLoader = bundleDescriptor.getClassLoader();
         }
 
-        // return an empty list if class loader is not set
+        // Return an empty list if class loader is not set
         if (classLoader == null) {
             return allMethodsInSEI;
         }
 
         try {
-            Class c = classLoader.loadClass(serviceInterfaceName);
-            Method[] methods = c.getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                // empty message or message name is *
-                if (methodName.equals(ALL_METHODS)) { 
-                    allMethodsInSEI.add(new MethodDescriptor(methods[i]));
-                // overloading methods with same method name
-                } else if (methodName.equals(methods[i].getName())) {
-                    allMethodsInSEI.add(new MethodDescriptor(methods[i]));
+            for (Method method : classLoader.loadClass(serviceInterfaceName).getMethods()) {
+                if (methodName.equals(ALL_METHODS)) {
+                    
+                    // Empty message or message name is *
+                    
+                    allMethodsInSEI.add(new MethodDescriptor(method));
+                } else if (methodName.equals(method.getName())) {
+                    
+                    // Overloading methods with same method name
+                    
+                    allMethodsInSEI.add(new MethodDescriptor(method));
                 }
             }
         } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "Error occurred", e); 
-            // if there is exception in the class loading
-            // then we just return the empty list
+            // If there is exception in the class loading then we just log and return the empty list
+            Logger.getAnonymousLogger().log(WARNING, "Error occurred", e);
         }
+        
         return allMethodsInSEI;
     }
 }

@@ -38,11 +38,11 @@
  * holder.
  */
  
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
  
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -91,7 +91,7 @@ public class DeleteLogLevel implements AdminCommand {
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     Domain domain;
@@ -156,14 +156,14 @@ public class DeleteLogLevel implements AdminCommand {
             }
 
             if (isCluster || isInstance) {
-                loggingConfig.deleteLoggingProperties(m, targetConfigName);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
                 success = true;
             } else if (isDas) {
-                loggingConfig.deleteLoggingProperties(m);
+                loggingConfigFactory.provide().deleteLoggingProperties(m);
                 success = true;
             } else if (isConfig) {
                 // This loop is for the config which is not part of any target
-                loggingConfig.deleteLoggingProperties(m, targetConfigName);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
                 success = true;
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

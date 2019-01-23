@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -109,20 +110,6 @@ public class PEWebContainerFeatureFactoryImpl
     @Override
     public String getDefaultAccessLogDateStampPattern() {
         return "yyyy-MM-dd";
-    }
-
-    /**
-     * Returns true if the first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation.
-     *
-     * @return true if first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation. 
-     */
-    @Override
-    public boolean getAddDateStampToFirstAccessLogFile() {
-        return true;
     }
 
     /**
