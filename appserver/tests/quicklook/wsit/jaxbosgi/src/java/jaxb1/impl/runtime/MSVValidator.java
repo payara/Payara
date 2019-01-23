@@ -166,7 +166,7 @@ public class MSVValidator implements XMLSerializer, IDContextProvider2
     }
 
     /** stores text reported by the text method. */
-    private StringBuilder buf = new StringBuilder();
+    private StringBuffer buf = new StringBuffer();
 
     public final void text( String text, String fieldName ) throws SAXException {
         if(text==null) {
@@ -213,7 +213,7 @@ public class MSVValidator implements XMLSerializer, IDContextProvider2
             context.reportEvent(target,ref.str);
         }
 
-        buf = new StringBuilder();
+        buf = new StringBuffer();
     }
 
     private void writePendingText() throws SAXException {
@@ -227,7 +227,7 @@ public class MSVValidator implements XMLSerializer, IDContextProvider2
         }
 
         if(buf.length()>1024)
-            buf = new StringBuilder();
+            buf = new StringBuffer();
         else
             buf.setLength(0);
     }

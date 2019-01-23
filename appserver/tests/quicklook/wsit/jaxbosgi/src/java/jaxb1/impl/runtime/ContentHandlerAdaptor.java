@@ -63,7 +63,7 @@ public class ContentHandlerAdaptor implements ContentHandler {
     /** Events will be sent to this object. */
     private final XMLSerializer serializer;
 
-    private final StringBuilder text = new StringBuilder();
+    private final StringBuffer text = new StringBuffer();
 
 
     public ContentHandlerAdaptor( XMLSerializer _serializer ) {

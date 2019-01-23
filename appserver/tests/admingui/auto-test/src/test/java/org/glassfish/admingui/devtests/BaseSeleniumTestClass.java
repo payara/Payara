@@ -72,7 +72,7 @@ public class BaseSeleniumTestClass {
 
     protected static WebDriver driver;
     public String baseUrl = "http://localhost:4848/";
-    public StringBuilder verificationErrors = new StringBuilder();
+    public StringBuffer verificationErrors = new StringBuffer();
     public boolean acceptNextAlert = true;
     protected static Selenium selenium;
     protected static final int TIMEOUT = 90;

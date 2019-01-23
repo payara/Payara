@@ -54,7 +54,7 @@ public class RAWriterAdapter extends Writer {
     //by default, autoFlush will be ON.
     private boolean autoFlush = true;
     //buffer used when autoFlush is OFF
-    private StringBuilder log;
+    private StringBuffer log;
 
     public RAWriterAdapter(Logger logger) {
         this.logger = logger;
@@ -72,7 +72,7 @@ public class RAWriterAdapter extends Writer {
         } else {
             String s = new String(cbuf, off, len);
             if (log == null) {
-                log = new StringBuilder(s);
+                log = new StringBuffer(s);
             } else {
                 log = log.append(s);
             }

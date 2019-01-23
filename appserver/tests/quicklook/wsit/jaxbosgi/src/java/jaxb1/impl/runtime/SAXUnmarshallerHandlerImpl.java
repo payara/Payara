@@ -233,7 +233,7 @@ public class SAXUnmarshallerHandlerImpl
 // text handling
 //
 //
-    private StringBuilder buffer = new StringBuilder();
+    private StringBuffer buffer = new StringBuffer();
 
     protected void consumeText( String str, boolean ignorable ) throws SAXException {
          if(ignorable && str.trim().length()==0)
@@ -251,7 +251,7 @@ public class SAXUnmarshallerHandlerImpl
         // avoid excessive object allocation, but also avoid
         // keeping a huge array inside StringBuilder.
         if(buffer.length()<1024)    buffer.setLength(0);
-        else                        buffer = new StringBuilder();
+        else                        buffer = new StringBuffer();
     }
 
     public final void characters( char[] buf, int start, int len ) {

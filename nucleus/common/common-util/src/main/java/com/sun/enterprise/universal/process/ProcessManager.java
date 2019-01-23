@@ -60,16 +60,16 @@ import java.util.List;
 public class ProcessManager {
     public ProcessManager(String... cmds) {
         cmdline = cmds;
-        sb_out = new StringBuilder();
-        sb_err = new StringBuilder();
+        sb_out = new StringBuffer();
+        sb_err = new StringBuffer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     public ProcessManager(List<String> Cmdline) {
         cmdline = new String[Cmdline.size()];
         cmdline = Cmdline.toArray(cmdline);
-        sb_out = new StringBuilder();
-        sb_err = new StringBuilder();
+        sb_out = new StringBuffer();
+        sb_err = new StringBuffer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ public class ProcessManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private void readStream(String name, InputStream stream, StringBuilder sb) {
+    private void readStream(String name, InputStream stream, StringBuffer sb) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         Thread thread = new Thread(new ReaderThread(reader, sb, echo), name);
         threads.add(thread);
@@ -268,8 +268,8 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     private String[] cmdline;
     private String[] env = null;
-    private StringBuilder sb_out;
-    private StringBuilder sb_err;
+    private StringBuffer sb_out;
+    private StringBuffer sb_err;
     private int exit = -1;
     private int timeout;
     private Process process;
@@ -281,7 +281,7 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
 
     static class ReaderThread implements Runnable {
-        ReaderThread(BufferedReader Reader, StringBuilder SB, boolean echo) {
+        ReaderThread(BufferedReader Reader, StringBuffer SB, boolean echo) {
             reader = Reader;
             sb = SB;
             this.echo = echo;
@@ -303,7 +303,7 @@ public class ProcessManager {
             ProcessManager.debug("ReaderThread exiting...");
         }
         private BufferedReader reader;
-        private StringBuilder sb;
+        private StringBuffer sb;
         private boolean echo;
     }
 

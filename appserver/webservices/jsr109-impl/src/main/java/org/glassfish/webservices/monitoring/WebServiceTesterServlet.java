@@ -377,6 +377,9 @@ public class WebServiceTesterServlet extends HttpServlet {
                 if (StringBuilder.class.equals(targetParamType)) {
                     convertedValue = new StringBuilder(webValue);
                 }
+                if (StringBuffer.class.equals(targetParamType)) {
+                    convertedValue = new StringBuffer(webValue);
+                }
             } catch (NumberFormatException nfe) {
                 System.out.println("Cannot convert " + webValue + " in " + targetParamType);
             }

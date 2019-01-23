@@ -260,7 +260,7 @@ public class SAXMarshaller implements XMLSerializer
 
 
     /** Buffer for collecting characters. */
-    private final StringBuilder textBuf = new StringBuilder();
+    private final StringBuffer textBuf = new StringBuffer();
 
     /**
      * Marshalls text.
