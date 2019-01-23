@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
  
 package com.sun.common.util.logging;
 
@@ -56,6 +56,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -64,7 +65,6 @@ import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 
 import org.glassfish.api.admin.FileMonitoring;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
@@ -77,74 +77,66 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 @Contract
-public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
+public class LoggingConfigImpl implements LoggingConfig {
+  
+    static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
+    static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
+
+    public static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
+    static {
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
+        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
+    }
 
     @Inject
-    Logger logger;
+    private ServerEnvironmentImpl env;
 
     @Inject
-    ServerEnvironmentImpl env;
+    private FileMonitoring fileMonitoring;
+
+    private String target;
+    private final Properties props = new Properties();
+    private final String loggingPropertiesName;
+    private final File loggingConfigDir;
+    private final File defaultLogFile;
 
     @Inject
-    FileMonitoring fileMonitoring;
+    public LoggingConfigImpl(ServerEnvironmentImpl env) {
+        this(env.getConfigDirPath(), env.getConfigDirPath());
+    }
 
-    Properties props = new Properties();
-    String loggingPropertiesName;
-    File loggingConfigDir = null;
+    public LoggingConfigImpl(File defaultConfigDir, File configDir) {
+        loggingConfigDir = configDir;
+        loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
+        this.defaultLogFile = new File(defaultConfigDir,
+                ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
+    }
+
+    @Override
+    public void initialize(String target) throws IOException {
+        this.target = target;
+    }
 
     /**
-     * Constructor
+     * Load the properties for the target.
      */
-
-    public void postConstruct() {
-        // set logging.properties filename
-        setupConfigDir(env.getConfigDirPath(), env.getLibPath());
-
-    }
-
-    // this is so the launcher can pass in where the dir is since
-
-    public void setupConfigDir(File file, File installDir) {
-        loggingConfigDir = file;
-        loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
-    }
-
-    /*
-      Load the properties  for DAS
-      */
-
     private void loadLoggingProperties() throws IOException {
-        props = new Properties();
+        props.clear();
         File file = getLoggingPropertiesFile();
-        InputStream fis=null;
+        InputStream fis = null;
         try {
             if (!file.exists()) {
                 fis = getDefaultLoggingPropertiesInputStream();
             } else {
-                fis = new FileInputStream(file);            
-            }
-            fis = new BufferedInputStream(fis);
-            props.load(fis);
-        } finally {
-            if (fis != null) {
-                fis.close();
-            }
-        }
-    }
-
-    /*
-      Load the properties  for given target.
-      */
-
-    private void loadLoggingProperties(String target) throws IOException {
-        props = new Properties();
-        File file = getLoggingPropertiesFile(target);
-        InputStream fis=null;
-        try {
-            if (!file.exists()) {
-                fis = getDefaultLoggingPropertiesInputStream();
-            } else {
-                fis = new FileInputStream(file);            
+                fis = new FileInputStream(file);
             }
             fis = new BufferedInputStream(fis);
             props.load(fis);
@@ -159,56 +151,36 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         return new File(loggingConfigDir, loggingPropertiesName);
     }
     
-    private File getLoggingPropertiesFile(String target) {
-        String pathForLoggingFile = loggingConfigDir.getAbsolutePath() + File.separator + target;
-        return new File(pathForLoggingFile, ServerEnvironmentImpl.kLoggingPropertiesFileName);
+    private InputStream getInputStream(File file) throws IOException {
+        InputStream fileInputStream;
+        if (!file.exists()) {
+            fileInputStream = getDefaultLoggingPropertiesInputStream();
+        } else {
+            fileInputStream = new FileInputStream(file);
+        }
+        return fileInputStream;
     }
     
     private FileInputStream getDefaultLoggingPropertiesInputStream() throws IOException {
-        File defaultConfig = new File(env.getConfigDirPath(), 
-                ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
-        return new FileInputStream(defaultConfig);
+        return new FileInputStream(defaultLogFile);
     }
 
-    private void safeCloseStream(OutputStream os) {
-        try {
-            if(os != null)
-                os.close();
+    private void closePropFile() throws IOException {
+        File file = getLoggingPropertiesFile();
+        File parentFile = file.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs()) {
+            throw new IOException();
         }
-        catch (Exception e) {
-            // nothing can be done about it...
-        }
-    }
-    private void safeCloseStream(InputStream is) {
-        try {
-            if (is != null) {
-                is.close();
-            }
-        }
-        catch (Exception e) {
-            // nothing can be done about it...
-        }
-    }
-    
-    private void closePropFile(String targetConfigName) throws IOException {
         OutputStream os = null;
         try {
-            File file;
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                file = getLoggingPropertiesFile();
-            } else {
-                file = getLoggingPropertiesFile(targetConfigName);    
-            } 
-            File parentFile = file.getParentFile();
-            if (!parentFile.exists() && !parentFile.mkdirs()) {
-                throw new IOException();
-            }
             os = new BufferedOutputStream(new FileOutputStream(file));
             props.store(os, "GlassFish logging.properties list");
             os.flush();
             fileMonitoring.fileModified(file);
+        } catch (Exception e) {
+            // nothing can be done about it...
         } finally {
-            safeCloseStream(os);
+            os.close();
         }
     }
 
@@ -220,15 +192,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         props.setProperty("org.apache.jasper.level", value);
     }
 
-    /**
-     * setLoggingProperty() sets an existing propertyName to be propertyValue
-     * if the property doesn't exist the property will be added.  The logManager
-     * readConfiguration is not called in this method.
-     *
-     * @param propertyName  Name of the property to set
-     * @param propertyValue Value to set
-     * @throws IOException
-     */
+    @Override
     public synchronized String setLoggingProperty(String propertyName, String propertyValue) throws IOException {
         loadLoggingProperties();
         // update the property
@@ -243,54 +207,26 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             setWebLoggers(propertyValue);
         }
 
-        closePropFile("");
+        closePropFile();
         return property;
     }
 
-    /**
-     * setLoggingProperty() sets an existing propertyName to be propertyValue
-     * if the property doesn't exist the property will be added.  The logManager
-     * readConfiguration is not called in this method.
-     *
-     * @param propertyName  Name of the property to set
-     * @param propertyValue Value to set
-     * @throws IOException
-     */
-    public synchronized String setLoggingProperty(String propertyName, String propertyValue, String targetConfigName) throws IOException {
-        loadLoggingProperties(targetConfigName);
-        // update the property
-        if (propertyValue == null) return null;
-        // may need to map the domain.xml name to the new name in logging.properties file
-        String key = LoggingXMLNames.xmltoPropsMap.get(propertyName);
-        if (key == null) {
-            key = propertyName;
-        }
-        String property = (String) props.setProperty(key, propertyValue);
-        if (propertyName.contains("javax.enterprise.system.container.web")) {
-            setWebLoggers(propertyValue);
-        }
-
-        closePropFile(targetConfigName);
-        return property;
-    }
-
-    /* update the properties to new values.  properties is a Map of names of properties and
-      * their cooresponding value.  If the property does not exist then it is added to the
-      * logging.properties file.
-      *
-      * @param properties Map of the name and value of property to add or update
-      *
-      * @throws  IOException
-      */
-
-    public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties) throws IOException {
-        Map<String, String> m = new HashMap<String, String>();
+    @Override
+    public synchronized Map<String, String> setLoggingProperties(Map<String, String> properties) throws IOException {
         loadLoggingProperties();
+        checkForLoggingProperties(properties);
         // need to map the name given to the new name in logging.properties file
         String key = null;
+        Map<String, String> m = getMap(properties);
+        closePropFile();
+        return m;
+    }
+
+    private Map<String, String> getMap(Map<String, String> properties) {
+        Map<String, String> m = new HashMap<>();
         for (Map.Entry<String, String> e : properties.entrySet()) {
             if (e.getValue() == null) continue;
-            key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
+            String key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
             if (key == null) {
                 key = e.getKey();
             }
@@ -303,68 +239,12 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             m.put(key, property);
 
         }
-        closePropFile("");
         return m;
     }
 
-    /* update the properties to new values for given target.  properties is a Map of names of properties and
-      * their cooresponding value.  If the property does not exist then it is added to the
-      * logging.properties file.
-      *
-      * @param properties Map of the name and value of property to add or update
-      *
-      * @throws  IOException
-      */
-
-    public synchronized Map<String, String> updateLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException {
-        Map<String, String> m = new HashMap<String, String>();
-        loadLoggingProperties(targetConfigName);
-        // need to map the name given to the new name in logging.properties file
-        String key = null;
-        for (Map.Entry<String, String> e : properties.entrySet()) {
-            if (e.getValue() == null) continue;
-            key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
-            if (key == null) {
-                key = e.getKey();
-            }
-            String property = (String) props.setProperty(key, e.getValue());
-            if (e.getKey().contains("javax.enterprise.system.container.web")) {
-                setWebLoggers(e.getValue());
-            }
-
-            //build Map of entries to return
-            m.put(key, property);
-
-        }
-        closePropFile(targetConfigName);
-        return m;
-    }
-
-    /* Return a Map of all the properties and corresponding values in the logging.properties file for given target.
-      * @throws  IOException
-      */
-
-    public synchronized Map<String, String> getLoggingProperties(String targetConfigName) throws IOException {
-        Map<String, String> m = new HashMap<String, String>();
-        try {
-            loadLoggingProperties(targetConfigName);
-            Enumeration e = props.propertyNames();
-
-            while (e.hasMoreElements()) {
-                String key = (String) e.nextElement();
-                // convert the name in domain.xml to the name in logging.properties if needed
-                if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                    key = LoggingXMLNames.xmltoPropsMap.get(key);
-                }
-
-                //System.out.println("Debug "+key+ " " + props.getProperty(key));
-                m.put(key, props.getProperty(key));
-            }
-            m = checkForLoggingProperties(m, targetConfigName);
-            return m;
-        } catch (IOException ex) {
-            throw ex;
-        }
+    @Override
+    public String getLoggingProperty(String propertyName) throws IOException {
+        return getLoggingProperties().get(propertyName);
     }
 
     /* Return a Map of all the properties and corresponding values in the logging.properties file.
@@ -372,130 +252,44 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public synchronized Map<String, String> getLoggingProperties() throws IOException {
-        Map<String, String> m = new HashMap<String, String>();
-        try {
-            loadLoggingProperties();
-            
-            Enumeration e = props.propertyNames();
-            while (e.hasMoreElements()) {
-                String key = (String) e.nextElement();
-                // convert the name in domain.xml to the name in logging.properties if needed
-                if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                    key = LoggingXMLNames.xmltoPropsMap.get(key);
-                }
-
-                //System.out.println("Debug "+key+ " " + props.getProperty(key));
-                m.put(key, props.getProperty(key));
-            }
-            m = checkForLoggingProperties(m, "");
-            return m;
-        } catch (IOException ex) {
-            throw ex;
-        }
+        loadLoggingProperties();
+        Enumeration<?> e = props.propertyNames();
+        Map<String, String> m = getMap(e);
+        return checkForLoggingProperties(m);
     }
-    
-    public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties, String targetConfigName) throws IOException {
 
-        if (!loggingProperties.containsKey(Constants.GF_HANDLER_LOG_TO_FILE)) {
-            loggingProperties.put(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.GF_HANDLER_LOG_TO_FILE, Constants.GF_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
+    private Map<String, String> getMap(Enumeration<?> e) {
+        Map<String, String> m = new HashMap<>();
+        while (e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            // convert the name in domain.xml to the name in logging.properties if needed
+            if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
+                key = LoggingXMLNames.xmltoPropsMap.get(key);
             }
+            m.put(key, props.getProperty(key));
         }
+        return m;
+    }
 
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_TO_FILE)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_TO_FILE, Constants.PY_HANDLER_LOG_TO_FILE_DEFAULT_VALUE, targetConfigName);
-            }
-        }
+    public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties) throws IOException {
 
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FILE)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_FILE, Constants.PY_HANDLER_LOG_FILE_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_MAXIMUM_FILES)) {
-            loggingProperties.put(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_MAXIMUM_FILES, Constants.PY_HANDLER_MAXIMUM_FILES_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE, Constants.PY_HANDLER_ROTATION_ON_DATE_CHANGE_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE, Constants.PY_HANDLER_ROTATION_ON_FILE_SIZE_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT)) {
-            loggingProperties.put(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT, Constants.PY_HANDLER_ROTATION_ON_TIME_LIMIT_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_COMPRESS_ON_ROTATION)) {
-            loggingProperties.put(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_COMPRESS_ON_ROTATION, Constants.PY_HANDLER_COMPRESS_ON_ROTATION_DEFAULT_VALUE, targetConfigName);
-            }
-        }
-
-        if (!loggingProperties.containsKey(Constants.PY_HANDLER_LOG_FORMATTER)) {
-            loggingProperties.put(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
-            if (targetConfigName == null || targetConfigName.isEmpty()) {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE);
-            } else {
-                setLoggingProperty(Constants.PY_HANDLER_LOG_FORMATTER, Constants.PY_HANDLER_LOG_FORMATTER_DEFAULT_VALUE, targetConfigName);
+        for (Entry<String, String> entry : DEFAULT_LOG_PROPERTIES.entrySet()) {
+            if (!loggingProperties.containsKey(entry.getKey())) {
+                loggingProperties.put(entry.getKey(), entry.getValue());
+                setLoggingProperty(entry.getKey(), entry.getValue());
             }
         }
            
         return loggingProperties;
     }
-    
-    /* delete the properties from logging.properties file.  properties is a Map of names of properties and
-      * their cooresponding value.
-      *
-      * @param properties Map of the name and value of property to delete
-      *
-      * @throws  IOException
-      */
 
-    public synchronized void deleteLoggingProperties(Map<String, String> properties) throws IOException {
+    @Override
+    public synchronized Map<String, String> deleteLoggingProperties(Map<String, String> properties) throws IOException {
         loadLoggingProperties();
 
         // need to map the name given to the new name in logging.properties file
-        String key = null;
         for (Map.Entry<String, String> e : properties.entrySet()) {
-            key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
+            String key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
             if (key == null) {
                 key = e.getKey();
             }
@@ -507,37 +301,9 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             props.remove(key);
         }
 
-        closePropFile("");
-    }
-
-    /* delete the properties from logging.properties file for given target.  properties is a Map of names of properties and
-      * their cooresponding value.
-      *
-      * @param properties Map of the name and value of property to delete
-      *
-      * @throws  IOException
-      */
-
-    public synchronized void deleteLoggingProperties(Map<String, 
-            String> properties, String targetConfigName) throws IOException {
-        loadLoggingProperties(targetConfigName);
-
-        // need to map the name given to the new name in logging.properties file
-        String key = null;
-        for (Map.Entry<String, String> e : properties.entrySet()) {
-            key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
-            if (key == null) {
-                key = e.getKey();
-            }
-            
-            if (key.contains("\\:")) {
-                key = key.replace("\\:", ":");
-            }
-            
-            props.remove(key);
-        }
-
-        closePropFile(targetConfigName);
+        closePropFile();
+        checkForLoggingProperties(getLoggingProperties());
+        return properties;
     }
 
     /*
@@ -610,9 +376,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
-        }
-        finally {
-            safeCloseStream(zout);
+        } finally {
+            zout.close();
         }
         return zipFile;
     }
@@ -647,9 +412,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
-        }
-        finally {
-            safeCloseStream(zout);
+        } finally {
+            zout.close();
         }
         return zipFile;
     }
@@ -712,9 +476,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             } catch (IOException ioe) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
                 throw ioe;
-            }
-            finally {
-                safeCloseStream(fin);
+            } finally {
+                fin.close();
             }
         }
     }
@@ -743,64 +506,5 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             throw ex;
         }
         return null;
-    }
-
-    /* Return a logging file details  in the logging.properties file for given target.
-      * @throws  IOException
-      */
-
-    public synchronized String getLoggingFileDetails(String targetConfigName) throws IOException {
-        try {
-            loadLoggingProperties(targetConfigName);
-            Enumeration e = props.propertyNames();
-
-            while (e.hasMoreElements()) {
-                String key = (String) e.nextElement();
-                // convert the name in domain.xml to the name in logging.properties if needed
-                if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                    key = LoggingXMLNames.xmltoPropsMap.get(key);
-                }
-
-                if (key != null && key.equals("com.sun.enterprise.server.logging.GFFileHandler.file")) {
-                    return props.getProperty(key);
-                }
-
-            }
-        } catch (IOException ex) {
-            throw ex;
-        }
-        return null;
-    }
-
-    /* Return a Map of all the properties and corresponding values from the logging.properties file from template..
-      * @throws  IOException
-      */
-
-    public Map<String, String> getDefaultLoggingProperties() throws IOException {
-        FileInputStream fisForLoggingTemplate = null;
-        Properties propsLoggingTempleate = new Properties();
-        Map<String, String> m = new HashMap<String, String>();
-        try {
-            File loggingTemplateFile = new File(env.getConfigDirPath(), 
-                    ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
-            fisForLoggingTemplate = new java.io.FileInputStream(loggingTemplateFile);
-            propsLoggingTempleate.load(fisForLoggingTemplate);
-        }
-        finally {
-            safeCloseStream(fisForLoggingTemplate);
-        }
-
-        Enumeration e = propsLoggingTempleate.propertyNames();
-
-        while (e.hasMoreElements()) {
-            String key = (String) e.nextElement();
-            // convert the name in domain.xml to the name in logging.properties if needed
-            if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
-                key = LoggingXMLNames.xmltoPropsMap.get(key);
-            }
-            m.put(key, propsLoggingTempleate.getProperty(key));
-        }
-        m = checkForLoggingProperties(m, "");
-        return m;
     }
 }

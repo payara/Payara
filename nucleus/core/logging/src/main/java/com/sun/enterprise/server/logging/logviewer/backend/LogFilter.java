@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -65,7 +67,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -111,7 +113,7 @@ public class LogFilter {
     private ServiceLocator habitat;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    LoggingConfigFactory loggingConfigFactory;
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
@@ -162,7 +164,7 @@ public class LogFilter {
         String logFileDetailsForServer = "";
 
         try {
-            logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+            logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
         } catch (Exception ex) {
@@ -233,7 +235,7 @@ public class LogFilter {
 
             try {
                 // getting log file attribute value from logging.properties file
-                logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+                logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
                 logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
                 logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             } catch (Exception ex) {
@@ -279,7 +281,7 @@ public class LogFilter {
             targetConfigName = targetServer.getConfigRef();
         }
 
-        logFileDetailsForServer = loggingConfig.getLoggingFileDetails(targetConfigName);
+        logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
 
         return logFileDetailsForServer;
 
@@ -294,7 +296,7 @@ public class LogFilter {
 
         if (targetServer.isDas()) {
             // getting log file for DAS from logging.properties and returning the same
-            String logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+            String logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             return logFileDetailsForServer;

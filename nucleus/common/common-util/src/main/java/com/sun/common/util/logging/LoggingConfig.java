@@ -38,76 +38,86 @@
  * holder.
  */
 
-package com.sun.common.util.logging;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
-import org.jvnet.hk2.annotations.Contract;
+package com.sun.common.util.logging;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
- * Interface for Logging Commands
+ * Handles I/O for a logging file.
  *
  * @author Naman Mehta
  */
-
-
 @Contract
 public interface LoggingConfig {
 
-    /* set propertyName to be propertyValue.  The logManager
-        *  readConfiguration is not called in this method.
-        */
+    /**
+     * Initializes the configuration for a given target.
+     * @param target the target to fetch the logs from.
+     * @throws IOException if an error occurred while reading from the managed file.
+     */
+    void initialize(String target) throws IOException;
 
-    String setLoggingProperty(String propertyName, String propertyValue) throws IOException;
+    /**
+     * Gets a given property from the managed file.
+     * 
+     * @param propertyName the name of the property to get.
+     * @return the value of the property, or null if it doesn't exist.
+     * @throws IOException if an error occurred while reading from the managed file.
+     */
+    String getLoggingProperty(String propertyName) throws IOException;
 
-    /* set propertyName to be propertyValue.  The logManager
-	*  readConfiguration is not called in this method.
-	*/
-
-    String setLoggingProperty(String propertyName, String propertyValue, String targetServer) throws IOException;
-
-    /* update the properties to new values.  properties is a Map of names of properties and
-       * their cooresponding value.  If the property does not exist then it is added to the
-       * logging.properties file.
-       *
-       * The readConfiguration method is called on the logManager after updating the properties.
-      */
-
-    Map<String, String> updateLoggingProperties(Map<String, String> properties) throws IOException;
-
-    /* update the properties to new values for given target server..  properties is a Map of names of properties and
-	 * their cooresponding value.  If the property does not exist then it is added to the
-	 * logging.properties file.
-	 *
-	 * The readConfiguration method is called on the logManager after updating the properties.
-	*/
-
-    Map<String, String> updateLoggingProperties(Map<String, String> properties, String targetServer) throws IOException;
-
-    /* get the properties and corresponding values in the logging.properties file for given target server..
-        */
-
-    Map<String, String> getLoggingProperties(String targetServer) throws IOException;
-
-    /* get the properties and corresponding values in the logging.properties file.
-	*/
-
+    /**
+     * Get all properties from the managed file.
+     * 
+     * @return all properties contained within the managed file.
+     * @throws IOException if an error occurred while reading from the managed file.
+     */
     Map<String, String> getLoggingProperties() throws IOException;
 
-    /* creates zip file for given sourceDirectory
-        */
+    /**
+     * Sets the given property within the managed file.
+     * 
+     * @param propertyName  the name of the property to set.
+     * @param propertyValue the value of the property to set.
+     * @return the property value in the file.
+     * @throws IOException if an error occurred while writing to the managed file.
+     */
+    String setLoggingProperty(String propertyName, String propertyValue) throws IOException;
 
+    /**
+     * Sets all properties within the managed file.
+     * 
+     * @return all properties to set within the managed file.
+     * @throws IOException if an error occurred while writing to the managed file.
+     */
+    Map<String, String> setLoggingProperties(Map<String, String> props) throws IOException;
+
+    /**
+     * Deletes all properties from the provided list.
+     * 
+     * @param props all properties to delete within the managed file.
+     * @return the list of deleted properties.
+     * @throws IOException if an error occurred while writing to the managed file.
+     */
+    Map<String, String> deleteLoggingProperties(Map<String, String> props) throws IOException;
+
+    /**
+     * @return the file for the GFHandler to log to.
+     * @throws IOException if an error occurred while reading from the managed file.
+     */
+    String getLoggingFileDetails() throws IOException;
+
+    /**
+     * Creates a ZIP file from a given directory.
+     * 
+     * @param sourceDir the directory to ZIP.
+     * @throws IOException if an error occurred while creating the ZIP.
+     */
     String createZipFile(String sourceDir) throws IOException;
-
-    /* delete the properties from logging.properties file for given target.
-      */
-
-    public void deleteLoggingProperties(Map<String, String> properties, String targetConfigName) throws IOException;
-
-    /* delete the properties from logging.properties file. 
-      */
-
-    public void deleteLoggingProperties(Map<String, String> properties) throws IOException;
 
 }

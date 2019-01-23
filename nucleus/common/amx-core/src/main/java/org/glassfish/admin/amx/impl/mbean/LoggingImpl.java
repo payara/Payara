@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.amx.impl.mbean;
 
@@ -117,8 +117,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         mLevelToNotificationTypeMap = initLevelToNotificationTypeMap();
         mNotificationTypeToNotificationBuilderMap = new HashMap<String, NotificationBuilder>();
         final ServerEnvironmentImpl env = InjectedValues.getInstance().getServerEnvironment();
-        loggingConfig = new LoggingConfigImpl();
-        loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
+        loggingConfig = new LoggingConfigImpl(env.getConfigDirPath(), env.getLibPath());
         msgIdCatalog = new MessageIdCatalog();
         mHabitat = InjectedValues.getInstance().getHabitat();
         gfFileHandler = mHabitat.getService(GFFileHandler.class);
@@ -217,7 +216,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public void updateLoggingProperties(final Map<String, String> properties) {
         try {
-            loggingConfig.updateLoggingProperties(properties);
+            loggingConfig.setLoggingProperties(properties);
         } catch (java.io.IOException e) {
             logger.log(Level.WARNING, "Can not get module log level");
         }
@@ -272,7 +271,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public void updateLoggingAttributes(final Map<String, String> properties) {
         try {
-            loggingConfig.updateLoggingProperties(properties);
+            loggingConfig.setLoggingProperties(properties);
         } catch (java.io.IOException e) {
             logger.log(Level.WARNING, "Can not set logging attributes");
         }
