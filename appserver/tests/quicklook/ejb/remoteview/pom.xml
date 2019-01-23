@@ -87,6 +87,11 @@
                         <version>5.6</version>
                         <classifier>jdk15</classifier>
                     </dependency>
+					<dependency>
+						<groupId>org.glassfish.main.appclient</groupId>
+						<artifactId>gf-client</artifactId>
+						<version>${project.version}</version>
+					</dependency>
                 </dependencies>
             </plugin>
         </plugins>
