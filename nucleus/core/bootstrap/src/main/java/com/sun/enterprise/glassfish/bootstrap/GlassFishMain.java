@@ -43,7 +43,6 @@
 package com.sun.enterprise.glassfish.bootstrap;
 
 import org.glassfish.embeddable.*;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -51,15 +50,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
 import fish.payara.boot.runtime.BootCommands;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM

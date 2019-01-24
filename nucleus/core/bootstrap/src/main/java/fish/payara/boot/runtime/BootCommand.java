@@ -39,8 +39,6 @@
  */
 package fish.payara.boot.runtime;
 
-import com.hazelcast.logging.Logger;
-import java.util.logging.Level;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandResult.ExitStatus;
 import org.glassfish.embeddable.CommandRunner;
