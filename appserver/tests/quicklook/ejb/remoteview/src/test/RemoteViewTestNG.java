@@ -123,13 +123,6 @@ public class RemoteViewTestNG {
     }
     
     private static Properties jndiProperties() {
-        Properties jndiProps = new Properties();
-        jndiProps.put("java.naming.factory.initial", "com.sun.enterprise.naming.impl.SerialInitContextFactory");
-        jndiProps.put("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
-        jndiProps.put("java.naming.factory.state", "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
-        jndiProps.put("java.naming.provider.url", "iiop://localhost:3700");
-        jndiProps.setProperty("org.omg.CORBA.ORBInitialHost", "127.0.0.1");
-        jndiProps.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
-        return jndiProps;
+        return null;
     }
 }
