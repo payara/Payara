@@ -89,7 +89,11 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         return sessionHzKey.updateAndGet(v -> v != null ? v : makeSessionHzKey());
     }
 
-    protected final void update() {
+    /**
+     * {@link #getSessionHzKey()} and {@link #getLockKey()} are dependent on {@link #getClusteredSessionKey()} so should
+     * its value change cache keys need to be invalidated using this method.
+     */
+    protected final void invalidateKeys() {
         sessionHzKey.set(null);
         lockKey.set(null);
     }

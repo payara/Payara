@@ -123,8 +123,6 @@ public class RemoteViewTestNG {
     }
     
     private static Properties jndiProperties() {
-        if (true)
-            return null;
         Properties jndiProps = new Properties();
         jndiProps.put("java.naming.factory.initial", "com.sun.enterprise.naming.impl.SerialInitContextFactory");
         jndiProps.put("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
