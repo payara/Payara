@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@ package fish.payara.appserver.context;
 
 import com.sun.enterprise.util.Utility;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -53,7 +52,7 @@ import org.jboss.weld.context.bound.BoundRequestContext;
  * @author lprimak
  */
 class ContextImpl {
-    @RequiredArgsConstructor
+
     public static class Context implements JavaEEContextUtil.Context {
         @Override
         public void close() {
@@ -66,12 +65,23 @@ class ContextImpl {
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
         private final ClassLoader oldClassLoader;
+
+        public Context(ComponentInvocation invocation, InvocationManager invMgr, ClassLoader oldClassLoader) {
+            this.invocation = invocation;
+            this.invMgr = invMgr;
+            this.oldClassLoader = oldClassLoader;
+        }
     }
 
-    @RequiredArgsConstructor
     public static class ClassLoaderContext implements JavaEEContextUtil.Context {
+
         private final ClassLoader oldClassLoader;
         private final boolean resetOldClassLoader;
+
+        public ClassLoaderContext(ClassLoader oldClassLoader, boolean resetOldClassLoader) {
+            this.oldClassLoader = oldClassLoader;
+            this.resetOldClassLoader = resetOldClassLoader;
+        }
 
         @Override
         public void close() {
@@ -81,7 +91,6 @@ class ContextImpl {
         }
     }
 
-    @RequiredArgsConstructor
     public static class RequestContext implements JavaEEContextUtil.Context {
         @Override
         public void close() {
@@ -95,5 +104,12 @@ class ContextImpl {
         private final JavaEEContextUtil.Context rootCtx;
         final BoundRequestContext ctx;
         final Map<String, Object> storage;
+
+        public RequestContext(org.glassfish.internal.api.JavaEEContextUtil.Context rootCtx, BoundRequestContext ctx,
+                Map<String, Object> storage) {
+            this.rootCtx = rootCtx;
+            this.ctx = ctx;
+            this.storage = storage;
+        }
     }
 }
