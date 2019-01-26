@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -189,14 +189,16 @@ public class TranslatedConfigView implements ConfigView {
     
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
-        domainPasswordAliasStore = AccessController.doPrivileged(
-                new PrivilegedAction<DomainScopedPasswordAliasStore>() {
-                    @Override
-                    public DomainScopedPasswordAliasStore run() {
-                        return habitat.getService(DomainScopedPasswordAliasStore.class);
+        if (habitat != null) {
+            domainPasswordAliasStore = AccessController.doPrivileged(
+                    new PrivilegedAction<DomainScopedPasswordAliasStore>() {
+                        @Override
+                        public DomainScopedPasswordAliasStore run() {
+                            return habitat.getService(DomainScopedPasswordAliasStore.class);
+                        }
                     }
-                }
-        );
+            );
+        }
         return domainPasswordAliasStore;
     }
     

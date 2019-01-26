@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.boot.runtime;
+package fish.payara.boot.runtime;
 
-import com.hazelcast.logging.Logger;
-import java.util.logging.Level;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandResult.ExitStatus;
 import org.glassfish.embeddable.CommandRunner;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 
 /**
  * Simple class for holding an asadmin command representation for using during
@@ -55,6 +56,8 @@ public class BootCommand {
     private final String command;
     private final String[] arguments;
 
+    private static final Logger LOGGER = Logger.getLogger(BootCommand.class.getName());
+
     public BootCommand(String command, String ... arguments) {
         this.command = command;
         this.arguments = arguments;
@@ -64,8 +67,10 @@ public class BootCommand {
         boolean result = true;
         CommandResult asadminResult = runner.run(command, arguments);
         if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
-            Logger.getLogger(BootCommand.class).log(Level.WARNING, "Boot Command " + command + " failed " + asadminResult.getOutput());
+            LOGGER.log(WARNING, String.format("Boot Command %s failed %s ", command, asadminResult.getOutput()));
             result = false;
+        } else {
+            LOGGER.log(INFO, String.format("Boot Command %s returned with result %s : %s", command, asadminResult.getExitStatus(), asadminResult.getOutput()));
         }
         return result;
     }
