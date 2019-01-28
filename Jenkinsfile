@@ -32,7 +32,7 @@ pipeline {
                 -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                 -Dsurefire.rerunFailingTestsCount=2
                 -Dsonar.pullrequest.base=master
-                -Dsonar.pullrequest.branch=${env.ghprbAuthorRepoGitUrl}
+                -Dsonar.pullrequest.branch=${env.ghprbPullAuthorLogin}/${env.ghprbSourceBranch}
                 -Dsonar.pullrequest.key=${env.ghprbPullId}
                 -Dsonar.pullrequest.provider=GitHub
                 -Dsonar.pullrequest.github.repository=payara/payara
