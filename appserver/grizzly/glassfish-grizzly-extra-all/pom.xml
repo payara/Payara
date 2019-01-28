@@ -42,15 +42,15 @@
 -->
 <!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.grizzly</groupId>
         <artifactId>glassfish-grizzly</artifactId>
         <version>5.191-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>glassfish-grizzly-extra-all</artifactId>
+    
     <name>Glassfish Grizzly extra jars Combining</name>
     <description>combining of all glassfish grizzly extra jars</description>
 
@@ -164,8 +164,8 @@
            <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
 	    <scope>provided</scope>
         </dependency>
     </dependencies>

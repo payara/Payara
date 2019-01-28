@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2016 Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -301,7 +301,7 @@
         /lib/
         \lib\
         javax.el.jar
-        javax.servlet-api.jar
+        jakarta.servlet-api.jar
         javax.servlet.jsp-api.jar
         javax.servlet.jsp.jstl-api.jar
         javax.servlet.jsp.jstl.jar

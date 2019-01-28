@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.registration.glassfish;
 
@@ -107,7 +107,7 @@ public class ModuleMap {
                 put("jackson-mapper-asl", 48);
                 put("jackson-xc", 49);
                 put("javax.persistence", 50);
-                put("javax.servlet-api", 51);
+                put("jakarta.servlet-api", 51);
                 put("javax.xml.jaxrpc-api-osgi", 52);
                 put("jaxb-api", 53);
                 put("org.glassfish.external.management-api", 54);

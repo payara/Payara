@@ -250,7 +250,7 @@
         <javaee.api.version>8.0</javaee.api.version>
 
         <!-- Servlet -->
-        <servlet-api.version>4.0.0</servlet-api.version>
+        <servlet-api.version>4.0.2</servlet-api.version>
         <grizzly.version>2.4.3.payara-p6</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
@@ -946,8 +946,8 @@ Parent is ${project.parent}</echo>
 
             <!-- Servlet -->
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
                 <version>${servlet-api.version}</version>
             </dependency>
             <dependency>

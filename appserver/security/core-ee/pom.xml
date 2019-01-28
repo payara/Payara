@@ -43,18 +43,18 @@
 
 <!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
         <version>5.191-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
+    
     <artifactId>security-ee</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>Java EE Security Core Classes</name>
+    
     <developers>
         <developer>
             <id>kumarjayanti</id>
@@ -87,13 +87,13 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.1</include>
@@ -105,37 +105,38 @@
                     <include>**/admin-keyfile</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/keyfile</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.jks</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/secure.seed</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/server.policy</include>
                 </includes>
             </resource>
-             <resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/login.conf</include>
                 </includes>
             </resource>
         </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -149,43 +150,79 @@
                 </configuration>
             </plugin>
             <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-dependency-plugin</artifactId>
-           <executions>
-             <execution>
-               <id>copy-installed</id>
-               <phase>process-classes</phase>
-               <goals>
-                 <goal>copy</goal>
-               </goals>
-               <configuration>
-                 <artifactItems>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolsparcauth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                   <artifactItem>
-                     <groupId>solarisrealm</groupId>
-                     <artifactId>libsolx86auth</artifactId>
-                     <version>1.0</version>
-                     <type>so</type>
-                   </artifactItem>
-                 </artifactItems>
-                 <stripVersion>
-                    true
-                 </stripVersion>
-                 <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
-                 <outputDirectory>target/classes</outputDirectory>
-               </configuration>
-             </execution>    
-           </executions>
-         </plugin> 
-        </plugins> 
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-installed</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolsparcauth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>solarisrealm</groupId>
+                                    <artifactId>libsolx86auth</artifactId>
+                                    <version>1.0</version>
+                                    <type>so</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <stripVersion>
+                                true
+                            </stripVersion>
+                            <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory> -->
+                            <outputDirectory>target/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
-    
+
     <dependencies>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.security.jacc</groupId>
+            <artifactId>javax.security.jacc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>security</artifactId>
@@ -195,10 +232,6 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-ee-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
@@ -226,19 +259,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.api</groupId>
-            <artifactId>payara-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.security.auth.message</groupId>
-            <artifactId>jakarta.security.auth.message-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.security.jacc</groupId>
-            <artifactId>javax.security.jacc-api</artifactId>
-        </dependency>
-         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>jaspic.provider.framework</artifactId>
             <version>${project.version}</version>
@@ -249,18 +269,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <!-- Don't set scope as provided. See issue #5992 -->
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.ejb</groupId>
-            <artifactId>javax.ejb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
@@ -271,14 +282,6 @@
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-        </dependency>
-        <dependency>
-    	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.external</groupId>

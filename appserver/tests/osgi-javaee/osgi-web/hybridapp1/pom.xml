@@ -40,15 +40,17 @@
     holder.
 
 -->
-<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]" -->
 
-<project>
-    <modelVersion>4.0.0</modelVersion>
+<project> <modelVersion>4.0.0</modelVersion>
+    
     <groupId>sahoo</groupId>
     <artifactId>hybridapp.example1</artifactId>
     <version>1.0-SNAPSHOT</version>
+    
     <name>Our first hybrid (OSGi + Java EE) application</name>
     <packaging>war</packaging>
+    
     <build>
         <finalName>hybridapp1</finalName>
         <plugins>
@@ -109,10 +111,11 @@
             </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
