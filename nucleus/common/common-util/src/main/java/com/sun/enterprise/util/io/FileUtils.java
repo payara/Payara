@@ -1151,25 +1151,17 @@ public class FileUtils  {
 
     public static String readSmallFile(final File file)
             throws IOException {
-        final BufferedReader bf = new BufferedReader(new FileReader(file));
-        final StringBuilder sb = new StringBuilder(); //preferred over StringBuilder, no need to synchronize
-        String line = null;
-        try {
+        final StringBuilder sb = new StringBuilder();
+        try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
             while ( (line = bf.readLine()) != null ) {
                 sb.append(line);
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
+        } catch (Exception e) {
+            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
-        finally {
-            try {
-                bf.close();
-            }
-            catch (Exception e) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);}
-            finally{
-            	 bf.close();
-            }
-        }
-        return ( sb.toString() );
+        return sb.toString();
     }
 
     /**
