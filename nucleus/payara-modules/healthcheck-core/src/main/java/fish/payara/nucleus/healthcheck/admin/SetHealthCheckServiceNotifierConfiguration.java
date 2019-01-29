@@ -39,7 +39,9 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import java.beans.PropertyVetoException;
-import java.util.EnumMap;
+import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +78,9 @@ import fish.payara.nucleus.notification.configuration.EventbusNotifier;
 import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.JmsNotifier;
 import fish.payara.nucleus.notification.configuration.NewRelicNotifier;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.configuration.SlackNotifier;
@@ -84,6 +88,19 @@ import fish.payara.nucleus.notification.configuration.SnmpNotifier;
 import fish.payara.nucleus.notification.configuration.XmppNotifier;
 import fish.payara.nucleus.notification.log.LogNotifier;
 
+/**
+ * Admin command to set enabled and noisy flags for a specific {@link Notifier} configuration as part of the
+ * {@link HealthCheckServiceConfiguration}.
+ * 
+ * This should not be confused with the {@link NotifierConfiguration} itself for that specific {@link Notifier} that
+ * exists as part of {@link NotificationServiceConfiguration}.
+ * 
+ * When {@link #noisy} parameter is not specified the according {@link NotifierConfiguration} is loaded from the
+ * {@link NotificationServiceConfiguration} to use its {@link NotifierConfiguration#getNoisy()} as automatic fallback
+ * setting.
+ *
+ * @author jan
+ */
 @Service(name = "set-healthcheck-service-notifier-configuration")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -92,32 +109,18 @@ import fish.payara.nucleus.notification.log.LogNotifier;
         @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "set-healthcheck-service-notifier-configuration",
-                description = "Sets Configuration for targetd Notifier of the HealthCheck Service")
+                description = "Sets the Configuration for specific Notifier for the HealthCheck Service")
 })
 public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand {
 
-    private static final EnumMap<NotifierType, Class<? extends Notifier>> NOTFIER_CLASS_BY_TYPE = new EnumMap<>(NotifierType.class);
-
-    static {
-        mapType(CDIEventbusNotifier.class);
-        mapType(DatadogNotifier.class);
-        mapType(EmailNotifier.class);
-        mapType(EventbusNotifier.class);
-        mapType(HipchatNotifier.class);
-        mapType(JmsNotifier.class);
-        mapType(LogNotifier.class);
-        mapType(NewRelicNotifier.class);
-        mapType(SlackNotifier.class);
-        mapType(SnmpNotifier.class);
-        mapType(XmppNotifier.class);
-    }
-
-    private static void mapType(Class<? extends Notifier> type) {
-        NotifierConfigurationType config = type.getAnnotation(NotifierConfigurationType.class);
-        if (config != null) {
-            NOTFIER_CLASS_BY_TYPE.put(config.type(), type);
-        }
-    }
+    /**
+     * A list of all "known" {@link Notifier}s, needed to be able to create new child nodes of this type based on the
+     * {@link NotifierType} which is annotated on each of the interfaces.
+     */
+    private static final List<Class<? extends Notifier>> NOTIFIER_TYPES = Arrays.asList(CDIEventbusNotifier.class,
+            DatadogNotifier.class, EmailNotifier.class, EventbusNotifier.class, HipchatNotifier.class,
+            JmsNotifier.class, NewRelicNotifier.class, SlackNotifier.class, SnmpNotifier.class, XmppNotifier.class,
+            LogNotifier.class);
 
     @Inject
     private Target targetUtil;
@@ -136,67 +139,88 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target;
+    private Config targetConfig;
 
     @Param(name = "enabled")
-    private Boolean enabled;
+    private boolean enabled;
 
     @Param(name = "noisy", optional = true)
     private Boolean noisy;
 
-    @Param(name = "notifier", optional = true)
-    private String notifierType;
+    @Param(name = "notifier", acceptableValues= "log,hipchat,slack,jms,email,xmpp,snmp,eventbus,newrelic,datadog,cdieventbus")
+    private String notifierName;
+    private NotifierType notifierType;
 
-    private ActionReport actionReport;
+    private ActionReport report;
 
     @Override
     public void execute(AdminCommandContext context) {
-        actionReport = context.getActionReport();
-        Properties extraProperties = actionReport.getExtraProperties();
+        report = context.getActionReport();
+        Properties extraProperties = report.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
+            report.setExtraProperties(extraProperties);
         }
+        notifierType = NotifierType.valueOf(notifierName.toUpperCase());
+        targetConfig = targetUtil.getConfig(target);
 
-        Config configuration = targetUtil.getConfig(target);
-        final HealthCheckServiceConfiguration config = configuration.getExtensionByType(HealthCheckServiceConfiguration.class);
-        Class<? extends Notifier> notifierClass = NOTFIER_CLASS_BY_TYPE.get(NotifierType.valueOf(notifierType.toUpperCase()));
-
-        Notifier notifier = config.getNotifierByType(notifierClass);
-
+        final HealthCheckServiceConfiguration config = targetConfig.getExtensionByType(HealthCheckServiceConfiguration.class);
+        final Notifier notifier = selectByType(Notifier.class, config.getNotifierList());
         try {
             if (notifier == null) {
                 ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) proxy -> {
-                  Notifier newNotifier = proxy.createChild(notifierClass);
-                  proxy.getNotifierList().add(newNotifier);
-                  applyValues(newNotifier);
-                  return proxy;
-               }, config);
-            }
-            else {
+                    Notifier newNotifier = proxy.createChild(selectByType(Class.class, NOTIFIER_TYPES));
+                    proxy.getNotifierList().add(newNotifier);
+                    applyValues(newNotifier);
+                    return proxy;
+                }, config);
+            } else {
                 ConfigSupport.apply(proxy -> {
                     applyValues(proxy);
                     return proxy;
                 }, notifier);
             }
-
             if (dynamic && (!server.isDas() || targetUtil.getConfig(target).isDas())) {
                 healthCheckService.reboot();
             }
-        }
-        catch(TransactionFailure ex){
+        } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
-            actionReport.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
 
     private void applyValues(Notifier notifier) throws PropertyVetoException {
-        if(this.enabled != null) {
-            notifier.enabled(enabled);
+        notifier.enabled(enabled);
+        if (this.noisy == null) {
+            // inherit setting from the notifier's configuration
+            NotifierConfiguration config = selectByType(NotifierConfiguration.class, targetConfig
+                    .getExtensionByType(NotificationServiceConfiguration.class).getNotifierConfigurationList());
+            if (config != null) {
+                noisy = "true".equalsIgnoreCase("" + config.getNoisy());
+            }
         }
-        if (this.noisy != null) {
+        if (noisy != null) {
             notifier.noisy(noisy);
         }
-        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+
+    private <T> T selectByType(Class<? super T> commonInterface, List<T> candidates) {
+        for (T e : candidates) {
+            Class<?> annotatedType = e instanceof Class ? (Class<?>) e : e.getClass();
+            if (Proxy.isProxyClass(annotatedType)) {
+                for (Class<?> i : annotatedType.getInterfaces()) {
+                    if (commonInterface.isAssignableFrom(i)) {
+                        annotatedType = i;
+                    }
+                }
+            }
+            NotifierConfigurationType t = annotatedType.getAnnotation(NotifierConfigurationType.class);
+            if (t != null && t.type() == notifierType) {
+                return e;
+            }
+        }
+        return null;
     }
 }
