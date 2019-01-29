@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -296,6 +296,11 @@ public class JCDIServiceImpl implements JCDIService {
         }
 
         //If not found in any BDA's subclasses, return topLevel BDA
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE,
+                    CDILoggerInfo.BDA_NOT_CONTAINS_BEAN_CLASS_NAME,
+                    new Object[]{topLevelBDA.getId(), beanClassName});
+        }
         return topLevelBDA;
     }
 
