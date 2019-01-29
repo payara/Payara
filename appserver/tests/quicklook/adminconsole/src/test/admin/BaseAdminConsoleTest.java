@@ -129,6 +129,11 @@ public class BaseAdminConsoleTest {
 
             formFound = getUrlAndTestForStrings(adminUrl + "login.jsf","id=\"Login.username\"");
             if (!formFound) {
+                
+                if (iteration > AC_TEST_ITERATIONS / 2) {
+                    System.err.println(getUrl(adminUrl + "login.jsf"));
+                }
+                
                 System.err.println("***** Login page not found.  Sleeping to allow app to deploy (" +
                         iteration + " of " + AC_TEST_ITERATIONS + ")...");
                 Thread.sleep(AC_TEST_DELAY);
