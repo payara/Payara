@@ -290,7 +290,7 @@
 
         <!-- Other -->
 
-        <hk2.version>2.5.0-b61.payara-p1</hk2.version>
+        <hk2.version>2.5.0</hk2.version>
         <hk2.plugin.version>2.5.0-b61.payara-p2</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
@@ -1356,11 +1356,6 @@ Parent is ${project.parent}</echo>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
                 <version>1.13</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>asm-repackaged</artifactId>
-                <version>${hk2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
