@@ -68,7 +68,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
  * Create Custom Resource
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean=Resources.class,
                 opType=RestEndpoint.OpType.POST,
