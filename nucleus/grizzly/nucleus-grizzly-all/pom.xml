@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2017] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
@@ -92,31 +92,21 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-
-                <configuration>
-                    <instructions>
-                        <Export-Package>
-                            org.glassfish.grizzly.config.*;version=${project.version},
-                            org.glassfish.grizzly.*;version=${grizzly.version},
-                            maskedclasses.*;version=${grizzly.version}
-                        </Export-Package>
-                        <Import-Package>*</Import-Package>
-                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
-                        <DynamicImport-Package>*</DynamicImport-Package>
-                    </instructions>
-                    
-                    <supportedProjectTypes>
-                        <supportedProjectType>jar</supportedProjectType>
-                    </supportedProjectTypes>
-                    
-                    <unpackBundle>true</unpackBundle>
-                </configuration>
                 <executions>
                     <execution>
                         <id>bundle</id>
                         <goals>
                             <goal>bundle</goal>
                         </goals>
+                        <configuration>
+                            <instructions>
+                                <Import-Package>*</Import-Package>
+                                <DynamicImport-Package>*</DynamicImport-Package>
+                                <Export-Package>org.glassfish.grizzly.*</Export-Package>
+                                <Private-Package>org.glassfish.grizzly.*</Private-Package>
+                                <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                            </instructions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

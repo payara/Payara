@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -145,7 +146,7 @@ this or the downstream JARs and so attempts to find things fail.
                                 <packageName>org.glassfish.appclient.client.acc</packageName>
                                 <addClasspath>true</addClasspath>
                                 <classpathLayoutType>custom</classpathLayoutType>
-                                <customClasspathLayout>../modules/$${artifact.artifactId}$${dashClassifier?}.$${artifact.extension}</customClasspathLayout>
+                                <customClasspathLayout>../modules/${artifact.artifactId}${dashClassifier?}.${artifact.extension}</customClasspathLayout>
                             </manifest>
                             <manifestEntries>
                                 <PreMain-Class>org.glassfish.appclient.client.acc.agent.AppClientContainerAgent</PreMain-Class>
