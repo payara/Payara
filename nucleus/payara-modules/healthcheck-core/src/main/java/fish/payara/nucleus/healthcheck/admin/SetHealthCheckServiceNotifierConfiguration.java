@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -147,7 +148,7 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
     @Param(name = "noisy", optional = true)
     private Boolean noisy;
 
-    @Param(name = "notifier", acceptableValues= "log,hipchat,slack,jms,email,xmpp,snmp,eventbus,newrelic,datadog,cdieventbus")
+    @Param(name = "notifier")
     private String notifierName;
     private NotifierType notifierType;
 
@@ -161,7 +162,15 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
             extraProperties = new Properties();
             report.setExtraProperties(extraProperties);
         }
-        notifierType = NotifierType.valueOf(notifierName.toUpperCase());
+        try {
+            notifierType = NotifierType.valueOf(notifierName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            String values = Arrays.asList(NotifierType.values())
+                    .stream().map(t -> t.name().toLowerCase()).collect(Collectors.joining(","));
+            report.setMessage("Unknown notifier `" + notifierName + "`. Known are: " + values);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
         targetConfig = targetUtil.getConfig(target);
 
         final HealthCheckServiceConfiguration config = targetConfig.getExtensionByType(HealthCheckServiceConfiguration.class);
@@ -191,7 +200,10 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
     }
 
     private void applyValues(Notifier notifier) throws PropertyVetoException {
-        notifier.enabled(enabled);
+        if (Boolean.parseBoolean(notifier.getEnabled()) != enabled) {
+            report.appendMessage(notifierName + ".enabled was " + notifier.getEnabled() + " set to " + enabled + "\n");
+            notifier.enabled(enabled);
+        }
         if (this.noisy == null) {
             // inherit setting from the notifier's configuration
             NotifierConfiguration config = selectByType(NotifierConfiguration.class, targetConfig
@@ -200,7 +212,8 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
                 noisy = "true".equalsIgnoreCase("" + config.getNoisy());
             }
         }
-        if (noisy != null) {
+        if (noisy != null && Boolean.parseBoolean(notifier.getNoisy()) != noisy.booleanValue()) {
+            report.appendMessage(notifierName + ".noisy was " + notifier.getNoisy() + " set to " + noisy + "\n");
             notifier.noisy(noisy);
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
