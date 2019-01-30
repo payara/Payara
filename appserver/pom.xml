@@ -63,8 +63,8 @@
   
     <properties>
         <jms-api.version>2.0.1</jms-api.version>
-        <jsp-api.version>2.3.2-b01</jsp-api.version>
-        <jsp-impl.version>2.3.3-b02</jsp-impl.version>
+        <jsp-api.version>2.3.3</jsp-api.version>
+        <jsp-impl.version>2.3.4</jsp-impl.version>
         <jstl-impl.version>1.2.4</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.18.payara-p2</mojarra.version>
@@ -504,7 +504,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.3</specVersion>
-                            <specImplVersion>2.3.1</specImplVersion>
+                            <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp</apiPackage>
                         </spec>
                         <spec>
