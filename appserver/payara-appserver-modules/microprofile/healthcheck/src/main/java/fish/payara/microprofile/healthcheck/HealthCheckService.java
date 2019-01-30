@@ -205,7 +205,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
         // No applications (yet), server is not ready.
         if (applicationsLoaded.isEmpty()) {
             // Application is not yet deployed
-            healthCheckResponses.add(HealthCheckResponse.builder().down().build());
+            healthCheckResponses.add(HealthCheckResponse.builder().name("No Application deployed").down().build());
         }
 
         // If we haven't encountered an exception, construct the JSON response
