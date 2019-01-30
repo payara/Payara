@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.cdi;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -45,7 +47,6 @@ import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.FINE;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
@@ -249,5 +250,9 @@ public class CDILoggerInfo {
     @LogMessageInfo( message = "JCDIServiceImpl.getBDAForBeanClass: subBDA {0} contains beanClassName: {1}.",
                      level = "FINE")
     public static final String SUB_BDA_CONTAINS_BEAN_CLASS_NAME = CDI_LOGMSG_PREFIX + "-00045";
+
+    @LogMessageInfo( message = "JCDIServiceImpl.getBDAForBeanClass: Neither topLevelBDA {0} nor subBDA contains beanClassName: {1}.",
+                     level = "FINE")
+    public static final String BDA_NOT_CONTAINS_BEAN_CLASS_NAME = CDI_LOGMSG_PREFIX + "-00046";
 
 }

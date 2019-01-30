@@ -82,9 +82,9 @@ public class TimerSchedule implements Serializable {
     private BitSet daysOfMonth = new BitSet(31);
     private BitSet months = new BitSet(12);
 
-    private static Map<Object, Integer> conversionTable = new HashMap<Object, Integer>();
+    private static Map<Object, Integer> conversionTable = new HashMap<>();
 
-    private List<String> daysOfWeekOrRangesOfDaysInMonth = new ArrayList<String>();
+    private List<String> daysOfWeekOrRangesOfDaysInMonth = new ArrayList<>();
     private List<Integer> years = new ArrayList<Integer>();
 
     private static final Pattern simpleRangePattern = Pattern.compile("[0-9]+\\s*-\\s*([0-9]+|last)");
@@ -295,7 +295,7 @@ public class TimerSchedule implements Serializable {
     public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (o == null || !(o instanceof TimerSchedule))
+        if (!(o instanceof TimerSchedule))
             return false;
 
         TimerSchedule t = (TimerSchedule)o;
@@ -457,7 +457,6 @@ public class TimerSchedule implements Serializable {
                 // Both are specified - pick the closest date:
                 Calendar date1 = (Calendar)next.clone();
                 Calendar date2 = (Calendar)next.clone();
-                boolean changed = false;
 
                 //System.out.println("==> Processing 1 DAY_OF_MONTH ...");
                 if(skipToNextValue(date1, daysOfMonth, Calendar.DAY_OF_MONTH, Calendar.MONTH)) {
@@ -694,11 +693,11 @@ public class TimerSchedule implements Serializable {
         // List
         if (year_.indexOf(',') > 0) {
             String[] arr = splitList(year_);
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i].indexOf(rangeChar, 1) > 0) {
-                    processRangeAsList(years, arr[i], YEAR, yearPattern);
+            for (String s : arr) {
+                if (s.indexOf(rangeChar, 1) > 0) {
+                    processRangeAsList(years, s, YEAR, yearPattern);
                 } else {
-                    years.add(assertValidYear(parseInt(arr[i], YEAR)));
+                    years.add(assertValidYear(parseInt(s, YEAR)));
                 }
             }
 
@@ -718,7 +717,7 @@ public class TimerSchedule implements Serializable {
     /**
      * Adds a List of values that correspond to the specified range
      */
-    private void processRangeAsList(List list, String s, String field, Pattern pattern) {
+    private void processRangeAsList(List<Integer> list, String s, String field, Pattern pattern) {
         String[] arr = splitBy(s, rangeChar);
         int begin = parseInt(arr[0], field);
         int end = parseInt(arr[1], field);
@@ -797,14 +796,14 @@ public class TimerSchedule implements Serializable {
         } else {
             Integer val = conversionTable.get(s.toLowerCase(Locale.ENGLISH));
             assertValid(val, s, field);
-            i = val.intValue();
+            i = val;
         }
 
         int result = i - start;
         if (isDayOfWeek(field)) {
             Integer val = conversionTable.get(i);
             assertValid(val, s, field);
-            result = val.intValue();
+            result = val;
         }
         return result;
     }
@@ -852,9 +851,8 @@ public class TimerSchedule implements Serializable {
             bits.set(date.getActualMaximum(Calendar.DAY_OF_MONTH) - dayBeforeEndOfMonth);
         }
 
-        int size = daysOfWeekOrRangesOfDaysInMonth.size();
-        for (int i = 0; i < size; i++) {
-            setDaysOfWeek(bits, date, daysOfWeekOrRangesOfDaysInMonth.get(i));
+        for (String s : daysOfWeekOrRangesOfDaysInMonth) {
+            setDaysOfWeek(bits, date, s);
         }
 
         return bits;
@@ -880,7 +878,7 @@ public class TimerSchedule implements Serializable {
             return lastday - parseInt(s.substring(1), DAY_OF_MONTH);
 
         } else if (orderedDayPattern.matcher(s).matches()) {
-            String arr[] = splitBy(s, ' ');
+            String[] arr = splitBy(s, ' ');
             int num = -1;
             if (!arr[0].equals("last")) {
                 num = parseInt(arr[0].substring(0, 1), DAY_OF_MONTH);

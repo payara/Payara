@@ -65,15 +65,9 @@ public class SystemProps
         //Map sortedMap = new TreeMap(p);
         //Set sortedSet = sortedMap.entrySet();
         Set<Map.Entry<Object, Object>>  set  = p.entrySet();
-        List<Map.Entry>	list = new ArrayList<Map.Entry>(set);
+        List<Map.Entry>	list = new ArrayList<>(set);
 
-        Collections.sort(list, new Comparator<Map.Entry>()
-        {
-            public int compare(Map.Entry me1, Map.Entry me2)
-            {
-                return ((String)me1.getKey()).compareToIgnoreCase((String)me2.getKey());
-            }
-        });
+        Collections.sort(list, (me1, me2) -> ((String)me1.getKey()).compareToIgnoreCase((String)me2.getKey()));
 
         return list;
     }
@@ -84,7 +78,7 @@ public class SystemProps
     {
         int             longestKey	= 0;
         List<Map.Entry>	list		= get();
-        StringBuilder	sb		= new StringBuilder();
+        StringBuilder	sb		    = new StringBuilder();
 
         /* Go through the list twice.
          * The first time through gets the maximum length entry

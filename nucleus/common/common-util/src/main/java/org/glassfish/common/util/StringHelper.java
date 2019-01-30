@@ -88,7 +88,7 @@ public class StringHelper
 				result.append(list.get(beginIndex));
 
 			for (i = beginIndex + 1; i < count; i++)
-				result.append(separator + list.get(i));
+				result.append(separator).append(list.get(i));
 		}
 
 		return result.toString();
@@ -138,9 +138,9 @@ public class StringHelper
 	 * @param separator The separator to be used to tokenize strings.
 	 * @return an array representing the tokenized list.
 	 */
-	public static List separatedListToArray (String list, String separator)
+	public static List<String> separatedListToArray (String list, String separator)
 	{
-		ArrayList result = new ArrayList();
+		List<String> result = new ArrayList<>();
 
 		if (list != null)
 		{
@@ -159,7 +159,7 @@ public class StringHelper
 	 * @param list The string representing the list of objects.
 	 * @return an array representing the tokenized list.
 	 */
-	public static List separatedListToArray (String list)
+	public static List<String> separatedListToArray (String list)
 	{
 		return separatedListToArray(list, ","); // NOI18N
 	}
@@ -242,7 +242,7 @@ public class StringHelper
 		int index = string.indexOf(oldString);
 		if (index != -1) {
 			StringBuilder sb = new StringBuilder(string.length());
-			sb.append(string.substring(0, index));
+			sb.append(string, 0, index);
 			sb.append(newString);
 			sb.append(string.substring(index + oldString.length()));
 			return sb.toString();
@@ -342,14 +342,12 @@ public class StringHelper
 			else
 			{
 				StringBuilder buf = new StringBuilder();
-				char data[] = str.toCharArray();
-				for (int i = 0; i < data.length; i++)
-				{
-					if (BACKSLASH == data[i] || QUOTE == data[i])
-					{
+				char[] data = str.toCharArray();
+				for (char datum : data) {
+					if (BACKSLASH == datum || QUOTE == datum) {
 						buf.append(BACKSLASH);
 					}
-					buf.append(data[i]);
+					buf.append(datum);
 				}
 				return buf.toString();
 			}

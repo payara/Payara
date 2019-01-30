@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.runtime;
 
 import org.glassfish.deployment.common.Descriptor;
@@ -157,13 +158,6 @@ public abstract class RuntimeDescriptor extends Descriptor {
     protected void removeValue(String name, int index) {
         List list = getIndexedProperty(name);
         list.remove(index);
-    }
-
-    protected void setValues(String name, Object[] values) {
-        List list = getIndexedProperty(name);
-        for (int i = 0; i < values.length;) {
-            list.add(values[i]);
-        }
     }
 
     protected Object[] getValues(String name) {

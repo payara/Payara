@@ -118,9 +118,8 @@ public final class ExceptionUtil
         final StringBuilder buf = new StringBuilder();
         final StackTraceElement[] elems = t.getStackTrace();
 
-        for (int i = 0; i < elems.length; ++i)
-        {
-            buf.append(elems[i]);
+        for (StackTraceElement elem : elems) {
+            buf.append(elem);
             buf.append("\n");
         }
 

@@ -233,15 +233,13 @@ public class SystemPropertyConstants {
      * a pair of braces with $ in the front (e.g. "a" will be returned as "${a}").
      * @throws IllegalArgumentException if the passed String is null
      */
-    public static final String getPropertyAsValue(final String name) {
+    public static String getPropertyAsValue(final String name) {
         if (name == null) {
             final String pn = "spc.null_name";
             final String pv = "property";
             throw new IllegalArgumentException(sm.getString(pn, pv));
         }
-        final StringBuilder sb = new StringBuilder();
-        sb.append(OPEN).append(name).append(CLOSE);
-        return (sb.toString());
+        return OPEN + name + CLOSE;
     }
 
     public static final String OPEN = "${";
@@ -252,7 +250,7 @@ public class SystemPropertyConstants {
      * syntax" the same string is returned. The "system-propery syntax" is "${...}" The given String may not be null. The
      * returned String may be an empty String, if it is of the form "${}" (rarely so).
      */
-    public static final String unSystemProperty(final String sp) {
+    public static String unSystemProperty(final String sp) {
         if (sp == null)
             throw new IllegalArgumentException("null_arg");
         String ret = sp;
@@ -262,7 +260,7 @@ public class SystemPropertyConstants {
         return (ret);
     }
 
-    public static final boolean isSystemPropertySyntax(final String s) {
+    public static boolean isSystemPropertySyntax(final String s) {
         if (s == null)
             throw new IllegalArgumentException("null_arg");
         boolean sp = false;
@@ -276,9 +274,8 @@ public class SystemPropertyConstants {
      * String. Never returns a null. Returned String contains no backslashes. Note that it is <b> not <b> the absolute value
      * of the path on a file system.
      */
-    public static final String getDocRootDefaultValue() {
-        final StringBuilder sb = new StringBuilder(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
-        return (sb.append("/docroot").toString());
+    public static String getDocRootDefaultValue() {
+        return getPropertyAsValue(INSTANCE_ROOT_PROPERTY) + "/docroot";
     }
 
     /**
@@ -286,9 +283,8 @@ public class SystemPropertyConstants {
      * virtual server is stored, as a String. Never returns a null. Returned String contains no backslashes. Note that it is
      * <b> not <b> the absolute value of the path on a file system.
      */
-    public static final String getAccessLogDefaultValue() {
-        final StringBuilder sb = new StringBuilder(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
-        return (sb.append("/logs/access").toString());
+    public static String getAccessLogDefaultValue() {
+        return getPropertyAsValue(INSTANCE_ROOT_PROPERTY) + "/logs/access";
     }
 
     /**
@@ -303,19 +299,19 @@ public class SystemPropertyConstants {
      * @return String representing the Path to asadmin script. Might return a string beginning with "null", if the
      * INSTALL_ROOT_PROPERTY is not defined
      */
-    public static final String getAsAdminScriptLocation() {
+    public static String getAsAdminScriptLocation() {
         return getAdminScriptLocation(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
     }
 
-    public static final String getAsAdminScriptLocation(String installRoot) {
+    public static String getAsAdminScriptLocation(String installRoot) {
         return getAdminScriptLocation(installRoot);
     }
 
-    public static final String getAdminScriptLocation(String installRoot) {
+    public static String getAdminScriptLocation(String installRoot) {
         final StringBuilder sb = new StringBuilder();
         final String ext = OS.isWindows() ? OS.WINDOWS_BATCH_FILE_EXTENSION : "";
         final String ASADMIN = "nadmin";
-        final String suffix = new StringBuilder("lib").append(System.getProperty("file.separator")).append(ASADMIN).append(ext).toString();
+        final String suffix = "lib" + System.getProperty("file.separator") + ASADMIN + ext;
         sb.append(installRoot);
         final String fs = System.getProperty("file.separator");
         if (!sb.toString().endsWith(fs))
@@ -331,7 +327,7 @@ public class SystemPropertyConstants {
      *
      * @return String representing the component identifier.
      */
-    public static final String getComponentName() {
+    public static String getComponentName() {
         final File installRootFile = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         return installRootFile.getName();
     }

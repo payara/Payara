@@ -83,8 +83,8 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
-     * @param ex
-     * @return
+     * @param ex the exception to format
+     * @returnformatted exception
      */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
@@ -104,19 +104,19 @@ public class StringUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     /**
-     * Find longest String in a vector of Strings...
-     * @param v
-     * @return
+     * Find longest String in a List of Strings...
+     * @param strings the list of strings
+     * @returnthe index of the longest string
      */
-    public static int maxWidth(Vector v) {
+    public static int maxWidth(List strings) {
         int max = 0;
 
-        if (v == null || v.size() <= 0 || !(v.elementAt(0) instanceof String)) {
+        if (strings == null || strings.isEmpty() || !(strings.get(0) instanceof String)) {
             return 0;
         }
 
-        for (int i = v.size() - 1; i >= 0; i--) {
-            int len = ((String) v.elementAt(i)).length();
+        for (int i = strings.size() - 1; i >= 0; i--) {
+            int len = ((String) strings.get(i)).length();
 
             if (len > max) {
                 max = len;
@@ -133,11 +133,12 @@ public class StringUtils {
     // p.s. there MUST be a better and faster way of doing this...
     public static boolean isHex(String s) {
 
+        if (s == null) return false;
 
         final int slen = s.length();
 
         for (int i = 0; i < slen; i++) {
-            if (isHex(s.charAt(i)) == false) {
+            if (!isHex(s.charAt(i))) {
                 return false;
             }
         }
@@ -145,6 +146,7 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    private static final String HEX_CHARS = "0123456789abcdefABCDEF";
     /**
      * Is this the char a valid hex digit?
      * <p>
@@ -153,17 +155,7 @@ public class StringUtils {
      * @return
      */
     public static boolean isHex(char c) {
-
-        String hex = "0123456789abcdefABCDEF";
-        int hexlen = hex.length();
-
-        for (int i = 0; i < hexlen; i++) {
-            if (hex.charAt(i) == c) {
-                return true;
-            }
-        }
-
-        return false;
+        return HEX_CHARS.indexOf(c) != -1;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -268,33 +260,29 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Converts a String into an array where every \n is a new used to signal a new element in the array
-     * @param s
-     * @return
+     * @param s string to split into lines
+     * @returnthe resulting lines array
      */
     public static String[] toLines(String s) {
         if (s == null) {
             return new String[0];
         }
 
-        Vector v = new Vector();
+        List<String> lines = new ArrayList<>();
 
         int start = 0;
         int end = 0;
 
         for (end = s.indexOf('\n', start); end >= 0 && start < s.length(); end = s.indexOf('\n', start)) {
-            v.addElement(s.substring(start, end));	// does NOT include the '\n'
+            lines.add(s.substring(start, end));	// does NOT include the '\n'
             start = end + 1;
         }
 
         if (start < s.length()) {
-            v.addElement(s.substring(start));
+            lines.add(s.substring(start));
         }
 
-        String[] ss = new String[v.size()];
-
-        v.copyInto(ss);
-
-        return ss;
+        return lines.toArray(new String[0]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -369,13 +357,12 @@ public class StringUtils {
             return "No entries";
         }
 
-        Set entries = props.entrySet();
+        Set<Map.Entry<Object, Object>> entries = props.entrySet();
         StringBuilder sb = new StringBuilder();
 
         // first -- to line things up nicely -- find the longest key...
         int keyWidth = 0;
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
+        for (Map.Entry<Object, Object> me : entries) {
             String key = (String) me.getKey();
             int len = key.length();
 
@@ -387,8 +374,7 @@ public class StringUtils {
         ++keyWidth;
 
         // now make the strings...
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
+        for (Map.Entry<Object, Object> me : entries) {
             String key = (String) me.getKey();
             String val = (String) me.getValue();
 
@@ -549,11 +535,9 @@ public class StringUtils {
             st = new StringTokenizer(line, sep);
         }
 
-        String token;
-
-        List<String> tokens = new Vector();
+        List<String> tokens = new ArrayList<>();
         while (st.hasMoreTokens()) {
-            token = st.nextToken().trim();
+            String token = st.nextToken().trim();
             if (token.length() > 0) {
                 tokens.add(token);
             }
