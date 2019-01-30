@@ -67,27 +67,17 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.CDIEventbusNotifier;
-import fish.payara.nucleus.notification.configuration.DatadogNotifier;
-import fish.payara.nucleus.notification.configuration.EmailNotifier;
-import fish.payara.nucleus.notification.configuration.EventbusNotifier;
-import fish.payara.nucleus.notification.configuration.HipchatNotifier;
-import fish.payara.nucleus.notification.configuration.JmsNotifier;
-import fish.payara.nucleus.notification.configuration.NewRelicNotifier;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.configuration.SlackNotifier;
-import fish.payara.nucleus.notification.configuration.SnmpNotifier;
-import fish.payara.nucleus.notification.configuration.XmppNotifier;
-import fish.payara.nucleus.notification.log.LogNotifier;
 
 /**
  * Admin command to set enabled and noisy flags for a specific {@link Notifier} configuration as part of the
@@ -114,20 +104,14 @@ import fish.payara.nucleus.notification.log.LogNotifier;
 })
 public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand {
 
-    /**
-     * A list of all "known" {@link Notifier}s, needed to be able to create new child nodes of this type based on the
-     * {@link NotifierType} which is annotated on each of the interfaces.
-     */
-    private static final List<Class<? extends Notifier>> NOTIFIER_TYPES = Arrays.asList(CDIEventbusNotifier.class,
-            DatadogNotifier.class, EmailNotifier.class, EventbusNotifier.class, HipchatNotifier.class,
-            JmsNotifier.class, NewRelicNotifier.class, SlackNotifier.class, SnmpNotifier.class, XmppNotifier.class,
-            LogNotifier.class);
-
     @Inject
     private Target targetUtil;
 
     @Inject
     private ServerEnvironment server;
+
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
 
     @Inject
     private Logger logger;
@@ -178,7 +162,9 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         try {
             if (notifier == null) {
                 ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) proxy -> {
-                    Notifier newNotifier = proxy.createChild(selectByType(Class.class, NOTIFIER_TYPES));
+                    @SuppressWarnings("unchecked")
+                    Notifier newNotifier = proxy.createChild(selectByType(Class.class,
+                            configModularityUtils.getInstalledExtensions(Notifier.class)));
                     proxy.getNotifierList().add(newNotifier);
                     applyValues(newNotifier);
                     return proxy;
