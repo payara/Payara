@@ -65,8 +65,8 @@
         <jms-api.version>2.0.1</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
         <jsp-impl.version>2.3.3-b02</jsp-impl.version>
-        <jstl-impl.version>1.2.4</jstl-impl.version>
-        <jstl-api.version>1.2.1</jstl-api.version>
+        <jstl-api.version>1.2.2</jstl-api.version>
+        <jstl-impl.version>1.2.5</jstl-impl.version>
         <mojarra.version>2.2.18.payara-p2</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.10.payara4-p7</woodstock.version>
@@ -312,7 +312,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>1.2</specVersion>
-                            <specImplVersion>1.2.1</specImplVersion>
+                            <specImplVersion>${jstl-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp.jstl</apiPackage>
                         </spec>
                         <spec>
