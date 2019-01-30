@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.util;
 
@@ -59,7 +59,7 @@ public class StringUtils {
     /**
      * return the length of the String - or 0 if it's null
      * @param s
-     * @return 
+     * @return
      */
     public static int safeLength(String s) {
         if (s == null) {
@@ -73,7 +73,7 @@ public class StringUtils {
     /**
      * Returns true if a string is not null and has a non-zero length, false otherwise
      * @param s
-     * @return 
+     * @return
      */
     public static boolean ok(String s) {
         return s != null && s.length() > 0;
@@ -82,8 +82,8 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
-     * @param ex
-     * @return 
+     * @param ex the exception to format
+     * @return formatted exception
      */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
@@ -103,19 +103,19 @@ public class StringUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     /**
-     * Find longest String in a vector of Strings...
-     * @param v
-     * @return 
+     * Find longest String in a List of Strings...
+     * @param strings the list of strings
+     * @return the index of the longest string
      */
-    public static int maxWidth(Vector v) {
+    public static int maxWidth(List strings) {
         int max = 0;
 
-        if (v == null || v.size() <= 0 || !(v.elementAt(0) instanceof String)) {
+        if (strings == null || strings.isEmpty() || !(strings.get(0) instanceof String)) {
             return 0;
         }
 
-        for (int i = v.size() - 1; i >= 0; i--) {
-            int len = ((String) v.elementAt(i)).length();
+        for (int i = strings.size() - 1; i >= 0; i--) {
+            int len = ((String) strings.get(i)).length();
 
             if (len > max) {
                 max = len;
@@ -132,11 +132,12 @@ public class StringUtils {
     // p.s. there MUST be a better and faster way of doing this...
     public static boolean isHex(String s) {
 
+        if (s == null) return false;
 
         final int slen = s.length();
 
         for (int i = 0; i < slen; i++) {
-            if (isHex(s.charAt(i)) == false) {
+            if (!isHex(s.charAt(i))) {
                 return false;
             }
         }
@@ -144,32 +145,23 @@ public class StringUtils {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    private static final String HEX_CHARS = "0123456789abcdefABCDEF";
     /**
      * Is this the char a valid hex digit?
      * <p>
      * Can be upper or lower case
      * @param c
-     * @return 
+     * @return
      */
     public static boolean isHex(char c) {
-
-        String hex = "0123456789abcdefABCDEF";
-        int hexlen = hex.length();
-
-        for (int i = 0; i < hexlen; i++) {
-            if (hex.charAt(i) == c) {
-                return true;
-            }
-        }
-
-        return false;
+        return HEX_CHARS.indexOf(c) != -1;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     /**
      * e.g.  input: "a/b/c/d/foobar.txt"   output: "d"
      * @param s
-     * @return 
+     * @return
      */
     public static String getPenultimateDirName(String s) {
 
@@ -206,7 +198,7 @@ public class StringUtils {
      * <p>
      * i.e. java.lang.String would return String
      * @param className The classname to convert. Note that there is no checking that this is a valid classname.
-     * @return 
+     * @return
      */
     public static String toShortClassName(String className) {
         int index = className.lastIndexOf('.');
@@ -267,33 +259,29 @@ public class StringUtils {
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Converts a String into an array where every \n is a new used to signal a new element in the array
-     * @param s
-     * @return 
+     * @param s string to split into lines
+     * @return the resulting lines array
      */
     public static String[] toLines(String s) {
         if (s == null) {
             return new String[0];
         }
 
-        Vector v = new Vector();
+        List<String> lines = new ArrayList<>();
 
         int start = 0;
         int end = 0;
 
         for (end = s.indexOf('\n', start); end >= 0 && start < s.length(); end = s.indexOf('\n', start)) {
-            v.addElement(s.substring(start, end));	// does NOT include the '\n'
+            lines.add(s.substring(start, end));	// does NOT include the '\n'
             start = end + 1;
         }
 
         if (start < s.length()) {
-            v.addElement(s.substring(start));
+            lines.add(s.substring(start));
         }
 
-        String[] ss = new String[v.size()];
-
-        v.copyInto(ss);
-
-        return ss;
+        return lines.toArray(new String[0]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -314,7 +302,7 @@ public class StringUtils {
     /**
      * Converts the first letter of a string to upper case
      * @param s
-     * @return 
+     * @return
      */
     public static String upperCaseFirstLetter(String s) {
         if (s == null || s.length() <= 0) {
@@ -333,7 +321,7 @@ public class StringUtils {
      * @return
      * @deprecated Now part of {@link String} since JDK 1.5
      * @see String#replace(CharSequence, CharSequence)
-     * @see String#replaceFirst(String, String) 
+     * @see String#replaceFirst(String, String)
      */
     public static String replace(String s, String token, String replace) {
         if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
@@ -361,20 +349,19 @@ public class StringUtils {
      * If there it is empty then this will return "No entries".
      * Otherwise it will be in the form of "key= value" with each property on a new line.
      * @param props
-     * @return 
+     * @return
      */
     public static String toString(Properties props) {
         if (props == null || props.size() <= 0) {
             return "No entries";
         }
 
-        Set entries = props.entrySet();
-        StringBuffer sb = new StringBuffer();
+        Set<Map.Entry<Object, Object>> entries = props.entrySet();
+        StringBuilder sb = new StringBuilder();
 
         // first -- to line things up nicely -- find the longest key...
         int keyWidth = 0;
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
+        for (Map.Entry<Object, Object> me : entries) {
             String key = (String) me.getKey();
             int len = key.length();
 
@@ -386,8 +373,7 @@ public class StringUtils {
         ++keyWidth;
 
         // now make the strings...
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
+        for (Map.Entry<Object, Object> me : entries) {
             String key = (String) me.getKey();
             String val = (String) me.getValue();
 
@@ -478,7 +464,7 @@ public class StringUtils {
     an empty string.
      */
     public static String makeFilePath(String[] strings, boolean addTrailing) {
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         String separator = System.getProperty("file.separator");
         if (strings != null) {
             for (int i = 0; i < strings.length; i++) {
@@ -548,11 +534,9 @@ public class StringUtils {
             st = new StringTokenizer(line, sep);
         }
 
-        String token;
-
-        List<String> tokens = new Vector();
+        List<String> tokens = new ArrayList<>();
         while (st.hasMoreTokens()) {
-            token = st.nextToken().trim();
+            String token = st.nextToken().trim();
             if (token.length() > 0) {
                 tokens.add(token);
             }
@@ -614,7 +598,7 @@ public class StringUtils {
     /**
      * Gets a String version of the stack trace of an exception
      * @param t
-     * @return 
+     * @return
      */
     public static String getStackTrace(Throwable t) {
         StringWriter sw = new StringWriter();
@@ -627,7 +611,7 @@ public class StringUtils {
     /**
      * Returns true is the given string is of the form "${text}"
      * @param s
-     * @return 
+     * @return
      */
     public static final boolean isToken(String s) {
         return s != null && s.startsWith("${") && s.endsWith("}") && s.length() > 3;
@@ -636,7 +620,7 @@ public class StringUtils {
     /**
      * Removes preceding <code>${</code> and trailing <code>}</code> from a String
      * @param s
-     * @return 
+     * @return
      */
     public static final String stripToken(String s) {
         if (isToken(s))
@@ -746,7 +730,7 @@ public class StringUtils {
      * <tr><td> \t </td><td> &#009;</td></tr>
      * </table>
      * @param str
-     * @return 
+     * @return
      */
     public static String escapeForHtml(String str) {
         if (str == null) {
@@ -777,11 +761,11 @@ public class StringUtils {
         }
         return result.toString();
     }
-    
+
     /** If given {@code String} is {@code null} then returns empty {@code String}
      * otherwise returns given {@code String}
      * @param str
-     * @return 
+     * @return
      */
     public static String nvl(String str) {
         return str == null ? "" : str;
