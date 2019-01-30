@@ -183,7 +183,7 @@
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
         <!-- PAYARA-625 / PAYARA-1860 -->
         <javassist.version>3.24.1-GA</javassist.version>
-        <javax.el.version>3.0.1-b03</javax.el.version>
+        <javax.el.version>3.0.1-b11</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.1</pfl.version>
