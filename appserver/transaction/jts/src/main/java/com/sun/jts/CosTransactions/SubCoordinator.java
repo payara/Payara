@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -62,8 +63,6 @@
 
 package com.sun.jts.CosTransactions;
 
-import java.util.*;
-
 import org.omg.CORBA.*;
 import org.omg.CosTransactions.*;
 
@@ -87,7 +86,6 @@ import com.sun.jts.utils.LogFormatter;
  *
  * @author Simon Holdsworth, IBM Corporation
  *
- * @see
  */
 
 //----------------------------------------------------------------------------
@@ -112,7 +110,7 @@ class SubCoordinator extends CoordinatorImpl {
     int                 hash = 0;
 	/*
 		Logger to log transaction messages
-	*/  
+	*/
     static Logger _logger = LogDomains.getLogger(SubCoordinator.class,LogDomains.TRANSACTION_LOGGER);
 
 
@@ -416,14 +414,14 @@ class SubCoordinator extends CoordinatorImpl {
         // return no transaction status (may want to raise a LogicError here).
 
 		if (tranState != null) {
-			CoordinatorImpl parent = nestingInfo.getParent(false); 
-			if (parent != null) { 
+			CoordinatorImpl parent = nestingInfo.getParent(false);
+			if (parent != null) {
 				result = parent.get_status();
 			}
 		} else {
 			INVALID_TRANSACTION exc = new INVALID_TRANSACTION(
-				MinorCode.Completed, CompletionStatus.COMPLETED_NO); 
-			throw exc; 
+				MinorCode.Completed, CompletionStatus.COMPLETED_NO);
+			throw exc;
 		}
 
         return result;
@@ -1301,7 +1299,7 @@ class SubCoordinator extends CoordinatorImpl {
         // Coordinator must be cleaned up.  The RecoveryManager is called to
         // clean up the transaction.
 
-        if (temporary && !registered &&
+        if (temporary && !registered && nestingInfo != null &&
                 !(participants != null && participants.involved()) &&
                 !(nestingInfo != null && nestingInfo.numChildren() > 0)) {
 
@@ -1727,7 +1725,7 @@ class SubCoordinator extends CoordinatorImpl {
         }
     }
     */
-    
+
     /**
      * Gets the object normally responsible for terminating this Coordinator.
      *
@@ -1738,7 +1736,7 @@ class SubCoordinator extends CoordinatorImpl {
      *
      * @see
      */
-    CompletionHandler getTerminator() {
+    synchronized CompletionHandler getTerminator() {
 
         CompletionHandler result = terminator;
         return result;
