@@ -40,6 +40,7 @@
 // Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.jts.CosTransactions;
+
 import java.lang.InterruptedException;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -189,7 +190,7 @@ public class RWLock {
       Object lock = writerQueue.deQueueFirst();
       ++currentWriters;
       synchronized(lock) {
-        lock.notify();
+        lock.notifyAll();
       }
     }
   }
