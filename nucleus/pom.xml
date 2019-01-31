@@ -576,6 +576,39 @@
                     <addGroupIdToProjectName>true</addGroupIdToProjectName>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>foo</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>
+Building ${project.artifactId} (final name ${project.build.finalName})
+Running from ${basedir}
+Output dir is ${project.build.outputDirectory}
+Parent is ${project.parent}</echo>
+
+                                <echo file="${basedir}/target/MANIFEST.MF">Manifest-Version: 1.0
+                                </echo>
+
+                                <copy toDir="${project.build.outputDirectory}/META-INF" overwrite="false">
+                                    <fileset dir="${basedir}/target" includes="MANIFEST.MF">
+                                        <present present="srconly" targetdir="${project.build.outputDirectory}/META-INF"/>
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -586,6 +619,8 @@
                             <classpathLayoutType>custom</classpathLayoutType>
                             <customClasspathLayout>$${artifact.artifactId}.$${artifact.extension}</customClasspathLayout>
                         </manifest>
+
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                     <excludes>
                         <exclude>**/.ade_path/**</exclude>
