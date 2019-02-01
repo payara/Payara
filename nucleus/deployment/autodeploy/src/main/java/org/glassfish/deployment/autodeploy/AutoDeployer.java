@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * AutoDeployer.java
@@ -293,7 +293,7 @@ public class AutoDeployer {
     private synchronized File domainRoot() {
         if (domainRoot == null) {
             ServerEnvironment serverEnv = habitat.getService(ServerEnvironment.class);
-            domainRoot = serverEnv.getDomainRoot();
+            domainRoot = serverEnv.getInstanceRoot();
         }
         return domainRoot;
     }

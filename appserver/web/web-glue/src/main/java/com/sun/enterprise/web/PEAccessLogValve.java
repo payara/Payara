@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -707,7 +707,7 @@ public final class PEAccessLogValve
                 dir = new File(logRoot, accessLog);
             } else {
                 ServerEnvironment env = services.getService(ServerEnvironment.class);
-                dir = new File(env.getDomainRoot(), accessLog);
+                dir = new File(env.getInstanceRoot(), accessLog);
             }
         }
 
