@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -924,7 +924,7 @@ public class ASURLClassLoader
         volatile boolean isJar  = false;
 
         /** ensure thread visibility by making it 'volatile'  */
-        volatile Hashtable<String,String> table = null;
+        volatile Map<String,String> table = null;
 
         /** ProtectionDomain with signers if jar is signed,
             ensure thread visibility by making it 'volatile'  */
@@ -944,7 +944,7 @@ public class ASURLClassLoader
                     zip = new ProtectedJarFile(file);
                 }
 
-                table = new Hashtable<>();
+                table = new ConcurrentHashMap<>();
             } catch (URISyntaxException use) {
                 IOException ioe= new IOException();
                 ioe.initCause(use);
@@ -952,7 +952,7 @@ public class ASURLClassLoader
             }
         }
 
-        private void fillTable(File f, Hashtable t, String parent) throws IOException {
+        private void fillTable(File f, Map<String, String> t, String parent) throws IOException {
             String localName = (parent.equals("")) ? "" : parent + "/";
             File[] children = f.listFiles();
             if (children != null) {
@@ -969,12 +969,12 @@ public class ASURLClassLoader
          *Invokes fillTable for subdirectories which in turn invokes processFile
          *recursively.
          *@param fileToProcess the File to be processed
-         *@param t the Hashtable that holds the files the loader knows about
+         *@param t the Map that holds the files the loader knows about
          *@param parentLocalName prefix to be used for the full path; should be
          *non-empty only for recursive invocations
          *@throws IOException in case of errors working with the fileToProcess
          */
-        private void processFile(File fileToProcess, Hashtable t, String parentLocalName) throws IOException {
+        private void processFile(File fileToProcess, Map<String, String> t, String parentLocalName) throws IOException {
             String key = parentLocalName + fileToProcess.getName();
             if (fileToProcess.isFile()) {
                 t.put(key, key);

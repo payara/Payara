@@ -36,9 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
@@ -328,7 +327,7 @@ public class LogFilter {
                 String logFileName = logFileDetailsForInstance.substring(logFileDetailsForInstance.lastIndexOf(File.separator) + 1, logFileDetailsForInstance.length());
                 File instanceFile = null;
                 instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, LOGGER,
-                        targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
+                        targetServerName, env.getInstanceRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
 
                 return instanceFile.getAbsolutePath();
             }
@@ -422,7 +421,7 @@ public class LogFilter {
                 try {
                     // this code is used when the node is not local.
                     instanceLogFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer,
-                            domain, LOGGER, instanceName, env.getDomainRoot().getAbsolutePath(), logFileName, instanceLogFileName);
+                            domain, LOGGER, instanceName, env.getInstanceRoot().getAbsolutePath(), logFileName, instanceLogFileName);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
                     return new AttributeList();
