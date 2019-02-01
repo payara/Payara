@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.admin.cli;
 
@@ -96,7 +97,7 @@ public class ListProtocolFilters implements AdminCommand {
         }
         final ActionReport report = context.getActionReport();
         Protocol protocol = config.getNetworkConfig().getProtocols().findProtocol(protocolName);
-        if (protocol!=null) {
+        if (protocol!=null && protocol.getProtocolChainInstanceHandler() != null) {
             final ProtocolChain chain = protocol.getProtocolChainInstanceHandler().getProtocolChain();
             if (chain!=null) {
                 for (ProtocolFilter filter : chain.getProtocolFilter()) {
