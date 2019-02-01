@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -615,9 +615,9 @@ public final class PEAccessLogValve
      */
     public void log() throws IOException {
 
-        if (rotatable && rotationOnDateChange) {
+        if (rotatable) {
             synchronized (lock) {
-                rotateOnDateChange();
+                rotateLog();
             }
         }
 
@@ -1058,33 +1058,28 @@ public final class PEAccessLogValve
     }
 
     /**
-     * Rotates the old log file and creates a new log file on date change.
+     * Rotates the old log file and creates a new log file on date change regardless of the interval.
+     * If the interval is exceeded and if it's a new day it also rotates the file.
      */
-    private void rotateOnDateChange(){
+    private void rotateLog(){
         long systime = System.currentTimeMillis();
-        long rotationIntervalLong = rotationInterval * 1000L;
-        if (systime - lastAccessLogCreationTime > rotationIntervalLong) {
-            synchronized (this) {
-                systime = System.currentTimeMillis();
-                if (systime - lastAccessLogCreationTime
-                        > rotationIntervalLong) {
+        synchronized (this) {
+            if (rotationOnDateChange || (systime - lastAccessLogCreationTime > rotationInterval * 1000L)) {
+                // Rotate only if the formatted datestamps are
+                // different
+                String lastDateStamp = dateFormatter.get().format(
+                        new Date(lastAccessLogCreationTime));
+                String newDateStamp = dateFormatter.get().format(
+                        new Date(systime));
 
-                    // Rotate only if the formatted datestamps are
-                    // different
-                    String lastDateStamp = dateFormatter.get().format(
-                            new Date(lastAccessLogCreationTime));
-                    String newDateStamp = dateFormatter.get().format(
-                            new Date(systime));
+                lastAccessLogCreationTime = systime;
 
-                    lastAccessLogCreationTime = systime;
-
-                    if (!lastDateStamp.equals(newDateStamp)) {
-                        try {
-                            close();
-                            open(newDateStamp, false);
-                        } catch (IOException ex) {
-                            _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
-                        }
+                if (!lastDateStamp.equals(newDateStamp)) {
+                    try {
+                        close();
+                        open(newDateStamp, false);
+                    } catch (IOException ex) {
+                        _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
                     }
                 }
             }
