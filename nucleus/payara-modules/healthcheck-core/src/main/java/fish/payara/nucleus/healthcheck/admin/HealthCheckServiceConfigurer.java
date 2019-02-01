@@ -69,7 +69,9 @@ import javax.validation.constraints.Min;
  * name
  *
  * @author mertcaliskan
+ * @deprecated replaced by {@link SetHealthCheckServiceConfiguration}
  */
+@Deprecated
 @Service(name = "healthcheck-configure-service")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

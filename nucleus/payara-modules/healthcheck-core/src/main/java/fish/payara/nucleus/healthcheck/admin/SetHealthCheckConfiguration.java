@@ -81,6 +81,7 @@ import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
  * Updating the service configuration also updates the {@link LogNotifierConfiguration} accordingly.
  *
  * @author jan
+ * @since 5.193
  */
 @Service(name = "set-healthcheck-configuration")
 @PerLookup
@@ -121,14 +122,14 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "enabled")
     private boolean enabled;
 
-    @Param(name = "historicalTraceEnabled", optional = true)
+    @Param(name = "trace-enabled", optional = true)
     private Boolean historicalTraceEnabled;
 
-    @Param(name = "historicalTraceStoreSize", optional = true, defaultValue = "20")
+    @Param(name = "trace-store-size", optional = true, defaultValue = "20")
     @Min(value = 1, message = "Store size must be greater than 0")
     private int historicalTraceStoreSize;
 
-    @Param(name = "historicalTraceStoreTimeout", optional = true)
+    @Param(name = "trace-store-timeout", optional = true)
     private String historicalTraceStoreTimeout;
 
     @Override
