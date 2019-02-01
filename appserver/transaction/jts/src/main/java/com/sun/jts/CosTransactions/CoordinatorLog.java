@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -110,7 +111,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
     private static final String defaultstring = "DEFAULT_LOG";
 
     /**
-    // Since muliple logs have to coexist as part of delegated recovery 
+    // Since muliple logs have to coexist as part of delegated recovery
     // support, static data can not be maintained. Now this data is stored
     // per log location
     private static LogFile logFile        = null;
@@ -137,7 +138,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 		Logger to log transaction messages
 	*/
 	static Logger _logger = LogDomains.getLogger(CoordinatorLog.class, LogDomains.TRANSACTION_LOGGER);
-    
+
 	/**The local transaction identifier for the transaction this object is logging.
      */
     Long localTID = null;
@@ -149,7 +150,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
     private ByteArrayOutputStream byteOutput = new ByteArrayOutputStream(2000);
     private DataOutputStream      dataOutput = new DataOutputStream(byteOutput);
 
-   
+
     // All the methods which take "String logPath" as parameter are same as the
     // ones with out that parameter. These methods are added for delegated
     // recovery support
@@ -196,7 +197,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 
         sectionMapping = new Hashtable();
         logStateHolder = defaultLogStateHolder;
-        
+
 
         // Do not inform the metaclass about the existence of this object yet, as it
         // does not have a transaction identifier.
@@ -208,7 +209,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
         sectionMapping = new Hashtable();
         logStateHolder = getStateHolder(logPath);
         this.logPath = logPath;
-        
+
 
         // Do not inform the metaclass about the existence of this object yet, as it
         // does not have a transaction identifier.
@@ -285,7 +286,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 
     }
 
-    synchronized private void reUse(String logPath) {	
+    synchronized private void reUse(String logPath) {
 
         // Clear up the section mapping.
 
@@ -350,11 +351,8 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
      */
     synchronized java.lang.Object createSection( String sectionName ) {
 
-        CoordinatorLogSection result = null;
-
         // Check whether the given name already has a corresponding section.
-
-        result = (CoordinatorLogSection) sectionMapping.get(sectionName);
+        CoordinatorLogSection result = (CoordinatorLogSection) sectionMapping.get(sectionName);
         if (result == null) {
             // Create a new section.
             // If a section info structure cannot be allocated, return.
@@ -363,12 +361,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 
 	    // get a new section object from the cache Arun 9/27/99
             result = SectionPool.getCoordinatorLogSection(sectionName);
-            if( result == null ) {
-            }
-
-            // Copy in the name and set initial values of the other variables.
-
-            else {
+            if( result != null ) {
 
                 // Add the new section information to the map.
 
@@ -781,10 +774,10 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 					else {
 						_logger.log(Level.SEVERE,
 						"jts.unable_to_convert_object_reference_to_string_in_recovery");
-						 
+
 						  String msg = LogFormatter.getLocalizedMessage(_logger,
 			  			"jts.unable_to_convert_object_reference_to_string_in_recovery");
-						
+
 						throw  new org.omg.CORBA.INTERNAL(msg);
 					}
 				}
@@ -1166,7 +1159,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 				 String msg = LogFormatter.getLocalizedMessage(_logger,
 				 						"jts.cannot_open_log_file");
 				 throw  new org.omg.CORBA.INTERNAL(msg);
-            } else 
+            } else
                 Configuration.setLogFile(logStateHolder.logFile);
         }
 
@@ -1227,7 +1220,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
 				 String msg = LogFormatter.getLocalizedMessage(_logger,
 				 						"jts.cannot_open_log_file");
 				 throw  new org.omg.CORBA.INTERNAL(msg);
-            } else 
+            } else
                 Configuration.setLogFile(logPath,logStateHolder.logFile);
         }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -465,8 +465,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             _embedded.setFileLoggerHandlerFactory(fileLoggerHandlerFactory);
             _embedded.setWebContainerFeatureFactory(webContainerFeatureFactory);
 
-            _embedded.setCatalinaHome(instance.getDomainRoot().getAbsolutePath());
-            _embedded.setCatalinaBase(instance.getDomainRoot().getAbsolutePath());
+            _embedded.setCatalinaHome(instance.getInstanceRoot().getAbsolutePath());
+            _embedded.setCatalinaBase(instance.getInstanceRoot().getAbsolutePath());
             _embedded.setUseNaming(false);
             if (_debug > 1)
                 _embedded.setDebug(_debug);

@@ -107,6 +107,14 @@ public final class ConfigBeansUtilities {
     }
 
     /**
+     * Get the default value of RotationOnDateChange from dtd
+     * @return
+     */
+    public static String getDefaultRotationOnDateChange() {
+        return "true";
+    }
+
+    /**
      * Get the default value of RotationIntervalInMinutes from dtd
      * @return 
      */

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -154,6 +154,11 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setRotationEnabled(String value) throws PropertyVetoException;
+
+    @Attribute (defaultValue="true", dataType=Boolean.class)
+    String getRotationOnDateChange();
+
+    void setRotationOnDateChange(String tf) throws PropertyVetoException;
 
     /**
      * Size in bytes of the buffer where access log calls are stored. If the value is less than 5120, a warning
