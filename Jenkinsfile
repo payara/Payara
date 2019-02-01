@@ -34,7 +34,7 @@ pipeline {
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                     -Dsurefire.rerunFailingTestsCount=2 \
                     -Dsonar.organization=payara \
-                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.host.url=\"https://sonarcloud.io\" \
                     -Dsonar.github.oauth=${githubToken} \
                     -Dsonar.login=${sonarToken} \
                     -Dsonar.pullrequest.base=${env.ghprbTargetBranch} \
