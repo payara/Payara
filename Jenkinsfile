@@ -44,7 +44,7 @@ pipeline {
                     -Dsonar.pullrequest.github.repository=payara/payara \
                     sonar:sonar"""
                 }
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#   Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post{
                 success{
