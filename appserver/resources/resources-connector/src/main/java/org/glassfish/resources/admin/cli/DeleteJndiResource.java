@@ -65,7 +65,7 @@ import java.beans.PropertyVetoException;
  * Delete Jndi Resource object
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,
