@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,16 +42,14 @@ package fish.payara.nucleus.hazelcast.contextproxy;
 import java.net.URI;
 import java.util.Properties;
 import javax.cache.CacheManager;
+import javax.cache.configuration.OptionalFeature;
 import javax.cache.spi.CachingProvider;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 import org.glassfish.internal.api.ServerContext;
 
 /**
  *
  * @author lprimak
  */
-@RequiredArgsConstructor
 public class CachingProviderProxy implements CachingProvider {
     @Override
     public CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts) {
@@ -68,13 +66,45 @@ public class CachingProviderProxy implements CachingProvider {
         return new CacheManagerProxy(delegate.getCacheManager(), serverContext);
     }
 
+    public CachingProviderProxy(CachingProvider delegate, ServerContext serverContext) {
+        this.delegate = delegate;
+        this.serverContext = serverContext;
+    }
+    private final CachingProvider delegate;
+    private final ServerContext serverContext;
 
-    private interface Exclusions {
-        CacheManager getCacheManager();
-        CacheManager getCacheManager(URI uri, ClassLoader cl, Properties prprts);
-        CacheManager getCacheManager(URI uri, ClassLoader cl);
+    @Override
+    public ClassLoader getDefaultClassLoader() {
+        return delegate.getDefaultClassLoader();
     }
 
-    private final @Delegate(excludes = Exclusions.class) CachingProvider delegate;
-    private final ServerContext serverContext;
+    @Override
+    public URI getDefaultURI() {
+        return delegate.getDefaultURI();
+    }
+
+    @Override
+    public Properties getDefaultProperties() {
+        return delegate.getDefaultProperties();
+    }
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public void close(ClassLoader classLoader) {
+        delegate.close(classLoader);
+    }
+
+    @Override
+    public void close(URI uri, ClassLoader classLoader) {
+        delegate.close(uri, classLoader);
+    }
+
+    @Override
+    public boolean isSupported(OptionalFeature optionalFeature) {
+        return delegate.isSupported(optionalFeature);
+    }
 }

@@ -37,82 +37,75 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
+
+import static com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames.PERMS_ROOT;
+import static com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames.PERM_ITEM;
+import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames;
 import com.sun.enterprise.deployment.PermissionItemDescriptor;
 import com.sun.enterprise.deployment.PermissionsDescriptor;
+import com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames;
 
-public class PermissionsNode extends AbstractBundleNode {
+public class PermissionsNode extends AbstractBundleNode<PermissionsDescriptor> {
 
     public final static String SCHEMA_ID = "permissions_7.xsd";
     public final static String SPEC_VERSION = "7";
-    
+
     private final static List<String> systemIDs = initSystemIDs();
-    
+
     // The XML tag associated with this Node
-    public final static XMLElement ROOT_ELEMENT = new XMLElement(
-            DeclaredPermissionsTagNames.PERMS_ROOT);
-    
+    public final static XMLElement ROOT_ELEMENT = new XMLElement(DeclaredPermissionsTagNames.PERMS_ROOT);
+
     private final static List<String> initSystemIDs() {
-        
         List<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);
-        return Collections.unmodifiableList(systemIDs);
+        
+        return unmodifiableList(systemIDs);
     }
-    
+
     private PermissionsDescriptor permDescriptor;
-    
-    
+
     public PermissionsNode() {
-        if (handlers != null) handlers.clear();
+        if (handlers != null) {
+            handlers.clear();
+        }
 
         permDescriptor = new PermissionsDescriptor();
-        
-        registerElementHandler(
-                new XMLElement(DeclaredPermissionsTagNames.PERM_ITEM),
-                PermissionItemNode.class);
-        
-        SaxParserHandler.registerBundleNode(this, 
-                DeclaredPermissionsTagNames.PERMS_ROOT);
+
+        registerElementHandler(new XMLElement(PERM_ITEM), PermissionItemNode.class);
+
+        SaxParserHandler.registerBundleNode(this, PERMS_ROOT);
     }
-    
-    
+
     public PermissionsNode(PermissionsDescriptor permDescriptor) {
         this();
         this.permDescriptor = permDescriptor;
     }
-    
-    
+
     @Override
     public PermissionsDescriptor getDescriptor() {
         return permDescriptor;
     }
-    
-    
-    
+
     @Override
     public String registerBundle(Map<String, String> publicIDToSystemIDMapping) {
-        
         return ROOT_ELEMENT.getQName();
     }
 
     @Override
-    public Map<String, Class> registerRuntimeBundle(
-            Map<String, String> publicIDToSystemIDMapping,
-            final Map<String, List<Class>> versionUpgrades) {
-        
-        return Collections.EMPTY_MAP;
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, final Map<String, List<Class<?>>> versionUpgrades) {
+        return Collections.emptyMap();
     }
 
     @Override
     public String getDocType() {
-
         return null;
     }
 
@@ -137,11 +130,8 @@ public class PermissionsNode extends AbstractBundleNode {
 
     @Override
     public void addDescriptor(Object descriptor) {
-
         if (descriptor instanceof PermissionItemDescriptor) {
-            final PermissionItemDescriptor pid =
-                PermissionItemDescriptor.class.cast(descriptor);
-            this.getDescriptor().addPermissionItemdescriptor(pid);
+            getDescriptor().addPermissionItemdescriptor(PermissionItemDescriptor.class.cast(descriptor));
         }
     }
 }

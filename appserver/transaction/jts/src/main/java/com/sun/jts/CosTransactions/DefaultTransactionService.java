@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -195,8 +195,9 @@ public class DefaultTransactionService implements ProxyChecker {
             // Set up the POA objects for transient and persistent references.
 
             try {
-                if (orb != null)
+                if (orb != null) {
                     createPOAs();
+                }
             } catch( Exception exc ) {
                 _logger.log(Level.WARNING,"jts.unexpected_error_when_creating_poa",exc);
                 throw new INTERNAL(MinorCode.TSCreateFailed,CompletionStatus.COMPLETED_NO);
@@ -205,37 +206,38 @@ public class DefaultTransactionService implements ProxyChecker {
 
         // Set up the instance of the Current object now that we know the ORB.
 
-        if( currentInstance == null )
-           try {
+        if( currentInstance == null ) {
+            try {
                 currentInstance = new CurrentImpl();
-            } catch( Exception exc ) {
-                _logger.log(Level.WARNING,"jts.unexpected_error_when_creating_current",exc);
-                throw new INTERNAL(MinorCode.TSCreateFailed,CompletionStatus.COMPLETED_NO);
+            } catch (Exception exc) {
+                _logger.log(Level.WARNING, "jts.unexpected_error_when_creating_current", exc);
+                throw new INTERNAL(MinorCode.TSCreateFailed, CompletionStatus.COMPLETED_NO);
             }
-
+        }
         // Identify Sender and Receiver objects to the Comm Manager.
 
-        if (ident != null)
+        if (ident != null) {
             SenderReceiver.identify(ident);
+        }
 
         // If the server is recoverable, create a NamingContext with which to
         // register the factory and admin objects.
 
-        if( recoverable && namingContext == null )
+        if( recoverable && namingContext == null && orb != null) {
             try {
                 namingContext = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"/*#Frozen*/));
-            } catch( InvalidName inexc ) {
+            } catch (InvalidName inexc) {
                 // _logger.log(Level.WARNING,"jts.orb_not_running");
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE,"jts.orb_not_running");
+                    _logger.log(Level.FINE, "jts.orb_not_running");
                 }
-            } catch( Exception exc ) {
+            } catch (Exception exc) {
                 // _logger.log(Level.WARNING,"jts.orb_not_running");
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE,"jts.orb_not_running");
+                    _logger.log(Level.FINE, "jts.orb_not_running");
                 }
             }
-
+        }
         // Create a TransactionFactory object and register it with the naming service
         // if recoverable.
 

@@ -99,20 +99,20 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @PostConstruct
     public void postConstruct() {
-      
+
         if (events != null) {
             events.register(this);
         }
-        
+
         if (payaraExecutorServiceConfiguration == null) {
             payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
                     .getService(PayaraExecutorServiceConfiguration.class);
         }
-        
+
         if (transactions != null) {
             transactions.addListenerForType(PayaraExecutorServiceConfiguration.class, this);
         }
-      
+
         initialiseThreadPools();
     }
 
@@ -147,7 +147,7 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
                     TimeUnit.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTimeUnit()),
                     new SynchronousQueue<>(), (Runnable r) -> new Thread(r, "payara-executor-service-task"));
         }
-
+        threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
                 Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()), (Runnable r) -> {
                     Thread t = new Thread(r, "payara-executor-service-scheduled-task");
@@ -189,7 +189,7 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return scheduledThreadPoolExecutor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
-    
+
     public ExecutorService getUnderlyingExecutorService() {
         return threadPoolExecutor;
     }
@@ -197,16 +197,16 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     public ScheduledExecutorService getUnderlyingScheduledExecutorService() {
         return scheduledThreadPoolExecutor;
     }
-    
+
     public int getExecutorThreadPoolSize() {
         return Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize());
     }
-    
+
     public int getScheduledExecutorThreadPoolSize() {
         return Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize());
     }
 
-    
+
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();

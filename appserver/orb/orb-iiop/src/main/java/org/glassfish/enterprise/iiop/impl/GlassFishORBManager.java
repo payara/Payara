@@ -244,6 +244,10 @@ public final class GlassFishORBManager {
 
         return result;
     }
+    
+    public boolean isClusterActive() {
+    	return gmsClient != null && gmsClient.isGMSAvailable();
+    }
 
     /**
      * Returns whether the operationName corresponds to an "is_a" call

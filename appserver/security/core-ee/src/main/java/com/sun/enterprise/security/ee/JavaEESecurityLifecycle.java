@@ -37,20 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
-import com.sun.enterprise.security.ContainerSecurityLifecycle;
-import com.sun.enterprise.security.jmac.config.GFAuthConfigFactory;
-import com.sun.logging.LogDomains;
-import java.security.Security;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.security.auth.message.config.AuthConfigFactory;
+import static java.util.logging.Level.WARNING;
+import static javax.security.auth.message.config.AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
+import java.security.Security;
+import java.util.logging.Logger;
+
 import javax.inject.Singleton;
+
+import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.security.ContainerSecurityLifecycle;
+import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
+import com.sun.logging.LogDomains;
 
 /**
  *
@@ -64,31 +67,31 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
 
     @Override
     public void onInitialization() {
-        java.lang.SecurityManager secMgr = System.getSecurityManager();
-        // TODO: need someway to not override the SecMgr if the EmbeddedServer was
-        // run with a different non-default SM.
-        // right now there seems no way to find out if the SM is the VM's default SM.
-        if (secMgr != null
-                && !(J2EESecurityManager.class.equals(secMgr.getClass()))) {
-            J2EESecurityManager mgr = new J2EESecurityManager();
+        java.lang.SecurityManager systemSecurityManager = System.getSecurityManager();
+
+        // TODO: Need some way to not override the security manager if the EmbeddedServer was
+        // run with a different non-default security manager.
+        //
+        // Right now there seems no way to find out if the security manager is the VM's default security manager.
+        if (systemSecurityManager != null && !(J2EESecurityManager.class.equals(systemSecurityManager.getClass()))) {
+            J2EESecurityManager eeSecurityManager = new J2EESecurityManager();
             try {
-                System.setSecurityManager(mgr);
+                System.setSecurityManager(eeSecurityManager);
             } catch (SecurityException ex) {
-                _logger.log(Level.WARNING, "security.secmgr.could.not.override");
+                _logger.log(WARNING, "security.secmgr.could.not.override");
             }
         }
-        initializeJMAC();
+        
+        initializeJASPIC();
     }
 
-    private void initializeJMAC() {
+    private void initializeJASPIC() {
+        // Define default factory if it is not already defined.
+        // The factory will be constructed on the first getFactory call.
 
-        // define default factory if it is not already defined
-        // factory will be constructed on first getFactory call.
-
-        String defaultFactory = Security.getProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY);
+        String defaultFactory = Security.getProperty(DEFAULT_FACTORY_SECURITY_PROPERTY);
         if (defaultFactory == null) {
-            Security.setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
-                    GFAuthConfigFactory.class.getName());
+            Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, GFAuthConfigFactory.class.getName());
         }
     }
 

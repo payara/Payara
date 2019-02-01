@@ -2,7 +2,6 @@
 // Jenkinsfile for building a PR and running a subset of tests against it
 def pom
 def DOMAIN_NAME
-def ASADMIN
 def payaraBuildNumber
 pipeline {
     options {
@@ -30,7 +29,8 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean install -PQuickBuild \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
+                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
+                -Dsurefire.rerunFailingTestsCount=2"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post{
@@ -52,14 +52,13 @@ pipeline {
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
+                -Dsurefire.rerunFailingTestsCount=2 \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -81,14 +80,15 @@ pipeline {
         stage('Run EE8 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} -Ppayara-server-remote"
+                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -111,11 +111,11 @@ pipeline {
                 sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Ppayara-server-managed,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                unstable {
+                always {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -141,21 +141,20 @@ pipeline {
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                -Ppayara-server-remote,stable,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable,payara5"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
                     teardownDomain()
-                }
-                unstable {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
     }
 }
-def void setupDomain() {
+
+void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
@@ -165,7 +164,8 @@ def void setupDomain() {
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database --dbtype derby || true"
 }
-def void teardownDomain() {
+
+void teardownDomain() {
     echo 'tidying up after tests:'
     sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} stop-database --dbtype derby || true"

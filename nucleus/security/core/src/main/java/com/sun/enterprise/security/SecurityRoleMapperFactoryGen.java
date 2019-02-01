@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * SecurityRoleMapperFactoryGen.java
@@ -47,6 +47,7 @@
 package com.sun.enterprise.security;
 
 import java.lang.ref.WeakReference;
+
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.internal.api.Globals;
 
@@ -56,15 +57,7 @@ import org.glassfish.internal.api.Globals;
  */
 public class SecurityRoleMapperFactoryGen {
 
-    private static WeakReference<SecurityRoleMapperFactory> securityRoleMapperFactory = new WeakReference<SecurityRoleMapperFactory>(null);
-
-    private static synchronized SecurityRoleMapperFactory _getSecurityRoleMapperFactory() {
-        if (securityRoleMapperFactory.get() == null) {
-            securityRoleMapperFactory = new WeakReference<SecurityRoleMapperFactory>(Globals.get(SecurityRoleMapperFactory.class));
-        }
-        
-        return securityRoleMapperFactory.get();
-    }
+    private static WeakReference<SecurityRoleMapperFactory> securityRoleMapperFactory = new WeakReference<>(null);
 
     public static SecurityRoleMapperFactory getSecurityRoleMapperFactory() {
         if (securityRoleMapperFactory.get() != null) {
@@ -72,5 +65,13 @@ public class SecurityRoleMapperFactoryGen {
         }
         
         return _getSecurityRoleMapperFactory();
+    }
+    
+    private static synchronized SecurityRoleMapperFactory _getSecurityRoleMapperFactory() {
+        if (securityRoleMapperFactory.get() == null) {
+            securityRoleMapperFactory = new WeakReference<>(Globals.get(SecurityRoleMapperFactory.class));
+        }
+        
+        return securityRoleMapperFactory.get();
     }
 }
