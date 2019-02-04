@@ -259,14 +259,14 @@ final class WebModuleListener
             (ServiceLocator) defaultServices,
             webModule.getID(), null
         );
-        // If the configuration flag usMyFaces is set, remove javax.faces.jar
+        // If the configuration flag usMyFaces is set, remove jakarta.faces.jar
         // from the system class path
         Boolean useMyFaces = (Boolean)
             servletContext.getAttribute("com.sun.faces.useMyFaces");
         if (useMyFaces != null && useMyFaces) {
             sysClassPath =
-                sysClassPath.replace("javax.faces.jar", "$disabled$.raj");
-            // jsf-connector.jar manifest has a Class-Path to javax.faces.jar
+                sysClassPath.replace("jakarta.faces.jar", "$disabled$.raj");
+            // jsf-connector.jar manifest has a Class-Path to jakarta.faces.jar
             sysClassPath =
                 sysClassPath.replace("jsf-connector.jar", "$disabled$.raj");
         }

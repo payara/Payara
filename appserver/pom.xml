@@ -84,9 +84,9 @@
         <jstl-impl.version>1.2.5</jstl-impl.version>
 
         <!-- JSF -->
-        <javax.faces-spec.version>2.3</javax.faces-spec.version>
-        <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.3.3.99.payara-p8</mojarra.version>
+        <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
+        <jakarta.faces-api.version>2.3.1</jakarta.faces-api.version>
+        <mojarra.version>2.3.9.payara-p1</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
@@ -321,14 +321,14 @@
                         <spec>
                             <artifact>
                                 <groupId>org.glassfish</groupId>
-                                <artifactId>javax.faces</artifactId>
+                                <artifactId>jakarta.faces</artifactId>
                                 <version>${mojarra.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>${javax.faces-spec.version}</specVersion>
+                            <specVersion>${jakarta.faces-spec.version}</specVersion>
                             <implVersion>${mojarra.version}</implVersion>
-                            <apiPackage>javax.faces</apiPackage>
+                            <apiPackage>jakarta.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
 
@@ -668,13 +668,13 @@
             
             <!-- JSF - JavaServer Faces -->
             <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>javax.faces-api</artifactId>
-                <version>${javax.faces-api.version}</version>
+                <groupId>jakarta.faces</groupId>
+                <artifactId>jakarta.faces-api</artifactId>
+                <version>${jakarta.faces-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.faces</artifactId>
+                <artifactId>jakarta.faces</artifactId>
                 <version>${mojarra.version}</version>
             </dependency>
             <dependency>

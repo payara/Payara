@@ -113,7 +113,7 @@
         <!-- work around for GLASSFISH-19861  -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.faces</artifactId>
+            <artifactId>jakarta.faces</artifactId>
             <optional>true</optional>
         </dependency>        
         
