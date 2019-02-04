@@ -81,7 +81,7 @@ import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
  * Updating the service configuration also updates the {@link LogNotifierConfiguration} accordingly.
  *
  * @author jan
- * @since 5.193
+ * @since 5.191
  */
 @Service(name = "set-healthcheck-configuration")
 @PerLookup

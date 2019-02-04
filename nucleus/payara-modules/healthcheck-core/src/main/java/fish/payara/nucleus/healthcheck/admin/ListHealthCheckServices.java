@@ -61,7 +61,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
  * Admin command to list the names of all available health check services.
  *
  * @author jan
- * @since 5.193
+ * @since 5.191
  */
 @Service(name = "list-healthcheck-services")
 @PerLookup
