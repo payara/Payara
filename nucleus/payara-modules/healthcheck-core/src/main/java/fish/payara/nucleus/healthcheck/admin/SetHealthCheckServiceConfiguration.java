@@ -93,7 +93,7 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
  * 
  * Depending on the concrete {@link Checker} type the are more parameters that have an effect.
  * 
- * @author jan
+ * @author Jan Bernitt
  * @since 5.191
  */
 @Service(name = "set-healthcheck-service-configuration")
