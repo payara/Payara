@@ -39,7 +39,7 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.Application;
 import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.io.Serializable;
@@ -82,8 +82,14 @@ public class ClusteredAnnotationProcessor {
     }
 
     private <X> boolean isEJB(ProcessAnnotatedType<X> annotatedType) {
-        EjbBundleDescriptor bundleDescriptor = deployment.getCurrentDeploymentContext().getModuleMetaData(EjbBundleDescriptorImpl.class);
-        return bundleDescriptor != null && bundleDescriptor.getEjbByClassName(annotatedType.getAnnotatedType().getJavaClass().getName()).length > 0;
+        String className = annotatedType.getAnnotatedType().getJavaClass().getName();
+        Application application = deployment.getCurrentDeploymentContext().getModuleMetaData(Application.class);
+        for(EjbBundleDescriptorImpl bundleDescriptor : application.getBundleDescriptors(EjbBundleDescriptorImpl.class)) {
+            if(bundleDescriptor.getEjbByClassName(className).length > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private <X> void validate(AnnotatedType<X> annotatedType, BeanManager beanManager) {
