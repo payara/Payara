@@ -52,6 +52,7 @@ import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.transaction.Transaction;
 import java.util.Hashtable;
+import java.util.logging.Level;
 
 /**
  * Associates a resource with the thread. When the same thread is used again,
@@ -136,7 +137,7 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
                         // from the pool.
                         return null;
                     }
-
+                    _logger.log(Level.INFO, "Retrieved a connection that was thread local and with state free:{0}", ar.getResourceState().isFree());
                     setResourceStateToBusy(ar);
                     if (maxConnectionUsage_ > 0) {
                         ar.incrementUsageCount();
@@ -240,6 +241,8 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
                             if (resource.hasConnectionErrorOccurred()) {
                                 continue;
                             }
+                            _logger.log(Level.INFO, "Retrieved a connection that was associated with thread with state free:{0}",
+                                    resource.getResourceState().isFree());
                             result = resource;
                             setResourceStateToBusy(result);
                             ((AssocWithThreadResourceHandle) result).setAssociated(false);

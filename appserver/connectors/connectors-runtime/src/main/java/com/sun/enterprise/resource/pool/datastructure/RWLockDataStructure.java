@@ -114,7 +114,7 @@ public class RWLockDataStructure implements DataStructure {
      */
     public ResourceHandle getResource() {
         readLock.lock();
-        for(int i=0; i<resources.size(); i++){
+        for (int i = 0; i < resources.size(); i++) {
             ResourceHandle h = resources.get(i);
             if (!h.isBusy()) {
                 readLock.unlock();
@@ -125,13 +125,10 @@ public class RWLockDataStructure implements DataStructure {
                         return h;
                     } else {
                         readLock.lock();
-                        continue;
                     }
-                }finally {
+                } finally {
                     writeLock.unlock();
                 }
-            } else {
-                continue;
             }
         }
         readLock.unlock();

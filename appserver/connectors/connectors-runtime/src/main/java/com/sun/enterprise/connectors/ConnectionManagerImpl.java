@@ -174,6 +174,7 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
     public Object allocateConnection(ManagedConnectionFactory mcf,
                                      ConnectionRequestInfo cxRequestInfo, String jndiNameToUse, Object conn)
             throws ResourceException {
+        logFine("ConnectionManager: allocateConnection");
         validateResourceAndPool();
         PoolManager poolmgr = ConnectorRuntime.getRuntime().getPoolManager();
         boolean resourceShareable = true;
@@ -249,6 +250,7 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
                                            boolean shareable, String jndiNameToUse, Object conn, boolean isUnknownAuth)
             throws ResourceException {
         try {
+            logFine("ConnectionPool: internalGetConnection");
             PoolManager poolmgr = ConnectorRuntime.getRuntime().getPoolManager();
             ConnectorRegistry registry = ConnectorRegistry.getInstance();
             PoolMetaData pmd = registry.getPoolMetaData(poolInfo);
@@ -337,7 +339,8 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
                                ConnectorDescriptor desc, boolean shareable)
             throws PoolingException, ResourceAllocationException, IllegalStateException, RetryableUnavailableException {
         ResourceAllocator alloc;
-
+        
+        logFine("ConnectionManagerImpl: getResource");
         switch (txLevel) {
             case ConnectorConstants.NO_TRANSACTION_INT:
                 alloc = new NoTxConnectorAllocator(poolmgr, mcf, spec, subject, cxRequestInfo, info, desc);

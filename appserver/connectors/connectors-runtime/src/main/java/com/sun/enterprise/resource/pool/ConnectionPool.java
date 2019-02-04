@@ -66,6 +66,7 @@ import javax.resource.ResourceException;
 import javax.resource.spi.RetryableUnavailableException;
 import javax.transaction.Transaction;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.hk2.api.MultiException;
@@ -140,7 +141,8 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
     // NOTE: This resource allocator may not be the same as the allocator passed in to getResource()
     protected ResourceAllocator allocator;
-
+    protected ReentrantReadWriteLock reentrantLock = new ReentrantReadWriteLock();
+    
     private boolean selfManaged_;
 
     private boolean blocked = false;
@@ -521,6 +523,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
             return result;
         }
         
+        logFine("about to prefetch");
         result = prefetch(spec, alloc, tran);
         if (result != null) {
             return result;
@@ -550,6 +553,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      */
     private ResourceHandle getResourceFromTransaction(Transaction tran, ResourceAllocator alloc, ResourceSpec spec) {
         ResourceHandle result = null;
+        logFine("getResourceFromTransaction");;
         try {
             //comment-1: sharing is possible only if caller is marked
             //shareable, so abort right here if that's not the case
@@ -561,57 +565,61 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 if (set != null) {
                     Iterator iter = set.iterator();
                     while (iter.hasNext()) {
-                        ResourceHandle h = (ResourceHandle) iter.next();
-                        if (h.hasConnectionErrorOccurred()) {
-                            iter.remove();
-                            continue;
-                        }
-
-                        ResourceState state = h.getResourceState();
-                        /*
-                         * One can share a resource only for the following conditions:
-                         * 1. The caller resource is shareable (look at the outermost
-                         *    if marked comment-1
-                         * 2. The resource enlisted inside the transaction is shareable
-                         * 3. We are dealing with XA resources OR
-                         *    We are dealing with a non-XA resource that's not in use
-                         *    Note that sharing a non-xa resource that's in use involves
-                         *    associating physical connections.
-                         * 4. The credentials of the resources match
-                         */
-                        if (h.getResourceAllocator().shareableWithinComponent()) {
-                            if (spec.isXA() || poolTxHelper.isNonXAResourceAndFree(j2eetran, h)) {
-                                if (matchConnections) {
-                                    if (!alloc.matchConnection(h)) {
-                                        if (poolLifeCycleListener != null) {
-                                            poolLifeCycleListener.connectionNotMatched();
-                                        }
-                                        continue;
-                                    }
-                                    if (h.hasConnectionErrorOccurred()) {
-                                        if (failAllConnections) {
-                                            //if failAllConnections has happened, we flushed the
-                                            //pool, so we don't have to do iter.remove else we
-                                            //will get a ConncurrentModificationException
-                                            result = null;
-                                            break;
-                                        }
-                                        iter.remove();
-                                        continue;
-                                    }
-                                    if (poolLifeCycleListener != null) {
-                                        poolLifeCycleListener.connectionMatched();
-                                    }
-                                }
-                                if (state.isFree())
-                                    setResourceStateToBusy(h);
-                                result = h;
-                                break;
+                            ResourceHandle resourceHandle = (ResourceHandle) iter.next();
+                            synchronized (resourceHandle.lock) {
+                            if (resourceHandle.hasConnectionErrorOccurred()) {
+                                iter.remove();
+                                continue;
                             }
+
+                            ResourceState state = resourceHandle.getResourceState();
+                            /*
+                            * One can share a resource only for the following conditions:
+                            * 1. The caller resource is shareable (look at the outermost
+                            *    if marked comment-1
+                            * 2. The resource enlisted inside the transaction is shareable
+                            * 3. We are dealing with XA resources OR
+                            *    We are dealing with a non-XA resource that's not in use
+                            *    Note that sharing a non-xa resource that's in use involves
+                            *    associating physical connections.
+                            * 4. The credentials of the resources match
+                            */
+                            if (resourceHandle.getResourceAllocator().shareableWithinComponent()) {
+                                if (spec.isXA() || poolTxHelper.isNonXAResourceAndFree(j2eetran, resourceHandle)) {
+                                    if (matchConnections) {
+                                        if (!alloc.matchConnection(resourceHandle)) {
+                                            if (poolLifeCycleListener != null) {
+                                                poolLifeCycleListener.connectionNotMatched();
+                                            }
+                                            continue;
+                                        }
+                                        if (resourceHandle.hasConnectionErrorOccurred()) {
+                                            if (failAllConnections) {
+                                                //if failAllConnections has happened, we flushed the
+                                                //pool, so we don't have to do iter.remove else we
+                                                //will get a ConncurrentModificationException
+                                                result = null;
+                                                break;
+                                            }
+                                            iter.remove();
+                                            continue;
+                                        }
+                                        if (poolLifeCycleListener != null) {
+                                            poolLifeCycleListener.connectionMatched();
+                                        }
+                                    }
+                                    if (state.isFree()) {
+                                        setResourceStateToBusy(resourceHandle);
+                                    }
+                                    _logger.log(Level.FINE, "Retrieved a shared connection with state free:{0}", state.isFree());
+                                    result = resourceHandle;
+                                    break;
+                                }
+                            }
+                            } // end of synchonized block
                         }
                     }
                 }
-            }
         } catch (ClassCastException e) {
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Pool: getResource : " +
@@ -633,6 +641,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      */
     protected ResourceHandle getUnenlistedResource(ResourceSpec spec, ResourceAllocator alloc,
                                                    Transaction tran) throws PoolingException {
+        logFine("getUnenlistedResource");
         return getResourceFromPool(alloc, spec);
     }
 
@@ -645,6 +654,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      */
     protected boolean isConnectionValid(ResourceHandle h, ResourceAllocator alloc) {
         boolean connectionValid = true;
+        logFine("isConnectionValid");
 
         if (validation || validateAtmostEveryIdleSecs) {
             long validationPeriod;
@@ -682,6 +692,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @return boolean representing the match status of the connection
      */
     protected boolean matchConnection(ResourceHandle resource, ResourceAllocator alloc) {
+        logFine("matchConnection");
         boolean matched = true;
         if (matchConnections) {
             matched = alloc.matchConnection(resource);
@@ -707,6 +718,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     protected ResourceHandle getResourceFromPool(ResourceAllocator alloc, ResourceSpec spec)
             throws PoolingException {
 
+        logFine("getResourceFromPool " + alloc + spec);
         // the order of serving a resource request
         // 1. free and enlisted in the same transaction
         // 2. free and unenlisted
@@ -740,6 +752,8 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     }
                     if(h.isShareable() == alloc.shareableWithinComponent()){
                         // got a matched, valid resource
+                        _logger.log(Level.FINE, "Retrieved a connection that was unenlisted with state free:{0} and shareable:{1}",
+                                new Object[]{!h.isBusy(), h.isShareable()});
                         result = h;
                         break;
                     }else{
@@ -897,6 +911,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @throws PoolingException when unable create a resource
      */
     protected ResourceHandle createSingleResource(ResourceAllocator resourceAllocator) throws PoolingException {
+        logFine("ConnectionPool: createSingleResource" + resourceAllocator);
         ResourceHandle resourceHandle;
         int count = 0;
         long startTime = 0;
@@ -1007,7 +1022,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
         if (!state.isBusy()) {
             //throw new IllegalStateException("state.isBusy() : false");
-            MultiException noBusyException = new MultiException(state.getBusyStackException());
+            MultiException noBusyException = state.getBusyStackException();
             noBusyException.addError(new IllegalStateException("state.isBusy() : false"));
             _logger.log(Level.WARNING, "state.isBusy already set to false for " + h.getName() + "#" + h.getId(), noBusyException);
         }
@@ -1036,7 +1051,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      */
     protected void performMaxConnectionUsageOperation(ResourceHandle handle) {
         ds.removeResource(handle);
-        _logger.log(Level.INFO, "resource_pool.remove_max_used_conn",
+        _logger.log(Level.FINE, "resource_pool.remove_max_used_conn",
                 new Object[]{handle.getId(), handle.getUsageCount()});
 
         if (poolLifeCycleListener != null) {
@@ -1164,7 +1179,8 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      */
     public void resourceEnlisted(Transaction tran, ResourceHandle resource)
             throws IllegalStateException {
-            poolTxHelper.resourceEnlisted(tran, resource);
+        logFine("Pool: resourceEnlisted " + resource);
+        poolTxHelper.resourceEnlisted(tran, resource);
     }
 
     /**
@@ -1174,6 +1190,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
      * @param status status of transaction
      */
     public void transactionCompleted(Transaction tran, int status) throws IllegalStateException {
+        logFine("Transaction complete: " + tran);
         List<ResourceHandle> delistedResources = poolTxHelper.transactionCompleted(tran, status, poolInfo);
         for (ResourceHandle resource : delistedResources) {
             // Application might not have closed the connection.
@@ -1190,6 +1207,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
     public ResourceHandle createResource(ResourceAllocator alloc) throws PoolingException {
         //NOTE : Pool should not call this method directly, it should be called only by pool-datastructure
+        logFine("ConnectionPool: createResource");
         ResourceHandle result = createSingleResource(alloc);
 
         ResourceState state = new ResourceState();
@@ -1216,6 +1234,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
     }
 
     public void resizePool(boolean forced) {
+        logFine("Resizing Pool");
         resizerTask.resizePool(forced);
     }
 

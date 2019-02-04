@@ -37,15 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019[ Payara Foundation and/or affiliates
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource;
+
+import org.glassfish.hk2.api.MultiException;
 
 public class ResourceState {
     private boolean enlisted;
     private boolean busy;
     private long timestamp;
-    private TwiceBusyException busyException;
+    private MultiException busyException;
 
     public boolean isEnlisted() {
         return enlisted;
@@ -69,20 +71,29 @@ public class ResourceState {
 
     public void setBusy(boolean busy) {
         this.busy = busy;
-        if (!busy) {
-            busyException = new TwiceBusyException();
+        if (busy) {
+            busyException.addError(new SetBusy());
+        } else {
+            busyException.addError(new SetFree());
         }
     }
     
     /**
      * Gets an exception with a stack trace of when the resource was previously
-     * set to not busy.
+     * set to busy or free
      * @return a TwiceBusyException used to create a MultiException when setBusy
      * is set to false twice
      * @see com.sun.enterprise.resource.pool.ConnectionPool#resourceClosed(com.sun.enterprise.resource.ResourceHandle) 
      */
-    public TwiceBusyException getBusyStackException(){
+    public MultiException getBusyStackException(){
         return busyException;
+    }
+    
+    /**
+     * Clears the history of when the ResourceHandle was set to busy or free
+     */
+    public void clearBusyStack() {
+        busyException = new MultiException();
     }
 
     public long getTimestamp() {
@@ -102,6 +113,8 @@ public class ResourceState {
         return "Enlisted :" + enlisted + " Busy :" + busy;
     }
     
-    public class TwiceBusyException extends Exception {}
+    public class SetBusy extends Exception {}
+    
+    public class SetFree extends Exception {}
     
 }

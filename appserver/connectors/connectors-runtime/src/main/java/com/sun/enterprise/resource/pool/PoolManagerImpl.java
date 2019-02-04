@@ -159,7 +159,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
     // invoked by DataSource objects to obtain a connection
     public Object getResource(ResourceSpec spec, ResourceAllocator alloc, ClientSecurityInfo info)
             throws PoolingException, RetryableUnavailableException {
-
+        logFine("PoolManager: getResource");
         Transaction tran = null;
         boolean transactional = alloc.isTransactional();
 
@@ -167,8 +167,8 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             tran = getResourceManager(spec).getTransaction();
         }
 
-        ResourceHandle handle =
-                getResourceFromPool(spec, alloc, info, tran);
+        ResourceHandle handle = getResourceFromPool(spec, alloc, info, tran);
+        logFine("Retrived handle: " + handle);
 
         if (!handle.supportsLazyAssociation()) {
             spec.setLazyAssociatable(false);
@@ -185,10 +185,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
                 dmc.associateConnection(connection);
             } catch (ResourceException e) {
                 putbackDirectToPool(handle, spec.getPoolInfo());
-                PoolingException pe = new PoolingException(
-                        e.getMessage());
-                pe.initCause(e);
-                throw pe;
+                throw new PoolingException(e);
             }
         }
 
@@ -236,11 +233,13 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
 
     public ResourceHandle getResourceFromPool(ResourceSpec spec, ResourceAllocator alloc, ClientSecurityInfo info,
                                               Transaction tran) throws PoolingException, RetryableUnavailableException {
+        logFine("getResourceFP from PoolManager");
         ResourcePool pool = getPool(spec.getPoolInfo());
         // pool.getResource() has been modified to:
         //      - be able to create new resource if needed
         //      - block the caller until a resource is acquired or
         //              the max-wait-time expires
+        logFine("pool to use: " + pool);
         return pool.getResource(spec, alloc, tran);
     }
 

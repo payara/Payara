@@ -96,7 +96,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      */
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
-        logFine("In createManagedConnection");
+        logFine("In DS createManagedConnection");
         PasswordCredential pc = SecurityUtils.getPasswordCredential(this, subject, cxRequestInfo);
 
         javax.sql.DataSource dataSource = getDataSource();
@@ -179,7 +179,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *         false	otherwise
      */
     public boolean equals(Object other) {
-        logFine("In equals");
+        logFine("In DSmcf equals");
         /**
          * The check below means that two ManagedConnectionFactory objects are equal
          * if and only if their properties are the same.
