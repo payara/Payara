@@ -156,17 +156,17 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     private void updateConfig(HealthCheckServiceConfiguration config, AdminCommandContext context) {
         final ActionReport report = initActionReport(context);
         try {
-            ConfigSupport.apply(proxy -> {
-                    proxy.enabled(String.valueOf(enabled));
-                    proxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
+            ConfigSupport.apply(configProxy -> {
+                    configProxy.enabled(String.valueOf(enabled));
+                    configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
                     if (historicalTraceEnabled != null) {
-                        proxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                        configProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
                     }
                     if (historicalTraceStoreTimeout != null) {
-                        proxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                     }
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return proxy;
+                    return configProxy;
                 }, config);
         } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);

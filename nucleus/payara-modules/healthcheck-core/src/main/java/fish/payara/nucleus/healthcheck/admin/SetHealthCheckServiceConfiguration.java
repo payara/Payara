@@ -206,7 +206,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
         if (serviceType == null) {
             String values = Arrays.asList(CheckerType.values())
-                    .stream().map(t -> t.name().toLowerCase().replace('_', '-')).collect(Collectors.joining(", "));
+                    .stream().map(type -> type.name().toLowerCase().replace('_', '-')).collect(Collectors.joining(", "));
             report.setMessage("No such service: " + serviceName + ".\nChoose one of: " + values
                     + ".\nThe name can also be given in short form consisting only of the first letters of each word.");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -232,15 +232,16 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
      */
     private static CheckerType parseServiceType(String serviceName) {
         if (serviceName.length() < 4) {
-            for (CheckerType t : CheckerType.values()) {
-                if (Arrays.asList(t.name().split("_")).stream().map(w -> w.charAt(0)+"").collect(Collectors.joining("")).equals(serviceName.toUpperCase())) {
-                    return t;
+            for (CheckerType type : CheckerType.values()) {
+                if (Arrays.asList(type.name().split("_")).stream().map(w -> w.charAt(0) + "")
+                        .collect(Collectors.joining("")).equals(serviceName.toUpperCase())) {
+                    return type;
                 }
             }
         } else {
             try {
                 return CheckerType.valueOf(serviceName.toUpperCase().replace('-', '_'));
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ex) {
                 // fall through
             }
         }
@@ -248,9 +249,9 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     }
 
     private BaseHealthCheck<?, ?> getService() {
-        for (BaseHealthCheck<?, ?> s : habitat.getAllServices(BaseHealthCheck.class)) {
-            if (s.getCheckerType().getAnnotation(CheckerConfigurationType.class).type() == serviceType)
-                return s;
+        for (BaseHealthCheck<?, ?> service : habitat.getAllServices(BaseHealthCheck.class)) {
+            if (service.getCheckerType().getAnnotation(CheckerConfigurationType.class).type() == serviceType)
+                return service;
         }
         return null;
     }
@@ -261,11 +262,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         C checker = config.getCheckerByType(checkerType);
         try {
             if (checker == null) {
-                ConfigSupport.apply(proxy-> {
-                    Checker newChecker = proxy.createChild(checkerType);
-                    proxy.getCheckerList().add(newChecker);
+                ConfigSupport.apply(configProxy-> {
+                    Checker newChecker = configProxy.createChild(checkerType);
+                    configProxy.getCheckerList().add(newChecker);
                     updateProperties(newChecker, checkerType);
-                    return proxy;
+                    return configProxy;
                 }, config);
             } else {
                 ConfigSupport.apply(proxy -> updateProperties(proxy, checkerType), checker);
@@ -347,16 +348,16 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             throws TransactionFailure {
         Property prop = config.getProperty(name);
         if (prop == null) {
-            ConfigSupport.apply(proxy -> {
-                Property newProp = proxy.createChild(Property.class);
+            ConfigSupport.apply(configProxy -> {
+                Property newProp = configProxy.createChild(Property.class);
                 updateProperty(newProp, name, value);
-                proxy.getProperty().add(newProp);
-                return proxy;
+                configProxy.getProperty().add(newProp);
+                return configProxy;
             }, config);
         } else {
-            ConfigSupport.apply(proxy -> {
-                updateProperty(proxy, name, value);
-                return proxy;
+            ConfigSupport.apply(propertyProxy -> {
+                updateProperty(propertyProxy, name, value);
+                return propertyProxy;
             }, prop);
         }
     }
@@ -375,11 +376,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             report.appendMessage(serviceName + "." + name +" was " + from + " set to " + to + "\n");
             try {
                 setter.accept(config, to.toString());
-            } catch (RuntimeException e) {
-                if (e.getCause() != null && PropertyVetoException.class.isAssignableFrom(e.getCause().getClass())) {
-                    throw (PropertyVetoException) e.getCause();
+            } catch (RuntimeException ex) {
+                if (ex.getCause() != null && PropertyVetoException.class.isAssignableFrom(ex.getCause().getClass())) {
+                    throw (PropertyVetoException) ex.getCause();
                 }
-                throw e;
+                throw ex;
             }
         }
     }
