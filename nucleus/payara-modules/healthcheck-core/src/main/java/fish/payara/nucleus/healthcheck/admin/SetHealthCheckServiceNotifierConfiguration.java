@@ -90,7 +90,7 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
  * {@link NotificationServiceConfiguration} to use its {@link NotifierConfiguration#getNoisy()} as automatic fallback
  * setting.
  *
- * @author jan
+ * @author Jan Bernitt
  */
 @Service(name = "set-healthcheck-service-notifier-configuration")
 @PerLookup
@@ -161,18 +161,18 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         final Notifier notifier = selectByType(Notifier.class, config.getNotifierList());
         try {
             if (notifier == null) {
-                ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) proxy -> {
+                ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) configProxy -> {
                     @SuppressWarnings("unchecked")
-                    Notifier newNotifier = proxy.createChild(selectByType(Class.class,
+                    Notifier newNotifier = configProxy.createChild(selectByType(Class.class,
                             configModularityUtils.getInstalledExtensions(Notifier.class)));
-                    proxy.getNotifierList().add(newNotifier);
+                    configProxy.getNotifierList().add(newNotifier);
                     applyValues(newNotifier);
-                    return proxy;
+                    return configProxy;
                 }, config);
             } else {
-                ConfigSupport.apply(proxy -> {
-                    applyValues(proxy);
-                    return proxy;
+                ConfigSupport.apply(notifierProxy -> {
+                    applyValues(notifierProxy);
+                    return notifierProxy;
                 }, notifier);
             }
             if (dynamic && (!server.isDas() || targetUtil.getConfig(target).isDas())) {
@@ -206,8 +206,8 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
     }
 
     private <T> T selectByType(Class<? super T> commonInterface, List<T> candidates) {
-        for (T e : candidates) {
-            Class<?> annotatedType = e instanceof Class ? (Class<?>) e : e.getClass();
+        for (T candidate : candidates) {
+            Class<?> annotatedType = candidate instanceof Class ? (Class<?>) candidate : candidate.getClass();
             if (Proxy.isProxyClass(annotatedType)) {
                 for (Class<?> i : annotatedType.getInterfaces()) {
                     if (commonInterface.isAssignableFrom(i)) {
@@ -215,9 +215,9 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
                     }
                 }
             }
-            NotifierConfigurationType t = annotatedType.getAnnotation(NotifierConfigurationType.class);
-            if (t != null && t.type() == notifierType) {
-                return e;
+            NotifierConfigurationType type = annotatedType.getAnnotation(NotifierConfigurationType.class);
+            if (type != null && type.type() == notifierType) {
+                return candidate;
             }
         }
         return null;
