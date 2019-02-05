@@ -66,12 +66,14 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     private int hazelcastPort;
     private int adminPort;
     private String instanceGroup;
+    private long heartBeatTS;
 
     public InstanceDescriptorImpl(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
         memberUUID = UUID;
         httpPorts = new ArrayList<>();
         httpsPorts = new ArrayList<>();
+        heartBeatTS = System.currentTimeMillis();
     }
 
     public void addApplication(ApplicationInfo info) {
@@ -477,6 +479,15 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      */
     public void setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
+    }
+    
+    public void setLastHeartBeat(long val) {
+        heartBeatTS = val;
+    }
+
+    @Override
+    public long getLastHearbeat() {
+        return heartBeatTS;
     }
 
 }
