@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.base.stats;
 
-import com.sun.enterprise.admin.monitor.stats.GenericStatsImpl;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
-
+import com.sun.enterprise.admin.monitor.stats.GenericStatsImpl;
 import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
 import org.glassfish.j2ee.statistics.CountStatistic;
 import org.glassfish.j2ee.statistics.Statistic;
 import org.glassfish.j2ee.statistics.Stats;
+
 import java.util.logging.Logger;
 
 /**
@@ -66,7 +67,7 @@ public abstract class StatsImpl
 
     protected StatsImpl() {
     }
-    
+
     protected void initialize(String statInterfaceName) {
 	try {
 	    genericStatsDelegate =  new GenericStatsImpl(statInterfaceName, this);
@@ -88,7 +89,7 @@ public abstract class StatsImpl
     }
 
     public String statToString() {
-	StringBuffer sbuf = new StringBuffer();
+	StringBuilder sbuf = new StringBuilder();
 	Statistic[] stats = getStatistics();
 	int sz = stats.length;
 	for (int i=0; i<sz; i++) {

@@ -37,30 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.loadbalancer.admin.cli.helper;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
+import org.glassfish.loadbalancer.admin.cli.beans.Loadbalancer;
+import org.glassfish.loadbalancer.admin.cli.reader.api.ClusterReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.LoadbalancerReader;
+import org.glassfish.loadbalancer.admin.cli.reader.api.WebModuleReader;
+import org.glassfish.loadbalancer.admin.cli.reader.impl.LoadbalancerReaderImpl;
+import org.glassfish.loadbalancer.admin.cli.transform.LoadbalancerVisitor;
+import org.glassfish.loadbalancer.config.LbConfig;
+import org.glassfish.loadbalancer.config.LbConfigs;
+import org.glassfish.loadbalancer.config.LoadBalancer;
+import org.glassfish.loadbalancer.config.LoadBalancers;
 
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
-import org.glassfish.loadbalancer.admin.cli.reader.api.ClusterReader;
-import org.glassfish.loadbalancer.admin.cli.reader.api.InstanceReader;
-import org.glassfish.loadbalancer.admin.cli.reader.api.WebModuleReader;
-import org.glassfish.loadbalancer.config.LbConfig;
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.loadbalancer.config.LoadBalancer;
-import org.glassfish.loadbalancer.config.LbConfigs;
-import org.glassfish.loadbalancer.config.LoadBalancers;
-
-import org.glassfish.loadbalancer.admin.cli.reader.api.LoadbalancerReader;
-import org.glassfish.loadbalancer.admin.cli.reader.impl.LoadbalancerReaderImpl;
-import org.glassfish.loadbalancer.admin.cli.transform.LoadbalancerVisitor;
-
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
-import org.glassfish.loadbalancer.admin.cli.beans.Loadbalancer;
 
 
 /**
@@ -164,7 +163,7 @@ public class LbConfigHelper {
         String LB = "lb";
         String CONTEXT_ROOT_MAPPING="CONTEXT_ROOT_MAPPING";
         String APP="APP";
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         String workerList = "";
 
@@ -221,7 +220,7 @@ public class LbConfigHelper {
         }
 
         try {
-            
+
         props.store(out,buffer.toString());
 
         } finally {
@@ -250,7 +249,7 @@ public class LbConfigHelper {
         String LISTENER = "listeners";
         String WEB = "web-modules";
         String SEPARATOR = ".";
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
 
         LoadbalancerVisitor lbVstr = new LoadbalancerVisitor(_lb);
@@ -262,7 +261,7 @@ public class LbConfigHelper {
         buffer.append("otd.properties");
 
         for(int i=0;i<clusterReaders.length;i++) {
-            StringBuffer clusterHostList = new StringBuffer();
+            StringBuilder clusterHostList = new StringBuilder();
             String clusterWebList = "";
             ClusterReader clusterReader = clusterReaders[i];
             String clusterName = clusterReader.getName();

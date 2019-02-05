@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.internal.logging;
 
@@ -105,7 +106,7 @@ public class Loggable {
    * Gets the contents of the message body without appending a stack trace. This
    * is particularly useful when using the value of a loggables message as the
    * value when creating an exception.
-   * 
+   *
    */
   public String getMessageBody() {
     return getMessage(true, false);
@@ -116,7 +117,7 @@ public class Loggable {
    */
   private String getMessage(boolean prefix, boolean addTrace) {
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     if (prefix) {
       Object[] preArgs = { getSubSystem(), id };

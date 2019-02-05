@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.tools.verifier.apiscan.classfile;
 
@@ -54,7 +55,7 @@ import java.lang.ref.SoftReference;
  */
 class ASMMethod extends EmptyVisitor implements Method {
 
-    private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";    
+    private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";
     private static Logger logger = Logger.getLogger("apiscan.classfile", resourceBundleName); // NOI18N
 
     private SoftReference<ClassFile> owningClass;
@@ -270,7 +271,7 @@ class ASMMethod extends EmptyVisitor implements Method {
                 break;
         }
         if (logger.isLoggable(Level.FINE)) {
-            StringBuffer sb = new StringBuffer("Class Names are {"); // NOI18N
+            StringBuilder sb = new StringBuilder("Class Names are {"); // NOI18N
             int size = result.size();
             for (int k = 0; k < size; k++) {
                 sb.append((String) result.get(k));

@@ -37,15 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
 import org.glassfish.deployment.common.Descriptor;
 
-import java.util.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
 import javax.servlet.descriptor.TaglibDescriptor;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * This is a descriptor for the taglib config used in a web application.
@@ -117,8 +121,8 @@ public class JspConfigDescriptorImpl extends Descriptor
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nTagLibs : ").append(taglibs).append(
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nTagLibs : ").append(taglibs).append(
             " jsp groups:").append(jspGroups);
     }
 }

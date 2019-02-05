@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * ClassPathBuilder.java
@@ -59,16 +60,16 @@ import java.util.logging.Logger;
 
 /**
  * This is a stand alone utility that recurssively computes the optional package
- * dependency of a jar file.  Then it makes a classpath out of the same 
+ * dependency of a jar file.  Then it makes a classpath out of the same
  * information.
  *
- * @author Sanjeeb.Sahoo@Sun.COM 
+ * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class ClassPathBuilder {
     private static String resourceBundleName = "com.sun.enterprise.tools.verifier.apiscan.LocalStrings";
     public static final Logger logger = Logger.getLogger("apiscan.packaging", resourceBundleName); // NOI18N
     private static final String myClassName = "ClassPathBuilder"; // NOI18N
-    
+
     private static final String thisClassName = "com.sun.enterprise.tools.verifier.apiscan.packaging.ClassPathBuilder"; // NOI18N
 
     public static String buildClassPathForJar(JarFile jar) throws IOException {
@@ -86,7 +87,7 @@ public class ClassPathBuilder {
     //It adds the incoming jar file to the classpath.
     public static String buildClassPathForJar(Archive jar) throws IOException {
         logger.entering(myClassName, "buildClassPathForJar", jar); // NOI18N
-        StringBuffer classpath = new StringBuffer(
+        StringBuilder classpath = new StringBuilder(
                 jar.getPath() + File.pathSeparator);
 
         Archive[] archives = jar.getBundledArchives();
@@ -102,7 +103,7 @@ public class ClassPathBuilder {
     //It adds the incoming jar file to the classpath.
     public static String buildClassPathForRar(Archive rar) throws IOException {
         logger.entering(myClassName, "buildClassPathForRar", rar); // NOI18N
-        final StringBuffer classpath = new StringBuffer();
+        final StringBuilder classpath = new StringBuilder();
 
         // all the jar's inside the rar should be available in the classpath
         new File(rar.getPath()).listFiles(new FileFilter() {
@@ -197,7 +198,7 @@ public class ClassPathBuilder {
     }
 
     public static String buildClassPathForWar(Archive war) throws IOException {
-        final StringBuffer cp = new StringBuffer();
+        final StringBuilder cp = new StringBuilder();
         if (new File(war.getPath()).isDirectory()) {
             final String explodedDir = war.getPath();
             //As per section#9.5 of Servlet 2.4 spec, WEB-INF/classes must be
@@ -246,7 +247,7 @@ public class ClassPathBuilder {
 
     public static String buildClassPathForEar(Archive jar) throws IOException {
         logger.entering(myClassName, "buildClassPathForEar", jar);
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         //See we do not care about bundled opt packages, as for an ear file
         //there should not be any Class-Path entry.
         ExtensionRef[] extRefs = jar.getExtensionRefs();
@@ -284,7 +285,7 @@ public class ClassPathBuilder {
                         ref);
             }
         }//for each ref
-        File[] archives = 
+        File[] archives =
                 new File(jar.getPath()).listFiles(new FileFilter() {
                     public boolean accept(File pathname) {
                         return pathname.getName().endsWith("_rar");
@@ -299,8 +300,8 @@ public class ClassPathBuilder {
         return result;
     }
 
-    private static StringBuffer convertToClassPath(Archive[] archives) {
-        StringBuffer cp = new StringBuffer();
+    private static StringBuilder convertToClassPath(Archive[] archives) {
+        StringBuilder cp = new StringBuilder();
         for (int i = 0; i < archives.length; ++i) {
             if (i != 0) cp.append(File.pathSeparatorChar);
             cp.append(archives[i].getPath());
@@ -308,7 +309,7 @@ public class ClassPathBuilder {
         return cp;
     }
 
-    private static StringBuffer removeDuplicates(StringBuffer cp) {
+    private static StringBuilder removeDuplicates(StringBuilder cp) {
         ArrayList<String> tokens = new ArrayList<String>();
         for (StringTokenizer st = new StringTokenizer(cp.toString(),
                 File.pathSeparator);
@@ -316,7 +317,7 @@ public class ClassPathBuilder {
             String next = st.nextToken();
             if (!tokens.contains(next)) tokens.add(next);
         }
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int j = 0; j < tokens.size(); ++j) {
             if (j != 0) result.append(File.pathSeparator);
             result.append(tokens.get(j));

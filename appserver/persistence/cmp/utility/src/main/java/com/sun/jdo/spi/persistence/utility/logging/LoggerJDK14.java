@@ -37,18 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.spi.persistence.utility.logging;
 
 import java.util.logging.Level;
-import java.util.logging.LogManager;
-
-import java.lang.StringBuffer;
 
 /**
  * This class is used with JDK 1.4 (and higher) programs to log messages from
  * jdo components.  It extends a java.util.logging.Logger which does
- * the actual logging.  
+ * the actual logging.
  *
  * @author  Craig Russell
  * @version 1.0
@@ -81,11 +79,11 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public boolean isLoggable() {
         return isLoggable(Level.FINE);
     }
-    
+
     /**
      * Log a FINE message.
      * <p>
-     * If the logger is currently enabled for the FINE message 
+     * If the logger is currently enabled for the FINE message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -102,7 +100,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     /**
      * Log a FINE message.
      * <p>
-     * If the logger is currently enabled for the FINE message 
+     * If the logger is currently enabled for the FINE message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -115,7 +113,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(Level.FINE, sourceClassName, sourceMethodName, msg, o1);
         }
     }
-    
+
 
     /**
      * Log a FINE message.
@@ -134,7 +132,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(Level.FINE, sourceClassName, sourceMethodName, msg, new Object[]{o1, o2});
         }
     }
-    
+
     /**
      * Log a FINE message.
      * <p>
@@ -153,11 +151,11 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(Level.FINE, sourceClassName, sourceMethodName, msg, new Object[]{o1, o2, o3});
         }
     }
-    
+
     /**
      * Log a FINER message.
      * <p>
-     * If the logger is currently enabled for the FINER message 
+     * If the logger is currently enabled for the FINER message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -174,7 +172,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     /**
      * Log a FINER message.
      * <p>
-     * If the logger is currently enabled for the FINER message 
+     * If the logger is currently enabled for the FINER message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -187,8 +185,8 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(Level.FINER, sourceClassName, sourceMethodName, msg, o1);
         }
     }
-    
-    
+
+
     /**
      * Log a FINER message.
      * <p>
@@ -203,11 +201,11 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public void finer(String msg, Object o1, Object o2) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
-            logp(Level.FINER, sourceClassName, sourceMethodName, msg, 
+            logp(Level.FINER, sourceClassName, sourceMethodName, msg,
                  new Object[]{o1, o2});
         }
     }
-    
+
     /**
      * Log a FINER message.
      * <p>
@@ -223,16 +221,16 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public void finer(String msg, Object o1, Object o2, Object o3) {
         if (isLoggable(Level.FINER)) {
             inferCaller();
-            logp(Level.FINER, sourceClassName, sourceMethodName, msg, 
+            logp(Level.FINER, sourceClassName, sourceMethodName, msg,
                  new Object[]{o1, o2, o3});
         }
     }
-    
+
 
     /**
      * Log a FINEST message.
      * <p>
-     * If the logger is currently enabled for the FINEST message 
+     * If the logger is currently enabled for the FINEST message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -249,7 +247,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     /**
      * Log a FINEST message.
      * <p>
-     * If the logger is currently enabled for the FINEST message 
+     * If the logger is currently enabled for the FINEST message
      * level then the given message is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -262,7 +260,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(Level.FINEST, sourceClassName, sourceMethodName, msg, o1);
         }
     }
-    
+
     /**
      * Log a FINEST message.
      * <p>
@@ -277,11 +275,11 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public void finest(String msg, Object o1, Object o2) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
-            logp(Level.FINEST, sourceClassName, sourceMethodName, msg, 
+            logp(Level.FINEST, sourceClassName, sourceMethodName, msg,
                  new Object[]{o1, o2});
         }
     }
-    
+
     /**
      * Log a FINEST message.
      * <p>
@@ -297,22 +295,22 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public void finest(String msg, Object o1, Object o2, Object o3) {
         if (isLoggable(Level.FINEST)) {
             inferCaller();
-            logp(Level.FINEST, sourceClassName, sourceMethodName, msg, 
+            logp(Level.FINEST, sourceClassName, sourceMethodName, msg,
                  new Object[]{o1, o2, o3});
         }
     }
-    
+
     /** Prepare a printable version of this instance.
      * @return the String representation of this object
-     */    
+     */
     public String toString() {
-        StringBuffer buf = new StringBuffer ("LoggerJDK14: ");  //NOI18N
+        StringBuilder buf = new StringBuilder ("LoggerJDK14: ");  //NOI18N
         buf.append (" name: "); buf.append (getName()); //NOI18N
         buf.append (", super: "); buf.append (super.toString());  //NOI18N
         buf.append (", logging level: "); buf.append (getLevel()); //NOI18N
         return buf.toString();
     }
-    
+
     /**
      * Log a message.
      * <p>
@@ -331,7 +329,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(lvl, sourceClassName, sourceMethodName, msg, o1);
         }
     }
-    
+
     /**
      * Log a message.
      * <p>
@@ -351,7 +349,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(lvl, sourceClassName, sourceMethodName, msg, new Object[]{o1, o2});
         }
     }
-    
+
     /**
      * Log a  message.
      * <p>
@@ -369,11 +367,11 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
         Level lvl = convertLevel(level);
         if (isLoggable(lvl)) {
             inferCaller();
-            logp(lvl, sourceClassName, sourceMethodName, msg, 
+            logp(lvl, sourceClassName, sourceMethodName, msg,
                  new Object[] {o1, o2, o3});
         }
     }
-    
+
     /**
      * Log a  message.
      * <p>
@@ -392,7 +390,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(lvl, sourceClassName, sourceMethodName, msg, o);
         }
     }
-    
+
     /**
      * Log a message.
      * <p>
@@ -410,13 +408,13 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
             logp(lvl, sourceClassName, sourceMethodName, msg);
         }
     }
-    
+
 
     /**
      * Log a message.
      * <p>
-     * If the logger is currently enabled for the message 
-     * level then the given message, and the exception dump, 
+     * If the logger is currently enabled for the message
+     * level then the given message, and the exception dump,
 	 * is forwarded to all the
      * registered output Handler objects.
      * <p>
@@ -443,7 +441,7 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     public boolean isLoggable(int levelValue) {
         return isLoggable(convertLevel(levelValue));
     }
-    
+
     /** Convert an int level used by jdo logger to the Level instance used
      * by JDK 1.4 logger.
      * This is done to allow components to use logging outside the JDK 1.4
@@ -464,8 +462,8 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
         }
     }
 
-    /** 
-     * Method to infer the caller's class name and method name. 
+    /**
+     * Method to infer the caller's class name and method name.
      * The method analyses the current stack trace, to find the method that
      * issued the logger call. It stores the callers class and method name
      * into fields sourceClassName and sourceMethodName.
@@ -487,9 +485,9 @@ public class LoggerJDK14 extends java.util.logging.Logger implements Logger {
     }
 
     /**
-     * This method is a helper method for {@link #inferCaller}. It returns 
+     * This method is a helper method for {@link #inferCaller}. It returns
      * <code>true</code> if the specified class name denotes a logger class
-     * that should be ignored when analysing the stack trace to infer the 
+     * that should be ignored when analysing the stack trace to infer the
      * caller of a log message.
      * @param className the class name to be checked.
      * @return <code>true</code> if the specified name denotes a logger class;

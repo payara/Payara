@@ -37,19 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.installer.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import org.openinstaller.util.ClassUtils;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openinstaller.util.ClassUtils;
 
 /**
  * Utility class to perform file I/O operations such as read/write/update.
@@ -132,7 +129,7 @@ public class FileIOUtils {
         for (int loopVar = 0; loopVar < totalLines; loopVar++) {
             contentBuffer.remove(loopVar);
             contentBuffer.add(loopVar,
-                    StringUtils.substString((StringBuffer) contentBuffer.get(loopVar),
+                    StringUtils.substString((StringBuilder) contentBuffer.get(loopVar),
                     token, newValue));
 
         }

@@ -37,17 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jaspic.config.helper;
 
+import javax.security.auth.message.AuthException;
+import javax.security.auth.message.AuthStatus;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.message.AuthException;
-import javax.security.auth.message.AuthStatus;
 
 /**
- * 
+ *
  *
  * @author Ron Monzillo
  */
@@ -75,7 +76,7 @@ public abstract class BaseAuthContextImpl {
     protected void logIfLevel(Level level, Throwable t, String... msgParts) {
         Logger logger = Logger.getLogger(loggerName);
         if (logger.isLoggable(level)) {
-            StringBuffer msgB = new StringBuffer("");
+            StringBuilder msgB = new StringBuilder("");
             for (String m : msgParts) {
                 msgB.append(m);
             }

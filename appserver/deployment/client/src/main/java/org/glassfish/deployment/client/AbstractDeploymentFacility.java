@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 package org.glassfish.deployment.client;
 
 import org.glassfish.api.admin.CommandException;
@@ -95,7 +95,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     private boolean connected;
     private TargetImpl domain;
     private ServerConnectionIdentifier targetDAS;
-    private Map<String, String> targetModuleWebURLs = 
+    private Map<String, String> targetModuleWebURLs =
         new HashMap<String, String>();
 
     @LogMessagesResourceBundle
@@ -129,7 +129,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
 
     /**
      * Returns a command runner for the concrete implementation.
-     * 
+     *
      * @param commandName
      * @param commandOptions
      * @param operands
@@ -284,7 +284,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     }
 
     protected String createTargetsParam(Target[] targets) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < targets.length; i++) {
             sb.append(targets[i].getName());
             if (i != targets.length-1) {
@@ -298,7 +298,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         if (source == null) {
             throw new IllegalArgumentException();
         }
-        File tempSourceFile = null; 
+        File tempSourceFile = null;
         File tempPlanFile = null;
         if (source instanceof MemoryMappedArchive) {
             try {
@@ -336,11 +336,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 return deploy(targets, source.getURI(), deploymentPlan.getURI(), deploymentOptions);
             }
         }
-    } 
+    }
 
     private File writeMemoryMappedArchiveToTempFile(MemoryMappedArchive mma, String fileSuffix) throws IOException {
         File tempFile = File.createTempFile("jsr88-", fileSuffix);
-        BufferedOutputStream bos = null; 
+        BufferedOutputStream bos = null;
         BufferedInputStream bis = null;
         int chunkSize = 32 * 1024;
         long remaining = mma.getArchiveSize();
@@ -352,8 +352,8 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 int actual = (remaining < chunkSize) ? (int) remaining : chunkSize;
                 byte[] bytes = new byte[actual];
                 try {
-                    for (int totalCount = 0, count = 0; 
-                        count != -1 && totalCount < actual; 
+                    for (int totalCount = 0, count = 0;
+                        count != -1 && totalCount < actual;
                         totalCount += (count = bis.read(bytes, totalCount, actual - totalCount)));
                     bos.write(bytes);
                 } catch (EOFException eof) {
@@ -370,11 +370,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 }
             }
             if (bis != null) {
-                bis.close(); 
+                bis.close();
             }
         }
         return tempFile;
-    } 
+    }
 
     /**
      * Deploys the application (with optional deployment plan) to the specified
@@ -441,7 +441,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 // set the enable attribute accordingly
                 String enabledAttr = getAppRefEnabledAttr(
                     targets[0].getName(), appName);
-                deploymentOptions.put(DFDeploymentProperties.ENABLED, 
+                deploymentOptions.put(DFDeploymentProperties.ENABLED,
                     enabledAttr);
             }
 
@@ -449,11 +449,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
 
             // first deploy to first target
             if (isRedeploy && targets.length > 1) {
-                // if it's redeploy and having more than one target, 
+                // if it's redeploy and having more than one target,
                 // we should just redeploy with the special domain target
                 targets = createTargets(new String[] {"domain"});
             }
-            deploymentOptions.put(DFDeploymentProperties.TARGET, targets[0].getName());    
+            deploymentOptions.put(DFDeploymentProperties.TARGET, targets[0].getName());
             DFCommandRunner commandRunner = getDFCommandRunner(
                 "deploy", deploymentOptions, new String[]{tmpFile.getAbsolutePath()});
             DFDeploymentStatus ds = commandRunner.run();
@@ -471,25 +471,25 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
 
             Map createAppRefOptions = new HashMap();
             if (deploymentOptions.get(DFDeploymentProperties.ENABLED) != null) {
-                createAppRefOptions.put(DFDeploymentProperties.ENABLED, deploymentOptions.get(DFDeploymentProperties.ENABLED)); 
+                createAppRefOptions.put(DFDeploymentProperties.ENABLED, deploymentOptions.get(DFDeploymentProperties.ENABLED));
             }
             if (deploymentOptions.get(DFDeploymentProperties.VIRTUAL_SERVERS) != null) {
-                createAppRefOptions.put(DFDeploymentProperties.VIRTUAL_SERVERS, deploymentOptions.get(DFDeploymentProperties.VIRTUAL_SERVERS)); 
+                createAppRefOptions.put(DFDeploymentProperties.VIRTUAL_SERVERS, deploymentOptions.get(DFDeploymentProperties.VIRTUAL_SERVERS));
             }
             // then create application references to the rest of the targets
             for (int i = 1; i < targets.length; i++) {
-                createAppRefOptions.put(DFDeploymentProperties.TARGET, targets[i].getName());    
+                createAppRefOptions.put(DFDeploymentProperties.TARGET, targets[i].getName());
                 DFCommandRunner commandRunner2 = getDFCommandRunner(
                     "create-application-ref", createAppRefOptions, new String[] {moduleID});
                 DFDeploymentStatus ds2 = commandRunner2.run();
                 DFDeploymentStatus mainStatus2 = ds2.getMainStatus();
-                if (!po.checkStatusAndAddStage((TargetImpl)targets[i], 
+                if (!po.checkStatusAndAddStage((TargetImpl)targets[i],
 "create app ref", mainStatus2)) {
                     return po;
-                } 
+                }
             }
- 
-            // we use origTargets to populate the targetModuleIDList 
+
+            // we use origTargets to populate the targetModuleIDList
             // so it takes care of the redeploy using domain target case too
             for (int i = 0; i < origTargets.length; i++) {
                 TargetModuleIDImpl targetModuleID = new TargetModuleIDImpl((TargetImpl)origTargets[i], moduleID);
@@ -558,7 +558,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             List<String> subModuleInfoList = new ArrayList<String>();
 
             if (mainStatus.getStatus() != DFDeploymentStatus.Status.FAILURE) {
-                for (Iterator subIter = mainStatus.getSubStages(); 
+                for (Iterator subIter = mainStatus.getSubStages();
                     subIter.hasNext();) {
                     DFDeploymentStatus subStage =
                         (DFDeploymentStatus) subIter.next();
@@ -606,7 +606,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             String enabledAttr = null;
 
             if (mainStatus.getStatus() != DFDeploymentStatus.Status.FAILURE) {
-                Iterator subIter = mainStatus.getSubStages(); 
+                Iterator subIter = mainStatus.getSubStages();
                 if (subIter.hasNext()) {
                     DFDeploymentStatus subStage =
                         (DFDeploymentStatus) subIter.next();
@@ -644,7 +644,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     public String getContextRoot(String moduleName) throws IOException {
         ensureConnected();
         String commandName = GET_COMMAND;
-        String patternParam = "applications.application." + moduleName + 
+        String patternParam = "applications.application." + moduleName +
             ".context-root";
         String[] operands = new String[] { patternParam };
         DFDeploymentStatus mainStatus = null;
@@ -656,12 +656,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             String contextRoot = null;
 
             if (mainStatus.getStatus() != DFDeploymentStatus.Status.FAILURE) {
-                Iterator subIter = mainStatus.getSubStages(); 
+                Iterator subIter = mainStatus.getSubStages();
                 if (subIter.hasNext()) {
                     DFDeploymentStatus subStage =
                         (DFDeploymentStatus) subIter.next();
                     String result = subStage.getStageStatusMessage();
-                    contextRoot = 
+                    contextRoot =
                         getValueFromDottedNameGetResult(result);
                 }
             } else {
@@ -702,7 +702,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             List<String> resultList = new ArrayList<String>();
 
             if (mainStatus.getStatus() != DFDeploymentStatus.Status.FAILURE) {
-                for (Iterator subIter = mainStatus.getSubStages(); 
+                for (Iterator subIter = mainStatus.getSubStages();
                     subIter.hasNext();) {
                     DFDeploymentStatus subStage =
                         (DFDeploymentStatus) subIter.next();
@@ -749,7 +749,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             List<Target> targets = new ArrayList<Target>();
 
             if (mainStatus.getStatus() != DFDeploymentStatus.Status.FAILURE) {
-                for (Iterator subIter = mainStatus.getSubStages(); 
+                for (Iterator subIter = mainStatus.getSubStages();
                     subIter.hasNext();) {
                     DFDeploymentStatus subStage =
                         (DFDeploymentStatus) subIter.next();
@@ -823,7 +823,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return getHostAndPort(target, false);
     }
 
-    public HostAndPort getHostAndPort(String target, boolean securityEnabled) 
+    public HostAndPort getHostAndPort(String target, boolean securityEnabled)
         throws IOException {
         return getHostAndPort(target, null, securityEnabled);
     }
@@ -832,12 +832,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return getHostAndPort(target, null, virtualServer, securityEnabled);
     }
 
-    public HostAndPort getHostAndPort(String target, String moduleId, boolean securityEnabled) 
+    public HostAndPort getHostAndPort(String target, String moduleId, boolean securityEnabled)
         throws IOException {
         return getHostAndPort(target, moduleId, null, securityEnabled);
     }
 
-    private HostAndPort getHostAndPort(String target, String moduleId, 
+    private HostAndPort getHostAndPort(String target, String moduleId,
         String virtualServer, boolean securityEnabled) throws IOException {
         ensureConnected();
         String commandName = "_get-host-and-port";
@@ -1028,7 +1028,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     private Target[] prepareTargets(Target[] targets) {
         if (targets == null || targets.length == 0) {
             targets = new Target[]{targetForDefaultServer()};
-        } 
+        }
 
         return targets;
     }
@@ -1129,9 +1129,9 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
      *  should be exported.
      *  @return the absolute location to the main jar file.
      */
-    public String exportClientStubs(String appName, String destDir) 
+    public String exportClientStubs(String appName, String destDir)
         throws IOException {
-        getClientStubs(destDir, appName); 
+        getClientStubs(destDir, appName);
         return (destDir + appName + "Client.jar");
     }
 
@@ -1180,10 +1180,10 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 sniffersFound.add("rar");
             } else if (result.endsWith("engine.appclient.sniffer=appclient")) {
                 sniffersFound.add("car");
-            } 
-        }         
-       
-        // if we are here, it's not ear 
+            }
+        }
+
+        // if we are here, it's not ear
         // note, we check for web sniffer before ejb, as in ejb in war case
         // we will return war.
         if (sniffersFound.contains("web")) {
@@ -1198,12 +1198,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         if (sniffersFound.contains("car")) {
             return ModuleType.CAR;
         }
- 
+
         return null;
     }
- 
+
     private String getSuffixFromType(String type) {
-        if (type == null) { 
+        if (type == null) {
             return null;
         }
         if (type.equals("war")) {
@@ -1220,7 +1220,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         return null;
     }
 
-    private boolean isTargetsMatched(String appName, Target[] targets) 
+    private boolean isTargetsMatched(String appName, Target[] targets)
         throws IOException {
         Target[] referencedTargets = listReferencedTargets(appName);
         if (targets.length != referencedTargets.length) {
@@ -1229,13 +1229,13 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         List<String> referencedTargetNames = new ArrayList<String>();
         for (Target target : referencedTargets) {
             referencedTargetNames.add(target.getName());
-        } 
+        }
         for (Target target: targets) {
             referencedTargetNames.remove(target.getName());
         }
         if (referencedTargetNames.size() == 0) {
             return true;
-        } 
+        }
         return false;
     }
 }

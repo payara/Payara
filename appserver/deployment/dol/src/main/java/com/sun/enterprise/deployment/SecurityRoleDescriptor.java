@@ -40,10 +40,9 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment;
 
+import com.sun.enterprise.deployment.web.SecurityRole;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
-
-import com.sun.enterprise.deployment.web.SecurityRole;
 
 /**
  * I am an abstract role..
@@ -53,13 +52,13 @@ import com.sun.enterprise.deployment.web.SecurityRole;
 public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
 
     private static final long serialVersionUID = 7523991714027594391L;
-    
+
     /**
      * Default constructor.
      */
     public SecurityRoleDescriptor() {
     }
-    
+
     /**
      * Construct a SecurityRoleDescriptor from the given role name.
      */
@@ -102,9 +101,9 @@ public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
     /**
      * Formatted string representing my state.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("SecurityRole ");
-        super.print(toStringBuffer);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("SecurityRole ");
+        super.print(toStringBuilder);
     }
 
 }

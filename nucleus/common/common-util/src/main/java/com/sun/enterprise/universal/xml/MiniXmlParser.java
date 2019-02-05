@@ -41,8 +41,6 @@
 
 package com.sun.enterprise.universal.xml;
 
-import java.io.ByteArrayInputStream;
-import javax.xml.stream.XMLResolver;
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
@@ -52,16 +50,11 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.StringUtils;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;

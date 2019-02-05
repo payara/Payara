@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ *
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -26,24 +26,24 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 
 /**
  * Utility class for Concurrent monitoring.
- * 
+ *
  * @author Andrew Pielage
  */
 public class ConcurrentMonitoringUtils
 {
     private static final Logger _logger = LogFacade.getLogger();
-    
+
     static final String NODE = "/";
     static final String SEP = "-";
     static final String APPLICATION_NODE = "applications" + NODE;
     static final String CONCURRENT_MONITORING_NODE = "thread-pool";
     static final String METHOD_NODE = NODE + "bean-methods" + NODE;
 
-    static String registerSingleComponent(String nodeItemName, 
+    static String registerSingleComponent(String nodeItemName,
             Object listener) {
         String beanTreeNode = "executorService/" + nodeItemName;
         try {
-            StatsProviderManager.register(CONCURRENT_MONITORING_NODE, 
+            StatsProviderManager.register(CONCURRENT_MONITORING_NODE,
                     PluginPoint.APPLICATIONS, beanTreeNode, listener);
         } catch (Exception ex) {
             _logger.log(Level.SEVERE, "[**ConcurrentMonitoringUtils**] Could not "
@@ -58,7 +58,7 @@ public class ConcurrentMonitoringUtils
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("==> Converting method to String: " + m);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(m.getName());
         Class[] args = m.getParameterTypes();
         for (Class c : args) {
@@ -72,7 +72,7 @@ public class ConcurrentMonitoringUtils
     }
 
     static String getBeanNode(String appName, String moduleName, String beanName) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         /** sb.append(APPLICATION_NODE); **/
 
         if (appName != null) {

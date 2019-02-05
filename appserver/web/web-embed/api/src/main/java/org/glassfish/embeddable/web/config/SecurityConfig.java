@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable.web.config;
 
@@ -110,10 +111,10 @@ public class SecurityConfig {
      * Returns a formatted string of the state.
      */
     public String toString() {
-        StringBuffer toStringBuffer = new StringBuffer();
-        toStringBuffer.append("SecurityConfig: ");
-        toStringBuffer.append(" securityConstraints: ").append(securityConstraints);
-        toStringBuffer.append(" loginConfig: ").append(lc);
-        return toStringBuffer.toString();
+        StringBuilder toStringBuilder = new StringBuilder();
+        toStringBuilder.append("SecurityConfig: ");
+        toStringBuilder.append(" securityConstraints: ").append(securityConstraints);
+        toStringBuilder.append(" loginConfig: ").append(lc);
+        return toStringBuilder.toString();
     }
 }

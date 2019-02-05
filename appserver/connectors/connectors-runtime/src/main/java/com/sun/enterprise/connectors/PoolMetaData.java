@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors;
 
@@ -157,7 +158,7 @@ public class PoolMetaData {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer("PoolMetaData : " + poolInfo);
+        StringBuilder sb = new StringBuilder("PoolMetaData : " + poolInfo);
         sb.append("\ntxSupport => " + txSupport_);
         sb.append("\nisPM_     => " + isPM_);
         sb.append("\nisNonTx_  => " + isNonTx_);

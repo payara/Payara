@@ -44,8 +44,8 @@
 <project name="hello-jsp" default="default" basedir=".">
     <property file="build.properties"/>
     <property file="${ws.root}/gfproject/${deploy.platform}-config.properties"/>
-   
-    
+
+
     <description>
 
 Builds, tests, and runs an integration test to verify that the way
@@ -61,7 +61,7 @@ connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/module
   a javax.validation.Validator instance, which it then puts in the
   ConnectorRegistry.
 
-  In method registerBeanValidator(), 
+  In method registerBeanValidator(),
 
  Validator beanValidator = null;
             ValidatorFactory validatorFactory = null;
@@ -79,7 +79,7 @@ connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/module
                         ValidatorContext validatorContext = validatorFactory.usingContext();
                         beanValidator = validatorContext.getValidator();
 
-  fileName is the name of a file conforming to 
+  fileName is the name of a file conforming to
 
   xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/mapping validation-mapping-1.0.xsd"
 
@@ -110,7 +110,7 @@ connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/module
 
                 if (constraintViolations != null AND.size() > 0) {
                     ConstraintViolationException cve = new ConstraintViolationException(constraintViolations);
-                    StringBuffer msg = new StringBuffer();    
+                    StringBuilder msg = new StringBuilder();
 
                     Iterator it = constraintViolations.iterator();
                     while (it.hasNext()) {
@@ -130,36 +130,36 @@ connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/module
                    _logger.log(Level.FINEST, "No Bean Validator is available for RAR [ " + rarName + " ]");
                 }
             }
-        }  
+        }
 
 
     </description>
-    <import file="${ws.root}/gfproject/build-impl.xml"/>   
+    <import file="${ws.root}/gfproject/build-impl.xml"/>
     <import file="${ws.root}/gfproject/${deploy.platform}-targets.xml"/>
-    
-    <target name="all" depends="build,deploy,runtest,undeploy" />        
+
+    <target name="all" depends="build,deploy,runtest,undeploy" />
     <target name="build-deploy" depends="build,deploy" />
-   
+
     <target name="build" depends="compile-tests">
         <antcall target="build-impl"/>
     </target>
-    
+
     <target name="deploy">
         <antcall target="deploy-${deploy.platform}-impl"/>
     </target>
-    
-    <target  name="runtest"> 
+
+    <target  name="runtest">
         <antcall target="runtest-impl">
         <param name="contextroot" value="${contextroot}"/>
         <param name="testng.test.name" value="${testng.test.name}"/>
         <param name="testng.testclient" value="IntegrationBVServletTestNG"/>
         </antcall>
-        
+
     </target>
-    
+
     <target name="undeploy">
         <antcall target="undeploy-${deploy.platform}-impl"/>
     </target>
-    
-    
+
+
 </project>

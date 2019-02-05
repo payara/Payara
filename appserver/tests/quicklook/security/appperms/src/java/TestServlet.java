@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package myapp;
 
@@ -52,7 +53,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 public class TestServlet extends HttpServlet {
-   
+
     @EJB
     private BeanRootInterface root;
 
@@ -105,7 +106,7 @@ public class TestServlet extends HttpServlet {
                     String hello2 = root2.sayHello();
                     out.println("Hello from lookup bean: " + hello2);
 
-                    StringBuffer checkReport = new StringBuffer(" -Servlet test- ");
+                    StringBuilder checkReport = new StringBuilder(" -Servlet test- ");
                     FilePermission fp = new FilePermission(
                             "/scratch/spei/bug/test/war.txt", "delete");
                     try {
@@ -114,7 +115,7 @@ public class TestServlet extends HttpServlet {
                             checkReport.append("servlet - success for WAR.txt; ");
                         } else
                             checkReport.append("servlet - bypass for WAR.txt; ");
-                        
+
                     } catch (AccessControlException e) {
                         checkReport.append("servlet - failed for WAR.txt; ");
                     }
@@ -146,9 +147,9 @@ public class TestServlet extends HttpServlet {
                     String crStr = checkReport.toString();
                     out.println("test: " + crStr);
 
-                    
-                    
-                    if (hello.equals(hello2) && 
+
+
+                    if (hello.equals(hello2) &&
                         !crStr.contains("failed") &&
                         !hello.contains("failed")) {
                         status = true;

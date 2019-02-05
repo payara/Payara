@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * GuiUtil.java
@@ -50,36 +50,28 @@
  */
 package org.glassfish.admingui.common.util;
 
-import com.sun.jsftemplating.resource.ResourceBundleManager;
-
-import javax.faces.context.FacesContext;
-// FIXME: 7-31-08 -- FIX by importing woodstock api's:
-//import com.sun.webui.jsf.model.Option;
-
-import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.text.MessageFormat;
-import java.net.URLEncoder;
-
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.io.File;
+import com.sun.jsftemplating.resource.ResourceBundleManager;
+import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
+import org.glassfish.hk2.api.ServiceLocator;
 
-import java.io.UnsupportedEncodingException;
 import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
-import org.glassfish.hk2.api.ServiceLocator;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+// FIXME: 7-31-08 -- FIX by importing woodstock api's:
+//import com.sun.webui.jsf.model.Option;
 
 /**
  *
@@ -198,34 +190,34 @@ public class GuiUtil {
             sessionMap.put("secureAdminEnabled", "false");
         }
 
-        Map asadminRecorderEnabled = 
-                RestUtil.restRequest(sessionMap.get("REST_URL") 
-                        + "/asadmin-recorder-enabled", null, "GET", null, 
+        Map asadminRecorderEnabled =
+                RestUtil.restRequest(sessionMap.get("REST_URL")
+                        + "/asadmin-recorder-enabled", null, "GET", null,
                         false);
-        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map) 
+        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map)
                 ((Map) asadminRecorderEnabled.get("data"))
                         .get("extraProperties")).get("asadminRecorderEnabled"));
-        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map) 
+        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map)
                 ((Map) asadminRecorderEnabled.get("data"))
-                        .get("extraProperties")).get("asadminRecorderEnabled"));  
+                        .get("extraProperties")).get("asadminRecorderEnabled"));
 
-        Map environmentWarningConfiguration = 
-                RestUtil.restRequest(sessionMap.get("REST_URL") 
-                        + "/get-environment-warning-configuration", null, "GET", null, 
+        Map environmentWarningConfiguration =
+                RestUtil.restRequest(sessionMap.get("REST_URL")
+                        + "/get-environment-warning-configuration", null, "GET", null,
                         false);
-        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map) 
+        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));   
-        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));
+        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));   
-        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));
+        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));   
-        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));
+        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));       
-       
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));
+
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));
         sessionMap.put("reqInt", GuiUtil.getMessage("msg.JS.enterIntegerValue"));
@@ -623,7 +615,7 @@ public class GuiUtil {
      * in the array, and returns a single string with the concatenated string.
      */
     public static String arrayToString(String[] str, String delimiter) {
-        StringBuffer retStr = new StringBuffer();
+        StringBuilder retStr = new StringBuilder();
 
         if (str != null) {
             for (int i = 0; i < str.length; i++) {
@@ -644,7 +636,7 @@ public class GuiUtil {
     }
 
     public static String listToString(List<String> list , String delimiter) {
-        StringBuffer retStr = new StringBuffer();
+        StringBuilder retStr = new StringBuilder();
         if(list == null || list.size() <=0 ) return "";
         for(String oneItem : list){
             retStr.append(oneItem);

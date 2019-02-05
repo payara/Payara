@@ -39,7 +39,7 @@
  */
 
 /*
- * Portions Copyright [2016-2018] [Payara Foundation]
+ * Portions Copyright [2016-2019] [Payara Foundation]
  */
 package com.sun.enterprise.util.io;
 
@@ -1151,15 +1151,17 @@ public class FileUtils  {
 
     public static String readSmallFile(final File file)
             throws IOException {
-        final StringBuilder sb = new StringBuilder(); //preferred over StringBuffer, no need to synchronize
+        final StringBuilder sb = new StringBuilder();
         try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
             String line;
             while ( (line = bf.readLine()) != null ) {
                 sb.append(line);
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
+        } catch (Exception e) {
+            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
-        return ( sb.toString() );
+        return sb.toString();
     }
 
     /**

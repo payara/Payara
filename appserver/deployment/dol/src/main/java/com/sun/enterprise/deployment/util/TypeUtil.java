@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
@@ -44,12 +45,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Datatype management utility methods
@@ -57,8 +53,8 @@ import java.util.Vector;
 public class TypeUtil {
 
     // map a decimal digit to its (real!) character
-    private static final char[] digits = { 
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9' 
+    private static final char[] digits = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     };
 
     // Map of primitive class name and its associated Class object
@@ -76,7 +72,7 @@ public class TypeUtil {
         primitiveClasses_.put(Double.TYPE.getName(), Double.TYPE);
     }
 
-    /** 
+    /**
      * Place a character representation of src into the buffer.
      * No formatting (e.g. localization) is done.
      *
@@ -104,7 +100,7 @@ public class TypeUtil {
 	else if (src < 0) {
 	    if (src == Integer.MIN_VALUE)
 		throw new IllegalArgumentException();
-	    
+
 	    // emit the negation sign and continue as if positive
 	    buf[offset++] = '-';
 	    src = Math.abs(src);
@@ -126,11 +122,11 @@ public class TypeUtil {
 
 
     // map a digit to its single byte character
-    private static final byte[] charval = { 
-	(byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5',(byte) '6',(byte) '7',(byte) '8',(byte) '9' 
+    private static final byte[] charval = {
+	(byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5',(byte) '6',(byte) '7',(byte) '8',(byte) '9'
     };
 
-    /** 
+    /**
      * Place a byte representation of src into the byte array buf.
      * No commas or any other formatting is done to the integer.
      * @param src - the integer to convert.  Must not be Integer.MIN_VALUE.
@@ -157,7 +153,7 @@ public class TypeUtil {
 	else if (src < 0) {
 	    if (src == Integer.MIN_VALUE)
 		throw new IllegalArgumentException();
-	    
+
 	    // emit the negation sign and continue as if positive
 	    buf[offset++] = (byte) '-';
 	    src = Math.abs(src);
@@ -207,14 +203,14 @@ public class TypeUtil {
 	boolean breakFound = true;
 	Vector v = new Vector();
 	int nextNewline = msg.indexOf("\n");
-	    
+
 	while (lengthLeft > width || nextNewline != -1) {
 	    // Find a convenient word break, always respecting explicit line
 	    // breaks.
 	    nextBreak = nextNewline;
 
 	    // If no newline, look for a space.
-	    if (nextBreak == -1 || 
+	    if (nextBreak == -1 ||
 		nextBreak <= lastBreak ||
 		nextBreak > lastBreak + width) {
 		nextBreak = msg.lastIndexOf(" ", lastBreak + width);
@@ -256,7 +252,7 @@ public class TypeUtil {
      * @param separator the string to insert between each element
      */
     public static String arrayToString(String[] from, String separator) {
-	StringBuffer sb = new StringBuffer(100);
+	StringBuilder sb = new StringBuilder(100);
 	String sep = "";
 	for (int i = 0; i < from.length; i++) {
 	   sb.append(sep);
@@ -362,7 +358,7 @@ public class TypeUtil {
     }
 
     /**
-     * Get all super-interfaces of a class, excluding the 
+     * Get all super-interfaces of a class, excluding the
      * given base interface.
      * Returns a set of strings containing class names.
      */
@@ -390,12 +386,12 @@ public class TypeUtil {
     {
 
         Class[] parameterTypes=null;
-        if (paramClassNames!=null) {       
+        if (paramClassNames!=null) {
             parameterTypes = new Class[paramClassNames.length];
             for(int pIndex = 0; pIndex < parameterTypes.length; pIndex++) {
                 String next = paramClassNames[pIndex];
                 if( primitiveClasses_.containsKey(next) ) {
-                    parameterTypes[pIndex] = 
+                    parameterTypes[pIndex] =
                         (Class) primitiveClasses_.get(next);
                 } else {
                     parameterTypes[pIndex] = Class.forName(next, true, loader);
@@ -411,12 +407,12 @@ public class TypeUtil {
     {
 
         Class[] parameterTypes=null;
-        if (paramClassNames!=null) {       
+        if (paramClassNames!=null) {
             parameterTypes = new Class[paramClassNames.length];
             for(int pIndex = 0; pIndex < parameterTypes.length; pIndex++) {
                 String next = paramClassNames[pIndex];
                 if( primitiveClasses_.containsKey(next) ) {
-                    parameterTypes[pIndex] = 
+                    parameterTypes[pIndex] =
                         (Class) primitiveClasses_.get(next);
                 } else {
                     parameterTypes[pIndex] = Class.forName(next, true, loader);
@@ -431,7 +427,7 @@ public class TypeUtil {
      * have the same numer of parameters and same parameter types.
      *
      * Note that this equality check does NOT cover :
-     * 1) declaring class 2) exceptions 3) method name 
+     * 1) declaring class 2) exceptions 3) method name
      * 4) return type
      *
      */
@@ -468,7 +464,7 @@ public class TypeUtil {
 
     /**
      * Compares the signatures of two methods to see if they
-     * have the same method name, parameters, and return type.  
+     * have the same method name, parameters, and return type.
      *
      * Note that this equality check does NOT cover :
      * 1) declaring class 2) exceptions
@@ -476,7 +472,7 @@ public class TypeUtil {
      */
     public static boolean sameMethodSignature(Method m1, Method m2) {
         boolean same = false;
-        
+
         if(m1.getName().equals(m2.getName())) {
             same = sameParamTypes(m1, m2) && sameReturnTypes(m1, m2);
         }
@@ -495,7 +491,7 @@ public class TypeUtil {
         if(m1.getReturnType().equals(m2.getReturnType())) {
             return true;
         }
-        
+
         Type grt1 = m1.getGenericReturnType();
         Type grt2 = m2.getGenericReturnType();
 
@@ -519,7 +515,7 @@ public class TypeUtil {
             !setterMethodName.startsWith("set") ) {
             throw new IllegalArgumentException("Invalid setter method name " +
                                                setterMethodName);
-        } 
+        }
 
         return ( setterMethodName.substring(3, 4).toLowerCase(Locale.ENGLISH) +
                  setterMethodName.substring(4) );
@@ -535,17 +531,17 @@ public class TypeUtil {
             (propertyName.length() == 0) ) {
             throw new IllegalArgumentException("Invalid property name " +
                                                propertyName);
-        } 
+        }
 
         return ( "set" + propertyName.substring(0, 1).toUpperCase(Locale.ENGLISH) +
                  propertyName.substring(1) );
 
     }
-    
+
    /**
     * Convert String array of class names into array of Classes.
     */
-    public static Class[] paramClassNamesToTypes(String[] paramClassNames, 
+    public static Class[] paramClassNamesToTypes(String[] paramClassNames,
             ClassLoader loader) throws Exception {
 
         Class[] parameterTypes = null;

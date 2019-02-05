@@ -38,36 +38,33 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl;
 
 
-import org.glassfish.api.invocation.ApplicationEnvironment;
-import org.glassfish.api.naming.NamespacePrefixes;
-import org.glassfish.api.naming.NamedNamingObjectProxy;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
-
-import com.sun.enterprise.deployment.*;
-
-
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.naming.NamingException;
-
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
-
-import javax.naming.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.invocation.ApplicationEnvironment;
+import org.glassfish.api.naming.NamedNamingObjectProxy;
+import org.glassfish.api.naming.NamespacePrefixes;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 @Service
@@ -84,7 +81,7 @@ public class JavaModuleNamingProxy
 
     @Inject
     private ProcessEnvironment processEnv;
-    
+
     @Inject
     private ApplicationRegistry applicationRegistry;
 
@@ -116,7 +113,7 @@ public class JavaModuleNamingProxy
 
     static final String JAVA_MODULE_NAME
             = "java:module/ModuleName";
-    
+
     static final String JAVA_APP_SERVICE_LOCATOR
             = "java:app/hk2/ServiceLocator";
 
@@ -132,9 +129,9 @@ public class JavaModuleNamingProxy
         } else if( name.equals(JAVA_MODULE_NAME) ) {
 
             returnValue = getModuleName();
-            
+
         } else if( name.equals(JAVA_APP_SERVICE_LOCATOR) ) {
-            
+
             returnValue = getAppServiceLocator();
 
         } else if (name.startsWith(JAVA_MODULE_CONTEXT) || name.startsWith(JAVA_APP_CONTEXT)) {
@@ -174,11 +171,11 @@ public class JavaModuleNamingProxy
 
                 Application app = bd.getApplication();
 
-                appName = app.getAppName();               
+                appName = app.getAppName();
             }
             else {
                 ApplicationEnvironment applicationEnvironment = namingMgr.getCurrentApplicationEnvironment();
-                
+
                 if (applicationEnvironment != null) {
                     appName = applicationEnvironment.getName();
                 }
@@ -223,17 +220,17 @@ public class JavaModuleNamingProxy
         return moduleName;
 
     }
-    
+
     private ServiceLocator getAppServiceLocator() throws NamingException {
-        
+
         String appName = getAppName();
 
         ApplicationInfo info = applicationRegistry.get(appName);
-        
+
         if (info == null) {
             throw new NamingException("Could not resolve " + JAVA_APP_SERVICE_LOCATOR);
         }
-        
+
         return info.getAppServiceLocator();
 
     }
@@ -271,7 +268,7 @@ public class JavaModuleNamingProxy
 
                     String moduleName = bd.getModuleDescriptor().getModuleName();
 
-                    StringBuffer javaGlobalName = new StringBuffer("java:global/");
+                    StringBuilder javaGlobalName = new StringBuilder("java:global/");
 
 
                     if( name.startsWith(JAVA_APP_CONTEXT) ) {
@@ -286,7 +283,7 @@ public class JavaModuleNamingProxy
                         if (appName != null) {
                             javaGlobalName.append(appName);
                             javaGlobalName.append("/");
-                        } 
+                        }
 
                         // Replace java:app/ with the fully-qualified global portion
                         int javaAppLength = JAVA_APP_CONTEXT.length();
@@ -297,7 +294,7 @@ public class JavaModuleNamingProxy
                         // For portable EJB names relative to java:module, only add
                         // the application name if it's an .ear, but always add
                         // the module name.
-   
+
                         if (appName != null) {
                             javaGlobalName.append(appName);
                             javaGlobalName.append("/");
@@ -331,7 +328,7 @@ public class JavaModuleNamingProxy
                     } catch(Exception e) {
                         NamingException ne = new NamingException("Error creating ACC managed bean " + newName);
                         ne.initCause(e);
-                        throw ne;                     
+                        throw ne;
                     }
 
                 }

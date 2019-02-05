@@ -37,37 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.persistence.common;
 
-import org.glassfish.persistence.common.database.DBVendorTypeHelper;
-
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.api.ActionReport;
-import com.sun.logging.LogDomains;
-
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.persistence.common.database.DBVendorTypeHelper;
 
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Statement;
 import java.sql.SQLException;
-import javax.sql.DataSource;
+import java.sql.Statement;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,7 +73,7 @@ import java.util.logging.Logger;
  *
  * @author pramodg
  */
-public class Java2DBProcessorHelper { 
+public class Java2DBProcessorHelper {
 
     /** The logger */
     private final static Logger logger = LogDomains.getLogger(Java2DBProcessorHelper.class, LogDomains.PERSISTENCE_LOGGER);
@@ -109,11 +107,11 @@ public class Java2DBProcessorHelper {
     private final static String DROP_JDBC_FILE_NAME = "org.glassfish.persistence.drop_jdbc_file_name_property."; // NOI18N
     private final static String CREATE_TABLE_VALUE = "org.glassfish.persistence.create_table_value_property."; // NOI18N
     private final static String DROP_TABLE_VALUE = "org.glassfish.persistence.drop_table_value_property."; // NOI18N
-    
+
     private DeploymentContext ctx;
     private Properties deploymentContextProps;
     private ActionReport subReport;
-    
+
     /**
      * True if this is instance is created for deploy
      */
@@ -127,12 +125,12 @@ public class Java2DBProcessorHelper {
      * Name with which the application is registered.
      */
     private String appRegisteredName;
-    
+
     private String appDeployedLocation;
     private String appGeneratedLocation;
 
     /**
-     * Creates a new instance of Java2DBProcessorHelper to be used to execute SQL 
+     * Creates a new instance of Java2DBProcessorHelper to be used to execute SQL
      * statements only.
      * @param appName the name used for reporting purposes
      */
@@ -165,7 +163,7 @@ public class Java2DBProcessorHelper {
         if (deploy) {
             // DeployCommandParameters are available only on deploy or deploy
             // part of redeploy
-            DeployCommandParameters cliOverrides = 
+            DeployCommandParameters cliOverrides =
                     ctx.getCommandParameters(DeployCommandParameters.class);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("---> cliOverrides " + cliOverrides);
@@ -182,7 +180,7 @@ public class Java2DBProcessorHelper {
             // UndeployCommandParameters are available only on undeploy or undeploy
             // part of redeploy. In the latter case, cliOverrides.droptables
             // is set from cliOverrides.dropandcreatetables passed to redeploy.
-            UndeployCommandParameters cliOverrides = 
+            UndeployCommandParameters cliOverrides =
                     ctx.getCommandParameters(UndeployCommandParameters.class);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("---> cliOverrides " + cliOverrides);
@@ -208,7 +206,7 @@ public class Java2DBProcessorHelper {
         ActionReport report = ctx.getActionReport();
         subReport = report.addSubActionsReport();
         subReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        
+
     }
 
 
@@ -239,7 +237,7 @@ public class Java2DBProcessorHelper {
                     if (getDropTables(bundleName)) {
                         fileName = deploymentContextProps.getProperty(DROP_JDBC_FILE_NAME + bundleName);
                     }
-                } 
+                }
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("---> fileName " + fileName);
                     logger.fine("---> jndiName " + jndiName);
@@ -271,9 +269,9 @@ public class Java2DBProcessorHelper {
         * @return the jdbc ddl file.
         */
     public File getDDLFile(String fileName, boolean deploy) {
-        File file = null;        
+        File file = null;
         try {
-            file = new File(fileName);   
+            file = new File(fileName);
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine(I18NHelper.getMessage(messages,
                     ((deploy)? "Java2DBProcessorHelper.createfilename" //NOI18N
@@ -285,9 +283,9 @@ public class Java2DBProcessorHelper {
                  "Exception caught in Java2DBProcessorHelper.getDDLFile()", //NOI18N
                 appRegisteredName, null, e);
         }
-        return file;        
+        return file;
     }
-    
+
     /**
      * Open a DDL file and execute each line as a SQL statement.
      * @param f the File object to use.
@@ -298,7 +296,7 @@ public class Java2DBProcessorHelper {
             throws IOException {
 
         BufferedReader reader = null;
-        StringBuffer warningBuf = new StringBuffer();
+        StringBuilder warningBuf = new StringBuilder();
 
         try {
             reader = new BufferedReader(new FileReader(f));
@@ -306,7 +304,7 @@ public class Java2DBProcessorHelper {
             while ((s = reader.readLine()) != null) {
                 try {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine(I18NHelper.getMessage(messages, 
+                        logger.fine(I18NHelper.getMessage(messages,
                         "Java2DBProcessorHelper.executestatement", s)); //NOI18N
                     }
                     sql.execute(s);
@@ -327,7 +325,7 @@ public class Java2DBProcessorHelper {
                 }
             }
             if (warningBuf.length() > 0) {
-                String warning = 
+                String warning =
                         getI18NMessage("Java2DBProcessorHelper.tablewarning");
                 warnUser(subReport, warning + warningBuf.toString());
             }
@@ -457,7 +455,7 @@ public class Java2DBProcessorHelper {
     }
 
     /**
-     * Drop tables on undeploy and redeploy, if the corresponding CLI options 
+     * Drop tables on undeploy and redeploy, if the corresponding CLI options
      * cliDropAndCreateTables (for redeploy) or cliDropTables (for undeploy) are
      * not set to false.
      * If the corresponding option is not set the value is taken from the boolean parameter
@@ -517,7 +515,7 @@ public class Java2DBProcessorHelper {
      * @return name prefix as String.
      */
     public static String getDDLNamePrefix(Object info) {
-        StringBuffer rc = new StringBuffer();
+        StringBuilder rc = new StringBuilder();
 
         if (info instanceof BundleDescriptor && !(info instanceof Application)) {
             BundleDescriptor bundle = (BundleDescriptor)info;
@@ -636,18 +634,18 @@ public class Java2DBProcessorHelper {
      * @param ex Exception which is cause for inability to connect.
      */
     private void cannotConnect(String connName, Throwable ex) {
-        logI18NWarnMessage( "Java2DBProcessorHelper.cannotConnect",  
+        logI18NWarnMessage( "Java2DBProcessorHelper.cannotConnect",
                 connName,  null, ex);
     }
-    
+
     /**
      * Provide a warning message to the user about inability to read a DDL file.
      */
     private void fileIOError(String regName, Throwable ex) {
-        logI18NWarnMessage("Java2DBProcessorHelper.ioexception",  
+        logI18NWarnMessage("Java2DBProcessorHelper.ioexception",
                 regName,  null, ex);
     }
-    
+
     /**
      * Close the connection that was opened to the database
      * @param conn the database connection.
@@ -661,33 +659,33 @@ public class Java2DBProcessorHelper {
             }
         }
     }
-    
+
     /**
      * Provide a generic warning message to the user.
      */
     public void logI18NWarnMessage(
-            String errorCode, String regName, 
+            String errorCode, String regName,
             String fileName, Throwable ex) {
-        String msg = getI18NMessage(errorCode, 
+        String msg = getI18NMessage(errorCode,
                 regName, fileName, ex);
         logger.warning(msg);
-        warnUser(subReport, msg);        
+        warnUser(subReport, msg);
     }
-    
+
     /**
      * Get the localized message for the error code.
-     * @param errorCode 
-     * @return i18ned message 
+     * @param errorCode
+     * @return i18ned message
      */
     public String getI18NMessage(String errorCode) {
         return getI18NMessage(errorCode, null, null, null);
-    }    
+    }
 
     /**
      * Get a generic localized message.
      */
     public String getI18NMessage(
-            String errorCode, String regName, 
+            String errorCode, String regName,
             String fileName, Throwable ex) {
         String msg = null;
         if(null != ex)
@@ -695,10 +693,10 @@ public class Java2DBProcessorHelper {
                     messages, errorCode,  regName,  ex.toString());
         else if(null != fileName )
             msg = I18NHelper.getMessage(
-                    messages, errorCode,  regName,  fileName); 
-        else            
+                    messages, errorCode,  regName,  fileName);
+        else
              msg = I18NHelper.getMessage(messages, errorCode);
-        
+
         return msg;
     }
 
@@ -709,7 +707,7 @@ public class Java2DBProcessorHelper {
      */
     public static void warnUser(ActionReport report, String msg) {
         if (report != null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             String s = report.getMessage();
             if (s != null) {
                 sb.append(s);
