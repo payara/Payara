@@ -277,10 +277,14 @@ public class ComponentInvocation implements Cloneable {
 
     /**
      * Returns the unique registration name of application.
+     *
      * @return
      */
     public String getRegistrationName() {
-        return registrationName;
+        if (registrationName != null) {
+            return registrationName;
+        }
+        return getAppName();
     }
 
     public void setRegistrationName(String registrationName) {
