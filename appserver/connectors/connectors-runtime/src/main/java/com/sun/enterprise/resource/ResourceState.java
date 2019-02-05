@@ -47,7 +47,7 @@ public class ResourceState {
     private boolean enlisted;
     private boolean busy;
     private long timestamp;
-    private MultiException busyException;
+    private MultiException busyException = new MultiException();
 
     public boolean isEnlisted() {
         return enlisted;
