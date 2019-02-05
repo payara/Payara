@@ -38,6 +38,7 @@ pipeline {
                     -Dsonar.pullrequest.provider=GitHub \
                     -Dsonar.pullrequest.github.repository=payara/payara \
                     -Dsonar.organization=payara \
+                    -Dsonar.host.url=https://sonarcloud.io \
                     -Dsonar.login=${sonarToken} \
                     sonar:sonar"""
                 }
