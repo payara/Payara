@@ -300,7 +300,10 @@ public class ComponentInvocation
      * @return
      */
     public String getRegistrationName() {
-        return registrationName;
+        if (registrationName != null) {
+            return registrationName;
+        }
+        return getAppName();
     }
 
     public void setRegistrationName(String registrationName) {
