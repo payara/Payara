@@ -38,7 +38,7 @@ In summary Payara Server provides:
 
 We take GlassFish, support it, add fixes, add customer-requested enhancements and we release it as open source Payara Server.
 
-## Supported JDKs and Operating Systems
+## Supported JDKs and OSs
 
 Payara Server 5 currently supports the following JDKs:
 
