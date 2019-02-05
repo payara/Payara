@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates.
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
  */
 
 package org.glassfish.admin.rest.provider;
 
+import static java.util.Arrays.asList;
+
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.*;
 import javax.ws.rs.Produces;
@@ -153,6 +154,8 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
             result = "";
         } else if (object instanceof Collection) {
             result = getXml((Collection)object);
+        } else if (object.getClass().isArray()) {
+            result = getXml(asList((Object[])object));
         } else if (object instanceof Map) {
             result = getXml((Map)object);
         } else if (object instanceof Number) {

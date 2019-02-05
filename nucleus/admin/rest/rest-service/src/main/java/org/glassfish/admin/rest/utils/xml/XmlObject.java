@@ -36,8 +36,6 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.utils.xml;
@@ -73,11 +71,7 @@ public class XmlObject {
     }
 
     public XmlObject(String name, Object value) {
-        if (name.endsWith("[]") || (value != null && Iterable.class.isAssignableFrom(value.getClass()))) {
-            this.name = "list";
-        } else {
-            this.name = name.toLowerCase(Locale.US);
-        }
+        this.name = name.toLowerCase(Locale.US);
         this.value = value;
     }
 
