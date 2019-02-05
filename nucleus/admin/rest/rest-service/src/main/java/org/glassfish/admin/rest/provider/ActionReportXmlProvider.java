@@ -184,8 +184,19 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
         return result;
     }
 
-    protected XmlMap getXml(Map map) {
+    protected Object getXml(Map map) {
         XmlMap result = new XmlMap("map");
+
+        if (map.containsKey("minVersion") && map.containsKey("maxVersion") && map.containsKey("jvmOption")) {
+            String jvmOption = map.get("jvmOption").toString();
+            String minVersion = map.get("minVersion").toString();
+            String maxVersion = map.get("maxVersion").toString();
+            String property = jvmOption;
+            if (!minVersion.isEmpty() || !maxVersion.isEmpty()) {
+                property = String.format("[%s|%s]%s", minVersion, maxVersion, property);
+            }
+            return property;
+        }
 
         for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
             result.put(entry.getKey().toString(), getXmlObject(entry.getValue()));
