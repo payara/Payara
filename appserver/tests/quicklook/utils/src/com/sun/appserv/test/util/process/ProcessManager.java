@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * ProcessManager.java
@@ -48,12 +49,7 @@
  */
 package com.sun.appserv.test.util.process;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -263,7 +259,7 @@ public class ProcessManager {
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     sb.append(line).append('\n');
-                    
+
                     if(echo)
                         System.out.println(line);
                 }

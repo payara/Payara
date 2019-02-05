@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -1677,7 +1677,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
         String ejbName = ejbDescriptor.getName();
 
-        StringBuffer javaGlobalPrefix = new StringBuffer("java:global/");
+        StringBuilder javaGlobalPrefix = new StringBuilder("java:global/");
 
         if (appName != null) {
             javaGlobalPrefix.append(appName);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -46,17 +47,17 @@ import java.util.*;
 /**
  */
 public class LocaleEncodingMappingListDescriptor extends Descriptor {
-    
+
     private Set<LocaleEncodingMappingDescriptor> list = null;
-        
+
     /*
-     * standard constructor 
+     * standard constructor
      */
     public LocaleEncodingMappingListDescriptor() {
     }
 
     /*
-     * copy constructor 
+     * copy constructor
      */
     public LocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor other) {
 	super(other);
@@ -93,7 +94,7 @@ public class LocaleEncodingMappingListDescriptor extends Descriptor {
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nProp : ").append(list);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nProp : ").append(list);
     }
 }

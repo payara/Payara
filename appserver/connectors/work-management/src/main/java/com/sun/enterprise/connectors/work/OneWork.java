@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.work;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
+import javax.resource.spi.work.Work;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.spi.work.Work;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 
 /**
  * Represents one piece of work that will be submitted to the workqueue.
@@ -60,7 +61,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
 
     private String name = "Resource adapter work";
     private boolean nameSet = false;
-    
+
     //Store the client's TCC so that when the work is executed,
     //TCC is set appropriately.
     private ClassLoader tcc = null;
@@ -177,7 +178,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      * @return String representation of work.
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         if(nameSet){
             result.append("[Work : " + name + "] ");
         }

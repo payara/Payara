@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors;
 
@@ -107,7 +108,7 @@ public class ConnectorConnectionPool implements Serializable {
     //This property will be set by ConnectorConnectionPoolDeployer or
     //JdbcConnectionPoolDeployer.
     private boolean preferValidateOverRecreate_ = false;
-    
+
     private String validateAtmostOncePeriod_ = null;
 
     private String conCreationRetryAttempts_ = null;
@@ -190,17 +191,17 @@ public class ConnectorConnectionPool implements Serializable {
 
     /**
      * Setter method of Ping pool during creation attribute.
-     * 
+     *
      * @param enabled enables/disables ping during creation.
      */
     public void setPingDuringPoolCreation(boolean enabled) {
-        pingDuringPoolCreation = enabled;    
+        pingDuringPoolCreation = enabled;
     }
-    
+
     public boolean isPoolingOn() {
         return poolingOn;
     }
-    
+
     /**
      * Setter method of pooling attribute
      *
@@ -732,7 +733,7 @@ public class ConnectorConnectionPool implements Serializable {
      */
     public String toString() {
         String returnVal = "";
-        StringBuffer sb = new StringBuffer("ConnectorConnectionPool :: ");
+        StringBuilder sb = new StringBuilder("ConnectorConnectionPool :: ");
         try {
             sb.append(getName());
             sb.append("\nsteady size: ");

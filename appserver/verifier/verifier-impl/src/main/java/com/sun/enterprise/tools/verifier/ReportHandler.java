@@ -37,27 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.tools.verifier;
 
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import com.sun.enterprise.tools.verifier.util.LogDomains;
+import com.sun.enterprise.tools.verifier.util.VerifierConstants;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -68,14 +56,15 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import com.sun.enterprise.tools.verifier.util.LogDomains;
-import com.sun.enterprise.tools.verifier.util.VerifierConstants;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * This class is responsible for generating the final output report file in xml and txt file.
@@ -556,7 +545,7 @@ public class ReportHandler {
         e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
-    
+
     /**
      * <p>
      * @return the localized XSL file if it is present in the configuration
@@ -566,7 +555,7 @@ public class ReportHandler {
     private InputStream getLocalizedXSLFile() {
         InputStream is;
         Locale locale = Locale.getDefault();
-        
+
         // check first with the language and country
         String xslFileName = VerifierConstants.CFG_RESOURCE_PREFIX +
                 XSL_FILE + "_" + locale.toString() + ".xsl"; // NOI18N
@@ -598,7 +587,7 @@ public class ReportHandler {
 
     	if (outputDirName != null && outputDirName.trim().length() > 0 ) {
     		char[] outputDirNameArr = outputDirName.toCharArray();
-    		StringBuffer formName = new StringBuffer();
+    		StringBuilder formName = new StringBuilder();
     		for(int i = 0; i < outputDirNameArr.length; i++) {
     			if(outputDirNameArr[i] == '/' || outputDirNameArr[i] == '\\') {
     				formName.append(File.separatorChar);

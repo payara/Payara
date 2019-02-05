@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.util;
 
@@ -100,7 +101,7 @@ public class IASSecurityException extends Exception {
      */
     @Override
     public String getMessage() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(super.getMessage());
         Throwable cause = getCause();
 

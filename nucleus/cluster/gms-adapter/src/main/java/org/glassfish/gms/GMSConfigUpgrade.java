@@ -37,22 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.gms;
 
-import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import com.sun.enterprise.util.EarlyLogger;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.logging.Level;
@@ -152,7 +151,7 @@ public class GMSConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
                 // generate a valid gms multicastport. Either heartbeatport was not set or was set to a value that is now invalid in v3.1.
                 // port range in v2 was quite large and outside the IANA recommended range being followed by v3.1.
                 cluster.setGmsMulticastPort(generateHeartbeatPort());
-                
+
             }
 
             //gms-bind-interface is an attribute of cluster in 3.1
@@ -222,7 +221,7 @@ public class GMSConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
                     // catch RuntimeException hk2 ValidationException. if v2 value is not valid for v3, just rely on v3 default
                 }
                 gms.setVsProtocolTimeoutInMillis(null);
-            } // else null for server-config           
+            } // else null for server-config
 
             Property prop = gms.getProperty("failure-detection-tcp-retransmit-timeout");
             if (prop != null && prop.getValue() != null ) {
@@ -260,7 +259,7 @@ public class GMSConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
     private String generateHeartbeatAddress() {
         final int MAX_GMS_MULTICAST_ADDRESS_SUBRANGE = 255;
 
-        final StringBuffer heartbeatAddressBfr = new StringBuffer("228.9.");
+        final StringBuilder heartbeatAddressBfr = new StringBuilder("228.9.");
         heartbeatAddressBfr.append(Math.round(Math.random() * MAX_GMS_MULTICAST_ADDRESS_SUBRANGE))
                 .append('.')
                 .append(Math.round(Math.random() * MAX_GMS_MULTICAST_ADDRESS_SUBRANGE));

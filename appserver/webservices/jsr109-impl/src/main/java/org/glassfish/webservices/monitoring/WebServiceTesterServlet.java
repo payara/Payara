@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 /*
  * WebServiceTesterServlet.java
  *
@@ -177,7 +177,7 @@ public class WebServiceTesterServlet extends HttpServlet {
         if (userAgent != null) {
             isInternetExplorer = userAgent.indexOf("MSIE") != -1;
         }
-        StringBuffer sb = new StringBuffer(URLDecoder.decode(requestURL));
+        StringBuilder sb = new StringBuilder(URLDecoder.decode(requestURL));
         sb.append("?WSDL");
 
         out.print("<br>");
@@ -373,6 +373,9 @@ public class WebServiceTesterServlet extends HttpServlet {
                 }
                 if (short.class.equals(targetParamType) || (Short.class.equals(targetParamType))) {
                     convertedValue = new Short(webValue);
+                }
+                if (StringBuilder.class.equals(targetParamType)) {
+                    convertedValue = new StringBuilder(webValue);
                 }
                 if (StringBuffer.class.equals(targetParamType)) {
                     convertedValue = new StringBuffer(webValue);

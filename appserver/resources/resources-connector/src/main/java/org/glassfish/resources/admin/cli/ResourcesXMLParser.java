@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.resources.admin.cli;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -65,7 +65,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 //i18n import
 
 /**
- * This Class reads the Properties (resources) from the xml file supplied 
+ * This Class reads the Properties (resources) from the xml file supplied
  * to constructor
  */
 @I18n("resources.parser")
@@ -76,21 +76,21 @@ public class ResourcesXMLParser implements EntityResolver
     private Document document;
     private List<org.glassfish.resources.api.Resource> vResources;
     private Map<Resource, Node> resourceMap = new HashMap<Resource, Node>();
-    
+
     private boolean isDoctypePresent = false;
-    /* list of resources that needs to be created prior to module deployment. This 
+    /* list of resources that needs to be created prior to module deployment. This
      * includes all non-Connector resources and resource-adapter-config
      */
 //    private List<Resource> connectorResources;
-    
+
     /* Includes all connector resources in the order in which the resources needs
       to be created */
 //    private List<Resource> nonConnectorResources;
-    
+
     // i18n StringManager
     private static StringManager localStrings =
         StringManager.getManager( ResourcesXMLParser.class );
-    
+
     private static final int NONCONNECTOR = 2;
     private static final int CONNECTOR = 1;
 
@@ -126,7 +126,7 @@ public class ResourcesXMLParser implements EntityResolver
     private static final String DTD_1_2 = "sun-resources_1_2.dtd";
     private static final String DTD_1_1 = "sun-resources_1_1.dtd";
     private static final String DTD_1_0 = "sun-resources_1_0.dtd";
-    
+
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
                     DTD_1_6,
@@ -214,11 +214,11 @@ public class ResourcesXMLParser implements EntityResolver
         // update the map
         resourceMap.put(modifiedResource, resourceNode);
     }
-    
+
     public File getResourceFile() {
         return resourceFile;
     }
-    
+
     /**
      *Parse the XML Properties file and populate it into document object
      */
@@ -270,7 +270,7 @@ public class ResourcesXMLParser implements EntityResolver
             if(!isDoctypePresent){
                 Object args[] = new Object[]{resourceFile.toString()};
                 throw new Exception(
-                    localStrings.getStringWithDefault("resources.parser.doctype_not_present_in_xml", 
+                    localStrings.getStringWithDefault("resources.parser.doctype_not_present_in_xml",
                                             "Error Parsing the xml ({0}), doctype is not present",
                                             args));
             }
@@ -318,7 +318,7 @@ public class ResourcesXMLParser implements EntityResolver
     {
         if (document != null) {
             for (Node nextKid = document.getDocumentElement().getFirstChild();
-                    nextKid != null; nextKid = nextKid.getNextSibling()) 
+                    nextKid != null; nextKid = nextKid.getNextSibling())
             {
                 String nodeName = nextKid.getNodeName();
                 if (nodeName.equalsIgnoreCase(Resource.CUSTOM_RESOURCE)) {
@@ -336,7 +336,7 @@ public class ResourcesXMLParser implements EntityResolver
                 {
                     generateJDBCConnectionPoolResource(nextKid, scope);
                 }
-                else if (nodeName.equalsIgnoreCase(Resource.MAIL_RESOURCE)) 
+                else if (nodeName.equalsIgnoreCase(Resource.MAIL_RESOURCE))
                 {
                     generateMailResource(nextKid, scope);
                 }
@@ -351,7 +351,7 @@ public class ResourcesXMLParser implements EntityResolver
                 {
                     generateAdminObjectResource(nextKid, scope);
                 }
-                else if (nodeName.equalsIgnoreCase(Resource.CONNECTOR_RESOURCE)) 
+                else if (nodeName.equalsIgnoreCase(Resource.CONNECTOR_RESOURCE))
                 {
                     generateConnectorResource(nextKid, scope);
                 }
@@ -380,29 +380,29 @@ public class ResourcesXMLParser implements EntityResolver
      *  b) includes all connector resources in the order in which the resources needs
      *  to be created
      *  and returns the requested resources bucker to the caller.
-     *   
+     *
      *  @param resources Resources list as defined in sun-resources.xml
-     *  @param type Specified either ResourcesXMLParser.CONNECTOR or 
-     *  ResourcesXMLParser.NONCONNECTOR to indicate the type of 
+     *  @param type Specified either ResourcesXMLParser.CONNECTOR or
+     *  ResourcesXMLParser.NONCONNECTOR to indicate the type of
      *  resources are needed by the client of the ResourcesXMLParser
      *  @param isResourceCreation During the resource Creation Phase, RA configs are
      *  added to the nonConnector resources list so that they can be created in the
-     *  <code>PreResCreationPhase</code>. When the isResourceCreation is false, the 
-     *  RA config resuorces are added to the Connector Resources list, so that they 
-     *  can be deleted as all other connector resources in the 
+     *  <code>PreResCreationPhase</code>. When the isResourceCreation is false, the
+     *  RA config resuorces are added to the Connector Resources list, so that they
+     *  can be deleted as all other connector resources in the
      *  <code>PreResDeletionPhase</code>
      */
     private static List<org.glassfish.resources.api.Resource> getResourcesOfType(List<Resource> resources,
                                             int type, boolean isResourceCreation, boolean ignoreDuplicates) {
         List<Resource> nonConnectorResources = new ArrayList<org.glassfish.resources.api.Resource>();
         List<org.glassfish.resources.api.Resource> connectorResources = new ArrayList<org.glassfish.resources.api.Resource>();
-        
+
         for (Resource res : resources) {
             if (isConnectorResource(res)) {
                 if (res.getType().equals(Resource.RESOURCE_ADAPTER_CONFIG)) {
                     if(isResourceCreation) {
-                        //RA config is considered as a nonConnector Resource, 
-                        //during sun-resources.xml resource-creation phase, so that 
+                        //RA config is considered as a nonConnector Resource,
+                        //during sun-resources.xml resource-creation phase, so that
                         //it could be created before the RAR is deployed.
                         addToList(nonConnectorResources, res, ignoreDuplicates);
                     } else {
@@ -415,7 +415,7 @@ public class ResourcesXMLParser implements EntityResolver
                 addToList(nonConnectorResources, res, ignoreDuplicates);
             }
         }
-        
+
         List<org.glassfish.resources.api.Resource> finalSortedConnectorList = sortConnectorResources(connectorResources);
         List<org.glassfish.resources.api.Resource> finalSortedNonConnectorList = sortNonConnectorResources(nonConnectorResources);
         if (type == CONNECTOR) {
@@ -448,9 +448,9 @@ public class ResourcesXMLParser implements EntityResolver
         List<org.glassfish.resources.api.Resource> raconfigs = new ArrayList<Resource>();
         List<Resource> ccps = new ArrayList<org.glassfish.resources.api.Resource>();
         List<org.glassfish.resources.api.Resource> others = new ArrayList<org.glassfish.resources.api.Resource>();
-        
+
         List<Resource> finalSortedConnectorList = new ArrayList<Resource>();
-        
+
         for (Resource resource : connectorResources) {
             if (resource.getType().equals(org.glassfish.resources.api.Resource.RESOURCE_ADAPTER_CONFIG)){
                 raconfigs.add(resource);
@@ -460,13 +460,13 @@ public class ResourcesXMLParser implements EntityResolver
                 others.add(resource);
             }
         }
-        
+
         finalSortedConnectorList.addAll(raconfigs);
         finalSortedConnectorList.addAll(ccps);
         finalSortedConnectorList.addAll(others);
         return finalSortedConnectorList;
     }
-    
+
     /**
      * Sort non connector resources
      * JDBC Pools are added first to the list, so that the conncetion
@@ -479,9 +479,9 @@ public class ResourcesXMLParser implements EntityResolver
         List<org.glassfish.resources.api.Resource> jdbccps = new ArrayList<Resource>();
         List<org.glassfish.resources.api.Resource> pmfs = new ArrayList<Resource>();
         List<org.glassfish.resources.api.Resource> others = new ArrayList<Resource>();
-        
+
         List<org.glassfish.resources.api.Resource> finalSortedNonConnectorList = new ArrayList<org.glassfish.resources.api.Resource>();
-        
+
         for (Resource resource : nonConnectorResources) {
             if(resource.getType().equals(org.glassfish.resources.api.Resource.JDBC_CONNECTION_POOL)) {
                 jdbccps.add(resource);
@@ -492,24 +492,24 @@ public class ResourcesXMLParser implements EntityResolver
                 others.add(resource);
             }
         }
-        
+
         finalSortedNonConnectorList.addAll(jdbccps);
         finalSortedNonConnectorList.addAll(others);
         finalSortedNonConnectorList.addAll(pmfs);
         return finalSortedNonConnectorList;
     }
-    
+
     /**
      * Determines if the passed in <code>Resource</code> is a connector
      * resource. A connector resource is either a connector connection pool or a
      * connector resource, security map, ra config or an admin object
-     * 
+     *
      * @param res Resource that needs to be tested
      * @return
      */
     private static boolean isConnectorResource(Resource res) {
         String type = res.getType();
-        return (    
+        return (
                     (type.equals(Resource.ADMIN_OBJECT_RESOURCE)) ||
                     (type.equals(org.glassfish.resources.api.Resource.CONNECTOR_CONNECTION_POOL)) ||
                     (type.equals(org.glassfish.resources.api.Resource.CONNECTOR_RESOURCE)) ||
@@ -583,21 +583,21 @@ public class ResourcesXMLParser implements EntityResolver
     private void generateCustomResource(Node nextKid, String scope) throws Exception
     {
         NamedNodeMap attributes = nextKid.getAttributes();
-        
+
         if (attributes == null)
             return;
-        
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
-        
+
         Node resTypeNode = attributes.getNamedItem(RES_TYPE);
         String resType = resTypeNode.getNodeValue();
-        
+
         Node factoryClassNode = attributes.getNamedItem(FACTORY_CLASS);
         String factoryClass = factoryClassNode.getNodeValue();
-        
+
         Node enabledNode = attributes.getNamedItem(ENABLED);
-        
+
         Resource customResource = new Resource(Resource.CUSTOM_RESOURCE);
         customResource.setAttribute(JNDI_NAME, jndiName);
         customResource.setAttribute(RES_TYPE, resType);
@@ -606,16 +606,16 @@ public class ResourcesXMLParser implements EntityResolver
            String sEnabled = enabledNode.getNodeValue();
            customResource.setAttribute(ENABLED, sEnabled);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(customResource, children);
         vResources.add(customResource);
         resourceMap.put(customResource, nextKid);
-        
+
         //debug strings
         printResourceElements(customResource);
     }
-    
+
     /**
      * Generate the JNDI resource
      */
@@ -624,7 +624,7 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
         Node jndiLookupNode = attributes.getNamedItem(JNDI_LOOKUP);
@@ -634,7 +634,7 @@ public class ResourcesXMLParser implements EntityResolver
         Node factoryClassNode = attributes.getNamedItem(FACTORY_CLASS);
         String factoryClass = factoryClassNode.getNodeValue();
         Node enabledNode = attributes.getNamedItem(ENABLED);
-        
+
         org.glassfish.resources.api.Resource jndiResource = new Resource(Resource.EXTERNAL_JNDI_RESOURCE);
         jndiResource.setAttribute(JNDI_NAME, jndiName);
         jndiResource.setAttribute(JNDI_LOOKUP, jndiLookup);
@@ -644,16 +644,16 @@ public class ResourcesXMLParser implements EntityResolver
            String sEnabled = enabledNode.getNodeValue();
            jndiResource.setAttribute(ENABLED, sEnabled);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(jndiResource, children);
         vResources.add(jndiResource);
         resourceMap.put(jndiResource, nextKid);
-        
+
         //debug strings
         printResourceElements(jndiResource);
     }
-    
+
     /**
      * Generate the JDBC resource
      */
@@ -661,7 +661,7 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
         Node poolNameNode = attributes.getNamedItem(POOL_NAME);
@@ -675,29 +675,29 @@ public class ResourcesXMLParser implements EntityResolver
            String enabledName = enabledNode.getNodeValue();
            jdbcResource.setAttribute(ENABLED, enabledName);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         //get description
-        if (children != null) 
+        if (children != null)
         {
-            for (int ii=0; ii<children.getLength(); ii++) 
+            for (int ii=0; ii<children.getLength(); ii++)
             {
                 if (children.item(ii).getNodeName().equals("description")) {
                     if (children.item(ii).getFirstChild() != null) {
                         jdbcResource.setDescription(
                             children.item(ii).getFirstChild().getNodeValue());
-                    } 
+                    }
                 }
             }
         }
 
         vResources.add(jdbcResource);
         resourceMap.put(jdbcResource, nextKid);
-        
+
         //debug strings
         printResourceElements(jdbcResource);
     }
-    
+
     /**
      * Generate the JDBC Connection pool Resource
      */
@@ -706,59 +706,59 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Node nameNode = attributes.getNamedItem(CONNECTION_POOL_NAME);
         String name = getScopedName(nameNode.getNodeValue(), scope);
         Node nSteadyPoolSizeNode = attributes.getNamedItem(STEADY_POOL_SIZE);
         Node nMaxPoolSizeNode = attributes.getNamedItem(MAX_POOL_SIZE);
-        Node nMaxWaitTimeInMillisNode  = 
+        Node nMaxWaitTimeInMillisNode  =
              attributes.getNamedItem(MAX_WAIT_TIME_IN_MILLIS);
-        Node nPoolSizeQuantityNode  = 
+        Node nPoolSizeQuantityNode  =
              attributes.getNamedItem(POOL_SIZE_QUANTITY);
-        Node nIdleTimeoutInSecNode  = 
+        Node nIdleTimeoutInSecNode  =
              attributes.getNamedItem(IDLE_TIME_OUT_IN_SECONDS);
-        Node nIsConnectionValidationRequiredNode  = 
+        Node nIsConnectionValidationRequiredNode  =
              attributes.getNamedItem(IS_CONNECTION_VALIDATION_REQUIRED);
-        Node nConnectionValidationMethodNode  = 
+        Node nConnectionValidationMethodNode  =
              attributes.getNamedItem(CONNECTION_VALIDATION_METHOD);
-        Node nFailAllConnectionsNode  = 
+        Node nFailAllConnectionsNode  =
              attributes.getNamedItem(FAIL_ALL_CONNECTIONS);
-        Node nValidationTableNameNode  = 
+        Node nValidationTableNameNode  =
              attributes.getNamedItem(VALIDATION_TABLE_NAME);
         Node nResType  = attributes.getNamedItem(RES_TYPE);
-        Node nTransIsolationLevel  = 
+        Node nTransIsolationLevel  =
              attributes.getNamedItem(TRANS_ISOLATION_LEVEL);
-        Node nIsIsolationLevelQuaranteed  = 
+        Node nIsIsolationLevelQuaranteed  =
              attributes.getNamedItem(IS_ISOLATION_LEVEL_GUARANTEED);
         Node datasourceNode = attributes.getNamedItem(DATASOURCE_CLASS);
         Node validationclassnameNode = attributes.getNamedItem(VALIDATION_CLASSNAME);
-        Node nonTransactionalConnectionsNode = 
+        Node nonTransactionalConnectionsNode =
                 attributes.getNamedItem(NON_TRANSACTIONAL_CONNECTIONS);
-        Node allowNonComponentCallersNode = 
+        Node allowNonComponentCallersNode =
                 attributes.getNamedItem(ALLOW_NON_COMPONENT_CALLERS);
-        Node validateAtmostOncePeriodNode = 
+        Node validateAtmostOncePeriodNode =
                 attributes.getNamedItem(VALIDATE_ATMOST_ONCE_PERIOD_IN_SECONDS);
-        Node connectionLeakTimeoutNode = 
+        Node connectionLeakTimeoutNode =
                 attributes.getNamedItem(CONNECTION_LEAK_TIMEOUT_IN_SECONDS);
-        Node connectionLeakReclaimNode = 
+        Node connectionLeakReclaimNode =
                 attributes.getNamedItem(CONNECTION_LEAK_RECLAIM);
-        Node connectionCreationRetryAttemptsNode = 
+        Node connectionCreationRetryAttemptsNode =
                 attributes.getNamedItem(CONNECTION_CREATION_RETRY_ATTEMPTS);
-        Node connectionCreationRetryIntervalNode = 
+        Node connectionCreationRetryIntervalNode =
                 attributes.getNamedItem(CONNECTION_CREATION_RETRY_INTERVAL_IN_SECONDS);
-        Node statementTimeoutNode = 
+        Node statementTimeoutNode =
                 attributes.getNamedItem(STATEMENT_TIMEOUT_IN_SECONDS);
-        Node lazyConnectionEnlistmentNode = 
+        Node lazyConnectionEnlistmentNode =
                 attributes.getNamedItem(LAZY_CONNECTION_ENLISTMENT);
-        Node lazyConnectionAssociationNode = 
+        Node lazyConnectionAssociationNode =
                 attributes.getNamedItem(LAZY_CONNECTION_ASSOCIATION);
-        Node associateWithThreadNode = 
+        Node associateWithThreadNode =
                 attributes.getNamedItem(ASSOCIATE_WITH_THREAD);
-        Node matchConnectionsNode = 
+        Node matchConnectionsNode =
                 attributes.getNamedItem(MATCH_CONNECTIONS);
-        Node maxConnectionUsageCountNode = 
+        Node maxConnectionUsageCountNode =
                 attributes.getNamedItem(MAX_CONNECTION_USAGE_COUNT);
-        Node wrapJDBCObjectsNode = 
+        Node wrapJDBCObjectsNode =
                 attributes.getNamedItem(WRAP_JDBC_OBJECTS);
         Node poolingNode
             = attributes.getNamedItem(POOLING);
@@ -787,7 +787,7 @@ public class ResourcesXMLParser implements EntityResolver
             String datasource = datasourceNode.getNodeValue();
             jdbcConnPool.setAttribute(DATASOURCE_CLASS, datasource);
         }
-        
+
         if (validationclassnameNode != null){
             String validationclassname = validationclassnameNode.getNodeValue();
             jdbcConnPool.setAttribute(VALIDATION_CLASSNAME, validationclassname);
@@ -838,17 +838,17 @@ public class ResourcesXMLParser implements EntityResolver
            jdbcConnPool.setAttribute(TRANS_ISOLATION_LEVEL, sTransIsolationLevel);
         }
         if (nIsIsolationLevelQuaranteed != null) {
-           String sIsIsolationLevelQuaranteed = 
+           String sIsIsolationLevelQuaranteed =
                   nIsIsolationLevelQuaranteed.getNodeValue();
-           jdbcConnPool.setAttribute(IS_ISOLATION_LEVEL_GUARANTEED, 
+           jdbcConnPool.setAttribute(IS_ISOLATION_LEVEL_GUARANTEED,
                                      sIsIsolationLevelQuaranteed);
         }
         if (nonTransactionalConnectionsNode != null) {
-           jdbcConnPool.setAttribute(NON_TRANSACTIONAL_CONNECTIONS, 
+           jdbcConnPool.setAttribute(NON_TRANSACTIONAL_CONNECTIONS,
                                         nonTransactionalConnectionsNode.getNodeValue());
         }
         if (allowNonComponentCallersNode != null) {
-           jdbcConnPool.setAttribute(ALLOW_NON_COMPONENT_CALLERS, 
+           jdbcConnPool.setAttribute(ALLOW_NON_COMPONENT_CALLERS,
                                         allowNonComponentCallersNode.getNodeValue());
         }
         if (validateAtmostOncePeriodNode != null) {
@@ -860,15 +860,15 @@ public class ResourcesXMLParser implements EntityResolver
                                         connectionLeakTimeoutNode.getNodeValue());
         }
         if (connectionLeakReclaimNode != null) {
-           jdbcConnPool.setAttribute(CONNECTION_LEAK_RECLAIM, 
+           jdbcConnPool.setAttribute(CONNECTION_LEAK_RECLAIM,
                                         connectionLeakReclaimNode.getNodeValue());
         }
         if (connectionCreationRetryAttemptsNode != null) {
-           jdbcConnPool.setAttribute(CONNECTION_CREATION_RETRY_ATTEMPTS, 
+           jdbcConnPool.setAttribute(CONNECTION_CREATION_RETRY_ATTEMPTS,
                                         connectionCreationRetryAttemptsNode.getNodeValue());
         }
         if (connectionCreationRetryIntervalNode != null) {
-           jdbcConnPool.setAttribute(CONNECTION_CREATION_RETRY_INTERVAL_IN_SECONDS, 
+           jdbcConnPool.setAttribute(CONNECTION_CREATION_RETRY_INTERVAL_IN_SECONDS,
                                         connectionCreationRetryIntervalNode.getNodeValue());
         }
         if (statementTimeoutNode != null) {
@@ -876,27 +876,27 @@ public class ResourcesXMLParser implements EntityResolver
                                         statementTimeoutNode.getNodeValue());
         }
         if (lazyConnectionEnlistmentNode != null) {
-           jdbcConnPool.setAttribute(LAZY_CONNECTION_ENLISTMENT, 
+           jdbcConnPool.setAttribute(LAZY_CONNECTION_ENLISTMENT,
                                         lazyConnectionEnlistmentNode.getNodeValue());
         }
         if (lazyConnectionAssociationNode != null) {
-           jdbcConnPool.setAttribute(LAZY_CONNECTION_ASSOCIATION, 
+           jdbcConnPool.setAttribute(LAZY_CONNECTION_ASSOCIATION,
                                         lazyConnectionAssociationNode.getNodeValue());
         }
         if (associateWithThreadNode != null) {
-           jdbcConnPool.setAttribute(ASSOCIATE_WITH_THREAD, 
+           jdbcConnPool.setAttribute(ASSOCIATE_WITH_THREAD,
                                         associateWithThreadNode.getNodeValue());
         }
         if (matchConnectionsNode != null) {
-           jdbcConnPool.setAttribute(MATCH_CONNECTIONS, 
+           jdbcConnPool.setAttribute(MATCH_CONNECTIONS,
                                         matchConnectionsNode.getNodeValue());
         }
         if (maxConnectionUsageCountNode != null) {
-           jdbcConnPool.setAttribute(MAX_CONNECTION_USAGE_COUNT, 
+           jdbcConnPool.setAttribute(MAX_CONNECTION_USAGE_COUNT,
                                         maxConnectionUsageCountNode.getNodeValue());
         }
         if (wrapJDBCObjectsNode != null) {
-           jdbcConnPool.setAttribute(WRAP_JDBC_OBJECTS, 
+           jdbcConnPool.setAttribute(WRAP_JDBC_OBJECTS,
                                         wrapJDBCObjectsNode.getNodeValue());
         }
         if(poolingNode != null){
@@ -940,11 +940,11 @@ public class ResourcesXMLParser implements EntityResolver
         generatePropertyElement(jdbcConnPool, children);
         vResources.add(jdbcConnPool);
         resourceMap.put(jdbcConnPool, nextKid);
-        
+
         //debug strings
         printResourceElements(jdbcConnPool);
     }
-    
+
     /**
      * Generate the Mail resource
      */
@@ -969,7 +969,7 @@ public class ResourcesXMLParser implements EntityResolver
         String host     = hostNode.getNodeValue();
         String user     = userNode.getNodeValue();
         String fromAddress = fromAddressNode.getNodeValue();
-        
+
         org.glassfish.resources.api.Resource mailResource = new org.glassfish.resources.api.Resource(org.glassfish.resources.api.Resource.MAIL_RESOURCE);
 
         mailResource.setAttribute(JNDI_NAME, jndiName);
@@ -1005,11 +1005,11 @@ public class ResourcesXMLParser implements EntityResolver
         generatePropertyElement(mailResource, children);
         vResources.add(mailResource);
         resourceMap.put(mailResource, nextKid);
-        
+
         //debug strings
         printResourceElements(mailResource);
     }
-    
+
     /**
      * Generate the Admin Object resource
      */
@@ -1018,7 +1018,7 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
         Node resTypeNode = attributes.getNamedItem(RES_TYPE);
@@ -1045,12 +1045,12 @@ public class ResourcesXMLParser implements EntityResolver
            String sEnabled = enabledNode.getNodeValue();
            adminObjectResource.setAttribute(ENABLED, sEnabled);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(adminObjectResource, children);
         vResources.add(adminObjectResource);
         resourceMap.put(adminObjectResource, nextKid);
-        
+
         //debug strings
         printResourceElements(adminObjectResource);
     }
@@ -1063,7 +1063,7 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Node jndiNameNode = attributes.getNamedItem(JNDI_NAME);
         String jndiName = getScopedName(jndiNameNode.getNodeValue(), scope);
         Node poolNameNode = attributes.getNamedItem(POOL_NAME);
@@ -1083,17 +1083,17 @@ public class ResourcesXMLParser implements EntityResolver
            String sEnabled = enabledNode.getNodeValue();
            connectorResource.setAttribute(ENABLED, sEnabled);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(connectorResource, children);
         vResources.add(connectorResource);
         resourceMap.put(connectorResource, nextKid);
-        
+
         //debug strings
         printResourceElements(connectorResource);
     }
 
-    private void generatePropertyElement(Resource rs, NodeList children) throws Exception 
+    private void generatePropertyElement(Resource rs, NodeList children) throws Exception
     {
         if (children != null) {
             for (int i=0; i<children.getLength(); i++) {
@@ -1106,8 +1106,8 @@ public class ResourcesXMLParser implements EntityResolver
                         String sName = nameNode.getNodeValue();
                         String sValue = valueNode.getNodeValue();
                         //get property description
-                        // FIX ME: Ignoring the value for description for the 
-                        // time-being as there is no method available in 
+                        // FIX ME: Ignoring the value for description for the
+                        // time-being as there is no method available in
                         // configMBean to set description for a property
                         Node descNode = children.item(i).getFirstChild();
                         while (descNode != null && !bDescFound) {
@@ -1138,7 +1138,7 @@ public class ResourcesXMLParser implements EntityResolver
             }
         }
     }
-    
+
     /**
      * Generate the Connector Connection pool Resource
      */
@@ -1147,8 +1147,8 @@ public class ResourcesXMLParser implements EntityResolver
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return ;
-        
-        Node nameNode 
+
+        Node nameNode
             = attributes.getNamedItem(CONNECTOR_CONNECTION_POOL_NAME);
         Node raConfigNode
             = attributes.getNamedItem(RESOURCE_ADAPTER_CONFIG_NAME);
@@ -1156,7 +1156,7 @@ public class ResourcesXMLParser implements EntityResolver
             = attributes.getNamedItem(CONN_DEF_NAME);
         Node steadyPoolSizeNode
             = attributes.getNamedItem(CONN_STEADY_POOL_SIZE);
-        Node maxPoolSizeNode 
+        Node maxPoolSizeNode
             =  attributes.getNamedItem(CONN_MAX_POOL_SIZE);
         Node poolResizeNode
             = attributes.getNamedItem(CONN_POOL_RESIZE_QUANTITY);
@@ -1172,7 +1172,7 @@ public class ResourcesXMLParser implements EntityResolver
             = attributes.getNamedItem(IS_CONNECTION_VALIDATION_REQUIRED);
         Node validateAtmostOncePeriodNode
             = attributes.getNamedItem(VALIDATE_ATMOST_ONCE_PERIOD_IN_SECONDS);
-        Node connLeakTimeoutNode 
+        Node connLeakTimeoutNode
             = attributes.getNamedItem(CONNECTION_LEAK_TIMEOUT_IN_SECONDS);
         Node connLeakReclaimNode
             = attributes.getNamedItem(CONNECTION_LEAK_RECLAIM);
@@ -1196,12 +1196,12 @@ public class ResourcesXMLParser implements EntityResolver
             = attributes.getNamedItem(PING);
 
         String poolName = null;
-        
+
         org.glassfish.resources.api.Resource connectorConnPoolResource = new Resource(org.glassfish.resources.api.Resource.CONNECTOR_CONNECTION_POOL);
         if(nameNode != null){
             poolName = getScopedName(nameNode.getNodeValue(), scope);
             connectorConnPoolResource.setAttribute(CONNECTION_POOL_NAME, poolName);
-        }    
+        }
        if(raConfigNode != null){
             String raConfig = raConfigNode.getNodeValue();
             connectorConnPoolResource.setAttribute(RESOURCE_ADAPTER_CONFIG_NAME,raConfig);
@@ -1308,7 +1308,7 @@ public class ResourcesXMLParser implements EntityResolver
         NodeList children = nextKid.getChildNodes();
         //get description
         generatePropertyElement(connectorConnPoolResource, children);
-        
+
         vResources.add(connectorConnPoolResource);
         resourceMap.put(connectorConnPoolResource, nextKid);
         // with the given poolname ..create security-map
@@ -1316,7 +1316,7 @@ public class ResourcesXMLParser implements EntityResolver
             for (int i=0; i<children.getLength(); i++) {
                 if((children.item(i).getNodeName().equals(SECURITY_MAP)))
                     generateSecurityMap(poolName,children.item(i), scope);
-                    
+
             }
         }
         //debug strings
@@ -1326,7 +1326,7 @@ public class ResourcesXMLParser implements EntityResolver
     private void generateWorkSecurityMap(Node node, String scope) throws Exception {
 
         //ignore "scope" as work-security-map is not a bindable resource
-        
+
         NamedNodeMap attributes = node.getAttributes();
         if(attributes == null){
             return;
@@ -1392,14 +1392,14 @@ public class ResourcesXMLParser implements EntityResolver
     private void generateSecurityMap(String poolName,Node mapNode, String scope) throws Exception{
 
         //scope is not needed for security map.
-        
+
         NamedNodeMap attributes = mapNode.getAttributes();
         if (attributes == null)
             return ;
-        Node nameNode 
+        Node nameNode
             = attributes.getNamedItem(SECURITY_MAP_NAME);
-               
-              
+
+
         Resource map = new Resource(org.glassfish.resources.api.Resource.CONNECTOR_SECURITY_MAP);
         if(nameNode != null){
             String name = nameNode.getNodeValue();
@@ -1407,12 +1407,12 @@ public class ResourcesXMLParser implements EntityResolver
         }
         if(poolName != null)
            map.setAttribute(POOL_NAME,poolName);
-        
-        StringBuffer principal = new StringBuffer();
-        StringBuffer usergroup = new StringBuffer();
-        
+
+        StringBuilder principal = new StringBuilder();
+        StringBuilder usergroup = new StringBuilder();
+
         NodeList children = mapNode.getChildNodes();
-        
+
         if(children != null){
             for (int i=0; i<children.getLength(); i++){
                 Node gChild = children.item(i);
@@ -1426,7 +1426,7 @@ public class ResourcesXMLParser implements EntityResolver
                     usergroup.append(u).append(",");
                 }
                 if((strNodeName.equals(SECURITY_MAP_BACKEND_PRINCIPAL))){
-                    NamedNodeMap attributes1 = (children.item(i)).getAttributes();    
+                    NamedNodeMap attributes1 = (children.item(i)).getAttributes();
                     if(attributes1 != null){
                         Node userNode = attributes1.getNamedItem(USER_NAME);
                         if(userNode != null){
@@ -1446,9 +1446,9 @@ public class ResourcesXMLParser implements EntityResolver
             map.setAttribute("user_group",convertToStringArray(usergroup.toString()));
        vResources.add(map);
         resourceMap.put(map, mapNode);
-    }//end of generateSecurityMap....     
-   
-    
+    }//end of generateSecurityMap....
+
+
     /**
      * Generate the Resource Adapter Config
      *
@@ -1456,11 +1456,11 @@ public class ResourcesXMLParser implements EntityResolver
     private void generateResourceAdapterConfig(Node nextKid, String scope) throws Exception
     {
         //ignore "scope" as resource-adapter-config is not a bindable resource
-        
+
         NamedNodeMap attributes = nextKid.getAttributes();
         if (attributes == null)
             return;
-        
+
         Resource resAdapterConfigResource = new Resource(Resource.RESOURCE_ADAPTER_CONFIG);
         Node resAdapConfigNode = attributes.getNamedItem(RES_ADAPTER_CONFIG);
         if(resAdapConfigNode != null){
@@ -1477,40 +1477,40 @@ public class ResourcesXMLParser implements EntityResolver
             String resAdapName = resAdapNameNode.getNodeValue();
             resAdapterConfigResource.setAttribute(RES_ADAPTER_NAME,resAdapName);
         }
-        
+
         NodeList children = nextKid.getChildNodes();
         generatePropertyElement(resAdapterConfigResource, children);
         vResources.add(resAdapterConfigResource);
         resourceMap.put(resAdapterConfigResource, nextKid);
-        
+
         //debug strings
         printResourceElements(resAdapterConfigResource);
     }
-    
+
     /**
      * Returns an Iterator of <code>Resource</code>objects in the order as defined
-     * in the resources XML configuration file. Maintained for backward compat 
-     * purposes only. 
+     * in the resources XML configuration file. Maintained for backward compat
+     * purposes only.
      */
     public Iterator<org.glassfish.resources.api.Resource> getResources() {
         return vResources.iterator();
     }
-    
+
     public List<org.glassfish.resources.api.Resource> getResourcesList() {
         return vResources;
     }
-    
+
     /**
-     * Returns an List of <code>Resource</code>objects that needs to be 
-     * created prior to module deployment. This includes all non-Connector 
+     * Returns an List of <code>Resource</code>objects that needs to be
+     * created prior to module deployment. This includes all non-Connector
      * resources and resource-adapter-config
      * @param resources List of resources, from which the non connector
      * resources need to be obtained.
      * @param isResourceCreation indicates if this determination needs to be
      * done during the <code>PreResCreationPhase</code>. In the
-     * <code>PreResCreationPhase</code>, RA config is added to the 
+     * <code>PreResCreationPhase</code>, RA config is added to the
      * non connector list, so that the RA config is created prior to the
-     * RA deployment. For all other purpose, this flag needs to be set to false. 
+     * RA deployment. For all other purpose, this flag needs to be set to false.
      */
     public static List  getNonConnectorResourcesList(List<org.glassfish.resources.api.Resource> resources,
                                                  boolean isResourceCreation, boolean ignoreDuplicates) {
@@ -1518,30 +1518,30 @@ public class ResourcesXMLParser implements EntityResolver
     }
 
     /**
-     *  Returns an Iterator of <code>Resource</code> objects that correspond to 
-     *  connector resources that needs to be created post module deployment. They 
+     *  Returns an Iterator of <code>Resource</code> objects that correspond to
+     *  connector resources that needs to be created post module deployment. They
      *  are arranged in the order in which the resources needs to be created
      * @param resources List of resources, from which the non connector
      * resources need to be obtained.
      * @param isResourceCreation indicates if this determination needs to be
      * done during the <code>PreResCreationPhase</code>. In the
-     * <code>PreResCreationPhase</code>, RA config is added to the 
+     * <code>PreResCreationPhase</code>, RA config is added to the
      * non connector list, so that the RA config is created prior to the
-     * RA deployment. For all other purpose, this flag needs to be set to false. 
+     * RA deployment. For all other purpose, this flag needs to be set to false.
      */
-    
+
     public static List getConnectorResourcesList(List<org.glassfish.resources.api.Resource> resources, boolean isResourceCreation,
                                                  boolean ignoreDuplicates) {
         return getResourcesOfType(resources, CONNECTOR, isResourceCreation, ignoreDuplicates);
     }
-    
+
     /**
      * Print(Debug) the resource
      */
     private void printResourceElements(Resource resource)
     {
         HashMap attrList = resource.getAttributes();
-        
+
         Iterator attrIter = attrList.keySet().iterator();
         while (attrIter.hasNext())
         {
@@ -1550,7 +1550,7 @@ public class ResourcesXMLParser implements EntityResolver
                         Level.FINE, "Name of the attribute:[{0}]", attrName);
         }
     }
-    
+
     // Helper Method to convert a String type to a String[]
      private String[] convertToStringArray(Object sOptions){
         StringTokenizer optionTokenizer   = new StringTokenizer((String)sOptions,",");
@@ -1558,11 +1558,11 @@ public class ResourcesXMLParser implements EntityResolver
         String []       sOptionsList = new String[size];
         for (int ii=0; ii<size; ii++){
             sOptionsList[ii] = optionTokenizer.nextToken();
-        } 
+        }
         return sOptionsList;
      }
-    
-    
+
+
       final static class AddResourcesErrorHandler implements ErrorHandler {
           public void error(SAXParseException e) throws org.xml.sax.SAXException{
            throw e ;
@@ -1574,8 +1574,8 @@ public class ResourcesXMLParser implements EntityResolver
           throw e ;
         }
     }
-      
-      
+
+
     public InputSource resolveEntity(String publicId, String systemId)
         throws SAXException {
         InputSource is = null;
@@ -1648,25 +1648,25 @@ public class ResourcesXMLParser implements EntityResolver
         public void startDTD(String name, String publicId, String systemId) throws SAXException {
             isDoctypePresent = true;
         }
-        
+
         public void endDTD() throws SAXException {
         }
-        
+
         public void startEntity(String name) throws SAXException {
         }
-        
+
         public void endEntity(String name) throws SAXException {
         }
-        
+
         public void startCDATA() throws SAXException {
         }
-        
+
         public void endCDATA() throws SAXException {
         }
-        
+
         public void comment(char[] ch, int start, int length) throws SAXException {
         }
-        
+
     }
 
 }

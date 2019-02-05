@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.installer.util;
+
+import org.openinstaller.util.ClassUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 import java.util.logging.Logger;
-import org.openinstaller.util.ClassUtils;
 
 /**
  * Utility class for String related operations.
@@ -106,7 +109,7 @@ public class StringUtils {
     /* scan the vector for given string.
      * @param str String to check.
      * @param v Vector to scan.
-     * @return true/false depending on the presence of string in vector. 
+     * @return true/false depending on the presence of string in vector.
      */
     static public boolean isStringInVector(String str, Vector v) {
         if (v == null) {
@@ -123,14 +126,14 @@ public class StringUtils {
     }
 
     /**
-     * Substitute the token with the given value in a StringBuffer and
-     * returns the StringBuffer.
-     * @param str Input StringBuffer.
+     * Substitute the token with the given value in a StringBuilder and
+     * returns the StringBuilder.
+     * @param str Input StringBuilder.
      * @param token Token to scan for in the buffer str.
      * @param newValue replacement string.
      * @return new String formed after token replacement.
      */
-    static public String substString(StringBuffer str, String token, String newValue) {
+    static public String substString(StringBuilder str, String token, String newValue) {
         int offset = 0, tokenLen = token.length(), valLen = newValue.length();
         offset = str.toString().indexOf(token, offset);
         while (offset != -1) {

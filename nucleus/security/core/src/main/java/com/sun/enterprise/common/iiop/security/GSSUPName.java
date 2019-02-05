@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.common.iiop.security;
 
-import static com.sun.enterprise.security.SecurityLoggerInfo.iiopImportNameError;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
+import com.sun.enterprise.security.SecurityLoggerInfo;
+import com.sun.enterprise.security.common.Util;
 
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
-import com.sun.enterprise.security.SecurityLoggerInfo;
-import com.sun.enterprise.security.common.Util;
+import static com.sun.enterprise.security.SecurityLoggerInfo.iiopImportNameError;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * This class implements the GSSAPI exported name functionality as required by CSIV2.
@@ -180,7 +181,7 @@ public class GSSUPName {
             _logger.log(Level.FINE, "Going to create exported name for:" + toString());
         }
 
-        StringBuffer strbuf = new StringBuffer("");
+        StringBuilder strbuf = new StringBuilder("");
 
         /* Process the username for special characters AT_CHAR and ESCAPE_CHAR */
 
@@ -188,7 +189,7 @@ public class GSSUPName {
         int esc_index = username.indexOf(ESCAPE_CHAR);
 
         if ((at_index == -1) && (esc_index == -1))
-            strbuf = new StringBuffer(username); // just copy - no processing required.
+            strbuf = new StringBuilder(username); // just copy - no processing required.
         else {
 
             // N.B. Order of processing is important

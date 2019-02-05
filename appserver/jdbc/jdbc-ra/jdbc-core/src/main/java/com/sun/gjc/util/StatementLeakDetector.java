@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.util;
 
@@ -177,7 +178,7 @@ public class StatementLeakDetector {
                         stmtLeakListener.reclaimStatement();
                     } catch (SQLException ex) {
                         Object[] params = new Object[]{poolInfo, ex};
-                        _logger.log(Level.WARNING, 
+                        _logger.log(Level.WARNING,
                                 "statement.leak.detector_reclaim_statement_failure",
                                 params);
                     }
@@ -194,7 +195,7 @@ public class StatementLeakDetector {
      * @param threadStackTrace Application(caller) thread stack trace
      */
     private void printStatementLeakTrace(StackTraceElement[] threadStackTrace) {
-        StringBuffer stackTrace = new StringBuffer();
+        StringBuilder stackTrace = new StringBuilder();
         String msg = localStrings.getStringWithDefault(
                 "potential.statement.leak.msg",
                 "A potential statement leak detected for connection pool " + poolInfo +

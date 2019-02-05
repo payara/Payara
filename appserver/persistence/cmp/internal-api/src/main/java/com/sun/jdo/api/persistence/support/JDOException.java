@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JDOException.java
@@ -61,7 +62,7 @@ public class JDOException extends java.lang.RuntimeException {
   /** This exception may be the result of incorrect parameters supplied
    * to an API.  This is the array from which the user can determine
    * the cause of the problem.
-   * The failed Object array is transient because it might contain 
+   * The failed Object array is transient because it might contain
    * non-Serializable instances.
    */
   transient Object[] failed;
@@ -158,7 +159,7 @@ public class JDOException extends java.lang.RuntimeException {
         len = failed.length;
     }
     // calculate approximate size of the String to return
-    StringBuffer sb = new StringBuffer (100 + 10 * len);
+    StringBuilder sb = new StringBuilder (100 + 10 * len);
     sb.append (super.toString());
     // include nested exception information
     if (nested != null) {

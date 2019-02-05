@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.jauth;
 
 import javax.security.auth.message.MessagePolicy;
-import static javax.security.auth.message.MessagePolicy.*;
+
+import static javax.security.auth.message.MessagePolicy.ProtectionPolicy;
+import static javax.security.auth.message.MessagePolicy.TargetPolicy;
 
 /*
  * This class is used to define the message authentication policy that informs
@@ -212,7 +215,7 @@ public class AuthPolicy {
 
         // wait for 1.5
         // StringBuilder sb = new StringBuilder();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         switch (authenticateSource) {
         case SOURCE_AUTH_NONE:
             sb.append("source-auth-type = SOURCE_AUTH_NONE");

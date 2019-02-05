@@ -147,7 +147,7 @@ public class CollectLogFiles implements AdminCommand {
 
                 String sourceDir = "";
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getDomainRoot() + File.separator + "logs";
+                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
                 } else {
                     sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 }
@@ -293,7 +293,7 @@ public class CollectLogFiles implements AdminCommand {
             try {
                 String sourceDir = "";
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getDomainRoot() + File.separator + "logs";
+                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
                 } else {
                     sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 }

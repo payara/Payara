@@ -37,25 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.WeakHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.validation.MessageInterpolator;
 import javax.validation.Payload;
 import javax.validation.metadata.ConstraintDescriptor;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * Custom MessageInterpolatorImpl for HK2
@@ -119,7 +112,7 @@ public class MessageInterpolatorImpl implements MessageInterpolator {
      * Look-ups in user bundles is recursive whereas look-ups in default bundle are not!
      *
      * @param message the message to interpolate
-     * @param annotationParameters the parameters of the annotation for which to interpolate this message
+     * @param context the context of the annotation for which to interpolate this message
      * @param locale the {@code Locale} to use for the resource bundle.
      *
      * @return the interpolated message.
@@ -309,7 +302,7 @@ public class MessageInterpolatorImpl implements MessageInterpolator {
                                 return Thread.currentThread().getContextClassLoader();
                             }
                         });
-                userBundle = ResourceBundle.getBundle(USER_VALIDATION_MESSAGES, 
+                userBundle = ResourceBundle.getBundle(USER_VALIDATION_MESSAGES,
                         locale,
                         cl);
             } catch (MissingResourceException mre) {

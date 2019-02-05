@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -96,12 +97,12 @@ public class MultipartConfigDescriptor extends Descriptor implements MultipartCo
     }
 
     @Override
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuilder) {
         if (location != null) {
-            toStringBuffer.append("\n multipart location ").append(location);
+            toStringBuilder.append("\n multipart location ").append(location);
         }
-        toStringBuffer.append("\n multipart maxFileSize ").append(maxFileSize);
-        toStringBuffer.append("\n multipart maxRequestSize ").append(maxRequestSize);
-        toStringBuffer.append("\n multipart fileSizeThreshold ").append(fileSizeThreshold);
+        toStringBuilder.append("\n multipart maxFileSize ").append(maxFileSize);
+        toStringBuilder.append("\n multipart maxRequestSize ").append(maxRequestSize);
+        toStringBuilder.append("\n multipart fileSizeThreshold ").append(fileSizeThreshold);
     }
 }

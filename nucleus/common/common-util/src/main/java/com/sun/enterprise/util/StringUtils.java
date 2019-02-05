@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package com.sun.enterprise.util;
 
 /* WBN Valentine's Day, 2000 -- place for handy String utils.
  */
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class StringUtils {
     public static final String NEWLINE = System.getProperty("line.separator");
@@ -83,7 +84,7 @@ public class StringUtils {
     /**
      * Returns a String containing SQLState, message and error code of exception and all sub-exceptions
      * @param ex the exception to format
-     * @return formatted exception
+     * @returnformatted exception
      */
     public static String formatSQLException(SQLException ex) {
         assert ex != null;
@@ -105,7 +106,7 @@ public class StringUtils {
     /**
      * Find longest String in a List of Strings...
      * @param strings the list of strings
-     * @return the index of the longest string
+     * @returnthe index of the longest string
      */
     public static int maxWidth(List strings) {
         int max = 0;
@@ -260,7 +261,7 @@ public class StringUtils {
     /**
      * Converts a String into an array where every \n is a new used to signal a new element in the array
      * @param s string to split into lines
-     * @return the resulting lines array
+     * @returnthe resulting lines array
      */
     public static String[] toLines(String s) {
         if (s == null) {

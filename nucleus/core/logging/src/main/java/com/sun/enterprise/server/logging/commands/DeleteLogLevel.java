@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- 
+
 // Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
- 
+
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
@@ -55,11 +55,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,8 +78,8 @@ import java.util.Map;
 @I18n("delete.log.levels")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-log-levels", 
+        opType=RestEndpoint.OpType.DELETE,
+        path="delete-log-levels",
         description="delete-log-levels")
 })
 public class DeleteLogLevel implements AdminCommand {
@@ -105,7 +104,7 @@ public class DeleteLogLevel implements AdminCommand {
         boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
-        StringBuffer successMsg = new StringBuffer();
+        StringBuilder successMsg = new StringBuilder();
         boolean isConfig = false;
         boolean success = false;
         String targetConfigName = "";
