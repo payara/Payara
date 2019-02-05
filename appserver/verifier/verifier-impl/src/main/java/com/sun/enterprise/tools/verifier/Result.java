@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.tools.verifier;
+
+import com.sun.enterprise.tools.verifier.util.LogDomains;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-
-import com.sun.enterprise.tools.verifier.util.LogDomains;
 
 public class Result {
 
@@ -97,18 +98,18 @@ public class Result {
      private static final LocalStringsImpl strings = new LocalStringsImpl(Verifier.class);
     public void init(Class c, String version, String compName) {
         setComponentName(compName);
-        StringBuffer assertion = new StringBuffer(
+        StringBuilder assertion = new StringBuilder(
                 StringManagerHelper.getLocalStringsManager().getLocalString(
                         (c.getName() + ".assertion"), "")); // NOI18N
         String key = ".specMappingInfo_"+version; // NOI18N
         String file="server log";
-        StringBuffer specMappingInfo = new StringBuffer(
+        StringBuilder specMappingInfo = new StringBuilder(
                 StringManagerHelper.getLocalStringsManager().getLocalString(
                         (c.getName() + key), ""));
         // if specMappingInfo_<version> is unavailable then try just specMappingInfo
         if(specMappingInfo == null || specMappingInfo.length() == 0) {
             key = c.getName() + ".specMappingInfo";
-            specMappingInfo = new StringBuffer(StringManagerHelper.getLocalStringsManager().getLocalString(key, ""));
+            specMappingInfo = new StringBuilder(StringManagerHelper.getLocalStringsManager().getLocalString(key, ""));
         }
          String  prefix = strings.get(
                 (getClass().getName() + ".prefix"), file); // NOI18N

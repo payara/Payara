@@ -36,37 +36,12 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.management.Attribute;
-import javax.management.AttributeList;
-
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.logging.LogLevel;
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -74,6 +49,21 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.logging.LogLevel;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <p/>
@@ -112,7 +102,7 @@ public class LogFilter {
     private ServiceLocator habitat;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    LoggingConfigFactory loggingConfigFactory;
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
@@ -163,7 +153,7 @@ public class LogFilter {
         String logFileDetailsForServer = "";
 
         try {
-            logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+            logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
         } catch (Exception ex) {
@@ -234,7 +224,7 @@ public class LogFilter {
 
             try {
                 // getting log file attribute value from logging.properties file
-                logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+                logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
                 logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
                 logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             } catch (Exception ex) {
@@ -280,7 +270,7 @@ public class LogFilter {
             targetConfigName = targetServer.getConfigRef();
         }
 
-        logFileDetailsForServer = loggingConfig.getLoggingFileDetails(targetConfigName);
+        logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
 
         return logFileDetailsForServer;
 
@@ -295,7 +285,7 @@ public class LogFilter {
 
         if (targetServer.isDas()) {
             // getting log file for DAS from logging.properties and returning the same
-            String logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
+            String logFileDetailsForServer = loggingConfigFactory.provide().getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             return logFileDetailsForServer;
@@ -328,7 +318,7 @@ public class LogFilter {
                 String logFileName = logFileDetailsForInstance.substring(logFileDetailsForInstance.lastIndexOf(File.separator) + 1, logFileDetailsForInstance.length());
                 File instanceFile = null;
                 instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, LOGGER,
-                        targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
+                        targetServerName, env.getInstanceRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
 
                 return instanceFile.getAbsolutePath();
             }
@@ -422,7 +412,7 @@ public class LogFilter {
                 try {
                     // this code is used when the node is not local.
                     instanceLogFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer,
-                            domain, LOGGER, instanceName, env.getDomainRoot().getAbsolutePath(), logFileName, instanceLogFileName);
+                            domain, LOGGER, instanceName, env.getInstanceRoot().getAbsolutePath(), logFileName, instanceLogFileName);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
                     return new AttributeList();
@@ -693,7 +683,7 @@ public class LogFilter {
                                 Date fromDate, Date toDate, String queryLevel, boolean onlyLevel,
                                 List listOfModules, Properties nameValueMap, String anySearch) {
         if (DEBUG) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(dateTimeCheck(entry.getLoggedDateTime(), fromDate, toDate));
             buf.append(",");
             buf.append(levelCheck(entry.getLoggedLevel(), queryLevel, onlyLevel));
@@ -703,9 +693,9 @@ public class LogFilter {
             buf.append(nameValueCheck(entry.getLoggedNameValuePairs(), nameValueMap));
             buf.append(",");
             buf.append(messageDataCheck(entry.getLoggedMessage(), entry.getLoggedNameValuePairs(), anySearch));
-            System.out.println("allChecks="+buf.toString()); 
+            System.out.println("allChecks="+buf.toString());
         }
-        
+
         if ((dateTimeCheck(entry.getLoggedDateTime(), fromDate, toDate))
                 && (levelCheck(entry.getLoggedLevel(), queryLevel, onlyLevel))
                 && (moduleCheck(entry.getLoggedLoggerName(), listOfModules))
@@ -729,8 +719,8 @@ public class LogFilter {
         if (!(loggedDateTime.before(fromDateTime) ||
                 loggedDateTime.after(toDateTime))) {
             return true;
-        } 
-        
+        }
+
         return false;
     }
 
@@ -755,7 +745,7 @@ public class LogFilter {
                 int queryLevelValue = Level.parse(queryLevelIn).intValue();
                 return (loggedLevelValue >= queryLevelValue);
             } catch(Exception e) {
-                return true;                
+                return true;
             }
         }
     }
@@ -764,7 +754,7 @@ public class LogFilter {
         if ((modules == null) || (modules.size() == 0)) {
             return true;
         }
-        loggerName = loggerName.trim();        
+        loggerName = loggerName.trim();
         Iterator iterator = modules.iterator();
         while (iterator.hasNext()) {
             String module = (String) iterator.next();
@@ -796,7 +786,7 @@ public class LogFilter {
             String loggedValue = nvToken.nextToken();
 
             // Reset the iterator to start from the first entry AGAIN
-            // FIXME: Is there any other cleaner way to reset the iterator 
+            // FIXME: Is there any other cleaner way to reset the iterator
             // position to zero than recreating a new iterator everytime
             Iterator queriedNameValueMapIterator =
                     queriedNameValueMap.entrySet().iterator();
@@ -808,7 +798,7 @@ public class LogFilter {
                     Object value = entry.getValue();
                     // We have a key with multiple values to match.
                     // This will happen if the match condition is like
-                    // _ThreadID=10 or _ThreadID=11 
+                    // _ThreadID=10 or _ThreadID=11
                     // _REVISIT_: There is an opportunity to improve performance
                     // for this search.
                     Iterator iterator = ((java.util.List) value).iterator();

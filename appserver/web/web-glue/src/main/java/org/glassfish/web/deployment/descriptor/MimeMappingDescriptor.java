@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -52,7 +53,7 @@ import java.io.Serializable;
 public class MimeMappingDescriptor implements MimeMapping, Serializable {
     private String extension;
     private String mimeType;
-    
+
     /** copy constructor */
     public MimeMappingDescriptor(MimeMappingDescriptor other) {
 	// super(other);
@@ -65,7 +66,7 @@ public class MimeMappingDescriptor implements MimeMapping, Serializable {
 	this.extension = extension;
 	this.mimeType = mimeType;
     }
-    
+
     /* Default constructor. */
     public MimeMappingDescriptor() {
     }
@@ -77,12 +78,12 @@ public class MimeMappingDescriptor implements MimeMapping, Serializable {
 	}
 	return this.extension;
     }
-    
+
     /** Set the filename extension for this mapping. */
     public void setExtension(String extension) {
 	this.extension = extension;
     }
-    
+
     /** Get the mime type for this mapping. */
     public String getMimeType() {
 	if (this.mimeType == null) {
@@ -95,8 +96,8 @@ public class MimeMappingDescriptor implements MimeMapping, Serializable {
 	this.mimeType = mimeType;
     }
     /** My pretty format. */
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("MimeMapping: ").append(this.getExtension()).append("@").append(this.getMimeType());
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("MimeMapping: ").append(this.getExtension()).append("@").append(this.getMimeType());
     }
 
 }

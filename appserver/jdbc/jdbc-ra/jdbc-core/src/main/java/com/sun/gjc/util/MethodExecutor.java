@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package com.sun.gjc.util;
 
@@ -46,10 +46,11 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.logging.LogDomains;
 
 import javax.resource.ResourceException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Vector;
 import java.util.Properties;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,7 @@ public class MethodExecutor implements java.io.Serializable {
     }
 
     private boolean debug = false;
-    
+
     private final static String newline = System.getProperty("line.separator");
 
     private static StringManager sm = StringManager.getManager(
@@ -209,7 +210,7 @@ public class MethodExecutor implements java.io.Serializable {
             if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
                 return Boolean.valueOf(parameter);
             }
-            
+
             if (typeName.equals("java.util.Properties")) {
                 Properties p = stringToProperties(parameter);
                 if (p!= null) return p;
@@ -223,7 +224,7 @@ public class MethodExecutor implements java.io.Serializable {
         }
     }
 
-    public Object invokeMethod(Object object, String methodName, 
+    public Object invokeMethod(Object object, String methodName,
             Class<?>[] valueTypes, Object... values) throws ResourceException {
         Object returnValue = null;
         Method actualMethod = null;
@@ -277,7 +278,7 @@ public class MethodExecutor implements java.io.Serializable {
          Properties p = new Properties();
          Properties prop = new Properties();
          try {
-            p.load(new java.io.StringBufferInputStream(s));
+            p.load(new StringReader(s));
          } catch (java.io.IOException ex) {
             if (_logger.isLoggable(Level.FINEST)) {
                _logger.log(Level.FINEST, "Parsing string to properties: {0}", ex.getMessage());

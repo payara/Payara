@@ -37,47 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
-import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
-import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
-import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import com.sun.enterprise.config.serverbeans.customvalidators.*;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.*;
-import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.Named;
+import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.api.admin.config.ReferenceContainer;
-
-import java.beans.PropertyVetoException;
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.config.support.CreationDecorator;
+import org.glassfish.config.support.DeletionDecorator;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-
-import org.glassfish.quality.ToDo;
 
 import javax.inject.Inject;
 import javax.validation.Payload;
@@ -85,6 +72,15 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 /**
  * A cluster defines a homogeneous set of server instances that share the same
@@ -350,7 +346,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * <p/>
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
-     * @return 
+     * @return
      */
     @Element
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal system props" )
@@ -400,7 +396,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     @Override
     boolean isDas();
-    
+
     @DuckTyped
     @Override
     boolean isDeploymentGroup();
@@ -457,8 +453,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             ArrayList<Server> instances = new ArrayList<Server>();
             for (ServerRef sRef : cluster.getServerRef()) {
                 Server svr =  domain.getServerNamed(sRef.getRef());
-                // the instance's domain.xml only has its own server 
-                // element and not other server elements in the cluster 
+                // the instance's domain.xml only has its own server
+                // element and not other server elements in the cluster
                 if (svr != null) {
                     instances.add(domain.getServerNamed(sRef.getRef()));
                 }
@@ -815,7 +811,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     private String generateHeartbeatAddress () {
             final int MAX_GMS_MULTICAST_ADDRESS_SUBRANGE = 255;
 
-            final StringBuffer heartbeatAddressBfr = new StringBuffer( "228.9.");
+            final StringBuilder heartbeatAddressBfr = new StringBuilder( "228.9.");
             heartbeatAddressBfr.append(Math.round(Math.random()*MAX_GMS_MULTICAST_ADDRESS_SUBRANGE))
                             .append('.')
                             .append(Math.round(Math.random()*MAX_GMS_MULTICAST_ADDRESS_SUBRANGE));
@@ -842,18 +838,18 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
         @Inject
         private ServerEnvironment env;
-        
+
         @Inject
         CommandRunner runner;
 
         @Override
         public void decorate(AdminCommandContext context, Clusters parent, Cluster child) throws
                 PropertyVetoException, TransactionFailure{
-            
+
             Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
             final ActionReport report = context.getActionReport();
-            
+
             // check to see if the clustering software is installed
             AdminCommand command = runner.getCommand("copy-config", report, context.getLogger());
             if (command == null) {
@@ -861,7 +857,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                         "Cluster software is not installed");
                 throw new TransactionFailure(msg);
             }
-            
+
             String instanceConfig = child.getConfigRef();
             final Config config = configs.getConfigByName(instanceConfig);
             Transaction t = Transaction.getTransaction(parent);
@@ -873,7 +869,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             StringBuilder namesOfServers = new StringBuilder();
             if (serverRefs.size() > 0) {
                 for (ServerRef serverRef: serverRefs){
-                    namesOfServers.append(new StringBuffer( serverRef.getRef()).append( ','));
+                    namesOfServers.append(new StringBuilder( serverRef.getRef()).append( ','));
                 }
 
                 final String msg = localStrings.getLocalString(

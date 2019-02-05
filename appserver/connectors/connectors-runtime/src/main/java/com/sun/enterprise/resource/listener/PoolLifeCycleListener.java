@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.listener;
 
@@ -51,8 +52,8 @@ public interface PoolLifeCycleListener {
      * Print stack trace in server.log
      * @param stackTrace
      */
-    void toString(StringBuffer stackTrace);
-    
+    void toString(StringBuilder stackTrace);
+
     /**
      * indicates that a connection is acquired by application
      */
@@ -124,20 +125,20 @@ public interface PoolLifeCycleListener {
     /**
      * indicates that free connections count in the pool has to be decremented.
      */
-    void decrementNumConnFree();    
-    
+    void decrementNumConnFree();
+
     /**
      * indicates that a connection is freed and the count is to be incremented.
      * @param beingDestroyed in case of an error.
      * @param steadyPoolSize
      */
     void incrementNumConnFree(boolean beingDestroyed, int steadyPoolSize);
-    
+
     /**
      * indicates that the wait queue length has increased.
      */
     void connectionRequestQueued();
-    
+
     /**
      * indicates that the wait queue length has decreased.
      */

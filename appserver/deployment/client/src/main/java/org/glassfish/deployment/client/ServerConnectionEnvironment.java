@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.client;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class defines the additional environment needed to
@@ -52,7 +53,7 @@ import java.util.Iterator;
  * jmx rmi connector when the jmx implementation is ready.
  * <br>
  * Environment supported in this class are defined by the
- * JMX connectors.  
+ * JMX connectors.
  * @see also com.sun.enterprise.admin.jmx.remote.DefaultConfiguration
  * <br>
  * For example, to set a client trust manager, the key of env shall
@@ -61,15 +62,15 @@ import java.util.Iterator;
  * @author Qingqing Ouyang
  */
 public final class ServerConnectionEnvironment extends HashMap {
-    
-    /** 
+
+    /**
      * Creates a new instance of ServerConnectionEnvironment
      */
     public ServerConnectionEnvironment() {
         super();
     }
-    
-    /** 
+
+    /**
      * Creates a new instance of ServerConnectionEnvironment
      */
     public ServerConnectionEnvironment(Map env) {
@@ -77,7 +78,7 @@ public final class ServerConnectionEnvironment extends HashMap {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("ServerConnectionEnvironments: \n");
         Iterator entries = entrySet().iterator();
         while (entries.hasNext()) {

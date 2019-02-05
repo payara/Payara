@@ -37,27 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
-import java.util.ArrayList;
-
 public class MessageSecurityBindingDescriptor extends RuntimeDescriptor {
+    
+    private static final long serialVersionUID = 5533601942007192366L;
+    
     public static final String AUTH_LAYER = "AuthLayer";
     public static final String PROVIDER_ID = "ProviderID";
 
-    private ArrayList messageSecDescs = new ArrayList();
+    private final List<MessageSecurityDescriptor> messageSecurityDescriptors = new ArrayList<>();
 
-    public MessageSecurityBindingDescriptor() {}
-
-    public void addMessageSecurityDescriptor(
-        MessageSecurityDescriptor messageSecDesc) {
-        messageSecDescs.add(messageSecDesc);
+    public void addMessageSecurityDescriptor(MessageSecurityDescriptor messageSecDesc) {
+        messageSecurityDescriptors.add(messageSecDesc);
     }
-    
-    public ArrayList getMessageSecurityDescriptors() {
-        return messageSecDescs;
+
+    public List<MessageSecurityDescriptor> getMessageSecurityDescriptors() {
+        return messageSecurityDescriptors;
     }
 }

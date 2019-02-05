@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package jaxb1.impl.runtime;
 
@@ -65,7 +66,7 @@ import com.sun.xml.bind.util.AttributesImpl;
 
 /**
  * Implementation of {@link UnmarshallerHandler}.
- * 
+ *
  * This object converts SAX events into unmarshaller events and
  * cooridnates the entire unmarshalling process.
  *
@@ -78,31 +79,31 @@ public class SAXUnmarshallerHandlerImpl
     /**
      * This flag is set to true at the startDocument event
      * and false at the endDocument event.
-     * 
+     *
      * Until the first document is unmarshalled, we don't
      * want to return an object. So this variable is initialized
      * to true.
      */
     private boolean isUnmarshalInProgress = true;
-    
-    
-    
+
+
+
     public SAXUnmarshallerHandlerImpl( UnmarshallerImpl _parent, GrammarInfo _gi ) {
         this.parent = _parent;
         grammarInfo = _gi;
         startPrefixMapping("",""); // by default, the default ns is bound to "".
      }
-    
+
     private final GrammarInfo grammarInfo;
     public GrammarInfo getGrammarInfo() { return grammarInfo; }
-    
+
     /**
      * Returns true if we should be collecting characters in the current element.
      */
     private final boolean shouldCollectText() {
         return collectText[stackTop];
     }
-    
+
     public void startDocument() throws SAXException {
         // reset the object
         result = null;
@@ -111,19 +112,19 @@ public class SAXUnmarshallerHandlerImpl
         patchersLen=0;
         aborted = false;
         isUnmarshalInProgress = true;
-        
+
         stackTop=0;
         elementDepth=1;
     }
-    
+
     public void endDocument() throws SAXException {
         runPatchers();
         isUnmarshalInProgress = false;
     }
-    
+
     public void startElement( String uri, String local, String qname, Attributes atts )
             throws SAXException {
-        
+
         // work gracefully with misconfigured parsers that don't support namespaces
         if( uri==null )
             uri="";
@@ -131,7 +132,7 @@ public class SAXUnmarshallerHandlerImpl
             local=qname;
         if( qname==null || qname.length()==0 )
             qname=local;
-        
+
         if(result==null) {
             // this is the root element.
             // create a root object and start unmarshalling
@@ -153,15 +154,15 @@ public class SAXUnmarshallerHandlerImpl
 
             pushContentHandler(unmarshaller,0);
         }
-    
+
         processText(true);
-    
+
         getCurrentHandler().enterElement(uri,local,qname,atts);
     }
 
     public final void endElement( String uri, String local, String qname )
             throws SAXException {
-        
+
         // work gracefully with misconfigured parsers that don't support namespaces
         if( uri==null )
             uri="";
@@ -169,29 +170,29 @@ public class SAXUnmarshallerHandlerImpl
             local=qname;
         if( qname==null || qname.length()==0 )
             qname=local;
-        
+
         processText(false);
         getCurrentHandler().leaveElement(uri,local,qname);
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     /** Root object that is being unmarshalled. */
     private Object result;
     public Object getResult() throws UnmarshalException {
         if(isUnmarshalInProgress)
             throw new IllegalStateException();
-        
+
         if(!aborted)       return result;
-        
+
         // there was an error.
         throw new UnmarshalException((String)null);
     }
 
-    
-    
+
+
 //
 //
 // handler stack maintainance
@@ -200,7 +201,7 @@ public class SAXUnmarshallerHandlerImpl
     private UnmarshallingEventHandler[] handlers = new UnmarshallingEventHandler[16];
     private int[] mementos = new int[16];
     private int handlerLen=0;
-    
+
     public void pushContentHandler( UnmarshallingEventHandler handler, int memento ) {
         if(handlerLen==handlers.length) {
             // expand buffer
@@ -215,7 +216,7 @@ public class SAXUnmarshallerHandlerImpl
         mementos[handlerLen] = memento;
         handlerLen++;
     }
-    
+
     public void popContentHandler() throws SAXException {
         handlerLen--;
         handlers[handlerLen]=null;  // this handler is removed
@@ -231,28 +232,28 @@ public class SAXUnmarshallerHandlerImpl
 //
 // text handling
 //
-//    
+//
     private StringBuffer buffer = new StringBuffer();
-    
+
     protected void consumeText( String str, boolean ignorable ) throws SAXException {
          if(ignorable && str.trim().length()==0)
             // if we are allowed to ignore text and
             // the text is ignorable, ignore.
             return;
-        
+
         // otherwise perform a transition by this token.
         getCurrentHandler().text(str);
     }
     private void processText( boolean ignorable ) throws SAXException {
         if( shouldCollectText() )
             consumeText(buffer.toString(),ignorable);
-        
+
         // avoid excessive object allocation, but also avoid
-        // keeping a huge array inside StringBuffer.
+        // keeping a huge array inside StringBuilder.
         if(buffer.length()<1024)    buffer.setLength(0);
         else                        buffer = new StringBuffer();
     }
-    
+
     public final void characters( char[] buf, int start, int len ) {
         if( shouldCollectText() )
             buffer.append(buf,start,len);
@@ -264,7 +265,7 @@ public class SAXUnmarshallerHandlerImpl
 
 
 
-    
+
 //
 //
 // namespace binding maintainance
@@ -272,12 +273,12 @@ public class SAXUnmarshallerHandlerImpl
 //
     private String[] nsBind = new String[16];
     private int nsLen=0;
-    
+
     // in the current scope, nsBind[0] - nsBind[idxStack[idxStackTop]-1]
     // are active.
     // use {@link #elementDepth} and {@link stackTop} to access.
     private int[] idxStack = new int[16];
-    
+
     public void startPrefixMapping( String prefix, String uri ) {
         if(nsBind.length==nsLen) {
             // expand the buffer
@@ -294,7 +295,7 @@ public class SAXUnmarshallerHandlerImpl
     public String resolveNamespacePrefix( String prefix ) {
         if(prefix.equals("xml"))
             return "http://www.w3.org/XML/1998/namespace";
-        
+
         for( int i=idxStack[stackTop]-2; i>=0; i-=2 ) {
             if(prefix.equals(nsBind[i]))
                 return nsBind[i+1];
@@ -308,7 +309,7 @@ public class SAXUnmarshallerHandlerImpl
     public String[] getAllDeclaredPrefixes() {
         return getPrefixList( 2 );  // skip the default ""->"" mapping
     }
-    
+
     private String[] getPrefixList( int startIndex ) {
         int size = (idxStack[stackTop]-startIndex)/2;
         String[] r = new String[size];
@@ -317,9 +318,9 @@ public class SAXUnmarshallerHandlerImpl
         return r;
     }
 
-    
+
     //
-    //  NamespaceContext2 implementation 
+    //  NamespaceContext2 implementation
     //
     public Iterator getPrefixes(String uri) {
         // wrap it into unmodifiable list so that the remove method
@@ -327,10 +328,10 @@ public class SAXUnmarshallerHandlerImpl
         return Collections.unmodifiableList(
             getAllPrefixesInList(uri)).iterator();
     }
-    
+
     private List getAllPrefixesInList(String uri) {
         List a = new ArrayList();
-        
+
         if( uri.equals(XMLConstants.XML_NS_URI) ) {
             a.add(XMLConstants.XML_NS_PREFIX);
             return a;
@@ -341,13 +342,13 @@ public class SAXUnmarshallerHandlerImpl
         }
         if( uri==null )
             throw new IllegalArgumentException();
-          
+
         for( int i=nsLen-2; i>=0; i-=2 )
             if(uri.equals(nsBind[i+1]))
                 if( getNamespaceURI(nsBind[i]).equals(nsBind[i+1]) )
                     // make sure that this prefix is still effective.
                     a.add(nsBind[i]);
-         
+
         return a;
     }
 
@@ -358,13 +359,13 @@ public class SAXUnmarshallerHandlerImpl
             return XMLConstants.XMLNS_ATTRIBUTE;
         if( uri==null )
             throw new IllegalArgumentException();
-          
+
         for( int i=idxStack[stackTop]-2; i>=0; i-=2 )
             if(uri.equals(nsBind[i+1]))
                 if( getNamespaceURI(nsBind[i]).equals(nsBind[i+1]) )
                     // make sure that this prefix is still effective.
                     return nsBind[i];
-         
+
         return null;
     }
 
@@ -373,7 +374,7 @@ public class SAXUnmarshallerHandlerImpl
              throw new IllegalArgumentException();
          if( prefix.equals(XMLConstants.XMLNS_ATTRIBUTE) )
              return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
-        
+
          return resolveNamespacePrefix(prefix);
      }
 
@@ -394,42 +395,42 @@ public class SAXUnmarshallerHandlerImpl
      * Always {@link #elementDepth}-1.
      */
     private int stackTop;
-    
+
     /**
      * Stack of collectText flag.
      * False means text can be ignored for this element.
-     * 
+     *
      * Use {@link #elementDepth} and {@link #stackTop} to access the array.
-     */ 
+     */
     private boolean[] collectText = new boolean[16];
-    
+
     public void pushAttributes( Attributes atts, boolean collectTextFlag ) {
-        
+
         if( attStack.length==elementDepth ) {
             // reallocate the buffer
             AttributesImpl[] buf1 = new AttributesImpl[attStack.length*2];
             System.arraycopy(attStack,0,buf1,0,attStack.length);
             attStack = buf1;
-            
+
             int[] buf2 = new int[idxStack.length*2];
             System.arraycopy(idxStack,0,buf2,0,idxStack.length);
             idxStack = buf2;
-            
+
             boolean[] buf3 = new boolean[collectText.length*2];
             System.arraycopy(collectText,0,buf3,0,collectText.length);
             collectText = buf3;
         }
-        
+
         elementDepth++;
         stackTop++;
-        
+
         // push the stack
         AttributesImpl a = attStack[stackTop];
         if( a==null )
             attStack[stackTop] = a = new AttributesImpl();
         else
             a.clear();
-        
+
         // since Attributes object is mutable, it is criticall important
         // to make a copy.
         // also symbolize attribute names
@@ -438,7 +439,7 @@ public class SAXUnmarshallerHandlerImpl
             String alocal = atts.getLocalName(i);
             String avalue = atts.getValue(i);
             String aqname = atts.getQName(i);
-            
+
             // work gracefully with misconfigured parsers that don't support namespaces
             if( auri==null )
                 auri="";
@@ -458,7 +459,7 @@ public class SAXUnmarshallerHandlerImpl
                 if(v.equals("false") || v.equals("0"))
                     continue;   // skip this attribute
             }
-            
+
             // otherwise just add it.
             a.addAttribute(
                     auri,
@@ -467,11 +468,11 @@ public class SAXUnmarshallerHandlerImpl
                     atts.getType(i),
                     avalue );
         }
-        
-        
+
+
         // start a new namespace scope
         idxStack[stackTop] = nsLen;
-        
+
         collectText[stackTop] = collectTextFlag;
     }
     public void popAttributes() {
@@ -490,7 +491,7 @@ public class SAXUnmarshallerHandlerImpl
     }
     public void consumeAttribute( int idx ) throws SAXException {
         AttributesImpl a = attStack[stackTop];
-        
+
         String uri = a.getURI(idx);
         String local = a.getLocalName(idx);
         String qname = a.getQName(idx);
@@ -500,20 +501,20 @@ public class SAXUnmarshallerHandlerImpl
         // we need to remove the attribute before we process it
         // because the event handler might access attributes.
         a.removeAttribute(idx);
-        
-        
+
+
         getCurrentHandler().enterAttribute(uri,local,qname);
         consumeText(value,false);
         getCurrentHandler().leaveAttribute(uri,local,qname);
     }
     public String eatAttribute( int idx ) throws SAXException {
         AttributesImpl a = attStack[stackTop];
-        
+
         String value = a.getValue(idx);
 
         // mark the attribute as consumed
         a.removeAttribute(idx);
-        
+
         return value;
     }
 
@@ -529,7 +530,7 @@ public class SAXUnmarshallerHandlerImpl
      */
     private Runnable[] patchers = null;
     private int patchersLen = 0;
-    
+
     public void addPatcher( Runnable job ) {
         // re-allocate buffer if necessary
         if( patchers==null )
@@ -541,7 +542,7 @@ public class SAXUnmarshallerHandlerImpl
         }
         patchers[patchersLen++] = job;
     }
-    
+
     /** Executes all the patchers. */
     private void runPatchers() {
         if( patchers!=null ) {
@@ -558,12 +559,12 @@ public class SAXUnmarshallerHandlerImpl
         idmap.put( id, getCurrentHandler().owner() );
         return id;
     }
-    
+
     public Object getObjectFromId( String id ) {
         if(idmap==null)     return null;
         return idmap.get(id);
     }
-    
+
 
 
 //
@@ -580,7 +581,7 @@ public class SAXUnmarshallerHandlerImpl
         locator = loc;
     }
     public Locator getLocator() { return locator; }
-    
+
     private Locator locator = DUMMY_LOCATOR;
 
     private static final Locator DUMMY_LOCATOR = new LocatorImpl();
@@ -593,7 +594,7 @@ public class SAXUnmarshallerHandlerImpl
 //
     private final UnmarshallerImpl parent;
     private boolean aborted = false;
-    
+
     public void handleEvent(ValidationEvent event, boolean canRecover ) throws SAXException {
         ValidationEventHandler eventHandler;
         try {
@@ -604,17 +605,17 @@ public class SAXUnmarshallerHandlerImpl
         }
 
         boolean recover = eventHandler.handleEvent(event);
-        
+
         // if the handler says "abort", we will not return the object
         // from the unmarshaller.getResult()
         if(!recover)    aborted = true;
-        
+
         if( !canRecover || !recover )
             throw new SAXException( new UnmarshalException(
                 event.getMessage(),
                 event.getLinkedException() ) );
     }
-  
+
 //
 //
 // ValidationContext implementation
@@ -639,13 +640,13 @@ public class SAXUnmarshallerHandlerImpl
             tracer = new Tracer.Standard();
         return tracer;
     }
-    
+
     /**
      * Computes the names of possible root elements for a better error diagnosis.
      */
     private String computeExpectedRootElements() {
         String r = "";
-        
+
         String[] probePoints = grammarInfo.getProbePoints();
         for( int i=0; i<probePoints.length; i+=2 ) {
             if( grammarInfo.recognize(probePoints[i],probePoints[i+1]) ) {
@@ -653,7 +654,7 @@ public class SAXUnmarshallerHandlerImpl
                 r += "<{"+probePoints[i]+"}"+probePoints[i+1]+">";
             }
         }
-        
+
         return r;
     }
 }

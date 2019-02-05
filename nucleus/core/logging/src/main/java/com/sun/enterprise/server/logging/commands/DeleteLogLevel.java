@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- 
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
- 
+
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -55,11 +55,10 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,8 +78,8 @@ import java.util.Map;
 @I18n("delete.log.levels")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-log-levels", 
+        opType=RestEndpoint.OpType.DELETE,
+        path="delete-log-levels",
         description="delete-log-levels")
 })
 public class DeleteLogLevel implements AdminCommand {
@@ -91,7 +90,7 @@ public class DeleteLogLevel implements AdminCommand {
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     Domain domain;
@@ -105,7 +104,7 @@ public class DeleteLogLevel implements AdminCommand {
         boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
-        StringBuffer successMsg = new StringBuffer();
+        StringBuilder successMsg = new StringBuilder();
         boolean isConfig = false;
         boolean success = false;
         String targetConfigName = "";
@@ -156,14 +155,14 @@ public class DeleteLogLevel implements AdminCommand {
             }
 
             if (isCluster || isInstance) {
-                loggingConfig.deleteLoggingProperties(m, targetConfigName);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
                 success = true;
             } else if (isDas) {
-                loggingConfig.deleteLoggingProperties(m);
+                loggingConfigFactory.provide().deleteLoggingProperties(m);
                 success = true;
             } else if (isConfig) {
                 // This loop is for the config which is not part of any target
-                loggingConfig.deleteLoggingProperties(m, targetConfigName);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
                 success = true;
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

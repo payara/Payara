@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -65,6 +66,8 @@ package com.sun.jts.CosTransactions;
 // Import required classes.
 
 import com.sun.enterprise.util.i18n.StringManager;
+
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.io.*;
 
@@ -85,7 +88,7 @@ import java.io.*;
 
 class LogHandle {
     private static final StringManager sm = StringManager.getManager(LogHandle.class);
-    
+
     // WriteMode identifies the mode in which a system journal record
     // is to be written, and affects the performance overhead of the write.
 
@@ -393,11 +396,11 @@ class LogHandle {
             link.toBytes(linkBytes,0);
             int bytesWritten = 0;
             try {
-                bytesWritten = logEDP.fileHandle.fileWrite(linkBytes); 
+                bytesWritten = logEDP.fileHandle.fileWrite(linkBytes);
             } catch( LogException le ) {
                 extentTable.remove(logControlDescriptor.headLSN.extent);
                 nextEDP.doFinalize();
-                throw new LogException(LogException.LOG_WRITE_FAILURE, 10, 
+                throw new LogException(LogException.LOG_WRITE_FAILURE, 10,
                         sm.getString("jts.log_add_link_failed"), le);
             }
 
@@ -527,7 +530,7 @@ class LogHandle {
                         }
 
                         try {
-                            logEDP = positionFilePointer(logControlDescriptor.nextLSN,0,LogExtent.ACCESSTYPE_WRITE); 
+                            logEDP = positionFilePointer(logControlDescriptor.nextLSN,0,LogExtent.ACCESSTYPE_WRITE);
                         } catch( Throwable e ) {};
                     }
                     else
@@ -624,7 +627,7 @@ class LogHandle {
      * @see
      */
     synchronized byte[] readRecord( LogLSN readLSN,
-                                    int[/*1*/] type ) 
+                                    int[/*1*/] type )
         throws LogException {
 
         // Check BlockValid field in Log_FileDescriptor block pointed to
@@ -1062,7 +1065,7 @@ class LogHandle {
      * @see
      */
     synchronized void truncate( LogLSN truncLSN,
-                                int    inclusive ) 
+                                int    inclusive )
         throws LogException {
 
         // Check BlockValid field in Log_FileDescriptor block and
@@ -1263,9 +1266,9 @@ class LogHandle {
             // IF not successful allow the error to pass to the caller.
 
             LogExtent logEDP = (LogExtent)extentTable.get(extent);
-            if( logEDP != null )
+            if( logEDP != null ) {
                 logEDP.fileHandle.fileClose();
-
+            }
             // Issue UNLINK for extent file
             // IF not successful
             //   Return LOG_CLOSE_FAILURE
@@ -1274,20 +1277,18 @@ class LogHandle {
             //if( !logEDP.file.delete() )
             final LogExtent tmplogEDP = logEDP;
             Boolean isdeleted = (Boolean) java.security.AccessController.doPrivileged(
-		new java.security.PrivilegedAction() {
-		    public Object run(){
-                        return tmplogEDP.file.delete();
-                    }
-                }
+                    (PrivilegedAction) () -> tmplogEDP.file.delete()
             );
-            if(!isdeleted.booleanValue())
+            if(!isdeleted)
                 throw new LogException(null,LogException.LOG_CLOSE_FAILURE,15);
             //End IASRI 4720539
             // Unchain the Log_ExtentDescriptor block, set its BlockValid
             // field to binary zeroes and deallocate it.
 
             extentTable.remove(extent);
-            logEDP.doFinalize();
+            if ( logEDP != null ) {
+                logEDP.doFinalize();
+            }
         }
 
         // If the cushion file does not exist and at least one extents has
@@ -1474,8 +1475,8 @@ class LogHandle {
         LogCursor cursor = new LogCursor(logControl,this,startLSN,endLSN);
         if( cursor == null ) {
             throw new LogException(null,LogException.LOG_INSUFFICIENT_MEMORY,4);
-        } 
-        
+        }
+
 
         // Add the Log_CursorDescriptor block to the chain of similar blocks
         // hung off the LogFileDescriptor (anchor is CursorDescriptorHead)
@@ -1669,7 +1670,7 @@ class LogHandle {
                 //   Return
 
                 try {
-                    cushionFH = new LogFileHandle(logControl.cushionFile,openOptions); 
+                    cushionFH = new LogFileHandle(logControl.cushionFile,openOptions);
                 } catch( LogException le ) {
                     if( callUpcall && !upcallInProgress ) {
                         upcallInProgress = true;

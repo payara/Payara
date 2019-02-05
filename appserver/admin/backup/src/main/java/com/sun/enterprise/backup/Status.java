@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * Status.java
@@ -46,12 +47,15 @@
 
 package com.sun.enterprise.backup;
 
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.util.io.FileUtils;
+
+import java.io.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -86,25 +90,25 @@ class Status {
 	    }
         }
     }
-    
+
     /**
-     * @param file Either a zip file that contains backup.properties -- or 
+     * @param file Either a zip file that contains backup.properties -- or
      * backup.properties itself.  terse is automatically set to true.
      * @return a String summary of the backup
-     */    
+     */
     String read(File file) {
         return read(file, true);
     }
-    
+
     /**
-     * @param file Either a zip file that contains backup.properties -- or 
+     * @param file Either a zip file that contains backup.properties -- or
      * backup.properties itself.
      * @param terse if true, give a short summary
      * @return a String summary of the backup
-     */    
+     */
     String read(File file, boolean terse) {
         props = null;
-        
+
         setPropsFromFile(file);
         if(props == null) {
             return badStatusFileMessage(file);
@@ -114,7 +118,7 @@ class Status {
     }
 
     public boolean loadProps(File file) {
-  
+
         // props is a class variable.
         props = null;
         setPropsFromFile(file);
@@ -142,32 +146,32 @@ class Status {
             return 0;
         }
     }
-    
+
     void delete() {
         if(statusFile != null && !statusFile.delete()) {
             // TBD warning message
             statusFile.deleteOnExit();
         }
     }
-    
+
     String getDomainName() {
         if(props == null)
             return null;
-        
+
         return props.getProperty(Constants.PROPS_DOMAIN_NAME);
     }
 
     String getTimeStamp() {
         if(props == null)
             return null;
-        
+
         return props.getProperty(Constants.PROPS_TIMESTAMP_HUMAN);
     }
 
     String getUserName() {
         if(props == null)
             return null;
-        
+
         return props.getProperty(Constants.PROPS_USER_NAME);
     }
 
@@ -175,7 +179,7 @@ class Status {
     String getBackupPath() {
         if(props == null)
             return null;
-        
+
         try {
             File f = new File(props.getProperty(Constants.PROPS_BACKUP_FILE));
 
@@ -189,7 +193,7 @@ class Status {
     String getFileName() {
         if(props == null)
             return null;
-        
+
         try {
             File f = new File(props.getProperty(Constants.PROPS_BACKUP_FILE));
 
@@ -218,11 +222,11 @@ class Status {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * @param file Either a zip file that contains backup.properties -- or 
+     * @param file Either a zip file that contains backup.properties -- or
      * backup.properties itself.
      * @param terse if true, give a short summary
      * @return a String summary of the backup
-     */    
+     */
     private void setPropsFromFile(File file) {
         props = null;
         ZipInputStream zis = null;
@@ -260,7 +264,7 @@ class Status {
             }
         }
     }
-    
+
     private void readPropertiesFile(File propsFile) {
 
         BufferedInputStream in = null;
@@ -299,7 +303,7 @@ class Status {
 
         props.setProperty(Constants.PROPS_VERSION,
                           Version.getFullVersion());
-         
+
         String type = request.configOnly ? Constants.CONFIG_ONLY :
                 Constants.FULL;
         props.setProperty(Constants.PROPS_TYPE, type);
@@ -309,9 +313,9 @@ class Status {
 
     private String propsToString(boolean terse) {
         final String pre = "backup-res.Props.";
-        StringBuffer sb = new StringBuffer();
-        
-        
+        StringBuilder sb = new StringBuilder();
+
+
         if(terse) {
             sb.append(props.getProperty(Constants.PROPS_BACKUP_FILE));
         } else {
@@ -321,13 +325,13 @@ class Status {
             sb.append(StringHelper.get(pre + Constants.PROPS_VERSION,
                 props.getProperty(Constants.PROPS_VERSION)));
             sb.append("\n");
-            sb.append(StringHelper.get(pre + Constants.PROPS_USER_NAME, 
+            sb.append(StringHelper.get(pre + Constants.PROPS_USER_NAME,
                 props.getProperty(Constants.PROPS_USER_NAME)));
             sb.append("\n");
             sb.append(StringHelper.get(pre + Constants.PROPS_TIMESTAMP_HUMAN,
                 props.getProperty(Constants.PROPS_TIMESTAMP_HUMAN)));
             sb.append("\n");
-            sb.append(StringHelper.get(pre + Constants.PROPS_DOMAIN_NAME, 
+            sb.append(StringHelper.get(pre + Constants.PROPS_DOMAIN_NAME,
                 props.getProperty(Constants.PROPS_DOMAIN_NAME)));
             sb.append("\n");
             sb.append(StringHelper.get(pre + Constants.PROPS_TYPE,
@@ -339,20 +343,20 @@ class Status {
             sb.append(StringHelper.get(pre + Constants.PROPS_BACKUP_FILE,
                 props.getProperty(Constants.PROPS_BACKUP_FILE)));
             sb.append("\n");
-            sb.append(StringHelper.get(pre + Constants.PROPS_DOMAIN_DIR, 
+            sb.append(StringHelper.get(pre + Constants.PROPS_DOMAIN_DIR,
                 props.getProperty(Constants.PROPS_DOMAIN_DIR)));
         }
 
         return sb.toString();
     }
-    
+
     private String badStatusFileMessage(File file) {
         String msg = StringHelper.get("backup-res.Props.backup.file", file);
         msg += "\n";
         msg += StringHelper.get("backup-res.CorruptBackupFile.NoStatusFile");
         return msg;
     }
-    
+
     private File             statusFile = null;
     private Properties       props;
 }

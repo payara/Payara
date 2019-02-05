@@ -308,9 +308,9 @@ public class PrometheusExporter {
         //Translation rules :
         //camelCase is translated to camel_case
         String out = name.replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase();
-        //Dot (.), Space ( ), Dash (-) are translated to underscore (_)
+        //Dot (.), Space ( ), Dash (-), Slash (/) are translated to underscore (_)
         //Double underscore is translated to single underscore
-        out = out.replaceAll("[-_.\\s]+", "_");
+        out = out.replaceAll("[-_./\\s]+", "_");
         //Colon-underscore (:_) is translated to single colon
         out = out.replaceAll(":_", ":");
         return out;

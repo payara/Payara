@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
@@ -228,7 +228,7 @@ public final class RegStoreFileParser {
      */
     private void writeEntries() throws IOException {
         if (configurationFile.exists() && !configurationFile.canWrite() && logger.isLoggable(WARNING)) {
-            logger.log(WARNING, "jmac.factory_cannot_write_file", configurationFile.getPath());
+            logger.log(WARNING, "jaspic.factory_cannot_write_file", configurationFile.getPath());
         }
 
         clearExistingFile();
@@ -271,7 +271,7 @@ public final class RegStoreFileParser {
 
     /*
      * Write registration entry output of the form: <pre> reg-entry { con-entry { see writeConEntry() for detail } reg-ctx {
-     * layer:HttpServlet app-ctx:security-jmac-https description:My provider } } </pre>
+     * layer:HttpServlet app-ctx:security-jaspic-https description:My provider } } </pre>
      */
     private void writeRegEntry(EntryInfo info, PrintWriter out, int i) {
         out.println(INDENT[i++] + REG_ENTRY + " {");
@@ -309,7 +309,7 @@ public final class RegStoreFileParser {
         }
 
         if (newCreation) {
-            logger.log(INFO, "jmac.factory_creating_conf_file", configurationFile.getPath());
+            logger.log(INFO, "jaspic.factory_creating_conf_file", configurationFile.getPath());
         }
 
         if (!configurationFile.createNewFile()) {
@@ -339,7 +339,7 @@ public final class RegStoreFileParser {
                 }
             } else {
                 if (logger.isLoggable(FINER)) {
-                    logger.log(FINER, "jmac.factory_file_not_found",
+                    logger.log(FINER, "jaspic.factory_file_not_found",
                             configurationFile.getParent() + File.pathSeparator + configurationFile.getPath());
                 }
 
@@ -441,13 +441,13 @@ public final class RegStoreFileParser {
 
     private void logWarningUpdated(Exception exception) {
         if (logger.isLoggable(WARNING)) {
-            logger.log(WARNING, "jmac.factory_could_not_persist", exception.toString());
+            logger.log(WARNING, "jaspic.factory_could_not_persist", exception.toString());
         }
     }
 
     private void logWarningDefault(Exception exception) {
         if (logger.isLoggable(WARNING)) {
-            logger.log(WARNING, "jmac.factory_could_not_read", exception.toString());
+            logger.log(WARNING, "jaspic.factory_could_not_read", exception.toString());
         }
     }
 

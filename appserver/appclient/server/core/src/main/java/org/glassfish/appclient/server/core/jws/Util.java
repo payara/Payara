@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
+
+import org.glassfish.grizzly.http.server.Request;
 
 import java.net.URI;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.glassfish.grizzly.http.server.Request;
 
 /**
  *
@@ -122,7 +124,7 @@ public class Util {
                     replaceAll(">", "&gt;").
                     replaceAll("\"", "&quot;");
     }
-    
+
     public static URI getCodebase(final Request gReq) {
         return URI.create(gReq.getScheme() + "://" + gReq.getServerName());
     }

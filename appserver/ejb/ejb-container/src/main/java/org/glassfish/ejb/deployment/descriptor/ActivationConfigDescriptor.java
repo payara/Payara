@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -46,7 +47,7 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
-/** 
+/**
  * This class holds a set of activation config properties.
  *
  * @author Kenneth Saks
@@ -56,10 +57,10 @@ public final class ActivationConfigDescriptor extends Descriptor {
 
     // Set of EnvironmentProperty entries
     private Set<EnvironmentProperty> activationConfig;
-    
+
     public ActivationConfigDescriptor()
     {
-        activationConfig = new OrderedSet<EnvironmentProperty>();        
+        activationConfig = new OrderedSet<EnvironmentProperty>();
     }
 
     public ActivationConfigDescriptor(ActivationConfigDescriptor other) {
@@ -67,8 +68,8 @@ public final class ActivationConfigDescriptor extends Descriptor {
      }
 
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Activation Config : ").append(activationConfig);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Activation Config : ").append(activationConfig);
     }
 
     public Set<EnvironmentProperty> getActivationConfig() {

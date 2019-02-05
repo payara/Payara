@@ -37,29 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbCMPFinder;
-import org.glassfish.ejb.deployment.descriptor.runtime.PrefetchDisabledDescriptor;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbCMPFinder;
+import org.glassfish.ejb.deployment.descriptor.runtime.PrefetchDisabledDescriptor;
 
-/** 
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
  * This class contains information about EJB1.1 and EJB2.0 CMP EntityBeans.
  */
 
@@ -82,7 +76,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
     // Standard String and Character variables.
     private static final char DOT                  = '.';   // NOI18N
-    private static final char LIST_START           = '(';// NOI18N   
+    private static final char LIST_START           = '(';// NOI18N
     private static final char LIST_END             = ')';   // NOI18N
     private static final char LIST_SEPARATOR       = ',';   // NOI18N
     private static final char NAME_PART_SEPARATOR  = '_';   // NOI18N
@@ -100,7 +94,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
     private static final Map conversionTable = createConversionTable();
     private Map oneOneFinders = new HashMap();
     private List arrOneOneFinders = new ArrayList();
-    
+
     private void addAllInterfaceMethodsIn(Collection methodDescriptors, Class c) {
         Method[] methods = c.getMethods();
         for (int i=0; i<methods.length; i++) {
@@ -192,7 +186,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
             String m2Name = m2.getName();
 
             if( !m1Name.equals(m2Name) ) { break; }
-        
+
             String m1DeclaringClass = m1.getDeclaringClass().getName();
             String m2DeclaringClass = m2.getDeclaringClass().getName();
 
@@ -227,7 +221,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
     private Class getEjbClass() {
         if (ejbClass == null) {
             String ejbClassName = getEjbClassName();
-            if(_logger.isLoggable(Level.FINE)) 
+            if(_logger.isLoggable(Level.FINE))
                 _logger.fine("@@@@@@ Ejb name is  "+ ejbClassName); //NOI18N
             if (jcl == null) {
                 String msg = localStrings.getLocalString(
@@ -251,19 +245,19 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         return ejbClass;
     }
 
-    /** 
+    /**
      * Returns a collection of finder method instances.
      */
     public Collection getFinders() {
         if (finders == null) {
             String ejbClassName = getEjbClassName();
             Class ejbClass = getEjbClass();
-                
+
             if ( super.isRemoteInterfacesSupported() ) {
                 Class remoteHomeIntf = null;
-                if(_logger.isLoggable(Level.FINE)) 
-                    _logger.fine("@@@@@@ " + ejbClassName + //NOI18N 
-                         " : Remote Interface is supported "); //NOI18N 
+                if(_logger.isLoggable(Level.FINE))
+                    _logger.fine("@@@@@@ " + ejbClassName + //NOI18N
+                         " : Remote Interface is supported "); //NOI18N
 
                 try {
                     remoteHomeIntf = ejbClass.getClassLoader().loadClass(
@@ -288,7 +282,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
             if ( super.isLocalInterfacesSupported() ) {
                 Class localHomeIntf = null;
 
-                if(_logger.isLoggable(Level.FINE)) 
+                if(_logger.isLoggable(Level.FINE))
                     _logger.fine("@@@@@@ " + ejbClassName + ":  Local Interface is supported "); //NOI18N
 
                 try {
@@ -299,25 +293,25 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
                          "enterprise.deployment_class_not_found", ex ); //NOI18N
                     return null;
                 }
-        
+
                 Collection localFinders = getFinders(localHomeIntf);
                 if(finders == null) {
                     // if there were no finders specified in the remote
-                    // home, the local finders are the finders  
+                    // home, the local finders are the finders
                     finders = localFinders;
 
                 } else if(localFinders != null) {
                     // Remove the Common Elements from the collections
                     // and keep only unique methods
-                    if(_logger.isLoggable(Level.FINE)) 
+                    if(_logger.isLoggable(Level.FINE))
                         _logger.fine("@@@@@@ Trying to remove the Common Elements from HashSet....... "); //NOI18N
 
                     for(Iterator iter = localFinders.iterator(); iter.hasNext();) {
                         Method localHomeMethod=(Method)iter.next();
                         if(findEquivalentMethod(finders, localHomeMethod) == null) {
-                            if(_logger.isLoggable(Level.FINE)) 
+                            if(_logger.isLoggable(Level.FINE))
                                 _logger.fine("@@@@ adding local interface method " + //NOI18N
-                                     localHomeMethod.getName() ); 
+                                     localHomeMethod.getName() );
 
                             finders.add(localHomeMethod);
                         }
@@ -333,8 +327,8 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         return finders;
     }
 
-    /** 
-     * Returns a collection of finder methods declared by the home 
+    /**
+     * Returns a collection of finder methods declared by the home
      * interface given by a class object.
      */
     public Collection getFinders(Class homeIntf) {
@@ -345,17 +339,17 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
                finders.add(methods[i]);
            }
         }
-        
+
         return finders;
     }
 
     public void setClassLoader(ClassLoader jcl) {
         this.jcl = jcl;
-    } 
+    }
 
     public ClassLoader getClassLoader() {
         return jcl;
-    } 
+    }
 
     public Collection getAllPersistentFields() {
         PersistenceDescriptor pers = getPersistenceDescriptor();
@@ -366,41 +360,41 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         for(int i=0; i<persFields.length; i++) {
             fields.put(persFields[i].name, persFields[i]);
         }
-        
+
         for(int i=0; i<pkeyFields.length; i++) {
             fields.put(pkeyFields[i].name, pkeyFields[i]);
         }
-        
-        return fields.values();        
+
+        return fields.values();
     }
-    
+
     public Collection getPersistentFields() {
-        
+
         PersistenceDescriptor pers = getPersistenceDescriptor();
         PersistentFieldInfo[] persFields = pers.getPersistentFieldInfo();
-        
+
         HashMap fields = new HashMap();
 
         for(int i=0; i<persFields.length; i++) {
             fields.put(persFields[i].name, persFields[i]);
         }
-        
-        return fields.values();        
+
+        return fields.values();
     }
 
-    
+
     public Collection getPrimaryKeyFields() {
-        
+
         PersistenceDescriptor pers = getPersistenceDescriptor();
         PersistentFieldInfo[] pkeyFields = pers.getPkeyFieldInfo();
-        
+
         HashMap pkey = new HashMap();
         for(int i=0; i<pkeyFields.length; i++) {
             pkey.put(pkeyFields[i].name, pkeyFields[i]);
         }
-        
-        return pkey.values();        
-        
+
+        return pkey.values();
+
     }
 
     /**
@@ -417,11 +411,11 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
                 }
             }
         }
-        
+
         return selectors;
     }
-    
-    
+
+
 
     public String getBaseName(String className) {
         if (className == null)
@@ -432,11 +426,11 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
             return className;
         return className.substring(dot+1);
     }
-    
+
     public IASEjbCMPEntityDescriptor() {
     }
-    
-    /** 
+
+    /**
      * The copy constructor.Hopefully we wont need it;)
      */
     public IASEjbCMPEntityDescriptor(EjbDescriptor other) {
@@ -444,22 +438,22 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
            setPersistenceType(CONTAINER_PERSISTENCE);
     }
- 
-  
+
+
     /**
-     * Sets the State class implementation classname. 
+     * Sets the State class implementation classname.
      */
      public void setPcImplClassName(String name) {
          pcImplClassName = name;
     }
-  
+
     public String getUniqueName() {
         if(uniqueName == null) {
             BundleDescriptor bundle = getEjbBundleDescriptor();
             Application application = bundle.getApplication();
 
             // Add ejb name and application name.
-            StringBuffer rc = new StringBuffer().
+            StringBuilder rc = new StringBuilder().
                     append(getName()).
                     append(NAME_CONCATENATOR).
                     append(application.getRegistrationName());
@@ -470,7 +464,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
                    append(bundle.getModuleDescriptor().getArchiveUri());
             }
 
-            uniqueName = getBaseName(getEjbClassName()) 
+            uniqueName = getBaseName(getEjbClassName())
                     + getUniqueNumber(rc.toString());
         }
 
@@ -486,14 +480,14 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
 
     public String getPcImplClassName() {
-       if (pcImplClassName == null) { 
-           // Check for Null added 
+       if (pcImplClassName == null) {
+           // Check for Null added
            pcImplClassName = getUniqueName() + JDOSTATE;
            String packageName = getPackageName(getEjbClassName());
            if(packageName != null)
                pcImplClassName = packageName + DOT + pcImplClassName;
 
-            if(_logger.isLoggable(Level.FINE)) 
+            if(_logger.isLoggable(Level.FINE))
                 _logger.fine("##### PCImplClass Name is " + pcImplClassName); // NOI18N
         }
         return pcImplClassName;
@@ -501,12 +495,12 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
 
       /**
-     * Sets the State class implementation classname. 
+     * Sets the State class implementation classname.
      */
     public void setConcreteImplClassName(String name) {
          concreteImplClassName = name;
     }
-    
+
     public String getPackageName(String className) {
         int dot = className.lastIndexOf(DOT);
         if (dot == -1)
@@ -534,9 +528,9 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
     }
 
     /**
-     * Returns the classname of the State class impl. 
+     * Returns the classname of the State class impl.
      */
- 
+
     public String getConcreteImplClassName() {
         if (concreteImplClassName == null) {
         /**    The Ear may contain two jar files with beans with same ejb names
@@ -565,20 +559,20 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
     public void setMappingProperties(String mappingProperties) {
          this.mappingProperties = mappingProperties;
     }
-    
-    
+
+
     /**
-     * Returns the classname of the State class impl. 
+     * Returns the classname of the State class impl.
      */
     public String  getMappingProperties() {
          return mappingProperties;
     }
-    
-    
-    /**     
-     * Called from EjbBundleDescriptor/EjbBundleArchivist 
+
+
+    /**
+     * Called from EjbBundleDescriptor/EjbBundleArchivist
      * when some classes in this bean are updated.
-     */         
+     */
     public boolean classesChanged() {
 
         /**        No Implementation Yet
@@ -593,7 +587,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
         return (superChanged || persChanged);
         */
-        
+
         return false;
     }
 
@@ -605,9 +599,9 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
     public void setQueryParser(QueryParser inParser) {
         queryParser = inParser;
     }
-    
-    /** 
-     * Returns the query parser object 
+
+    /**
+     * Returns the query parser object
      */
     public QueryParser getQueryParser() {
         return queryParser;
@@ -617,7 +611,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
      * This method returns the conversion table which maps the unqualified
      * name (e.g., String) of the java.lang classes to their fully qualified
      * name (e.g., java.lang.String)
-     */    
+     */
     private static Map createConversionTable () {
 
         HashMap conversionTable = new HashMap();
@@ -634,7 +628,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         conversionTable.put("Object", "java.lang.Object"); //NOI18N
         return conversionTable;
     }
-    
+
     private String getFullyQualifiedType(String type) {
         String knownType=(String)conversionTable.get(type);
         return knownType == null ? type : knownType;
@@ -650,7 +644,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
 
     /**
      * Setter for prefetch-disabled
-     * @param prefetchDisabledDescriptor 
+     * @param prefetchDisabledDescriptor
      * New value of prefetchDisabledDescriptor.
      */
     public void setPrefetchDisabledDescriptor(
@@ -658,17 +652,17 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         this.prefetchDisabledDescriptor = prefetchDisabledDescriptor;
     }
 
-    
+
     /*
      * Adds the given OneOneFinder to the HashMap
-     * @Param finder represents the EJB 1.1 Finder 
+     * @Param finder represents the EJB 1.1 Finder
      */
     public  void addOneOneFinder (IASEjbCMPFinder finder) {
         arrOneOneFinders.add(finder);
     }
-    
+
     /**
-     * Returns a Map which maps between a method signature and the 
+     * Returns a Map which maps between a method signature and the
      * corresponding IASEjbCMPFinder instance. The key is the method
      * signature as a string and consists of methodName(type1, type2.....).
      */
@@ -683,7 +677,7 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
                 _logger.log(Level.WARNING, msg);
                 throw new RuntimeException(msg);
             }
-            
+
             //parse the query declaration parameter and store the query object
             for ( Iterator i = arrOneOneFinders.iterator(); i.hasNext(); ) {
                 IASEjbCMPFinder finder = ( IASEjbCMPFinder )i.next();
@@ -694,15 +688,15 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         }
         return oneOneFinders;
     }
-    
+
     /*
      * @returns the key used to store 1.1 Finder Object.
      * the key is methodName(param0, param1.....)
-     * @param finder is the object which represents the EJB 1.1 Finder 
+     * @param finder is the object which represents the EJB 1.1 Finder
      */
     private String generateKey(IASEjbCMPFinder finder, QueryParser parser)     {
-        
-        StringBuffer key = new StringBuffer();
+
+        StringBuilder key = new StringBuilder();
         key.append(finder.getMethodName()).append(LIST_START);
 
         String queryParams = finder.getQueryParameterDeclaration();
@@ -711,14 +705,14 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
             String type = ( String ) iter.next() ;
             key.append(getFullyQualifiedType(type)) ;
             if( iter.hasNext() ) {
-                key.append(LIST_SEPARATOR); 
+                key.append(LIST_SEPARATOR);
             }
         }
         key.append(LIST_END);
 
         return key.toString().intern();
     }
-    
+
     /*
      * @returns The finder object for the particular Method object.
      * @param method object for which the Finder Object needs to be found
@@ -729,9 +723,9 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
             return null;
         }
         String methodName = method.getName();
-        
+
         //key is of the form methodName(param0, param1, ....)
-        StringBuffer key = new StringBuffer();
+        StringBuilder key = new StringBuilder();
         key.append(methodName);
         key.append(LIST_START);
         Class paramList[] = method.getParameterTypes();
@@ -743,5 +737,5 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
         }
         key.append(LIST_END);
         return (IASEjbCMPFinder)getOneOneFinders().get(key.toString());
-    } 
+    }
 }

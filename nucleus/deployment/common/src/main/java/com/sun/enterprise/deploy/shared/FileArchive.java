@@ -44,20 +44,17 @@ package com.sun.enterprise.deploy.shared;
 
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
 import java.io.*;
+import java.net.URI;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -66,6 +63,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * This implementation of the Archive interface maps to a directory/file

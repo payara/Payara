@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- * 
+ *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- * 
+ *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,10 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.EmbeddedSystemAdministrator;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.security.services.api.authorization.*;
+import org.glassfish.security.services.api.common.Attributes;
+import org.glassfish.security.services.api.context.SecurityContextService;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.security.auth.Subject;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -52,45 +70,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.security.auth.Subject;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.hk2.api.IterableProvider;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.EmbeddedSystemAdministrator;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
-import org.glassfish.security.services.api.authorization.AuthorizationService;
-import org.glassfish.security.services.api.authorization.AzAction;
-import org.glassfish.security.services.api.authorization.AzResource;
-import org.glassfish.security.services.api.authorization.AzResult;
-import org.glassfish.security.services.api.authorization.AzSubject;
-import org.glassfish.security.services.api.common.Attributes;
-import org.glassfish.security.services.api.context.SecurityContextService;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
  * Utility class which checks if the Subject is allowed to execute the specified command.
  * <p>
- * The processing includes {@link AccessRequired}} annotations, CRUD commands, 
+ * The processing includes {@link AccessRequired}} annotations, CRUD commands,
  * {@code RestEndpoint} annotations, and if the command
  * class implements {@link AdminCommandSecurity.AccessCheckProvider} it also invokes the
  * corresponding {@code getAccessChecks} method.  To succeed the overall authorization
- * all access checks - whether inferred from annotations or returned from 
+ * all access checks - whether inferred from annotations or returned from
  * {@code getAccessChecks} - for which {@code isFailureFatal} is true must pass.
- * 
+ *
  * @author tjquinn
  */
 @Service
 @Singleton
 public class CommandSecurityChecker implements PostConstruct {
-    
+
     @LoggerInfo(subsystem="ADMSECAUTHZ", description="Admin security authorization")
     private static final String ADMSEC_AUTHZ_LOGGER_NAME = "javax.enterprise.system.tools.admin.security.authorization";
 
@@ -99,34 +95,34 @@ public class CommandSecurityChecker implements PostConstruct {
 
     static final Logger ADMSEC_AUTHZ_LOGGER = Logger.getLogger(ADMSEC_AUTHZ_LOGGER_NAME, LOG_MESSAGES_RB);
     private static final String RESOURCE_NAME_URL_ENCODING = "UTF-8";
-    
+
     private static final Level PROGRESS_LEVEL = Level.FINE;
     private static final String LINE_SEP = System.lineSeparator();
     private static final String ADMIN_RESOURCE_SCHEME = "admin";
-    
+
     @Inject
     private ServiceLocator locator;
 
     @Inject
     private AuthorizationService authService;
-    
+
     @Inject
     private NamedResourceManager namedResourceMgr;
-    
+
     @Inject
     private IterableProvider<AuthorizationPreprocessor> authPreprocessors;
-    
+
     @Inject
     private ServerEnvironment serverEnv;
-    
+
     @Inject
     private SecurityContextService securityContextService;
-    
+
     @Inject
     private EmbeddedSystemAdministrator embeddedSystemAdministrator;
-    
+
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
-    
+
     /**
      * Group 1 contains the token from $token; group 2 contains the token from ${token}
      */
@@ -140,14 +136,14 @@ public class CommandSecurityChecker implements PostConstruct {
          * in making authorization decisions.
          */
         securityContextService.getEnvironmentAttributes().addAttribute(
-                AuthorizationAdminConstants.ISDAS_ATTRIBUTE, 
+                AuthorizationAdminConstants.ISDAS_ATTRIBUTE,
                 Boolean.toString(serverEnv.isDas()), true);
     }
-    
-    
+
+
     /**
      * Maps RestEndpoint HTTP methods to the corresponding security action.
-     * @return 
+     * @return
      */
     private static EnumMap<RestEndpoint.OpType,String> initOptypeMap() {
         final EnumMap<RestEndpoint.OpType,String> result = new EnumMap(RestEndpoint.OpType.class);
@@ -157,13 +153,13 @@ public class CommandSecurityChecker implements PostConstruct {
         result.put(RestEndpoint.OpType.PUT, "create"); // insert
         return result;
     }
-    
+
     /**
      * Reports whether the Subject is allowed to perform the specified admin command.
      * @param subject Subject for the current user to authorize
      * @param env environmental settings that might be used in the resource name expression
      * @param command the admin command the Subject wants to execute
-     * @return 
+     * @return
      */
     public boolean authorize(Subject subject,
             final Map<String,Object> env,
@@ -174,7 +170,7 @@ public class CommandSecurityChecker implements PostConstruct {
                     new IllegalArgumentException("subject"));
             subject = new Subject();
         }
-        
+
         boolean result;
         try {
             if (command instanceof AdminCommandSecurity.Preauthorization) {
@@ -217,7 +213,7 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return result;
     }
-    
+
     private List<AccessCheckWork> assembleAccessCheckWork(
             final AdminCommand command,
             final Subject subject) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -240,16 +236,16 @@ public class CommandSecurityChecker implements PostConstruct {
         if (accessChecks.isEmpty() && ! isCommandAccessCheckProvider) {
             accessChecks.add(new UnguardedCommandAccessCheckWork(command));
         }
-        
+
         return accessChecks;
     }
-    
+
     private boolean checkAccessRequired(Subject subject,
             final Map<String,Object> env,
             final AdminCommand command,
-            final List<AccessCheckWork> accessChecks) 
+            final List<AccessCheckWork> accessChecks)
                 throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, URISyntaxException, UnsupportedEncodingException {
-        
+
         final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         boolean result = true;
         final StringBuilder sb = (isTaggable ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing on ").append(command.getClass().getName()).append(LINE_SEP) : null);
@@ -263,19 +259,19 @@ public class CommandSecurityChecker implements PostConstruct {
             final Map<String,String> actionAttrs = new HashMap<String,String>();
             for (AuthorizationPreprocessor ap : authPreprocessors) {
                 ap.describeAuthorization(
-                        subject, 
-                        a.accessCheck.resourceName(), 
+                        subject,
+                        a.accessCheck.resourceName(),
                         a.accessCheck.action(),
                         command,
-                        env, 
-                        subjectAttrs, 
-                        resourceAttrs, 
+                        env,
+                        subjectAttrs,
+                        resourceAttrs,
                         actionAttrs);
             }
             mapToAzAttrs(subjectAttrs, azSubject);
             mapToAzAttrs(resourceAttrs, azResource);
             mapToAzAttrs(actionAttrs, azAction);
-            
+
             final AzResult azResult = authService.getAuthorizationDecision(azSubject, azResource, azAction);
             a.accessCheck.setSuccessful(azResult.getDecision() == AzResult.Decision.PERMIT);
             if (isTaggable) {
@@ -290,7 +286,7 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return result;
     }
-    
+
     private String formattedAccessCheck(final URI resourceURI, final AccessCheck a) {
         return (new StringBuilder("AccessCheck ")).
                     append(resourceURI.toASCIIString()).
@@ -309,7 +305,7 @@ public class CommandSecurityChecker implements PostConstruct {
             attrs.addAttribute(i.getKey(), i.getValue(), false /* replace */);
         }
     }
-    
+
     /**
      * Returns all AccessCheck objects which apply to the specified command.
      * @param command the AdminCommand for which the AccessChecks are needed
@@ -317,7 +313,7 @@ public class CommandSecurityChecker implements PostConstruct {
      * @return the AccessChecks resulting from analyzing the command
      * @throws NoSuchFieldException
      * @throws IllegalArgumentException
-     * @throws IllegalAccessException 
+     * @throws IllegalAccessException
      */
     public Collection<? extends AccessCheck> getAccessChecks(final AdminCommand command,
             final Subject subject) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -335,9 +331,9 @@ public class CommandSecurityChecker implements PostConstruct {
      * @param command
      * @param accessChecks
      * @param isTaggable
-     * @return 
+     * @return
      */
-    private boolean addChecksFromAccessCheckProvider( 
+    private boolean addChecksFromAccessCheckProvider(
             final AdminCommand command, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable,
             final Subject subject) {
@@ -345,7 +341,7 @@ public class CommandSecurityChecker implements PostConstruct {
             /*
              * Invoke getAccessChecks in the context of the Subject.
              */
-            final Collection<? extends AccessCheck> checks = 
+            final Collection<? extends AccessCheck> checks =
                     Subject.doAs(subject, new PrivilegedAction<Collection<? extends AccessCheck>>() {
 
                 @Override
@@ -353,7 +349,7 @@ public class CommandSecurityChecker implements PostConstruct {
                     return ((AdminCommandSecurity.AccessCheckProvider) command).getAccessChecks();
                 }
             });
-                        
+
             for (AccessCheck ac : checks) {
                 accessChecks.add(new AccessCheckWork(ac,
                         isTaggable ? "  Class's getAccessChecks()"  : null));
@@ -362,13 +358,13 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return false;
     }
-    
+
     private URI resourceURIFromAccessCheck(final AccessCheck c) throws URISyntaxException, UnsupportedEncodingException {
         return new URI(ADMIN_RESOURCE_SCHEME,
                         resourceNameFromAccessCheck(c) /* ssp */,
                         null /* fragment */);
     }
-    
+
     private String resourceNameFromAccessCheck(final AccessCheck c) throws UnsupportedEncodingException {
         String resourceName = c.resourceName();
         if (resourceName == null) {
@@ -379,13 +375,13 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return URLEncoder.encode(resourceName,RESOURCE_NAME_URL_ENCODING);
     }
-    
+
     private boolean addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,
             final List<AccessCheckWork> accessChecks,
-            final boolean isTaggable) 
+            final boolean isTaggable)
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         boolean isAnnotated = false;
-                
+
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
             final Class<?> c = cIt.next();
             final AccessRequired ar = c.getAnnotation(AccessRequired.class);
@@ -396,17 +392,17 @@ public class CommandSecurityChecker implements PostConstruct {
             final AccessRequired.List arList = c.getAnnotation(AccessRequired.List.class);
             if (arList != null) {
                 isAnnotated = true;
-                
+
                 for (final AccessRequired repeatedAR : arList.value()) {
                     addAccessChecksFromAnno(repeatedAR, command, accessChecks, c, isTaggable);
                 }
             }
-            
+
             isAnnotated |= addAccessChecksFromFields(c, command, accessChecks, isTaggable);
         }
         return isAnnotated;
     }
-    
+
     private boolean addAccessChecksFromFields(
             final Class<?> c,
             final AdminCommand command,
@@ -418,9 +414,9 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return isAnnotatedOnFields;
     }
-    
+
     private void addAccessChecksFromAnno(final AccessRequired ar, final AdminCommand command,
-            final List<AccessCheckWork> accessChecks, final Class<?> currentClass, final boolean isTaggable) 
+            final List<AccessCheckWork> accessChecks, final Class<?> currentClass, final boolean isTaggable)
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         for (final String resource : ar.resource()) {
             final String translatedResource = processTokens(resource, command);
@@ -434,7 +430,7 @@ public class CommandSecurityChecker implements PostConstruct {
             }
         }
     }
-    
+
     private boolean addAccessChecksFromAnno(final Field f, final AdminCommand command,
             final List<AccessCheckWork> accessChecks, final boolean isTaggable) throws IllegalArgumentException, IllegalAccessException {
         boolean isAnnotated = false;
@@ -461,7 +457,7 @@ public class CommandSecurityChecker implements PostConstruct {
              * the resource name using the explicit collection name in the
              * anno or the inferred name from the child type.
              */
-            
+
             for (final String action : arNC.action()) {
                 final AccessCheck a = new AccessCheck(resourceNameForField, action);
                 String tag = null;
@@ -473,41 +469,41 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return isAnnotated;
     }
-    
+
     private String resourceNameFromNewChildAnno(final AccessRequired.NewChild arNC, final Field f, final AdminCommand command) throws IllegalArgumentException, IllegalAccessException {
         /*
          * The config beans convention - although not a requirement - is that
          * an owner bean which has a collection of sub-beans has a single
-         * child named for the plural of the subtype, and then that single 
-         * child actually holds the collection.  For example, the domain 
+         * child named for the plural of the subtype, and then that single
+         * child actually holds the collection.  For example, the domain
          * can contain multiple resources, each of which can be of a different
          * subtype of resource.  This is modeled with the Domain having
-         * 
-         *  Resources getResources(); 
-         * 
-         * (this returns a single Resources object) and 
-         * the Resources object has 
-         * 
+         *
+         *  Resources getResources();
+         *
+         * (this returns a single Resources object) and
+         * the Resources object has
+         *
          *  List<*> getResources();  // plural
-         * 
+         *
          * Note that the name for the method on the single container object is not
-         * consistent.  For example, Domain also has 
-         * 
+         * consistent.  For example, Domain also has
+         *
          *  Servers getServers();
-         * 
+         *
          * and then the Servers bean has
-         * 
+         *
          *  List<*> getServer();  // singular
-         * 
+         *
          * But in either case, the config path to an actual child is
-         * 
+         *
          *  parent/collectionName/childType/childID
-         * 
+         *
          * or in these examples,
-         * 
+         *
          *  domain/resources/javamail-resource/MyIMAPMail
          *  domain/servers/server/MyInstance
-         * 
+         *
          * The AccessRequired.NewChild annotation requires the developer to provide
          * the type of the child to be created and the name of the collection
          * in which it is to be stored.  (Maybe in the future we can be
@@ -521,21 +517,21 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         if (ConfigBeanProxy.class.isAssignableFrom(parent.getClass())) {
             sb.append(AccessRequired.Util.resourceNameFromConfigBeanType(
-                    (ConfigBeanProxy) parent, 
+                    (ConfigBeanProxy) parent,
                     arNC.collection(),
                     (Class<? extends ConfigBeanProxy>) childType));
         } else if (ConfigBean.class.isAssignableFrom(parent.getClass())) {
             sb.append(AccessRequired.Util.resourceNameFromConfigBeanType(
-                    (ConfigBean) parent, 
+                    (ConfigBean) parent,
                     arNC.collection(),
                     (Class<? extends ConfigBeanProxy>) childType));
         }
 
         return sb.toString();
     }
-    
+
     private String processTokens(final String expr, final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        
+
         final Matcher m = TOKEN_PATTERN.matcher(expr);
         final StringBuffer translated = new StringBuffer();
         while (m.find()) {
@@ -551,7 +547,7 @@ public class CommandSecurityChecker implements PostConstruct {
         m.appendTail(translated);
         return translated.toString();
     }
-    
+
     private Field findField(final AdminCommand command, final String fieldName) throws NoSuchFieldException {
         Field result = null;
         for (Class c = command.getClass(); c != null; c = c.getSuperclass()) {
@@ -559,13 +555,13 @@ public class CommandSecurityChecker implements PostConstruct {
                 result = c.getDeclaredField(fieldName);
                 return result;
             } catch (NoSuchFieldException ex) {
-                continue; 
+                continue;
             }
         }
         return result;
     }
-    
-    private String resourceNameFromField(final Field f, final AdminCommand command) 
+
+    private String resourceNameFromField(final Field f, final AdminCommand command)
             throws IllegalArgumentException, IllegalAccessException {
         f.setAccessible(true);
         if (ConfigBeanProxy.class.isAssignableFrom(f.getType())) {
@@ -584,8 +580,8 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return fieldValue.toString();
     }
-    
-    private void addChecksFromReSTEndpoints(final AdminCommand command, 
+
+    private void addChecksFromReSTEndpoints(final AdminCommand command,
             final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
@@ -602,7 +598,7 @@ public class CommandSecurityChecker implements PostConstruct {
             }
         }
     }
-    
+
     private void addAccessChecksFromReSTEndpoint(
             final RestEndpoint restEndpoint, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
@@ -618,12 +614,12 @@ public class CommandSecurityChecker implements PostConstruct {
          */
         String resource;
 //        if (restEndpoint.params().length == 0) {
-            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
+            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(),
                     restEndpoint.path(),
                     locator);
 //        } else {
 //            // TODO need to do something with the endpoint params
-//            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
+//            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(),
 //                    restEndpoint.path(),
 //                    locator);
 //        }
@@ -634,8 +630,8 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         accessChecks.add(new AccessCheckWork(a, tag));
     }
-    
-    private static String resourceNameFromRestEndpoint(Class<? extends ConfigBeanProxy> c, 
+
+    private static String resourceNameFromRestEndpoint(Class<? extends ConfigBeanProxy> c,
             final String path,
             final ServiceLocator locator) {
         ConfigBeanProxy b = locator.getService(c);
@@ -645,29 +641,29 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return name;
     }
-        
-        
+
+
 //    private String resourceKeyFromReSTEndpoint(final RestEndpoint restEndpoint) {
 //        for (RestParam p : restEndpoint.params()) {
 //
 //        }
 //        return "";
 //    }
-    
+
     private static class AccessCheckWork {
         private final AccessCheck accessCheck;
         private final String tag;
-        
+
         private AccessCheckWork(final AccessCheck accessCheck, final String tag) {
             this.accessCheck = accessCheck;
             this.tag = tag;
         }
-        
+
         private AccessCheck accessCheck() {
             return accessCheck;
         }
     }
-    
+
     private static class UnguardedCommandAccessCheckWork extends AccessCheckWork {
         private UnguardedCommandAccessCheckWork(final AdminCommand c) {
             /*
@@ -676,7 +672,7 @@ public class CommandSecurityChecker implements PostConstruct {
             super(new AccessCheck("unguarded/" + getCommandName(c), "execute"),"  Unguarded access control on " + c.getClass().getName());
         }
     }
-    
+
     private static String getCommandName(final AdminCommand c) {
         final Service serviceAnno = c.getClass().getAnnotation(Service.class);
         if (serviceAnno == null) {
@@ -684,5 +680,5 @@ public class CommandSecurityChecker implements PostConstruct {
         }
         return serviceAnno.name();
     }
-    
+
 }

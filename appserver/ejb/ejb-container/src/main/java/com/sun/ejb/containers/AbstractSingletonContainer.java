@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -155,7 +155,7 @@ public abstract class AbstractSingletonContainer
     }
 
     public String getMonitorAttributeValues() {
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         sbuf.append("SINGLETON ").append(ejbDescriptor.getName());
         sbuf.append("]");
 
@@ -658,7 +658,7 @@ public abstract class AbstractSingletonContainer
     public void activateEJB(Object ctx, Object instanceKey) {}
 
 /** TODO
-    public void appendStats(StringBuffer sbuf) {
+    public void appendStats(StringBuilder sbuf) {
 	sbuf.append("\nSingletonContainer: ")
 	    .append("CreateCount=").append(statCreateCount).append("; ")
 	    .append("RemoveCount=").append(statRemoveCount).append("; ")

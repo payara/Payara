@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portion Copyright [2018] Payara Foundation and/or affiliates
+// Portion Copyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * AbstractLogger.java
@@ -54,10 +54,10 @@ import java.text.MessageFormat;
 import org.glassfish.persistence.common.I18NHelper;
 import org.glassfish.common.util.StringHelper;
 
-/** 
- * This class provides a default implementation of the 
- * com.sun.jdo.spi.persistence.utility.logging.Logger interface which 
- * implements most methods and/or delegates them to a few 
+/**
+ * This class provides a default implementation of the
+ * com.sun.jdo.spi.persistence.utility.logging.Logger interface which
+ * implements most methods and/or delegates them to a few
  * abstract methods which subclasses must override.
  *
  * @author Rochelle Raccah
@@ -110,7 +110,7 @@ abstract public class AbstractLogger implements Logger
 	 * @param loader the loader used for looking up the bundle file
 	 * and possibly the logging.properties or alternative file
 	 */
-	public AbstractLogger (String loggerName, String bundleName, 
+	public AbstractLogger (String loggerName, String bundleName,
 		ClassLoader loader)
 	{
 		_loggerName = loggerName;
@@ -119,7 +119,7 @@ abstract public class AbstractLogger implements Logger
 	}
 
 	/** Get the message bundle for the AbstractLogger itself.
-	 */    
+	 */
 	protected static ResourceBundle getMessages () { return _messages; }
 
 	private static Map getLevelNameMap () { return _levelNamesToValues; }
@@ -129,7 +129,7 @@ abstract public class AbstractLogger implements Logger
 	{
 		if (_hasLoggingProperties && (_loggingProperties == null))
 		{
-			String fileName = 
+			String fileName =
 				System.getProperty("java.util.logging.config.file"); // NOI18N
 
 			if (fileName == null)
@@ -196,7 +196,7 @@ abstract public class AbstractLogger implements Logger
 
 	/** Return the string name of a level given its int value.
 	 * @return a string representing the level
-	 */    
+	 */
 	public static String toString (int level)
 	{
 		String bundleKey = null;
@@ -232,12 +232,12 @@ abstract public class AbstractLogger implements Logger
 				break;
 		}
 
-		return ((bundleKey != null) ? 
+		return ((bundleKey != null) ?
 			I18NHelper.getMessage(getMessages(), bundleKey) : null);
 	}
 
     /** Get the message bundle for the named instance of the logger.
-     */    
+     */
 	protected ResourceBundle getBundle () { return _bundle; }
 
 	public int getLevel () { return _level; }
@@ -276,7 +276,7 @@ abstract public class AbstractLogger implements Logger
 	 *@param loggerName the name of the hierarchical
 	 *@return a String representing the level value
 	 */
-	private String findLevelMatch (String loggerName) 
+	private String findLevelMatch (String loggerName)
 	{
 		Properties properties = getLoggingProperties();
 		String value = null;
@@ -305,7 +305,7 @@ abstract public class AbstractLogger implements Logger
 	/** Return whether logging is enabled at the FINE level.  This method
 	 * is not exact because to make it accurately reflect the logging level
 	 * we would have to include the JDK 1.4 java.util.logging.Level class.
-	 * This method does not delegate to isLoggable(FINE) for performance 
+	 * This method does not delegate to isLoggable(FINE) for performance
 	 * reasons.
 	 * @return whether logging is enabled at the fine level.
 	 */
@@ -351,7 +351,7 @@ abstract public class AbstractLogger implements Logger
 	 * @param sourceMethod name of method that is being entered
 	 * @param param1 parameter to the method being entered
 	 */
-	public void entering (String sourceClass, String sourceMethod, 
+	public void entering (String sourceClass, String sourceMethod,
 		Object param1)
 	{
 		if (isLoggable(FINER))
@@ -362,16 +362,16 @@ abstract public class AbstractLogger implements Logger
 	 * Log a method entry, with an array of parameters.
 	 * <p>
 	 * This is a convenience method that can be used to log entry
-	 * to a method.  A LogRecord with message "ENTRY" (followed by a 
-	 * format {N} indicator for each entry in the parameter array), 
-	 * log level FINER, and the given sourceMethod, sourceClass, and 
+	 * to a method.  A LogRecord with message "ENTRY" (followed by a
+	 * format {N} indicator for each entry in the parameter array),
+	 * log level FINER, and the given sourceMethod, sourceClass, and
 	 * parameters is logged.
 	 * <p>
 	 * @param sourceClass name of class that issued the logging request
 	 * @param sourceMethod name of method that is being entered
 	 * @param params array of parameters to the method being entered
 	 */
-	public void entering (String sourceClass, String sourceMethod, 
+	public void entering (String sourceClass, String sourceMethod,
 		Object params[])
 	{
 		if (isLoggable(FINER))
@@ -383,7 +383,7 @@ abstract public class AbstractLogger implements Logger
 			if ((params != null) && (params.length > 0))
 			{
 				messageKey = "entering_method_params";	// NOI18N
-				args = new String[]{sourceClass, sourceMethod, 
+				args = new String[]{sourceClass, sourceMethod,
 					StringHelper.arrayToSeparatedList(Arrays.asList(params))};
 			}
 			else
@@ -406,7 +406,7 @@ abstract public class AbstractLogger implements Logger
 	 * FINER, and the given sourceMethod and sourceClass is logged.
 	 * <p>
 	 * @param sourceClass name of class that issued the logging request
-	 * @param sourceMethod name of the method 
+	 * @param sourceMethod name of the method
 	 */
 	public void exiting (String sourceClass, String sourceMethod)
 	{
@@ -422,7 +422,7 @@ abstract public class AbstractLogger implements Logger
 	 * object is logged.
 	 * <p>
 	 * @param sourceClass name of class that issued the logging request
-	 * @param sourceMethod name of the method 
+	 * @param sourceMethod name of the method
 	 * @param result Object that is being returned
 	 */
 	public void exiting (String sourceClass, String sourceMethod, Object result)
@@ -454,10 +454,10 @@ abstract public class AbstractLogger implements Logger
 	 * Log throwing an exception.
 	 * <p>
 	 * This is a convenience method to log that a method is
-	 * terminating by throwing an exception.  The logging is done 
+	 * terminating by throwing an exception.  The logging is done
 	 * using the FINER level.
 	 * <p>
-	 * If the logger is currently enabled for the given message 
+	 * If the logger is currently enabled for the given message
 	 * level then the given arguments are stored in a LogRecord
 	 * which is forwarded to all registered output handlers.  The
 	 * LogRecord's message is set to "THROW".
@@ -471,7 +471,7 @@ abstract public class AbstractLogger implements Logger
 	 * @param sourceMethod name of the method.
 	 * @param thrown The Throwable that is being thrown.
 	 */
-	public void throwing (String sourceClass, String sourceMethod, 
+	public void throwing (String sourceClass, String sourceMethod,
 		Throwable thrown)
 	{
 		if (isLoggable(FINER))
@@ -487,7 +487,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a SEVERE message.
 	 * <p>
-	 * If the logger is currently enabled for the SEVERE message 
+	 * If the logger is currently enabled for the SEVERE message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -498,7 +498,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a WARNING message.
 	 * <p>
-	 * If the logger is currently enabled for the WARNING message 
+	 * If the logger is currently enabled for the WARNING message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -509,7 +509,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log an INFO message.
 	 * <p>
-	 * If the logger is currently enabled for the INFO message 
+	 * If the logger is currently enabled for the INFO message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -520,7 +520,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a CONFIG message.
 	 * <p>
-	 * If the logger is currently enabled for the CONFIG message 
+	 * If the logger is currently enabled for the CONFIG message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -581,7 +581,7 @@ abstract public class AbstractLogger implements Logger
 
 			if (count > 0)
 			{
-				MessageFormat messageFormat = 
+				MessageFormat messageFormat =
 					new MessageFormat(getBundle().getString(msg));
 
 				if (messageFormat != null)
@@ -611,7 +611,7 @@ abstract public class AbstractLogger implements Logger
 		if (isLoggable(level))
 			log(level, msg, new Object[]{o1, o2});
 	}
-    
+
 	/**
 	 * Log a message.
 	 * <p>
@@ -634,8 +634,8 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a message.
 	 * <p>
-	 * If the logger is currently enabled for the message 
-	 * level then the given message, and the exception dump, 
+	 * If the logger is currently enabled for the message
+	 * level then the given message, and the exception dump,
 	 * is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -648,7 +648,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a message.
 	 * <p>
-	 * If the logger is currently enabled for the  message 
+	 * If the logger is currently enabled for the  message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -659,7 +659,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINE message.
 	 * <p>
-	 * If the logger is currently enabled for the FINE message 
+	 * If the logger is currently enabled for the FINE message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -671,7 +671,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINE message.
 	 * <p>
-	 * If the logger is currently enabled for the FINE message 
+	 * If the logger is currently enabled for the FINE message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -712,11 +712,11 @@ abstract public class AbstractLogger implements Logger
 	{
 		log(FINE, msg, o1, o2, o3);
 	}
-    
+
 	/**
 	 * Log a FINER message.
 	 * <p>
-	 * If the logger is currently enabled for the FINER message 
+	 * If the logger is currently enabled for the FINER message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -727,7 +727,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINER message.
 	 * <p>
-	 * If the logger is currently enabled for the FINER message 
+	 * If the logger is currently enabled for the FINER message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -739,7 +739,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINER message.
 	 * <p>
-	 * If the logger is currently enabled for the FINER message 
+	 * If the logger is currently enabled for the FINER message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -763,7 +763,7 @@ abstract public class AbstractLogger implements Logger
 	{
 		log(FINER, msg, o1, o2);
 	}
-    
+
 	/**
 	 * Log a FINER message.
 	 * <p>
@@ -784,7 +784,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINEST message.
 	 * <p>
-	 * If the logger is currently enabled for the FINEST message 
+	 * If the logger is currently enabled for the FINEST message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -795,7 +795,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINEST message.
 	 * <p>
-	 * If the logger is currently enabled for the FINEST message 
+	 * If the logger is currently enabled for the FINEST message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -807,7 +807,7 @@ abstract public class AbstractLogger implements Logger
 	/**
 	 * Log a FINEST message.
 	 * <p>
-	 * If the logger is currently enabled for the FINEST message 
+	 * If the logger is currently enabled for the FINEST message
 	 * level then the given message is forwarded to all the
 	 * registered output Handler objects.
 	 * <p>
@@ -831,7 +831,7 @@ abstract public class AbstractLogger implements Logger
 	{
 		log(FINEST, msg, o1, o2);
 	}
-    
+
 	/**
 	 * Log a FINEST message.
 	 * <p>
@@ -857,10 +857,10 @@ abstract public class AbstractLogger implements Logger
 
 	/** Prepare a printable version of this instance.
 	 * @return the String representation of this object
-	 */    
+	 */
 	public String toString ()
 	{
-		StringBuffer buffer = new StringBuffer(getClass().getName());
+		StringBuilder buffer = new StringBuilder(getClass().getName());
 
 		buffer.append(": ");				//NOI18N
 		buffer.append(" name: ");			//NOI18N
@@ -872,9 +872,9 @@ abstract public class AbstractLogger implements Logger
 	}
 
 	/**
-	 * This method returns a string from the bundle file if possible, 
+	 * This method returns a string from the bundle file if possible,
 	 * treating the message argument as the key.  If no such key is found
-	 * in the bundle, the message itself is returned. 
+	 * in the bundle, the message itself is returned.
 	 *
 	 * @return a message either used as itself or searched in the bundle file.
 	 * @param message the message which is used as a key to search the bundle
@@ -893,7 +893,7 @@ abstract public class AbstractLogger implements Logger
 	}
 
 	/**
-	 * This method returns a string with a formatted prefix which 
+	 * This method returns a string with a formatted prefix which
 	 * depends on the level.
 	 *
 	 * @return a formatted string with a level prefix.
@@ -909,10 +909,10 @@ abstract public class AbstractLogger implements Logger
 		return messageFormat.format(
 			new String[]{toString(level), message});
 	}
-	
+
 	/**
-	 * This method does the actual logging.  It is expected that if a 
-	 * check for isLoggable is desired for performance reasons, it has 
+	 * This method does the actual logging.  It is expected that if a
+	 * check for isLoggable is desired for performance reasons, it has
 	 * already been done, as it should not be done here.
 	 * @param level the level to print
 	 * @param message the message to print

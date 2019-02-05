@@ -37,26 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 import org.glassfish.api.deployment.archive.ArchiveType;
-
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * This descriptor contains all common information amongst root element 
- * of the J2EE Deployment Descriptors (application, ejb-jar, web-app, 
- * connector...). 
+ * This descriptor contains all common information amongst root element
+ * of the J2EE Deployment Descriptors (application, ejb-jar, web-app,
+ * connector...).
  *
  * @author Jerome Dochez
  */
@@ -71,7 +66,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * each module is uniquely identified with a moduleID
      */
     protected String moduleID;
-    
+
     /**
      * version of the specification loaded by this descriptor
      */
@@ -82,9 +77,9 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * part of the same module
      */
     private String index=null;
-    
+
     /**
-     * class loader associated to this module to load classes 
+     * class loader associated to this module to load classes
      * contained in the archive file
      */
     protected transient ClassLoader classLoader = null;
@@ -103,19 +98,19 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     private final static List<?> emptyList = Collections.emptyList();
 
     /**
-     * Construct a new RootDeploymentDescriptor 
+     * Construct a new RootDeploymentDescriptor
      */
     public RootDeploymentDescriptor() {
         super();
     }
-    
+
     /**
      * Construct a new RootDeploymentDescriptor with a name and description
      */
     public RootDeploymentDescriptor(String name, String description) {
         super(name, description);
     }
-    
+
     /**
      * each module is uniquely identified with a moduleID
      * @param moduleID for this module
@@ -123,7 +118,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     public void setModuleID(String moduleID) {
         this.moduleID = moduleID;
     }
-    
+
     /**
      * @return the module ID for this module descriptor
      */
@@ -141,7 +136,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      */
     public abstract boolean isEmpty();
 
-        
+
     /**
      * @return the specification version of the deployment descriptor
      * loaded by this descriptor
@@ -149,9 +144,9 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     public String getSpecVersion() {
         if (specVersion == null) {
             specVersion = getDefaultSpecVersion();
-        } 
+        }
         try {
-            Double.parseDouble(specVersion); 
+            Double.parseDouble(specVersion);
         } catch (NumberFormatException nfe) {
             deplLogger.log(Level.WARNING,
                            INVALID_SPEC_VERSION,
@@ -161,15 +156,15 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
 
         return specVersion;
     }
-    
+
     /**
      * Sets the specification version of the deployment descriptor
      * @param specVersion version number
      */
     public void setSpecVersion(String specVersion) {
         this.specVersion = specVersion;
-    }      
-    
+    }
+
     /**
      * @return the module type for this bundle descriptor
      */
@@ -188,8 +183,8 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
-    
-    /**               
+
+    /**
      * @return the class loader associated with this module
      */
     public abstract ClassLoader getClassLoader();
@@ -200,29 +195,29 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
     public void setDisplayName(String name) {
         super.setName(name);
     }
-    
-    /** 
+
+    /**
      * @return the display name
      */
     public String getDisplayName() {
         return super.getName();
     }
-    
+
     /**
-     * as of J2EE1.4, get/setName are deprecated, 
-     * people should use the set/getDisplayName or 
+     * as of J2EE1.4, get/setName are deprecated,
+     * people should use the set/getDisplayName or
      * the set/getModuleID.
      */
     public void setName(String name) {
         setModuleID(name);
     }
-    
+
     /**
-     * as of J2EE1.4, get/setName are deprecated, 
-     * people should use the set/getDisplayName or 
+     * as of J2EE1.4, get/setName are deprecated,
+     * people should use the set/getDisplayName or
      * the set/getModuleID.
      * note : backward compatibility
-     */     
+     */
     public String getName() {
         if (getModuleID()!=null) {
             return getModuleID();
@@ -230,11 +225,11 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
             return getDisplayName();
         }
     }
-        
+
     public void setSchemaLocation(String schemaLocation) {
         addExtraAttribute("schema-location", schemaLocation);
     }
-    
+
     public String getSchemaLocation() {
         return (String) getExtraAttribute("schema-location");
     }
@@ -265,24 +260,24 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
             }
 
         }
-    }    
-    
+    }
+
     /**
-     * @return true if this module is an application object 
+     * @return true if this module is an application object
      */
     public abstract boolean isApplication();
-    
+
     /**
      * print a meaningful string for this object
      */
-    public void print(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append("\n Module Type = ").append(getModuleType());
-        toStringBuffer.append("\n Module spec version = ").append(getSpecVersion());
-        if (moduleID!=null) 
-            toStringBuffer.append("\n Module ID = ").append(moduleID);
+    public void print(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append("\n Module Type = ").append(getModuleType());
+        toStringBuilder.append("\n Module spec version = ").append(getSpecVersion());
+        if (moduleID!=null)
+            toStringBuilder.append("\n Module ID = ").append(moduleID);
         if (getSchemaLocation()!=null)
-            toStringBuffer.append("\n Client SchemaLocation = ").append(getSchemaLocation());
+            toStringBuilder.append("\n Client SchemaLocation = ").append(getSchemaLocation());
     }
 
     /**

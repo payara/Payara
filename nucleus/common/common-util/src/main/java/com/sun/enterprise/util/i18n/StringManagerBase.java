@@ -37,14 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
 package com.sun.enterprise.util.i18n;
 
 import com.sun.enterprise.util.CULoggerInfo;
 import java.text.MessageFormat;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,8 +50,8 @@ import java.util.logging.Logger;
  * Implementation of a local string manager. Provides access to i18n messages
  * for classes that need them.
  *
- * <p> One StringManagerBase per resource bundle name can be created and accessed by the 
- * getManager method call. 
+ * <p> One StringManagerBase per resource bundle name can be created and accessed by the
+ * getManager method call.
  *
  * <xmp>
  * Example:
@@ -69,8 +67,8 @@ import java.util.logging.Logger;
  *  try {
  *      ....
  *  } catch (Exception e) {
- *      String localizedMsg = sm.getString("test", 
- *          new Integer(7), new java.util.Date(System.currentTimeMillis()), 
+ *      String localizedMsg = sm.getString("test",
+ *          new Integer(7), new java.util.Date(System.currentTimeMillis()),
  *          "a disturbance in the Force");
  *
  *      throw new MyException(localizedMsg, e);
@@ -95,18 +93,18 @@ public class StringManagerBase {
 
     private final String _resourceBundleName;
     private final ClassLoader _classLoader;
-    
+
     /** default value used for undefined local string */
     private static final String NO_DEFAULT = "No local string defined";
 
     /** cache for all the local string managers (per pkg) */
-    private static Hashtable managers = new Hashtable();
+    private static Map<String, StringManagerBase> managers = new HashMap<>();
 
     /**
      * Initializes the resource bundle.
      *
      * @param    resourceBundleName    name of the resource bundle
-     */    
+     */
     protected StringManagerBase(String resourceBundleName, ClassLoader classLoader) {
         this._resourceBundleName = resourceBundleName;
         this._classLoader = classLoader;
@@ -139,7 +137,7 @@ public class StringManagerBase {
      * @return   a local string manager for the given package name
      */
     public synchronized static StringManagerBase getStringManager(String resourceBundleName, ClassLoader classLoader) {
-        StringManagerBase mgr = (StringManagerBase) managers.get(resourceBundleName);
+        StringManagerBase mgr = managers.get(resourceBundleName);
         if (mgr == null) {
             mgr = new StringManagerBase(resourceBundleName, classLoader);
             try {
@@ -189,8 +187,8 @@ public class StringManagerBase {
     }
 
     /**
-     * Returns a local string for the caller and format the arguments 
-     * accordingly. If the key is not found, it will use the given 
+     * Returns a local string for the caller and format the arguments
+     * accordingly. If the key is not found, it will use the given
      * default format.
      *
      * @param   key            the key to the local format string
@@ -199,8 +197,8 @@ public class StringManagerBase {
      *
      * @return  a formatted localized string
      */
-    public String getStringWithDefault(String key, String defaultFormat, 
-            Object arguments[]) {
+    public String getStringWithDefault(String key, String defaultFormat,
+            Object[] arguments) {
 
         MessageFormat f =
             new MessageFormat( getStringWithDefault(key, defaultFormat) );
@@ -219,7 +217,7 @@ public class StringManagerBase {
             }
         }
 
-        String fmtStr; 
+        String fmtStr;
         try {
             fmtStr =  f.format(arguments);
         } catch (Exception e) {
@@ -290,10 +288,10 @@ public class StringManagerBase {
      *
      * @return  a formatted localized string
      */
-    public String getString(String key, Object arg1, Object arg2, 
+    public String getString(String key, Object arg1, Object arg2,
             Object arg3, Object arg4) {
 
-        return getStringWithDefault(key, NO_DEFAULT, 
+        return getStringWithDefault(key, NO_DEFAULT,
                                     new Object[] {arg1, arg2, arg3, arg4});
     }
 

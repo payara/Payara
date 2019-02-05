@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.services;
 
@@ -48,19 +48,20 @@ import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
+
 import java.io.File;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+
 import static com.sun.enterprise.admin.servermgmt.services.Constants.*;
-import java.io.UncheckedIOException;
 
 /**
  *
  * @author Byron Nevins
  */
 public class LinuxService extends NonSMFServiceAdapter {
-    
+
     private String targetName;
     File target;
     private static final String TEMPLATE_FILE_NAME = "linux-service.template";
@@ -69,7 +70,7 @@ public class LinuxService extends NonSMFServiceAdapter {
     private String sFile;
     private String kFile;
     private boolean hasStartStopTokens = false;
-    
+
     static boolean apropos() {
 
         return OS.isLinux();
@@ -377,7 +378,7 @@ public class LinuxService extends NonSMFServiceAdapter {
 
     private void tooManyLinks(File[] matches) {
         // this is complicated enough to turn it into a method
-        StringBuffer theMatches = new StringBuffer();
+        StringBuilder theMatches = new StringBuilder();
         boolean first = true;
         for (File f : matches) {
             if (first)
@@ -441,5 +442,5 @@ public class LinuxService extends NonSMFServiceAdapter {
 
         return sb.toString();
     }
-    
+
 }

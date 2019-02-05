@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable.web.config;
 
-import java.util.Set;
 import org.glassfish.embeddable.GlassFishException;
+
+import java.util.Set;
 
 /**
  * This class represents a list of URL patterns and HTTP
@@ -92,11 +94,11 @@ public class WebResourceCollection {
     /**
      * Sets the url patterns that correspond to this
      * web resource
-     * 
-     * @param urlPatterns the url patterns 
+     *
+     * @param urlPatterns the url patterns
      */
     public void setUrlPatterns(Set<String> urlPatterns) {
-        this.urlPatterns = urlPatterns;          
+        this.urlPatterns = urlPatterns;
     }
 
     /**
@@ -138,7 +140,7 @@ public class WebResourceCollection {
     /**
      * Sets the HTTP methods to be omitted from protection
      *
-     * @param httpMethodOmissions the HTTP methods to be 
+     * @param httpMethodOmissions the HTTP methods to be
      * omitted from protection
      *
      * @throws GlassFishException if HttpMethods is already defined
@@ -166,12 +168,12 @@ public class WebResourceCollection {
      * Returns a formatted string of the state.
      */
     public String toString() {
-        StringBuffer toStringBuffer = new StringBuffer();
-        toStringBuffer.append("WebResourceCollection: ");
-        toStringBuffer.append(" name: ").append(name);
-        toStringBuffer.append(" urlPatterns: ").append(urlPatterns);
-        toStringBuffer.append(" httpMethods ").append(httpMethods);
-        toStringBuffer.append(" httpMethodOmissions ").append(httpMethodOmissions);
-        return toStringBuffer.toString();
+        StringBuilder toStringBuilder = new StringBuilder();
+        toStringBuilder.append("WebResourceCollection: ");
+        toStringBuilder.append(" name: ").append(name);
+        toStringBuilder.append(" urlPatterns: ").append(urlPatterns);
+        toStringBuilder.append(" httpMethods ").append(httpMethods);
+        toStringBuilder.append(" httpMethodOmissions ").append(httpMethodOmissions);
+        return toStringBuilder.toString();
     }
 }

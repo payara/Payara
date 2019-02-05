@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
   * DeploymentStatusImplWithError.java
@@ -46,11 +47,10 @@
 
 package org.glassfish.deployapi;
 
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.shared.CommandType;
 
 /**
   *Simple implementation of DeploymentStatus intended to describe an exception that
@@ -58,14 +58,14 @@ import javax.enterprise.deploy.shared.CommandType;
   * @author  tjquinn
   */
 public class DeploymentStatusImplWithError extends DeploymentStatusImpl {
-    
+
     /** Records the error, if any, associated with this status object */
     private Throwable cause = null;
-    
+
     /** Creates a new instance of DeploymentStatusImplWithError */
     public DeploymentStatusImplWithError() {
     }
-    
+
     /** Creates a new instance of DeploymentStatusImplWithError */
     public DeploymentStatusImplWithError(CommandType commandType, Throwable cause) {
         super();
@@ -73,7 +73,7 @@ public class DeploymentStatusImplWithError extends DeploymentStatusImpl {
         setState(StateType.FAILED);
         setCommand(commandType);
     }
-    
+
     /**
      *Assigns the cause for this status.
      *@param Throwable that describes the error to be reported
@@ -82,7 +82,7 @@ public class DeploymentStatusImplWithError extends DeploymentStatusImpl {
         this.cause = cause;
         setMessage(cause.getMessage());
     }
-    
+
     /**
      *Returns the cause for this status.
      *@return Throwable that describes the error associated with this status
@@ -90,13 +90,13 @@ public class DeploymentStatusImplWithError extends DeploymentStatusImpl {
     public Throwable getCause() {
         return cause;
     }
-    
+
     /**
      *Displays the status as a string, including stack trace information if error is present.
      *@return String describing the status, including stack trace info from the error (if present).
      */
     public String toString() {
-        StringBuffer result = new StringBuffer(super.toString());
+        StringBuilder result = new StringBuilder(super.toString());
         if (cause != null) {
             String lineSep = System.getProperty("line.separator");
             result.append(lineSep).append("Cause: ");
