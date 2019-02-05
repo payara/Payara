@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * APIHelper.java
@@ -76,7 +77,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * In verifier, this class is used in conjunction with an XML file where all
  * the standard APIs are listed along with their respective version number.
  * Refer to standard-apis.xml file to see how we list APIs in that file.
- * 
+ *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class APIRepository {
@@ -125,9 +126,9 @@ public class APIRepository {
     }
 
     /**
-     * This method is used to find out if a particular class is part of 
-     * a standard API or not. e.g. to find out if an EJB 2.0 application is 
-     * allowed to use javax.ejb.Timer.class, call this method as 
+     * This method is used to find out if a particular class is part of
+     * a standard API or not. e.g. to find out if an EJB 2.0 application is
+     * allowed to use javax.ejb.Timer.class, call this method as
      * <blockquote><pre>
      * isClassPartOf("javax.ejb.Timer","ejb_jar_2.0")
      * </pre></blockquote>
@@ -135,7 +136,7 @@ public class APIRepository {
      * @param class_name name of the class (in external class name format)
      * @param api_name_version is the name of the API along with version. It
      * must already be defined in the XML file.
-     * 
+     *
      * @return true iff the given class is part of this API.
      */
     public boolean isClassPartOf(String class_name, String api_name_version) {
@@ -153,11 +154,11 @@ public class APIRepository {
         }
         return false;
     }
-    
+
     /**
-     * This method is used to find out if a particular package is part of 
-     * a standard API or not. e.g. to find out if an appclient (v 1.4) is 
-     * allowed to import javax.persistence.* , call this method as 
+     * This method is used to find out if a particular package is part of
+     * a standard API or not. e.g. to find out if an appclient (v 1.4) is
+     * allowed to import javax.persistence.* , call this method as
      * <blockquote><pre>
      * isPackagePartOf("javax.persistence","appclient_1.4")
      * </pre></blockquote>
@@ -165,7 +166,7 @@ public class APIRepository {
      * @param pkg_name name of the package
      * @param api_name_version is the name of the API along with version. It
      * must already be defined in the XML file.
-     * 
+     *
      * @return true iff the given package is part of this API.
      */
     public boolean isPackagePartOf(String pkg_name, String api_name_version) {
@@ -180,7 +181,7 @@ public class APIRepository {
         }
         return false;
     }
-    
+
     protected Collection<String> getPackagesFor(String api_name_version) {
         return ((API) apis.get(api_name_version)).getPackages();
     }
@@ -194,7 +195,7 @@ public class APIRepository {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (Iterator i = apis.values().iterator(); i.hasNext();) {
             sb.append("\n").append(i.next().toString()); // NOI18N
         }
@@ -207,7 +208,7 @@ public class APIRepository {
         Document d = getDocumentBuilder().parse(file);
         traverseTree(d.getDocumentElement());
     }
-    
+
     private APIRepository(InputStream is) throws Exception {
         logger.entering(myClsName, "init<>", is.toString()); // NOI18N
         Document d = getDocumentBuilder().parse(is);
@@ -383,7 +384,7 @@ public class APIRepository {
         }
 
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("<api name_version=\"" + name_version + "\">"); // NOI18N
             sb.append("\n\t<classes>"); // NOI18N
             for (Iterator i = getClasses().iterator(); i.hasNext();) sb.append(
@@ -429,7 +430,7 @@ public class APIRepository {
             e.printStackTrace();
         }
     }
-    
+
     private static void usage(){
         System.out.println(
                 "Usage: java " + APIRepository.class.getName() + // NOI18N

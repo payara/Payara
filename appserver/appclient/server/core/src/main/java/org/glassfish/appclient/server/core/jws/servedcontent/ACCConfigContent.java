@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
@@ -58,7 +59,7 @@ public class ACCConfigContent {
 
     private final SunACCPairedFiles sunACC;
     private final PairedFiles appClientLogin;
-    
+
     /* match the security.config property and capture the value */
     private final static Pattern SECURITY_CONFIG_VALUE_PATTERN = Pattern.compile(
             "<property name=\"security.config\"\\s*value=\"([^\"]*)\"\\s*/\\s*>");
@@ -127,7 +128,7 @@ public class ACCConfigContent {
         protected boolean isContentCurrent() {
             return lastModified >= fileToCheck().lastModified();
         }
-        
+
         protected File fileToCheck() {
             return (jwsFile.exists() ? jwsFile : normalFile);
         }
@@ -160,7 +161,7 @@ public class ACCConfigContent {
     private static class SunACCPairedFiles extends PairedFiles {
 
         private String configFilePath = null;
-        
+
         private File securityConfigFile = null;
 
         private String securityConfigContent = null;

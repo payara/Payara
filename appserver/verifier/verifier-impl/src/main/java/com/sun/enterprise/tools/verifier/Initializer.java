@@ -37,19 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.tools.verifier;
 
+import com.sun.enterprise.tools.verifier.util.LogDomains;
+import com.sun.enterprise.tools.verifier.util.VerifierConstants;
+import com.sun.enterprise.tools.verifier.util.VerifierFormatter;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import java.io.File;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.ConsoleHandler;
-
-import com.sun.enterprise.tools.verifier.util.LogDomains;
-import com.sun.enterprise.tools.verifier.util.VerifierFormatter;
-import com.sun.enterprise.tools.verifier.util.VerifierConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * Initialization of arguments and other temporary variables is done here. This
@@ -97,7 +98,7 @@ public class Initializer {
         boolean isVerboseSet = false;
         LongOption[] longopts = new LongOption[20];
         // The set of valid long options for verifier
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         longopts[0] = new LongOption("help", false, null, 'h'); // NOI18N
         longopts[1] = new LongOption("timestamp", false, null, 't'); // NOI18N
         longopts[2] = new LongOption("verbose", false, null, 'v'); // NOI18N
@@ -708,22 +709,22 @@ public class Initializer {
             return false;
         }
     }
-    
+
     /**
-     * This method is only used in standalone invocation. For backend 
+     * This method is only used in standalone invocation. For backend
      * invocations this method should not be called. The logger should continue
      * to use the default formatter when verifier is invoked from backend.
-     */ 
+     */
     private void setFormatter() {
         Handler[] handlers = logger.getParent().getHandlers();
-        for (int i = 0; i < handlers.length; i++) 
+        for (int i = 0; i < handlers.length; i++)
             if(handlers[i] instanceof ConsoleHandler)
                 handlers[i].setFormatter(new VerifierFormatter());
     }
 
     /**
      * @param rl
-     * @return reporting level string. 
+     * @return reporting level string.
      */
     private String getReportLevelString(int rl) {
         String rls = "";

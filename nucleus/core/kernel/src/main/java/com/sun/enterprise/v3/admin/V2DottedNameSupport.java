@@ -37,18 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Dom;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Dom;
 
 import java.util.*;
-
-import com.sun.enterprise.config.serverbeans.*;
 
 /**
  * Utility class for all V2 style related dotted names commands.
@@ -139,7 +141,7 @@ public class V2DottedNameSupport {
                 values = node.leafElements(leafName);
             }
             Iterator i = values.iterator();
-            StringBuffer value = new StringBuffer();
+            StringBuilder value = new StringBuilder();
             while (i.hasNext()) {
                 String nextValue = (String) i.next();
 
@@ -271,7 +273,7 @@ public class V2DottedNameSupport {
         if (a.indexOf('.')!=-1) {
             nextTokenName = a.substring(0, a.indexOf('.'));
         }
-                
+
         if (nextTokenName.equals(b)) {
             return true;
         }
@@ -280,7 +282,7 @@ public class V2DottedNameSupport {
         }
         return false;
     }
-    
+
     final static class TreeNode {
         final Dom node;
         final String name;
@@ -413,7 +415,7 @@ public class V2DottedNameSupport {
         });
         return mapEntries;
     }
-    
+
     public List<org.glassfish.flashlight.datatree.TreeNode> sortTreeNodesByCompletePathName(List<org.glassfish.flashlight.datatree.TreeNode> nodes) {
         Collections.sort(nodes, new Comparator() {
             public int compare(Object o1, Object o2) {

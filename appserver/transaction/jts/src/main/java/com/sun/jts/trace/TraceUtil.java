@@ -37,23 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jts.trace;
 
-import java.io.*;
-import java.util.logging.*;
-import javax.transaction.xa.XAException;
+import com.sun.jts.CosTransactions.Configuration;
 
-import com.sun.jts.CosTransactions.*;
-import org.omg.CosTransactions.*;
+import javax.transaction.xa.XAException;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is used to set trace properties and print trace statements. The print method does the printing.
  * All the methods are unsynchronized. Since setting of properties doesn't happen simultaneously with print
- * in current usage, this is fine. The tracing should be enabled/disabled by calling 
+ * in current usage, this is fine. The tracing should be enabled/disabled by calling
  * <code> Configuration.enableTrace()/disableTrace()</code>
  * prior to any operation on TraceUtil.
- * It uses TraceRecordFormatter for formatting the trace record. 
+ * It uses TraceRecordFormatter for formatting the trace record.
  *
  * @author <a href="mailto:kannan.srinivasan@sun.com">Kannan Srinivasan</a>
  * @version 1.0
@@ -71,7 +72,7 @@ public class TraceUtil
 	}
 
  /**
-   * Initialises the trace class with given output writer. 
+   * Initialises the trace class with given output writer.
    *
    * @param traceWriter an <code>PrintWriter</code> value
    */
@@ -131,7 +132,7 @@ public class TraceUtil
                     traceLevelSet = true;
                     break;
                 }
-            } 
+            }
             if(!traceLevelSet)
                 throw new InvalidTraceLevelException();
 
@@ -150,25 +151,25 @@ public class TraceUtil
    * @param origin an <code>Object</code> value
    * @param msg a <code>String</code> value
    */
-    public static void print(int traceLevel, PrintWriter outWriter, Object tid, Object origin, String msg) 
+    public static void print(int traceLevel, PrintWriter outWriter, Object tid, Object origin, String msg)
     {
             if( traceLevel <= m_currentTraceLevel )
             {
-            	String traceRecord = TraceRecordFormatter.createTraceRecord(tid, origin, msg); 
+            	String traceRecord = TraceRecordFormatter.createTraceRecord(tid, origin, msg);
 		outWriter.println(traceRecord);
             }
     }
 
   /**
-   * This method formats and writes the trace record to current output writer. The method is 
-   * called with a tracelevel, which is checked with current trace level and if found equal 
+   * This method formats and writes the trace record to current output writer. The method is
+   * called with a tracelevel, which is checked with current trace level and if found equal
    * or higher, the print is carried out. This method doesn't take a otid and tries to recover
    * it from current obejct asscociated with this thread
    * @param traceLevel an <code>int</code> value
    * @param origin an <code>Object</code> value
    * @param msg a <code>String</code> value
    */
-    public static void print(int traceLevel, Object origin, String msg) 
+    public static void print(int traceLevel, Object origin, String msg)
     {
 	try{
 		 print(traceLevel,
@@ -191,7 +192,7 @@ public class TraceUtil
    * @param origin an <code>Object</code> value
    * @param msg a <code>String</code> value
    */
-    public static void print(int traceLevel, Object tid, Object origin, String msg) 
+    public static void print(int traceLevel, Object tid, Object origin, String msg)
     {
     	print(traceLevel,m_traceWriter,tid,origin,msg);
     }
@@ -204,7 +205,7 @@ public class TraceUtil
     public static char getFieldDelimiter()
     {
         return m_fieldDelimiter;
-     }    
+     }
 
   /**
    * Sets the current field delimiter.
@@ -217,7 +218,7 @@ public class TraceUtil
     }
 
   /**
-   * Gets the current trace record tag used in formatting of trace record. The default is 
+   * Gets the current trace record tag used in formatting of trace record. The default is
    * 'iAS_JTS_Trace> '.
    *
    * @return a <code>String</code> value
@@ -225,7 +226,7 @@ public class TraceUtil
     public static String getTraceRecordTag()
     {
         return m_traceRecordTag;
-     }    
+     }
 
   /**
    * Sets the trace record tag.
@@ -251,7 +252,7 @@ public class TraceUtil
             return exception.getMessage();
         }
 
-        StringBuffer msg = new StringBuffer();
+        StringBuilder msg = new StringBuilder();
         try {
                 String oracleError = "" + invokeMethod(exception, aClass, "getOracleError", logger);
                 String oracleSQLError = "" + invokeMethod(exception, aClass, "getOracleSQLError", logger);
@@ -281,7 +282,7 @@ public class TraceUtil
             return m.invoke(instance, null);
         } catch (Exception e) {
             logger.log(Level.FINE, "", e);
-        } 
+        }
         return null;
     }
 }

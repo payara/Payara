@@ -37,32 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
 
-import static java.util.Collections.unmodifiableSet;
-import static java.util.logging.Level.FINE;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Stack;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.DTDRegistry;
+import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -73,11 +55,15 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.DTDRegistry;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
+
+import static java.util.Collections.unmodifiableSet;
+import static java.util.logging.Level.FINE;
 
 /**
  * This class implements all the callbacks for the SAX Parser in JAXP 1.1
@@ -88,7 +74,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 @Service
 @PerLookup
 public class SaxParserHandler extends DefaultHandler {
-    
+
     public static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     public static final String JAXP_SCHEMA_SOURCE = "http://java.sun.com/xml/jaxp/properties/schemaSource";
     public static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
@@ -130,7 +116,7 @@ public class SaxParserHandler extends DefaultHandler {
     private final List<XMLNode> nodes = new ArrayList<XMLNode>();
     public XMLNode topNode = null;
     protected String publicID = null;
-    private StringBuffer elementData = null;
+    private StringBuilder elementData = null;
     private Map<String, String> prefixMapping = null;
 
     private boolean stopOnXMLErrors = false;
@@ -151,12 +137,12 @@ public class SaxParserHandler extends DefaultHandler {
         if (versionUpgradeList != null) {
             return versionUpgradeList;
         }
-        
+
         List<Class<?>> classList = MAPPING_STUFF.versionUpgradeClasses.get(key);
         if (classList == null) {
             return null;
         }
-        
+
         versionUpgradeList = new ArrayList<VersionUpgrade>();
         for (int n = 0; n < classList.size(); ++n) {
             VersionUpgrade versionUpgrade = null;
@@ -169,7 +155,7 @@ public class SaxParserHandler extends DefaultHandler {
             }
         }
         MAPPING_STUFF.versionUpgrades.put(key, versionUpgradeList);
-        
+
         return versionUpgradeList;
     }
 
@@ -265,10 +251,10 @@ public class SaxParserHandler extends DefaultHandler {
                 if (DOLUtils.getDefaultLogger().isLoggable(FINE)) {
                     DOLUtils.getDefaultLogger().fine("Resolved to " + fileName);
                 }
-                
+
                 return new InputSource(fileName);
             }
-            
+
             if (getMapping().containsKey(publicID)) {
                 this.publicID = publicID;
                 return new InputSource(new BufferedInputStream(getDTDUrlFor(getMapping().get(publicID))));
@@ -277,7 +263,7 @@ public class SaxParserHandler extends DefaultHandler {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, ioe.getMessage(), ioe);
             throw new SAXException(ioe);
         }
-        
+
         return null;
     }
 
@@ -292,7 +278,7 @@ public class SaxParserHandler extends DefaultHandler {
     public void error(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
                 new Object[] { errorReportingString, String.valueOf(spe.getLineNumber()), String.valueOf(spe.getColumnNumber()), spe.getLocalizedMessage() });
-        
+
         if (stopOnXMLErrors) {
             throw spe;
         }
@@ -301,7 +287,7 @@ public class SaxParserHandler extends DefaultHandler {
     public void fatalError(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
                 new Object[] { errorReportingString, String.valueOf(spe.getLineNumber()), String.valueOf(spe.getColumnNumber()), spe.getLocalizedMessage() });
-        
+
         if (stopOnXMLErrors) {
             throw spe;
         }
@@ -355,7 +341,7 @@ public class SaxParserHandler extends DefaultHandler {
     /**
      * Determine whether the syatemID starts with a known namespace. If so, strip off that namespace and return the rest.
      * Otherwise, return null
-     * 
+     *
      * @param systemID The systemID to examine
      * @return the part if the namespace to find in the file system or null if the systemID does not start with a known
      * namespace
@@ -374,7 +360,7 @@ public class SaxParserHandler extends DefaultHandler {
     /**
      * Determine whether the publicID starts with a known proprietary value. If so, strip off that value and return the
      * rest. Otherwise, return null
-     * 
+     *
      * @param publicID The publicID to examine
      * @return the part if the namespace to find in the file system or null if the publicID does not start with a known
      * namespace
@@ -468,7 +454,7 @@ public class SaxParserHandler extends DefaultHandler {
             DOLUtils.getDefaultLogger().finer("start of element " + uri + " with local name " + localName + " and " + qName);
         }
         XMLNode node = null;
-        elementData = new StringBuffer();
+        elementData = new StringBuilder();
 
         if (nodes.isEmpty()) {
             // this must be a root element...
@@ -564,7 +550,7 @@ public class SaxParserHandler extends DefaultHandler {
                                 replacementName = versionUpgrade.getReplacementElementName();
                                 replacementValue = versionUpgrade.getReplacementElementValue();
                             } else {
-                                StringBuffer buf = new StringBuffer();
+                                StringBuilder buf = new StringBuilder();
                                 String errorString = "Invalid upgrade from <";
                                 buf.append(errorString);
                                 for (Map.Entry<String, String> entry : matchXPath.entrySet()) {
@@ -681,12 +667,12 @@ public class SaxParserHandler extends DefaultHandler {
      * current implementation uses an inelegant but fast equals test.
      * <p>
      * If the set of tags that should support empty values grows a little, extending the expression to
-     * 
+     *
      * elementName.equals(TAG_1) || elementName.equals(TAG_2) || ...
      *
      * might make sense. If the set of such tags grows sufficiently large, then a list-based approach might make more sense
      * even though it might prove to be slower.
-     * 
+     *
      * @param elementName the name of the element
      * @return boolean indicating whether empty values should be recorded for this element
      */

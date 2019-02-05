@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * To change this template, choose Tools | Templates
@@ -45,37 +46,22 @@
 
 package org.glassfish.uc.admingui;
 
+import com.sun.jsftemplating.annotation.Handler;
+import com.sun.jsftemplating.annotation.HandlerInput;
+import com.sun.jsftemplating.annotation.HandlerOutput;
+import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import com.sun.pkg.client.*;
+import com.sun.pkg.client.SystemInfo.UpdateCheckFrequency;
+import org.glassfish.admingui.common.util.GuiUtil;
+
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
-import java.util.Map;
-import java.util.Properties;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-
-import com.sun.jsftemplating.annotation.Handler;
-import com.sun.jsftemplating.annotation.HandlerOutput;
-import com.sun.jsftemplating.annotation.HandlerInput;
-import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-
-import com.sun.pkg.client.Image;
-import com.sun.pkg.client.Fmri;
-import com.sun.pkg.client.LicenseAction;
-import com.sun.pkg.client.Manifest;
-import com.sun.pkg.client.SystemInfo;
-import com.sun.pkg.client.SystemInfo.UpdateCheckFrequency;
-import com.sun.pkg.client.Version;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import javax.servlet.http.HttpSession;
-
-
-import org.glassfish.admingui.common.util.GuiUtil;
 
 /**
  *
@@ -109,11 +95,11 @@ public class UpdateCenterHandlers {
         @HandlerOutput(name="result", type=String.class)})
     public static void getInstalledPath(HandlerContext handlerCtx) {
         Image image = getUpdateCenterImage();
-        handlerCtx.setOutputValue("result",  (image == null) ? 
+        handlerCtx.setOutputValue("result",  (image == null) ?
             GuiUtil.getMessage(BUNDLE, "updateCenter.NoImageDirectory") : image.getRootDirectory());
     }
-    
-    
+
+
     @Handler(id="getAuthority",
         output={
         @HandlerOutput(name="result", type=String.class)})
@@ -121,8 +107,8 @@ public class UpdateCenterHandlers {
         Image image = getUpdateCenterImage();
         handlerCtx.setOutputValue("result",  (image == null) ? "" : image.getPreferredAuthorityName());
     }
-    
-    
+
+
     @Handler(id="getPkgDetailsInfo",
     	input={
         @HandlerInput(name="fmriStr", type=String.class, required=true ),
@@ -137,7 +123,7 @@ public class UpdateCenterHandlers {
             return;
         }
         Fmri fmri = new Fmri(fmriStr);
-        Map details = new HashMap();  
+        Map details = new HashMap();
         Image img = getUpdateCenterImage();
         try{
             details.put("pkgName", fmri.getName());
@@ -169,7 +155,7 @@ public class UpdateCenterHandlers {
             ex.printStackTrace();
         }
         handlerCtx.setOutputValue("details", details);
-        
+
     }
 
     private static String  getCategory(Manifest manifest){
@@ -178,7 +164,7 @@ public class UpdateCenterHandlers {
         int index = attr.indexOf(":");
         return (index==-1) ? attr : attr.substring(index+1);
     }
-    
+
     @Handler(id="getUcList",
     	input={
         @HandlerInput(name="state", type=String.class, required=true )},
@@ -202,7 +188,7 @@ public class UpdateCenterHandlers {
                 handlerCtx.setOutputValue("result", getUpdateDisplayList(img, false));
                 return;
             }
-            
+
             List<Fmri> displayList = null;
             if (state.equals("installed"))
                 displayList = getInstalledList(img);
@@ -246,13 +232,13 @@ public class UpdateCenterHandlers {
         }
         handlerCtx.setOutputValue("result", result);
     }
-    
-    
+
+
     @Handler(id="getAuthList",
         output={
         @HandlerOutput(name="result", type=java.util.List.class)})
     public static void getAuthList(HandlerContext handlerCtx) {
-        
+
         List result = new ArrayList();
         try {
             Image image = getUpdateCenterImage();
@@ -271,8 +257,8 @@ public class UpdateCenterHandlers {
         }
         handlerCtx.setOutputValue("result", result);
     }
-    
-    
+
+
     @Handler(id="getProxyInfo",
         output={
         @HandlerOutput(name="connection", type=String.class),
@@ -280,7 +266,7 @@ public class UpdateCenterHandlers {
         @HandlerOutput(name="port", type=String.class)}
         )
     public static void getProxyInfo(HandlerContext handlerCtx) {
-        
+
         Proxy proxy = SystemInfo.getProxy();
         if (proxy != null){
             InetSocketAddress address = (InetSocketAddress) proxy.address();
@@ -295,7 +281,7 @@ public class UpdateCenterHandlers {
         handlerCtx.setOutputValue("host", "");
         handlerCtx.setOutputValue("port", "");
     }
-    
+
     @Handler(id="setProxyInfo",
         input={
         @HandlerInput(name="connection", type=String.class),
@@ -331,8 +317,8 @@ public class UpdateCenterHandlers {
             GuiUtil.handleException(handlerCtx, ex);
         }
     }
-                    
-    
+
+
     private static void putInfo( Map oneRow, String key, String value){
         oneRow.put( key, GuiUtil.isEmpty(value) ? "" : value);
     }
@@ -370,7 +356,7 @@ public class UpdateCenterHandlers {
         return f1.isSuccessor(f2);
     }
 
-    
+
     private static List<Fmri> getAddOnList(Image image){
         List<String> installed = new ArrayList<String>();
         for (Image.FmriState each : image.getInventory(null, false)) {
@@ -468,9 +454,9 @@ public class UpdateCenterHandlers {
        GuiUtil.setSessionValue("_updateCountMsg", GuiUtil.getMessage(UpdateCenterHandlers.BUNDLE, "msg.updatesAvailable", new String[]{""+result.size()}));
        return result;
     }
-    
-    
-    
+
+
+
     @Handler(id="updateCenterProcess",
     	input={
         @HandlerInput(name="action", type=String.class, required=true ),
@@ -507,7 +493,7 @@ public class UpdateCenterHandlers {
             ex.printStackTrace();
         }
     }
-    
+
    // getLicenseText(selectedRows="#{selectedRows}" license=>$page{license});
      @Handler(id="getLicenseText",
     	input={
@@ -516,12 +502,12 @@ public class UpdateCenterHandlers {
         @HandlerOutput(name="license", type=String.class),
         @HandlerOutput(name="hasLicense", type=Boolean.class)})
     public static void getLicenseText(HandlerContext handlerCtx) {
-         
+
         List obj = (List) handlerCtx.getInputValue("selectedRows");
         Image image = getUpdateCenterImage();
         List<Map> selectedRows = (List) obj;
         try {
-            StringBuffer allLicense = new StringBuffer();
+            StringBuilder allLicense = new StringBuilder();
             for (Map oneRow : selectedRows) {
                 Fmri fmri = (Fmri)oneRow.get("fmri");
                 allLicense.append(getLicense(image, fmri));
@@ -533,8 +519,8 @@ public class UpdateCenterHandlers {
             //ex.printStackTrace();
         }
      }
-        
-     
+
+
     @Handler(id = "getUpdateComponentCount")
     public static void getUpdateComponentCount(HandlerContext handlerCtx) {
 
@@ -557,7 +543,7 @@ public class UpdateCenterHandlers {
             return;
         }
         GuiUtil.setSessionValue("_hideUpdateMsg", Boolean.FALSE);
-        GuiUtil.setSessionValue("_updateCountMsg", ""); 
+        GuiUtil.setSessionValue("_updateCountMsg", "");
         UcThread thread = new UcThread((HttpSession)FacesContext.getCurrentInstance().getExternalContext().getSession(false));
         thread.start();
     }
@@ -573,9 +559,9 @@ public class UpdateCenterHandlers {
 	 }
          return countInt;
      }
-     
+
     private static String getLicense(Image img, Fmri fmri){
-        StringBuffer licenseText = new StringBuffer();
+        StringBuilder licenseText = new StringBuilder();
         try{
             Manifest manifest = img.getManifest(fmri);
             List<LicenseAction> lla = manifest.getActionsByType(LicenseAction.class);
@@ -592,21 +578,21 @@ public class UpdateCenterHandlers {
         }
         return null;
     }
-    
+
     private static String getPkgVersion(Version version){
-        //The version format is release[,build_release]-branch:datetime, which is decomposed into three DotSequences and the datetime. 
+        //The version format is release[,build_release]-branch:datetime, which is decomposed into three DotSequences and the datetime.
         //eg. 2.4.4,0-8.724:20080612T135341Z
-        
+
         String dotSequence = version.getRelease().toString();
         String branch = version.getBranch().toString();
-        return GuiUtil.isEmpty(branch) ? dotSequence : dotSequence+"-"+branch; 
+        return GuiUtil.isEmpty(branch) ? dotSequence : dotSequence+"-"+branch;
     }
-    
+
     private static String getPkgSize(Manifest manifest){
         int size = manifest.getPackageSize();
         return convertSizeForDispay(size);
     }
-    
+
     private static String convertSizeForDispay(int size){
         String sizep = (size <= MB) ?
             size/1024 + GuiUtil.getMessage(BUNDLE, "sizeKB") :
@@ -626,7 +612,7 @@ public class UpdateCenterHandlers {
      *
      */
 
-    
+
     public static Image getUpdateCenterImage(){
         if (Boolean.TRUE.equals(GuiUtil.getSessionValue("_noNetwork"))){
             return null;
@@ -651,7 +637,7 @@ public class UpdateCenterHandlers {
         return image;
     }
 
-    
+
     final private static String CATEGORY = "info.classification";
     final private static String DESC_LONG = "description_long";
     final private static String PKG_DESC = "pkg.description";

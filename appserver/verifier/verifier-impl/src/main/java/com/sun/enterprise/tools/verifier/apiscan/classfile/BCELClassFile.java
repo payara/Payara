@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * Main.java
@@ -46,25 +47,13 @@
 
 package com.sun.enterprise.tools.verifier.apiscan.classfile;
 
+import com.sun.org.apache.bcel.internal.classfile.*;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.org.apache.bcel.internal.classfile.ClassParser;
-import com.sun.org.apache.bcel.internal.classfile.ConstantClass;
-import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
-import com.sun.org.apache.bcel.internal.classfile.EmptyVisitor;
-import com.sun.org.apache.bcel.internal.classfile.Field;
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
-import com.sun.org.apache.bcel.internal.classfile.Method;
 
 /**
  * This is an implementation of {@link ClassFile} interface. It uses Apache's
@@ -73,7 +62,7 @@ import com.sun.org.apache.bcel.internal.classfile.Method;
  * This is NOT a public class. Access thru' {@link ClassFile} interface.
  * Use {@link ClassFileLoaderFactory} to create new instances of this class.
  *
- * @author Sanjeeb.Sahoo@Sun.COM 
+ * @author Sanjeeb.Sahoo@Sun.COM
  */
 class BCELClassFile implements ClassFile {
 
@@ -105,7 +94,7 @@ class BCELClassFile implements ClassFile {
         logger.entering(myClassName, "<init>(InputStream, String)", file_name); // NOI18N
         jc = new ClassParser(is, file_name).parse();
     }
-    
+
     //In contrast to the other constructor, here class_path is the path to the
     // .class file.
     /**
@@ -117,7 +106,7 @@ class BCELClassFile implements ClassFile {
     }
 
     /* Now the ClassFile interface implementation methods */
-    
+
     //See ClassFile interface for description.
     public synchronized Collection getAllReferencedClassNamesInInternalForm() {
         if (classNames == null) {
@@ -234,7 +223,7 @@ class BCELClassFile implements ClassFile {
                 break;
         }
         if (logger.isLoggable(Level.FINE)) {
-            StringBuffer sb = new StringBuffer("Class Names are {"); // NOI18N
+            StringBuilder sb = new StringBuilder("Class Names are {"); // NOI18N
             int size = result.size();
             for (int k = 0; k < size; k++) {
                 sb.append((String) result.get(k));
@@ -254,7 +243,7 @@ class BCELClassFile implements ClassFile {
         }
 
         /* Now override the visitor methods of our interest from EmptyVisitor class. */
-        /** 
+        /**
          */
         public void visitConstantClass(ConstantClass obj) {
             logger.entering(myClassName, "visitConstantClass", obj); // NOI18N

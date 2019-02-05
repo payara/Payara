@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
 /**
- * Performs string substitution for the given input.  Substitution process look 
+ * Performs string substitution for the given input.  Substitution process look
  * for the matching input in the given {@link RadixTree} and replaced the string
  * with the corresponding matching value.
  *
@@ -54,7 +54,7 @@ class RadixTreeSubstitution {
 
     /** Buffer to store the current processing characters, reset when match found
      *  for the processed character. */
-    private StringBuffer processedChars;
+    private StringBuilder processedChars;
 
     /** Reference to the currently processing node.*/
     private RadixTreeNode currentNode;
@@ -66,7 +66,7 @@ class RadixTreeSubstitution {
     private String lastMatchedValue;
 
     /** Buffer to store the characters need to re-process from root. */
-    private StringBuffer reProcessChars;
+    private StringBuilder reProcessChars;
 
     /**
      * Construct {@link RadixTreeSubstitution} for the given {@link RadixTree}.
@@ -77,7 +77,7 @@ class RadixTreeSubstitution {
             throw new IllegalArgumentException("Invalid tree.");
         }
         this.tree = tree;
-        processedChars = new StringBuffer();
+        processedChars = new StringBuilder();
         currentNode = tree.getRootNode();
     }
 
@@ -98,10 +98,10 @@ class RadixTreeSubstitution {
      * <li>Value of the matching node, if no further match available.</li>
      * <li>Return the string of processed characters if no matching node found
      *   or the node value is null.</li>
-     * <li><code>null</code> if waiting for more input char.</li> 
+     * <li><code>null</code> if waiting for more input char.</li>
      */
     String substitute(Character c) {
-        StringBuffer outputBuffer = null;
+        StringBuilder outputBuffer = null;
         boolean finalCall = (c == null);
         do {
             if (c != null) {
@@ -135,7 +135,7 @@ class RadixTreeSubstitution {
             }
 
             if (outputBuffer == null) {
-                outputBuffer = new StringBuffer();
+                outputBuffer = new StringBuilder();
             }
             // write to the output buffer.
             if (lastMatchedValue != null) {
@@ -161,7 +161,7 @@ class RadixTreeSubstitution {
             }
             if (processedChars.length() > 0) {
                 if (reProcessChars == null) {
-                    reProcessChars = new StringBuffer(processedChars);
+                    reProcessChars = new StringBuilder(processedChars);
                 } else {
                     processedChars.append(reProcessChars);
                     reProcessChars.delete(0, reProcessChars.length());

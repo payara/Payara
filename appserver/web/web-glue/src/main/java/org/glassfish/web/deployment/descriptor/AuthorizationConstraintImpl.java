@@ -59,9 +59,9 @@ import com.sun.enterprise.deployment.web.SecurityRole;
  * @author Danny Coward
  */
 public class AuthorizationConstraintImpl extends Descriptor implements AuthorizationConstraint {
-    
+
     private static final long serialVersionUID = -9221963350304406520L;
-    
+
     private Set<SecurityRole> securityRoles;
 
     /**
@@ -84,13 +84,13 @@ public class AuthorizationConstraintImpl extends Descriptor implements Authoriza
         if (securityRoles == null) {
             securityRoles = new HashSet<>();
         }
-        
+
         return securityRoles;
     }
 
     /**
      * Return the security roles involved in this constraint. The enumeration is empty if there are none.
-     * 
+     *
      * @return the enumeration of security roles in this constraint.
      */
     public Enumeration<SecurityRole> getSecurityRoles() {
@@ -99,7 +99,7 @@ public class AuthorizationConstraintImpl extends Descriptor implements Authoriza
 
     /**
      * Adds a role to the authorization constraint.
-     * 
+     *
      * @param the role to be added.
      */
     public void addSecurityRole(SecurityRole securityRole) {
@@ -108,7 +108,7 @@ public class AuthorizationConstraintImpl extends Descriptor implements Authoriza
 
     /**
      * Adds a role to the authorization constraint
-     * 
+     *
      * @param the role name to be added
      */
     public void addSecurityRole(String roleName) {
@@ -117,7 +117,7 @@ public class AuthorizationConstraintImpl extends Descriptor implements Authoriza
 
     /**
      * Removes the given role from the autrhorization constraint.
-     * 
+     *
      * @param the role to be removed.
      */
     public void removeSecurityRole(SecurityRole securityRole) {
@@ -127,10 +127,10 @@ public class AuthorizationConstraintImpl extends Descriptor implements Authoriza
     /**
      * Prints a formatted representation of this object.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("AuthorizationConstraint ");
-        super.print(toStringBuffer);
-        toStringBuffer.append(" securityRoles ").append(securityRoles);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("AuthorizationConstraint ");
+        super.print(toStringBuilder);
+        toStringBuilder.append(" securityRoles ").append(securityRoles);
     }
 
 }

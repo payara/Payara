@@ -37,9 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*
- * Portions Copyright [2018] [Payara Foundation]
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * StringHelper.java
@@ -273,7 +271,7 @@ public class StringHelper
 
 		while ((index = string.indexOf(oldString, beginIndex)) > -1)
 		{
-			// only create the StringBuffer if there's an occurence of oldString
+			// only create the StringBuilder if there's an occurence of oldString
 			if (sb == null)
 			{
 				sb = new StringBuilder(string.length());

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package client;
 
@@ -82,15 +83,15 @@ public class TestClient {
         int code = c1.getResponseCode();
         InputStream is = c1.getInputStream();
         BufferedReader input = new BufferedReader (new InputStreamReader(is));
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
         String line = null;
 		boolean found = false;
         while ((line = input.readLine()) != null) {
-			if(line.indexOf("SUCCESS") != -1) found = true;	
+			if(line.indexOf("SUCCESS") != -1) found = true;
 			buffer.append(line + "\n");
         }
         log(buffer.toString());
-	    if(!found) return 505;	
+	    if(!found) return 505;
         return code;
     }
 

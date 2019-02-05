@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package fish.payara.nucleus.notification.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -91,10 +93,10 @@ public class NotifierServiceLister implements AdminCommand {
                     "No registered notifier service found."));
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(strings.getLocalString("notifier.list.services.availability.info",
                     "Available Notifier Services") + ":\n");
-            
+
             Properties extrasProps = new Properties();
             ArrayList<String> names = new ArrayList<String>();
             for (ServiceHandle serviceHandle : allServiceHandles) {

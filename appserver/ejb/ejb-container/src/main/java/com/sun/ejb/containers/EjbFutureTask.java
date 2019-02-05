@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
 
 import com.sun.ejb.EjbInvocation;
 
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -59,7 +59,7 @@ public class EjbFutureTask<V>
 
     // Used to remember if cancel() was called already
     private boolean cancelCalled = false;
-        
+
     // State which could be set from both the caller's thread and
     // the thread on which the task is executing.
     private volatile boolean complete = false;
@@ -88,7 +88,7 @@ public class EjbFutureTask<V>
         }
 
         // For now we don't even try checking to see if the task has started running.
-        // Just return false so the caller knows the task could not be cancelled.      
+        // Just return false so the caller knows the task could not be cancelled.
         return false;
     }
 
@@ -133,7 +133,7 @@ public class EjbFutureTask<V>
 
         // If get() has already been called, produce the same behavior
         // as initial call, except if get(timeout, unit) resulted in a
-        // TimeoutException        
+        // TimeoutException
 
         if( !complete ) {
             try {
@@ -166,7 +166,7 @@ public class EjbFutureTask<V>
         }
 
         return resultValue;
-        
+
     }
 
     @Override
@@ -221,7 +221,7 @@ public class EjbFutureTask<V>
 
     public String toString() {
 
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
 
         sbuf.append("EjbFutureTask  ");
         sbuf.append("taskId="+ejbAsyncTask.getInvId());

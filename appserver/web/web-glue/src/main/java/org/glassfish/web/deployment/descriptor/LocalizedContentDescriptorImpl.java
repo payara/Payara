@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -46,10 +47,10 @@ import com.sun.enterprise.deployment.web.LocalizedContentDescriptor;
 public class LocalizedContentDescriptorImpl implements LocalizedContentDescriptor, java.io.Serializable {
     private String url;
     private String locale;
-    
+
     public LocalizedContentDescriptorImpl() {
     }
-    
+
     public LocalizedContentDescriptorImpl(String locale, String url) {
 	this.locale = locale;
 	this.url = url;
@@ -61,26 +62,26 @@ public class LocalizedContentDescriptorImpl implements LocalizedContentDescripto
 	}
 	return this.locale;
     }
-    
+
     public void setLocale(String locale) {
 	this.locale = locale;
     }
-    
+
     public String getUrl() {
 	if (this.url == null) {
 	    this.url = "";
 	}
 	return this.url;
     }
-	
+
     public void setUrl(String url) {
 	this.url = url;
     }
 
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("LocalizedContent: ");
-	toStringBuffer.append(" locale: ").append(locale);
-	toStringBuffer.append(" url: ").append(url);
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("LocalizedContent: ");
+	toStringBuilder.append(" locale: ").append(locale);
+	toStringBuilder.append(" url: ").append(url);
     }
 
 }

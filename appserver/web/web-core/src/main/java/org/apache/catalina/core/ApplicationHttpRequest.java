@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -70,13 +71,7 @@ import org.apache.catalina.util.RequestUtil;
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.PushBuilder;
-import javax.servlet.http.HttpServletMapping;
-import org.apache.catalina.connector.MappingImpl;
-
+import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 // END GlassFish 896
@@ -179,7 +174,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
      * behavior.
      */
     protected boolean crossContext = false;
-    
+
     private HttpServletMapping mappingForDispatch;
 
     /**
@@ -257,7 +252,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             if ( requestDispatcherPath != null ){
                 return requestDispatcherPath.toString();
             } else {
-                return null;   
+                return null;
             }
         }
 
@@ -363,7 +358,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             return (context.getServletContext().getRequestDispatcher(path));
 
         // Convert a request-relative path to a context-relative one
-        String servletPath = 
+        String servletPath =
             (String) getAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH);
         if (servletPath == null)
             servletPath = getServletPath();
@@ -589,7 +584,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
     public HttpSession getSession(boolean create) {
 
         if (crossContext) {
-            
+
             // There cannot be a session if no context has been assigned yet
             if (context == null)
                 return (null);
@@ -602,7 +597,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             HttpSession other = super.getSession(false);
             if (create && (other == null)) {
                 // First create a session in the first context: the problem is
-                // that the top level request is the only one which can 
+                // that the top level request is the only one which can
                 // create the cookie safely
                 other = super.getSession(true);
             }
@@ -631,7 +626,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
                     localSession = null;
                 } else if (localSession == null && create) {
                     //START OF 6364900
-                    localSession = 
+                    localSession =
                         context.getManager().createSession(other.getId());
                     //XXX need to revisit
                     if (isSessionVersioningSupported &&
@@ -718,7 +713,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
             return super.isRequestedSessionIdValid();
         }
     }
-    
+
 	@Override
 	public PushBuilder newPushBuilder() {
 		return ((HttpServletRequest) getRequest()).newPushBuilder();
@@ -789,7 +784,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
         super.setRequest(request);
 
         // Initialize the attributes for this request
-        requestDispatcherPath = 
+        requestDispatcherPath =
             request.getAttribute(Globals.DISPATCHER_REQUEST_PATH_ATTR);
 
         // Initialize the path elements for this request
@@ -876,7 +871,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
                                String pathInfo,
                                String queryString) {
         specialAttributes = new HashMap<String, Object>(5);
-        HttpServletMapping originalMapping;  
+        HttpServletMapping originalMapping;
 
         switch (dispatcherType) {
         case INCLUDE:
@@ -1044,7 +1039,7 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         public boolean hasMoreElements() {
             return (specialNames != null && specialNames.hasNext())
-                    || (next != null) 
+                    || (next != null)
                     || ((next = findNext()) != null);
         }
 

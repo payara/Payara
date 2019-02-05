@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.containers;
-
-import javax.ejb.ScheduleExpression;
 
 import org.glassfish.common.util.timer.TimerSchedule;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 
+import javax.ejb.ScheduleExpression;
+
 /**
- * A runtime representation of the user-defined calendar-based 
+ * A runtime representation of the user-defined calendar-based
  * timeout expression for an enterprise bean timer.
  *
  * @author mvatkina
@@ -141,7 +142,7 @@ public class EJBTimerSchedule extends TimerSchedule {
     }
 
     public String getScheduleAsString() {
-        StringBuffer s = new StringBuffer(super.getScheduleAsString())
+        StringBuilder s = new StringBuilder(super.getScheduleAsString())
                .append(" # ").append(automatic_);
 
         if (automatic_) {

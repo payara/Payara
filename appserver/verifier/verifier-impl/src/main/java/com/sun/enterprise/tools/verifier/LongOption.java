@@ -44,10 +44,10 @@ public class LongOption {
 
     protected String name;
     protected boolean argPresent;
-    protected StringBuffer holder;
+    protected StringBuilder holder;
     protected int value;
 
-    public LongOption(String name, boolean arg, StringBuffer hld, int val) {
+    public LongOption(String name, boolean arg, StringBuilder hld, int val) {
         this.name = name;
         argPresent = arg;
         holder = hld;
@@ -62,7 +62,7 @@ public class LongOption {
         return name;
     }
 
-    public StringBuffer getHolder() {
+    public StringBuilder getHolder() {
         return holder;
     }
 

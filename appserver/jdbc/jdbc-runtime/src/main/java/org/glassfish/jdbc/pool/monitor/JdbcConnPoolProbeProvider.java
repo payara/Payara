@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.jdbc.pool.monitor;
 
-import org.glassfish.external.probe.provider.annotations.ProbeParam;
+import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProvider;
 import org.glassfish.external.probe.provider.annotations.Probe;
+import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
-import com.sun.enterprise.resource.pool.monitor.*;
 /**
  * Probe provider interface for JDBC connection pool related events to provide
  * information related to the various objects on jdbc pool monitoring.
@@ -245,7 +245,7 @@ public class JdbcConnPoolProbeProvider extends ConnectionPoolProbeProvider {
     public void toString(@ProbeParam("poolName") String poolName,
                          @ProbeParam("appName") String appName,
                          @ProbeParam("moduleName") String moduleName,
-            @ProbeParam("stackTrace") StringBuffer stackTrace) { }
+            @ProbeParam("stackTrace") StringBuilder stackTrace) { }
 
     /**
      * Emits probe event/notification that a connection under test matches the

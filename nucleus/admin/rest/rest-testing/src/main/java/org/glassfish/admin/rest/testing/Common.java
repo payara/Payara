@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
@@ -55,7 +55,7 @@ public class Common {
     public static final int SC_BAD_REQUEST = Status.BAD_REQUEST.getStatusCode();
     public static final int SC_UNAUTHORIZED = Status.UNAUTHORIZED.getStatusCode();
     public static final int SC_ANY = -1;
-    
+
     // Commonly used property names:
     public static final String PROP_ITEM = "item";
     public static final String PROP_ITEMS = "items";
@@ -256,11 +256,11 @@ public class Common {
     public static ObjectValue rootResource(String rel) {
         return objectVal().put("rel", rel).put("uri", anyString());
     }
- 
+
     public static ObjectValue resource(String rel, String title, String uri) {
         return resource(rel, uri).put("title", stringVal(title));
     }
- 
+
     public static ObjectValue resource(String rel, String uri) {
          return objectVal().put("rel", rel).put("uri", stringRegexp(".*/" + uri));
     }

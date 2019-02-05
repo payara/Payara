@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package myapp;
 
@@ -79,9 +80,9 @@ public class BeanRoot implements BeanRootInterface {
             msg.appendMessage(MESSAGE_HELLO);
         }
 
-        StringBuffer check = new StringBuffer(" -EJB test-");
+        StringBuilder check = new StringBuilder(" -EJB test-");
 
-        
+
         FilePermission fp = new FilePermission(
                 "/scratch/spei/bug/test/war.txt", "delete");
         try {
