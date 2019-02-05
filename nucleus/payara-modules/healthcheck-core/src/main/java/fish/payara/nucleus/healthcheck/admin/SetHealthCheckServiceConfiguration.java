@@ -151,7 +151,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     @Param(name = "time-unit", optional = true,
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
-    private String unit;
+    private String timeUnit;
 
     // hogging threads properties params:
 
@@ -212,6 +212,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+        // update the service to to unify the way it is printed later on
         serviceName = serviceType.name().toLowerCase().replace('_', '-');
 
         BaseHealthCheck<?, ?> service = getService();
@@ -272,10 +273,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
                 ConfigSupport.apply(proxy -> updateProperties(proxy, checkerType), checker);
             }
             if (ThresholdDiagnosticsChecker.class.isAssignableFrom(checkerType)) {
-                ThresholdDiagnosticsChecker tdConfig = (ThresholdDiagnosticsChecker) config.getCheckerByType(checkerType); // get updated checker
-                updateProperty(tdConfig, HealthCheckConstants.THRESHOLD_CRITICAL, thresholdCritical);
-                updateProperty(tdConfig, HealthCheckConstants.THRESHOLD_WARNING, thresholdWarning);
-                updateProperty(tdConfig, HealthCheckConstants.THRESHOLD_GOOD, thresholdGood);
+                ThresholdDiagnosticsChecker thresholdDiagnosisConfig = (ThresholdDiagnosticsChecker) config
+                        .getCheckerByType(checkerType); // get updated checker
+                updateProperty(thresholdDiagnosisConfig, HealthCheckConstants.THRESHOLD_CRITICAL, thresholdCritical);
+                updateProperty(thresholdDiagnosisConfig, HealthCheckConstants.THRESHOLD_WARNING, thresholdWarning);
+                updateProperty(thresholdDiagnosisConfig, HealthCheckConstants.THRESHOLD_GOOD, thresholdGood);
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
@@ -326,24 +328,28 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
         updateProperty(config, "enabled", config.getEnabled(), String.valueOf(enabled), Checker::setEnabled);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
-        updateProperty(config, "time-unit", config.getUnit(), unit, Checker::setUnit);
+        updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
         if (HoggingThreadsChecker.class.isAssignableFrom(type)) {
-            HoggingThreadsChecker htConfig = (HoggingThreadsChecker) config;
-            updateProperty(htConfig, "hogging-threads-threshold", htConfig.getThresholdPercentage(), 
+            HoggingThreadsChecker hoggingThreadsConfig = (HoggingThreadsChecker) config;
+            updateProperty(hoggingThreadsConfig, "hogging-threads-threshold", hoggingThreadsConfig.getThresholdPercentage(), 
                     hogginThreadsThreshold, HoggingThreadsChecker::setThresholdPercentage);
-            updateProperty(htConfig, "hogging-threads-retry-count", htConfig.getRetryCount(), 
+            updateProperty(hoggingThreadsConfig, "hogging-threads-retry-count", hoggingThreadsConfig.getRetryCount(), 
                     hogginThreadsRetryCount, HoggingThreadsChecker::setRetryCount);
         }
         if (StuckThreadsChecker.class.isAssignableFrom(type)) {
-            StuckThreadsChecker stConfig = (StuckThreadsChecker) config;
-            updateProperty(stConfig, "stuck-threads-threshold", stConfig.getThreshold(), 
+            StuckThreadsChecker stuckThreadsConfig = (StuckThreadsChecker) config;
+            updateProperty(stuckThreadsConfig, "stuck-threads-threshold", stuckThreadsConfig.getThreshold(), 
                     stuckThreadsThreshold, StuckThreadsChecker::setThreshold);
-            updateProperty(stConfig, "stuck-threads-threshold-unit", stConfig.getThresholdTimeUnit(), 
+            updateProperty(stuckThreadsConfig, "stuck-threads-threshold-unit", stuckThreadsConfig.getThresholdTimeUnit(), 
                     stuckThreadsThresholdUnit, StuckThreadsChecker::setThresholdTimeUnit);
         }
         return config;
     }
 
+    /**
+     * Updates the named property in the given config with the given value. If the property does not exist it is
+     * created.
+     */
     private void updateProperty(ThresholdDiagnosticsChecker config, final String name, final String value)
             throws TransactionFailure {
         Property prop = config.getProperty(name);

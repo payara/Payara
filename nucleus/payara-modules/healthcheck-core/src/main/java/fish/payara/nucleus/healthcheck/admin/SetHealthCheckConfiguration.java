@@ -122,14 +122,14 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "enabled")
     private boolean enabled;
 
-    @Param(name = "trace-enabled", optional = true)
+    @Param(name = "historical-trace-enabled", optional = true)
     private Boolean historicalTraceEnabled;
 
-    @Param(name = "trace-store-size", optional = true, defaultValue = "20")
+    @Param(name = "historical-trace-store-size", optional = true, defaultValue = "20")
     @Min(value = 1, message = "Store size must be greater than 0")
     private int historicalTraceStoreSize;
 
-    @Param(name = "trace-store-timeout", optional = true)
+    @Param(name = "historical-trace-store-timeout", optional = true)
     private String historicalTraceStoreTimeout;
 
     @Override
