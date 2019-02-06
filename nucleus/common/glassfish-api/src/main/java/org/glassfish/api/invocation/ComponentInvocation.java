@@ -281,10 +281,7 @@ public class ComponentInvocation implements Cloneable {
      * @return
      */
     public String getRegistrationName() {
-        if (registrationName != null) {
-            return registrationName;
-        }
-        return getAppName();
+        return registrationName;
     }
 
     public void setRegistrationName(String registrationName) {
