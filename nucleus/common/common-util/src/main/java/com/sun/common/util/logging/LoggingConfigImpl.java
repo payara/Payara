@@ -97,16 +97,13 @@ public class LoggingConfigImpl implements LoggingConfig {
     }
 
     @Inject
-    private ServerEnvironmentImpl env;
-
-    @Inject
     private FileMonitoring fileMonitoring;
 
-    private String target;
     private final Properties props = new Properties();
-    private final String loggingPropertiesName;
+    private final String logFileName;
     private final File loggingConfigDir;
     private final File defaultLogFile;
+    private File logFile;
 
     @Inject
     public LoggingConfigImpl(ServerEnvironmentImpl env) {
@@ -114,15 +111,18 @@ public class LoggingConfigImpl implements LoggingConfig {
     }
 
     public LoggingConfigImpl(File defaultConfigDir, File configDir) {
-        loggingConfigDir = configDir;
-        loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
+        this.loggingConfigDir = configDir;
+        this.logFileName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
         this.defaultLogFile = new File(defaultConfigDir,
                 ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
+        this.logFile = new File(defaultConfigDir,
+                ServerEnvironmentImpl.kLoggingPropertiesFileName);
     }
 
     @Override
     public void initialize(String target) throws IOException {
-        this.target = target;
+        this.logFile = new File(loggingConfigDir,
+                target + "/" + logFileName);
     }
 
     /**
@@ -130,15 +130,9 @@ public class LoggingConfigImpl implements LoggingConfig {
      */
     private void loadLoggingProperties() throws IOException {
         props.clear();
-        File file = getLoggingPropertiesFile();
         InputStream fis = null;
         try {
-            if (!file.exists()) {
-                fis = getDefaultLoggingPropertiesInputStream();
-            } else {
-                fis = new FileInputStream(file);
-            }
-            fis = new BufferedInputStream(fis);
+            fis = getLoggingFileInputStream();
             props.load(fis);
         } finally {
             if (fis != null) {
@@ -147,36 +141,27 @@ public class LoggingConfigImpl implements LoggingConfig {
         }
     }
     
-    private File getLoggingPropertiesFile() {
-        return new File(loggingConfigDir, loggingPropertiesName);
-    }
-    
-    private InputStream getInputStream(File file) throws IOException {
+    private InputStream getLoggingFileInputStream() throws IOException {
         InputStream fileInputStream;
-        if (!file.exists()) {
-            fileInputStream = getDefaultLoggingPropertiesInputStream();
+        if (!logFile.exists()) {
+            fileInputStream = new FileInputStream(defaultLogFile);
         } else {
-            fileInputStream = new FileInputStream(file);
+            fileInputStream = new FileInputStream(logFile);
         }
-        return fileInputStream;
-    }
-    
-    private FileInputStream getDefaultLoggingPropertiesInputStream() throws IOException {
-        return new FileInputStream(defaultLogFile);
+        return new BufferedInputStream(fileInputStream);
     }
 
     private void closePropFile() throws IOException {
-        File file = getLoggingPropertiesFile();
-        File parentFile = file.getParentFile();
+        File parentFile = logFile.getParentFile();
         if (!parentFile.exists() && !parentFile.mkdirs()) {
             throw new IOException();
         }
         OutputStream os = null;
         try {
-            os = new BufferedOutputStream(new FileOutputStream(file));
+            os = new BufferedOutputStream(new FileOutputStream(logFile));
             props.store(os, "GlassFish logging.properties list");
             os.flush();
-            fileMonitoring.fileModified(file);
+            fileMonitoring.fileModified(logFile);
         } catch (Exception e) {
             // nothing can be done about it...
         } finally {
@@ -216,7 +201,6 @@ public class LoggingConfigImpl implements LoggingConfig {
         loadLoggingProperties();
         checkForLoggingProperties(properties);
         // need to map the name given to the new name in logging.properties file
-        String key = null;
         Map<String, String> m = getMap(properties);
         closePropFile();
         return m;
