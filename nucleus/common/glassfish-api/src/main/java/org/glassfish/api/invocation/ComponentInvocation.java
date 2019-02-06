@@ -180,7 +180,7 @@ public class ComponentInvocation
     public void setTransaction(Object t) {
         this.transaction = t;
     }
-
+    
     private Object transactionOperationsManager;
     public void setTransactionOperationsManager(Object transactionOperationsManager) {
         this.transactionOperationsManager = transactionOperationsManager;
@@ -300,10 +300,7 @@ public class ComponentInvocation
      * @return
      */
     public String getRegistrationName() {
-        if (registrationName != null) {
-            return registrationName;
-        }
-        return getAppName();
+        return registrationName;
     }
 
     public void setRegistrationName(String registrationName) {
