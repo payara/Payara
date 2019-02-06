@@ -974,7 +974,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.jersey.inject</groupId>
                 <artifactId>jersey-hk2</artifactId>
-                <version>2.26-b06</version>
+                <version>${jersey.version}</version>
             </dependency>
 
 
