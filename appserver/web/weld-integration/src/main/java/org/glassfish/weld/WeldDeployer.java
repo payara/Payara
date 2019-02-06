@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -286,7 +286,14 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 });
 
                 BundleDescriptor bd = DOLUtils.getCurrentBundleForContext(deployment.getCurrentDeploymentContext());
-                ComponentInvocation inv = new ComponentInvocation(DOLUtils.getComponentEnvId((JndiNameEnvironment) bd), ComponentInvocationType.SERVLET_INVOCATION, appInfo, fAppName, fAppName);
+                ComponentInvocation inv = new ComponentInvocation(
+                        DOLUtils.getComponentEnvId((JndiNameEnvironment) bd),
+                        ComponentInvocationType.SERVLET_INVOCATION,
+                        appInfo,
+                        fAppName,
+                        fAppName,
+                        fAppName
+                );
                 inv.setJNDIEnvironment(bd);
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
