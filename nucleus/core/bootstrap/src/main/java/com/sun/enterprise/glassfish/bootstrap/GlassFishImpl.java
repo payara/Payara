@@ -47,9 +47,12 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.grizzly.threadpool.Threads;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.Properties;
+
+import javax.swing.plaf.SliderUI;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -87,8 +90,22 @@ public class GlassFishImpl implements GlassFish {
             throw new IllegalStateException("Already in " + status + " state.");
         }
         status = Status.STOPPING;
+        sleepShutdownGracePeriod();
         gfKernel.stop();
         status = Status.STOPPED;
+    }
+
+    public static void sleepShutdownGracePeriod() {
+        String shutdowngrace = System.getProperty("fish.payara.shutdowngrace");
+        if (shutdowngrace != null) {
+            try {
+                Thread.sleep(Integer.parseInt(shutdowngrace));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (NumberFormatException e) {
+                // no sleep, continue shutdown
+            }
+        }
     }
 
     public synchronized void dispose() throws GlassFishException {
