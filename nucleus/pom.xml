@@ -185,6 +185,17 @@
         <javassist.version>3.24.1-GA</javassist.version>
         <javax.el.version>3.0.1-b11</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
+
+        <!-- JAX-B -->
+        <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
+        <jaxb.version>2.2.12-b141219.1637</jaxb.version>
+
+        <!-- EJB -->
+        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+
+        <!-- Cache -->
+        <javax.cache-api.version>1.1.0</javax.cache-api.version>
+
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.1</pfl.version>
         <gmbal.version>4.0.0</gmbal.version>
