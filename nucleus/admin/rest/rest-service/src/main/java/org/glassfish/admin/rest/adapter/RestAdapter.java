@@ -178,8 +178,25 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     adapter = exposeContext();
                     RestLogging.restLogger.log(Level.INFO, RestLogging.REST_INTERFACE_INITIALIZED, context);
                 }
-                //delegate to adapter managed by Jersey.
-                adapter.service(req, res);
+
+                ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
+                boolean monitoring = false;
+                try {
+                    // Temporarily switch classloader for monitoring so that the HK2 injection manager can be found
+                    if (context.equals("/monitoring")) {
+                        monitoring = true;
+                        ClassLoader apiClassLoader = sc.getCommonClassLoader();
+                        Thread.currentThread().setContextClassLoader(apiClassLoader);
+                    }
+
+                    // Delegate to adapter managed by Jersey.
+                    adapter.service(req, res);
+                } finally {
+                    // Switch back the classloader
+                    if (monitoring) {
+                        Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+                    }
+                }
 
             } else { // !latch.await(...)
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
