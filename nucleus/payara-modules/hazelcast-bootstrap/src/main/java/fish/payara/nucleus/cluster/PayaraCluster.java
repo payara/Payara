@@ -238,26 +238,31 @@ public class PayaraCluster implements MembershipListener, EventListener {
         String NL = System.lineSeparator();
         message.append(NL);
         if (hzCore.isEnabled()) {
+            String dataGridName = hzCore.getInstance().getConfig().getGroupConfig().getName();
             Cluster cluster = hzCore.getInstance().getCluster();
             Set<Member> members = hzCore.getInstance().getCluster().getMembers();
             message.append("Payara Data Grid State: DG Version: ").append(cluster.getClusterVersion().getId());
+            message.append(" DG Name: ").append(dataGridName);
             message.append(" DG Size: ").append(members.size());
             message.append(NL);
             message.append("Instances: {").append(NL);
             for (Member member : members) {
-
-                message.append("Address: ").append(member.getSocketAddress());
-                message.append(" UUID: ").append(member.getUuid());
-                message.append(" Lite: ").append(Boolean.toString(member.isLiteMember()));
-                message.append(" This: ").append(Boolean.toString(member.localMember()));
                 String name = member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
                 String group = member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                message.append(" DataGrid: ").append(dataGridName);
+                if (group != null) {
+                    message.append(" Instance Group: ").append(group);
+                }
+
                 if (name != null) {
                     message.append(" Name: ").append(name);
                 }
-                if (group != null) {
-                    message.append(" Group: ").append(group);
-                }                message.append(NL);
+                message.append(" Lite: ").append(Boolean.toString(member.isLiteMember()));
+                message.append(" This: ").append(Boolean.toString(member.localMember()));
+                message.append(" UUID: ").append(member.getUuid());
+                message.append(" Address: ").append(member.getSocketAddress());
+
+                message.append(NL);
             }
             message.append("}");
             logger.info("Data Grid Status " + message);
