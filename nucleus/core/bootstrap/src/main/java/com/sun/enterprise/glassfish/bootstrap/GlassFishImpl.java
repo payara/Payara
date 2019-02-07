@@ -47,12 +47,9 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.grizzly.threadpool.Threads;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.Properties;
-
-import javax.swing.plaf.SliderUI;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
