@@ -57,6 +57,8 @@ import java.util.Properties;
 
 public class GlassFishImpl implements GlassFish {
 
+    public static final String PAYARA_SHUTDOWNGRACE_PROPERTY = "fish.payara.shutdowngrace";
+
     private ModuleStartup gfKernel;
     private ServiceLocator habitat;
     volatile Status status = Status.INIT;
@@ -93,7 +95,7 @@ public class GlassFishImpl implements GlassFish {
     }
 
     public static void sleepShutdownGracePeriod() {
-        String shutdowngrace = System.getProperty("fish.payara.shutdowngrace");
+        String shutdowngrace = System.getProperty(PAYARA_SHUTDOWNGRACE_PROPERTY);
         if (shutdowngrace != null) {
             try {
                 Thread.sleep(Integer.parseInt(shutdowngrace));

@@ -103,7 +103,8 @@ public enum RUNTIME_OPTION {
     sslcert(true),
     help(false),
     enablesni(false),
-    hzpublicaddress(true);
+    hzpublicaddress(true),
+    shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE));
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());
