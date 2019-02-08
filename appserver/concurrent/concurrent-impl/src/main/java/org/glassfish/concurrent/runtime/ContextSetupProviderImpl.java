@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -186,9 +186,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         ClassLoader backupClassLoader = null;
         if (handle.getInvocation() != null) {
-            appName = handle.getInvocation().getAppName();
+            appName = isApplicationAvailable(handle.getInvocation().getAppName()) ? handle.getInvocation().getAppName() : null;
             if (appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
-                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getName();
+                JndiNameEnvironment currJndiEnv =  (JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment();
+                com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
+                appName = isApplicationAvailable(appInfo.getName()) ? appInfo.getName() : appInfo.getRegistrationName();
             }
             if (appName == null) {
                 // try to get environment from component ID
@@ -197,7 +199,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     if (currJndiEnv != null) {
                         com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
                         if (appInfo != null) {
-                            appName = appInfo.getName();
+                            appName = isApplicationAvailable(appInfo.getName()) ? appInfo.getName() : appInfo.getRegistrationName();
                             // cache JNDI environment
                             handle.getInvocation().setJNDIEnvironment(currJndiEnv);
                             backupClassLoader = appInfo.getClassLoader();
@@ -340,6 +342,19 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     logger.log(Level.INFO, "Job submitted for {0} likely during deployment. Continuing...", appId);
                     result = true;
                 }
+            }
+        }
+        return result;
+    }
+    
+    private boolean isApplicationAvailable(String appId) {
+        boolean result = false;
+        if (appId != null) {
+            Application app = applications.getApplication(appId);
+            if (app != null) {
+                result = true;
+            } else if (applicationRegistry.get(appId) != null) {
+                result = true;
             }
         }
         return result;
