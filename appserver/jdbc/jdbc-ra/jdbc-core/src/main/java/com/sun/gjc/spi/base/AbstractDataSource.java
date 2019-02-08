@@ -78,11 +78,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
 
     private ConnectionHolder.ConnectionType conType_;
 
-    protected static final Logger _logger;
-
-    static {
-        _logger = LogDomains.getLogger(ManagedConnectionFactoryImpl.class, LogDomains.RSR_LOGGER);
-    }
+    protected static final Logger _logger = LogDomains.getLogger(ManagedConnectionFactoryImpl.class, LogDomains.RSR_LOGGER);
 
     /**
      * Constructs <code>DataSource</code> object. This is created by the
