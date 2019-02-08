@@ -58,7 +58,6 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -69,8 +68,6 @@
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
-            <version>${javax.cache-api.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

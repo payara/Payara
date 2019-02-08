@@ -124,8 +124,6 @@
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
-            <version>${javax.cache-api.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     <profiles>

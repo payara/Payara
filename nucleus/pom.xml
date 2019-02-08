@@ -190,9 +190,6 @@
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
 
-        <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
-
         <!-- Cache -->
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
@@ -1150,6 +1147,16 @@ Parent is ${project.parent}</echo>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${javassist.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${javax.cache-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
