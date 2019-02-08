@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -51,12 +52,9 @@ import javax.resource.spi.security.PasswordCredential;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +100,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws SecurityException if there ino <code>PasswordCredential</code> object
      *                           satisfying this request
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
