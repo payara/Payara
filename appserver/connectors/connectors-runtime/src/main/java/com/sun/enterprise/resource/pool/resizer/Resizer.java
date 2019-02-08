@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool.resizer;
 
@@ -60,31 +61,32 @@ import java.util.logging.Logger;
 
 /**
  * Resizer to remove unusable connections, maintain steady-pool <br>
- * <code>
+ * 
  * Remove all invalid and idle resources, as a result one of the following may happen<br>
- * i)   equivalent to "pool-resize" quantity of resources are removed<br>
- * ii)  less than "pool-reize" quantity of resources are removed<br>
- * remove more resources to match pool-resize quantity, atmost scale-down till steady-pool-size<br>
- * iii) more than "pool-resize" quantity of resources are removed<br>
- * (1) if pool-size is less than steady-pool-size, bring it back to steady-pool-size.<br>
- * (2) if pool-size is greater than steady-pool-size, don't do anything.<br></code>
- *
+ * <ol><li>equivalent to "pool-resize" quantity of resources are removed</li>
+ * <li>less than "pool-reize" quantity of resources are removed
+ * remove more resources to match pool-resize quantity, atmost scale-down till steady-pool-size</li>
+ * <li>more than "pool-resize" quantity of resources are removed
+ *   <ol type="i"><li>if pool-size is less than steady-pool-size, bring it back to steady-pool-size.<br></li>
+ *   <li> if pool-size is greater than steady-pool-size, don't do anything.<br></li></ol>
+ * </li>
+ * </ol>
  * @author Jagadish Ramu
  */
 public class
         Resizer extends TimerTask {
     protected PoolInfo poolInfo;
-    protected DataStructure ds;
+    protected DataStructure dataStructure;
     protected PoolProperties pool;
     protected ResourceHandler handler;
     protected boolean preferValidateOverRecreate = false;
 
     protected final static Logger _logger = LogDomains.getLogger(Resizer.class, LogDomains.RSR_LOGGER);
 
-    public Resizer(PoolInfo poolInfo, DataStructure ds, PoolProperties pp, ResourceHandler handler,
+    public Resizer(PoolInfo poolInfo, DataStructure dataStructure, PoolProperties pp, ResourceHandler handler,
             boolean preferValidateOverRecreate) {
         this.poolInfo = poolInfo;
-        this.ds = ds;
+        this.dataStructure = dataStructure;
         this.pool = pp;
         this.handler = handler;
         this.preferValidateOverRecreate = preferValidateOverRecreate;
@@ -122,7 +124,7 @@ public class
         //ensure that steady-pool-size is maintained
         ensureSteadyPool();
 
-        debug("No. of resources held for pool [ " + poolInfo + " ] : " + ds.getResourcesSize());
+        debug("No. of resources held for pool [ " + poolInfo + " ] : " + dataStructure.getResourcesSize());
     }
 
     /**
@@ -130,9 +132,9 @@ public class
      * invalid and scale-down resource removals.
      */
     private void ensureSteadyPool() {
-        if (ds.getResourcesSize() < pool.getSteadyPoolSize()) {
+        if (dataStructure.getResourcesSize() < pool.getSteadyPoolSize()) {
             // Create resources to match the steady pool size
-            for (int i = ds.getResourcesSize(); i < pool.getSteadyPoolSize(); i++) {
+            for (int i = dataStructure.getResourcesSize(); i < pool.getSteadyPoolSize(); i++) {
                 try {
                     handler.createResourceAndAddToPool();
                 } catch (PoolingException ex) {
@@ -153,11 +155,11 @@ public class
 
         if (pool.getResizeQuantity() > 0 && forced) {
 
-            scaleDownQuantity = (scaleDownQuantity <= (ds.getResourcesSize() - pool.getSteadyPoolSize())) ? scaleDownQuantity : 0;
+            scaleDownQuantity = (scaleDownQuantity <= (dataStructure.getResourcesSize() - pool.getSteadyPoolSize())) ? scaleDownQuantity : 0;
 
             ResourceHandle h;
-            while (scaleDownQuantity > 0 && ((h = ds.getResource()) != null)) {
-                ds.removeResource(h);
+            while (scaleDownQuantity > 0 && ((h = dataStructure.getResource()) != null)) {
+                dataStructure.removeResource(h);
                 scaleDownQuantity--;
             }
         }
@@ -171,11 +173,11 @@ public class
      */
     protected int removeIdleAndInvalidResources() {
 
-        int poolSizeBeforeRemoval = ds.getResourcesSize();
+        int poolSizeBeforeRemoval = dataStructure.getResourcesSize();
         int noOfResourcesRemoved;
         //Find all Connections that are free/not-in-use
         ResourceState state;
-        int size = ds.getFreeListSize();
+        int size = dataStructure.getFreeListSize();
         // let's cache the current time since precision is not required here.
         long currentTime = System.currentTimeMillis();
         int validConnectionsCounter = 0;
@@ -186,7 +188,7 @@ public class
         Set<ResourceHandle> activeResources = new HashSet<ResourceHandle>();
         Set<String> resourcesToValidate = new HashSet<String>();
         try {
-            while ((h = ds.getResource()) != null ) {
+            while ((h = dataStructure.getResource()) != null ) {
                 state = h.getResourceState();
                 if (currentTime - state.getTimestamp() < pool.getIdleTimeout()) {
                     //Should be added for validation.
@@ -208,13 +210,13 @@ public class
 
                     } else {
                         //Add to remove
-                        ds.removeResource(h);
+                        dataStructure.removeResource(h);
                     }
                 }
             }
         } finally {
             for(ResourceHandle activeResource : activeResources) {
-                ds.returnResource(activeResource);
+                dataStructure.returnResource(activeResource);
             }
         }
 
@@ -230,14 +232,14 @@ public class
             debug("Number of Idle resources freed for pool [ " + poolInfo + " ] - " +
                     (size - activeResources.size() - idleConnKeptInSteadyCounter));
             debug("Number of Invalid resources removed for pool [ " + poolInfo + " ] - " +
-                    (activeResources.size() - ds.getFreeListSize() + idleConnKeptInSteadyCounter));
+                    (activeResources.size() - dataStructure.getFreeListSize() + idleConnKeptInSteadyCounter));
         } else {
             debug("Number of Idle resources freed for pool [ " + poolInfo + " ] - " +
                     (size - activeResources.size()));
             debug("Number of Invalid resources removed for pool [ " + poolInfo + " ] - " +
-                    (activeResources.size() - ds.getFreeListSize()));
+                    (activeResources.size() - dataStructure.getFreeListSize()));
         }
-        noOfResourcesRemoved = poolSizeBeforeRemoval - ds.getResourcesSize();
+        noOfResourcesRemoved = poolSizeBeforeRemoval - dataStructure.getResourcesSize();
         return noOfResourcesRemoved;
     }
 
@@ -256,7 +258,7 @@ public class
             ResourceHandle handle;
             Set<ResourceHandle> validResources = new HashSet<ResourceHandle>();
             try {
-                while ((handle = ds.getResource()) != null ) {
+                while ((handle = dataStructure.getResource()) != null ) {
                     //validate if the connection is one in the freeConnectionsToValidate
                     if (freeConnectionsToValidate.contains(handle.toString())) {
                         Set connectionsToTest = new HashSet();
@@ -275,7 +277,7 @@ public class
                 }
             } finally {
                 for(ResourceHandle resourceHandle : validResources){
-                    ds.returnResource(resourceHandle);
+                    dataStructure.returnResource(resourceHandle);
                 }
                 validResources.clear();
                 debug("No. of invalid connections received from RA : " + invalidConnectionsCount);
@@ -302,7 +304,7 @@ public class
         for (Object o : invalidConnections) {
             ManagedConnection invalidConnection = (ManagedConnection) o;
             if (invalidConnection.equals(handle.getResource())) {
-                ds.removeResource(handle);
+                dataStructure.removeResource(handle);
                 handler.invalidConnectionDetected(handle);
                 invalidConnectionsCount++;
             }
