@@ -212,7 +212,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        // update the service to to unify the way it is printed later on
+        // update the service to unify the way it is printed later on
         serviceName = serviceType.name().toLowerCase().replace('_', '-');
 
         BaseHealthCheck<?, ?> service = getService();
