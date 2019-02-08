@@ -122,57 +122,68 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public Invocation.Builder accept(String... mediaTypes) {
-        return this.invocationBuilder.accept(mediaTypes);
+        invocationBuilder.accept(mediaTypes);
+        return this;
     }
 
     @Override
     public Invocation.Builder accept(MediaType... mediaTypes) {
-        return this.invocationBuilder.accept(mediaTypes);
+        invocationBuilder.accept(mediaTypes);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(Locale... locales) {
-        return this.invocationBuilder.acceptLanguage(locales);
+        invocationBuilder.acceptLanguage(locales);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(String... locales) {
-        return this.invocationBuilder.acceptLanguage(locales);
+        invocationBuilder.acceptLanguage(locales);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptEncoding(String... encodings) {
-        return this.invocationBuilder.acceptEncoding(encodings);
+        invocationBuilder.acceptEncoding(encodings);
+        return this;
     }
 
     @Override
     public Invocation.Builder cookie(Cookie cookie) {
-        return this.invocationBuilder.cookie(cookie);
+        invocationBuilder.cookie(cookie);
+        return this;
     }
 
     @Override
     public Invocation.Builder cookie(String name, String value) {
-        return this.invocationBuilder.cookie(name, value);
+        invocationBuilder.cookie(name, value);
+        return this;
     }
 
     @Override
     public Invocation.Builder cacheControl(CacheControl cacheControl) {
-        return this.invocationBuilder.cacheControl(cacheControl);
+        invocationBuilder.cacheControl(cacheControl);
+        return this;
     }
 
     @Override
     public Invocation.Builder header(String name, Object value) {
-        return this.invocationBuilder.header(name, value);
+        invocationBuilder.header(name, value);
+        return this;
     }
 
     @Override
     public Invocation.Builder headers(MultivaluedMap<String, Object> headers) {
-        return this.invocationBuilder.headers(headers);
+        invocationBuilder.headers(headers);
+        return this;
     }
 
     @Override
     public Invocation.Builder property(String name, Object value) {
-        return this.invocationBuilder.property(name, value);
+        invocationBuilder.property(name, value);
+        return this;
     }
 
     @Override

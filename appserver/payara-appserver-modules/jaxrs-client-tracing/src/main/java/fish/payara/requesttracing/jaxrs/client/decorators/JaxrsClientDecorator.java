@@ -111,47 +111,56 @@ public class JaxrsClientDecorator implements Client {
 
     @Override
     public Client property(String name, Object value) {
-        return this.client.property(name, value);
+        client = client.property(name, value);
+        return this;
     }
 
     @Override
     public Client register(Class<?> componentClass) {
-        return this.client.register(componentClass);
+        client = client.register(componentClass);
+        return this;
     }
 
     @Override
     public Client register(Class<?> componentClass, int priority) {
-        return this.client.register(componentClass, priority);
+        client = client.register(componentClass, priority);
+        return this;
     }
 
     @Override
     public Client register(Class<?> componentClass, Class<?>... contracts) {
-        return this.client.register(componentClass, contracts);
+        client = client.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public Client register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
-        return this.client.register(componentClass, contracts);
+        client = client.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public Client register(Object component) {
-        return this.client.register(component);
+        client = client.register(component);
+        return this;
     }
 
     @Override
     public Client register(Object component, int priority) {
-        return this.client.register(component, priority);
+        client = client.register(component, priority);
+        return this;
     }
 
     @Override
     public Client register(Object component, Class<?>... contracts) {
-        return this.client.register(component, contracts);
+        client = client.register(component, contracts);
+        return this;
     }
 
     @Override
     public Client register(Object component, Map<Class<?>, Integer> contracts) {
-        return this.client.register(component, contracts);
+        client = client.register(component, contracts);
+        return this;
     }
     
 }
