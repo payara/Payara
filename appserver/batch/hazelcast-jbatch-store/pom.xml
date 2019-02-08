@@ -57,8 +57,6 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>javax.batch</groupId>
