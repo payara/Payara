@@ -123,31 +123,6 @@
                     </archive>
                 </configuration>
             </plugin>
-             <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-dependency-plugin</artifactId>
-                   <executions>
-                       <execution>
-                           <id>unpack</id>
-                           <phase>prepare-package</phase>
-                           <goals>
-                             <goal>unpack</goal>
-                           </goals>
-                           <configuration>
-                               <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                               <artifactItems>
-                                   <artifactItem>
-                                       <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>admin-cli-manpage</artifactId>
-                                       <version>${v3-docs.version}</version>
-                                       <type>zip</type>
-                                       <overWrite>false</overWrite>
-                                   </artifactItem>
-                                </artifactItems>
-                           </configuration>
-                      </execution>
-                   </executions>
-            </plugin>
         </plugins>
     </build>
  

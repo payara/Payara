@@ -110,14 +110,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.jar</exclude>
-                </excludes>
-            </resource>
-        </resources>
     </build>
 
     <dependencies>
@@ -149,12 +141,6 @@
             <groupId>com.sun.messaging.mq</groupId>
             <artifactId>imqjmx</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-           <artifactId>console-jms-plugin-help</artifactId>
-           <version>${v3-docs.version}</version>
-           <type>zip</type>
         </dependency>
     </dependencies>
 </project>

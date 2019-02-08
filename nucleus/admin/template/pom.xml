@@ -61,52 +61,6 @@
                     <includeEmptyDirs>true</includeEmptyDirs>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.glassfish.docs</groupId>
-                                    <artifactId>basedocs</artifactId>
-                                    <version>4.1.payara-p3</version>
-                                    <type>zip</type>
-                                    <overWrite>false</overWrite>
-                                    <includes>glassfish/lib/templates/**</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
-                            </descriptors>
-                            <finalName>classes</finalName>
-                            <attach>false</attach>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <useProjectArtifact>false</useProjectArtifact>
-                        </configuration>                        
-                    </execution>
-                </executions>
-            </plugin>
             
             <plugin>
               <artifactId>maven-antrun-plugin</artifactId>
