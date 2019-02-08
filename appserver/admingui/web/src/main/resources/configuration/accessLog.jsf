@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -66,7 +66,7 @@
         setPageSessionAttribute(key="has2Objects" value="#{true}" );  //for editPageButtons.inc
         setPageSessionAttribute(key="childType2" value="access-log");
         setPageSessionAttribute(key="selfUrl2", value="#{pageSession.selfUrl}/#{pageSession.childType2}");
-        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled", "logToConsoleEnabled"});
+        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled", "dateStampToFirstAccessLogFileEnabled", "logToConsoleEnabled"});
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl2}.json", valueMap="#{pageSession.valueMap2}");
 
         //set the following for including buttons.inc
@@ -140,7 +140,12 @@
         <sun:property id="formatProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Format}" helpText="$resource{i18n_web.access.FormatHelp}">
             <sun:textField id="Format" columns="$int{90}" maxLength="#{sessionScope.fieldLengths['maxLength.access.Format']}"  text="#{pageSession.valueMap2['format']}"/>
         </sun:property>
-        </sun:propertySheetSection>
+
+        <sun:property id="dateStampToFirstAccessLogFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.DateStampToFirstAccessLogFile}" helpText="$resource{i18n_web.access.DateStampToFirstAccessLogFileHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['dateStampToFirstAccessLogFileEnabled']}" selectedValue="true" >
+            </sun:checkbox>
+        </sun:property>
+    </sun:propertySheetSection>
     </sun:propertySheet>
     "<br/>
 #include "/common/shared/propertyDescTable.inc"
