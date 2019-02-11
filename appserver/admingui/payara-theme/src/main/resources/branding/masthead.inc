@@ -86,9 +86,12 @@
                     redirect("#{request.contextPath}/common/index.jsf");
                 />
         </sun:button>
-    </facet>    
+    </facet>
     <!facet helpLink>
-        <sun:button id="helpLink" rendered="true" toolTip="$resource{i18n.helpWindowTooltip}" target="help_window" text="$resource{i18n.masthead.Help}" onClick="admingui.help.launchHelp(this); return false;" />
+        <sun:panelGroup id="helpLink">
+            <sun:button id="help" rendered="true" toolTip="$resource{i18n.helpWindowTooltip}" target="_top" text="$resource{i18n.masthead.Help}" onClick="admingui.help.launchHelp(this); return false;" />
+            <sun:button id="onlineHelp" rendered="true" toolTip="$resource{i18n.onlineHelpWindowTooltip}" target="_top" text="$resource{i18n.masthead.OnlineHelp}" onClick="admingui.help.launchHelp(); return false;" />
+        </sun:panelGroup>
     </facet>
     <!facet logoutLink>
         <sun:button id="logoutLink" rendered="#{showLogoutButton}" toolTip="$resource{i18n.logoutTooltip}" target="_top" text="$resource{i18n.masthead.Logout}"

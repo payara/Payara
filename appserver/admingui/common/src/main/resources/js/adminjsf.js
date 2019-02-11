@@ -1028,7 +1028,10 @@ admingui.help = {
     },
 
     launchHelp: function(url) {
-        var helpLink = "https://docs.payara.fish/";
+        var helpLink = "/common/help/help.jsf";
+        if (url === undefined) {
+            var helpLink = "https://docs.payara.fish/";
+        }
         var helpKeys = admingui.util.findNodes(document,
             function(node, name) {
                 if ((typeof(node.id) === "undefined") || (node.id == null)) {
@@ -1039,17 +1042,17 @@ admingui.help = {
                 return (shortName == name);
             },
             "helpKey");
-        if (helpKeys !== null) {
+        if (url !== undefined && helpKeys !== null) {
             admingui.ajax.invoke("calculateHelpUrl", {
                 pluginId: admingui.help.pluginId,
                 helpKey: helpKeys[0].value,
                 url:"url"
             },
             function(result) {
-                admingui.help.openHelpWindow(helpLink + result.url, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
+                admingui.help.openHelpWindow(helpLink + "?contextRef=/resource/" + admingui.help.pluginId + result.url);
             }, 3, false);
         } else {
-            admingui.help.openHelpWindow(helpLink, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
+            admingui.help.openHelpWindow(helpLink);
         }
     },
 
