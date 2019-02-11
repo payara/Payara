@@ -1025,6 +1025,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
             MultiException noBusyException = state.getBusyStackException();
             noBusyException.addError(new IllegalStateException("state.isBusy() : false"));
             _logger.log(Level.WARNING, "state.isBusy already set to false for " + h.getName() + "#" + h.getId(), noBusyException);
+            state.clearBusyStack();
         }
 
         setResourceStateToFree(h);  // mark as not busy
