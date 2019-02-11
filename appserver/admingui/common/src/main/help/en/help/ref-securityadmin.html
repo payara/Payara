@@ -1,0 +1,81 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-securityadmin" name="ref-securityadmin"></a><a id="GHCOM00060" name="GHCOM00060"></a></p>
+
+<h4>Secure Administration</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Secure Administration page to enable or disable secure administration.</p>
+<p>When secure administration is enabled:</p>
+<ul>
+<li>
+<p>The DAS and the instances in the domain use SSL certificates for encrypting the messages they send to each other.</p>
+</li>
+<li>
+<p>The DAS accepts administration messages from remote admin clients such as the asadmin utility and IDEs.</p>
+</li>
+</ul>
+<p>The Secure Administration page contains the following information.</p>
+<dl>
+<dt>Enable Secure Admin</dt>
+<dd>
+<p>Button to enable secure administration. This button appears only when secure administration is not enabled.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If any administrative user in the domain has an empty password, attempts to enable secure administration fail.</p>
+
+<hr>
+
+</dd>
+<dt>Disable Secure Admin</dt>
+<dd>
+<p>Button to disable secure administration. This button appears only when secure administration is enabled.</p>
+</dd>
+<dt>Administration Alias</dt>
+<dd>
+<p>The alias that refers to the SSL/TLS certificate on the DAS. This alias is used by the DAS to identify itself to instances. The default value is <code>s1as</code>. This option appears only when secure administration is not enabled.</p>
+</dd>
+<dt>Instance Alias</dt>
+<dd>
+<p>The alias that refers to the SSL/TLS certificate on the instances. This alias is used by the instances to identify themselves to the DAS. The default value is <code>glassfish-instance</code>. This option appears only when secure administration is not enabled.</p>
+</dd>
+</dl>
+<a id="GHCOM357" name="GHCOM357"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-enable-secure-admin.html">To Enable Secure Administration</a></p>
+</li>
+<li>
+<p><a href="task-disable-secure-admin.html">To Disable Secure Administration</a></p>
+</li>
+</ul>
+<a id="GHCOM358" name="GHCOM358"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00129"><code>enable-secure-admin</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00121"><code>disable-secure-admin</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

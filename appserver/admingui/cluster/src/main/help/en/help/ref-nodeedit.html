@@ -1,0 +1,214 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-nodeedit" name="ref-nodeedit"></a><a id="GHCLU00017" name="GHCLU00017"></a></p>
+
+<h4><a id="sthref313" name="sthref313"></a>Edit Node</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Node page to update the configuration data of a GlassFish Server node. You can also use this page to change the type of a node from CONFIG to SSH to enable remote communication for the node.</p>
+<p>If you change the type of the node from CONFIG to SSH, default values are applied if any of the following fields is left empty:</p>
+<ul>
+<li>
+<p>SSH Port</p>
+</li>
+<li>
+<p>User Name</p>
+</li>
+<li>
+<p>Key File</p>
+</li>
+</ul>
+<p>The options that the Edit Node page contains depend on the type of the node.</p>
+<a id="sthref314" name="sthref314"></a>
+<h5>Options for All Types of Nodes</h5>
+<p>The following options are available for all types of nodes:</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name that was assigned to the node when the node was created. This field is read only.</p>
+</dd>
+<dt>Type</dt>
+<dd>
+<p>Drop-down list to specify the type of the node, which is one of the following types:</p>
+<dl>
+<dt>CONFIG</dt>
+<dd>
+<p>The node does not support remote communication. If CONFIG, is selected, no options for SSH configuration is displayed. If the current type of the node is SSH and you select CONFIG, SSH configuration data is removed from the node's configuration when you save your changes.</p>
+</dd>
+<dt>SSH</dt>
+<dd>
+<p>The node supports communication over secure shell (SSH).</p>
+</dd>
+</dl>
+</dd>
+<dt>Node Host</dt>
+<dd>
+<p>The name of the host that the node is to represent after the node is updated. Whether this field is mandatory depends on the type of the node:</p>
+<ul>
+<li>
+<p>If the type of the node is CONFIG, the name of the host may be omitted. The name of the host can be determined when instances that reside on the node are created.</p>
+</li>
+<li>
+<p>If the type of the node is SSH, the name of the host must be specified. Otherwise, an error occurs.</p>
+</li>
+</ul>
+</dd>
+<dt>Node Directory</dt>
+<dd>
+<p>The path to the directory that is to contain GlassFish Server instances that are created on the node. If a relative path is specified, the path is relative to the <i>as-install</i> directory, where <i>as-install</i> is the base installation directory of the GlassFish Server software on the host.</p>
+<p>If this field is left empty, the configuration of the node is updated as follows:</p>
+<ul>
+<li>
+<p>If the type of the node is CONFIG, no directory for instances is specified for the node in the domain administration server (DAS) configuration. The node directory can be determined when instances that reside on the node are created.</p>
+</li>
+<li>
+<p>If the type of the node is SSH, the node directory is <i>as-install</i><code>/nodes</code>, where <i>as-install</i> is the base installation directory of the GlassFish Server software on the host.</p>
+</li>
+</ul>
+</dd>
+<dt>Installation Directory</dt>
+<dd>
+<p>The full path to the <i>parent</i> of the base installation directory of the GlassFish Server software on the host, for example, <code>/export/glassfish3/</code>.</p>
+<p>If this field is left empty, the configuration of the node is updated as follows:</p>
+<ul>
+<li>
+<p>If the type of the node is CONFIG, no installation directory is specified for the node in the DAS configuration. The installation directory can be determined when instances that reside on the node are created.</p>
+</li>
+<li>
+<p>If the type of the node is SSH, the installation directory is the parent of the default base installation directory of the GlassFish Server software for the DAS. This setting is useful only if GlassFish Server is installed in the same location on all hosts.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<a id="sthref316" name="sthref316"></a>
+<h5>Additional Options for SSH Nodes</h5>
+<p>The following options are available only if the Type field is set to SSH:</p>
+<dl>
+<dt>Force</dt>
+<dd>
+<p>If the Enabled option is selected, the node is updated in the domain administration server (DAS) configuration even if validation of the node's parameters fails. To validate a node's parameters, the DAS must be able to contact the node's host through SSH.</p>
+</dd>
+<dt>SSH Port</dt>
+<dd>
+<p>The port to use for SSH connections to this node's host.</p>
+<p>If you change the type of the node from CONFIG to SSH and leave this field empty, the SSH Port option is set to 22.</p>
+<p>If the Node Host option is set to <code>localhost-</code><i>domain</i>, the SSH Port option is ignored.</p>
+</dd>
+<dt>SSH User Name</dt>
+<dd>
+<p>The user on this node's host that is to run the process for connecting to the host through SSH.</p>
+<p>If you change the type of the node from CONFIG to SSH and leave this field empty, the User Name option is set to the user that is running the DAS process.</p>
+<p>If the Node Host option is set to <code>localhost-</code><i>domain</i>, the SSH User option is ignored.</p>
+</dd>
+<dt>SSH User Authentication</dt>
+<dd>
+<p>Drop-down list to specify how the SSH user is authenticated when logging in to this node's host. The possible methods for authentication are as follows:</p>
+<dl>
+<dt>Key File</dt>
+<dd>
+<p>The SSH user is authenticated through an SSH private key file. If you select this option, specify the absolute path to the file in the Key File field.</p>
+</dd>
+<dt>Password</dt>
+<dd>
+<p>The SSH user is authenticated through a password that is stored in the DAS configuration.</p>
+
+<hr>
+<p><b>Caution:</b></p>
+<p>This password is stored in clear text in the DAS configuration. For enhanced security, use a key file or a password alias.</p>
+
+<hr>
+
+<p>If you select this option, the SSH User Password field is activated to enable you to provide the password.</p>
+</dd>
+<dt>Password Alias</dt>
+<dd>
+<p>The SSH user is authenticated through a password alias. If you select this option, select the password alias from the Password Alias drop-down list.</p>
+</dd>
+</dl>
+</dd>
+<dt>Setup SSH</dt>
+<dd>
+<p>If the Enabled option is selected, GlassFish Server sets up an SSH key on the node host. GlassFish Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files. This option is available only if the SSH User Authentication option is set to Key File.</p>
+</dd>
+<dt>Generate Key</dt>
+<dd>
+<p>If the Enabled option is selected, GlassFish Server generates the SSH key files before copying the files to the node host if the files do not exist. If the SSH key files exist, GlassFish Server does not generate the files, even if the Enabled option is selected.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If the SSH key files do not exist, the Enabled option must be selected. Otherwise, an error occurs when you attempt to save your changes.</p>
+
+<hr>
+
+</dd>
+<dt>SSH User Password</dt>
+<dd>
+<p>The password that the SSH user will use when logging in to this node's host.</p>
+</dd>
+<dt>Password Alias</dt>
+<dd>
+<p>Drop-down list of password aliases that are defined for this domain.</p>
+</dd>
+<dt>Public Key File</dt>
+<dd>
+<p>The absolute path to the SSH public key file for user that the SSH User Name option specifies. The content of the public key file is appended to the user's <code>.ssh/authorized_keys</code> file on the node host. If the <code>.ssh/authorized_keys</code> file does not exist on the host, GlassFish Server creates the file.</p>
+</dd>
+<dt>Key File</dt>
+<dd>
+<p>The absolute path to the SSH private key file for user that the User Name option specifies. This file is used for authentication to the <code>sshd</code> daemon on the node's host.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>GlassFish Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00263"><code>asadmin</code>(1)</a> utility.</p>
+
+<hr>
+
+<p>If the SSH private key file is protected by a passphrase, the password file must contain the <code>AS_ADMIN_SSHKEYPASSPHRASE</code> entry.</p>
+<p>The path to the key file must be reachable by the DAS and the key file must be readable by the DAS.</p>
+<p>The default depends on whether you change the type of the node from CONFIG to SSH to enable SSH communication for the node:</p>
+<p>If you change the type of the node from CONFIG to SSH and leave this field empty, the Key File option is set to a key file in the user's <code>.ssh</code> directory. If multiple key files are found, GlassFish Server uses the following order of preference:</p>
+<ol>
+<li>
+<p><code>id_rsa</code></p>
+</li>
+<li>
+<p><code>id_dsa</code></p>
+</li>
+<li>
+<p><code>identity</code></p>
+</li>
+</ol>
+</dd>
+</dl>
+<a id="sthref317" name="sthref317"></a>
+<h5>Related Tasks</h5>
+<p><a href="task-editnode.html">To Edit a Node</a></p>
+<a id="sthref318" name="sthref318"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00255"><code>update-node-config</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00256"><code>update-node-ssh</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

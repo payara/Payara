@@ -1,0 +1,105 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbcresourceedit" name="ref-jdbcresourceedit"></a><a id="GHJDB00022" name="GHJDB00022"></a></p>
+
+<h4><a id="sthref35" name="sthref35"></a>Edit JDBC Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit JDBC Resource page to modify an existing JDBC resource.</p>
+<p>The Edit JDBC Resource page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/. The JNDI name is a read-only field. You can only specify the JNDI name when you create a new resource</p>
+</dd>
+<dt>Logical JNDI Name</dt>
+<dd>
+<p>The logical JNDI name for the resource. It is a Java EE standard name by which the resource can be accessed. The logical JNDI name is a read-only field. See <a href="../../../common/en/help/ref-logicaljndinames.html">Logical JNDI Names</a> for more information.</p>
+</dd>
+<dt>Pool Name</dt>
+<dd>
+<p>The connection pool associated with the JDBC resource.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the JDBC resource.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A short description of the JDBC resource.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>Whether the resource is available at runtime.</p>
+<p>If only the default server instance, <code>server</code>, exists in the domain, the resource's runtime availability can be enabled or disabled. Runtime availability is enabled by default.</p>
+<p>If any clusters or standalone instances have been created in the domain, use the Target tab to control runtime availability of the resource on its targets.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JDBC resource. GlassFish Server does not define any additional properties for JDBC resources.</p>
+</dd>
+</dl>
+<a id="sthref36" name="sthref36"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcenew.html">To Create a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesedit.html">To Edit a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesdelete.html">To Delete a JDBC Resource</a></p>
+</li>
+</ul>
+<a id="sthref37" name="sthref37"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00001"><code>add-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00037"><code>create-jdbc-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00089"><code>delete-jdbc-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00174"><code>list-jdbc-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00234"><code>start-database</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00239"><code>stop-database</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,75 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jaccprovidernew" name="task-jaccprovidernew"></a><a id="GHCOM00200" name="GHCOM00200"></a></p>
+
+<h4><a id="sthref98" name="sthref98"></a>To Create a JACC Provider</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JACC Provider page to create a new JSR-115/196compliant Java Authorization Contract for Containers (JACC) provider that can be used by third-party authorization modules for applications running in GlassFish Server. The JACC provider is created as a <code>jacc-provider</code> element within the <code>security-service</code> element in the domain's <code>domain.xml</code> file.</p>
+<p>The default GlassFish Server installation includes two JACC providers, named <code>default</code> and <code>simple</code>. Any new JACC providers you create are in addition to these two default providers. The default GlassFish Server JACC providers implement a simple, file-based authorization engine that complies with the JACC specification.</p>
+<p>For information on how to write the implementation classes for a JACC provider, see the JACC specification at <code><a href="http://jcp.org/en/jsr/detail?id=115">http://jcp.org/en/jsr/detail?id=115</a></code>.</p>
+<ol>
+<li>
+<p>Under the Configurations node In the navigation tree, expand the expand the GlassFish Server instance or cluster for which you want to create a JACC provider.</p>
+<p>To create a provider that will be available to all instances and clusters, choose the <code>default-config</code> node.</p>
+</li>
+<li>
+<p>Under the expanded instance or cluster configuration node, expand the Security node.</p>
+</li>
+<li>
+<p>Under the Security node, select the JACC Providers node.</p>
+<p>The JACC Providers page opens.</p>
+</li>
+<li>
+<p>On the JACC Providers page, click New.</p>
+<p>The New JACC Provider page opens.</p>
+</li>
+<li>
+<p>On the New JACC Provider page, in the Name field, type the name that will identify this provider.</p>
+<p>This name is used to reference the <code>jacc-provider</code> element in <code>domain.xml</code>.</p>
+</li>
+<li>
+<p>In the Policy Configuration field, type the name of the class that implements the policy configuration factory.</p>
+<p>The <code>default</code> provider uses <code>com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl</code>. The <code>simple</code> provider uses <code>com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory</code>.</p>
+</li>
+<li>
+<p>In the Policy Provider field, type the name of the class that implements the policy factory.</p>
+<p>The <code>default</code> provider uses <code>com.sun.enterprise.security.provider.PolicyWrapper</code>. The <code>simple</code> provider uses <code>com.sun.enterprise.security.jacc.provider.SimplePolicyProvider</code>.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>For a description of the additional properties available for JACC providers, see <a href="ref-jaccproviderprop.html">Properties Specific to JACC Providers</a>.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCOM304" name="GHCOM304"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jaccprovideredit.html">To Edit a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccproviderdelete.html">To Delete a JACC Provider</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

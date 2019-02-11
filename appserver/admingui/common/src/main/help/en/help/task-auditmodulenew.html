@@ -1,0 +1,88 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-auditmodulenew" name="task-auditmodulenew"></a><a id="GHCOM00194" name="GHCOM00194"></a></p>
+
+<h4><a id="sthref92" name="sthref92"></a>To Create an Audit Module</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Auditing is how GlassFish Server records significant events, such as errors or security breaches. GlassFish Server records all authentication events in log files. A complete access log provides a sequential trail of GlassFish Server access events.</p>
+<p>The GlassFish Server provides a simple default audit module; for more information, see <a href="task-usedefaultauditmod.html">To Use the Default Audit Module</a>.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the instance to configure:</p>
+<ul>
+<li>
+<p>To configure a particular instance, expand the instance's config node. For example, the default instance, <code>server</code>, expand the <code>server-config</code> node.</p>
+</li>
+<li>
+<p>To configure the default settings for all instances, expand the <code>default-config</code> node.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Under the Configuration node, expand the Security node.</p>
+</li>
+<li>
+<p>Under the Security node, select the Audit Modules node.</p>
+<p>The Audit Modules page opens.</p>
+</li>
+<li>
+<p>On the Audit Modules page, click New.</p>
+<p>The New Audit Module page opens.</p>
+</li>
+<li>
+<p>On the New Audit Module page, in the Name field, type the name of the audit module.</p>
+</li>
+<li>
+<p>In the Class Name field, type the fully qualified name of the class that implements this module.</p>
+<p>The class name for the default audit module is <code>com.sun.enterprise.security.Audit</code>.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>For a description of the additional property that is available for audit modules, see <a href="ref-auditmoduleprop.html">Properties Specific to Audit Modules</a>.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCOM297" name="GHCOM297"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-auditmoduleedit.html">To Edit an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-auditmoduledelete.html">To Delete an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-enabledisableauditmod.html">To Enable or Disable Audit Logging</a></p>
+</li>
+<li>
+<p><a href="task-setactiveauditmod.html">To Set the Active Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-usedefaultauditmod.html">To Use the Default Audit Module</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

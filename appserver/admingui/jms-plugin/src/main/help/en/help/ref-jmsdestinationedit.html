@@ -1,0 +1,93 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmsdestinationedit" name="ref-jmsdestinationedit"></a><a id="GHJMS00008" name="GHJMS00008"></a></p>
+
+<h4><a id="sthref67" name="sthref67"></a><a id="sthref68" name="sthref68"></a>Edit JMS Destination Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit JMS Destination Resource page to modify the settings for a JMS destination resource.</p>
+<p>The Edit JMS Destination Resource page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the destination resource. The JNDI name is a read-only field. You can only specify the JNDI name when you create a new JMS destination resource.</p>
+</dd>
+<dt>Physical Destination Name</dt>
+<dd>
+<p>The name of the physical destination associated with this resource.</p>
+<p>GlassFish Server creates the physical destination automatically when it is needed and deletes it when you delete the destination resource.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>The type of the destination resource. Available choices are <code>javax.jms.Topic</code> and <code>javax.jms.Queue</code>.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the destination resource.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the destination resource.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>Whether the resource is available at runtime.</p>
+<p>If only the default server instance, <code>server</code>, exists in the domain, the resource's runtime availability can be enabled or disabled. Runtime availability is enabled by default.</p>
+<p>If any clusters or standalone instances have been created in the domain, use the Target tab to control runtime availability of the resource on its targets.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the destination resource. GlassFish Server does not define any additional properties for JMS destination resources.</p>
+</dd>
+</dl>
+<a id="sthref69" name="sthref69"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jmsdestinationnew.html">To Create a JMS Destination Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsdestinationedit.html">To Edit a JMS Destination Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsdestinationdelete.html">To Delete a JMS Destination Resource</a></p>
+</li>
+</ul>
+<a id="sthref70" name="sthref70"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00040"><code>create-jms-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00177"><code>list-jms-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00092"><code>delete-jms-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

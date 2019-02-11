@@ -1,0 +1,61 @@
+delete-connector-connection-pool(1)  asadmin Utility Subcommands  delete-connector-connection-pool(1)
+
+NAME
+       delete-connector-connection-pool - removes the specified connector
+       connection pool
+
+SYNOPSIS
+           delete-connector-connection-pool [--help] [--target target]
+           [--cascade={false|true}] poolname
+
+DESCRIPTION
+       The delete-connector-connection-pool subcommand removes the specified
+       connector connection pool.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+       --cascade
+           When set to true, all connector resources associated with the pool,
+           and the pool itself, are deleted. When set to false, the deletion
+           of pool fails if any resources are associated with the pool. The
+           resource must be deleted explicitly or the option must be set to
+           true. Default is false.
+
+OPERANDS
+       poolname
+           The name of the connection pool to be removed.
+
+EXAMPLES
+       Example 1, Deleting a Connector Connection Pool
+           This example deletes the connector connection pool named
+           jms/qConnPool.
+
+               asadmin> delete-connector-connection-pool
+               --cascade=false jms/qConnPool
+               Command delete-connector-connection-pool executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-connection-pool(1),
+       list-connector-connection-pools(1), ping-connection-pool(1)
+
+       asadmin(1M)
+
+Java EE 8              09 Aug 2017       delete-connector-connection-pool(1)

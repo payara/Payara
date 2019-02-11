@@ -1,0 +1,73 @@
+stop-database(1)          asadmin Utility Subcommands         stop-database(1)
+
+NAME
+       stop-database - stops the Java DB
+
+SYNOPSIS
+           stop-database [--help] [--dbuser db-user]
+           [--dbhost host] [--dbport port-no]
+
+DESCRIPTION
+       The stop-database subcommand stops a process of the Java DB server.
+       Java DB server is available for use with GlassFish Server and is based
+       upon Apache Derby. The database is typically started with the
+       start-database(1) subcommand. A single host can have multiple database
+       server processes running on different ports. The stop-database
+       subcommand stops the database server process for the specified port
+       only.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --dbuser
+           The user name of the Java DB user that is to stop the server
+           process. This option is required only when Java DB user
+           authentication is enabled.
+
+           If this option is omitted, no user is specified. By default, Java
+           DB user authentication is disabled, so no user or password is
+           required.
+
+       --dbhost
+           The host name or IP address of the Java DB server process. The
+           default is the IP address 0.0.0.0, which denotes all network
+           interfaces on the host where you run the stop-database subcommand.
+
+       --dbport
+           The port number where the Java DB server listens for client
+           connections. The default is 1527.
+
+EXAMPLES
+       Example 1, Stopping Java DB
+           This example stops Java DB on host host1 and port 5001.
+
+               asadmin> stop-database --dbhost host1 --dbport 5001
+               Connection obtained for host: host1, port number 5001.
+               Shutdown successful.
+               Command stop-database executed successfully.
+
+EXIT STATUS
+       The exit status applies to errors in executing the asadmin utility. For
+       information on database errors, see the derby.log file. This file is
+       located in the directory you specify by using the --dbhome option when
+       you run the start-database subcommand. If you did not specify --dbhome,
+       the value of DERBY_INSTALL defaults to as-install/javadb.
+
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       start-database(1)
+
+       asadmin(1M)
+
+       "Administering Database Connectivity" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         22 Dec 2010                 stop-database(1)

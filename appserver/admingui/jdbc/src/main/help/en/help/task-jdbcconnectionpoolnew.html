@@ -1,0 +1,195 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jdbcconnectionpoolnew" name="task-jdbcconnectionpoolnew"></a><a id="GHJDB00036" name="GHJDB00036"></a></p>
+
+<h4><a id="sthref14" name="sthref14"></a>To Create a JDBC Connection Pool</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>When creating a connection pool with the Administration Console, you are defining the aspects of a connection to a specific database.</p>
+<a id="sthref15" name="sthref15"></a>
+<h5>Before You Begin</h5>
+<p>To create a connection pool, you must first install and integrate a driver supporting the JDBC API (JDBC driver). See <a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a>.</p>
+<p>The following information is required to create the JDBC connection pool. Gather this information before proceeding:</p>
+<ul>
+<li>
+<p>Database driver vendor name</p>
+</li>
+<li>
+<p>Resource type, such as <code>javax.sql.DataSource</code> (local transactions only), <code>java.sql.ConnectionPoolDataSource</code> (local transactions, possible performance improvements), <code>javax.sql.XADataSource</code> (global transactions), and <code>java.sql.Driver</code></p>
+</li>
+<li>
+<p>Data source class name</p>
+</li>
+<li>
+<p>Required properties, such as the database name (URL), user name, and password</p>
+</li>
+</ul>
+<ol>
+<li>
+<p>In the navigation tree, select the Common Tasks node.</p>
+<p>The Common Tasks page opens.</p>
+</li>
+<li>
+<p>On the Common Tasks page, click the Create New JDBC Connection Pool button.</p>
+<p>The New JDBC Connection Pool (Step 1 of 2) page opens.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>You can also access the New JDBC Connection Pool page by expanding the Resources node and the JDBC node, and selecting the Connection Pools node. Then from the Connection Pools page, click New to create a new connection pool.</p>
+
+<hr>
+
+</li>
+<li>
+<p>In the Pool Name field, type a name for the new connection pool.</p>
+<p>This is a required field.</p>
+</li>
+<li>
+<p>From the Resource Type drop-down list, select a resource type.</p>
+<p>Choices include <code>javax.sql.XADataSource</code> (global transactions), <code>java.sql.ConnectionPoolDataSource</code> (local transactions, possible performance improvements), <code>javax.sql.DataSource</code> (local transactions only), and <code>java.sql.Driver</code>.</p>
+</li>
+<li>
+<p>Specify a database vendor:</p>
+<ol type="a">
+<li>
+<p>From the Database Driver Vendor drop-down list, select a database vendor.</p>
+</li>
+<li>
+<p>If the database vendor does not appear in the list, type the name of the vendor in the Database Driver Vendor text field.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Select the Introspect Enabled check box to introspect the database driver based on the Resource Type and Database Driver Vendor.</p>
+<p>For introspection to work, the JDBC driver must be available to GlassFish Server. See <a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a>.</p>
+</li>
+<li>
+<p>Click Next.</p>
+<p>The New JDBC Connection Pool (Step 2 of 2) page opens.</p>
+</li>
+<li>
+<p>In the Datasource Classname field, type the name of the vendor-specific class that implements the <code>DataSource</code>, <code>ConnectionPoolDataSource</code>, or <code>XADataSource</code> API.</p>
+<p>If you selected Introspect Enabled and one of the datasource resource types, this field is filled in automatically with the class name associated with the resource type and database vendor you chose. If you selected the <code>java.sql.Driver</code> resource type, this field is disabled.</p>
+</li>
+<li>
+<p>In the Driver Classname field, type the name of the vendor-specific class that implements the <code>java.sql.Driver</code> API.</p>
+<p>If you selected Introspect Enabled or the <code>java.sql.Driver</code> resource type, this field is filled in automatically with the class name associated with the driver and database vendor you chose. If you selected one of the datasource resource types, this field is disabled.</p>
+</li>
+<li>
+<p>Select the Ping Enabled checkbox to automatically ping the pool during pool creation or reconfiguration to identify and warn of any erroneous attribute values.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Description field, type a short description for the connection pool.</p>
+</li>
+<li>
+<p>In the Initial and Minimum Pool Size field, type the minimum number of connections for this pool.</p>
+<p>This value also determines the number of connections placed in the pool when the pool is first created or when GlassFish Server starts. The default value is 8.</p>
+</li>
+<li>
+<p>In the Maximum Pool Size field, type the maximum number of connections for this pool.</p>
+<p>The default value is 32.</p>
+</li>
+<li>
+<p>In the Pool Resize Quantity field, type the number of connections per pool resizing batch.</p>
+<p>When the pool scales up and scales down toward the maximum and minimum pool size respectively, it is resized in batches. This value determines the number of connections in the batch. Making this value too large delays connection creation and recycling; making it too small will be less efficient. The default value is 2.</p>
+</li>
+<li>
+<p>In the Idle Timeout field, type the maximum amount of time, in seconds, that a connection can remain idle in the pool.</p>
+<p>After this time expires, the connection is removed from the pool. The default value is 300.</p>
+</li>
+<li>
+<p>In the Max Wait Time field, type the maximum amount of time, in milliseconds, that the application requesting a connection will wait before getting a connection timeout.</p>
+<p>The default value is 60,000.</p>
+</li>
+<li>
+<p>Select the Non Transactional Connections Enabled checkbox to return non-transactional connections.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>From the Transaction Isolation Level drop-down list, select a transaction isolation level for this connection pool.</p>
+<p>If not specified, the connections operate with default isolation levels provided by the JDBC driver. By default, this option is not specified.</p>
+</li>
+<li>
+<p>Select the Isolation Level Guaranteed checkbox to ensure that all connections taken from the pool have the same isolation level.</p>
+<p>For example, if the isolation level for the connection is changed programmatically (with <code>con.setTransactionIsolation</code>) when last used, this mechanism changes the status back to the specified isolation level. This option is enabled by default.</p>
+<p>This setting is only applicable if a transaction isolation level has been specified.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>Examples of required properties include database name (URL), user name, and password. The table normally contains properties used by the database vendor. For information on some of the available properties, see <a href="ref-jdbc-properties.html">Properties Specific to JDBC Connection Pools</a>.</p>
+<p>If you do not specify a value for a property, it is removed from the table when you finish creating the connection pool. If you do not want to set a value for a property now, but you want the property to remain in the table so that the value can be set later, type a set of empty parentheses in the Value field:</p>
+<pre>
+()
+</pre>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Finish.</p>
+</li>
+</ol>
+<a id="sthref16" name="sthref16"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcenew.html">To Create a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesedit.html">To Edit a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcetargets.html">To Edit JDBC Resource Targets</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesdelete.html">To Delete a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooledit.html">To Edit JDBC Connection Pool General Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooladvance.html">To Edit JDBC Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-verifyconnpoolsettings.html">To Verify Connection Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolproperty.html">To Edit JDBC Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooldelete.html">To Delete a JDBC Connection Pool</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

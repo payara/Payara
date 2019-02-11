@@ -1,0 +1,113 @@
+create-http-lb-config(1)  asadmin Utility Subcommands  create-http-lb-config(1)
+
+NAME
+       create-http-lb-config - creates a configuration for the load balancer
+
+SYNOPSIS
+           create-http-lb-config [--help] [--responsetimeout 60]
+            [httpsrouting=false] [--reloadinterval 60]
+            [--monitor=false] [--property (name=value)[:name=value]*]
+            --target target | config_name
+
+DESCRIPTION
+       Use the create-http-lb-config subcommand to create a load balancer
+       configuration. This configuration applies to load balancing in the HTTP
+       path. After using this subcommand to create the load balancer
+       configuration file, create the load balancer by running create-http-lb.
+
+       You must specify either a target or a configuration name, or both. If
+       you do not specify a target, the configuration is created without a
+       target and you add one later using create-http-lb-ref. If you don't
+       specify a configuration name, a name is created based on the target
+       name. If you specify both, the configuration is created with the
+       specified name, referencing the specified target.
+
+           Note
+           +----------------------------------------+
+           |           This subcommand is only      |
+           |           applicable to Oracle         |
+           |           GlassFish Server. This       |
+           |           subcommand is not applicable |
+           |           to GlassFish Server Open     |
+           |           Source Edition.              |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --responsetimeout
+           The time in seconds within which a server instance must return a
+           response. If no response is received within the time period, the
+           server is considered unhealthy. If set to a positive number, and
+           the request is idempotent, the request is retried. If the request
+           is not idempotent, an error page is returned. If set to 0 no
+           timeout is used. The default is 60.
+
+       --httpsrouting
+           If set to true, HTTPS requests to the load balancer result in HTTPS
+           requests to the server instance. If set to false, HTTPS requests to
+           the load balancer result in HTTP requests to the server instance.
+           The default is false.
+
+       --reloadinterval
+           The interval between checks for changes to the load balancer
+           configuration file loadbalancer.xml. When the check detects
+           changes, the configuration file is reloaded. A value of 0 disables
+           reloading.
+
+       --monitor
+           Specifies whether monitoring is enabled. The default is false.
+
+       --routecookie
+           This option is deprecated. The value is always true.
+
+       --property
+           Optional attribute name/value pairs for configuring the load
+           balancer.
+
+       --target
+           Specifies the target to which the load balancer configuration
+           applies. If you don't specify a target, the load balancer
+           configuration is created without a target. You can specify targets
+           later using the subcommand create-http-lb-ref.
+
+           Valid values are:
+
+           *   cluster_name- Specifies that requests for this cluster will be
+               handled by the load balancer.
+
+           *   stand-alone_instance_name- Specifies that requests for this
+               standalone instance will be handled by the load balancer.
+
+OPERANDS
+       config_name
+           The name of the new load balancer configuration. This name must not
+           conflict with any other load balancer groups, agents,
+           configurations, clusters, or sever instances in the domain. If you
+           don't specify a name, the load balancer configuration name is based
+           on the target name, target_name-http-lb-config.
+
+EXAMPLES
+       Example 1, Creating a Load Balancer Configuration
+           This example creates a load balancer configuration on a target
+           named mycluster and load balancer configuration named
+           mylbconfigname.
+
+               asadmin> create-http-lb-config --target mycluster mylbconfigname
+
+               Command create-http-lb-config executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-http-lb-config(1), list-http-lb-configs(1), create-http-lb(1)
+
+       asadmin(1M)
+
+Java EE 8                   09 Aug 2017            create-http-lb-config(1)

@@ -1,0 +1,132 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-javamailsessioncreate" name="ref-javamailsessioncreate"></a><a id="GHJML00002" name="GHJML00002"></a></p>
+
+<h4><a id="sthref23" name="sthref23"></a>New JavaMail Session</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JavaMail Session page to create a JavaMail session resource.</p>
+<p>The New JavaMail Session page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the mail session. Use the naming sub-context prefix <code>mail/</code> for JavaMail resources. For example: <code>mail/MySession</code>. The name must contain only alphanumeric, underscore, dash, or dot characters.</p>
+</dd>
+<dt>Mail Host</dt>
+<dd>
+<p>The host name of the default mail server. The connect methods of the Store and Transport objects use this value if a protocol-specific host property is not supplied. The name must be resolvable to an actual host name.</p>
+</dd>
+<dt>Default User</dt>
+<dd>
+<p>The user name to provide when connecting to a mail server. The connect methods of the Store and Transport objects use this value if a protocol-specific username property is not supplied. The user name must contain only alphanumeric, underscore, dash, or dot characters.</p>
+</dd>
+<dt>Default Sender Address</dt>
+<dd>
+<p>The e-mail address of the default user. The format is <i>username</i><code>@</code><i>host</i>.<i>domain</i>.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of this mail session.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the mail session. The mail session can be enabled or disabled. The default value is Enabled.</p>
+</dd>
+<dt>Store Protocol</dt>
+<dd>
+<p>The storage protocol service, which connects to a mail server, retrieves messages, and saves messages in one or more folders. Allowed values are <code>imap</code>, <code>pop3</code>, <code>imaps</code>, and <code>pop3s</code>. The default value is <code>imap</code>.</p>
+</dd>
+<dt>Store Protocol Class</dt>
+<dd>
+<p>The service provider implementation class for storage. Allowed values are:</p>
+<ul>
+<li>
+<p><code>com.sun.mail.imap.IMAPStore</code></p>
+</li>
+<li>
+<p><code>com.sun.mail.pop3.POP3Store</code></p>
+</li>
+<li>
+<p><code>com.sun.mail.imap.IMAPSSLStore</code></p>
+</li>
+<li>
+<p><code>com.sun.mail.pop3.POP3SSLStore</code></p>
+</li>
+</ul>
+<p>The default value is <code>com.sun.mail.imap.IMAPStore</code>.</p>
+</dd>
+<dt>Transport Protocol</dt>
+<dd>
+<p>The transport protocol service, which sends messages. Allowed values are <code>smtp</code> and <code>smtps</code>. The default value is <code>smtp</code>.</p>
+</dd>
+<dt>Transport Protocol Class</dt>
+<dd>
+<p>The service provider implementation class for transport. Allowed values are:</p>
+<ul>
+<li>
+<p><code>com.sun.mail.smtp.SMTPTransport</code></p>
+</li>
+<li>
+<p><code>com.sun.mail.smtp.SMTPSSLTransport</code></p>
+</li>
+</ul>
+<p>The default value is <code>com.sun.mail.smtp.SMTPTransport</code>.</p>
+</dd>
+<dt>Debug</dt>
+<dd>
+<p>If this option is selected, debugging for this resource is enabled. If the JavaMail log level is set to <code>FINE</code> or finer, the debugging output is generated and is included in the system log file. See <a href="../../../common/en/help/task-eelogginglevels.html">To Configure Log Levels</a> for information about setting the log level.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JavaMail session. For a list of the available properties, see the JavaMail API documentation (<code><a href="http://java.sun.com/products/javamail/javadocs/index.html">http://java.sun.com/products/javamail/javadocs/index.html</a></code>). Additional properties must begin with <code>mail-</code> and must use hyphens, not periods, as separators. For example, <code>mail-debug</code> is correct, but <code>mail.debug</code> is not. The GlassFish Server back end converts the hyphens into the periods expected by the JavaMail API.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="GHJML119" name="GHJML119"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-javamailsessioncreate.html">To Create a JavaMail Session</a></p>
+</li>
+<li>
+<p><a href="task-javamailsessionsedit.html">To Edit a JavaMail Session</a></p>
+</li>
+<li>
+<p><a href="task-javamailsessionsdelete.html">To Delete a JavaMail Session</a></p>
+</li>
+</ul>
+<a id="GHJML120" name="GHJML120"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00035"><code>create-javamail-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00172"><code>list-javamail-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00087"><code>delete-javamail-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

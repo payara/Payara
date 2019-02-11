@@ -1,0 +1,112 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jndicustomresourceedit" name="task-jndicustomresourceedit"></a><a id="GHJML00016" name="GHJML00016"></a></p>
+
+<h4><a id="sthref10" name="sthref10"></a><a id="sthref11" name="sthref11"></a><a id="sthref12" name="sthref12"></a>To Edit a Custom JNDI Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Under the Resources node, expand the JNDI node.</p>
+</li>
+<li>
+<p>Under the JNDI node, select Custom Resources.</p>
+<p>The Custom Resources page opens.</p>
+</li>
+<li>
+<p>On the Custom Resources page, click the name of the resource that you are editing.</p>
+<p>The Edit Custom Resource page opens.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>The JNDI name is a read-only field. You can only specify the JNDI name when you create a new custom resource.</p>
+
+<hr>
+
+</li>
+<li>
+<p>To modify the Resource Type, do one of the following.</p>
+<ul>
+<li>
+<p>From the drop-down list, select a type definition.</p>
+</li>
+<li>
+<p>Select the second radio button and type a fully qualified type definition that follows the format <i>xxx</i><code>.</code><i>xxx</i>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Factory Class field, type a factory class name for the custom resource.</p>
+<p>The Factory Class is the user-specified name for the factory class. This class implements the <code>javax.naming.spi.ObjectFactory</code> interface.</p>
+</li>
+<li>
+<p>In the Deployment Order field, type a number to specify the deployment order of the custom resource.</p>
+<p>Resources with a lower number are loaded first at server startup. The default value is 100.</p>
+</li>
+<li>
+<p>In the Description field, Type a short description of the resource.</p>
+<p>This description is a string value and can include a maximum of 250 characters.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the resource.</p>
+<p>By default, the resource is enabled, meaning that it is available as soon as it is created.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties for the custom resource.</p>
+<p>GlassFish Server does not define any additional properties for custom resources.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHJML109" name="GHJML109"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jndicustomresourcenew.html">To Create a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndicustomresourcedelete.html">To Delete a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourcecreate.html">To Create an External JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourceedit.html">To Edit an External JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourcedelete.html">To Delete an External JNDI Resource</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

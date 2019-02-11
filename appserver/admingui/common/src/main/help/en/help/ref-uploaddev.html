@@ -1,0 +1,491 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-uploaddev" name="ref-uploaddev"></a><a id="GHCOM00077" name="GHCOM00077"></a></p>
+
+<h4><a id="sthref169" name="sthref169"></a><a id="sthref170" name="sthref170"></a><a id="sthref171" name="sthref171"></a><a id="sthref172" name="sthref172"></a><a id="sthref173" name="sthref173"></a><a id="sthref174" name="sthref174"></a><a id="sthref175" name="sthref175"></a><a id="sthref176" name="sthref176"></a><a id="sthref177" name="sthref177"></a><a id="sthref178" name="sthref178"></a><a id="sthref179" name="sthref179"></a><a id="sthref180" name="sthref180"></a>Deploy Applications or Modules</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Deploy Applications or Modules page to deploy an application.</p>
+<p>The Deploy Applications or Modules page contains the following options for all applications. Additional options appear only after you specify the Location field for the application.</p>
+<dl>
+<dt>Location</dt>
+<dd>
+<p>The location of the archive for the application that you are deploying.</p>
+<p>The following options specify from where the archive is accessible and whether the archive is a file or a directory.</p>
+<dl>
+<dt>Packaged File to Be Uploaded to the Server</dt>
+<dd>
+<p>The archive is in a file that resides on or is accessible from the client machine.</p>
+<p>The client machine is the host on which you are viewing the Administration Console through a browser.</p>
+</dd>
+<dt>Local Packaged File or Directory That Is Accessible From the GlassFish Server</dt>
+<dd>
+<p>The archive is a file that resides on the server machine, or is an unpackaged application in an exploded directory.</p>
+<p>The server machine is the host that is running the GlassFish Server domain administration server.</p>
+</dd>
+</dl>
+</dd>
+<dt>Type</dt>
+<dd>
+<p>The type of the application. Available choices are:</p>
+<ul>
+<li>
+<p>Web Application</p>
+</li>
+<li>
+<p>Enterprise Application</p>
+</li>
+<li>
+<p>Application Client</p>
+</li>
+<li>
+<p>Connector Module</p>
+</li>
+<li>
+<p>EJB Jar</p>
+</li>
+<li>
+<p>Other</p>
+</li>
+</ul>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>Clusters and standalone instances to which to deploy the application or module. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+<p>This option is displayed only if clusters or standalone instances have been created in the domain.</p>
+</dd>
+</dl>
+<p>Additional options for the various application types are described in the following sections.</p>
+<ul>
+<li>
+<p><a href="#ref-webapp-options">Additional Options for a Web Application</a></p>
+</li>
+<li>
+<p><a href="#ref-entapp-options">Additional Options for an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="#ref-appclient-options">Additional Options for an Application Client</a></p>
+</li>
+<li>
+<p><a href="#ref-connmodule-options">Additional Options for a Connector Module</a></p>
+</li>
+<li>
+<p><a href="#ref-ejb-options">Additional Options for an EJB Jar</a></p>
+</li>
+</ul>
+<a id="ref-webapp-options" name="ref-webapp-options"></a><a id="GHCOM378" name="GHCOM378"></a>
+<h5>Additional Options for a Web Application</h5>
+<p>If the application type is Web Application, the following options appear.</p>
+<dl>
+<dt>Context Root</dt>
+<dd>
+<p>The path to the application. In the URL of the web application, the context root immediately follows the port number (<code>http://</code><i>host</i><code>:</code><i>port</i><code>/</code><i>context-root</i><code>/...</code>). The context root must start with a forward slash, for example, <code>/hello</code>.</p>
+</dd>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Virtual Servers</dt>
+<dd>
+<p>The virtual servers associated with this application.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the application is enabled. This option is selected by default.</p>
+</dd>
+<dt>Availability</dt>
+<dd>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</dd>
+<dt>Precompile JSPs</dt>
+<dd>
+<p>If this option is selected, JavaServer Pages (JSP) files are precompiled. If this option is disabled, JSP files are compiled at runtime when they are first accessed. This option is disabled by default.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Keep State</dt>
+<dd>
+<p>This option controls whether web sessions, SFSB instances, and persistently created EJB timers are retained between redeployments.</p>
+<p>This option is disabled by default. This option is supported only on the default server instance, named <code>server</code>. It is not supported and ignored for any other target.</p>
+<p>Some changes to an application between redeployments prevent this feature from working properly. For example, do not change the set of instance variables in the SFSB bean class.</p>
+<p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
+<p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
+<p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
+<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+</dd>
+<dt>Preserve Application Scoped Resources</dt>
+<dd>
+<p>If checked, preserves any application-scoped resources and restores them during redeployment. This option is not checked by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Libraries</dt>
+<dd>
+<p>A comma-separated list of library JAR files specific to this module or application. The paths may be absolute or relative. A relative path is relative to <i>domain-dir</i><code>/lib/applibs</code>. If the path is absolute, the path must be accessible to the domain administration server (DAS), which means it must be under <i>domain-dir</i>. The libraries are made available to the application in the order in which they are specified.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="ref-entapp-options" name="ref-entapp-options"></a><a id="GHCOM379" name="GHCOM379"></a>
+<h5>Additional Options for an Enterprise Application</h5>
+<p>If the application type is Enterprise Application, the following options appear.</p>
+<dl>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Virtual Servers</dt>
+<dd>
+<p>The virtual servers associated with this application.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the application is enabled. This option is selected by default.</p>
+</dd>
+<dt>Availability</dt>
+<dd>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</dd>
+<dt>Java Web Start</dt>
+<dd>
+<p>If this option is selected, Java Web Start access is permitted for an application client module. This option is disabled by default.</p>
+</dd>
+<dt>Precompile JSPs</dt>
+<dd>
+<p>If this option is selected, JavaServer Pages (JSP) files are precompiled. If this option is disabled, JSP files are compiled at runtime when they are first accessed. This option is disabled by default.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Compatibility</dt>
+<dd>
+<p>If checked, uses GlassFish Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in GlassFish Server v3 releases, including 4.0. This option is not checked by default.</p>
+<p>The Java EE 6 platform specification imposes stricter requirements than Java EE 5 did on which JAR files can be visible to various modules within an EAR file. In particular, application clients must not have access to EJB JAR files or other JAR files in the EAR file unless references use the standard Java SE mechanisms (extensions, for example) or the Java EE library-directory mechanism. Checking this box removes these Java EE 6 restrictions.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Keep State</dt>
+<dd>
+<p>This option controls whether web sessions, SFSB instances, and persistently created EJB timers are retained between redeployments.</p>
+<p>This option is disabled by default. This option is supported only on the default server instance, named <code>server</code>. It is not supported and ignored for any other target.</p>
+<p>Some changes to an application between redeployments prevent this feature from working properly. For example, do not change the set of instance variables in the SFSB bean class.</p>
+<p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
+<p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
+<p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
+<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+</dd>
+<dt>Preserve Application Scoped Resources</dt>
+<dd>
+<p>If checked, preserves any application-scoped resources and restores them during redeployment. This option is not checked by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Libraries</dt>
+<dd>
+<p>A comma-separated list of library JAR files specific to this application. Specifies an absolute or relative path. A relative path is relative to <i>domain-dir</i><code>/lib/applibs</code>. If the path is absolute, the path must be accessible to the domain administration server (DAS), which means it must be under <i>domain-dir</i>. The libraries are made available to the application in the order in which they are specified.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="ref-appclient-options" name="ref-appclient-options"></a><a id="GHCOM380" name="GHCOM380"></a>
+<h5>Additional Options for an Application Client</h5>
+<p>If the application type is Application Client, the following options appear.</p>
+<dl>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Java Web Start</dt>
+<dd>
+<p>If this option is selected, Java Web Start access is permitted for an application client module. This option is disabled by default.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="ref-connmodule-options" name="ref-connmodule-options"></a><a id="GHCOM381" name="GHCOM381"></a>
+<h5>Additional Options for a Connector Module</h5>
+<p>If the application type is Connector Module, the following options appear.</p>
+<dl>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the application is enabled. This option is selected by default.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Preserve Application Scoped Resources</dt>
+<dd>
+<p>If checked, preserves any application-scoped resources and restores them during redeployment. This option is not checked by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="ref-ejb-options" name="ref-ejb-options"></a><a id="GHCOM382" name="GHCOM382"></a>
+<h5>Additional Options for an EJB Jar</h5>
+<p>If the application type is EJB Jar, the following options appear.</p>
+<dl>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the application is enabled. This option is selected by default.</p>
+</dd>
+<dt>Availability</dt>
+<dd>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Compatibility</dt>
+<dd>
+<p>If checked, uses GlassFish Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in GlassFish Server v3 releases, including 4.0. This option is not checked by default.</p>
+<p>The Java EE 6 platform specification imposes stricter requirements than Java EE 5 did on which JAR files can be visible to various modules within an EAR file. In particular, application clients must not have access to EJB JAR files or other JAR files in the EAR file unless references use the standard Java SE mechanisms (extensions, for example) or the Java EE library-directory mechanism. Checking this box removes these Java EE 6 restrictions.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Keep State</dt>
+<dd>
+<p>This option controls whether web sessions, SFSB instances, and persistently created EJB timers are retained between redeployments.</p>
+<p>This option is disabled by default. This option is supported only on the default server instance, named <code>server</code>. It is not supported and ignored for any other target.</p>
+<p>Some changes to an application between redeployments prevent this feature from working properly. For example, do not change the set of instance variables in the SFSB bean class.</p>
+<p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
+<p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
+<p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
+<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+</dd>
+<dt>Preserve Application Scoped Resources</dt>
+<dd>
+<p>If checked, preserves any application-scoped resources and restores them during redeployment. This option is not checked by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Libraries</dt>
+<dd>
+<p>A comma-separated list of library JAR files specific to this module or application. Specifies an absolute or relative path. A relative path is relative to <i>domain-dir</i><code>/lib/applibs</code>. If the path is absolute, the path must be accessible to the domain administration server (DAS), which means it must be under <i>domain-dir</i>. The libraries are made available to the application in the order in which they are specified.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="GHCOM383" name="GHCOM383"></a>
+<h5>Additional Options for Applications of Type Other</h5>
+<p>If the application type is Other, the following options appear.</p>
+<dl>
+<dt>Application Name</dt>
+<dd>
+<p>The name of the application.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Virtual Servers</dt>
+<dd>
+<p>The virtual servers associated with this application.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the application is enabled. This option is selected by default.</p>
+</dd>
+<dt>Availability</dt>
+<dd>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</dd>
+<dt>OSGI Type</dt>
+<dd>
+<p>If this option is selected, it specifies a hybrid OSGi/Java-EE module. This option only appears if the Type selected is Other.</p>
+</dd>
+<dt>Precompile JSPs</dt>
+<dd>
+<p>If this option is selected, JavaServer Pages (JSP) files are precompiled. If this option is disabled, JSP files are compiled at runtime when they are first accessed. This option is disabled by default.</p>
+</dd>
+<dt>Run Verifier</dt>
+<dd>
+<p>If this option is selected, deployment descriptors are verified before deployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</dd>
+<dt>Force Redeploy</dt>
+<dd>
+<p>If this option is selected, the application is redeployed if it is already deployed. If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</dd>
+<dt>Keep State</dt>
+<dd>
+<p>This option controls whether web sessions, SFSB instances, and persistently created EJB timers are retained between redeployments.</p>
+<p>This option is disabled by default. This option is supported only on the default server instance, named <code>server</code>. It is not supported and ignored for any other target.</p>
+<p>Some changes to an application between redeployments prevent this feature from working properly. For example, do not change the set of instance variables in the SFSB bean class.</p>
+<p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
+<p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
+<p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
+<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Libraries</dt>
+<dd>
+<p>A comma-separated list of library JAR files specific to this module or application. Specifies an absolute or relative path. A relative path is relative to <i>domain-dir</i><code>/lib/applibs</code>. If the path is absolute, the path must be accessible to the domain administration server (DAS), which means it must be under <i>domain-dir</i>. The libraries are made available to the application in the order in which they are specified.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the application.</p>
+</dd>
+</dl>
+<a id="GHCOM384" name="GHCOM384"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+</li>
+<li>
+<p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+</li>
+<li>
+<p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appdeployconn.html">To Deploy a Connector Module</a></p>
+</li>
+<li>
+<p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+</li>
+<li>
+<p><a href="task-appedit.html">To Edit a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+</li>
+<li>
+<p><a href="task-applaunch.html">To Launch an Application</a></p>
+</li>
+<li>
+<p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appclientstubs.html">To Download Application Client Stubs</a></p>
+</li>
+<li>
+<p><a href="task-appredeploy.html">To Redeploy a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-apprestart.html">To Reload a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesview.html">To View Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesedit.html">To Modify Application Scoped Resources</a></p>
+</li>
+</ul>
+<a id="GHCOM385" name="GHCOM385"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00114"><code>deploy</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00217"><code>redeploy</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00148"><code>list-applications</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

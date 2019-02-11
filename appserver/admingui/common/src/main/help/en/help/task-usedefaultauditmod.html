@@ -1,0 +1,100 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-usedefaultauditmod" name="task-usedefaultauditmod"></a><a id="GHCOM00199" name="GHCOM00199"></a></p>
+
+<h4><a id="sthref97" name="sthref97"></a>To Use the Default Audit Module</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The <code>default</code> audit module logs authentication and authorization requests to the server log file. For information on changing the location of the log file, see <a href="task-eelogging.html">To Configure General Logging Settings</a>.</p>
+<p>Authentication log entries include the following information:</p>
+<ul>
+<li>
+<p>Names of users who attempted to authenticate</p>
+</li>
+<li>
+<p>The realm that processed the access request</p>
+</li>
+<li>
+<p>The requested Web module URI or EJB component</p>
+</li>
+<li>
+<p>Success or failure of the request</p>
+</li>
+</ul>
+<p>Regardless of whether audit logging is enabled, the GlassFish Server logs all denied authentication events.</p>
+<p>Authorization log entries include the following information:</p>
+<ul>
+<li>
+<p>Names of authenticated users, if any</p>
+</li>
+<li>
+<p>The requested Web URI or EJB component</p>
+</li>
+<li>
+<p>Success or failure of the requests</p>
+</li>
+</ul>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the instance to configure:</p>
+<ul>
+<li>
+<p>To configure a particular instance, expand the instance's config node. For example, the default instance, <code>server</code>, expand the <code>server-config</code> node.</p>
+</li>
+<li>
+<p>To configure the default settings for all instances, expand the <code>default-config</code> node.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Under the Configuration node, select the Security node.</p>
+<p>The Security page opens.</p>
+</li>
+<li>
+<p>From the Audit Modules drop-down list, select the audit module named <code>default</code>.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHCOM302" name="GHCOM302"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-auditmodulenew.html">To Create an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-auditmoduleedit.html">To Edit an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-auditmoduledelete.html">To Delete an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-enabledisableauditmod.html">To Enable or Disable Audit Logging</a></p>
+</li>
+<li>
+<p><a href="task-setactiveauditmod.html">To Set the Active Audit Module</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

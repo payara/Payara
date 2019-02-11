@@ -1,0 +1,106 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-standaloneinstances" name="ref-standaloneinstances"></a><a id="GHCLU00018" name="GHCLU00018"></a></p>
+
+<h4><a id="sthref319" name="sthref319"></a><a id="sthref320" name="sthref320"></a><a id="sthref321" name="sthref321"></a>Standalone Server Instances</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Standalone Server Instances page to create and manage standalone GlassFish Server instances.</p>
+<p>The Standalone Server Instances page displays a list of all standalone instances in the domain. For each instance, the following information is provided.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name that was assigned to the instance when the instance was created. Clicking the name opens the <a href="ref-standaloneinstancegeneral.html">General Information</a> page for the instance.</p>
+</dd>
+<dt>LB Weight</dt>
+<dd>
+<p>An integer that represents the load-balancing weight of the instance.</p>
+<p>The load-balancing weight determines the proportion of all requests to the cluster that the instance should process.</p>
+<p>For example, in a two-instance cluster, you might require one instance to process one out of four requests, and the other instance to process three out of four requests. In this situation, set the weight of the instance that is process one out of four requests to 1 and set the weight of the other instance to 3. If you prefer to use percentages, set the weights of the instances to 25 and 75 respectively.</p>
+<p>The default weight is 100.</p>
+</dd>
+<dt>Configuration</dt>
+<dd>
+<p>The configuration that was selected for the instance when the instance was created. Clicking the configuration opens the <a href="../../../common/en/help/ref-configuration.html">Configurations</a> page for the instance.</p>
+</dd>
+<dt>Node</dt>
+<dd>
+<p>The name of the node on which the instance resides. Clicking the name opens the <a href="ref-nodeedit.html">Edit Node</a> page for the node.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>An indication of whether the instance is running or not running.</p>
+</dd>
+</dl>
+<p>The Server Instances table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a standalone instance.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected standalone instances.</p>
+</dd>
+<dt>Start</dt>
+<dd>
+<p>Button to start one or more selected standalone instances.</p>
+</dd>
+<dt>Stop</dt>
+<dd>
+<p>Button to stop one or more selected standalone instances.</p>
+</dd>
+</dl>
+<a id="sthref322" name="sthref322"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-create-standalone-instance.html">To Create a Standalone GlassFish Server Instance</a></p>
+</li>
+<li>
+<p><a href="task-delete-standalone-instances.html">To Delete Standalone GlassFish Server Instances</a></p>
+</li>
+<li>
+<p><a href="task-start-standalone-instances.html">To Start Standalone GlassFish Server Instances</a></p>
+</li>
+<li>
+<p><a href="task-stop-standalone-instances.html">To Stop Standalone GlassFish Server Instances</a></p>
+</li>
+</ul>
+<a id="sthref323" name="sthref323"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00033"><code>create-instance</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00085"><code>delete-instance</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00170"><code>list-instances</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00236"><code>start-instance</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00241"><code>stop-instance</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

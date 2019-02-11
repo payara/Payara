@@ -1,0 +1,72 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-settranstimeout" name="task-settranstimeout"></a><a id="GHJTS00006" name="GHJTS00006"></a></p>
+
+<h4><a id="sthref6" name="sthref6"></a>To Set a Transaction Timeout Value</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>By default, the server does not time out a transaction. That is, the server waits indefinitely for a transaction to complete. If you set a timeout value for transactions, if a transaction isn't completed within the configured time, the GlassFish Server rolls back the transaction.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the instance to configure:</p>
+<ul>
+<li>
+<p>To configure a particular instance, select the instance's config node. For example, the default instance, <code>server</code>, select the <code>server-config</code> node.</p>
+</li>
+<li>
+<p>To configure the default settings for all instances, select the <code>default-config</code> node.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Select the Transaction Service node.</p>
+<p>The Transaction Service page opens.</p>
+</li>
+<li>
+<p>In the Transaction Timeout field, type the number of seconds before the transaction times out.</p>
+<p>The default value is 0. This value disables transaction timeouts.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+<li>
+<p>Restart the GlassFish Server.</p>
+</li>
+</ol>
+<a id="sthref7" name="sthref7"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-configtransservice.html">To Configure the Transaction Service</a></p>
+</li>
+<li>
+<p><a href="task-configtransrecovery.html">To Configure How the GlassFish Server Recovers Transactions</a></p>
+</li>
+<li>
+<p><a href="task-settranslog.html">To Set the Location of the Transaction Logs</a></p>
+</li>
+<li>
+<p><a href="task-setkeyptinterval.html">To Set the Keypoint Interval</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

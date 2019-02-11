@@ -1,0 +1,84 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-threadfactorynew" name="ref-threadfactorynew"></a><a id="GHCON155" name="GHCON155"></a></p>
+
+<h4>New Managed Thread Factory<a id="sthref24" name="sthref24"></a></h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Managed Thread Factory page to create a managed thread factory resource.</p>
+<p>The New Managed Thread Factory page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/.</p>
+</dd>
+<dt>Context Information</dt>
+<dd>
+<p>The contexts to propagate to threads: Classloader, JNDI, Security, or WorkArea. Context propagation can be enabled or disabled. If enabled, the selected contexts are propagated. If disabled, none of the contexts are propagated, even if they are selected. The default value is Enabled, with all four contexts selected.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the resource. The resource can be enabled or disabled. The default value is Enabled.</p>
+</dd>
+<dt>Thread Priority</dt>
+<dd>
+<p>The priority to assign to created threads. The default value is 5.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of this resource.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the resource. GlassFish Server does not define any additional properties for this resource type. Moreover, this resource type does not currently use any additional properties.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for the resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="sthref25" name="sthref25"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-managedthreadfactorynew.html">To Create a Managed Thread Factory</a></p>
+</li>
+<li>
+<p><a href="task-managedthreadfactoryedit.html">To Edit a Managed Thread Factory</a></p>
+</li>
+<li>
+<p><a href="task-managedthreadfactorydelete.html">To Delete a Managed Thread Factory</a></p>
+</li>
+</ul>
+<a id="GHCON156" name="GHCON156"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM842"><code>create-managed-thread-factory</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM875"><code>list-managed-thread-factories</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM852"><code>delete-managed-thread-factory</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

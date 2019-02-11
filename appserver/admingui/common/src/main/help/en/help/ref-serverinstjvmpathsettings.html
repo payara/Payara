@@ -1,0 +1,116 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-serverinstjvmpathsettings" name="ref-serverinstjvmpathsettings"></a><a id="GHCOM00091" name="GHCOM00091"></a></p>
+
+<h4><a id="sthref189" name="sthref189"></a>JVM Path Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the JVM Path settings page to configure the native library path. The native library path is a concatenation of the following paths:</p>
+<ul>
+<li>
+<p>The native library path prefix</p>
+</li>
+<li>
+<p>The server's path for its native libraries (that is, <i>as-install</i><code>/lib</code>)</p>
+</li>
+<li>
+<p>The 64-bit native library directories, if applicable</p>
+</li>
+<li>
+<p>The value of the <code>java.library.path</code> variable for the JVM used to start the GlassFish Server (this differs between operating systems)</p>
+</li>
+<li>
+<p>Any paths that are specified on the <a href="ref-serverinstjvmprofiler.html">JVM Profiler Settings</a> page, if the profiler is enabled</p>
+</li>
+<li>
+<p>The native library path suffix</p>
+</li>
+</ul>
+<p>Other settings are shown as read-only values for domains that have been upgraded from an earlier release of GlassFish Server. They are not supported in the v3 release.</p>
+<p>The JVM Path Settings page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Environment Classpath</dt>
+<dd>
+<p>If the Ignore checkbox is selected, the <code>CLASSPATH</code> environment variable is ignored. The <code>CLASSPATH</code> environment variable is convenient for basic tutorials in programming, but is not recommended for enterprise environments. This is a read-only field.</p>
+</dd>
+<dt>System Classpath</dt>
+<dd>
+<p>The path to the classes on your system. This is a read-only field.</p>
+</dd>
+<dt>Classpath Prefix</dt>
+<dd>
+<p>Full paths to the JAR files to be prepended to the server's classpath, one per line. This is a read-only field.</p>
+</dd>
+<dt>Classpath Suffix</dt>
+<dd>
+<p>Full paths to the JAR files to be appended to the server's classpath, one per line. This is a read-only field.</p>
+</dd>
+<dt>Native Library Path Prefix</dt>
+<dd>
+<p>Full paths to the JAR files to be prepended to the native library path, one per line.</p>
+</dd>
+<dt>Native Library Path Suffix</dt>
+<dd>
+<p>Full paths to the JAR files to be appended to the native library path, one per line.</p>
+</dd>
+</dl>
+<a id="GHCOM414" name="GHCOM414"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jvmsettings.html">To Configure the JVM General Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmpathsettings.html">To Configure the JVM Path Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmoptions.html">To Configure the JVM Options</a></p>
+</li>
+<li>
+<p><a href="task-securitymanagerdisable.html">To Disable the Security Manager</a></p>
+</li>
+<li>
+<p><a href="task-jvmprofilersettings.html">To Configure the JVM Profiler Settings</a></p>
+</li>
+</ul>
+<a id="GHCOM415" name="GHCOM415"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00042"><code>create-jvm-options</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00094"><code>delete-jvm-options</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00180"><code>list-jvm-options</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00050"><code>create-profiler</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00102"><code>delete-profiler</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,144 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-appredeploy" name="task-appredeploy"></a><a id="GHCOM00167" name="GHCOM00167"></a></p>
+
+<h4><a id="sthref59" name="sthref59"></a><a id="sthref60" name="sthref60"></a>To Redeploy a Deployed Application</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Redeploying an application deploys a new version of the application while preserving the settings and other options with which the application was originally deployed.</p>
+<a id="GHCOM258" name="GHCOM258"></a>
+<h5>Before You Begin</h5>
+<p>Ensure that the application that you are redeploying is already deployed.</p>
+<ol>
+<li>
+<p>In the navigation tree, select the Applications node.</p>
+<p>The Applications page opens.</p>
+</li>
+<li>
+<p>In the Deployed Applications table, click Redeploy in the row for the application that you are redeploying.</p>
+<p>The application name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>The Redeploy Applications or Modules page opens.</p>
+</li>
+<li>
+<p>Specify the location of the application to redeploy.</p>
+<ul>
+<li>
+<p>If the application is an archive file that resides on or is accessible from the client machine, select the option Packaged File to Be Uploaded to the Server.</p>
+<p>The client machine is the host on which you are viewing the Administration Console through a browser.</p>
+<p>Click Browse to browse to the file, or type the full path to the file.</p>
+</li>
+<li>
+<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the GlassFish Server.</p>
+<p>The server machine is the host that is running the domain administration server (DAS).</p>
+<p>Click Browse Files to browse to a file, or Browse Folders to browse to a directory. Alternatively, type the full path name to the file or directory. Deploying from an exploded directory is for advanced developers and is not recommended for production environments.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Select the Availability Enabled checkbox to enable session persistence and SFSB checkpointing for the application.</p>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application. If set to true, the specified application is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</li>
+<li>
+<p>Select the Precompile JSPs checkbox to precompile JavaServer Pages (JSP) files.</p>
+<p>If this option is disabled, JSP files are compiled at runtime when they are first accessed. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Run Verifier checkbox to verify deployment descriptors before redeployment.</p>
+<p>If this option is selected and if verification fails, redeployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</li>
+<li>
+<p>Select the Java Web Start checkbox to enable Java Web Start access for an application client module.</p>
+<p>This option is enabled or disabled by default according to its setting when originally deployed.</p>
+</li>
+<li>
+<p>Select the Keep State checkbox to retain web sessions, SFSB instances, and persistently created EJB timers between redeployments.</p>
+<p>This option is disabled by default. This option is supported only on the default server instance, named <code>server</code>. It is not supported and ignored for any other target.</p>
+<p>Some changes to an application between redeployments prevent this feature from working properly. For example, do not change the set of instance variables in the SFSB bean class.</p>
+<p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
+<p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
+<p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
+<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+</li>
+<li>
+<p>Select the Preserve Application Scoped Resources checkbox to preserve any application-scoped resources and restore them during redeployment.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCOM259" name="GHCOM259"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+</li>
+<li>
+<p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+</li>
+<li>
+<p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appdeployconn.html">To Deploy a Connector Module</a></p>
+</li>
+<li>
+<p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+</li>
+<li>
+<p><a href="task-appedit.html">To Edit a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewtargets.html">To View Application Targets</a></p>
+</li>
+<li>
+<p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+</li>
+<li>
+<p><a href="task-applaunch.html">To Launch an Application</a></p>
+</li>
+<li>
+<p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appclientstubs.html">To Download Application Client Stubs</a></p>
+</li>
+<li>
+<p><a href="task-apprestart.html">To Reload a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesview.html">To View Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesedit.html">To Modify Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="../../../ejb/en/help/task-ejbcontaineravailability.html">To Configure Availability Settings for the EJB Container</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

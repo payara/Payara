@@ -1,0 +1,130 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmsconnectionnew" name="ref-jmsconnectionnew"></a><a id="GHJMS00003" name="GHJMS00003"></a></p>
+
+<h4><a id="sthref49" name="sthref49"></a><a id="sthref50" name="sthref50"></a>New JMS Connection Factory</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JMS Connection Factory page to create a new JMS connection factory.</p>
+<p>The New JMS Connection Factory page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>The type of the connection factory. Available choices are <code>javax.jms.ConnectionFactory</code>, <code>javax.jms.QueueConnectionFactory</code>, and <code>javax.jms.TopicConnectionFactory</code>.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the connection factory.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the connection factory. The connection factory can be enabled or disabled. This option is enabled by default.</p>
+</dd>
+<dt>Initial and Minimum Pool Size</dt>
+<dd>
+<p>The minimum number of connections in the pool for the connection factory. The default value is 8.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of connections in the pool for the connection factory. The default value is 32.</p>
+</dd>
+<dt>Pool Resize Quantity</dt>
+<dd>
+<p>The number of connections to be removed when pool idle timeout expires. The default value is 2.</p>
+</dd>
+<dt>Idle Timeout</dt>
+<dd>
+<p>The maximum time in seconds that a connection can remain idle in the pool. The default value is 300.</p>
+</dd>
+<dt>Max Wait Time</dt>
+<dd>
+<p>The amount of time the application requesting a connection will wait before getting a connection timeout. The default value is 60000.</p>
+</dd>
+<dt>On Any Failure</dt>
+<dd>
+<p>If the Close All Connections checkbox is selected, GlassFish Server will close all connections in the pool and reestablish them if a single connection fails. This option is disabled by default.</p>
+</dd>
+<dt>Transaction Support</dt>
+<dd>
+<p>The chosen transaction support overrides the transaction support attribute in the resource adapter associated with this connection pool in a downward compatible way. In other words, it can support a lower transaction level than that specified in the resource adapter, or the same transaction level as that specified in resource adapter, but it cannot specify a higher level.</p>
+<p>The value may be any of the following:</p>
+<dl>
+<dt>XATransaction</dt>
+<dd>
+<p>The resource can be used for transactions that involve the use of more than one resource within a transaction scope. This value is the default for a JMS connection factory.</p>
+<p>For example, transactions may involve this resource plus a JDBC resource, a connector resource, or another JMS connection factory resource. This value offers the most flexibility. A resource that is configured as XATransaction will participate in two-phase commit operations.</p>
+</dd>
+<dt>LocalTransaction</dt>
+<dd>
+<p>The resource can be used either for transactions that involve only one resource within the transaction scope or as the last agent in a distributed transaction that involves more than one XA resource.</p>
+<p>This value offers significantly better performance. A resource that is configured as LocalTransaction will not be used in two-phase commit operations.</p>
+</dd>
+<dt>NoTransaction</dt>
+<dd>
+<p>The resource can never participate in transactions. This setting is of limited use in JMS applications.</p>
+</dd>
+</dl>
+</dd>
+<dt>Connection Validation</dt>
+<dd>
+<p>If the Required checkbox is selected, connections are validated before being given to the application. If a resource's validation fails, it is destroyed, and a new resource is created and returned. This option is disabled by default.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the connection factory.</p>
+<p>For information on available properties, see <a href="ref-jmsconnectionproperties.html">Properties Specific to JMS Connection Factories</a>.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="sthref51" name="sthref51"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jmsconnectionnew.html">To Create a JMS Connection Factory Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsconnectionedit.html">To Edit a JMS Connection Factory Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsconnectiondelete.html">To Delete a JMS Connection Factory Resource</a></p>
+</li>
+</ul>
+<a id="sthref52" name="sthref52"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00040"><code>create-jms-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00177"><code>list-jms-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00092"><code>delete-jms-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

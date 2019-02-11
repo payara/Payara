@@ -1,0 +1,105 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-threadfactories" name="ref-threadfactories"></a><a id="GHCON153" name="GHCON153"></a></p>
+
+<h4>Managed Thread Factories<a id="sthref21" name="sthref21"></a><a id="sthref22" name="sthref22"></a></h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Managed thread factories are used by applications to create managed threads on demand. The threads are started and managed by the container. The context of the container is propagated to the thread executing the task.</p>
+<p>Use the Managed Thread Factories page to configure managed thread factory resources.</p>
+<p>For each managed thread factory resource, the following information is provided.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the resource.</p>
+</dd>
+<dt>Logical JNDI Name</dt>
+<dd>
+<p>The logical JNDI name for the resource. See <a href="../../../common/en/help/ref-logicaljndinames.html">Logical JNDI Names</a> for more information.</p>
+</dd>
+<dt>Enabled</dt>
+<dd>
+<p>(This column is displayed if only the default server instance, <code>server</code>, exists in the domain.)</p>
+<p>A check mark if the resource is enabled, or an X if the resource is disabled.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>(This column is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>The number of clusters and standalone instances to which the resource is targeted and how many of these targets the resource is enabled on. For example, "Enabled on 2 of 4 Target(s)" means that the resource is targeted to four clusters and standalone instances and that it is enabled on two of these four targets.</p>
+</dd>
+<dt>Context Information</dt>
+<dd>
+<p>The container contexts propagated to threads.</p>
+</dd>
+<dt>Thread Priority</dt>
+<dd>
+<p>The priority assigned to threads.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the resource.</p>
+</dd>
+</dl>
+<p>The Managed Thread Factories table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new resource.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected resources.</p>
+</dd>
+<dt>Enable</dt>
+<dd>
+<p>Button to enable one or more selected resources.</p>
+</dd>
+<dt>Disable</dt>
+<dd>
+<p>Button to disable one or more selected resources.</p>
+</dd>
+</dl>
+<a id="sthref23" name="sthref23"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-managedthreadfactorynew.html">To Create a Managed Thread Factory</a></p>
+</li>
+<li>
+<p><a href="task-managedthreadfactoryedit.html">To Edit a Managed Thread Factory</a></p>
+</li>
+<li>
+<p><a href="task-managedthreadfactorydelete.html">To Delete a Managed Thread Factory</a></p>
+</li>
+</ul>
+<a id="GHCON154" name="GHCON154"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM842"><code>create-managed-thread-factory</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM875"><code>list-managed-thread-factories</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM852"><code>delete-managed-thread-factory</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

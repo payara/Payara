@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jmsconnectionnew" name="task-jmsconnectionnew"></a><a id="GHJMS00020" name="GHJMS00020"></a></p>
+
+<h4><a id="sthref2" name="sthref2"></a><a id="sthref3" name="sthref3"></a>To Create a JMS Connection Factory Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>When you create a JMS connection factory, GlassFish Server creates a connector connection pool and a connector resource for the connection factory. You can view these objects under the Connectors node.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Under the Resources node, expand the JMS Resources node.</p>
+</li>
+<li>
+<p>Under the JMS Resources node, select the JMS Connection Factories node.</p>
+<p>The JMS Connection Factories page opens.</p>
+</li>
+<li>
+<p>On the JMS Connection Factories page, click New.</p>
+<p>The New JMS Connection Factory page appears.</p>
+</li>
+<li>
+<p>In the Pool Name field, type the unique name of the connection factory.</p>
+<p>GlassFish Server sets the JNDI name of the connection factory to this value..</p>
+</li>
+<li>
+<p>From the Resource Type drop-down list, select either <code>javax.jms.ConnectionFactory</code>, <code>javax.jms.QueueConnectionFactory</code>, or <code>javax.jms.TopicConnectionFactory</code>.</p>
+</li>
+<li>
+<p>In the Description field, type a description of the connection factory.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the resource at run time.</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>In the Initial and Minimum Pool Size field, specify the minimum number of connections in the pool.</p>
+<p>The default value is 8.</p>
+</li>
+<li>
+<p>In the Maximum Pool Size field, specify the maximum number of connections in the pool.</p>
+<p>The default value is 32.</p>
+</li>
+<li>
+<p>In the Pool Resize Quantity field, specify the number of connections to be removed when pool idle timeout expires.</p>
+<p>The default value is 2.</p>
+</li>
+<li>
+<p>In the Idle Timeout field, specify the maximum time in seconds that a connection can remain idle in the pool.</p>
+<p>The default value is 300.</p>
+</li>
+<li>
+<p>In the Max Wait Time field, specify the amount of time the application requesting a connection will wait before getting a connection timeout.</p>
+<p>The default value is 60000.</p>
+</li>
+<li>
+<p>Select the On Any Failure Close All Connections checkbox so GlassFish Server will close all connections in the pool and reestablish them if a single connection fails.</p>
+<p>If you do not select the checkbox, individual connections will be reestablished only when they are used. This option is disabled by default.</p>
+</li>
+<li>
+<p>For a JMS connection factory resource, select the level of Transaction Support.</p>
+<p>The selected value overwrites the transaction support attribute in the Resource Adapter in a downward compatible way.</p>
+<ul>
+<li>
+<p>Select XATransaction (the default value for the JMS Resource Adapter) for a resource that can be used for transactions that involve the use of more than one resource within a transaction scope.</p>
+<p>For example, transactions may involve this resource plus a JDBC resource, a connector resource, or another JMS connection factory resource. This value offers the most flexibility. A resource that is configured as XATransaction will participate in two-phase commit operations.</p>
+</li>
+<li>
+<p>Select LocalTransaction for a resource that can be used either for transactions that involve only one resource within the transaction scope or as the last agent in a distributed transaction that involves more than one XA resource.</p>
+<p>This value offers significantly better performance. A resource that is configured as LocalTransaction will not be used in two-phase commit operations.</p>
+</li>
+<li>
+<p>Select NoTransaction for a resource that can never participate in transactions.</p>
+<p>This setting is of limited use in JMS applications.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Select the Connection Validation Required checkbox to enable connection validation.</p>
+<p>If this option is selected, connections are validated before being given to the application. If a resource's validation fails, it is destroyed, and a new resource is created and returned. This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties for the connection factory.</p>
+<p>For information on available properties, see <a href="ref-jmsconnectionproperties.html">Properties Specific to JMS Connection Factories</a>.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>In the Targets area, do the following:</p>
+<ol type="a">
+<li>
+<p>From the Available column, select the target or targets to which applications that use the resource will be deployed.</p>
+<p>The available targets include the available clusters and server instances as well as the default server instance, <code>server</code>.</p>
+</li>
+<li>
+<p>Click Add to move the target to the Selected column.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="sthref4" name="sthref4"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jmsconnectionedit.html">To Edit a JMS Connection Factory Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsconnectiondelete.html">To Delete a JMS Connection Factory Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsdestinationnew.html">To Create a JMS Destination Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsdestinationedit.html">To Edit a JMS Destination Resource</a></p>
+</li>
+<li>
+<p><a href="task-jmsdestinationdelete.html">To Delete a JMS Destination Resource</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

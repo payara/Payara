@@ -1,0 +1,207 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-virtualserverprops" name="ref-virtualserverprops"></a><a id="GHWEB00012" name="GHWEB00012"></a></p>
+
+<h4><a id="sthref125" name="sthref125"></a><a id="sthref126" name="sthref126"></a>Properties Specific to Virtual Servers</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following additional properties are available for a virtual server.</p>
+<dl>
+<dt><code>sso-max-inactive-seconds</code></dt>
+<dd>
+<p>Specifies the number of seconds after which a user's single sign-on record becomes eligible for purging if no client activity is received. Since single sign-on applies across several applications on the same virtual server, access to any of the applications keeps the single sign-on record active.</p>
+<p>The default value is 300 seconds (5 minutes). Higher values provide longer single sign-on persistence for users at the expense of more memory use on the server.</p>
+</dd>
+<dt><code>sso-reap-interval-seconds</code></dt>
+<dd>
+<p>Specifies the number of seconds between purges of expired single sign-on records.</p>
+<p>The default value is 60.</p>
+</dd>
+<dt><code>ssoCookieSecure</code></dt>
+<dd>
+<p>Sets the <code>Secure</code> attribute of any <code>JSESSIONIDSSO</code> cookies associated with the web applications deployed to this virtual server. This property is applicable only if single sign-on is enabled. Allowed values are as follows:</p>
+<dl>
+<dt><code>true</code></dt>
+<dd>
+<p>Sets <code>Secure</code> to true.</p>
+</dd>
+<dt><code>false</code></dt>
+<dd>
+<p>Sets <code>Secure</code> to false.</p>
+</dd>
+<dt><code>dynamic</code></dt>
+<dd>
+<p>The <code>JSESSIONIDSSO</code> cookie inherits the <code>Secure</code> setting of the first session participating in SSO.</p>
+</dd>
+</dl>
+<p>To set the Secure attribute of a <code>JSESSIONID</code> cookie, use the <code>cookieSecure</code> <code>cookie-properties</code> property in the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00130"><i>cookie-properties</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt><code>setCacheControl</code></dt>
+<dd>
+<p>Specifies a comma-separated list of <code>Cache-Control</code> response directives. For a list of valid directives, see Section 14.9 of the document at http://www.ietf.org/rfc/rfc2616.txt (<code><a href="http://www.ietf.org/rfc/rfc2616.txt">http://www.ietf.org/rfc/rfc2616.txt</a></code>).</p>
+</dd>
+<dt><code>accessLogBufferSize</code></dt>
+<dd>
+<p>Specifies the size, in bytes, of the buffer where access log calls are stored. If the value is less than 5120, a warning message is issued, and the value is set to 5120. The default value is 32768.</p>
+</dd>
+<dt><code>accessLogWriterInterval</code></dt>
+<dd>
+<p>Specifies the number of seconds before the log is written to the disk. The access log is written when the buffer is full or when the interval expires. If the value is 0, the buffer is always written even if it is not full. This means that each time the server is accessed, the log message is stored directly to the file. The default value is 300.</p>
+</dd>
+<dt><code>allowRemoteAddress</code></dt>
+<dd>
+<p>Specifies a comma-separated list of regular expression patterns that the remote client's IP address is compared to. If this property is specified, the remote address <i>must</i> match for this request to be accepted. If this property is not specified, all requests are accepted <i>unless</i> the remote address matches a <code>denyRemoteAddress</code> pattern.</p>
+</dd>
+<dt><code>denyRemoteAddress</code></dt>
+<dd>
+<p>Specifies a comma-separated list of regular expression patterns that the remote client's IP address is compared to. If this property is specified, the remote address must <i>not</i> match for this request to be accepted. If this property is not specified, request acceptance is governed solely by the <code>allowRemoteAddress</code> property.</p>
+</dd>
+<dt><code>allowRemoteHost</code></dt>
+<dd>
+<p>Specifies a comma-separated list of regular expression patterns that the remote client's hostname (as returned by <code>[java.net.]Socket.getInetAddress().getHostName()</code>) is compared to. If this property is specified, the remote hostname <i>must</i> match for this request to be accepted. If this property is not specified, all requests are accepted <i>unless</i> the remote hostname matches a <code>denyRemoteHost</code> pattern.</p>
+</dd>
+<dt><code>denyRemoteHost</code></dt>
+<dd>
+<p>Specifies a comma-separated list of regular expression patterns that the remote client's hostname (as returned by <code>[java.net.]Socket.getInetAddress().getHostName()</code>) is compared to. If this property is specified, the remote hostname must <i>not</i> match for this request to be accepted. If this property is not specified, request acceptance is governed solely by the <code>allowRemoteHost</code> property.</p>
+<p>Setting this property has no effect if the GlassFish Server domain is accessed through a network listener that has the JK Listener option enabled.</p>
+</dd>
+<dt><code>authRealm</code></dt>
+<dd>
+<p>Specifies the name of an authentication realm, which overrides the server instance's default realm for standalone web applications deployed to this virtual server. A realm defined in a standalone web application's <code>web.xml</code> file overrides the virtual server's realm. For more information, see <a href="../../../common/en/help/ref-realms.html">Realms</a>.</p>
+</dd>
+<dt><code>securePagesWithPragma</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to ensure that for all web applications on this virtual server file downloads using SSL work properly in Internet Explorer.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>The default value is <code>true</code>.</p>
+</dd>
+<dt><code>alternatedocroot_</code><i>n</i></dt>
+<dd>
+<p>Specifies an alternate document root (docroot), where <i>n</i> is a positive integer that allows specification of more than one. Alternate docroots allow web applications to serve requests for certain resources from outside their own docroot, based on whether those requests match one (or more) of the URI patterns of the web application's alternate docroots.</p>
+<p>If a request matches an alternate docroot's URI pattern, it is mapped to the alternate docroot by appending the request URI (minus the web application's context root) to the alternate docroot's physical location (directory). If a request matches multiple URI patterns, the alternate docroot is determined according to the following precedence order:</p>
+<ul>
+<li>
+<p>Exact match</p>
+</li>
+<li>
+<p>Longest path match</p>
+</li>
+<li>
+<p>Extension match</p>
+</li>
+</ul>
+<p>For example, the following properties specify three alternate docroots. The URI pattern of the first alternate docroot uses an exact match, whereas the URI patterns of the second and third alternate docroots use extension and longest path prefix matches, respectively.</p>
+<pre>
+&lt;property name="alternatedocroot_1" 
+   value="from=/my.jpg dir=/srv/images/jpg"/&gt;
+&lt;property name="alternatedocroot_2" 
+   value="from=*.jpg dir=/srv/images/jpg"/&gt;
+&lt;property name="alternatedocroot_3" 
+   value="from=/jpg/* dir=/src/images"/&gt;
+</pre>
+<p>The <code>value</code> of each alternate docroot has two components: The first component, <code>from</code>, specifies the alternate docroot's URI pattern, and the second component, <code>dir</code>, specifies the alternate docroot's physical location (directory). Spaces are allowed in the <code>dir</code> component.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt><code>contextXmlDefault</code></dt>
+<dd>
+<p>Specifies the location, relative to <i>domain-dir</i>, of the <code>context.xml</code> file for this virtual server, if one is used. For more information about the <code>context.xml</code> file, see The Context Container (<code><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/context.html">http://tomcat.apache.org/tomcat-5.5-doc/config/context.html</a></code>).</p>
+</dd>
+<dt><code>allowLinking</code></dt>
+<dd>
+<p>If <code>true</code>, resources that are symbolic links will be served for all web applications deployed on this virtual server. Individual web applications may override this setting by using the <code>sun-web-app</code> property <code>allowLinking</code> in the <code>sun-web.xml</code> file:</p>
+<pre>
+&lt;sun-web-app&gt;
+   &lt;property name="allowLinking" 
+      value="{true|false}"/&gt;
+&lt;/sun-web-app&gt;
+</pre>
+<p>For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>The default value is <code>false</code>.</p>
+
+<hr>
+<p><b>Caution:</b></p>
+<p>Setting this property to true on Windows systems exposes JSP source code.</p>
+
+<hr>
+
+</dd>
+<dt><code>send-error_</code><i>n</i></dt>
+<dd>
+<p>Specifies custom error page mappings for the virtual server, which are inherited by all web applications deployed on the virtual server. A web application can override these custom error page mappings in its <code>web.xml</code> deployment descriptor. The value of each <code>send-error_</code><i>n</i> property has three components, which may be specified in any order:</p>
+<ul>
+<li>
+<p>The first component, <code>code</code>, specifies the three-digit HTTP response status code for which the custom error page should be returned in the response.</p>
+</li>
+<li>
+<p>The second component, <code>path</code>, specifies the absolute or relative file system path of the custom error page. A relative file system path is interpreted as relative to the <i>domain-dir</i><code>/config</code> directory.</p>
+</li>
+<li>
+<p>The third component, <code>reason</code>, is optional and specifies the text of the reason string (such as <code>Unauthorized</code> or <code>Forbidden</code>) to be returned.</p>
+</li>
+</ul>
+<p>For example:</p>
+<pre>
+&lt;property name="send-error_1"
+   value="code=401 path=/myhost/401.html reason=MY-401-REASON"/&gt;
+</pre>
+<p>This example property definition causes the contents of <code>/myhost/401.html</code> to be returned with 401 responses, along with this response line:</p>
+<pre>
+HTTP/1.1 401 MY-401-REASON
+</pre></dd>
+<dt><code>redirect_</code><i>n</i></dt>
+<dd>
+<p>Specifies that a request for an old URL is treated as a request for a new URL. These properties are inherited by all web applications deployed on the virtual server. The value of each <code>redirect_</code><i>n</i> property has two components, which may be specified in any order:</p>
+<ul>
+<li>
+<p>The first component, <code>from</code>, specifies the prefix of the requested URI to match.</p>
+</li>
+<li>
+<p>The second component, <code>url-prefix</code>, specifies the new URL prefix to return to the client. The <code>from</code> prefix is simply replaced by this URL prefix.</p>
+</li>
+</ul>
+<p>For example:</p>
+<pre>
+&lt;property name="redirect_1" 
+  value="from=/dummy url-prefix=http://etude"/&gt;
+</pre></dd>
+<dt><code>valve_</code><i>n</i></dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom valve, where <i>n</i> is a positive integer that allows specification of more than one. The valve class must implement the <code>org.apache.catalina.Valve</code> interface from Tomcat or previous GlassFish Server releases, or the <code>org.glassfish.web.valve.GlassFishValve</code> interface from the current GlassFish Server release. For example:</p>
+<pre>
+&lt;property name="valve_1"
+value="org.glassfish.extension.Valve"/&gt;
+</pre>
+<p>You can set this property for a specific web application. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt><code>listener_</code><i>n</i></dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom Catalina listener, where <i>n</i> is a positive integer that allows specification of more than one. The listener class must implement the <code>org.apache.catalina.ContainerListener</code> or <code>org.apache.catalina.LifecycleListener</code> interface. For example:</p>
+<pre>
+&lt;property name="listener_1"
+value="org.glassfish.extension.MyLifecycleListener"/&gt;
+</pre>
+<p>You can set this property for a specific web application. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt><code>errorReportValve</code></dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom valve that produces default error pages for applications on this virtual server. Specify an empty string to disable the default error page mechanism for this virtual server.</p>
+</dd>
+</dl>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

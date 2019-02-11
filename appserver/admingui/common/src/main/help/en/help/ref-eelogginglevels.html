@@ -1,0 +1,129 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-eelogginglevels" name="ref-eelogginglevels"></a><a id="GHCOM00095" name="GHCOM00095"></a></p>
+
+<h4><a id="sthref193" name="sthref193"></a><a id="sthref194" name="sthref194"></a>Module Log Levels</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Module Log Levels page to configure the logging levels for individual modules.</p>
+<p>For each module, the following information is provided.</p>
+<dl>
+<dt>Logger Name</dt>
+<dd>
+<p>The name of the logger for the module (for example, <code>javax.enterprise.system.tools.admin</code>).</p>
+</dd>
+<dt>Log Level</dt>
+<dd>
+<p>The current logging level for the module.</p>
+</dd>
+</dl>
+<p>The Logger Settings table also contains the following options.</p>
+<dl>
+<dt>Add Logger</dt>
+<dd>
+<p>Button to add a logger module. Clicking this button adds a row to the Logger Settings table. Enter information about the logger module in the new row.</p>
+</dd>
+<dt>Delete Logger</dt>
+<dd>
+<p>Button to delete one or more selected modules.</p>
+</dd>
+<dt>Level</dt>
+<dd>
+<p>Drop-down list from which you can select a logging level to be applied to all selected modules.</p>
+</dd>
+<dt>Change Level</dt>
+<dd>
+<p>Button to change the logging level for one or more selected modules.</p>
+</dd>
+</dl>
+<p>The following log levels are available. They are listed in order from highest to lowest.</p>
+<dl>
+<dt>EMERGENCY</dt>
+<dd>
+<p>The server is in an unusable state. A severe system failure or panic has occurred.</p>
+</dd>
+<dt>ALERT</dt>
+<dd>
+<p>A particular service is in an unusable state. Automatic recovery is not possible.</p>
+</dd>
+<dt>SEVERE</dt>
+<dd>
+<p>Events that interfere with normal program execution.</p>
+</dd>
+<dt>WARNING</dt>
+<dd>
+<p>Warnings, including exceptions.</p>
+</dd>
+<dt>INFO</dt>
+<dd>
+<p>Messages related to server configuration or server status, excluding errors.</p>
+</dd>
+<dt>CONFIG</dt>
+<dd>
+<p>Messages related to server configuration.</p>
+</dd>
+<dt>FINE</dt>
+<dd>
+<p>Minimal verbosity.</p>
+</dd>
+<dt>FINER</dt>
+<dd>
+<p>Moderate verbosity.</p>
+</dd>
+<dt>FINEST</dt>
+<dd>
+<p>Maximum verbosity.</p>
+</dd>
+<dt>OFF</dt>
+<dd>
+<p>No logging messages.</p>
+</dd>
+</dl>
+<a id="GHCOM423" name="GHCOM423"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-eelogging.html">To Configure General Logging Settings</a></p>
+</li>
+<li>
+<p><a href="task-eelogginglevels.html">To Configure Log Levels</a></p>
+</li>
+<li>
+<p><a href="task-logviewer.html">To View Log Files for the DAS</a></p>
+</li>
+</ul>
+<a id="GHCOM424" name="GHCOM424"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00007"><code>collect-log-files</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00183"><code>list-log-levels</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00224"><code>rotate-log</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00228"><code>set-log-levels</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

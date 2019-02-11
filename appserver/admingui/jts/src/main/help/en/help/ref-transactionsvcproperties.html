@@ -1,0 +1,66 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-transactionsvcproperties" name="ref-transactionsvcproperties"></a><a id="GHJTS00003" name="GHJTS00003"></a></p>
+
+<h4><a id="sthref16" name="sthref16"></a><a id="sthref17" name="sthref17"></a>Properties Specific to the Transaction Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following properties are available for configuring the Transaction Service.</p>
+<dl>
+<dt><code>oracle-xa-recovery-workaround</code></dt>
+<dd>
+<p>If set to <code>true</code>, the Oracle XA Resource workaround is used in transaction recovery. The default value is <code>true</code>.</p>
+</dd>
+<dt><code>disable-distributed-transaction-logging</code></dt>
+<dd>
+<p>If set to <code>true</code>, disables transaction logging, which might improve performance. If the On Restart Enabled checkbox is selected, this property is ignored. The default value is <code>false</code>.</p>
+</dd>
+<dt><code>xaresource-txn-timeout</code></dt>
+<dd>
+<p>Changes the <code>XAResource</code> timeout. In some cases, the <code>XAResource</code> default timeout can cause transactions to be aborted, so it is desirable to change it. The default value is specific to the <code>XAResource</code> used.</p>
+</dd>
+<dt><code>pending-txn-cleanup-interval</code></dt>
+<dd>
+<p>Specifies the interval, in seconds, at which an asynchronous thread checks for pending transactions and completes them. If this property is not specified, there is no default. If this property is present but has no value, the default value is 60.</p>
+</dd>
+<dt><code>use-last-agent-optimization</code></dt>
+<dd>
+<p>If set to <code>true</code>, enables last agent optimization, which improves the throughput of transactions. If one non-XA resource is used with XA resources in the same transaction, the non-XA resource is the last agent. The default value is <code>true</code>.</p>
+</dd>
+<dt><code>delegated-recovery</code></dt>
+<dd>
+<p>If set to <code>true</code>, cluster-wide delegated recovery is enabled. The default value is false.</p>
+</dd>
+<dt><code>wait-time-before-recovery-insec</code></dt>
+<dd>
+<p>Specifies the wait time, in seconds, after which an instance starts the recovery for a dead instance.</p>
+</dd>
+<dt><code>db-logging-resource</code></dt>
+<dd>
+<p>Specifies the JNDI name of the JDBC resource for the database to which transactions are logged. For more information, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDVG00018">Chapter 17, <i>Using the Transaction Service,</i> in <i>Oracle GlassFish Server Application Development Guide</i></a>. There is no default value.</p>
+</dd>
+<dt><code>xa-servername</code></dt>
+<dd>
+<p>Specifies the host name that the transaction service uses to identify transactions being managed by the installed GlassFish Server. This can sometimes be useful for recovering transactions from the log file that was created on a different host running the GlassFish Server.</p>
+</dd>
+</dl>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

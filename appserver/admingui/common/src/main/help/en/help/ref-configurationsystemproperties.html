@@ -1,0 +1,93 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-configurationsystemproperties" name="ref-configurationsystemproperties"></a><a id="GHCOM00130" name="GHCOM00130"></a></p>
+
+<h4><a id="sthref241" name="sthref241"></a><a id="sthref242" name="sthref242"></a>System Properties</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The System Properties page displays a list of the Java system properties that are defined in the selected named configuration. Java system properties are passed to the Java application launcher through the <code>-D</code> option of the Java application launcher whenGlassFish Server is started</p>
+<p>These properties define the default values of port settings for all GlassFish Server instances that reference the configuration.</p>
+<p>For information about predefined port settings in a configuration, see <a href="ref-predefinedconfigsysproperties.html">Predefined System Properties</a>.</p>
+<p>For each property, the following information is displayed:</p>
+<dl>
+<dt>Instance Variable Name</dt>
+<dd>
+<p>The name of the system property.</p>
+</dd>
+<dt>Default Value</dt>
+<dd>
+<p>The value that is set for the property in the named configuration that the instance references. This field is read only.</p>
+</dd>
+<dt>Instance Values</dt>
+<dd>
+<p>A link to the <a href="ref-sysinstancevalues.html">Instance Values</a> page for the property.</p>
+</dd>
+</dl>
+<p>The Additional Properties table also contains the following options.</p>
+<dl>
+<dt>Add Property</dt>
+<dd>
+<p>Button to add a property. Clicking this button adds a row to the Additional Properties table.</p>
+</dd>
+<dt>Delete Properties</dt>
+<dd>
+<p>Button to delete one or more selected properties. Any property that is deleted reverts to its default value or, if no default value is set, is undefined.</p>
+</dd>
+</dl>
+<p>The System Properties page also contains the following options:</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Dynamic Reconfiguration</dt>
+<dd>
+<p>If this option is enabled, changes to the configuration are applied to the instances that reference the configuration without the need to restart the instances.</p>
+</dd>
+<dt>Clusters and/or Instances Using This Configuration</dt>
+<dd>
+<p>A list of the clusters and instances that reference the configuration with an indication of whether each cluster or instance is running:</p>
+<ul>
+<li>
+<p>If the cluster or instance is running, a check mark (&#10003;) is displayed.</p>
+</li>
+<li>
+<p>If the cluster or instance is stopped, an exclamation point (<code>!</code>) is displayed.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<a id="GHCOM478" name="GHCOM478"></a>
+<h5>Related Tasks</h5>
+<p>To Set Default Values for Configuration Properties</p>
+<a id="GHCOM479" name="GHCOM479"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00059"><code>create-system-properties</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00110"><code>delete-system-property</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00203"><code>list-system-properties</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

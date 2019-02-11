@@ -1,0 +1,68 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-migrateejbtimers" name="ref-migrateejbtimers"></a><a id="GHCLU00004" name="GHCLU00004"></a></p>
+
+<h4><a id="sthref257" name="sthref257"></a><a id="sthref258" name="sthref258"></a><a id="sthref259" name="sthref259"></a>Migrate EJB Timers</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Migrate EJB Timers page contains the following options.</p>
+<dl>
+<dt>Source</dt>
+<dd>
+<p>Drop-down list of stopped GlassFish Server instances in the cluster. EJB timers can be migrated only from instances that are not running.</p>
+</dd>
+<dt>Destination</dt>
+<dd>
+<p>Drop-down list of running GlassFish Server instances in the cluster. EJB timers can be migrated only to instances that are running.</p>
+</dd>
+</dl>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If all instances in the cluster are not running, this page displays only a warning that no running instances to which EJB timers can be migrated are available.</p>
+
+<hr>
+
+<p>The Migrate EJB Timers page contains a table of EJB timers with the following information.</p>
+<dl>
+<dt>Server Name</dt>
+<dd>
+<p>List of GlassFish Server instances in the cluster.</p>
+</dd>
+<dt>Timer Count</dt>
+<dd>
+<p>Number of persistent timers on each instance.</p>
+</dd>
+</dl>
+<a id="sthref260" name="sthref260"></a>
+<h5>Related Tasks</h5>
+<p><a href="task-migrate-ejb-timers.html">To Migrate EJB Timers</a></p>
+<a id="sthref261" name="sthref261"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00205"><code>list-timers</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00211"><code>migrate-timers</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

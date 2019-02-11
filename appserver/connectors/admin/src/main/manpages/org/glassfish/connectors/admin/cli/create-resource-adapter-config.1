@@ -1,0 +1,72 @@
+create-resource-adapter-config(1)  asadmin Utility Subcommands  create-resource-adapter-config(1)
+
+NAME
+       create-resource-adapter-config - creates the configuration information
+       for the connector module
+
+SYNOPSIS
+           create-resource-adapter-config [--help] [--threadpoolid threadpool]
+           [--objecttype object-type] [--property (property-name=value)[:name=value]*]
+           raname
+
+DESCRIPTION
+       The create-resource-adapter-config subcommand creates configuration
+       information for the connector module. This subcommand can be run before
+       deploying a resource adapter, so that the configuration information is
+       available at the time of deployment. The resource adapter configuration
+       can also be created after the resource adapter is deployed. In this
+       case, the resource adapter is restarted with the new configuration. You
+       must first create a thread pool, using the create-threadpool
+       subcommand, and then identify that thread pool value as the ID in the
+       --threadpoolid option.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option has been deprecated.
+
+       --threadpoolid
+           The thread pool ID from which the work manager gets the thread.
+           This option takes only one thread pool ID.
+
+       --objecttype
+           The default is user.
+
+       --property
+           Keyword-value pairs that specify additional configuration
+           properties of the resource adapter Java bean. The keyword-value
+           pairs are separated by a colon (:). The properties are the names of
+           setter methods of the class that is referenced by the
+           resourceadapter-class element in the ra.xml file.
+
+OPERANDS
+       raname
+           Indicates the connector module name. It is the value of the
+           resource-adapter-name in the domain.xml file.
+
+EXAMPLES
+       Example 1, Creating a Resource Adapter Con figuration
+           This example creates a resource adapter configuration for ra1.
+
+               asadmin> create-resource-adapter-config --property foo=bar --threadpoolid
+               mycustomerthreadpool ra1
+               Command create-resource-adapter-config executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-threadpool(1), delete-resource-adapter-config(1),
+       list-resource-adapter-configs(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        create-resource-adapter-config(1)

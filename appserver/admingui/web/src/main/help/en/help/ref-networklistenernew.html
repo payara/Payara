@@ -1,0 +1,135 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-networklistenernew" name="ref-networklistenernew"></a><a id="GHWEB00016" name="GHWEB00016"></a></p>
+
+<h4><a id="sthref133" name="sthref133"></a>New Network Listener</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Network Listener page to create a new network listener.</p>
+<p>When you create a network listener, you can simultaneously create a protocol that the network listener will use, or use a protocol that you create first. Typically, there is a one-to-one relationship between a network listener and its associated protocol, but this is not required.</p>
+<p>The New Network Listener page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>A unique listener name. A network listener name cannot begin with a number.</p>
+</dd>
+<dt>Protocol</dt>
+<dd>
+<p>The protocol associated with the network listener. The following options specify whether to create a protocol or use an existing one.</p>
+<dl>
+<dt>Create a New Protocol</dt>
+<dd>
+<p>A new protocol with default settings is created for the network listener. The default name of the protocol is the name of the network listener with <code>-protocol</code> appended, but you can edit this value.</p>
+<dl>
+<dt>Virtual Server</dt>
+<dd>
+<p>For a new protocol, the virtual server to be associated with the protocol.</p>
+</dd>
+</dl>
+</dd>
+<dt>Use an Existing Protocol</dt>
+<dd>
+<p>The selected protocol is used. The protocol determines whether security is enabled for the network listener.</p>
+</dd>
+</dl>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the network listener. The listener can be enabled or disabled. This option is enabled by default. If the listener is disabled, any attempts to connect to the listener result in a socket exception (<code>java.net.ConnectException</code>).</p>
+<p>In GlassFish Server versions prior to 9.1, a listener whose enabled attribute was set to false returned a 404 response code for any requests sent to it. To achieve this behavior in the current GlassFish Server version, set the listener's status to enabled, and set every associated virtual server's state to OFF. A virtual server lists its associated listeners in its Network Listeners drop-down list.</p>
+</dd>
+<dt>Security</dt>
+<dd>
+<p>If this option is selected, security is enabled for the protocol used by the network listener. The Security field is a read-only field.</p>
+<p>If you are configuring the <code>admin-listener</code> for the domain administration server (DAS), which uses the <code>server-config</code> configuration, this option is read-only. To enable security for this listener, you must enable secure administration. See <a href="../../../common/en/help/ref-securityadmin.html">Secure Administration</a>.</p>
+</dd>
+<dt>JK Listener</dt>
+<dd>
+<p>If this option is selected, the listener supports Apache's <code>mod-jk</code> protocol. The <code>mod-jk</code> protocol is a proprietary communication/network protocol between Apache's <code>httpd</code> (web server) and an GlassFish Server back-end instance. If the listener supports this protocol, <code>httpd</code> is supposed to handle all static content, whereas any requests for dynamic resources (i.e., Servlets and JSPs) are routed to the <code>mod-jk</code> enabled network listener of the GlassFish Server, using the <code>mod-jk</code> protocol. This option is disabled by default.</p>
+</dd>
+<dt>Port</dt>
+<dd>
+<p>The port number on which the listener will listen. Legal values are 1 through 65535. On a UNIX system, creating sockets that listen on ports 1 through 1024 requires superuser privileges.</p>
+</dd>
+<dt>Address</dt>
+<dd>
+<p>The IP address on which the network listener will listen. The address can be in dotted-pair or IPv6 notation. It can be <code>any</code> (for <code>INADDR_ANY</code>) to listen on all IP addresses. It can be a hostname.</p>
+</dd>
+<dt>Thread Pool</dt>
+<dd>
+<p>The thread pool associated with the network listener. Normally, you select one of the two thread pools that are configured when you install the GlassFish Server.</p>
+</dd>
+<dt>Transport</dt>
+<dd>
+<p>The type of transport for the network listener. By default, the only choice is <code>tcp</code>.</p>
+</dd>
+</dl>
+<a id="sthref134" name="sthref134"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-networklistenernew.html">To Create a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklisteneredit.html">To Edit a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklistenerdelete.html">To Delete a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolssledit.html">To Edit SSL Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-virtualservercreate.html">To Create a Virtual Server</a></p>
+</li>
+</ul>
+<a id="sthref135" name="sthref135"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00046"><code>create-network-listener</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00186"><code>list-network-listeners</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00098"><code>delete-network-listener</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

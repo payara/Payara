@@ -1,0 +1,114 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmsavailability" name="ref-jmsavailability"></a><a id="GHJMS00009" name="GHJMS00009"></a></p>
+
+<h4><a id="sthref71" name="sthref71"></a><a id="sthref72" name="sthref72"></a>JMS Availability</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the JMS Availability page to configure the Message Queue broker cluster to service the GlassFish Server cluster.</p>
+
+<hr>
+<p><b>Caution:</b></p>
+<p>Before using the JMS Availability page to reconfigure an existing cluster, you must follow the special procedures to migrate to another type of broker cluster, as described in <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSHAG00158">To Migrate Between Types of Embedded or Local Conventional Broker Clusters</a> in<i>Oracle GlassFish Server High Availability Administration Guide</i>. Failing to perform these special procedures could lead to data loss or corruption and even render your setup unusable, depending on the JMS operations performed on the existing cluster.</p>
+
+<hr>
+
+<p>The JMS Availability page contains the following options.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If any instances that use the configuration are running, the JMS Availability page displays a warning, sets all options to read-only, and disables the Save button.</p>
+
+<hr>
+
+<dl>
+<dt>JMS Service Type</dt>
+<dd>
+<p>The type of brokers (called JMS hosts in GlassFish Server) to use in the broker cluster. The type chosen determines what types of broker clusters are available. The broker types are as follows.</p>
+<dl>
+<dt>Embedded</dt>
+<dd>
+<p>Broker configuration and lifecycle are managed by GlassFish Server. Each GlassFish clustered instance is serviced by a broker running in the same JVM as the instance.</p>
+<p>If the JMS Service Type option is set to Embedded, only conventional Message Queue broker clusters are supported. Options to configure the conventional cluster are displayed.</p>
+</dd>
+<dt>Local</dt>
+<dd>
+<p>Broker configuration and lifecycle are managed by GlassFish Server. Each GlassFish clustered instance is serviced by a broker running in a separate JVM on the same host as the instance.</p>
+<p>If the JMS Service Type option is set to Local, both conventional and enhanced (highly available) Message Queue broker clusters are supported. Options to select the cluster type and to configure the cluster are displayed.</p>
+</dd>
+<dt>Remote</dt>
+<dd>
+<p>Broker and broker cluster configuration and lifecycle are managed using Message Queue administrative tools.</p>
+<p>If the JMS Service Type option is set to Remote, no other options are displayed.</p>
+</dd>
+</dl>
+</dd>
+<dt>JMS Cluster Type</dt>
+<dd>
+<p>The type of Message Queue broker cluster to use for the GlassFish Server cluster.</p>
+<p>If the JMS Cluster Type option is set to Conventional, the following options are displayed.</p>
+<dl>
+<dt>JMS Configuration Store Type</dt>
+<dd>
+<p>The type of data store to use for the conventional cluster's configuration data. If this option is set to Master Broker, one broker in the cluster is designated as the master broker and the configuration data is stored by it. If this option is set to Shared DB, the configuration data is stored in a JDBC data store accessible to all the brokers. In this case, the database-related options are displayed.</p>
+</dd>
+<dt>JMS Message Store Type</dt>
+<dd>
+<p>The type of data store each broker is to use to store its message data. If this option is set to File, each broker stores its message data in a file-based data store. If this option is set to JDBC, each broker stores its message data in a JDBC data store.</p>
+</dd>
+</dl>
+<p>If the JMS Cluster Type option is set to Enhanced (HA), the database-related options are displayed.</p>
+</dd>
+<dt>Database Vendor</dt>
+<dt>Database URL</dt>
+<dt>Database User</dt>
+<dd>
+<p>The database vendor, access url, and user of the JDBC database to use in any of these situations:</p>
+<ul>
+<li>
+<p>When the configuration store type of a conventional cluster is set to Shared DB</p>
+</li>
+<li>
+<p>When the message store type of a conventional cluster is set to JDBC</p>
+</li>
+<li>
+<p>When the cluster type is set to Enhanced (HA)</p>
+</li>
+</ul>
+<p>For information about supported vendors and the formats of access urls for each vendor, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GMADG00244">JDBC-Based Persistence</a> in <i>Oracle GlassFish Server Message Queue Administration Guide</i>.</p>
+</dd>
+<dt>Database Authentication</dt>
+<dt>Database Password</dt>
+<dt>Password Alias</dt>
+<dd>
+<p>The password information for the JDBC database user specified in Database User.</p>
+<p>If Database Authentication is set to Password, the Database Password option is displayed. If Database Authentication is set to Password Alias, the Password Alias option is displayed.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for JMS availability.</p>
+<p>GlassFish Server does not predefine any additional JMS availability properties.</p>
+</dd>
+</dl>
+<a id="sthref73" name="sthref73"></a>
+<h5>Related Tasks</h5>
+<p><a href="task-jmsservice.html">To Configure the JMS Service</a></p>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

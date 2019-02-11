@@ -1,0 +1,126 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-transportedit" name="ref-transportedit"></a><a id="GHWEB00026" name="GHWEB00026"></a></p>
+
+<h4><a id="sthref166" name="sthref166"></a>Edit Transport</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Transport page to modify the settings of an existing transport.</p>
+<p>The Edit Transport page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the transport. The name is a read-only field. You can only specify a name when you create a new transport.</p>
+</dd>
+<dt>Classname</dt>
+<dd>
+<p>The class name of the transport implementation. The default value is <code>com.sun.grizzly.TCPSelectorHandler</code>.</p>
+</dd>
+<dt>Selection Key Handler</dt>
+<dd>
+<p>The class name of the selection key handler. A selection key handler is an abstract class that manages the lifecycle of selection keys. If you do not specify a value, a default implementation is used.</p>
+</dd>
+<dt>Byte Buffer Type</dt>
+<dd>
+<p>The type of <code>ByteBuffer</code> to be used. Available choices are <code>HEAP</code> and <code>DIRECT</code>. The default value is <code>HEAP</code>.</p>
+</dd>
+<dt>Acceptor Threads</dt>
+<dd>
+<p>The number of processors in the machine. A value of -1 indicates that Grizzly will calculate the number of acceptor threads itself, based on the number of processors in the machine. The default value is 1.</p>
+<p>To set the number of request processing threads, set the Max Thread Pool Size value of the thread pool used by a network listener that uses this transport.</p>
+</dd>
+<dt>Max Connections Count</dt>
+<dd>
+<p>The maximum number of pending connections on a network listener that uses this transport. The default value is 4096.</p>
+</dd>
+<dt>Buffer Size</dt>
+<dd>
+<p>The size, in bytes, of the buffer to be provided for input streams created by a network listener that uses this transport. The default value is 8192.</p>
+</dd>
+<dt>Idle Key Timeout</dt>
+<dd>
+<p>The number of seconds after which an idle key will be cancelled and the channel closed. The default value is 30.</p>
+</dd>
+<dt>Read Timeout</dt>
+<dd>
+<p>The number of milliseconds the GlassFish Serverwaits during the header and body parsing phase of a read operation. The default value is 30,000.</p>
+</dd>
+<dt>Selector Poll Timeout</dt>
+<dd>
+<p>The number of milliseconds an NIO Selector will block waiting for events (users' requests). The default value is 1000.</p>
+</dd>
+<dt>Write Timeout</dt>
+<dd>
+<p>The number of milliseconds the GlassFish Serverwaits before considering the remote client disconnected when writing the response. The default value is 30,000.</p>
+</dd>
+<dt>Display Configuration</dt>
+<dd>
+<p>If this option is selected, Grizzly's internal configuration is flushed to the server logs. This option may provide useful information for debugging. This option is disabled by default.</p>
+</dd>
+<dt>Snoop</dt>
+<dd>
+<p>If this option is selected, the requests/response information is dumped to the server log. This option may provide useful information for debugging, but will significantly reduce performance. This option is disabled by default.</p>
+</dd>
+<dt>TCP No Delay</dt>
+<dd>
+<p>If this option is selected, TCP_NODELAY (also called Nagle's algorithm) is enabled. This option is enabled by default.</p>
+</dd>
+</dl>
+<a id="sthref167" name="sthref167"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-transportnew.html">To Create a Transport</a></p>
+</li>
+<li>
+<p><a href="task-transportedit.html">To Edit a Transport</a></p>
+</li>
+<li>
+<p><a href="task-transportdelete.html">To Delete a Transport</a></p>
+</li>
+</ul>
+<a id="sthref168" name="sthref168"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00061"><code>create-transport</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00206"><code>list-transports</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00112"><code>delete-transport</code>(1)</a></p>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

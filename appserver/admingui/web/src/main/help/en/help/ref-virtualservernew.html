@@ -1,0 +1,118 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-virtualservernew" name="ref-virtualservernew"></a><a id="GHWEB00011" name="GHWEB00011"></a></p>
+
+<h4><a id="sthref122" name="sthref122"></a>New Virtual Server</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Virtual Server page to create a virtual server.</p>
+<p>The New Virtual Server page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Id</dt>
+<dd>
+<p>Internally visible virtual server identifier. It is not exposed to HTTP clients. The host names that are exposed to HTTP clients must be specified in the Hosts field.</p>
+</dd>
+<dt>Hosts</dt>
+<dd>
+<p>The host name or names for the machine on which the server is running. Use either actual or virtual host names that are registered with the DNS server for your network (and, on a UNIX system, in your <code>/etc/hosts</code> file). The default value is the system property value <code>${com.sun.aas.hostName}</code>.</p>
+</dd>
+<dt>State</dt>
+<dd>
+<p>The desired state for the virtual server. The value may be any of the following:</p>
+<dl>
+<dt>On</dt>
+<dd>
+<p>The virtual server is active. This value is the default.</p>
+</dd>
+<dt>Off</dt>
+<dd>
+<p>The virtual server is inactive. Attempts to access the server will return the error code 404 (resource not available).</p>
+</dd>
+<dt>Disabled</dt>
+<dd>
+<p>The virtual server is disabled. Attempts to access the server will return the error code 403 (refused to fulfill the request).</p>
+</dd>
+</dl>
+</dd>
+<dt>SSO</dt>
+<dd>
+<p>Specifies whether single sign-on behavior is inherited from the HTTP Service, enabled, or disabled. By default, it is inherited from the HTTP Service. If this option is enabled, single sign-on is enabled for web applications on this virtual server that are configured for the same realm. If this option is disabled, single sign-on is disabled for this virtual server, and users must authenticate separately to every application on the virtual server.</p>
+</dd>
+<dt>Network Listeners</dt>
+<dd>
+<p>The network listener or listeners associated with this server, if any.</p>
+</dd>
+<dt>Default Web Module</dt>
+<dd>
+<p>The deployed web module (if any) that is to respond to all requests that cannot be mapped to other web modules deployed to the virtual server. If a Default Web Module is not specified, the web module that has an empty context root is used. If there is no web module with an empty context root, a system default web module is created and used.</p>
+</dd>
+<dt>Log File</dt>
+<dd>
+<p>The path name of the file where logging messages from this virtual server will appear. By default, logging messages will appear in <i>domain-dir</i><code>/logs/server.log</code>.</p>
+</dd>
+<dt>Docroot</dt>
+<dd>
+<p>The absolute path to the root document directory for the server. The default value is <i>domain-dir</i><code>/docroot</code>.</p>
+</dd>
+<dt>Access Logging</dt>
+<dd>
+<p>Specifies whether access logging is inherited from the HTTP Service, enabled, or disabled. By default, it is inherited from the HTTP Service.</p>
+</dd>
+<dt>Directory</dt>
+<dd>
+<p>The absolute directory path to the server access logs. The default value is <i>domain-dir</i><code>/logs/access</code>.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the virtual server.</p>
+<p>For information on available properties, see <a href="ref-virtualserverprops.html">Properties Specific to Virtual Servers</a>.</p>
+</dd>
+</dl>
+<a id="sthref123" name="sthref123"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-virtualservercreate.html">To Create a Virtual Server</a></p>
+</li>
+<li>
+<p><a href="task-virtualserveredit.html">To Edit a Virtual Server</a></p>
+</li>
+<li>
+<p><a href="task-virtualserverdelete.html">To Delete a Virtual Server</a></p>
+</li>
+</ul>
+<a id="sthref124" name="sthref124"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00062"><code>create-virtual-server</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00207"><code>list-virtual-servers</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00113"><code>delete-virtual-server</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

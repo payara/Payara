@@ -1,0 +1,113 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-generaltab" name="ref-generaltab"></a><a id="GHCOM00058" name="GHCOM00058"></a></p>
+
+<h4><a id="sthref136" name="sthref136"></a><a id="sthref137" name="sthref137"></a>General Information</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The GlassFish Server creates one application server instance, called <code>server</code> at the time of installation. You can delete the server instance and create a new instance with a different name if you prefer.</p>
+<p>Each GlassFish Server instance has its own Java configuration, Java resources, application deployment areas, and server configuration settings. Changes to one application server instance have no effect on other application server instances. You can have one application server instance within one administrative domain.</p>
+<p>For many users, one application server instance meets their needs. However, depending upon your environment, you might want to create one or more additional application server instances. For example, in a development environment you can use different application server instances to test different GlassFish Server configurations, or to compare and test different application deployments. Because you can easily add or delete an application server instance, you can use them to create temporary "sandbox" areas to experiment with while developing.</p>
+<p>In addition, for each application server instance you can also create virtual servers. Within a single installed application server instance you can offer companies or individuals domain names, IP Addresses, and some administration capabilities. For the users, it is almost as if they have their own web server, without the hardware and basic server maintenance. These virtual servers do not span application server instances. For more information about virtual servers, see <a href="ref-serverinstjvmgeneral.html">JVM General Settings</a>.</p>
+<p>In operational deployments, for many purposes you can use virtual servers instead of multiple application server instances. However, if virtual servers do not meet your needs, you can also use multiple application server instances.</p>
+<p>An GlassFish Server instance is not started automatically. Once you start an instance, the instance runs until you stop it. When you stop an application server instance, it stops accepting new connections, then waits for all outstanding connections to complete. If your machine crashes or is taken offline, the server quits and any requests it was servicing may be lost.</p>
+<p>Use the General Information page to verify GlassFish Server settings and to view Java Virtual Machine data.</p>
+<p>The General Information page contains the following information.</p>
+<dl>
+<dt>Stop Button</dt>
+<dd>
+<p>Click the Stop button to stop the GlassFish Server.</p>
+</dd>
+<dt>Restart Button</dt>
+<dd>
+<p>Click the Restart button to restart the GlassFish Server.</p>
+</dd>
+<dt>View Log Files Button</dt>
+<dd>
+<p>Click the View Log Files button to view log files for a GlassFish Server instance or cluster.</p>
+</dd>
+<dt>Rotate Log Button</dt>
+<dd>
+<p>Click the Rotate Log button to rotate the log file for the Admin Server (named <code>server</code>).</p>
+</dd>
+<dt>Recover Transaction Button</dt>
+<dd>
+<p>Click the Recover Transaction button to recover transactions for the Admin Server (named <code>server</code>) on the <a href="ref-recovertransactions.html">Recover Transactions</a> page.</p>
+</dd>
+<dt>Secure Administration Button</dt>
+<dd>
+<p>Click the Secure Administration button to enable or disable secure administration on the <a href="ref-securityadmin.html">Secure Administration</a> page.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the current server.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The current status of the server instance. The server can be stopped, started, or running.</p>
+</dd>
+<dt>Uptime</dt>
+<dd>
+<p>The number of hours and minutes that the server instance has been continuously running. This is read-only.</p>
+</dd>
+<dt>HTTP Load Balancer</dt>
+<dd>
+<p>The name of the load balancer, if it is enabled for the server instance.</p>
+</dd>
+<dt>JVM</dt>
+<dd>
+<p>If you click JVM Report, a separate window opens and displays reports on the Java Virtual Machine, including a summary report, memory management and garbage collection report, class loading report, and a current thread dump.</p>
+</dd>
+<dt>Configuration Directory</dt>
+<dd>
+<p>The directory on the host machine that contains configuration files, such as <code>domain.xml</code>.</p>
+</dd>
+<dt>Installed Version</dt>
+<dd>
+<p>The product version identifier.</p>
+</dd>
+<dt>Secure Administration</dt>
+<dd>
+<p>The current status of secure administration. Possible values are Enabled and Not Enabled.</p>
+</dd>
+<dt>Debug</dt>
+<dd>
+<p>Identifies whether debugging is enabled. If debugging is enabled, the port number is also displayed.</p>
+</dd>
+<dt>HTTP Port(s)</dt>
+<dd>
+<p>The currently configured ports for HTTP requests and responses.</p>
+</dd>
+<dt>IIOP Port(s)</dt>
+<dd>
+<p>The currently configured ports for IIOP requests and responses.</p>
+</dd>
+</dl>
+<a id="GHCOM353" name="GHCOM353"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-generaltab.html">To View General Information for the DAS</a></p>
+</li>
+<li>
+<p><a href="task-logviewer.html">To View Log Files for the DAS</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,165 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-security" name="ref-security"></a><a id="GHCOM00096" name="GHCOM00096"></a></p>
+
+<h4><a id="sthref195" name="sthref195"></a><a id="sthref196" name="sthref196"></a>Security</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Security page to set security properties for the selected GlassFish Server instance or cluster.</p>
+<p>The Security page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Security Manager</dt>
+<dd>
+<p>If this option is selected, the security manager for the domain is enabled. This option is disabled by default.</p>
+<p>When this option is enabled, a JVM option, <code>-Djava.security.manager</code>, will be added to the JVM setting of the GlassFish Server. See <a href="task-jvmoptions.html">To Configure the JVM Options</a>. You must restart the server to enable this change.</p>
+<p>Ensure that you have granted correct permissions for all applications. You can turn off the security manager to enhance performance.</p>
+</dd>
+<dt>Audit Logging</dt>
+<dd>
+<p>If this option is enabled, the server will load and run all the audit modules specified in the Audit Modules setting. If the option is disabled, the server will not access audit modules. This option is disabled by default.</p>
+</dd>
+<dt>Default Realm</dt>
+<dd>
+<p>The active (default) realm that the server uses for authentication. Applications use this realm unless their deployment descriptor specifies a different realm. All configured realms appear in the list. The default value is <code>file</code>.</p>
+</dd>
+<dt>Default Principal</dt>
+<dd>
+<p>Specifies the default user name. The server uses this user name when no other principal is provided. If you type a value in this field, type the corresponding password in the Default Principal Password field.</p>
+<p>A default principal is not required for normal server operation.</p>
+</dd>
+<dt>Default Principal Password</dt>
+<dd>
+<p>Password of the default principal specified in the Default Principal field. A default principal is not required for normal server operation.</p>
+</dd>
+<dt>JACC</dt>
+<dd>
+<p>The class name of a configured JACC provider. The default value is <code>default</code>.</p>
+</dd>
+<dt>Audit Modules</dt>
+<dd>
+<p>The audit provider modules that will be used by the audit subsystem if audit logging is enabled. By default, the server uses an audit module named <code>default</code>. For information on creating new audit modules, see <a href="task-auditmodulenew.html">To Create an Audit Module</a>.</p>
+</dd>
+<dt>Default Principal To Role Mapping Enabled</dt>
+<dd>
+<p>If this option is selected, default principal-to-role mapping is applied to applications that do not have an application-specific mapping.</p>
+</dd>
+<dt>Mapped Principal Class</dt>
+<dd>
+<p>Specifies a custom implementation of the <code>java.security.Principal</code> class used in the default principal-to-role mapping, if default principal-to-role mapping is enabled.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional security properties for the server.</p>
+<p>Valid properties are dependent on the type of realm selected in the Default Realm field and are typically specified when you edit a realm. For details, see the following topics:</p>
+<ul>
+<li>
+<p><a href="ref-editfile-adminrealm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editcertrealm.html">Properties Specific to the <code>CertificateRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editjdbcrealm.html">Properties Specific to the <code>JDBCRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-ldaprealmprop.html">Properties Specific to the <code>LDAPRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-solarisrealmprop.html">Properties Specific to the <code>SolarisRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-pamrealmprop.html">Properties Specific to the <code>PamRealm</code> Class</a></p>
+</li>
+</ul>
+</dd>
+</dl>
+<a id="GHCOM426" name="GHCOM426"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-securitysettings.html">To Configure Security Settings</a></p>
+</li>
+<li>
+<p><a href="task-auditmodulenew.html">To Create an Audit Module</a></p>
+</li>
+<li>
+<p><a href="task-changeadminpasswd.html">To Change the Password for a User in the Admin Realm</a></p>
+</li>
+<li>
+<p><a href="task-accessadmintools.html">To Grant Access to Administration Tools</a></p>
+</li>
+</ul>
+<a id="GHCOM427" name="GHCOM427"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00004"><code>change-admin-password</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00015"><code>create-auth-realm</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00024"><code>create-file-user</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00034"><code>create-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00049"><code>create-password-alias</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00066"><code>delete-auth-realm</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00076"><code>delete-file-user</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00086"><code>delete-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00101"><code>delete-password-alias</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00150"><code>list-auth-realms</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00164"><code>list-file-groups</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00165"><code>list-file-users</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00171"><code>list-jacc-providers</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00190"><code>list-password-aliases</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00254"><code>update-file-user</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00257"><code>update-password-alias</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

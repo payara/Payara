@@ -1,0 +1,127 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-securitysettings" name="task-securitysettings"></a><a id="GHCOM00181" name="GHCOM00181"></a></p>
+
+<h4><a id="sthref77" name="sthref77"></a><a id="sthref78" name="sthref78"></a>To Configure Security Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Administration Console enables you to set a variety of system-wide security settings.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configurations node.</p>
+</li>
+<li>
+<p>Under the Configurations node, click the server instance or cluster configuration for which you want to configure Security settings.</p>
+<p>The Configuration page opens.</p>
+</li>
+<li>
+<p>On the Configuration page, click Security.</p>
+<p>The Security settings page for the selected configuration target opens.</p>
+</li>
+<li>
+<p>Select the Security Manager Enabled checkbox to turn on the security manager.</p>
+<p>If this option is enabled, a JVM option, <code>-Djava.security.manager</code>, will be added to the JVM settings of the GlassFish Server. See <a href="task-jvmoptions.html">To Configure the JVM Options</a>. You must restart the server to enable this change.</p>
+<p>Ensure that you have granted correct permissions for all applications. You can turn off the security manager to enhance performance. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Audit Logging Enabled checkbox to turn on audit logging.</p>
+<p>If this option is enabled, the server will load and run all the audit modules selected in the Audit Modules list. If this option is disabled, the server will not access audit modules. This option is disabled by default.</p>
+</li>
+<li>
+<p>From the Default Realm drop-down list, select an active realm that the server will use for authentication.</p>
+<p>Applications will use this realm unless their deployment descriptor specifies a different realm. All configured realms appear in the list. The default value is <code>file</code>.</p>
+</li>
+<li>
+<p>Specify Default Principal information.</p>
+<ol type="a">
+<li>
+<p>In the Default Principal field, type the default user name.</p>
+<p>The server uses this user name when no other principal is provided.</p>
+</li>
+<li>
+<p>In the Default Principal Password field, type the password of the default principal specified in the Default Principal field.</p>
+</li>
+</ol>
+<p>A default principal is not required for normal server operation.</p>
+</li>
+<li>
+<p>From the JACC drop-down list, select the name of a configured JACC provider.</p>
+<p>The default choices are <code>default</code> and <code>simple</code>. The default option is <code>default</code>. For information on creating new JACC providers, see ***.</p>
+</li>
+<li>
+<p>From the Audit Modules drop-down list, select the audit provider modules that will be used by the audit subsystem if audit logging is enabled.</p>
+<p>By default, the server uses an audit module named <code>default</code>. For information on creating new audit modules, see <a href="task-auditmodulenew.html">To Create an Audit Module</a>.</p>
+</li>
+<li>
+<p>Select the Default Principal To Role Mapping Enabled checkbox to apply a default principal-to-role mapping to applications that do not have an application-specific mapping.</p>
+</li>
+<li>
+<p>If you enabled default principal-to-role mapping, in the Mapped Principal Class field, type the name of a customized <code>java.security.Principal</code> implementation class to be used in the default principal-to-role mapping.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>Valid properties are dependent on the type of realm selected in the Default Realm field. Refer to the appropriate entry from the following list for the type of realm you want to configure.</p>
+<ul>
+<li>
+<p><a href="ref-editfile-adminrealm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editcertrealm.html">Properties Specific to the <code>CertificateRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editjdbcrealm.html">Properties Specific to the <code>JDBCRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-ldaprealmprop.html">Properties Specific to the <code>LDAPRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-solarisrealmprop.html">Properties Specific to the <code>SolarisRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-pamrealmprop.html">Properties Specific to the <code>PamRealm</code> Class</a></p>
+</li>
+</ul>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHCOM280" name="GHCOM280"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-accessadmintools.html">To Grant Access to Administration Tools</a></p>
+</li>
+<li>
+<p><a href="task-changeadminpasswd.html">To Change the Password for a User in the Admin Realm</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

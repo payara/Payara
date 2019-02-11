@@ -1,0 +1,54 @@
+delete-http-redirect(1)   asadmin Utility Subcommands  delete-http-redirect(1)
+
+NAME
+       delete-http-redirect - removes an HTTP redirect
+
+SYNOPSIS
+           delete-http-redirect [--help]
+           [--target target]
+           protocol-name
+
+DESCRIPTION
+       The delete-http-redirect subcommand removes the specified HTTP
+       redirect. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Deletes the HTTP redirect only from the specified target. Valid
+           values are as follows:
+
+           server
+               Deletes the HTTP redirect from the default server instance.
+               This is the default value.
+
+           configuration-name
+               Deletes the HTTP redirect from the specified configuration.
+
+           cluster-name
+               Deletes the HTTP redirect from all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Deletes the HTTP redirect from the specified standalone server
+               instance.
+
+OPERANDS
+       protocol-name
+           The name of the associated protocol.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-http-redirect(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010          delete-http-redirect(1)

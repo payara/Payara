@@ -1,0 +1,46 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-recovertransactions" name="ref-recovertransactions"></a><a id="GHCOM00061" name="GHCOM00061"></a></p>
+
+<h4><a id="sthref141" name="sthref141"></a>Recover Transactions</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Recover Transactions page to recover transactions for a GlassFish Server instance.</p>
+<p>If the instance is running, the Recover Transactions page contains only the text <b>Recovery is performed by the running server itself</b> and the OK button.</p>
+<p>If the instance is not running, the Recover Transactions page contains the following options.</p>
+<dl>
+<dt>Instance Name</dt>
+<dd>
+<p>The name that was assigned to the instance when the instance was created. This field is read only.</p>
+</dd>
+<dt>Destination Server</dt>
+<dd>
+<p>Another instance that can recover the transactions on the current instance.</p>
+</dd>
+<dt>Transaction Log Directory</dt>
+<dd>
+<p>The directory in which the transaction logs are stored, if the logs are stored in a shared file system. This setting does not apply to transaction logs stored in a database. The default is <code>/logs/tx</code> under the domain directory.</p>
+<p>Transaction logs are kept in the <code>tx</code> subdirectory of the directory specified by Transaction Log Location setting of the Transaction Service for the cluster configuration. The default Transaction Log Location value is the directory specified by the Log Root field of the Domain Attributes page, which is located under the Advanced tab of the GlassFish Server node.</p>
+</dd>
+</dl>
+<a id="GHCOM356" name="GHCOM356"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00216"><code>recover-transactions</code>(1)</a></p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

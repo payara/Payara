@@ -1,0 +1,111 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jvmsettings" name="task-jvmsettings"></a><a id="GHCOM00172" name="GHCOM00172"></a></p>
+
+<h4><a id="sthref66" name="sthref66"></a>To Configure the JVM General Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Java Virtual Machine (JVM) enables Java byte codes to run on a physical machine. Tuning the JVM settings improves performance and avoids memory allocation errors.</p>
+<p>The Java Virtual Machine is included in the Java Platform, Standard Edition (Java SE platform), which is required by the GlassFish Server. Incorrect JVM settings will prevent the server from running, so use care when changing these settings.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>The terms "Java Virtual Machine" and "JVM" mean a Virtual Machine for the Java platform.</p>
+
+<hr>
+
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Select the JVM Settings node.</p>
+<p>The JVM General Settings page opens.</p>
+</li>
+<li>
+<p>In the navigation tree, select the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the JVM Settings node.</p>
+<p>The JVM General Settings page opens.</p>
+</li>
+<li>
+<p>On the JVM General Settings page, in the Java Home field, type the name of the installation directory of the Java SE software.</p>
+<p>The GlassFish Server relies on the Java SE platform. To verify that the version of Java SE software that you specify is supported in this release, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRLN"><i>Oracle GlassFish Server Release Notes</i></a>. If you enter a nonexistent directory name or the directory for an unsupported version of Java SE software, then GlassFish Server will not start.</p>
+</li>
+<li>
+<p>In the Javac Options field, type the command-line options for the Java programming language compiler.</p>
+<p>The GlassFish Server runs the compiler when Enterprise JavaBeans (EJB) components are deployed.</p>
+</li>
+<li>
+<p>Select the Debug Enabled checkbox to enable debugging with the Java Platform Debugger Architecture (JPDA).</p>
+<p>JPDA is used by application developers. For more information, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDVG"><i>Oracle GlassFish Server Application Development Guide</i></a>.</p>
+</li>
+<li>
+<p>In the Debug Options field, type the JPDA options to be passed to the JVM.</p>
+<p>This field is applicable only if debugging was enabled in the preceding step.</p>
+</li>
+<li>
+<p>In the RMI Compile Options field, type the command-line options for the <code>rmic</code> compiler.</p>
+<p>The GlassFish Server runs the <code>rmic</code> compiler when EJB components are deployed.</p>
+</li>
+<li>
+<p>In the Bytecode Preprocessor field, type a list of class names.</p>
+<p>Use commas to separate class names. Each class must implement the com.sun.appserv.BytecodePreprocessor interface. The classes are called in the order specified.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>The GlassFish Server does not define any additional properties for the JVM.</p>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+<li>
+<p>Restart the server.</p>
+</li>
+</ol>
+<a id="GHCOM270" name="GHCOM270"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jvmpathsettings.html">To Configure the JVM Path Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmoptions.html">To Configure the JVM Options</a></p>
+</li>
+<li>
+<p><a href="task-securitymanagerdisable.html">To Disable the Security Manager</a></p>
+</li>
+<li>
+<p><a href="task-jvmprofilersettings.html">To Configure the JVM Profiler Settings</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

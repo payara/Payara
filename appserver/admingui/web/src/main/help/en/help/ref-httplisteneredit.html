@@ -1,0 +1,126 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-httplisteneredit" name="ref-httplisteneredit"></a></p>
+
+<h4><a id="sthref116" name="sthref116"></a>Edit HTTP Listener</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit HTTP Listener page to modify an existing HTTP listener.</p>
+<p>When you edit an HTTP listener, the SSL tab is available for you to edit as well.</p>
+<p>The Edit HTTP Listener page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The unique listener name. The Name field is a read-only field. You can only specify the name when you create a new HTTP listener.</p>
+</dd>
+<dt>Port</dt>
+<dd>
+<p>The port number on which the listener will listen. Legal values are 1 through 65535. On a UNIX system, creating sockets that listen on ports 1 through 1024 requires superuser privileges.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the HTTP listener. The listener can be enabled or disabled. This option is enabled by default. If the listener is disabled, any attempts to connect to the listener result in a socket exception (<code>java.net.ConnectException</code>).</p>
+<p>In GlassFish Server versions prior to 9.1, a listener whose enabled attribute was set to false returned a 404 response code for any requests sent to it. To achieve this behavior in the current GlassFish Server version, set the listener's status to enabled, and set every associated virtual server's state to OFF. A virtual server lists its associated listeners in its Network Listeners drop-down list.</p>
+</dd>
+<dt>Security</dt>
+<dd>
+<p>If this option is selected, security is enabled for the HTTP listener. This option is disabled by default.</p>
+<p>If you are configuring the <code>admin-listener</code> for the domain administration server (DAS), which uses the <code>server-config</code> configuration, this option is read-only. To enable security for this listener, you must enable secure administration. See <a href="../../../common/en/help/ref-securityadmin.html">Secure Administration</a>.</p>
+</dd>
+<dt>JK Listener</dt>
+<dd>
+<p>If this option is selected, the listener supports Apache's <code>mod-jk</code> protocol. The <code>mod-jk</code> protocol is a proprietary communication/network protocol between Apache's <code>httpd</code> (web server) and an GlassFish Server back-end instance. If the listener supports this protocol, <code>httpd</code> is supposed to handle all static content, whereas any requests for dynamic resources (i.e., Servlets and JSPs) are routed to the <code>mod-jk</code> enabled HTTP listener of the GlassFish Server, using the <code>mod-jk</code> protocol. This option is disabled by default.</p>
+</dd>
+<dt>Address</dt>
+<dd>
+<p>The IP address on which the network listener will listen. The address can be in dotted-pair or IPv6 notation. It can be <code>any</code> (for <code>INADDR_ANY</code>) to listen on all IP addresses. It can be a hostname.</p>
+</dd>
+<dt>Default Virtual Server</dt>
+<dd>
+<p>The virtual server to be associated with this HTTP listener. Use the Virtual Servers page to define virtual servers.</p>
+</dd>
+<dt>Thread Pool</dt>
+<dd>
+<p>The thread pool associated with the HTTP listener.</p>
+</dd>
+<dt>Server Name</dt>
+<dd>
+<p>The host name to be used in the URLs the server sends to the client. This name is the alias name if your server uses an alias. If your server does not use an alias, leave this field blank.</p>
+<p>This value affects URLs the server automatically generates; it does not affect the URLs for directories and files stored in the server. If your server uses an alias, the server-name should be the alias name. If a colon and port number are appended, that port is used in URLs the server sends to the client.</p>
+</dd>
+</dl>
+<a id="sthref117" name="sthref117"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-httplistenernew.html">To Create an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-httplisteneredit.html">To Edit an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-httplistenerdelete.html">To Delete an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-httplistenerssl.html">To Edit SSL Settings for an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-virtualservercreate.html">To Create a Virtual Server</a></p>
+</li>
+<li>
+<p><a href="task-networklistenernew.html">To Create a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+</ul>
+<a id="sthref118" name="sthref118"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00030"><code>create-http-listener</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00168"><code>list-http-listeners</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00082"><code>delete-http-listener</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00046"><code>create-network-listener</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00186"><code>list-network-listeners</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00098"><code>delete-network-listener</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

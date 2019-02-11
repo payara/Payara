@@ -1,0 +1,66 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-logging-max-logfiles" name="task-logging-max-logfiles"></a><a id="GHCOM00179" name="GHCOM00179"></a></p>
+
+<h4><a id="sthref74" name="sthref74"></a><a id="sthref75" name="sthref75"></a><a id="sthref76" name="sthref76"></a>To Change the Limit on the Number of Rotated Log Files</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>When GlassFish Server rotates a log file, it creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated.</p>
+<p>By default, GlassFish Server limits the number of rotated log files to 10. When this limit is reached, the oldest log file is deleted when GlassFish Server next rotates a log file.</p>
+<p>If necessary, you can change the limit on the number of rotated log files. Any new limit that you set applies to rotated log files for both access logging and the server log.</p>
+<ol>
+<li>
+<p>Set the <code>com.sun.enterprise.server.logging.max_history_files</code> system property to the maximum number of rotated log files to keep.</p>
+<p>For information about how to set a system property, see <a href="task-systemproperties.html">To Manage System Properties</a>.</p>
+<p>The behavior of the <code>com.sun.enterprise.server.logging.max_history_files</code> system property is as follows:</p>
+<ul>
+<li>
+<p>If the property is not set, GlassFish Server keeps a maximum of 10 rotated log files.</p>
+</li>
+<li>
+<p>If the property is set to an invalid number or null, GlassFish Server keeps a maximum of 10 rotated log files.</p>
+</li>
+<li>
+<p>If the property is set to 0, GlassFish Server keeps no rotated log files.</p>
+</li>
+</ul>
+</li>
+</ol>
+<a id="GHCOM278" name="GHCOM278"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-eelogging.html">To Configure General Logging Settings</a></p>
+</li>
+<li>
+<p><a href="task-eelogginglevels.html">To Configure Log Levels</a></p>
+</li>
+<li>
+<p><a href="task-logviewer.html">To View Log Files for the DAS</a></p>
+</li>
+<li>
+<p><a href="task-collectdomainlogs.html">To Collect and Download Domain Logs</a></p>
+</li>
+<li>
+<p><a href="task-systemproperties.html">To Manage System Properties</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

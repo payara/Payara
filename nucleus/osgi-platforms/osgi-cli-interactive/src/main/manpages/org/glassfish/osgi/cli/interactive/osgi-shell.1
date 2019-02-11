@@ -1,0 +1,108 @@
+osgi-shell(1)             asadmin Utility Subcommands            osgi-shell(1)
+
+NAME
+       osgi-shell - provides interactive access to the Apache Felix Gogo
+       remote shell for the execution of OSGi shell commands
+
+SYNOPSIS
+           osgi-shell [--help]
+           [--file file]
+           [--printprompt={false|true}]
+           [--encoding encoding]
+
+DESCRIPTION
+       The osgi-shell subcommand provides interactive access to the Apache
+       Felix Gogo remote shell for the execution of OSGi shell commands. The
+       remote shell is provided with GlassFish Server and used to administer
+       and inspect the OSGi runtime.
+
+       OSGi shell commands are executed on the server and results are printed
+       on the client. Because the shell is interactive, no operands are
+       accepted. Scripting is supported, which means that multiple commands
+       can be executed in sequence from a text file.
+
+       A related subcommand is the osgi subcommand, which passes a single
+       command to the remote shell for execution. Results are returned by the
+       asadmin utility. For more information about the osgi subcommand, see
+       the osgi(1) help page.
+
+       This subcommand is supported in local mode only. Unlike other local
+       subcommands, however, the domain administration server (DAS) and the
+       server instance whose shell is being accessed must be running.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --file, -f
+           Reads the commands in the specified file.
+
+       --printprompt
+           Controls printing of the shell prompt. The default value is true,
+           which means the shell prompt is displayed.
+
+       --encoding
+           Specifies the character set for the file to be decoded. By default,
+           the system character set is used.
+
+EXAMPLES
+       Example 1, Listing Apache Felix Gogo Remote Shell Commands
+           This example lists Apache Felix Gogo remote shell commands.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> osgi-shell
+               Use "exit" to exit and "help" for online help.
+               gogo$ help
+               felix:bundlelevel
+               felix:cd
+               felix:frameworklevel
+               felix:headers
+               felix:help
+               felix:inspect
+               felix:install
+               felix:lb
+               felix:log
+               felix:ls
+               ...
+               gogo:cat
+               gogo:each
+               gogo:echo
+               gogo:format
+               gogo:getopt
+               gogo:gosh
+               gogo:grep
+               ...
+               gogo$
+
+       Example 2, Running a Remote Shell Command
+           This example runs the Felix Remote Shell Command lb without any
+           arguments to list all installed OSGi bundles.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> osgi-shell
+               Use "exit" to exit and "help" for online help.
+               gogo$ lb
+               START LEVEL 2
+               ID|State      |Level|Name
+                0|Active     |    0|System Bundle
+                1|Active     |    1|Metro Web Services API OSGi Bundle
+                2|Active     |    1|javax.annotation API
+                3|Active     |    1|jaxb-api
+               ...
+               gogo$
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       osgi(1)
+
+       asadmin(1M)
+
+Java EE 8                         13 Mar 2013                    osgi-shell(1)

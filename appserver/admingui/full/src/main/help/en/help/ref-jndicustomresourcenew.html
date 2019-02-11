@@ -1,0 +1,84 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jndicustomresourcenew" name="ref-jndicustomresourcenew"></a><a id="GHJML00006" name="GHJML00006"></a></p>
+
+<h4><a id="sthref28" name="sthref28"></a><a id="sthref29" name="sthref29"></a><a id="sthref30" name="sthref30"></a>New Custom Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Custom Resource page to create a custom JNDI resource.</p>
+<p>The New Custom Resource page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the resource.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>The fully qualified type definition for the resource.</p>
+</dd>
+<dt>Factory Class</dt>
+<dd>
+<p>The user-specified name for the factory class. This class implements the <code>javax.naming.spi.ObjectFactory</code> interface.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of this custom resource.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the custom resource. The custom resource can be enabled or disabled. The default value is Enabled.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the custom resource. GlassFish Server does not define any additional properties for custom resources.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="GHJML127" name="GHJML127"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jndicustomresourcenew.html">To Create a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndicustomresourceedit.html">To Edit a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndicustomresourcedelete.html">To Delete a Custom JNDI Resource</a></p>
+</li>
+</ul>
+<a id="GHJML128" name="GHJML128"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00022"><code>create-custom-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00162"><code>list-custom-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00074"><code>delete-custom-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

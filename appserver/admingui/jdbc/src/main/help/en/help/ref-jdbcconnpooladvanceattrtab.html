@@ -1,0 +1,212 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbcconnpooladvanceattrtab" name="ref-jdbcconnpooladvanceattrtab"></a><a id="GHJDB00027" name="GHJDB00027"></a></p>
+
+<h4><a id="sthref50" name="sthref50"></a>Edit Connection Pool Advanced Attributes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Connection Pool Advanced Attributes page to specify attributes that help diagnose connection leaks and improve ease-of-use.</p>
+<p>The Edit Connection Pool Advanced Attributes page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Pool Name</dt>
+<dd>
+<p>The name of the connection pool. The name is a read-only field. You can only specify the connection pool name when you create a new JDBC connection pool.</p>
+</dd>
+<dt>Statement Timeout</dt>
+<dd>
+<p>The length of time, in seconds, after which abnormally long running queries will be terminated. GlassFish Server will set <code>QueryTimeout</code> on the statements created. A value of -1 means that the option is disabled. The default value is -1.</p>
+</dd>
+<dt>Statement Cache Size</dt>
+<dd>
+<p>The number of statements to be cached using the LRU (Least Recently Used) caching mechanism. A value of 0 disables statement caching. The default value is 0.</p>
+</dd>
+<dt>Init SQL</dt>
+<dd>
+<p>An SQL string to be executed whenever a connection is created (not reused) in the pool. Execution of this string initializes the state of the connection.</p>
+</dd>
+<dt>SQL Trace Listeners</dt>
+<dd>
+<p>A comma-separated list of listener implementation class names, which specifies that SQL statements executed by applications will be traced. The listener classes must implement the <code>org.glassfish.api.jdbc.SQLTraceListener</code> interface. Use of listeners enables easy filtering of log messages for the SQL statements and helps administrators analyze the statements.</p>
+</dd>
+<dt>Wrap JDBC Objects</dt>
+<dd>
+<p>If this option is enabled, applications will get wrapped JDBC objects for Statement, PreparedStatement, CallableStatement, ResultSet, DatabaseMetaData. This option is enabled by default.</p>
+</dd>
+<dt>Pooling</dt>
+<dd>
+<p>Enables connection pooling for the pool. This option is enabled by default.</p>
+</dd>
+<dt>Validate At Most Once</dt>
+<dd>
+<p>Specifies the time interval in seconds between successive requests to validate a connection at most once. Setting this attribute to an appropriate value minimizes the number of validation requests by a connection. Default value is 0, which means that the attribute is not enabled.</p>
+</dd>
+<dt>Connection Leak Timeout</dt>
+<dd>
+<p>The amount of time, in seconds, to trace connection leaks in a connection pool. Use this field to detect potential connection leaks by the application. A connection that is not returned back to the pool by the application within the specified period is assumed to be potentially leaking, and a stack trace of the caller is logged. A value of 0 means that connection leak tracing is disabled. The default value is 0.</p>
+<p>Use this field along with Leak Reclaim to avoid potential connection leaks from the application.</p>
+</dd>
+<dt>Connection Leak Reclaim</dt>
+<dd>
+<p>If this option is enabled, leaked connections are restored to the pool after leak connection tracing is complete. This option is disabled by default.</p>
+</dd>
+<dt>Statement Leak Timeout</dt>
+<dd>
+<p>The amount of time, in seconds, to trace statement leaks in a connection pool. Use this field to detect potential statement leaks by the application. A statement that is not returned back to the pool by the application within the specified period is assumed to be potentially leaking, and a stack trace of the caller is logged. A value of 0 means that statement leak tracing is disabled. The default value is 0.</p>
+<p>Use this field along with Statement Leak Reclaim to avoid potential connection leaks from the application.</p>
+</dd>
+<dt>Statement Leak Reclaim</dt>
+<dd>
+<p>If this option is enabled, leaked statements are restored to the pool after leak statement tracing is complete. This option is disabled by default.</p>
+</dd>
+<dt>Creation Retry Attempts</dt>
+<dd>
+<p>The number of attempts that will be made if there is a failure in creating a new connection. A value of 0 means that no attempts will be made to create the connection again. The default value is 0.</p>
+</dd>
+<dt>Retry Interval</dt>
+<dd>
+<p>The interval of time, in seconds, between two attempts to create a connection. The default value is 10. This attribute is used only if the value of Creation Retry Attempts is greater than 0.</p>
+</dd>
+<dt>Lazy Association</dt>
+<dd>
+<p>If this option is enabled, a physical connection is associated with a logical collection only when the connection is used. Connections are disassociated when the transaction is completed and a component method ends, which helps reuse of the physical connections. This option is disabled by default.</p>
+</dd>
+<dt>Lazy Connection Enlistment</dt>
+<dd>
+<p>If this option is enabled, a resource is enlisted to the transaction only when it is actually used in a method. This option is disabled by default.</p>
+</dd>
+<dt>Associate with Thread</dt>
+<dd>
+<p>If this option is enabled, an association is made between a connection and a thread such that when the same thread is in need of a connection, it can reuse the connection already associated with that thread, thereby not incurring the overhead of getting a connection from the pool. This option is disabled by default.</p>
+</dd>
+<dt>Match Connections</dt>
+<dd>
+<p>If this option is enabled, a connection that is selected from the pool should be matched with connections that have certain credentials. This option must be enabled if the connection pool is used by applications that have multiple user credentials. This option can safely be disabled if the administrator knows that the connections in the pool will always be homogeneous and hence a connection picked from the pool does not need to be matched by the resource adapter. This option is disabled by default.</p>
+</dd>
+<dt>Max Connection Usage</dt>
+<dd>
+<p>The number of times that a connection should be reused by the pool. Once a connection is reused for the specified number of times, it will be closed. By limiting the number of times a connection can be reused, you can avoid statement leaks if an application does not close statements. A value of 0 means that this attribute is disabled. The default value is 0.</p>
+</dd>
+<dt>Connection Validation</dt>
+<dd>
+<p>If this option is enabled, connection validation is required, allowing the server to reconnect in case of failure.</p>
+</dd>
+<dt>Validation Method</dt>
+<dd>
+<p>GlassFish Server can validate database connections in the following ways.</p>
+<dl>
+<dt><code>auto-commit</code> and <code>metadata</code></dt>
+<dd>
+<p>GlassFish Server validates a connection by calling the <code>con.getAutoCommit</code> or <code>con.getMetaData</code> method.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>Many JDBC drivers cache the results of these calls. As a result, using these calls might not always provide reliable validations. Check with the driver vendor to determine whether these calls are cached or not.</p>
+
+<hr>
+
+</dd>
+<dt><code>custom-validation</code></dt>
+<dd>
+<p>GlassFish Server uses a user-defined validation mechanism specified by the custom implementation class in the Validation Classname field.</p>
+</dd>
+<dt><code>table</code></dt>
+<dd>
+<p>The application queries the database table that is specified. The table must exist and be accessible, but it does not require any rows. Do not use an existing table that has a large number of rows, or a table that is already frequently accessed.</p>
+</dd>
+</dl>
+</dd>
+<dt>Table Name</dt>
+<dd>
+<p>Name of the database table for validation. This field is applicable only if the Validation Method was set to <code>table</code>. You can either select the name from the drop-down list or type it.</p>
+</dd>
+<dt>Validation Class Name</dt>
+<dd>
+<p>The custom validation implementation class name. This field is applicable only if the Validation Method was set to <code>custom-validation</code>. The class name provided must be accessible to GlassFish Server. The specified class must implement the <code>org.glassfish.api.jdbc.ConnectionValidation</code> interface. You can either select the name from the drop-down list or type it.</p>
+</dd>
+<dt>On Any Failure</dt>
+<dd>
+<p>If this option is enabled, the GlassFish Server closes all connections in the pool and reestablishes them when any connection fails. If the option is disabled, individual connections are reestablished only when they are used. This option is disabled by default.</p>
+</dd>
+<dt>Allow Non Component Callers</dt>
+<dd>
+<p>If this option is enabled, the pool can be used by non-component callers such as servlet filters and third-party persistence managers. Connections obtained by non-component callers are not automatically closed at the end of a transaction by the container. They must be explicitly closed by the caller. This option is disabled by default.</p>
+</dd>
+</dl>
+<a id="sthref51" name="sthref51"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolnew.html">To Create a JDBC Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooledit.html">To Edit JDBC Connection Pool General Settings</a></p>
+</li>
+<li>
+<p><a href="task-verifyconnpoolsettings.html">To Verify Connection Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooladvance.html">To Edit JDBC Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolproperty.html">To Edit JDBC Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooldelete.html">To Delete a JDBC Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref52" name="sthref52"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00001"><code>add-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00036"><code>create-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00088"><code>delete-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00135"><code>flush-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00173"><code>list-jdbc-connection-pools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00214"><code>ping-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00234"><code>start-database</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00239"><code>stop-database</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

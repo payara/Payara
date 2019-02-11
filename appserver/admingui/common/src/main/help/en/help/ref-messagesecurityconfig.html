@@ -1,0 +1,85 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-messagesecurityconfig" name="ref-messagesecurityconfig"></a><a id="GHCOM00118" name="GHCOM00118"></a></p>
+
+<h4><a id="sthref226" name="sthref226"></a>Message Security Configurations</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Message Security Configurations page to view and modify the available configurations for message security providers.</p>
+<p>To configure message security, you need a basic understanding of security and web services concepts. For more information, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSSCG00037">Chapter 3, <i>Administering Message Security,</i> in <i>Oracle GlassFish Server Security Guide</i></a> and <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSADG00009">Chapter 6, <i>Administering Web Applications,</i> in <i>Oracle GlassFish Server Administration Guide</i></a>.</p>
+<p>GlassFish Server implements message security using message security providers integrated in its SOAP processing layer. The message security providers depend on other security facilities of GlassFish Server.</p>
+<p>For each configuration, the following information is provided.</p>
+<dl>
+<dt>Authentication Layer</dt>
+<dd>
+<p>The message layer at which authentication is performed. By default, a SOAP configuration is provided. It is also possible to provide an HttpServlet configuration.</p>
+</dd>
+<dt>Default Provider</dt>
+<dd>
+<p>The default server provider for this configuration. By default, no default server provider is configured.</p>
+</dd>
+<dt>Default Client Provider</dt>
+<dd>
+<p>The default client provider for this configuration. By default, no default client provider is configured.</p>
+</dd>
+</dl>
+<p>The Message Security Configuration table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new configuration.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected configurations.</p>
+</dd>
+</dl>
+<a id="GHCOM457" name="GHCOM457"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfignew.html">To Create a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigdelete.html">To Delete a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfignew.html">To Create a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigedit.html">To Edit a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigdelete.html">To Delete a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-enablemesec4appclients.html">To Enable Message Security for Application Clients</a></p>
+</li>
+</ul>
+<a id="GHCOM458" name="GHCOM458"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

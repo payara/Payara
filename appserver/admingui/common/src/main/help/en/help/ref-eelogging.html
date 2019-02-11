@@ -1,0 +1,121 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-eelogging" name="ref-eelogging"></a><a id="GHCOM00094" name="GHCOM00094"></a></p>
+
+<h4><a id="sthref192" name="sthref192"></a>Logger Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Logger Settings page to configure logging for the selected GlassFish Server instance or cluster.</p>
+<p>The Logger Settings page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Write to System Log</dt>
+<dd>
+<p>When enabled, logging output is sent to the <code>syslog</code> facility in addition to the server log. This feature is available on Solaris and Linux systems only. This option is disabled by default.</p>
+</dd>
+<dt>Log to Console</dt>
+<dd>
+<p>When enabled, logging output is sent to the system console. This option is disabled by default.</p>
+</dd>
+<dt>Rotation on Date Change</dt>
+<dd>
+<p>When enabled, GlassFish Server rotates log files every day at midnight. This option is disabled by default.</p>
+</dd>
+<dt>Multiline Mode</dt>
+<dd>
+<p>When enabled, the body of a log message starts on a new line after the message header. This option is enabled by default.</p>
+</dd>
+<dt>Console Logging Format</dt>
+<dd>
+<p>The format used for logging to the console. Available choices are ULF (UniformLogFormatter) or ODL (Oracle Diagnostics Logging). The default format is ULF.</p>
+</dd>
+<dt>Log File Logging Format</dt>
+<dd>
+<p>The format used for logging to the server log file. Available choices are ULF or ODL. The default format is ODL.</p>
+</dd>
+<dt>Format Exclude Fields</dt>
+<dd>
+<p>The fields to exclude in log records. All fields are included by default.</p>
+</dd>
+<dt>File Rotation Limit</dt>
+<dd>
+<p>The size in bytes that the server log file must reach before it is rotated. When the server log reaches the specified size, GlassFish Server creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated. The default value is 2 megabytes. The minimum value for the limit is 500 kilobytes; if you specify a lower value, the file rotates when it reaches 500 KB. To turn off log file rotation, set the value to 0.</p>
+</dd>
+<dt>File Rotation Time Limit</dt>
+<dd>
+<p>The number of minutes after which the server log must be rotated. The default value is 0, which means that the file is rotated when it reaches the size specified in the File Rotation Limit field. If you specify one or more minutes, the time limit takes precedence over the size limit specified by the File Rotation Limit field.</p>
+</dd>
+<dt>Flush Frequency</dt>
+<dd>
+<p>The maximum number of messages to be written from the queue to the server log at a time. The default value is 1.</p>
+</dd>
+<dt>Maximum History Files</dt>
+<dd>
+<p>The maximum number of log files that GlassFish Server keeps before deleting the oldest file. If you set this value to zero (0), GlassFish Server does not delete any old log files.</p>
+</dd>
+<dt>Log File</dt>
+<dd>
+<p>An alternative name or location for the server log file. The default location is <i>domain-dir</i><code>/logs/server.log</code>.</p>
+</dd>
+<dt>Log Handler</dt>
+<dd>
+<p>The absolute class name of a custom log handler. A custom log handler enables you to send logs to a destination other than <code>server.log</code> or <code>syslog</code>. The custom handler must extend the class <code>java.util.logging.Handler</code> (a JSR 047 compliant API). Put the handler class in the GlassFish Server classpath so that the handler is installed during server startup.</p>
+</dd>
+</dl>
+<a id="GHCOM421" name="GHCOM421"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-eelogging.html">To Configure General Logging Settings</a></p>
+</li>
+<li>
+<p><a href="task-eelogginglevels.html">To Configure Log Levels</a></p>
+</li>
+<li>
+<p><a href="task-logviewer.html">To View Log Files for the DAS</a></p>
+</li>
+</ul>
+<a id="GHCOM422" name="GHCOM422"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00007"><code>collect-log-files</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00183"><code>list-log-levels</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00224"><code>rotate-log</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00228"><code>set-log-levels</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM879"><code>set-log-file-format</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,215 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-accesslog" name="task-accesslog"></a><a id="GHWEB00035" name="GHWEB00035"></a></p>
+
+<h4><a id="sthref21" name="sthref21"></a><a id="sthref22" name="sthref22"></a>To Configure the HTTP Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the HTTP Service node.</p>
+<p>The HTTP Service page opens.</p>
+</li>
+<li>
+<p>Select the SSO Enabled checkbox to enable single sign-on by default for all web applications on all virtual servers on this server that are configured for the same realm.</p>
+<p>You can override this setting for an individual virtual server. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Access Logging Enabled checkbox to enable access logging for all virtual-server sub-elements that do not specify this property.</p>
+<p>If the Access Logging Enabled checkbox is deselected, access logging is disabled for all virtual-server sub-elements that do not specify this property. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Rotation Enabled checkbox to enable log file rotation.</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>From the Rotation Policy drop-down list, select a rotation policy.</p>
+<p>The only available rotation policy is <code>time</code>.</p>
+</li>
+<li>
+<p>In the Rotation Interval field, type the number of minutes between rotations of the access log.</p>
+<p>This field is valid only if the Rotation Policy is <code>time</code>. The default value is 1,440 minutes (24 hours).</p>
+</li>
+<li>
+<p>In the Rotation Suffix field, type the string value to be added to the end of the log file name after rotation.</p>
+<p>The default value is <code>yyyy-MM-dd</code>.</p>
+<p>Ensure that the rotation suffix contains enough values to create a unique suffix for every log rotation. For example, if the access log is rotated more frequently than once every day, include the time of day in the rotation suffix.</p>
+<p>A unique suffix is required to ensure that the access log file is rotated every time that the rotation interval has elapsed. If the rotation suffix of the new access log file is the same as the rotation suffix of the existing access log file, the file is not rotated.</p>
+</li>
+<li>
+<p>In the Max File Count field, type the maximum number of rotated access log files that are to be kept.</p>
+<p>A negative value indicates that there is no limit to the file count. The default value is -1.</p>
+</li>
+<li>
+<p>In the Buffer Size field, type the size, in bytes, of the access log buffer.</p>
+<p>A value of less than or equal to 0 disables access log buffering. The default value is 32768.</p>
+</li>
+<li>
+<p>In the Write Interval field, type the number of seconds before the log will be written to the disk.</p>
+<p>The access log is written when the buffer is full or when the interval expires. If the value is less than or equal to 0, then the buffer is always written even if it is not full. This means that each time the server is accessed, the log message is stored directly to the file. The default value is 300.</p>
+</li>
+<li>
+<p>In the Format field, type the string value to specify the following properties of the access log:</p>
+<ul>
+<li>
+<p>The information that is to be captured in the access log</p>
+</li>
+<li>
+<p>The order in which the information is captured</p>
+</li>
+</ul>
+<p>The default value is as follows:</p>
+<pre>
+%client.name% %auth-user-name% %datetime% %request% %status% %response.length%
+</pre>
+<p>The following values are available for inclusion in the format string:</p>
+<dl>
+<dt><code>%attribute.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>Logs the value (by calling its <code>toString</code> method) of the request attribute with the given <i>name</i></p>
+</dd>
+<dt><code>%auth-user-name%</code></dt>
+<dd>
+<p>Name of authorized user</p>
+</dd>
+<dt><code>%client.name%</code></dt>
+<dd>
+<p>Client host name</p>
+</dd>
+<dt><code>%client.dns%</code></dt>
+<dd>
+<p>Client DNS</p>
+</dd>
+<dt><code>%cookie.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>The value of the request cookie with the given <i>name</i></p>
+</dd>
+<dt><code>%cookie.value%</code></dt>
+<dd>
+<p>The value of the first cookie found in the request</p>
+</dd>
+<dt><code>%datetime%</code></dt>
+<dd>
+<p>System date</p>
+</dd>
+<dt><code>%request%</code></dt>
+<dd>
+<p>Full HTTP request line</p>
+</dd>
+<dt><code>%status%</code></dt>
+<dd>
+<p>Status</p>
+</dd>
+<dt><code>%response.length%</code></dt>
+<dd>
+<p>Response content length</p>
+</dd>
+<dt><code>%header.referer%</code></dt>
+<dd>
+<p>Referer header</p>
+</dd>
+<dt><code>%header.user-agent%</code></dt>
+<dd>
+<p>User agent header</p>
+</dd>
+<dt><code>%http-method%</code></dt>
+<dd>
+<p>HTTP method</p>
+</dd>
+<dt><code>%http-uri%</code></dt>
+<dd>
+<p>HTTP URI</p>
+</dd>
+<dt><code>%query-str%</code></dt>
+<dd>
+<p>HTTP query string</p>
+</dd>
+<dt><code>%http-version%</code></dt>
+<dd>
+<p>HTTP protocol version</p>
+</dd>
+<dt><code>%header.accept%</code></dt>
+<dd>
+<p>Accept header</p>
+</dd>
+<dt><code>%header.date%</code></dt>
+<dd>
+<p>Date header</p>
+</dd>
+<dt><code>%header.if-mod-since%</code></dt>
+<dd>
+<p>If-Modified-Since header</p>
+</dd>
+<dt><code>%header.auth%</code></dt>
+<dd>
+<p>Authorization header</p>
+</dd>
+<dt><code>%header.</code><i>any</i><code>%</code></dt>
+<dd>
+<p>Any valid HTTP header value defined in RFC 2616 (<code>any</code> is also a valid header value; it is specified as a variable here)</p>
+</dd>
+<dt><code>%session.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>The value of the session attribute with the name <i>name</i>, or <code>NULL-SESSION-ATTRIBUTE-</code><i>name</i> if the named attribute does not exist in the session, or <code>NULL-SESSION</code> if no session exists</p>
+</dd>
+<dt><code>%time-taken%</code></dt>
+<dd>
+<p>Time (in milliseconds) it took to service each request</p>
+</dd>
+<dt><code>%vs.id%</code></dt>
+<dd>
+<p>Virtual server ID</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>For a description of available properties, see <a href="ref-httpserviceprops.html">Properties Specific to the HTTP Service</a>.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

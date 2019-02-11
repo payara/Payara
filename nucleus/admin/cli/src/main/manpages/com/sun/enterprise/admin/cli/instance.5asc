@@ -1,0 +1,22 @@
+instance(5ASC)             GlassFish Server Concepts            instance(5ASC)
+
+NAME
+       instance - an instance in GlassFish Server has its own Java EE
+       configuration, Java EE resources, application deployment areas, and
+       server configuration settings
+
+DESCRIPTION
+       GlassFish Server creates one server instance, called server at the time
+       of installation. You can delete the server instance and create a new
+       instance with a different name.
+
+       For many users, one server instance meets their needs. However,
+       depending upon your environment, you might want to create additional
+       server instances. For example, in a development environment you can use
+       different server instances to test different GlassFish Server
+       configurations, or to compare and test different application
+       deployments. Because you can easily add or delete a server instance,
+       you can use them to create temporary "sandbox" areas to experiment with
+       while developing.
+
+Java EE 8                         24 Sep 2008                   instance(5ASC)

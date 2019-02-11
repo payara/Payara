@@ -1,0 +1,193 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-accesslog" name="ref-accesslog"></a><a id="GHWEB00008" name="GHWEB00008"></a></p>
+
+<h4><a id="sthref104" name="sthref104"></a><a id="sthref105" name="sthref105"></a>HTTP Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the HTTP Service page to specify the general access log policy for web applications.</p>
+<p>The HTTP service provides the facilities for deploying web applications and for making deployed web applications accessible by HTTP clients, along with virtual servers, thread pools, and the Network Configuration capability.</p>
+<p>The GlassFish Server uses the HTTP Service Access Log to enable and configure rotation for the access logs for the virtual servers. These logs are located in the <i>domain-dir</i><code>/logs/access</code> directory and are named as follows: <i>virtual_server_name</i><code>_access_log.</code><i>yyyyMMdd</i><code>-</code><i>HH</i><code>h</code><i>mm</i><code>m</code><i>ss</i><code>s.txt</code></p>
+<p>The HTTP Service page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>SSO</dt>
+<dd>
+<p>Identifies whether single sign-on is enabled by default for all web applications on all virtual servers on this server that are configured for the same realm. If this option is not enabled, single sign-on is disabled by default for all virtual servers, and users must authenticate separately to every application on each virtual server. You can override this setting for an individual virtual server. SSO can be can be enabled or disabled. This option is disabled by default.</p>
+</dd>
+<dt>Access Logging</dt>
+<dd>
+<p>If this option is selected, access logging is enabled for all virtual server sub-elements that do not specify this property. If not selected, this option disables access logging for all virtual-server sub-elements that do not specify this property. This option is disabled by default.</p>
+</dd>
+<dt>Rotation</dt>
+<dd>
+<p>If this option is selected, log file rotation is enabled. This option is enabled by default.</p>
+</dd>
+<dt>Rotation Policy</dt>
+<dd>
+<p>The only available rotation policy is <code>time</code>.</p>
+</dd>
+<dt>Rotation Interval</dt>
+<dd>
+<p>The number of minutes between rotations of the access log. This field is valid only if the Rotation Policy is <code>time</code>. The default value is 1,440 minutes (24 hours).</p>
+</dd>
+<dt>Rotation Suffix</dt>
+<dd>
+<p>String value to be added to the end of the log file name after rotation. The default value is <code>yyyy-MM-dd</code>.</p>
+<p>Ensure that the rotation suffix contains enough values to create a unique suffix for every log rotation. For example, if the access log is rotated more frequently than once every day, include the time of day in the rotation suffix.</p>
+<p>A unique suffix is required to ensure that the access log file is rotated every time that the rotation interval has elapsed. If the rotation suffix of the new access log file is the same as the rotation suffix of the existing access log file, the file is not rotated.</p>
+</dd>
+<dt>Max File Count</dt>
+<dd>
+<p>The maximum number of rotated access log files that are to be kept. A negative value indicates that there is no limit to the file count. The default value is -1.</p>
+</dd>
+<dt>Buffer Size</dt>
+<dd>
+<p>The size, in bytes, of the access log buffer, or a value less than or equal to 0 for unbuffered access logs. The default value is 32768.</p>
+</dd>
+<dt>Write Interval</dt>
+<dd>
+<p>The number of seconds before the log will be written to the disk. The access log is written when the buffer is full or when the interval expires. If the value is less than or equal to 0, then the buffer is always written even if it is not full. This means that each time the server is accessed, the log message is stored directly to the file. The default value is 300.</p>
+</dd>
+<dt>Format</dt>
+<dd>
+<p>String value that specifies what information is to be captured in the access log and the order in which it is captured. The default value is as follows:</p>
+<pre>
+%client.name% %auth-user-name% %datetime% %request% %status% %response.length%
+</pre>
+<p>The following values are available for inclusion in the format string:</p>
+<dl>
+<dt><code>%attribute.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>Logs the value (by calling its <code>toString</code> method) of the request attribute with the given <i>name</i></p>
+</dd>
+<dt><code>%auth-user-name%</code></dt>
+<dd>
+<p>Name of authorized user</p>
+</dd>
+<dt><code>%client.name%</code></dt>
+<dd>
+<p>Client host name</p>
+</dd>
+<dt><code>%client.dns%</code></dt>
+<dd>
+<p>Client DNS</p>
+</dd>
+<dt><code>%cookie.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>The value of the request cookie with the given <i>name</i></p>
+</dd>
+<dt><code>%cookie.value%</code></dt>
+<dd>
+<p>The value of the first cookie found in the request</p>
+</dd>
+<dt><code>%datetime%</code></dt>
+<dd>
+<p>System date</p>
+</dd>
+<dt><code>%request%</code></dt>
+<dd>
+<p>Full HTTP request line</p>
+</dd>
+<dt><code>%status%</code></dt>
+<dd>
+<p>Status</p>
+</dd>
+<dt><code>%response.length%</code></dt>
+<dd>
+<p>Response content length</p>
+</dd>
+<dt><code>%header.referer%</code></dt>
+<dd>
+<p>Referer header</p>
+</dd>
+<dt><code>%header.user-agent%</code></dt>
+<dd>
+<p>User agent header</p>
+</dd>
+<dt><code>%http-method%</code></dt>
+<dd>
+<p>HTTP method</p>
+</dd>
+<dt><code>%http-uri%</code></dt>
+<dd>
+<p>HTTP URI</p>
+</dd>
+<dt><code>%query-str%</code></dt>
+<dd>
+<p>HTTP query string</p>
+</dd>
+<dt><code>%http-version%</code></dt>
+<dd>
+<p>HTTP protocol version</p>
+</dd>
+<dt><code>%header.accept%</code></dt>
+<dd>
+<p>Accept header</p>
+</dd>
+<dt><code>%header.date%</code></dt>
+<dd>
+<p>Date header</p>
+</dd>
+<dt><code>%header.if-mod-since%</code></dt>
+<dd>
+<p>If-Modified-Since header</p>
+</dd>
+<dt><code>%header.auth%</code></dt>
+<dd>
+<p>Authorization header</p>
+</dd>
+<dt><code>%header.</code><i>any</i><code>%</code></dt>
+<dd>
+<p>Any valid HTTP header value defined in RFC 2616 (<code>any</code> is also a valid header value; it is specified as a variable here)</p>
+</dd>
+<dt><code>%session.</code><i>name</i><code>%</code></dt>
+<dd>
+<p>The value of the session attribute with the name <i>name</i>, or <code>NULL-SESSION-ATTRIBUTE-</code><i>name</i> if the named attribute does not exist in the session, or <code>NULL-SESSION</code> if no session exists</p>
+</dd>
+<dt><code>%time-taken%</code></dt>
+<dd>
+<p>Time (in milliseconds) it took to service each request</p>
+</dd>
+<dt><code>%vs.id%</code></dt>
+<dd>
+<p>Virtual server ID</p>
+</dd>
+</dl>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the HTTP Service. For a description of available properties, see <a href="ref-httpserviceprops.html">Properties Specific to the HTTP Service</a>.</p>
+</dd>
+</dl>
+<a id="sthref106" name="sthref106"></a>
+<h5>Related Tasks</h5>
+<p><a href="task-accesslog.html">To Configure the HTTP Service</a></p>
+<a id="sthref107" name="sthref107"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

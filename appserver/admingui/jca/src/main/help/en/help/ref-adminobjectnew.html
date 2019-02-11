@@ -1,0 +1,88 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-adminobjectnew" name="ref-adminobjectnew"></a><a id="GHJCA00051" name="GHJCA00051"></a></p>
+
+<h4><a id="sthref100" name="sthref100"></a>New Admin Object Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Admin Object Resource page to create a new administered object resource.</p>
+<p>The New Admin Object Resource page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the administered object resource.</p>
+</dd>
+<dt>Resource Adapter</dt>
+<dd>
+<p>The resource adapter for the administered object resource.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>The Java type for the administered object resource (or example, <code>javax.jms.Topic</code>).</p>
+</dd>
+<dt>Class Name</dt>
+<dd>
+<p>The implementation class name associated with the resource type.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the administered object resource.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the administered object resource is enabled. This option is enabled by default.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the administered object resource. Available properties depend upon the resource adapter for the connector connection pool. The name-value pairs specified in this table can be used to override the default values for the properties defined by the resource-adapter vendor.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="sthref101" name="sthref101"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-adminobjectnew.html">To Create an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-adminobjectedit.html">To Edit an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-administeredobjectresourcedelete.html">To Delete an Administered Object Resource</a></p>
+</li>
+</ul>
+<a id="sthref102" name="sthref102"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00012"><code>create-admin-object</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00146"><code>list-admin-objects</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00063"><code>delete-admin-object</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

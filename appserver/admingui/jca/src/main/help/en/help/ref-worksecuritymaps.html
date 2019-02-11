@@ -1,0 +1,76 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-worksecuritymaps" name="ref-worksecuritymaps"></a><a id="GHJCA00053" name="GHJCA00053"></a></p>
+
+<h4><a id="sthref106" name="sthref106"></a><a id="sthref107" name="sthref107"></a>Work Security Maps</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Work Security Maps page to configure work security maps for resource adapters.</p>
+<p>A connector work security map maps the caller identity of the work submitted by a resource adapter EIS principal or EIS user group to a suitable principal or user group in the GlassFish Server security domain. One or more work security maps may be associated with a resource adapter. The connector work security map configuration supports the use of the wild card asterisk (<code>*</code>) to indicate all users or all user groups.</p>
+<p>A work security map is different from a security map for a connector connection pool, which maps the principal received during servlet or EJB authentication to the credentials accepted by the EIS. See <a href="ref-connectorsecuritymaps.html">Connector Connection Pool Security Maps</a> for information about security maps for connector connection pools.</p>
+<p>The enterprise information system (EIS) is any system that holds the data of an organization. It can be a mainframe, a messaging system, a database system, or an application.</p>
+<p>For each work security map, the following information is provided.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name of the work security map.</p>
+</dd>
+</dl>
+<p>The Work Security Maps table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new work security map.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected work security maps.</p>
+</dd>
+</dl>
+<a id="sthref108" name="sthref108"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-worksecuritymapnew.html">To Create a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapedit.html">To Edit a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapdelete.html">To Delete a Work Security Map</a></p>
+</li>
+</ul>
+<a id="sthref109" name="sthref109"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00021"><code>create-connector-work-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00160"><code>list-connector-work-security-maps</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00073"><code>delete-connector-work-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00253"><code>update-connector-work-security-map</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

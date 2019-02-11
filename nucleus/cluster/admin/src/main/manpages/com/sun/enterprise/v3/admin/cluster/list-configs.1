@@ -1,0 +1,69 @@
+list-configs(1)           asadmin Utility Subcommands          list-configs(1)
+
+NAME
+       list-configs - lists named configurations
+
+SYNOPSIS
+           list-configs [--help] [target]
+
+DESCRIPTION
+       The list—configs subcommand lists named configurations in the
+       configuration of the domain administration server (DAS). The list can
+       be filtered by cluster, instance, or named configuration.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Filters the list of configurations. Valid values are as follows:
+
+           domain
+               Lists all named configurations in the current domain.
+
+           cluster-name
+               Lists the named configuration that defines the configuration of
+               instances in the specified cluster.
+
+           instance-name
+               Lists the named configuration that defines the configuration of
+               the specified instance.
+
+           configuration-name
+               Lists the specified named configuration. Use this option to
+               determine whether a named configuration exits.
+
+EXAMPLES
+       Example 1, Listing All Named Configurations in a Domain
+           This example lists all named configurations in the current domain.
+
+               asadmin> list-configs
+               server-config
+               default-config
+               pmdclust-config
+               pmdsharedconfig
+               pmdcpinst-config
+               ymlclust-config
+               il1-config
+               il2-config
+
+               Command list-configs executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       copy-config(1), delete-config(1)
+
+       asadmin(1M)
+
+       configuration(5ASC)
+
+Java EE 8                         20 Dec 2010                  list-configs(1)

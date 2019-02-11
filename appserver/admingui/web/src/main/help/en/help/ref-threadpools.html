@@ -1,0 +1,92 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-threadpools" name="ref-threadpools"></a><a id="GHWEB00027" name="GHWEB00027"></a></p>
+
+<h4><a id="sthref169" name="sthref169"></a><a id="sthref170" name="sthref170"></a>Thread Pools</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Thread Pools page to configure thread pools.</p>
+<p>Use thread pools to limit a service to a specific number of concurrent threads.</p>
+<p>When you first install the GlassFish Server, two thread pools exist by default. The thread pool named <code>http-thread-pool</code> is configured for use by network listeners, while <code>thread-pool-1</code> is configured for use by the ORB for RMI/IIOP requests. You may need to create a thread pool with different settings for use by particular kinds of applications and for particular hardware systems, or to tune the default thread pools for your needs.</p>
+<p>The Java Virtual Machine (JVM) can support many threads of execution at once. To help performance, theGlassFish Server maintains one or more thread pools. It is possible to assign specific thread pools to specific services.</p>
+<p>One thread pool can serve multiple services. Request threads handle user requests. When the server receives a request, it assigns the request to a free thread from the thread pool. The thread executes the client's requests and returns results. For example, if the request needs to use a system resource that is currently busy, the thread waits until that resource is free before allowing the request to use that resource.</p>
+<p>Specify the minimum and maximum number of threads that are reserved for requests. The thread pool is dynamically adjusted between these two values. The minimum thread pool size that is specified signals the server to allocate at least that many threads in reserve for requests. That number is increased up to the maximum thread pool size that is specified.</p>
+<p>Increasing the number of threads available to a process allows the process to respond to more requests simultaneously.</p>
+<p>For each thread pool, the following information is provided.</p>
+<dl>
+<dt>Thread Pool ID</dt>
+<dd>
+<p>The name of the thread pool.</p>
+</dd>
+<dt>Max Thread Pool Size</dt>
+<dd>
+<p>The maximum number of threads in the thread pool.</p>
+</dd>
+<dt>Min Thread Pool Size</dt>
+<dd>
+<p>The minimum number of threads in the thread pool. These threads are created when the thread pool is instantiated.</p>
+</dd>
+<dt>Max Queue Size</dt>
+<dd>
+<p>The maximum number of messages that can be queued until threads are available to process them.</p>
+</dd>
+<dt>Idle Thread Timeout</dt>
+<dd>
+<p>The amount of time in seconds after which idle threads are removed from the pool.</p>
+</dd>
+</dl>
+<p>The Thread Pools table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new thread pool.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected thread pools.</p>
+</dd>
+</dl>
+<a id="sthref171" name="sthref171"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-threadpoolnew.html">To Create a Thread Pool</a></p>
+</li>
+<li>
+<p><a href="task-threadpooledit.html">To Edit a Thread Pool</a></p>
+</li>
+<li>
+<p><a href="task-threadpooldelete.html">To Delete a Thread Pool</a></p>
+</li>
+</ul>
+<a id="sthref172" name="sthref172"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00060"><code>create-threadpool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00204"><code>list-threadpools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00111"><code>delete-threadpool</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

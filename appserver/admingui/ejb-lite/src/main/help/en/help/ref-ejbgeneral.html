@@ -1,0 +1,131 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-ejbgeneral" name="ref-ejbgeneral"></a><a id="GHEJL00001" name="GHEJL00001"></a></p>
+
+<h4><a id="sthref5" name="sthref5"></a><a id="sthref6" name="sthref6"></a>Enterprise Java Beans (EJB)</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Enterprise Java Beans (EJB) page to configure settings for the EJB container.</p>
+<p>In addition to general settings for enterprise beans, you can configure pool settings and cache settings.</p>
+<ul>
+<li>
+<p>Pool settings apply only to stateless session beans. By default, the container maintains a pool of enterprise beans in order to respond to client requests without the performance hit that results from creating the beans.</p>
+<p>If you experience performance problems in an application that uses deployed enterprise beans, you can help improve the applications's performance by creating a pool or by increasing the number of beans maintained by an existing pool.</p>
+</li>
+<li>
+<p>Cache settings apply only to stateful session beans. The container maintains a cache of enterprise bean data for the most used enterprise beans. This allows the container to respond more quickly to requests from other application modules for data from the enterprise beans.</p>
+<p>Cached enterprise beans are in one of three states: active, idle, and passivated. An active enterprise bean is currently being accessed by clients. An idle enterprise bean's data is currently in the cache, but no clients are accessing the bean. A passivated bean's data is temporarily stored and is read back into the cache if a client requests the bean.</p>
+</li>
+</ul>
+<p>The Enterprise Java Beans (EJB) page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Session Store Location</dt>
+<dd>
+<p>The directory where passivated stateful session beans and persisted HTTP sessions are stored on the file system. The default value is <code>${com.sun.aas.instanceRoot}/session-store</code>.</p>
+<p>Passivated beans are stateful session beans that have had their state written to a file on the file system. Passivated beans typically have been idle for a certain period of time, and are not currently being accessed by clients. Similarly, persisted HTTP sessions are individual web sessions that have had their state written to a file on the file system.</p>
+</dd>
+<dt>Commit Option</dt>
+<dd>
+<p>Specifies how the container caches passivated bean instances between transactions. If you select Option B (the default), the container caches a ready instance between transactions. If you select Option C, the container does not cache a ready instance between transactions.</p>
+</dd>
+<dt>Initial and Minimum Pool Size</dt>
+<dd>
+<p>The minimum number of beans to be maintained in the pool. The default value is 0.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of beans that the container can maintain in the pool at one time. The default value is 32.</p>
+</dd>
+<dt>Pool Resize Quantity</dt>
+<dd>
+<p>The number of beans that are removed from the pool if they are idle for more than the time specified in the Pool Idle Timeout field. The value must be at least 0 and less than the Maximum Pool Size value. The default value is 8.</p>
+</dd>
+<dt>Pool Idle Timeout</dt>
+<dd>
+<p>The time, in seconds, that a bean in the pool can remain idle before it is removed from the pool. After this amount of time, the bean is destroyed. A value of 0 means that a bean can remain idle indefinitely. The default value is 600.</p>
+</dd>
+<dt>Max Cache Size</dt>
+<dd>
+<p>The maximum number of beans to be held in the cache. Increase the maximum number of beans to cache to eliminate the overhead of bean creation and destruction. However, if the cache is increased, the server consumes more memory and resources. Be sure your operating environment is sufficient for your cache settings. A value of 0 indicates an unbounded cache. The default value is 512.</p>
+</dd>
+<dt>Cache Resize Quantity</dt>
+<dd>
+<p>The number of beans to passivate when the cache is full. When the maximum number of cached beans is reached, the container removes a number of passivated beans from the backup store. This value also specifies the number of beans to be created if a request arrives when the pool has no available beans. The value must be greater than 1 and less than the Max Cache Size value. The default value is 32.</p>
+</dd>
+<dt>Removal Timeout</dt>
+<dd>
+<p>The number of seconds after which a passivated bean is removed from the session store. A value of 0 specifies that the container does not remove inactive beans automatically. If the Removal Timeout value is less than or equal to the Cache Idle Timeout value, beans are removed immediately without being passivated. The default value is 5400.</p>
+</dd>
+<dt>Removal Selection Policy</dt>
+<dd>
+<p>The policy the container uses to remove stateful session beans from the cache. The choices are as follows:</p>
+<dl>
+<dt>Not recently used (NRU)</dt>
+<dd>
+<p>Removes a bean that hasn't been used recently. This value is the default.</p>
+</dd>
+<dt>First in, first out (FIFO)</dt>
+<dd>
+<p>Removes the oldest bean in the cache.</p>
+</dd>
+<dt>Least recently used (LRU)</dt>
+<dd>
+<p>Removes the least recently accessed bean.</p>
+</dd>
+</dl>
+</dd>
+<dt>Cache Idle Timeout</dt>
+<dd>
+<p>The maximum number of seconds that a bean can remain idle in the cache. After this amount of time, the container can passivate this bean. A value of 0 specifies that beans never become candidates for passivation. The default value is 600.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the EJB container.</p>
+<p>For a description of available properties, see <a href="ref-ejbgeneralproperties.html">Properties Specific to the EJB Container</a>.</p>
+</dd>
+</dl>
+<a id="sthref7" name="sthref7"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+<li>
+<p><a href="../../../ejb/en/help/task-ejbmdbpoolsettings.html">To Configure MDB Pool Settings</a></p>
+</li>
+<li>
+<p><a href="../../../ejb/en/help/task-ejbtimerservice.html">To Configure the EJB Timer Service</a></p>
+</li>
+<li>
+<p><a href="../../../ejb/en/help/task-ejbcontaineravailability.html">To Configure Availability Settings for the EJB Container</a></p>
+</li>
+</ul>
+<a id="sthref8" name="sthref8"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

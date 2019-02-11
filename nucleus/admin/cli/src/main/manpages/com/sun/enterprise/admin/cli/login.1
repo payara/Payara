@@ -1,0 +1,92 @@
+login(1)                  asadmin Utility Subcommands                 login(1)
+
+NAME
+       login - logs you into a domain
+
+SYNOPSIS
+           login [--help]
+
+DESCRIPTION
+       The purpose of the login subcommand is to ease domain administration by
+       letting you log into a particular domain. If GlassFish Server domains
+       are created on various machines (locally), you can run the asadmin
+       utility from any of these machines and manage domains located elsewhere
+       (remotely). This is especially useful when a particular machine is
+       chosen as an administration client that manages multiple domains and
+       servers.
+
+       The login subcommand prompts you for the administrator user name and
+       password. After successful login, the .asadminpass file is created in
+       your home directory. (This is the same file that is modified when you
+       run the create-domain subcommand with the --savelogin option.) The
+       literal host name is stored, and no resolution with the DNS is
+       attempted. If a domain is being administered from other machines, it is
+       sufficient to run the login subcommand once. You do not need to specify
+       the asadmin utility options --user and --passwordfile when you run
+       additional remote subcommands on that domain. After you have logged
+       into a domain, you still need to provide the host and port for any
+       subsequent remote subcommands unless you chose the default values for
+       --host (localhost) and --port (4848) options.
+
+       Subsequent use of same subcommand with the same parameters will result
+       in overwriting the contents of the .asadminpass file for the given
+       administration host and port. You can decide to overwrite the file or
+       to reject such a login.
+
+       Login information is saved permanently and can be used across multiple
+       domain restarts.
+
+       There is no logout subcommand. If you want to log in to another domain,
+       run the login subcommand and specify new values for the asadmin utility
+       options --host and --port.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Logging Into a Domain on a Remote Machine
+           This example logs into a domain located on another machine. Options
+           are specified before the login subcommand.
+
+               asadmin --host foo --port 8282 login
+               Please enter the admin user name>admin
+               Please enter the admin password>
+
+               Trying to authenticate for administration of server at host [foo]
+               and port [8282] ...
+               Login information relevant to admin user name [admin] for host [foo]
+               and admin port [8282] stored at [/.asadminpass] successfully.
+               Make sure that this file remains protected. Information stored in this
+               file will be used by asadmin commands to manage associated domain.
+
+       Example 2, Logging Into a Domain on the Default Port of Localhost
+           This example logs into a domain on mylhost on the default port.
+           Options are specified before the login subcommand.
+
+               asadmin --host myhost login
+               Please enter the admin user name>admin
+               Please enter the admin password>
+               Trying to authenticate for administration of server
+               at host [myhost] and port [4848] ...
+               An entry for login exists for host [myhost] and port [4848], probably
+               from an earlier login operation.
+               Do you want to overwrite this entry (y/n)?y
+               Login information relevant to admin user name [admin] for host [myhost]
+               and admin port [4848] stored at [/home/joe/.asadminpass] successfully.
+               Make sure that this file remains protected. Information stored in this
+               file will be used by asadmin commands to manage associated domain.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-domain(1), delete-domain(1)
+
+       asadmin(1M)
+
+Java EE 8                         9 Oct 2009                          login(1)

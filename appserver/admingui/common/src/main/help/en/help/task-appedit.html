@@ -1,0 +1,125 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-appedit" name="task-appedit"></a><a id="GHCOM00161" name="GHCOM00161"></a></p>
+
+<h4><a id="sthref47" name="sthref47"></a>To Edit a Deployed Application</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, select the Applications node.</p>
+<p>The Applications page opens.</p>
+</li>
+<li>
+<p>From the Deployed Applications table, click the name of the application that you are editing.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>The Edit Application page opens.</p>
+</li>
+<li>
+<p>Deselect the Status Enabled checkbox to disable the application status so that it is unavailable.</p>
+<p>By default, the status of an application is Enabled as soon as it is deployed.</p>
+</li>
+<li>
+<p>For a web application, in the Context Root field, type the path for the application.</p>
+<p>In the URL of the web application, the context root immediately follows the port number (<code>http://</code><i>host</i><code>:</code><i>port</i><code>/</code><i>context-root</i><code>/...</code>). Ensure that the context root starts with a forward slash, for example, <code>/hello</code>.</p>
+</li>
+<li>
+<p>Deselect the Availability Enabled checkbox to disable session persistence and SFSB checkpointing for the application.</p>
+<p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
+<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+</li>
+<li>
+<p>From the Virtual Servers drop-down list, select the virtual server to be associated with this application.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+</li>
+<li>
+<p>Select the Java Web Start Enabled checkbox to use Java Web Start software to deploy the application.</p>
+<p>This option is enabled or disabled by default according to its setting when originally deployed.</p>
+</li>
+<li>
+<p>In the Deployment Order field, type a number to specify the deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</li>
+<li>
+<p>In the Description field, type a description for this application.</p>
+</li>
+<li>
+<p>To view the list of module descriptors for the application, click the Description tab. For more details, see <a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p>By default the Status of an application is Enabled on all targets. To view the targets on which the application has been enabled, click the Targets tab. You can enable or disable applications on one or multiple targets. See <a href="task-appviewtargets.html">To View Application Targets</a>.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHCOM248" name="GHCOM248"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+</li>
+<li>
+<p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+</li>
+<li>
+<p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appdeployconn.html">To Deploy a Connector Module</a></p>
+</li>
+<li>
+<p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+</li>
+<li>
+<p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewtargets.html">To View Application Targets</a></p>
+</li>
+<li>
+<p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+</li>
+<li>
+<p><a href="task-applaunch.html">To Launch an Application</a></p>
+</li>
+<li>
+<p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appclientstubs.html">To Download Application Client Stubs</a></p>
+</li>
+<li>
+<p><a href="task-appredeploy.html">To Redeploy a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-apprestart.html">To Reload a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesview.html">To View Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesedit.html">To Modify Application Scoped Resources</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,81 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmxconnectorssledit" name="ref-jmxconnectorssledit"></a><a id="GHCOM00128" name="GHCOM00128"></a></p>
+
+<h4><a id="sthref237" name="sthref237"></a><a id="sthref238" name="sthref238"></a><a id="sthref239" name="sthref239"></a>SSL</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the SSL page to modify the SSL settings for the JMX connector.</p>
+<p>The settings on this page are meaningful only if security is enabled for the JMX connector on the Edit JMX Connector page.</p>
+<p>The SSL page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>SSL3</dt>
+<dd>
+<p>If this checkbox is selected, the SSL3 protocol is enabled for the JMX connector. This option is enabled by default.</p>
+</dd>
+<dt>TLS</dt>
+<dd>
+<p>If this checkbox is selected, the TLS protocol is enabled for the JMX connector. This option is enabled by default.</p>
+</dd>
+<dt>Client Authentication</dt>
+<dd>
+<p>If this checkbox is selected, clients must identify themselves to the server on every request. This option is disabled by default.</p>
+</dd>
+<dt>Certificate Nickname</dt>
+<dd>
+<p>The nickname of the server certificate in the certificate database or the PKCS#11 token. In the certificate, the name format is <i>tokenname</i><code>:</code><i>nickname</i>. Including the <i>tokenname</i><code>:</code> part of the name in this attribute is optional.</p>
+</dd>
+<dt>Key Store</dt>
+<dd>
+<p>The name of the keystore file (for example, <code>keystore.jks</code>).</p>
+</dd>
+<dt>Trust Algorithm</dt>
+<dd>
+<p>The name of the trust management algorithm (for example, PKIX) to use for certification path validation.</p>
+</dd>
+<dt>Max Certificate Length</dt>
+<dd>
+<p>The maximum number of non-self-issued intermediate certificates that can exist in a certification path. This field is used only if the Trust Algorithm field is set to PKIX. A value of 0 implies that the path can only contain a single certificate. A value of -1 implies that the path length is unconstrained (there is no maximum). Setting a value less than -1 causes an exception to be thrown.</p>
+</dd>
+<dt>Trust Store</dt>
+<dd>
+<p>The name of the truststore file (for example, <code>cacerts.jks</code>).</p>
+</dd>
+<dt>Cipher Suites</dt>
+<dd>
+<p>An area where you can add or remove cipher suites. If you do not add any cipher suites, all cipher suites will be used.</p>
+</dd>
+</dl>
+<a id="GHCOM473" name="GHCOM473"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jmxconnectoredit.html">To Edit the JMX Connector</a></p>
+</li>
+<li>
+<p><a href="task-jmxconnectorssledit.html">To Edit SSL Settings for the JMX Connector</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

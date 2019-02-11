@@ -1,0 +1,116 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-scheduledexecutorserviceedit" name="ref-scheduledexecutorserviceedit"></a><a id="GHCON150" name="GHCON150"></a></p>
+
+<h4>Edit Managed Scheduled Executor Service<a id="sthref40" name="sthref40"></a></h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Managed Scheduled Executor Service page to edit a managed scheduled executor service resource.</p>
+<p>The Edit Managed Scheduled Executor Service page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/. The JNDI name is a read-only field. You can only specify the JNDI name when you create a new resource</p>
+</dd>
+<dt>Logical JNDI Name</dt>
+<dd>
+<p>The logical JNDI name for the resource. It is a Java EE standard name by which the resource can be accessed. The logical JNDI name is a read-only field. See <a href="../../../common/en/help/ref-logicaljndinames.html">Logical JNDI Names</a> for more information.</p>
+</dd>
+<dt>Context Information</dt>
+<dd>
+<p>The contexts to propagate to threads: Classloader, JNDI, Security, or WorkArea. Context propagation can be enabled or disabled. If enabled, the selected contexts are propagated. If disabled, none of the contexts are propagated, even if they are selected. The default value is Enabled, with all four contexts selected.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>Whether the resource is available at runtime.</p>
+<p>If only the default server instance, <code>server</code>, exists in the domain, the resource's runtime availability can be enabled or disabled. Runtime availability is enabled by default.</p>
+<p>If any clusters or standalone instances have been created in the domain, use the Target tab to control runtime availability of the resource on its targets.</p>
+</dd>
+<dt>Thread Priority</dt>
+<dd>
+<p>The priority to assign to created threads. The default value is 5.</p>
+</dd>
+<dt>Long-Running Tasks</dt>
+<dd>
+<p>Whether the resource should be used for long-running tasks. If enabled, long-running tasks are not reported as stuck. This option is disabled by default.</p>
+</dd>
+<dt>Hung After</dt>
+<dd>
+<p>The number of seconds tasks can execute before they are considered unresponsive. The default value is 0.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of this resource. Resources with lower numbers are loaded first at server startup. The default value is 100.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of this resource.</p>
+</dd>
+<dt>Core Size</dt>
+<dd>
+<p>The number of threads to keep in a thread pool. The default value is 0.</p>
+</dd>
+<dt>Keep Alive</dt>
+<dd>
+<p>The number of seconds threads can remain idle when the number of threads is greater than core size. The default value is 60.</p>
+</dd>
+<dt>Thread Lifetime</dt>
+<dd>
+<p>The number of seconds threads can remain in a thread pool before being purged, regardless of whether the number of threads is greater than core size or whether the threads are idle. The default value is 0.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the resource. GlassFish Server does not define any additional properties for this resource type. Moreover, this resource type does not currently use any additional properties.</p>
+</dd>
+</dl>
+<a id="sthref41" name="sthref41"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-managedscheduledexecutorservicecreate.html">To Create a Managed Scheduled Executor Service</a></p>
+</li>
+<li>
+<p><a href="task-managedscheduledexecutorserviceedit.html">To Edit a Managed Scheduled Executor Service</a></p>
+</li>
+<li>
+<p><a href="task-managedscheduledexecutorservicedelete.html">To Delete a Managed Scheduled Executor Service</a></p>
+</li>
+</ul>
+<a id="GHCON151" name="GHCON151"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM680"><code>create-managed-scheduled-executor-service</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM873"><code>list-managed-scheduled-executor-services</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM850"><code>delete-managed-scheduled-executor-service</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,70 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-predefinedconfigsysproperties" name="ref-predefinedconfigsysproperties"></a><a id="GHCOM00132" name="GHCOM00132"></a></p>
+
+<h4>Predefined System Properties</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>GlassFish Server defines the following configuration system properties:</p>
+<dl>
+<dt><code>ASADMIN_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the HTTP port or HTTPS port through which the DAS connects to the instance to manage the instance. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>HTTP_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used to listen for HTTP requests. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>HTTP_SSL_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used to listen for HTTPS requests. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>IIOP_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for IIOP connections. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>IIOP_SSL_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for secure IIOP connections. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>IIOP_SSL_MUTUALAUTH_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for secure IIOP connections with client authentication. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>JAVA_DEBUGGER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for connections to the Java Platform Debugger Architecture (JPDA) (<code><a href="http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html/">http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html/</a></code>) debugger. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>JMS_PROVIDER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number for the Java Message Service provider. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>JMX_SYSTEM_CONNECTOR_PORT</code></dt>
+<dd>
+<p>This property specifies the port number on which the JMX connector listens. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt><code>OSGI_SHELL_TELNET_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for connections to the Apache Felix Remote Shell (<code><a href="http://felix.apache.org/site/apache-felix-remote-shell.html">http://felix.apache.org/site/apache-felix-remote-shell.html</a></code>). This shell uses the Felix shell service to interact with the OSGi module management subsystem. Valid values are 1-65535. On UNIX, creating sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+</dl>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

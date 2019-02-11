@@ -1,0 +1,142 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbcconnectionpoolnew2" name="ref-jdbcconnectionpoolnew2"></a><a id="GHJDB00025" name="GHJDB00025"></a></p>
+
+<h4><a id="sthref44" name="sthref44"></a>New JDBC Connection Pool (Step 2 of 2)</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JDBC Connection Pool (Step 2 of 2) page to create a new JDBC connection pool.</p>
+<p>The New JDBC Connection Pool (Step 2 of 2) page contains the following options.</p>
+<dl>
+<dt>Datasource Classname</dt>
+<dd>
+<p>The vendor-specific class name that implements the <code>DataSource</code>, <code>ConnectionPoolDataSource</code>, or <code>XADataSource</code> API. If you enabled the Introspect option and selected one of the datasource resource types, this field is filled in automatically with the class name associated with the resource type and database vendor you chose. If you selected the <code>java.sql.Driver</code> resource type, this field is disabled.</p>
+</dd>
+<dt>Driver Classname</dt>
+<dd>
+<p>The vendor-supplied JDBC driver class name. If you enabled the Introspect option and selected the <code>java.sql.Driver</code> resource type, this field is filled in automatically with the class name associated with the driver and database vendor you chose. If you selected one of the datasource resource types, this field is disabled.</p>
+</dd>
+<dt>Ping</dt>
+<dd>
+<p>If this option is selected, the pool will be pinged automatically during pool creation or reconfiguration to identify and warn of any erroneous attribute values. This option is disabled by default.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A short description for the connection pool.</p>
+</dd>
+<dt>Initial and Minimum Pool Size</dt>
+<dd>
+<p>The minimum number of connections in the pool. This value also determines the number of connections placed in the pool when the pool is first created or when GlassFish Server starts. The default value is 8.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of connections in the pool. The default value is 32.</p>
+</dd>
+<dt>Pool Resize Quantity</dt>
+<dd>
+<p>When the pool scales up and scales down toward the maximum and minimum pool size respectively, it is resized in batches. This value determines the number of connections in the batch. Making this value too large delays connection creation and recycling; making it too small will be less efficient. The default value is 2.</p>
+</dd>
+<dt>Idle Timeout</dt>
+<dd>
+<p>The maximum amount of time, in seconds, that a connection can remain idle in the pool. After this time expires, the connection is removed from the pool. The default value is 300.</p>
+</dd>
+<dt>Max Wait Time</dt>
+<dd>
+<p>The maximum amount of time, in milliseconds, that the application requesting a connection will wait before getting a connection timeout. The default value is 60,000.</p>
+</dd>
+<dt>Non Transactional Connections</dt>
+<dd>
+<p>If this option is enabled, non-transactional connections are returned.</p>
+</dd>
+<dt>Transaction Isolation</dt>
+<dd>
+<p>If a transaction isolation level is specified, connections in this pool operate at the specified level. Otherwise, the connections operate with default isolation levels provided by the JDBC driver. By default, this option is not specified.</p>
+</dd>
+<dt>Isolation Level</dt>
+<dd>
+<p>If the Guaranteed checkbox is selected, all connections taken from the pool have the same isolation level. For example, if the isolation level for the connection is changed programmatically (with <code>con.setTransactionIsolation</code>) when last used, then this mechanism changes the status back to the specified isolation level. This option is enabled by default.</p>
+<p>This setting is only applicable if a transaction isolation level has been specified.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JDBC connection pool. These properties might include database name (URL), user name, and password. The table normally contains properties used by the database vendor.</p>
+<p>For a description of some of the available properties, see <a href="ref-jdbc-properties.html">Properties Specific to JDBC Connection Pools</a>.</p>
+<p>If you do not specify a value for a property, it is removed from the table when you finish creating the connection pool. If you do not want to set a value for a property now, but you want the property to remain in the table so that the value can be set later, type a set of empty parentheses in the Value field:</p>
+<pre>
+()
+</pre></dd>
+</dl>
+<a id="sthref45" name="sthref45"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolnew.html">To Create a JDBC Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooledit.html">To Edit JDBC Connection Pool General Settings</a></p>
+</li>
+<li>
+<p><a href="task-verifyconnpoolsettings.html">To Verify Connection Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooladvance.html">To Edit JDBC Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolproperty.html">To Edit JDBC Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooldelete.html">To Delete a JDBC Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref46" name="sthref46"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00001"><code>add-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00036"><code>create-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00088"><code>delete-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00135"><code>flush-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00173"><code>list-jdbc-connection-pools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00214"><code>ping-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00234"><code>start-database</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00239"><code>stop-database</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

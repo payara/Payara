@@ -1,0 +1,139 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-appdeployconn" name="task-appdeployconn"></a><a id="GHCOM00159" name="GHCOM00159"></a></p>
+
+<h4><a id="sthref41" name="sthref41"></a><a id="sthref42" name="sthref42"></a><a id="sthref43" name="sthref43"></a>To Deploy a Connector Module</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, select the Applications node.</p>
+<p>The Applications page opens.</p>
+</li>
+<li>
+<p>In the Deployed Applications table, click the Deploy button.</p>
+<p>The Deploy Applications or Modules page opens.</p>
+</li>
+<li>
+<p>Specify the location of the application to deploy.</p>
+<ul>
+<li>
+<p>If the application is an archive file that resides on or is accessible from the client machine, select the option Packaged File to Be Uploaded to the Server.</p>
+<p>The client machine is the host on which you are viewing the Administration Console through a browser.</p>
+<p>Click Browse to browse to the file, or type the full path to the file.</p>
+</li>
+<li>
+<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the GlassFish Server.</p>
+<p>The server machine is the host that is running the domain administration server (DAS).</p>
+<p>Click Browse Files to browse to a file, or Browse Folders to browse to a directory. Alternatively, type the full path name to the file or directory. Deploying from an exploded directory is for advanced developers and is not recommended for production environments.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>From the Type drop-down list, select Connector Module.</p>
+<p>If you specified either a Packaged File to Be Uploaded to the Server or a Local Packaged File That Is Accessible From the GlassFish Server, the application type is detected automatically. If you specified a Directory That Is Accessible From the GlassFish Server, you must specify the type manually.</p>
+</li>
+<li>
+<p>In the Application Name field, retain the default name, which is the directory name or the prefix of the file name, or type another name.</p>
+<p>The default name appears if you chose to upload a file. The application name must be unique.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). The version identifier must begin with a letter or number. It can contain alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period (<code>.</code>) characters. For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the application.</p>
+<p>This option is selected by default. If this option is disabled, the application is unavailable.</p>
+</li>
+<li>
+<p>Select the Run Verifier checkbox to verify deployment descriptors before deployment.</p>
+<p>If this option is selected and if verification fails, deployment is not performed. The verifier examines the structure and content of the deployment descriptors. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+<p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
+</li>
+<li>
+<p>Select the Force Redeploy checkbox to force redeployment if the application is already deployed.</p>
+<p>If this option is not selected, an attempt to deploy an application that is already deployed results in an error. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Preserve Application Scoped Resources checkbox to preserve any application-scoped resources and restore them during redeployment.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Deployment Order field, type a number to specify the deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</li>
+<li>
+<p>In the Description field, type a description for this application.</p>
+</li>
+<li>
+<p>To add target server instances and clusters on which to deploy the module or application, select them from the Available Targets list and use the Add button to move them to the Selected Targets list.</p>
+<p>The Target option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist. By default, the module or application is deployed to the default server instance, named <code>server</code>. Use the Add All button to deploy to all targets. Use the Remove and Remove All buttons to remove targets from the Selected Targets list.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCOM246" name="GHCOM246"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+</li>
+<li>
+<p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+</li>
+<li>
+<p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+</li>
+<li>
+<p><a href="task-appedit.html">To Edit a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+</li>
+<li>
+<p><a href="task-applaunch.html">To Launch an Application</a></p>
+</li>
+<li>
+<p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appclientstubs.html">To Download Application Client Stubs</a></p>
+</li>
+<li>
+<p><a href="task-appredeploy.html">To Redeploy a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-apprestart.html">To Reload a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesview.html">To View Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesedit.html">To Modify Application Scoped Resources</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

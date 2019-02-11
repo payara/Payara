@@ -1,0 +1,159 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-realmsnew" name="ref-realmsnew"></a><a id="GHCOM00098" name="GHCOM00098"></a></p>
+
+<h4><a id="sthref198" name="sthref198"></a>New Realm</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Realm page to create a realm.</p>
+<p>The New Realm page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name for the new realm.</p>
+</dd>
+<dt>Class Name</dt>
+<dd>
+<p>The class name for the new realm.</p>
+<p>Valid choices are shown in the following table.</p>
+
+<table  summary="Add Summary attribute value here." dir="ltr" border="1" width="100%" frame="hsides" rules="rows" cellpadding="3" cellspacing="0">
+<col width="16%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t6">Realm Name</th>
+<th align="left" valign="bottom" id="r1c2-t6">Class Name</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t6" headers="r1c1-t6">
+<p><code>file</code></p>
+</td>
+<td align="left" headers="r2c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.file.FileRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t6" headers="r1c1-t6">
+<p><code>certificate</code></p>
+</td>
+<td align="left" headers="r3c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.certificate.CertificateRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t6" headers="r1c1-t6">
+<p><code>ldap</code></p>
+</td>
+<td align="left" headers="r4c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.ldap.LDAPRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t6" headers="r1c1-t6">
+<p><code>JDBC</code></p>
+</td>
+<td align="left" headers="r5c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t6" headers="r1c1-t6">
+<p><code>solaris</code></p>
+</td>
+<td align="left" headers="r6c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.solaris.SolarisRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t6" headers="r1c1-t6">
+<p><code>PAM</code></p>
+</td>
+<td align="left" headers="r7c1-t6 r1c2-t6">
+<p><code>com.sun.enterprise.security.auth.realm.solaris.PamRealm</code></p>
+</td>
+</tr>
+</tbody>
+</table>
+<hr>
+
+<p>To specify a custom realm, select the lower radio button and type the class name for the custom realm being created.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the realm. Valid properties depend on the type of realm.</p>
+<ul>
+<li>
+<p><a href="ref-editfile-adminrealm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editcertrealm.html">Properties Specific to the <code>CertificateRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editjdbcrealm.html">Properties Specific to the <code>JDBCRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-ldaprealmprop.html">Properties Specific to the <code>LDAPRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-solarisrealmprop.html">Properties Specific to the <code>SolarisRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-pamrealmprop.html">Properties Specific to the <code>PamRealm</code> Class</a></p>
+</li>
+</ul>
+</dd>
+</dl>
+<a id="GHCOM431" name="GHCOM431"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-realmnew.html">To Create a Realm</a></p>
+</li>
+<li>
+<p><a href="task-realmedit.html">To Edit a Realm</a></p>
+</li>
+<li>
+<p><a href="task-todeleterealm.html">To Delete a Realm</a></p>
+</li>
+<li>
+<p><a href="task-createcustomrealm.html">To Create a Custom Realm</a></p>
+</li>
+</ul>
+<a id="GHCOM432" name="GHCOM432"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00015"><code>create-auth-realm</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00066"><code>delete-auth-realm</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00150"><code>list-auth-realms</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

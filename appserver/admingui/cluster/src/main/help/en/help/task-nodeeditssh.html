@@ -1,0 +1,125 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-nodeeditssh" name="task-nodeeditssh"></a></p>
+<!-- infolevel="all" infotype="General" -->
+<h4>To Finish the Update of an SSH Node</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>This task is the continuation for an SSH node of <a href="task-editnode.html">To Edit a Node</a>.</p>
+<ol>
+<li>
+<p>To force the node to be updated in the configuration of the domain administration server (DAS) even if validation of the node's parameters fails, enable the Force option.</p>
+</li>
+<li>
+<p>In the SSH Port field, type the port to use for SSH connections to this node's host.</p>
+<p>If you change the type of the node from CONFIG to SSH and leave this field empty, the SSH Port option is set to 22.</p>
+</li>
+<li>
+<p>In the SSH User Name field, type the name of the user on this node's host that is to run the process for connecting to the host through SSH.</p>
+<p>If you change the type of the node from CONFIG to SSH and leave this field empty, the SSH User Name option is set to the user that is running the DAS process.</p>
+</li>
+<li>
+<p>Specify how the SSH user will be authenticated when logging in to this node's host.</p>
+<ul>
+<li>
+<p>To specify authentication through an SSH private key file, perform these steps:</p>
+<ol type="a">
+<li>
+<p>From the SSH User Authentication drop-down list, select Key File.</p>
+</li>
+<li>
+<p>If you require GlassFish Server to set up an SSH key on the node host, enable the Setup SSH Option.</p>
+<p>GlassFish Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files.</p>
+<p>The Generate Key field and the Public Key File field are added to the window.</p>
+</li>
+<li>
+<p>If you require GlassFish Server to generate the SSH key files before copying the files to the node host, enable the Generate Key Option.</p>
+<p>If the SSH key files exist, GlassFish Server does not generate the files, even if you select the Enabled option.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If the SSH key files do not exist, you must select the Enabled option. Otherwise, an error occurs when you attempt to save your changes.</p>
+
+<hr>
+
+</li>
+<li>
+<p>In the SSH User Password field, type the password that the SSH user will use when logging in to this node's host.</p>
+</li>
+<li>
+<p>In the Public Key File field, type the absolute path to the SSH public key file for user that the SSH User Name option specifies.</p>
+</li>
+<li>
+<p>In the Key File field, type the absolute path to the SSH private key file for user that the SSH User Name option specifies.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>GlassFish Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00263"><code>asadmin</code>(1)</a> utility.</p>
+
+<hr>
+
+<p>If you change the type of the node to SSH and leave this field empty, the Key File option is set to a key file in the user's <code>.ssh</code> directory. If multiple key files are found, GlassFish Server uses the following order of preference:</p>
+<pre>
+id_rsa
+id_dsa
+identity
+</pre></li>
+</ol>
+</li>
+<li>
+<p>To specify authentication through a password that is stored in the DAS configuration, perform these steps:</p>
+
+<hr>
+<p><b>Caution:</b></p>
+<p>This password is stored in clear text in the DAS configuration. For enhanced security, use a key file or a password alias.</p>
+
+<hr>
+
+<ol type="a">
+<li>
+<p>From the SSH User Authentication drop-down list, select Password.</p>
+</li>
+<li>
+<p>In the SSH User Password field, type the password that the SSH user will use when logging in to this node's host.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>To specify authentication through a password alias, perform these steps:</p>
+<ol type="a">
+<li>
+<p>From the SSH User Authentication drop-down list, select Password Alias.</p>
+</li>
+<li>
+<p>From the Password Alias drop-down list, select an existing alias.</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="sthref239" name="sthref239"></a>
+<h5>See Also</h5>
+<p><a href="task-editnode.html">To Edit a Node</a></p>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

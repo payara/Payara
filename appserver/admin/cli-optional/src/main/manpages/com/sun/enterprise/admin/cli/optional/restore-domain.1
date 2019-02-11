@@ -1,0 +1,79 @@
+restore-domain(1)         asadmin Utility Subcommands        restore-domain(1)
+
+NAME
+       restore-domain - restores files from backup
+
+SYNOPSIS
+           restore-domain [--help]
+           [--long[={false|true}]]
+           [--filename backup-filename]
+           [--domaindir domain-root-dir]
+           [--backupdirbackup-directory]
+           [--backupconfigbackup-config-name]
+           [--force[={false|true}]]
+           [domain-name]
+
+DESCRIPTION
+       This command restores files under the domain from a backup directory.
+
+       The restore-domain command is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about the restore operation.
+
+           The default value is false.
+
+       --filename
+           Specifies the name of the backup file to use as the source.
+
+       --domaindir
+           Specifies the domain root directory, the parent directory of the
+           domain to restore.
+
+           The default value is as-install/domains.
+
+       --backupdir
+           Specifies the directory under which the backup file is stored.
+
+           The default value is as-install/domains/domain-dir/backups. If the
+           domain is not in the default location, the location is
+           domain-dir/backups.
+
+       --backupconfig
+           (Supported only in Oracle GlassFish Server.) The name of the domain
+           backup configuration in the backup directory under which the backup
+           file is stored.
+
+       --force
+           Causes the restore operation to continue even when the name of the
+           domain to restore does not match the name of the domain stored in
+           the backup file.
+
+           The default value is false.
+
+OPERANDS
+       domain-name
+           Specifies the name of the domain to restore.
+
+           This operand is optional if only one domain exists in the GlassFish
+           Server installation.
+
+           If the specified domain name does not match the domain name stored
+           in the backup file, an error occurs unless the --force option is
+           specified.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       backup-domain(1), list-backups(1)
+
+Java EE 8                         22 Dec 2010                restore-domain(1)

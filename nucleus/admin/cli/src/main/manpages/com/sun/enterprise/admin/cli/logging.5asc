@@ -1,0 +1,43 @@
+logging(5ASC)              GlassFish Server Concepts             logging(5ASC)
+
+NAME
+       logging - capturing information on GlassFish Server runtime events
+
+DESCRIPTION
+       Logging is the process by which GlassFish Server captures data about
+       events that occur during GlassFish Server operation. GlassFish Server
+       components and application components generate logging data, which is
+       saved in the server log, typically domain-dir/logs/server.log. The
+       server log is the first source of information if GlassFish Server
+       problems occur.
+
+       The server log is rotated when the file reaches the specified size in
+       bytes, or the specified time has elapsed. The file can also be rotated
+       manually by using the rotate-log subcommand.
+
+       In addition to the server log, the domain-dir/logs directory contains
+       two other kinds of logs:
+
+       *   HTTP service access logs, located in the /access subdirectory
+
+       *   Transaction service logs, located in the /tx subdirectory
+
+       Logging levels can be configured by using the Administration Console or
+       the set-log-levels subcommand. Additional properties can be set by
+       using the Administration Console or by editing the logging.properties
+       file. The default logging.properties file is typically located in
+       domain-dir/config.
+
+       Although application components can use the Apache Commons Logging
+       Library to record messages, the platform standard JSR 047 API is
+       recommended for better log configuration.
+
+SEE ALSO
+       list-log-levels(1), rotate-log(1), set-log-levels(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         01 Nov 2010                    logging(5ASC)

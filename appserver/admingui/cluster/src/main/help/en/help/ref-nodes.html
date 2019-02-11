@@ -1,0 +1,131 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-nodes" name="ref-nodes"></a><a id="GHCLU00015" name="GHCLU00015"></a></p>
+
+<h4><a id="sthref303" name="sthref303"></a><a id="sthref304" name="sthref304"></a>Nodes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Nodes page displays a list of nodes in the domain. For each node, the following information is displayed:</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name that was assigned to the node when the node was created. Clicking the name opens the <a href="ref-nodeedit.html">Edit Node</a> page for the node.</p>
+</dd>
+<dt>Node Host</dt>
+<dd>
+<p>The name of the host that the node represents.</p>
+</dd>
+<dt>Type</dt>
+<dd>
+<p>The type of the node, which is one of the following types:</p>
+<dl>
+<dt>CONFIG</dt>
+<dd>
+<p>The node does not support remote communication.</p>
+</dd>
+<dt>SSH</dt>
+<dd>
+<p>The node supports communication over secure shell (SSH).</p>
+</dd>
+</dl>
+</dd>
+<dt>Instances</dt>
+<dd>
+<p>A list of the instances that reside on the node with an indication of whether each instance is running:</p>
+<ul>
+<li>
+<p>If the instance is running, a check mark (&#10003;) is displayed.</p>
+</li>
+<li>
+<p>If the instance is stopped, an exclamation point (<code>!</code>) is displayed.</p>
+</li>
+</ul>
+<p>Clicking the name of an instance opens the General Information page for the instance.</p>
+</dd>
+<dt>Action</dt>
+<dd>
+<p>Nodes of type SSH only: A link to the Ping action for the node. Clicking the Ping link tests whether the node is reachable over the communication protocol that the node supports.</p>
+<p>No actions are possible for CONFIG nodes.</p>
+</dd>
+</dl>
+<p>The Nodes table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a node.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected nodes.</p>
+</dd>
+<dt>Delete and Uninstall</dt>
+<dd>
+<p>Button to delete one or more selected nodes and uninstall GlassFish Server software from the host that each deleted node represents.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>The GlassFish Server software is not uninstalled from any host that a node of type CONFIG represents. For nodes of type CONFIG, the action of this button is identical to the action of the Delete button.</p>
+
+<hr>
+
+</dd>
+</dl>
+<a id="sthref305" name="sthref305"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-createnode.html">To Create a Node</a></p>
+</li>
+<li>
+<p><a href="task-deletenode.html">To Delete Nodes</a></p>
+</li>
+<li>
+<p><a href="task-listnodes.html">To List All Nodes in the Current Domain</a></p>
+</li>
+<li>
+<p><a href="task-editnode.html">To Edit a Node</a></p>
+</li>
+<li>
+<p><a href="task-pingnode.html">To Test if a Node Is Reachable</a></p>
+</li>
+</ul>
+<a id="sthref306" name="sthref306"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00047"><code>create-node-config</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00048"><code>create-node-ssh</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00099"><code>delete-node-config</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00100"><code>delete-node-ssh</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00187"><code>list-nodes</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00215"><code>ping-node-ssh</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,73 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbc-properties" name="ref-jdbc-properties"></a><a id="GHJDB00029" name="GHJDB00029"></a></p>
+
+<h4><a id="sthref56" name="sthref56"></a><a id="sthref57" name="sthref57"></a>Properties Specific to JDBC Connection Pools</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Most JDBC drivers allow use of standard property lists to specify the user, password, and other resource configuration information. Although properties are optional with respect to the GlassFish Server, some properties might be necessary for most databases. For details, see the JDBC 4.0 Standard Extension API.</p>
+<p>Changing JDBC driver properties requires a server restart.</p>
+<p>The following standard properties are common to many JDBC vendors. For information about the properties available for your JDBC driver, consult the vendor's documentation.</p>
+<dl>
+<dt><code>user</code></dt>
+<dd>
+<p>Specifies the user name for connecting to the database.</p>
+</dd>
+<dt><code>password</code></dt>
+<dd>
+<p>Specifies the password for connecting to the database.</p>
+</dd>
+<dt><code>databaseName</code></dt>
+<dd>
+<p>Specifies the database for this connection pool.</p>
+</dd>
+<dt><code>serverName</code></dt>
+<dd>
+<p>Specifies the database server for this connection pool.</p>
+</dd>
+<dt><code>port</code></dt>
+<dd>
+<p>Specifies the port on which the database server listens for requests.</p>
+</dd>
+<dt><code>networkProtocol</code></dt>
+<dd>
+<p>Specifies the communication protocol.</p>
+</dd>
+<dt><code>roleName</code></dt>
+<dd>
+<p>Specifies the initial SQL role name.</p>
+</dd>
+<dt><code>datasourceName</code></dt>
+<dd>
+<p>Specifies an underlying <code>XADataSource</code>, or a <code>ConnectionPoolDataSource</code> if connection pooling is done.</p>
+</dd>
+<dt><code>description</code></dt>
+<dd>
+<p>Specifies a text description.</p>
+</dd>
+<dt><code>url</code></dt>
+<dd>
+<p>Specifies the URL for this connection pool. Although this is not a standard property, it is commonly used.</p>
+</dd>
+</dl>
+
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

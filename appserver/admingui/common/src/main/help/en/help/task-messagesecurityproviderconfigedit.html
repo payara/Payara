@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-messagesecurityproviderconfigedit" name="task-messagesecurityproviderconfigedit"></a><a id="GHCOM00208" name="GHCOM00208"></a></p>
+
+<h4><a id="sthref106" name="sthref106"></a>To Edit a Message Security Provider Configuration</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Typically, a provider would be re-configured to modify its message protection policies, although the provider type, implementation class, and provider-specific configuration properties may also be modified.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Expand the Security node.</p>
+</li>
+<li>
+<p>Select the Message Security node.</p>
+<p>The Message Security Configurations page opens.</p>
+</li>
+<li>
+<p>On the Message Security Configurations page, click the Authentication Layer name of the configuration that you are editing.</p>
+<p>By default, the only configured message security configuration is SOAP.</p>
+<p>The Edit Message Security Configuration page opens.</p>
+</li>
+<li>
+<p>Click the Providers tab.</p>
+<p>The Provider Configurations page opens.</p>
+<p>By default, four providers are configured for the SOAP authentication layer.</p>
+</li>
+<li>
+<p>On the Provider Configurations page, click the Provider ID of the provider configuration that you are editing.</p>
+<p>The Edit Provider Configuration page appears.</p>
+</li>
+<li>
+<p>On the Edit Provider Configuration page, select the Default Provider checkbox to make this provider the default provider.</p>
+<p>The default provider will be invoked for any application that does not identify a specific provider. Whether the provider is the default client provider, the default server provider, or both is determined by the Provider Type.</p>
+</li>
+<li>
+<p>From the Provider Type drop-down list, select the provider type.</p>
+<p>Available choices are:</p>
+<dl>
+<dt><code>client</code></dt>
+<dd>
+<p>Specifies that the provider is the client authentication provider.</p>
+</dd>
+<dt><code>server</code></dt>
+<dd>
+<p>Specifies that the provider is the server authentication provider.</p>
+</dd>
+<dt><code>client-server</code></dt>
+<dd>
+<p>Specifies that the provider is both a client and a server authentication provider.</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>In the Class Name field, type the name of the Java implementation class of the provider.</p>
+<p>Client authentication providers must implement the <code>com.sun.enterprise.security.jauth.ClientAuthModule</code> interface. Server-side providers must implement the <code>com.sun.enterprise.security.jauth.ServerAuthModule</code> interface. Client-server providers must implement both interfaces.</p>
+</li>
+<li>
+<p>In the Request Policy area, from the Authenticate Source drop-down list, select the type of required authentication for the request policy.</p>
+<p>The request policy determines the request processing that the authentication provider performs. The request policy fields are optional, but if they are not specified, the authentication provider does not authenticate request messages.</p>
+<p>Select <code>sender</code> to specify message-layer sender authentication (for example, username and password) of request messages. Select <code>content</code> to specify content authentication (for example, digital signature) of request messages. Leave the field empty to not authenticate the source of requests. By default, no authentication type is selected.</p>
+<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
+</li>
+<li>
+<p>From the Authenticate Recipient drop-down list, select whether recipient authentication occurs before or after content authentication for the request policy.</p>
+<p>Select <code>before-content</code> or <code>after-content</code> to require message-layer authentication of the receiver of the request message to its sender (by XML encryption). If the value is not specified, the default is <code>after-content</code>. Policies are expressed in message sender order, so <code>after-content</code> means that the message receiver decrypts the message before validating the signature.</p>
+</li>
+<li>
+<p>In the Response Policy area, from the Authenticate Source drop-down list, select the type of required authentication for the response policy.</p>
+<p>The response policy determines the response processing that the authentication provider performs. The response policy fields are optional, but if they are not specified, no authentication is applied to response messages.</p>
+<p>Select <code>sender</code> to specify message-layer sender authentication (for example, username password) of response messages. Select <code>content</code> to specify content authentication (for example, digital signature) of response messages. Leave the field empty to not authenticate response sources. By default, no authentication type is selected.</p>
+<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
+</li>
+<li>
+<p>From the Authenticate Recipient drop-down list, select whether recipient authentication occurs before or after content authentication for the response policy.</p>
+<p>Select <code>before-content</code> or <code>after-content</code> to define a requirement for message-layer authentication of the receiver of the response message to its sender (by XML encryption). If the value is not specified, the default is <code>after-content</code>. Policies are expressed in message sender order, so <code>after-content</code> means that the message receiver decrypts the message before validating the signature.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>For a description of the additional properties available for provider configurations, see <a href="ref-messagesecurityproviderconfigprops.html">Properties Specific to Message Security Provider Configurations</a>.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHCOM315" name="GHCOM315"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfignew.html">To Create a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigdelete.html">To Delete a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfignew.html">To Create a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigdelete.html">To Delete a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-enablemesec4appclients.html">To Enable Message Security for Application Clients</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

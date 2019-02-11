@@ -1,0 +1,90 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-connectorsecuritymaps" name="ref-connectorsecuritymaps"></a><a id="GHJCA00047" name="GHJCA00047"></a></p>
+
+<h4><a id="sthref85" name="sthref85"></a><a id="sthref86" name="sthref86"></a>Connector Connection Pool Security Maps</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Connector Connection Pool Security Maps page to manage security maps for connector connection pools.</p>
+<p>Security maps for connector connection pools enable the creation of a mapping between Java EE users and groups and EIS users and groups. A security map maps the principal received during servlet or EJB authentication to the credentials accepted by the EIS. It is possible to map multiple GlassFish Server principals to the same back-end principal.</p>
+<p>A security map for a connection pool is different from a connector work security map, which maps a principal associated with an incoming work instance to a principal in a security realm of the GlassFish Server domain. See <a href="ref-worksecuritymaps.html">Work Security Maps</a> for information about connector work security maps.</p>
+<p>For each security map, the following information is provided.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name of the security map.</p>
+</dd>
+</dl>
+<p>The Security Maps table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new security map.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected security maps.</p>
+</dd>
+</dl>
+<a id="sthref87" name="sthref87"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-connectorconnectionpoolnew.html">To Create a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooledit.html">To Edit a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooladvance.html">To Edit Connector Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolproperty.html">To Edit Connector Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapnew.html">To Create a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapedit.html">To Edit a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapdel.html">To Delete a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooldel.html">To Delete a Connector Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref88" name="sthref88"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00020"><code>create-connector-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00159"><code>list-connector-security-maps</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00072"><code>delete-connector-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00252"><code>update-connector-security-map</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

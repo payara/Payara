@@ -1,0 +1,98 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-batchjobslisting" name="ref-batchjobslisting"></a><a id="GHJML140" name="GHJML140"></a></p>
+
+<h4>Batch Job Executions</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>GlassFish Server provides a batch runtime for the scheduling and execution of batch jobs. Batch jobs are typically long-running, bulk-oriented tasks that contain a series of steps. Batch applications submit jobs to the batch runtime and provide instructions about how and when to execute the steps. The batch runtime processes the steps and stores information about jobs in a job repository. In GlassFish Server, the job repository is a database.</p>
+<p>Use the Batch Job Executions page to view details about recorded executions of batch jobs.</p>
+<p>The Batch Job Executions page contains the following information.</p>
+<dl>
+<dt>Instance Name</dt>
+<dt>Cluster Name</dt>
+<dd>
+<p>The name of the GlassFish cluster or server instance to which the configuration applies.</p>
+</dd>
+<dt>Batch Jobs</dt>
+<dd>
+<p>A list of recorded batch job executions for the instance or cluster. For each execution, the following information is displayed:</p>
+<dl>
+<dt>Execution ID</dt>
+<dd>
+<p>The ID assigned to the execution of the batch job. Clicking the execution ID opens the Batch Job Execution Details page for the execution. A new execution is created the first time a job is started and every time the existing execution is restarted.</p>
+</dd>
+<dt>Job Name</dt>
+<dd>
+<p>The name of the job.</p>
+</dd>
+<dt>Batch Status</dt>
+<dd>
+<p>The status of the execution as set by the batch runtime.</p>
+</dd>
+<dt>Exit Status</dt>
+<dd>
+<p>The status of the execution as set by the Job XML for the job or by the batch application. By default, the exit status and the batch status are the same unless the exit status is explicitly overridden.</p>
+</dd>
+<dt>Instance ID</dt>
+<dd>
+<p>The ID assigned to the instance of the batch job. An instance of a batch job can have multiple executions.</p>
+</dd>
+<dt>Start Time</dt>
+<dd>
+<p>The time the execution started.</p>
+</dd>
+<dt>End Time</dt>
+<dd>
+<p>The time the execution finished.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<a id="GHJML153" name="GHJML153"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-viewbatchjobexecutions.html">To View Batch Job Executions</a></p>
+</li>
+<li>
+<p><a href="task-configurebatchruntime.html">To Configure the Batch Runtime</a></p>
+</li>
+</ul>
+<a id="GHJML141" name="GHJML141"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM861"><code>list-batch-jobs</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM884"><code>list-batch-job-executions</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM895"><code>list-batch-job-steps</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM863"><code>list-batch-runtime-configuration</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM897"><code>set-batch-runtime-configuration</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

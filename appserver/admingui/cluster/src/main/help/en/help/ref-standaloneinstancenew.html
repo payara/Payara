@@ -1,0 +1,95 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-standaloneinstancenew" name="ref-standaloneinstancenew"></a><a id="GHCLU00019" name="GHCLU00019"></a></p>
+
+<h4><a id="sthref324" name="sthref324"></a><a id="sthref325" name="sthref325"></a><a id="sthref326" name="sthref326"></a>New Standalone Server Instance</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Standalone Server Instance page to create a standalone GlassFish Server instance.</p>
+<p>The New Standalone Server Instance contains the following options.</p>
+<dl>
+<dt>Instance Name</dt>
+<dd>
+<p>The name of the instance that is being created.</p>
+<p>The name must meet the following requirements:</p>
+<ul>
+<li>
+<p>The name may contain only ASCII characters.</p>
+</li>
+<li>
+<p>The name must start with a letter, a number, or an underscore.</p>
+</li>
+<li>
+<p>The name may contain only the following characters:</p>
+<ul>
+<li>
+<p>Lowercase letters</p>
+</li>
+<li>
+<p>Uppercase letters</p>
+</li>
+<li>
+<p>Numbers</p>
+</li>
+<li>
+<p>Hyphen</p>
+</li>
+<li>
+<p>Period</p>
+</li>
+<li>
+<p>Underscore</p>
+</li>
+</ul>
+</li>
+<li>
+<p>The name must be unique in the domain and must not be the name of another GlassFish Server instance, a cluster, a named configuration, or a node.</p>
+</li>
+<li>
+<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by GlassFish Server.</p>
+</li>
+</ul>
+</dd>
+<dt>Node</dt>
+<dd>
+<p>Drop-down list of existing nodes that define the hosts where the instance can reside. One node must be selected from the list. If the instance is to be created on the host where the domain administration server (DAS) is running, select the predefined node <code>localhost-</code><i>domain</i>.</p>
+</dd>
+<dt>Configuration</dt>
+<dd>
+<p>Drop-down list of existing named configurations that the instance can use. One configuration must be selected from the list. The instance will use the selected configuration when the instance is created.</p>
+</dd>
+<dt>Make a Copy of the Selected Configuration</dt>
+<dd>
+<p>If this option is selected, the selected configuration is copied when the instance is created. The copy of the configuration is assigned the name <i>instance-name</i><code>-config</code>, where <i>instance-name</i> is the name of the instance as typed in the Instance Name field.</p>
+<p>If <code>default-config</code> is selected from the Configuration drop-down list, you must select this option. The <code>default-config</code> configuration can only be copied, not referenced.</p>
+</dd>
+<dt>Reference the Selected Configuration</dt>
+<dd>
+<p>If this option is selected, the instance will use the specified existing named configuration.</p>
+<p>If <code>default-config</code> is selected from the Configuration drop-down list, you must <i>not</i> select this option. The <code>default-config</code> configuration cannot be referenced, only copied.</p>
+</dd>
+</dl>
+<a id="sthref327" name="sthref327"></a>
+<h5>Related Tasks</h5>
+<p><a href="task-create-standalone-instance.html">To Create a Standalone GlassFish Server Instance</a></p>
+<a id="sthref328" name="sthref328"></a>
+<h5>Equivalent asadmin Subcommand</h5>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00033"><code>create-instance</code>(1)</a></p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

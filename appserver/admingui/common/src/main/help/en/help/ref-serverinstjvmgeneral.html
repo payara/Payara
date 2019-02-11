@@ -1,0 +1,96 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-serverinstjvmgeneral" name="ref-serverinstjvmgeneral"></a><a id="GHCOM00090" name="GHCOM00090"></a></p>
+
+<h4><a id="sthref188" name="sthref188"></a>JVM General Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Java Virtual Machine (JVM) enables Java byte codes to run on a physical machine. Tuning the JVM settings improves performance and avoids memory allocation errors.</p>
+<p>The Java Virtual Machine is included in the Java Platform, Standard Edition (Java SE platform), which is required by the GlassFish Server. Incorrect JVM settings will prevent the server from running, so use care when changing these settings.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>The terms "Java Virtual Machine" and "JVM" mean a Virtual Machine for the Java platform.</p>
+
+<hr>
+
+<p>The JVM General Settings page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Java Home</dt>
+<dd>
+<p>The name of the installation directory of the Java SE software, which is required for GlassFish Server to run. To verify that the version of Java SE software that you specify is supported in this release, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRLN"><i>Oracle GlassFish Server Release Notes</i></a>. If you enter a nonexistent directory name or the directory for an unsupported version of Java SE software, GlassFish Server will not start.</p>
+</dd>
+<dt>Javac Options</dt>
+<dd>
+<p>The command-line options for the Java programming language compiler. The GlassFish Server runs the compiler when Enterprise JavaBeans (EJB) components are deployed.</p>
+</dd>
+<dt>Debug</dt>
+<dd>
+<p>Enables debugging with the Java Platform Debugger Architecture (JPDA).</p>
+<p>JPDA is used by application developers. For more information, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDVG"><i>Oracle GlassFish Server Application Development Guide</i></a>.</p>
+</dd>
+<dt>Debug Options</dt>
+<dd>
+<p>Specifies the JPDA options passed to the JVM when debugging is enabled.</p>
+</dd>
+<dt>RMI Compile Options</dt>
+<dd>
+<p>The command-line options for the <code>rmic</code> compiler. The GlassFish Server runs the <code>rmic</code> compiler when EJB components are deployed.</p>
+</dd>
+<dt>Bytecode Preprocessor</dt>
+<dd>
+<p>Names of classes for bytecode preprocessing. Use commas to separate class names. Each class must implement the com.sun.appserv.BytecodePreprocessor interface. The classes are called in the order specified.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JVM. The GlassFish Server does not define any additional properties for the JVM.</p>
+</dd>
+</dl>
+<a id="GHCOM412" name="GHCOM412"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jvmsettings.html">To Configure the JVM General Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmpathsettings.html">To Configure the JVM Path Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmoptions.html">To Configure the JVM Options</a></p>
+</li>
+<li>
+<p><a href="task-securitymanagerdisable.html">To Disable the Security Manager</a></p>
+</li>
+<li>
+<p><a href="task-jvmprofilersettings.html">To Configure the JVM Profiler Settings</a></p>
+</li>
+</ul>
+<a id="GHCOM413" name="GHCOM413"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

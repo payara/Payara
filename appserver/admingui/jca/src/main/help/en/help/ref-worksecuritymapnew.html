@@ -1,0 +1,86 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-worksecuritymapnew" name="ref-worksecuritymapnew"></a><a id="GHJCA00054" name="GHJCA00054"></a></p>
+
+<h4><a id="sthref110" name="sthref110"></a><a id="sthref111" name="sthref111"></a>New Work Security Map</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Work Security Map page to create a new work security map.</p>
+<p>The New Work Security Map contains the following options.</p>
+<dl>
+<dt>Security Map Name</dt>
+<dd>
+<p>The name of the work security map.</p>
+</dd>
+<dt>Group</dt>
+<dd>
+<p>If the Group Mapping radio button is selected, the text field must specify a map of each back-end EIS user group to the corresponding user group defined in the GlassFish Server security domain. Use a comma-separated list to specify more than one mapping. For example:</p>
+<pre>
+eis-group-1=server-group-1,eis-group-2=server-group-2
+</pre></dd>
+<dt>Principal</dt>
+<dd>
+<p>If the Principal Mapping radio button is selected, the text field must specify a map of each back-end EIS principal to the corresponding principal defined in the GlassFish Server security domain. Use a comma-separated list to specify more than one mapping. For example:</p>
+<pre>
+eis-principal-1=server-principal-1,eis-principal-2=server-principal-2
+</pre></dd>
+<dt>Resource Adapter</dt>
+<dd>
+<p>The resource adapter for the EIS.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the work security map.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the work security map is enabled. This option is enabled by default.</p>
+</dd>
+</dl>
+<a id="sthref112" name="sthref112"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-worksecuritymapnew.html">To Create a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapedit.html">To Edit a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapdelete.html">To Delete a Work Security Map</a></p>
+</li>
+</ul>
+<a id="sthref113" name="sthref113"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00021"><code>create-connector-work-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00160"><code>list-connector-work-security-maps</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00073"><code>delete-connector-work-security-map</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00253"><code>update-connector-work-security-map</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

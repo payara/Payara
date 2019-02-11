@@ -1,0 +1,254 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-protocolnew" name="ref-protocolnew"></a><a id="GHWEB00019" name="GHWEB00019"></a></p>
+
+<h4><a id="sthref142" name="sthref142"></a>New Protocol</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Protocol page to create a new network protocol.</p>
+<p>After you create a protocol, you normally create a network listener with the same name, and you associate the network listener with the protocol. Alternatively, you can create a network listener and have a protocol with default settings created for you at the same time.</p>
+<p>The New Protocol page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The unique name of the protocol. A protocol name cannot begin with a number.</p>
+</dd>
+<dt>Security</dt>
+<dd>
+<p>If this option is selected, security is enabled for the protocol. This option is disabled by default. If you enable security, you can use the SSL tab of the Edit Protocol page to modify the security settings.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the file cache is enabled. This option is enabled by default.</p>
+</dd>
+<dt>Max Age</dt>
+<dd>
+<p>The maximum age, in seconds, for a valid cache entry.</p>
+<p>This parameter controls how long cached information is used after a file has been cached. An entry older than the maximum age is replaced by a new entry for the same file. If your content changes infrequently, increase this value for improved performance.</p>
+<p>The optimum maximum age depends on whether existing files are modified regularly. For example, if files are modified four times a day at regular intervals, consider setting the maximum age to 21600 seconds (6 hours). Otherwise, consider setting the maximum age to the longest time for which you are willing to serve the previous version of a file after the file has been modified.</p>
+<p>The default value is 30.</p>
+</dd>
+<dt>Max Cache Size</dt>
+<dd>
+<p>The maximum total size (in bytes) of the file cache on disk. The default value is 10485760.</p>
+</dd>
+<dt>Max File Count</dt>
+<dd>
+<p>The maximum number of files that can be stored in the file cache.</p>
+<p>If the value is too big, the server caches little-needed files, which wastes memory. If the value is too small, the benefit of caching is lost. Try different values of this attribute to find the optimal solution for specific applications.</p>
+<p>The default value is 1024.</p>
+</dd>
+<dt>Server Name</dt>
+<dd>
+<p>The host name to be used in the URLs the server sends to the client. This name is the alias name if your server uses an alias. If your server does not use an alias, leave this field blank.</p>
+<p>This value affects URLs the server automatically generates; it does not affect the URLs for directories and files stored in the server. If your server uses an alias, the server-name should be the alias name. If a colon and port number are appended, that port is used in URLs the server sends to the client.</p>
+</dd>
+<dt>Default Virtual Server</dt>
+<dd>
+<p>The virtual server to be associated with this protocol. Use the Virtual Servers page to define virtual servers.</p>
+</dd>
+<dt>Redirect Port</dt>
+<dd>
+<p>Port value that redirects a request to another port. The GlassFish Server automatically redirects the request if these two conditions exist:</p>
+<ul>
+<li>
+<p>The network listener that references this protocol is supporting non-SSL requests.</p>
+</li>
+<li>
+<p>A request is received for which a matching security constraint requires SSL transport.</p>
+</li>
+</ul>
+<p>If a redirect port is not specified, the GlassFish Server uses the port number specified in the original request. By default, no port is specified.</p>
+</dd>
+<dt>Max Connections</dt>
+<dd>
+<p>Specifies the maximum number of requests that can be pipelined until the connection is closed by the server. The Keep-Alive subsystem periodically polls idle connections. The default value is 256.</p>
+<p>Set this property to 1 to disable HTTP/1.0 keep-alive, as well as HTTP/1.1 keep-alive and pipelining. A value of 0 means requests are always rejected. A value of -1 sets no limit to the number of keep-alive connections.</p>
+</dd>
+<dt>Timeout</dt>
+<dd>
+<p>The maximum time in seconds that a connection can be deemed as idle and kept in the keep-alive state. A value of 0 or less means that keep-alive connections are kept open indefinitely. The default value is 30 seconds.</p>
+</dd>
+<dt>Upload Timeout</dt>
+<dd>
+<p>If this option is selected, the connection for a servlet that reads bytes slowly is closed after the Connection Upload Timeout limit is reached. If this option is disabled, servlet connections do not time out. This option is disabled by default.</p>
+</dd>
+<dt>Connection Upload Timeout</dt>
+<dd>
+<p>The timeout for uploads, in milliseconds. This field is applicable only if the Upload Timeout Enabled checkbox is selected. The default value is 300000 milliseconds.</p>
+</dd>
+<dt>Request Timeout</dt>
+<dd>
+<p>The number of seconds before a request times out. If the request is not processed before the timeout value is reached, the request is ignored. The default value is 30 seconds.</p>
+</dd>
+<dt>Send Buffer Size</dt>
+<dd>
+<p>The size in bytes of the send buffer. The default value is 8192 bytes.</p>
+</dd>
+<dt>Header Buffer Length</dt>
+<dd>
+<p>The size in bytes of the buffer used by the request processing threads to read the request data. The default value is 8192 bytes.</p>
+</dd>
+<dt>Max Post Size</dt>
+<dd>
+<p>The maximum size in bytes of POST actions. The default value is 2097152 bytes.</p>
+</dd>
+<dt>URI Encoding</dt>
+<dd>
+<p>The name of the character set used to decode the request URIs received. The value must be a valid IANA character set name. The default value is UTF-8.</p>
+</dd>
+<dt>Version</dt>
+<dd>
+<p>The version of the HTTP protocol used. The default value is HTTP/1.1.</p>
+</dd>
+<dt>Compression</dt>
+<dd>
+<p>Specifies the use of HTTP/1.1 GZIP compression to save server bandwidth. Available choices are:</p>
+<dl>
+<dt><code>on</code></dt>
+<dd>
+<p>Compresses data.</p>
+</dd>
+<dt><code>off</code></dt>
+<dd>
+<p>Disables compression.</p>
+</dd>
+<dt><code>force</code></dt>
+<dd>
+<p>Forces data compression in all cases.</p>
+</dd>
+</dl>
+<p>The default value is <code>off</code>.</p>
+</dd>
+<dt>Compressible Mime Types</dt>
+<dd>
+<p>A comma-separated list of MIME types for which HTTP compression is used. The default value is <code>text/html,text/xml,text/plain</code>.</p>
+</dd>
+<dt>Compression Minimum Size</dt>
+<dd>
+<p>The minimum size of a file when compression is applied. This value must be set if Compression is set to <code>on</code> or <code>force</code>. The default value is 2048 bytes.</p>
+</dd>
+<dt>No-Compression User Agents</dt>
+<dd>
+<p>A comma-separated list of regular expressions matching user-agents of HTTP clients for which compression should not be used. By default, this value is an empty string.</p>
+</dd>
+<dt>Restricted User Agent</dt>
+<dd>
+<p>A list of restricted user agents on which HTTP compression is applied. If no user agents are specified, HTTP compression is applied to all user agents. By default, no user agents are specified.</p>
+</dd>
+<dt>Default Response Type</dt>
+<dd>
+<p>A string that specifies the default response type. The format is a semicolon-delimited string consisting of the content-type, encoding, language, and charset. The default value is <code>text/html; charset=iso-8859-1</code>.</p>
+</dd>
+<dt>Forced Response Type</dt>
+<dd>
+<p>A string that specifies the request type used if no MIME mapping is available that matches the file extension. The format is a semicolon-delimited string consisting of the content-type, encoding, language, and charset. The default value is <code>text/html; charset=iso-8859-1</code>.</p>
+</dd>
+<dt>Adapter</dt>
+<dd>
+<p>The class name of the static resources adapter. The default value is <code>com.sun.grizzly.tcp.StaticResourcesAdapter</code>.</p>
+</dd>
+<dt>Comet Support</dt>
+<dd>
+<p>If this option is selected, Comet support is enabled for the network listener that references this protocol. By default, this option is disabled. If your servlet or JSP page uses Comet technology, make sure it is initialized when the GlassFish Server starts up by adding the <code>load-on-startup</code> element to your <code>web.xml</code> file. For example:</p>
+<pre>
+&lt;servlet&gt;
+&lt;servlet-name&gt;CheckIn&lt;/servlet-name&gt;
+&lt;servlet-class&gt;CheckInServlet&lt;/servlet-class&gt;
+&lt;load-on-startup&gt;0&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+</pre></dd>
+<dt>DNS Lookup</dt>
+<dd>
+<p>If this option is selected, DNS lookup is enabled. This option is disabled by default.</p>
+</dd>
+<dt>DNS Lookup</dt>
+<dd>
+<p>If this option is selected, DNS lookup is enabled. This option is disabled by default.</p>
+</dd>
+<dt>RCM Support</dt>
+<dd>
+<p>If this option is selected, Resource Configuration Management (RCM) is enabled. This option is disabled by default.</p>
+</dd>
+<dt>Trace</dt>
+<dd>
+<p>If this option is selected, the TRACE operation is enabled. If this option is disabled, the GlassFish Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
+</dd>
+<dt>Auth Pass Through</dt>
+<dd>
+<p>If this option is selected, it indicates that the network listener that uses this protocol receives traffic from an SSL-terminating proxy server. This option is disabled by default.</p>
+</dd>
+<dt>Chunking</dt>
+<dd>
+<p>If this option is selected, HTTP response chunking is enabled. This option is enabled by default.</p>
+</dd>
+<dt>XPowered By</dt>
+<dd>
+<p>If this option is selected, <code>X-Powered-By</code> headers are used according to the Java Servlet 3.0 and Java Server Pages 2.0 specifications. This option is enabled by default.</p>
+</dd>
+<dt>Encoded Slash</dt>
+<dd>
+<p>If this option is selected, URIs are permitted to contain encoded slashes. This option is disabled by default.</p>
+</dd>
+<dt>Websockets Support</dt>
+<dd>
+<p>If this option is selected, the WebSockets protocol is supported. This option is disabled by default.</p>
+</dd>
+</dl>
+<a id="sthref143" name="sthref143"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolssledit.html">To Edit SSL Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+</ul>
+<a id="sthref144" name="sthref144"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00051"><code>create-protocol</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00195"><code>list-protocols</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00103"><code>delete-protocol</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

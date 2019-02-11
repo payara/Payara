@@ -1,0 +1,101 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbcresourcenew" name="ref-jdbcresourcenew"></a><a id="GHJDB00021" name="GHJDB00021"></a></p>
+
+<h4><a id="sthref32" name="sthref32"></a>New JDBC Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JDBC Resource page to create a new JDBC resource.</p>
+<p>The New JDBC Resource page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/.</p>
+</dd>
+<dt>Pool Name</dt>
+<dd>
+<p>The connection pool associated with the JDBC resource.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A short description of the JDBC resource.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is enabled, the resource is available at runtime. This option is enabled by default.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JDBC resource. GlassFish Server does not define any additional properties for JDBC resources.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="sthref33" name="sthref33"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcenew.html">To Create a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesedit.html">To Edit a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesdelete.html">To Delete a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolnew.html">To Create a JDBC Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref34" name="sthref34"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00001"><code>add-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00037"><code>create-jdbc-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00089"><code>delete-jdbc-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00174"><code>list-jdbc-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00036"><code>create-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00234"><code>start-database</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00239"><code>stop-database</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

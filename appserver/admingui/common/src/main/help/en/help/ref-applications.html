@@ -1,0 +1,150 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-applications" name="ref-applications"></a><a id="GHCOM00068" name="GHCOM00068"></a></p>
+
+<h4><a id="sthref157" name="sthref157"></a>Applications</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Applications page displays a list of applications that are deployed on the GlassFish Server. You can view and manage the applications that are already deployed, and you can deploy more applications.</p>
+<p>For each application, the following information is provided.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The application name.</p>
+<p>The name can include an optional version identifier, which follows the name and is separated from the name by a colon (<code>:</code>). For more information about module and application versions, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00324"><i>Module and Application Versions</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the application.</p>
+<p>Applications with a lower number are loaded first at server startup. An application with a deployment order of 102 is loaded before an application with a deployment order of 110. If a deployment order is not specified at the time an application is deployed, the default deployment order of 100 is assigned. If two applications have the same deployment order, the application that was deployed first is loaded first. Specifying a deployment order is useful if the application has dependencies and must be loaded in a certain order.</p>
+</dd>
+<dt>Enabled or Status</dt>
+<dd>
+<p>A check mark if the application is enabled, or an X if the application is disabled, if only the default server instance, <code>server</code>, exists.</p>
+<p>If clusters or other standalone server instances exist, select Enabled on Targets to view the targets on which the application is deployed.</p>
+</dd>
+<dt>Engines</dt>
+<dd>
+<p>The types of containers used by the application. Container types can be any of the following:</p>
+<ul>
+<li>
+<p><code>web</code></p>
+</li>
+<li>
+<p><code>webservices</code></p>
+</li>
+<li>
+<p><code>ejb</code></p>
+</li>
+<li>
+<p><code>connector</code></p>
+</li>
+<li>
+<p><code>appclient</code></p>
+</li>
+<li>
+<p><code>weld</code> (the container for Contexts and Dependency Injection for the Java EE Platform applications)</p>
+</li>
+</ul>
+</dd>
+<dt>Action</dt>
+<dd>
+<p>Links to the actions you can perform on the component after deploying it: Redeploy and Reload for all components, Launch for web applications and application clients, and Download Client Stubs for application clients.</p>
+</dd>
+</dl>
+<p>The Deployed Applications table also contains the following options.</p>
+<dl>
+<dt>Deploy</dt>
+<dd>
+<p>Button to deploy an application.</p>
+</dd>
+<dt>Undeploy</dt>
+<dd>
+<p>Button to undeploy one or more selected applications.</p>
+</dd>
+<dt>Enable</dt>
+<dd>
+<p>Button to enable one or more selected applications, if only the default server instance, <code>server</code>, exists.</p>
+</dd>
+<dt>Disable</dt>
+<dd>
+<p>Button to disable one or more selected applications, if only the default server instance, <code>server</code>, exists.</p>
+</dd>
+<dt>Filter</dt>
+<dd>
+<p>Drop-down list that filters applications by engine.</p>
+</dd>
+</dl>
+<a id="GHCOM367" name="GHCOM367"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+</li>
+<li>
+<p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+</li>
+<li>
+<p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+</li>
+<li>
+<p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appdeployconn.html">To Deploy a Connector Module</a></p>
+</li>
+<li>
+<p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+</li>
+<li>
+<p><a href="task-appedit.html">To Edit a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+</li>
+<li>
+<p><a href="task-appviewtargets.html">To View Application Targets</a></p>
+</li>
+<li>
+<p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+</li>
+<li>
+<p><a href="task-applaunch.html">To Launch an Application</a></p>
+</li>
+<li>
+<p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+</li>
+<li>
+<p><a href="task-appclientstubs.html">To Download Application Client Stubs</a></p>
+</li>
+<li>
+<p><a href="task-appredeploy.html">To Redeploy a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-apprestart.html">To Reload a Deployed Application</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesview.html">To View Application Scoped Resources</a></p>
+</li>
+<li>
+<p><a href="task-appscopedresourcesedit.html">To Modify Application Scoped Resources</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

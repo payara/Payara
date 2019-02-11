@@ -1,0 +1,52 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-editfile-adminrealm" name="ref-editfile-adminrealm"></a><a id="GHCOM00100" name="GHCOM00100"></a></p>
+
+<h4><a id="sthref200" name="sthref200"></a><a id="sthref201" name="sthref201"></a>Properties Specific to the <code>FileRealm</code> Class</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following properties are required for a <code>file</code> realm.</p>
+<dl>
+<dt>JAAS Context</dt>
+<dd>
+<p>The JAAS (Java Authentication and Authorization Service) context (the identifier for the login module to use for this realm). The only valid value is <code>fileRealm</code>.</p>
+</dd>
+<dt>Key File</dt>
+<dd>
+<p>Full path and name of the file where the server will store all user, group, and password information for this realm. The default value is <i>domain-dir</i><code>/config/keyfile</code> for the <code>file</code> realm and <i>domain-dir</i><code>/config/admin-keyfile</code> for the <code>admin-realm</code> realm.</p>
+</dd>
+</dl>
+<p>The key file for the <code>file</code> realm is initially empty, so users must be added on the <a href="ref-managefilerealm.html">File Users</a> page before the <code>file</code> realm is used.</p>
+<p>The key file for the <code>admin-realm</code> realm initially contains the administrator user name, the administrator password in an encrypted format, and the group to which this user belongs (<code>asadmin</code> by default). For more information on adding users to the <code>admin-realm</code>, see <a href="task-accessadmintools.html">To Grant Access to Administration Tools</a>.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>Users in the group <code>asadmin</code> in the <code>admin-realm</code> are authorized to use the Administration Console and <code>asadmin</code> tools. Add only users to this group that have server administrative privileges.</p>
+
+<hr>
+
+<p>The following optional property is available for a <code>file</code> realm.</p>
+<dl>
+<dt>Assign Groups</dt>
+<dd>
+<p>A comma-separated list of group names. All clients who present valid certificates are assigned to these groups, for example, <code>employee,manager</code>, where these are the names of user groups.</p>
+</dd>
+</dl>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

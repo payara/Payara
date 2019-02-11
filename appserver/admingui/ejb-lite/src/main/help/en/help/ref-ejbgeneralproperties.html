@@ -1,0 +1,59 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-ejbgeneralproperties" name="ref-ejbgeneralproperties"></a></p>
+
+<h4>Properties Specific to the EJB Container</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following properties are available for configuring the EJB container. For more information about the thread-related properties, see <a href="http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/ThreadPoolExecutor.html"><code>http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/ThreadPoolExecutor.html</code></a>.</p>
+<dl>
+<dt><code>thread-core-pool-size</code></dt>
+<dd>
+<p>Specifies the number of core threads in the EJB container's common thread pool. The default value is <code>16</code>.</p>
+</dd>
+<dt><code>thread-max-pool-size</code></dt>
+<dd>
+<p>Specifies the maximum number of threads in the EJB container's common thread pool. The default value is <code>32</code>.</p>
+</dd>
+<dt><code>thread-queue-capacity</code></dt>
+<dd>
+<p>Specifies the size of the thread pool queue, which stores new requests if more than <code>thread-core-pool-size</code> threads are running. The default value is the <code>Integer.MAX_VALUE</code>.</p>
+</dd>
+<dt><code>thread-keep-alive-seconds</code></dt>
+<dd>
+<p>Specifies the time, in seconds, past which threads in excess of <code>thread-core-pool-size</code> are terminated. The default value is <code>60</code>.</p>
+</dd>
+<dt><code>allow-core-thread-timeout</code></dt>
+<dd>
+<p>If set to <code>true</code>, all threads, even core threads, are subject to termination after <code>thread-keep-alive-seconds</code>. The default value is <code>false</code>.</p>
+</dd>
+<dt><code>prestart-all-core-threads</code></dt>
+<dd>
+<p>If set to <code>true</code>, all core threads in the EJB container's common thread pool are started, causing them to idly wait for work. If set to <code>false</code>, threads are not started until new requests arrive. The default value is <code>false</code>.</p>
+</dd>
+<dt><code>disable-nonportable-jndi-names</code></dt>
+<dd>
+<p>If set to <code>true</code>, GlassFish Server specific JNDI names for an EJB module are disabled. The default is <code>false</code>.</p>
+<p>Because the EJB 3.1 specification defines portable EJB JNDI names, there is less need for GlassFish Server specific JNDI names. By default, GlassFish Server specific default JNDI names are applied automatically for backward compatibility.</p>
+</dd>
+</dl>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

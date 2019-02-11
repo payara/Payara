@@ -1,0 +1,126 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-virtualserveredit" name="task-virtualserveredit"></a><a id="GHWEB00037" name="GHWEB00037"></a></p>
+
+<h4><a id="sthref37" name="sthref37"></a>To Edit a Virtual Server</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the Virtual Servers node.</p>
+<p>The Virtual Servers page opens.</p>
+</li>
+<li>
+<p>On the Virtual Servers page, click the name of the virtual server that you are editing.</p>
+<p>The Edit Virtual Server page opens.</p>
+</li>
+<li>
+<p>In the Hosts field, type the host names or IP addresses for the machine on which the server is running.</p>
+<p>Use either actual or virtual host names that are registered with the DNS server for your network (and, on a UNIX system, in your <code>/etc/hosts</code> file). The default value is the system property value <code>${com.sun.aas.hostName}</code>.</p>
+</li>
+<li>
+<p>Select a State option for the virtual server.</p>
+<p>The value may be any of the following:</p>
+<dl>
+<dt>On</dt>
+<dd>
+<p>The virtual server is active. This value is the default.</p>
+</dd>
+<dt>Off</dt>
+<dd>
+<p>The virtual server is inactive. Attempts to access the server will return the error code 404 (resource not available).</p>
+</dd>
+<dt>Disabled</dt>
+<dd>
+<p>The virtual server is disabled. Attempts to access the server will return the error code 403 (refused to fulfill the request).</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>Select an SSO option for the new virtual server.</p>
+<p>By default, a virtual server inherits the single sign-on (SSO) setting of the HTTP service. Select Enabled or Disabled to override the HTTP service setting by enabling or disabling single sign-on for this virtual server.</p>
+<p>Single sign-on across applications on the GlassFish Server is supported by servlets and JSP files. This feature allows multiple applications that require the same user sign-on information to share this information, rather than have the user sign on separately for each application.</p>
+</li>
+<li>
+<p>From the Network Listeners drop-down list, select one or more network listeners, or leave the field blank.</p>
+</li>
+<li>
+<p>From the Default Web Module drop-down list, select the module that is to respond to all requests that cannot be mapped to other web modules deployed to the virtual server.</p>
+<p>If a default web module is not specified, the web module that has an empty context root is used. If there is no web module with an empty context root, a system default web module is created and used.</p>
+</li>
+<li>
+<p>In the Log File field, type the path name of the file where logging messages from this virtual server will appear.</p>
+<p>By default, logging messages will be sent to the default server log, <i>domain-dir</i><code>/logs/server.log</code>.</p>
+</li>
+<li>
+<p>In the Docroot field, type the absolute path to the root document directory for the server.</p>
+<p>The default value is <i>domain-dir</i><code>/docroot</code>.</p>
+</li>
+<li>
+<p>Select an Access Logging option to enable or disable access logging.</p>
+<p>By default, a virtual server inherits the access logging setting of the HTTP service. Select Enabled or Disabled to override the HTTP service setting by enabling or disabling access logging for this virtual server.</p>
+</li>
+<li>
+<p>In the Directory field, type the absolute directory path to the server access logs.</p>
+<p>The default value is <i>domain-dir</i><code>/logs/access</code>.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties for the virtual server.</p>
+<p>For information on available properties, see <a href="ref-virtualserverprops.html">Properties Specific to Virtual Servers</a>.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="sthref38" name="sthref38"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-virtualservercreate.html">To Create a Virtual Server</a></p>
+</li>
+<li>
+<p><a href="task-virtualserverdelete.html">To Delete a Virtual Server</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

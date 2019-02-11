@@ -1,0 +1,112 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-executorservicenew" name="ref-executorservicenew"></a><a id="GHCON141" name="GHCON141"></a></p>
+
+<h4>New Managed Executor Service<a id="sthref31" name="sthref31"></a></h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Managed Executor Service page to create a managed executor service resource.</p>
+<p>The New Managed Executor Service page contains the following options.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique JNDI name that identifies the resource. By convention, the name begins with a resource-type indicator and a slash, such as concurrent/, jdbc/, or jms/.</p>
+</dd>
+<dt>Context Information</dt>
+<dd>
+<p>The contexts to propagate to threads: Classloader, JNDI, Security, or WorkArea. Context propagation can be enabled or disabled. If enabled, the selected contexts are propagated. If disabled, none of the contexts are propagated, even if they are selected. The default value is Enabled, with all four contexts selected.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>The status of the resource. The resource can be enabled or disabled. The default value is Enabled.</p>
+</dd>
+<dt>Thread Priority</dt>
+<dd>
+<p>The priority to assign to created threads. The default value is 5.</p>
+</dd>
+<dt>Long-Running Tasks</dt>
+<dd>
+<p>Whether the resource should be used for long-running tasks. If enabled, long-running tasks are not reported as stuck. This option is disabled by default.</p>
+</dd>
+<dt>Hung After</dt>
+<dd>
+<p>The number of seconds tasks can execute before they are considered unresponsive. The default value is 0.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of this resource.</p>
+</dd>
+<dt>Core Size</dt>
+<dd>
+<p>The number of threads to keep in a thread pool. The default value is 0.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of threads a thread pool can contain. The default value is 2147483647.</p>
+</dd>
+<dt>Keep Alive</dt>
+<dd>
+<p>The number of seconds threads can remain idle when the number of threads is greater than core size. The default value is 60.</p>
+</dd>
+<dt>Thread Lifetime</dt>
+<dd>
+<p>The number of seconds threads can remain in a thread pool before being purged, regardless of whether the number of threads is greater than core size or whether the threads are idle. The default value is 0.</p>
+</dd>
+<dt>Task Queue Capacity</dt>
+<dd>
+<p>The number of submitted tasks that can be stored in the task queue awaiting execution. The default value is 2147483647.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the resource. GlassFish Server does not define any additional properties for this resource type. Moreover, this resource type does not currently use any additional properties.</p>
+</dd>
+<dt>Targets</dt>
+<dd>
+<p>(This option is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>Clusters and standalone instances for the resource. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+</dd>
+</dl>
+<a id="sthref32" name="sthref32"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-managedexecutorservicecreate.html">To Create a Managed Executor Service</a></p>
+</li>
+<li>
+<p><a href="task-managedexecutorserviceedit.html">To Edit a Managed Executor Service</a></p>
+</li>
+<li>
+<p><a href="task-managedexecutorservicedelete.html">To Delete a Managed Executor Service</a></p>
+</li>
+</ul>
+<a id="GHCON142" name="GHCON142"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM840"><code>create-managed-executor-service</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM871"><code>list-managed-executor-services</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM848"><code>delete-managed-executor-service</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

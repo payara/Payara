@@ -1,0 +1,76 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jaccprovideredit" name="ref-jaccprovideredit"></a><a id="GHCOM00117" name="GHCOM00117"></a></p>
+
+<h4><a id="sthref225" name="sthref225"></a>Edit JACC Provider</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit JACC Provider page to modify a JACC provider for the selected GlassFish Server instance or cluster.</p>
+<p>The Edit JACC Provider page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the JACC provider. This is a read-only field. You can only specify the name when you create a new JACC provider.</p>
+</dd>
+<dt>Policy Configuration</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.PolicyConfigurationFactory.provider</code> that implements the provider-specific <code>javax.security.jacc.PolicyConfigurationFactory</code>.</p>
+</dd>
+<dt>Policy Provider</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.policy.provider</code> that implements the <code>java.security.Policy</code>.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JACC provider. For a description of the additional properties that are available for JACC providers, see <a href="ref-jaccproviderprop.html">Properties Specific to JACC Providers</a>.</p>
+</dd>
+</dl>
+<a id="GHCOM454" name="GHCOM454"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jaccprovidernew.html">To Create a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccprovideredit.html">To Edit a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccproviderdelete.html">To Delete a JACC Provider</a></p>
+</li>
+</ul>
+<a id="GHCOM455" name="GHCOM455"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00034"><code>create-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00086"><code>delete-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00171"><code>list-jacc-providers</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

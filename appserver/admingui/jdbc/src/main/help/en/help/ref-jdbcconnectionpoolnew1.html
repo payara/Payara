@@ -1,0 +1,102 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jdbcconnectionpoolnew1" name="ref-jdbcconnectionpoolnew1"></a><a id="GHJDB00024" name="GHJDB00024"></a></p>
+
+<h4><a id="sthref41" name="sthref41"></a>New JDBC Connection Pool (Step 1 of 2)</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JDBC Connection Pool (Step 1 of 2) page to create a new JDBC connection pool.</p>
+<p>The New JDBC Connection Pool (Step 1 of 2) page contains the following options.</p>
+<dl>
+<dt>Pool Name</dt>
+<dd>
+<p>The name for the connection pool.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>Available resource types are <code>javax.sql.XADataSource</code> (global transactions), <code>java.sql.ConnectionPoolDataSource</code> (local transactions, possible performance improvements), <code>javax.sql.DataSource</code> (local transactions only), and <code>java.sql.Driver</code>.</p>
+</dd>
+<dt>Database Driver Vendor</dt>
+<dd>
+<p>The name of the vendor of your database product.</p>
+</dd>
+<dt>Introspect</dt>
+<dd>
+<p>If this option is enabled, the database driver is introspected based on the Resource Type and Database Driver Vendor, and any discovered datasource or driver class names are displayed on the <a href="ref-jdbcconnectionpoolnew2.html">New JDBC Connection Pool (Step 2 of 2)</a> page when you click the Next button.</p>
+<p>For introspection to work, the JDBC driver must be available to GlassFish Server. See <a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a>.</p>
+</dd>
+</dl>
+<a id="sthref42" name="sthref42"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-integratejdbcdriver.html">To Integrate a JDBC Driver</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolnew.html">To Create a JDBC Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooledit.html">To Edit JDBC Connection Pool General Settings</a></p>
+</li>
+<li>
+<p><a href="task-verifyconnpoolsettings.html">To Verify Connection Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooladvance.html">To Edit JDBC Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolproperty.html">To Edit JDBC Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooldelete.html">To Delete a JDBC Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref43" name="sthref43"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00001"><code>add-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00036"><code>create-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00088"><code>delete-jdbc-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00135"><code>flush-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00173"><code>list-jdbc-connection-pools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00214"><code>ping-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00234"><code>start-database</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00239"><code>stop-database</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

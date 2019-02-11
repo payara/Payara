@@ -1,0 +1,134 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmsphysicaldestnew" name="ref-jmsphysicaldestnew"></a><a id="GHJMS00017" name="GHJMS00017"></a></p>
+
+<h4><a id="sthref92" name="sthref92"></a><a id="sthref93" name="sthref93"></a>New JMS Physical Destination</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JMS Physical Destination page to create a new JMS physical destination.</p>
+<p>You do not ordinarily need to create physical destinations, because you specify a physical destination name when you create a JMS destination resource, and GlassFish Server creates the physical destination automatically when it is needed.</p>
+<p>The New JMS Physical Destination page contains the following options.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name of the physical destination.</p>
+</dd>
+<dt>Type</dt>
+<dd>
+<p>The type of the physical destination. Available choices are <code>javax.jms.Topic</code> and <code>javax.jms.Queue</code>.</p>
+</dd>
+<dt>Maximum Number of Unconsumed Messages</dt>
+<dd>
+<p>The maximum number of unconsumed messages permitted for the destination. A value of -1 indicates that there is no limit to the number of unconsumed messages. The default value is -1.</p>
+</dd>
+<dt>Maximum Message Size</dt>
+<dd>
+<p>The maximum size, in bytes, of any single message. A value of -1 denotes an unlimited message size. The default value is -1.</p>
+</dd>
+<dt>Maximum Total Memory</dt>
+<dd>
+<p>The maximum total memory, in bytes, for unconsumed messages. A value of -1 indicates that there is no limit to the memory size for unconsumed messages. The default value is -1.</p>
+</dd>
+<dt>Threshold Limit Behavior</dt>
+<dd>
+<p>The behavior the broker is to follow when the memory-limit threshold is reached. Available choices are:</p>
+<dl>
+<dt>Reject newest messages</dt>
+<dd>
+<p>Reject the newest messages and notify the producing client with an exception only if the message is persistent. This is the default value.</p>
+</dd>
+<dt>Slow down producers</dt>
+<dd>
+<p>Slow the rate at which message producers send messages.</p>
+</dd>
+<dt>Throw out oldest</dt>
+<dd>
+<p>Discard the oldest messages.</p>
+</dd>
+<dt>Throw out lowest-priority messages</dt>
+<dd>
+<p>Discard the messages with the lowest priority.</p>
+</dd>
+</dl>
+<p>If the value is Throw out oldest or Throw out lowest-priority messages and Use Dead Message Queue is set to True, excess messages are moved to the dead message queue.</p>
+</dd>
+<dt>Maximum Number of Producers</dt>
+<dd>
+<p>The maximum number of message producers that can be associated with this physical destination. When this limit is reached, no new producers can be created. A value of -1 denotes an unlimited number of producers. The default value is 100.</p>
+</dd>
+<dt>Batch Delivery Max Message Count</dt>
+<dd>
+<p>The maximum number of messages that can be delivered to consumers in a single batch. A value of -1 denotes an unlimited number of messages. The default value is 1000.</p>
+</dd>
+<dt>Use Dead Message Queue</dt>
+<dd>
+<p>If the value is set to True, dead messages are placed in the dead message queue. If the value is set to False, dead messages are discarded. This option is set to True by default.</p>
+</dd>
+<dt>Validate XML Schema</dt>
+<dd>
+<p>If the value is set to True, the Message Queue client runtime will attempt to validate an XML message against the specified XML Schema Definitions (or against the DTD, if no XSD is specified) before sending it to the broker. If the specified schema cannot be located or the message cannot be validated, the message is not sent, and an exception is thrown. This option is set to False by default.</p>
+</dd>
+<dt>XML Schema URI List</dt>
+<dd>
+<p>A space-separated list of XML Schema Definition (XSD) URI strings. If XML schema validation is enabled, the URIs point to the location of one or more XSDs to use for XML schema validation.</p>
+</dd>
+</dl>
+<a id="sthref94" name="sthref94"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jmsservice.html">To Configure the JMS Service</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldestnew.html">To Create a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldestedit.html">To Edit a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldestdelete.html">To Delete a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsflushmessages.html">To Remove Messages from a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldeststats.html">To View Statistics for a JMS Physical Destination</a></p>
+</li>
+</ul>
+<a id="sthref95" name="sthref95"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00038"><code>create-jmsdest</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00175"><code>list-jmsdest</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00090"><code>delete-jmsdest</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00136"><code>flush-jmsdest</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00144"><code>jms-ping</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

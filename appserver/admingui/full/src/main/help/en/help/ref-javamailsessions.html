@@ -1,0 +1,93 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-javamailsessions" name="ref-javamailsessions"></a><a id="GHJML00001" name="GHJML00001"></a></p>
+
+<h4><a id="sthref22" name="sthref22"></a>JavaMail Sessions</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>GlassFish Server includes the JavaMail API. JavaMail provides access from Java applications to Internet Message Access Protocol (IMAP) and Simple Mail Transfer Protocol (SMTP) capable mail servers on your network or the Internet.</p>
+<p>Use the JavaMail Sessions page to configure JavaMail sessions.</p>
+<p>For each JavaMail session, the following information is provided.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the JavaMail session.</p>
+</dd>
+<dt>Enabled</dt>
+<dd>
+<p>(This column is displayed if only the default server instance, <code>server</code>, exists in the domain.)</p>
+<p>A check mark if the resource is enabled, or an X if the resource is disabled.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>(This column is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>The number of clusters and standalone instances to which the resource is targeted and how many of these targets the resource is enabled on. For example, "Enabled on 2 of 4 Target(s)" means that the resource is targeted to four clusters and standalone instances and that it is enabled on two of these four targets.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the JavaMail session.</p>
+</dd>
+</dl>
+<p>The Sessions table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new JavaMail session.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected JavaMail sessions.</p>
+</dd>
+<dt>Enable</dt>
+<dd>
+<p>Button to enable one or more selected JavaMail sessions.</p>
+</dd>
+<dt>Disable</dt>
+<dd>
+<p>Button to disable one or more selected JavaMail sessions.</p>
+</dd>
+</dl>
+<a id="GHJML117" name="GHJML117"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-javamailsessioncreate.html">To Create a JavaMail Session</a></p>
+</li>
+<li>
+<p><a href="task-javamailsessionsedit.html">To Edit a JavaMail Session</a></p>
+</li>
+<li>
+<p><a href="task-javamailsessionsdelete.html">To Delete a JavaMail Session</a></p>
+</li>
+</ul>
+<a id="GHJML118" name="GHJML118"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00035"><code>create-javamail-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00172"><code>list-javamail-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00087"><code>delete-javamail-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

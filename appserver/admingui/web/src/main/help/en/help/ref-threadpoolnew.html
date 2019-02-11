@@ -1,0 +1,83 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-threadpoolnew" name="ref-threadpoolnew"></a><a id="GHWEB00028" name="GHWEB00028"></a></p>
+
+<h4><a id="sthref173" name="sthref173"></a>New Thread Pool</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Thread Pool page to create a thread pool.</p>
+<p>The New Thread Pool page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the thread pool.</p>
+</dd>
+<dt>Class Name</dt>
+<dd>
+<p>The fully qualified name of the class that implements the thread pool. The default value is <code>com.sun.grizzly.http.StatsThreadPool</code>.</p>
+</dd>
+<dt>Max Queue Size</dt>
+<dd>
+<p>The maximum number of messages that can be queued until threads are available to process them. A value of -1 indicates that there is no limit to the queue size. The default value is 4096.</p>
+</dd>
+<dt>Max Thread Pool Size</dt>
+<dd>
+<p>The maximum number of threads in the thread pool. The default value is 5. This is the recommended value for network listener thread pools.</p>
+</dd>
+<dt>Min Thread Pool Size</dt>
+<dd>
+<p>The minimum number of threads in the thread pool. The default value is 2.</p>
+</dd>
+<dt>Idle Thread Timeout</dt>
+<dd>
+<p>The maximum amount of time, in seconds, that a thread can remain idle in the pool. After this time expires, the thread is removed from the pool. The default value is 900.</p>
+</dd>
+</dl>
+<a id="sthref174" name="sthref174"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-threadpoolnew.html">To Create a Thread Pool</a></p>
+</li>
+<li>
+<p><a href="task-threadpooledit.html">To Edit a Thread Pool</a></p>
+</li>
+<li>
+<p><a href="task-threadpooldelete.html">To Delete a Thread Pool</a></p>
+</li>
+</ul>
+<a id="sthref175" name="sthref175"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00060"><code>create-threadpool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00204"><code>list-threadpools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00111"><code>delete-threadpool</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

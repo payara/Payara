@@ -1,0 +1,156 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-connectorconnectionpooledit" name="ref-connectorconnectionpooledit"></a><a id="GHJCA00044" name="GHJCA00044"></a></p>
+
+<h4><a id="sthref75" name="sthref75"></a>Edit Connector Connection Pool</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Connector Connection Pool page to modify the settings for a connector connection pool.</p>
+<p>The Edit Connector Connection Pool page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Flush</dt>
+<dd>
+<p>Button to reinitialize the connections in the connection pool. Clicking this button destroys any existing connections, recreates connections established for the pool, and restores the pool to its initial and minimum pool size.</p>
+</dd>
+<dt>Ping</dt>
+<dd>
+<p>Button to verify that the connection pool is usable.</p>
+</dd>
+<dt>Pool Name</dt>
+<dd>
+<p>A unique name that identifies the connector connection pool. This is a read-only field. You can only specify the pool name when you create a new connector connection pool.</p>
+</dd>
+<dt>Resource Adapter</dt>
+<dd>
+<p>The resource adapter associated with the connector connection pool.</p>
+</dd>
+<dt>Connection Definition</dt>
+<dd>
+<p>The connection definition for the connector connection pool. The choices in the list depend on the resource adapter you selected. The connection definition identifies a resource adapter's <code>connection-definition</code> element in the<code>ra.xml</code> file.</p>
+</dd>
+<dt>Ping</dt>
+<dd>
+<p>If this option is enabled, the connection pool is pinged during creation or reconfiguration to identify and warn of any erroneous values for its attributes. This option is disabled by default.</p>
+</dd>
+<dt>Deployment Order</dt>
+<dd>
+<p>The deployment order of the connector connection pool.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the connector connection pool.</p>
+</dd>
+<dt>Initial and Minimum Pool Size</dt>
+<dd>
+<p>The minimum number of connections in the connector connection pool. The default value is 8.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of connections in the connector connection pool. The default value is 32.</p>
+</dd>
+<dt>Pool Resize Quantity</dt>
+<dd>
+<p>The number of connections to be removed when pool idle timeout expires. The default value is 2.</p>
+</dd>
+<dt>Idle Timeout</dt>
+<dd>
+<p>The maximum time in seconds that a connection can remain idle in the pool. The default value is 300.</p>
+</dd>
+<dt>Max Wait Time</dt>
+<dd>
+<p>The amount of time the application requesting a connection will wait before getting a connection timeout. The default value is 60000.</p>
+</dd>
+<dt>Connection Validation</dt>
+<dd>
+<p>If the Required checkbox is selected, connections are validated before being given to the application. If a resource's validation fails, it is destroyed, and a new resource is created and returned. This option is disabled by default.</p>
+</dd>
+<dt>On Any Failure</dt>
+<dd>
+<p>If the Close All Connections checkbox is selected, GlassFish Server will close all connections in the pool and reestablish them if a single connection fails. This option is disabled by default.</p>
+</dd>
+<dt>Transaction Support</dt>
+<dd>
+<p>The chosen transaction support overrides the transaction support attribute in the resource adapter associated with this connection pool in a downward compatible way. In other words, it can support a lower transaction level than that specified in the resource adapter, or the same transaction level as that specified in resource adapter, but it cannot specify a higher level.</p>
+<p>The value may be any of the following:</p>
+<dl>
+<dt>XATransaction</dt>
+<dd>
+<p>The resource adapter supports resource manager local and JTA transactions by implementing the LocalTransaction and XAResource interfaces. XA transactions are controlled and coordinated by a transaction manager external to a resource manager.</p>
+</dd>
+<dt>LocalTransaction</dt>
+<dd>
+<p>The resource adapter supports local transactions by implementing the LocalTransaction interface. Local transactions are managed internal to a resource manager and involve no external transaction managers.</p>
+</dd>
+<dt>NoTransaction</dt>
+<dd>
+<p>The resource adapter does not support resource manager local or JTA transactions and does not implement the XAResource or LocalTransaction interfaces.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<a id="sthref76" name="sthref76"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-connectorconnectionpoolnew.html">To Create a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooledit.html">To Edit a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooladvance.html">To Edit Connector Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolproperty.html">To Edit Connector Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapnew.html">To Create a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapedit.html">To Edit a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapdel.html">To Delete a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooldel.html">To Delete a Connector Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref77" name="sthref77"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00018"><code>create-connector-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00157"><code>list-connector-connection-pools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00070"><code>delete-connector-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00135"><code>flush-connection-pool</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

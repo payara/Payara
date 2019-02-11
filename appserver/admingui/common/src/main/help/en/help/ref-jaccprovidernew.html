@@ -1,0 +1,78 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jaccprovidernew" name="ref-jaccprovidernew"></a><a id="GHCOM00115" name="GHCOM00115"></a></p>
+
+<h4><a id="sthref222" name="sthref222"></a>New JACC Provider</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New JACC Provider page to create a new JSR-115/196compliant Java Authorization Contract for Containers (JACC) provider that can be used by third-party authorization modules for applications running in GlassFish Server. The JACC provider is created as a <code>jacc-provider</code> element within the <code>security-service</code> element in the domain's <code>domain.xml</code> file.</p>
+<p>The default GlassFish Server installation includes two JACC providers, named <code>default</code> and <code>simple</code>. Any new JACC providers you create are in addition to these two default providers. The default GlassFish Server JACC providers implement a simple, file-based authorization engine that complies with the JACC specification.</p>
+<p>All GlassFish Server JACC providers must use the Java Authentication and Authorization Service (JAAS) APIs. JAAS enables services to authenticate and enforce access controls upon users. JAAS implements a Java technology version of the standard Pluggable Authentication Module (PAM) framework.</p>
+<p>JSR 196 allows you to develop plugins at different layers. You can define plugins that change the way new authentication mechanism are configured, such as <code>AuthConfigProvider</code> and <code>AuthConfigFactory</code>. You can also define new authentication mechanisms, such as <code>ServerAuthModule</code> and <code>ClientAuthModule</code>.</p>
+<p>The New JACC Provider page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the JACC provider. This name is used to reference the <code>jacc-provider</code> element in <code>domain.xml</code>.</p>
+</dd>
+<dt>Policy Configuration</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.PolicyConfigurationFactory.provider</code> that implements the provider-specific <code>javax.security.jacc.PolicyConfigurationFactory</code>.</p>
+</dd>
+<dt>Policy Provider</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.policy.provider</code> that implements the <code>java.security.Policy</code>.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JACC provider. For a description of the additional properties that are available for JACC providers, see <a href="ref-jaccproviderprop.html">Properties Specific to JACC Providers</a>.</p>
+</dd>
+</dl>
+<a id="GHCOM452" name="GHCOM452"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jaccprovidernew.html">To Create a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccprovideredit.html">To Edit a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccproviderdelete.html">To Delete a JACC Provider</a></p>
+</li>
+</ul>
+<a id="GHCOM453" name="GHCOM453"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00034"><code>create-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00086"><code>delete-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00171"><code>list-jacc-providers</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

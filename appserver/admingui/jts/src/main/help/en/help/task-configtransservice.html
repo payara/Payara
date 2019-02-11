@@ -1,0 +1,113 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-configtransservice" name="task-configtransservice"></a><a id="GHJTS00004" name="GHJTS00004"></a></p>
+
+<h4><a id="sthref2" name="sthref2"></a>To Configure the Transaction Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the instance to configure:</p>
+<ul>
+<li>
+<p>To configure a particular instance, select the instance's config node. For example, the default instance, <code>server</code>, select the <code>server-config</code> node.</p>
+</li>
+<li>
+<p>To configure the default settings for all instances, select the <code>default-config</code> node.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Select the Transaction Service node.</p>
+<p>The Transaction Service page opens.</p>
+</li>
+<li>
+<p>On the Transaction Service page, select the On Restart Enabled checkbox to enable the recovery of incomplete transactions when the server is restarted.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Transaction Timeout field, type the number of seconds the server waits before rolling back a transaction that has not completed.</p>
+<p>A value of 0 disables transaction timeouts. The default value is 0, meaning that the server waits indefinitely for a transaction to complete.</p>
+</li>
+<li>
+<p>In the Retry Timeout field, type the number of seconds the GlassFish Server tries to connect to an unreachable server.</p>
+<p>The default value is 600 (10 minutes).</p>
+</li>
+<li>
+<p>In the Transaction Log Location field, type the directory where server logs are kept.</p>
+<p>Transaction logs are kept in the <code>tx</code> subdirectory of the directory specified by this field. The default value is the directory specified by the Log Root field of the Domain Attributes page, which is located under the Advanced tab of the GlassFish Server node.</p>
+</li>
+<li>
+<p>From the Heuristic Decision drop-down list, select the policy to be followed if the outcome of a distributed transaction cannot be determined because other participants are unreachable.</p>
+<p>Unless there is a good reason to select Commit, leave Heuristic Decision set to Rollback (the default). Committing indeterminate transactions can compromise the data integrity of your application.</p>
+</li>
+<li>
+<p>In the Keypoint Interval field, type the number of transactions between keypoint operations.</p>
+<p>Keypoint operations compress the transaction log file. The default value is 65,536.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>For a description of available properties, see <a href="ref-transactionsvcproperties.html">Properties Specific to the Transaction Service</a>.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+<li>
+<p>Restart the GlassFish Server.</p>
+</li>
+</ol>
+<a id="sthref3" name="sthref3"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-configtransrecovery.html">To Configure How the GlassFish Server Recovers Transactions</a></p>
+</li>
+<li>
+<p><a href="task-settranstimeout.html">To Set a Transaction Timeout Value</a></p>
+</li>
+<li>
+<p><a href="task-settranslog.html">To Set the Location of the Transaction Logs</a></p>
+</li>
+<li>
+<p><a href="task-setkeyptinterval.html">To Set the Keypoint Interval</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

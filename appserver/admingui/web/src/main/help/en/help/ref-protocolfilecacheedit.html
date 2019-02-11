@@ -1,0 +1,98 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-protocolfilecacheedit" name="ref-protocolfilecacheedit"></a><a id="GHWEB00023" name="GHWEB00023"></a></p>
+
+<h4><a id="sthref156" name="sthref156"></a><a id="sthref157" name="sthref157"></a>File Cache</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the File Cache page to modify file cache settings for a network protocol.</p>
+<p>The File Cache page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Protocol Name</dt>
+<dd>
+<p>The name of the protocol. The Protocol Name field is a read-only field. You can only specify the name when you create a new protocol.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>If this option is selected, the file cache status is enabled. This option is selected by default.</p>
+</dd>
+<dt>Max Age</dt>
+<dd>
+<p>The maximum age, in seconds, for a valid cache entry.</p>
+<p>This parameter controls how long cached information is used after a file has been cached. An entry older than the maximum age is replaced by a new entry for the same file. If your content changes infrequently, increase this value for improved performance.</p>
+<p>The optimum maximum age depends on whether existing files are modified regularly. For example, if files are modified four times a day at regular intervals, consider setting the maximum age to 21600 seconds (6 hours). Otherwise, consider setting the maximum age to the longest time for which you are willing to serve the previous version of a file after the file has been modified.</p>
+<p>The default value is 30.</p>
+</dd>
+<dt>Max Cache Size</dt>
+<dd>
+<p>The maximum total size (in bytes) of the file cache on disk. The default value is 10485760.</p>
+</dd>
+<dt>Max File Count</dt>
+<dd>
+<p>The maximum number of files that can be stored in the file cache.</p>
+<p>If the value is too big, the server caches little-needed files, which wastes memory. If the value is too small, the benefit of caching is lost. Try different values of this attribute to find the optimal solution for specific applications.</p>
+<p>The default value is 1024.</p>
+</dd>
+</dl>
+<a id="sthref158" name="sthref158"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolssledit.html">To Edit SSL Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+</ul>
+<a id="sthref159" name="sthref159"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00051"><code>create-protocol</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00195"><code>list-protocols</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00103"><code>delete-protocol</code>(1)</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

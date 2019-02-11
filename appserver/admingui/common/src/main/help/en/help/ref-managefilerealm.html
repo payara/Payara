@@ -1,0 +1,79 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-managefilerealm" name="ref-managefilerealm"></a><a id="GHCOM00106" name="GHCOM00106"></a></p>
+
+<h4><a id="sthref212" name="sthref212"></a>File Users</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the File Users page to manage <code>file</code> realm users. Users and groups in the <code>file</code> realm are listed in the key file, whose location is specified by the <code>file</code> property.</p>
+<p>A user in the <code>file</code> realm can belong to a <i>Java group</i>, a category of users classified by common traits. For example, customers of an e-commerce application might belong to the <code>CUSTOMER</code> group, but the big spenders would belong to the <code>PREFERRED</code> group. Categorizing users into groups makes it easier to control the access of large numbers of users.</p>
+<p>Initially after installation of the GlassFish Server, the only user is the administrator entered during installation. By default, this user belongs to the group <code>asadmin</code>, in the realm <code>admin-realm</code>, which gives rights to modify the GlassFish Server. Any users assigned to this group will have administrator privileges, that is, they will have access to the <code>asadmin</code> tool and the Administration Console.</p>
+<p>The File Users page displays a list of users for the selected realm. For each user, the following information is provided:</p>
+<dl>
+<dt>User ID</dt>
+<dd>
+<p>The user name.</p>
+</dd>
+<dt>Group List</dt>
+<dd>
+<p>The groups to which the user belongs.</p>
+</dd>
+</dl>
+<p>The File Users table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new user.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected users.</p>
+</dd>
+</dl>
+<a id="GHCOM435" name="GHCOM435"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-fileuserscreate.html">To Add a User to the File Realm</a></p>
+</li>
+<li>
+<p><a href="task-fileusersedit.html">To Edit File Realm User Information</a></p>
+</li>
+<li>
+<p><a href="task-fileusersdelete.html">To Delete a User from the File Realm</a></p>
+</li>
+</ul>
+<a id="GHCOM436" name="GHCOM436"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00165"><code>list-file-users</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00024"><code>create-file-user</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00254"><code>update-file-user</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00076"><code>delete-file-user</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

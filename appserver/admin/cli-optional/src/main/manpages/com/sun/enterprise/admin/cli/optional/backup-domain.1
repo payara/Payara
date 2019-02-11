@@ -1,0 +1,82 @@
+backup-domain(1)          asadmin Utility Subcommands         backup-domain(1)
+
+NAME
+       backup-domain - performs a backup on the domain
+
+SYNOPSIS
+           backup-domain [--help]
+           [--long[={false|true}]]
+           [--description description-text]
+           [--domaindir domain-root-dir]
+           [--backupdir backup-directory]
+           [--backupconfig backup-config-name]
+           [domain_name]
+
+DESCRIPTION
+       The backup-domain subcommand backs up files under the named domain.
+
+       This subcommand is supported in local mode only in GlassFish Server
+       Open Source Edition, and is supported in local mode and remote mode in
+       Oracle GlassFish Server.
+
+       In GlassFish Server Open Source Edition, the domain to be backed up
+       must be stopped.
+
+       In Oracle GlassFish Server, the domain to be backed up must be stopped
+       or be suspended using the suspend-domain(1) subcommand.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about the backup operation.
+
+           The default value is false.
+
+       --description
+           Specifies a description to store in the backup file. The
+           description is displayed as part of the information about a backup
+           file.
+
+           The default value has this form:
+
+               domain-name backup created on YYYY_MM_DD by user user-name
+
+       --domaindir
+           Specifies the domain root directory, the parent directory of the
+           domain to back up.
+
+           The default value is as-install/domains.
+
+       --backupdir
+           Specifies the directory under which the backup file is to be
+           stored.
+
+           The default value is as-install/domains/domain-dir/backups. If the
+           domain is not in the default location, the location is
+           domain-dir/backups.
+
+       --backupconfig
+           (Supported only in Oracle GlassFish Server.) The name of the domain
+           backup configuration in the backup directory under which the backup
+           file is to be stored.
+
+OPERANDS
+       domain-name
+           Specifies the name of the domain to be backed up.
+
+           This operand is optional if only one domain exists in the GlassFish
+           Server installation.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       restore-domain(1), list-backups(1), suspend-domain(1), resume-domain(1)
+
+Java EE 8                         22 Dec 2010                 backup-domain(1)

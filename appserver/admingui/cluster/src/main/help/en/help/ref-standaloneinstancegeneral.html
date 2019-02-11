@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-standaloneinstancegeneral" name="ref-standaloneinstancegeneral"></a><a id="GHCLU00020" name="GHCLU00020"></a></p>
+
+<h4><a id="sthref329" name="sthref329"></a><a id="sthref330" name="sthref330"></a><a id="sthref331" name="sthref331"></a>General Information</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The General Information page contains the following options.</p>
+<dl>
+<dt>Start</dt>
+<dd>
+<p>Button to start the instance. If the instance is running, this button is deactivated.</p>
+</dd>
+<dt>Stop</dt>
+<dd>
+<p>Button to stop the instance. If the instance is stopped, this button is deactivated.</p>
+</dd>
+<dt>Restart</dt>
+<dd>
+<p>Button to restart the instance. If the instance is stopped, this button is deactivated.</p>
+</dd>
+<dt>View Log Files</dt>
+<dd>
+<p>Button to view log files for the instance.</p>
+</dd>
+<dt>Rotate Log</dt>
+<dd>
+<p>Button to rotate the log file for the instance. When the log file is rotated, the file is renamed with a timestamp name in the format <code>server.log_</code><i>date-and-time</i>, and an empty log file is created for new log messages. The changes are applied dynamically. Server restart is not required.</p>
+</dd>
+<dt>Recover Transactions</dt>
+<dd>
+<p>Button to recover transactions for the instance.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name that was assigned to the instance when the instance was created. This field is read only.</p>
+</dd>
+<dt>JVM</dt>
+<dd>
+<p>If you click JVM Report, a separate window opens and displays reports on the Java Virtual Machine, including a summary report, memory management and garbage collection report, class loading report, and a current thread dump.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>An indication of whether the instance is running or not running. This field is read only.</p>
+</dd>
+<dt>Node</dt>
+<dd>
+<p>The name of the node on which the instance resides. Clicking the name opens the <a href="ref-nodeedit.html">Edit Node</a> page for the node.</p>
+</dd>
+<dt>Configuration</dt>
+<dd>
+<p>The configuration that the instance references. Clicking the configuration opens the <a href="../../../common/en/help/ref-configuration.html">Configurations</a> page for the instance.</p>
+</dd>
+<dt>Debug</dt>
+<dd>
+<p>An indication of whether Java Platform Debugger Architecture (JPDA) (<code><a href="http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html/">http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html/</a></code>) debugging is enabled for the instance. This field is read only.</p>
+<p>If an instance is started from the Administration Console, JPDA debugging is not enabled for the instance. To start an instance with JPDA debugging enabled, use the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00236"><code>start-instance</code>(1)</a> subcommand.</p>
+</dd>
+<dt>HTTP Ports</dt>
+<dd>
+<p>A comma-separated list of the port numbers of the ports on which the instance listens for the following types of requests:</p>
+<ul>
+<li>
+<p>Administration requests</p>
+</li>
+<li>
+<p>HTTP requests</p>
+</li>
+<li>
+<p>HTTPS requests</p>
+</li>
+</ul>
+<p>This field is read only.</p>
+</dd>
+<dt>IIOP Ports</dt>
+<dd>
+<p>A comma-separated list of the port numbers of the ports that the instance uses for the following types of connections:</p>
+<ul>
+<li>
+<p>Secure IIOP connection</p>
+</li>
+<li>
+<p>Secure IIOP connections with client authentication</p>
+</li>
+<li>
+<p>IIOP connections</p>
+</li>
+</ul>
+<p>This field is read only.</p>
+</dd>
+</dl>
+<a id="sthref332" name="sthref332"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-start-standalone-instances.html">To Start Standalone GlassFish Server Instances</a></p>
+</li>
+<li>
+<p><a href="task-stop-standalone-instances.html">To Stop Standalone GlassFish Server Instances</a></p>
+</li>
+<li>
+<p><a href="task-view-logs-standalone-instance.html">To View Log Files for a Standalone GlassFish Server Instance</a></p>
+</li>
+<li>
+<p><a href="task-recovertransactions-standalone-instance.html">To Recover Transactions for a Standalone GlassFish Server Instance</a></p>
+</li>
+</ul>
+<a id="sthref333" name="sthref333"></a>
+<h5>Equivalent asadmin Subcommands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00138"><code>generate-jvm-report</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00236"><code>start-instance</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00241"><code>stop-instance</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00224"><code>rotate-log</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

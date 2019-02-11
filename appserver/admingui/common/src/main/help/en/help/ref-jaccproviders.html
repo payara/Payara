@@ -1,0 +1,87 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jaccproviders" name="ref-jaccproviders"></a><a id="GHCOM00114" name="GHCOM00114"></a></p>
+
+<h4><a id="sthref221" name="sthref221"></a>JACC Providers</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the JACC Providers page to configure Java Authorization Contract for Containers (JACC) providers for the selected GlassFish Server instance or cluster.</p>
+<p>JACC providers can be used by third-party authorization modules for applications running in GlassFish Server. The default GlassFish Server installation includes two JACC providers, named <code>default</code> and <code>simple</code>. These default providers implement a simple, file-based authorization engine that complies with the JACC specification. You can also create your own custom JACC providers. See <a href="task-jaccprovidernew.html">To Create a JACC Provider</a>.</p>
+<p>For information on how to write the implementation classes for a JACC provider, see the JACC specification at <code><a href="http://jcp.org/en/jsr/detail?id=115">http://jcp.org/en/jsr/detail?id=115</a></code>.</p>
+<p>For each JACC provider, the following information is provided.</p>
+<dl>
+<dt>Name</dt>
+<dd>
+<p>The name of the JACC provider. This name is used to reference the <code>jacc-provider</code> element in <code>domain.xml</code>.</p>
+</dd>
+<dt>Policy Configuration</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.PolicyConfigurationFactory.provider</code> that implements the provider-specific <code>javax.security.jacc.PolicyConfigurationFactory</code>.</p>
+</dd>
+<dt>Policy Provider</dt>
+<dd>
+<p>The fully qualified class name for the <code>javax.security.jacc.policy.provider</code> that implements the <code>java.security.Policy</code>.</p>
+</dd>
+</dl>
+<p>The default JACC providers also support the following property.</p>
+<dl>
+<dt>repository</dt>
+<dd>
+<p>The directory containing the JACC policy file. For the <code>default</code>GlassFish Server JACC provider, the default directory is <code>${com.sun.aas.instanceRoot}/generated/policy</code>. This property is not defined by default for the <code>simple</code>GlassFish Server JACC provider.</p>
+</dd>
+</dl>
+<p>The JACC Providers table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new JACC provider.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected JACC providers.</p>
+</dd>
+</dl>
+<a id="GHCOM450" name="GHCOM450"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jaccprovidernew.html">To Create a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccprovideredit.html">To Edit a JACC Provider</a></p>
+</li>
+<li>
+<p><a href="task-jaccproviderdelete.html">To Delete a JACC Provider</a></p>
+</li>
+</ul>
+<a id="GHCOM451" name="GHCOM451"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00034"><code>create-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00086"><code>delete-jacc-provider</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00171"><code>list-jacc-providers</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

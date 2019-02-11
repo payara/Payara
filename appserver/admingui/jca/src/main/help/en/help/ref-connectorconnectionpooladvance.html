@@ -1,0 +1,118 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-connectorconnectionpooladvance" name="ref-connectorconnectionpooladvance"></a><a id="GHJCA00045" name="GHJCA00045"></a></p>
+
+<h4><a id="sthref78" name="sthref78"></a>Edit Connector Connection Pool Advanced Attributes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit Connector Connection Pool Advanced Attributes page to modify the advanced settings for a connector connection pool.</p>
+<p>The Edit Connector Connection Pool Advanced Attributes page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Validate At Most Once</dt>
+<dd>
+<p>Specifies the time interval in seconds between successive requests to validate a connection at most once. Default value is 0, which means the attribute is not enabled.</p>
+</dd>
+<dt>Leak Timeout</dt>
+<dd>
+<p>The amount of time, in seconds, to trace connection leaks in a connection pool. A value of 0 indicates that connection leak tracing is disabled. The default value is 0.</p>
+</dd>
+<dt>Leak Reclaim</dt>
+<dd>
+<p>If this option is selected, leaked connections will be restored to the pool after leak connection tracing is complete. This option is disabled by default.</p>
+</dd>
+<dt>Creation Retry Attempts</dt>
+<dd>
+<p>The number of attempts that will be made if there is a failure in creating a new connection. A value of 0 indicates that no attempts will be made to create the connection again. The default value is 0.</p>
+</dd>
+<dt>Retry Interval</dt>
+<dd>
+<p>The interval, in seconds, between two attempts to create a connection. This attribute is used only if the value of Creation Retry Attempts is greater than 0. The default value is 10 seconds.</p>
+</dd>
+<dt>Pooling</dt>
+<dd>
+<p>Enables connection pooling for the pool. This option is enabled by default.</p>
+</dd>
+<dt>Lazy Association</dt>
+<dd>
+<p>If this option is selected, connections will be lazily associated when an operation is performed on them. The connections are disassociated when the transaction is completed and a component method ends, which helps reuse of the physical connections. This option is disabled by default.</p>
+</dd>
+<dt>Lazy Connection Enlistment</dt>
+<dd>
+<p>If this option is selected, a resource is enlisted in the transaction only when it is actually used in a method. This option is disabled by default.</p>
+</dd>
+<dt>Associate with Thread</dt>
+<dd>
+<p>If this option is selected, a connection is associated with a thread. When the same thread is in need of a connection, it can reuse the connection already associated with it, thereby not incurring the overhead of getting a connection from the pool. This option is disabled by default.</p>
+</dd>
+<dt>Match Connections</dt>
+<dd>
+<p>If this option is selected, connection matching is enabled for the pool. This option can be disabled if you know that the connections in the pool will always be homogeneous and hence a connection picked from the pool need not be matched by the resource adapter. This option is enabled by default.</p>
+</dd>
+<dt>Match Connection Usage</dt>
+<dd>
+<p>The number of times a connection should be reused by the pool. Once a connection is reused for the specified number of times, it will be closed. A value of 0 indicates that this attribute is not enabled. The default value is 0.</p>
+</dd>
+</dl>
+<a id="sthref79" name="sthref79"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-connectorconnectionpoolnew.html">To Create a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooledit.html">To Edit a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooladvance.html">To Edit Connector Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolproperty.html">To Edit Connector Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapnew.html">To Create a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapedit.html">To Edit a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapdel.html">To Delete a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooldel.html">To Delete a Connector Connection Pool</a></p>
+</li>
+</ul>
+<a id="sthref80" name="sthref80"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00018"><code>create-connector-connection-pool</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00157"><code>list-connector-connection-pools</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00070"><code>delete-connector-connection-pool</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

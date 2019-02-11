@@ -1,0 +1,223 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-protocolhttpedit" name="ref-protocolhttpedit"></a><a id="GHWEB00022" name="GHWEB00022"></a></p>
+
+<h4><a id="sthref152" name="sthref152"></a><a id="sthref153" name="sthref153"></a>HTTP</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the HTTP page to modify HTTP settings for a network protocol.</p>
+<p>The HTTP page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Protocol Name</dt>
+<dd>
+<p>The name of the protocol. The Protocol Name field is a read-only field. You can only specify the name when you create a new protocol.</p>
+</dd>
+<dt>Server Name</dt>
+<dd>
+<p>The host name to be used in the URLs the server sends to the client. This name is the alias name if your server uses an alias. If your server does not use an alias, leave this field blank.</p>
+</dd>
+<dt>Default Virtual Server</dt>
+<dd>
+<p>The virtual server to be associated with the protocol. Use the Virtual Servers page to define virtual servers.</p>
+</dd>
+<dt>Redirect Port</dt>
+<dd>
+<p>Port value that redirects a request to another port. The GlassFish Server automatically redirects the request if these two conditions exist:</p>
+<ul>
+<li>
+<p>This protocol is supporting non-SSL requests.</p>
+</li>
+<li>
+<p>A request is received for which a matching security constraint requires SSL transport.</p>
+</li>
+</ul>
+<p>If a redirect port is not specified, the GlassFish Server uses the port number specified in the original request.</p>
+</dd>
+<dt>Max Connections</dt>
+<dd>
+<p>The maximum number of persistent connections to be maintained in Keep-Alive mode. The Keep-Alive subsystem periodically polls idle connections. The default value is 256.</p>
+</dd>
+<dt>Timeout</dt>
+<dd>
+<p>The maximum time in seconds that a connection can be considered idle and kept in the keep-alive state. A value of 0 or less means that keep-alive connections are kept open indefinitely. The default value is 30 seconds.</p>
+<p>A value of -1 disables this timeout.</p>
+</dd>
+<dt>Upload Timeout</dt>
+<dd>
+<p>If this option is selected, the connection for a servlet that reads bytes slowly is closed after the Connection Upload Timeout limit is reached. If this option is disabled, servlet connections do not time out. This option is disabled by default.</p>
+</dd>
+<dt>Connection Upload Timeout</dt>
+<dd>
+<p>The timeout for uploads, in milliseconds. This field is applicable only if the Upload Timeout Enabled checkbox is selected. The default value is 300000 milliseconds.</p>
+<p>A value of -1 disables this timeout.</p>
+</dd>
+<dt>Request Timeout</dt>
+<dd>
+<p>The number of seconds before a request times out. If the request is not processed before the timeout value is reached, the request is ignored. The default value is 30 seconds.</p>
+<p>A value of -1 disables this timeout.</p>
+</dd>
+<dt>Send Buffer Size</dt>
+<dd>
+<p>The size in bytes of the send buffer. The default value is 8192 bytes.</p>
+</dd>
+<dt>Header Buffer Length</dt>
+<dd>
+<p>The size in bytes of the buffer used by the request processing threads to read the request data. The default value is 8192 bytes.</p>
+</dd>
+<dt>Max Post Size</dt>
+<dd>
+<p>The maximum size in bytes of POST actions using application/x-www-form-urlencoded. The default value is 2097152 bytes.</p>
+</dd>
+<dt>URI Encoding</dt>
+<dd>
+<p>The name of the character set used to decode the request URIs received. The value must be a valid IANA character set name. The default value is UTF-8.</p>
+</dd>
+<dt>Version</dt>
+<dd>
+<p>The version of the HTTP protocol used. The default value is HTTP/1.1.</p>
+</dd>
+<dt>Compression</dt>
+<dd>
+<p>Specifies the use of HTTP/1.1 GZIP compression to save server bandwidth. Available choices are:</p>
+<dl>
+<dt><code>on</code></dt>
+<dd>
+<p>Compresses data.</p>
+</dd>
+<dt><code>off</code></dt>
+<dd>
+<p>Disables compression.</p>
+</dd>
+<dt><code>force</code></dt>
+<dd>
+<p>Forces data compression in all cases.</p>
+</dd>
+</dl>
+<p>The default value is <code>off</code>.</p>
+</dd>
+<dt>Compressible Mime Type</dt>
+<dd>
+<p>A comma-separated list of MIME types for which HTTP compression is used. The default value is <code>text/html,text/xml,text/plain</code>.</p>
+</dd>
+<dt>Compression Minimum Size</dt>
+<dd>
+<p>The minimum size of a file when compression is applied. This value must be set if Compression is set to <code>on</code> or <code>force</code>. The default value is 2048 bytes.</p>
+</dd>
+<dt>No-Compression User Agents</dt>
+<dd>
+<p>A comma-separated list of regular expressions matching user agents of HTTP clients for which compression should not be used. By default, this value is an empty string.</p>
+</dd>
+<dt>Restricted User Agent</dt>
+<dd>
+<p>A list of restricted user agents on which HTTP compression is applied. If no user agents are specified, HTTP compression is applied to all user agents. By default, no user agents are specified.</p>
+</dd>
+<dt>Default Response Type</dt>
+<dd>
+<p>A string that specifies the default response type. The format is a semicolon-delimited string consisting of the content-type, encoding, language, and charset. The default value is <code>text/html; charset=iso-8859-1</code>.</p>
+</dd>
+<dt>Forced Response Type</dt>
+<dd>
+<p>A string that specifies the request type used if no MIME mapping is available that matches the file extension. The format is a semicolon-delimited string consisting of the content-type, encoding, language, and charset. The default value is <code>text/html; charset=iso-8859-1</code>.</p>
+</dd>
+<dt>Adapter</dt>
+<dd>
+<p>The class name of the static resources adapter. The default value is <code>com.sun.grizzly.tcp.StaticResourcesAdapter</code>.</p>
+</dd>
+<dt>Comet Support</dt>
+<dd>
+<p>If this option is selected, Comet support is enabled for the protocol. This option is disabled by default.</p>
+</dd>
+<dt>DNS Lookup</dt>
+<dd>
+<p>If this option is selected, Domain Name System (DNS) lookup is enabled. This option is disabled by default.</p>
+</dd>
+<dt>RCM Support</dt>
+<dd>
+<p>If this option is selected, Resource Configuration Management (RCM) is enabled. This option is disabled by default.</p>
+</dd>
+<dt>Trace</dt>
+<dd>
+<p>If this option is selected, the TRACE operation is enabled. If this option is disabled, the GlassFish Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
+</dd>
+<dt>Auth Pass Through</dt>
+<dd>
+<p>If this option is selected, it indicates that the network listener that uses this protocol receives traffic from an SSL-terminating proxy server. This option is disabled by default.</p>
+</dd>
+<dt>Chunking</dt>
+<dd>
+<p>If this option is selected, HTTP response chunking is enabled. This option is enabled by default.</p>
+</dd>
+<dt>XPowered By</dt>
+<dd>
+<p>If this option is selected, the GlassFish Server uses <code>X-Powered-By</code> headers according to the Java Servlet 3.0 and Java Server Pages 2.0 specifications. This option is enabled by default.</p>
+</dd>
+<dt>Encoded Slash</dt>
+<dd>
+<p>If this option is selected, URIs are permitted to contain encoded slashes. This option is disabled by default.</p>
+</dd>
+<dt>Websockets Support</dt>
+<dd>
+<p>If this option is selected, the WebSockets protocol is supported. This option is disabled by default.</p>
+</dd>
+</dl>
+<a id="sthref154" name="sthref154"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolssledit.html">To Edit SSL Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+</ul>
+<a id="sthref155" name="sthref155"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00051"><code>create-protocol</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00195"><code>list-protocols</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00103"><code>delete-protocol</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

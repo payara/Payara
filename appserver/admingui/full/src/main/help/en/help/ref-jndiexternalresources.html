@@ -1,0 +1,97 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jndiexternalresources" name="ref-jndiexternalresources"></a><a id="GHJML00008" name="GHJML00008"></a></p>
+
+<h4><a id="sthref34" name="sthref34"></a><a id="sthref35" name="sthref35"></a>External Resources</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>An external JNDI resource accesses an external JNDI repository, such as an LDAP server.</p>
+<p>Use the External Resources page to configure external JNDI resources.</p>
+<p>For each external resource, the following information is provided.</p>
+<dl>
+<dt>JNDI Name</dt>
+<dd>
+<p>A unique name that identifies the external resource.</p>
+</dd>
+<dt>Enabled</dt>
+<dd>
+<p>(This column is displayed if only the default server instance, <code>server</code>, exists in the domain.)</p>
+<p>A check mark if the resource is enabled, or an X if the resource is disabled.</p>
+</dd>
+<dt>Status</dt>
+<dd>
+<p>(This column is displayed if any clusters or standalone instances have been created in the domain.)</p>
+<p>The number of clusters and standalone instances to which the resource is targeted and how many of these targets the resource is enabled on. For example, "Enabled on 2 of 4 Target(s)" means that the resource is targeted to four clusters and standalone instances and that it is enabled on two of these four targets.</p>
+</dd>
+<dt>Resource Type</dt>
+<dd>
+<p>The type of the external resource.</p>
+</dd>
+<dt>Description</dt>
+<dd>
+<p>A description of the external resource.</p>
+</dd>
+</dl>
+<p>The Resources table also contains the following options.</p>
+<dl>
+<dt>New</dt>
+<dd>
+<p>Button to create a new external resource.</p>
+</dd>
+<dt>Delete</dt>
+<dd>
+<p>Button to delete one or more selected external resources.</p>
+</dd>
+<dt>Enable</dt>
+<dd>
+<p>Button to enable one or more selected external resources.</p>
+</dd>
+<dt>Disable</dt>
+<dd>
+<p>Button to disable one or more selected external resources.</p>
+</dd>
+</dl>
+<a id="GHJML132" name="GHJML132"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jndiexternalresourcecreate.html">To Create an External JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourceedit.html">To Edit an External JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourcedelete.html">To Delete an External JNDI Resource</a></p>
+</li>
+</ul>
+<a id="GHJML133" name="GHJML133"></a>
+<h5>Related asadmin Commands</h5>
+<ul>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00041"><code>create-jndi-resource</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00179"><code>list-jndi-resources</code>(1)</a></p>
+</li>
+<li>
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00093"><code>delete-jndi-resource</code>(1)</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
