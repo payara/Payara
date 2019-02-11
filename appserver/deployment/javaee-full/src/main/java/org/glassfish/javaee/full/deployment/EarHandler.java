@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.javaee.full.deployment;
 
 import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.getDeclaredPermissions;
@@ -526,9 +526,24 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     }
 
     // do any necessary meta data initialization for composite handler
+    @Override
     public void initCompositeMetaData(DeploymentContext context) {
+        final ReadableArchive source = context.getSource();
+
         // populate ear level metadata
-        getApplicationHolder(context.getSource(), context, true);
+        getApplicationHolder(source, context, true);
+
+        if (!context.getAppProps().containsKey(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
+            try {
+                Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
+                context.getAppProps().put(
+                        RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI,
+                        cdiEnabled.toString().toLowerCase()
+                );
+            } catch (XMLStreamException | IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     private ApplicationHolder getApplicationHolder(ReadableArchive source, DeploymentContext context, boolean isDirectory) {
@@ -550,12 +565,8 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                 }
 
                 holder = new ApplicationHolder(archivist.createApplication(source, isDirectory));
-                Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
-                if (cdiEnabled != null) {
-                    context.getAppProps().put(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI, cdiEnabled.toString().toLowerCase());
-                }
-                _logger.fine("time to read application.xml " + (System.currentTimeMillis() - start));
-            } catch (IOException | XMLStreamException | SAXParseException e) {
+                _logger.log(FINE, "time to read application.xml {0}", System.currentTimeMillis() - start);
+            } catch (IOException | SAXParseException e) {
                 throw new RuntimeException(e);
             }
             context.addModuleMetaData(holder);
