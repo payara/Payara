@@ -189,6 +189,18 @@
             </executions>
           </plugin>
         </plugins>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>**/*.jar</exclude>
+              <exclude>**/*.gitkeep_empty_dir</exclude>
+            </excludes>
+          </resource>
+          <resource>
+            <directory>src/main/help</directory>
+          </resource>
+        </resources>
       </build>
 
     <dependencies>
