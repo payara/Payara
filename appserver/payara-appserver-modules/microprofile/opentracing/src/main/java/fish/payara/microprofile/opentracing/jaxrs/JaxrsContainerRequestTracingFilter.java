@@ -262,9 +262,21 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 // If the provider is set to "http-path" and the @Path annotations are actually present
                 if (operationNameProvider.equals("http-path")
                         && (classLevelAnnotation != null && methodLevelAnnotation != null)) {
-                    return requestContext.getMethod() + ":"
-                            + classLevelAnnotation.value()
-                            + methodLevelAnnotation.value();
+                    String operationName = requestContext.getMethod() + ":";
+
+                    if (classLevelAnnotation.value().startsWith("/")) {
+                        operationName += classLevelAnnotation.value();
+                    } else {
+                        operationName += "/" + classLevelAnnotation.value();
+                    }
+
+                    if (methodLevelAnnotation.value().startsWith("/")) {
+                        operationName += methodLevelAnnotation.value();
+                    } else {
+                        operationName += "/" + methodLevelAnnotation.value();
+                    }
+
+                    return operationName;
                 }
             }
 
