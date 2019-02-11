@@ -536,10 +536,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         if (!context.getAppProps().containsKey(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
             try {
                 Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
-                context.getAppProps().put(
-                        RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI,
-                        cdiEnabled.toString().toLowerCase()
-                );
+                if (cdiEnabled != null) {
+                    context.getAppProps().put(
+                            RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI,
+                            cdiEnabled.toString().toLowerCase()
+                    );
+                }
             } catch (XMLStreamException | IOException ex) {
                 throw new RuntimeException(ex);
             }
