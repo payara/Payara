@@ -98,4 +98,10 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
 
         return notificationEvent;
     }
+
+    public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
+        LogNotificationEvent event = super.buildNotificationEvent(subject, message);
+        event.setLevel(level);
+        return event;
+    }
 }
