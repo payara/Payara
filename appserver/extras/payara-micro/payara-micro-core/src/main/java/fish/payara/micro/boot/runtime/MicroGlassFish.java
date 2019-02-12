@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.boot.runtime;
 
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import java.util.Properties;
 import org.glassfish.embeddable.CommandRunner;
@@ -74,19 +75,20 @@ public class MicroGlassFish implements GlassFish {
     }
 
     @Override
-    public void stop() throws GlassFishException {
+    public synchronized void stop() throws GlassFishException {
         if (status == Status.STOPPED || status == Status.STOPPING || status == Status.DISPOSED) {
             throw new IllegalStateException("Already in " + status + " state.");
         }
-        
+
         status = Status.STOPPING;
+        GlassFishImpl.sleepShutdownGracePeriod();
         kernel.stop();
         habitat.shutdown();
         status = Status.STOPPED;
     }
 
     @Override
-    public void dispose() throws GlassFishException {
+    public synchronized void dispose() throws GlassFishException {
         if (status == Status.DISPOSED) {
             throw new IllegalStateException("Already disposed.");
         } else if (status != Status.STOPPED) {
