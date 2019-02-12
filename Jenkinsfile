@@ -27,7 +27,9 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                env.GIT_COMMIT = sh 'git rev-parse HEAD'
+                script{
+                    env.GIT_COMMIT = sh 'git rev-parse HEAD'
+                }
                 withCredentials([string(credentialsId: 'jenkins-held-sonarcloud-token-secret', variable: 'sonarToken')]) {
                     sh """mvn -B -V -ff -e clean install -PQuickBuild \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
