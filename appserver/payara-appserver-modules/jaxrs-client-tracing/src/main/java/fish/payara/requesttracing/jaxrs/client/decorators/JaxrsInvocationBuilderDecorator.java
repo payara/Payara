@@ -42,7 +42,10 @@ package fish.payara.requesttracing.jaxrs.client.decorators;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Span;
-import java.util.Locale;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.CompletionStageRxInvoker;
 import javax.ws.rs.client.Entity;
@@ -54,9 +57,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.util.Locale;
 
 /**
  * Decorator class used for instrumenting asynchronous clients.
@@ -122,67 +123,67 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public Invocation.Builder accept(String... mediaTypes) {
-        invocationBuilder.accept(mediaTypes);
+        invocationBuilder = invocationBuilder.accept(mediaTypes);
         return this;
     }
 
     @Override
     public Invocation.Builder accept(MediaType... mediaTypes) {
-        invocationBuilder.accept(mediaTypes);
+        invocationBuilder = invocationBuilder.accept(mediaTypes);
         return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(Locale... locales) {
-        invocationBuilder.acceptLanguage(locales);
+        invocationBuilder = invocationBuilder.acceptLanguage(locales);
         return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(String... locales) {
-        invocationBuilder.acceptLanguage(locales);
+        invocationBuilder = invocationBuilder.acceptLanguage(locales);
         return this;
     }
 
     @Override
     public Invocation.Builder acceptEncoding(String... encodings) {
-        invocationBuilder.acceptEncoding(encodings);
+        invocationBuilder = invocationBuilder.acceptEncoding(encodings);
         return this;
     }
 
     @Override
     public Invocation.Builder cookie(Cookie cookie) {
-        invocationBuilder.cookie(cookie);
+        invocationBuilder = invocationBuilder.cookie(cookie);
         return this;
     }
 
     @Override
     public Invocation.Builder cookie(String name, String value) {
-        invocationBuilder.cookie(name, value);
+        invocationBuilder = invocationBuilder.cookie(name, value);
         return this;
     }
 
     @Override
     public Invocation.Builder cacheControl(CacheControl cacheControl) {
-        invocationBuilder.cacheControl(cacheControl);
+        invocationBuilder = invocationBuilder.cacheControl(cacheControl);
         return this;
     }
 
     @Override
     public Invocation.Builder header(String name, Object value) {
-        invocationBuilder.header(name, value);
+        invocationBuilder = invocationBuilder.header(name, value);
         return this;
     }
 
     @Override
     public Invocation.Builder headers(MultivaluedMap<String, Object> headers) {
-        invocationBuilder.headers(headers);
+        invocationBuilder = invocationBuilder.headers(headers);
         return this;
     }
 
     @Override
     public Invocation.Builder property(String name, Object value) {
-        invocationBuilder.property(name, value);
+        invocationBuilder = invocationBuilder.property(name, value);
         return this;
     }
 
