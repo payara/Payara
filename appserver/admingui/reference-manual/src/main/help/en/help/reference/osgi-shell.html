@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>osgi-shell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>osgi-shell</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="osgi.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="ping-connection-pool.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="osgi-shell-1"></a><a id="GSRFM890"></a><a id="osgi-shell"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_osgi_shell">osgi-shell</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>provides interactive access to the Apache Felix Gogo remote shell for
+the execution of OSGi shell commands</p>
+</div>
+<div id="sthref1918" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] osgi-shell [--help]
+[--file file]
+[--printprompt={false|true}]
+[--encoding encoding]</code></pre>
+</div>
+</div>
+<div id="sthref1919" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>osgi-shell</code> subcommand provides interactive access to the Apache
+Felix Gogo remote shell for the execution of OSGi shell commands. The
+remote shell is provided with \{product---name} and used to administer
+and inspect the OSGi runtime.</p>
+</div>
+<div class="paragraph">
+<p>OSGi shell commands are executed on the server and results are printed
+on the client. Because the shell is interactive, no operands are
+accepted. Scripting is supported, which means that multiple commands can
+be executed in sequence from a text file.</p>
+</div>
+<div class="paragraph">
+<p>A related subcommand is the <code>osgi</code> subcommand, which passes a single
+command to the remote shell for execution. Results are returned by the
+<code>asadmin</code> utility. For more information about the <code>osgi</code> subcommand, see
+the <a href="osgi.html#osgi-1"><code>osgi</code>(1)</a> help page.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only. Unlike other local
+subcommands, however, the domain administration server (DAS) and the
+server instance whose shell is being accessed must be running.</p>
+</div>
+<div id="sthref1920" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--file</code></dt>
+<dt class="hdlist1"><code>-f</code></dt>
+<dd>
+<p>Reads the commands in the specified file.</p>
+</dd>
+<dt class="hdlist1"><code>--printprompt</code></dt>
+<dd>
+<p>Controls printing of the shell prompt. The default value is <code>true</code>,
+which means the shell prompt is displayed.</p>
+</dd>
+<dt class="hdlist1"><code>--encoding</code></dt>
+<dd>
+<p>Specifies the character set for the file to be decoded. By default,
+the system character set is used.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1921" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM891"></a><a id="sthref1922"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Apache Felix Gogo Remote Shell Commands</p>
+</div>
+<div class="paragraph">
+<p>This example lists Apache Felix Gogo remote shell commands.</p>
+</div>
+<div class="paragraph">
+<p>Some lines of output are omitted from this example for readability.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; osgi-shell
+Use "exit" to exit and "help" for online help.
+gogo$ help
+felix:bundlelevel
+felix:cd
+felix:frameworklevel
+felix:headers
+felix:help
+felix:inspect
+felix:install
+felix:lb
+felix:log
+felix:ls
+...
+gogo:cat
+gogo:each
+gogo:echo
+gogo:format
+gogo:getopt
+gogo:gosh
+gogo:grep
+...
+gogo$</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM892"></a><a id="sthref1923"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Running a Remote Shell Command</p>
+</div>
+<div class="paragraph">
+<p>This example runs the Felix Remote Shell Command <code>lb</code> without any
+arguments to list all installed OSGi bundles.</p>
+</div>
+<div class="paragraph">
+<p>Some lines of output are omitted from this example for readability.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; osgi-shell
+Use "exit" to exit and "help" for online help.
+gogo$ lb
+START LEVEL 2
+ID|State      |Level|Name
+ 0|Active     |    0|System Bundle
+ 1|Active     |    1|Metro Web Services API OSGi Bundle
+ 2|Active     |    1|javax.annotation API
+ 3|Active     |    1|jaxb-api
+...
+gogo$</code></pre>
+</div>
+</div>
+<div id="sthref1924" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1925" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="osgi.html#osgi-1"><code>osgi</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="osgi.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="ping-connection-pool.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

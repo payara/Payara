@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>enable-secure-admin-principal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>enable-secure-admin-principal</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="enable-secure-admin-internal-user.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="export.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="enable-secure-admin-principal-1"></a><a id="GSRFM00131"></a><a id="enable-secure-admin-principal"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enable_secure_admin_principal">enable-secure-admin-principal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Instructs \{product---name}, when secure admin is enabled, to accept
+admin requests from clients identified by the specified SSL certificate.</p>
+</div>
+<div id="sthref1143" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] enable-secure-admin-principal [--help]
+--alias aliasname | DN</code></pre>
+</div>
+</div>
+<div id="sthref1144" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>enable-secure-admin-principal</code> subcommand instructs
+\{product---name} to accept admin requests when accompanied by an SSL
+certificate with the specified distinguished name (DN). If you use the
+"<code>--alias</code> aliasname" form, then \{product---name} looks in its
+truststore for a certificate with the specified alias and uses the DN
+associated with that certificate. Otherwise, \{product---name} records
+the value you specify as the DN.</p>
+</div>
+<div class="paragraph">
+<p>You must specify either the <code>--alias</code> option, or the DN.</p>
+</div>
+<div class="paragraph">
+<p>You can run <code>enable-secure-admin-principal</code> multiple times so that
+\{product---name} accepts admin requests from a client sending a
+certificate with any of the DNs you specify.</p>
+</div>
+<div class="paragraph">
+<p>When you run <code>enable-secure-admin</code>, \{product---name} automatically
+records the DNs for the admin alias and the instance alias, whether you
+specify those values or use the defaults. You do not need to run
+<code>enable-secure-admin-principal</code> yourself for those certificates. Other
+than these certificates, you must run <code>enable-secure-admin-principal</code>
+for any other DN that \{product---name} should authorize to send admin
+requests. This includes DNs corresponding to trusted certificates (those
+with a certificate chain to a trusted authority.)</p>
+</div>
+<div id="sthref1145" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--alias</code></dt>
+<dd>
+<p>The alias name of the certificate in the trust store.
+\{product---name} looks up certificate in the trust store using that
+alias and, if found, stores the corresponding DN as being valid for
+secure administration. Because alias-name must be an alias associated
+with a certificate currently in the trust store, you may find it most
+useful for self-signed certificates.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1146" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">DN</dt>
+<dd>
+<p>The distinguished name of the certificate, specified as a
+comma-separated list in quotes. For example,
+<code>"CN=system.amer.oracle.com,OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US"</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1147" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM608"></a><a id="sthref1148"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Trusting a DN for secure administration</p>
+</div>
+<div class="paragraph">
+<p>The following example shows how to specify a DN for authorizing access
+in secure administration.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; enable-secure-admin-principal
+"CN=system.amer.oracle.com,OU=GlassFish,
+O=Oracle Corporation,L=Santa Clara,ST=California,C=US"
+
+Command enable-secure-admin-principal executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1149" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1150" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="disable-secure-admin-principal.html#disable-secure-admin-principal-1"><code>disable-secure-admin-principal</code>(1)</a>,
+<a href="enable-secure-admin.html#enable-secure-admin-1"><code>enable-secure-admin</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="enable-secure-admin-internal-user.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="export.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

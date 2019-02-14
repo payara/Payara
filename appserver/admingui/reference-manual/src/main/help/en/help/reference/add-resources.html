@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>add-resources</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>add-resources</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="add-library.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="apply-http-lb-changes.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="add-resources-1"></a><a id="GSRFM00001"></a><a id="add-resources"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_add_resources">add-resources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates the resources specified in an XML file</p>
+</div>
+<div id="sthref15" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] add-resources [--help]
+[--target target]
+[--upload={false|true}] xml-file-name</code></pre>
+</div>
+</div>
+<div id="sthref16" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>add-resources</code> subcommand creates the resources named in the
+specified XML file. The resources that can be created with this
+subcommand are listed in See Also in this help page.</p>
+</div>
+<div class="paragraph">
+<p>The <code>--target</code> option specifies the target for which you are creating
+the resources. If this option specifies the domain, the resources are
+added only to the configuration of the domain administration server
+(DAS). If this option specifies any other target, the resources are
+added to the configuration of the DAS and references are added to the
+resources from the specified target.</p>
+</div>
+<div class="paragraph">
+<p>The xml-file-name operand is the path to the XML file that contains the
+resources to be created. The <code>DOCTYPE</code> must be specified as
+<code>http://glassfish.org/dtds/glassfish-resources_1_5.dtd</code> in the
+<code>resources.xml</code> file.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref17" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the resources.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the resources for the default server instance <code>server</code> and
+is the default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Creates the resources for the domain.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the resources for every server instance in the cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Creates the resources for a particular \{product---name} instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--upload</code></dt>
+<dd>
+<p>Specifies whether the subcommand uploads the file to the DAS. In most
+situations, this option can be omitted.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The subcommand does not upload the file and attempts to access the
+file through the specified file name. If the DAS cannot access the
+file, the subcommand fails.<br>
+For example, the DAS might be running as a different user than the
+administration user and does not have read access to the file. In
+this situation, the subcommand fails if the <code>--upload</code> option is
+<code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>  The subcommand uploads the file to the DAS over the network
+  connection.<br>
+The default value depends on whether the DAS is on the host where the
+subcommand is run or is on a remote host.<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the DAS is on the host where the subcommand is run, the default
+is <code>false</code>.</p>
+</li>
+<li>
+<p>If the DAS is on a remote host, the default is <code>true</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref18" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">xml-file-name</dt>
+<dd>
+<p>The path to the XML file that contains the resources that are to be
+created. You can specify an absolute path, only the file name, or a
+relative path.<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If you specify an absolute path, the XML file can be anywhere.</p>
+</li>
+<li>
+<p>If you specify only the file name, the XML file must reside in the
+domain-dir`/config` directory on the DAS host. This requirement must
+be met even if you run the subcommand from another host.</p>
+</li>
+<li>
+<p>If you specify a relative path, the XML file must be in the relative
+directory.<br>
+An example XML file follows.<br></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE resources PUBLIC
+   "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions //EN"
+   "http://glassfish.org/dtds/glassfish-resources_1_5.dtd"&gt;
+&lt;resources&gt;
+ &lt;jdbc-connection-pool name="SPECjPool" steady-pool-size="100"
+   max-pool-size="150" max-wait-time-in-millis="60000"
+   pool-resize-quantity="2" idle-timeout-in-seconds="300"
+   is-isolation-level-guaranteed="true"
+   is-connection-validation-required="false"
+   connection-validation-method="auto-commit"
+   fail-all-connections="false"
+   datasource-classname="oracle.jdbc.pool.OracleDataSource"&gt;
+  &lt;property name="URL"
+    value="jdbc:oracle:thin:@iasperfsol12:1521:specdb"/&gt;
+  &lt;property name="User" value="spec"/&gt;
+  &lt;property name="Password" value="spec"/&gt;
+  &lt;property name="MaxStatements" value="200"/&gt;
+  &lt;property name="ImplicitCachingEnabled" value="true"/&gt;
+ &lt;/jdbc-connection-pool&gt;
+ &lt;jdbc-resource enabled="true" pool-name="SPECjPool"
+   jndi-name="jdbc/SPECjDB"/&gt;
+&lt;/resources&gt;</code></pre>
+</div>
+</div>
+<div id="sthref19" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM445"></a><a id="sthref20"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Adding Resources</p>
+</div>
+<div class="paragraph">
+<p>This example creates resources using the contents of the XML file
+<code>resource.xml</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; add-resources resource.xml
+Command : Connector connection pool jms/testQFactoryPool created.
+Command : Administered object jms/testQ created.
+Command : Connector resource jms/testQFactory created.
+Command : Resource adapter config myResAdapterConfig created successfully
+Command : JDBC connection pool DerbyPoolA created successfully.
+Command : JDBC resource jdbc/__defaultA created successfully.
+Command add-resources executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref21" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref22" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-jdbc-connection-pool.html#create-jdbc-connection-pool-1"><code>create-jdbc-connection-pool</code>(1)</a>,<a href="create-jdbc-resource.html#create-jdbc-resource-1"><code>create-jdbc-resource</code>(1)</a>,
+<a href="create-jms-resource.html#create-jms-resource-1"><code>create-jms-resource</code>(1)</a>,
+<a href="create-jndi-resource.html#create-jndi-resource-1"><code>create-jndi-resource</code>(1)</a>,
+<a href="create-javamail-resource.html#create-javamail-resource-1"><code>create-javamail-resource</code>(1)</a>,
+<a href="create-custom-resource.html#create-custom-resource-1"><code>create-custom-resource</code>(1)</a>,
+<a href="create-connector-resource.html#create-connector-resource-1"><code>create-connector-resource</code>(1)</a>,
+<a href="create-connector-work-security-map.html#create-connector-work-security-map-1"><code>create-connector-work-security-map</code>(1)</a>,
+<a href="create-admin-object.html#create-admin-object-1"><code>create-admin-object</code>(1)</a>,
+<a href="create-resource-adapter-config.html#create-resource-adapter-config-1"><code>create-resource-adapter-config</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="add-library.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="apply-http-lb-changes.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

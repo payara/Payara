@@ -107,6 +107,7 @@
         <module>core</module>
         <module>concurrent</module>
         <module>cluster</module>
+        <module>reference-manual</module>
         <module>payara-theme</module>
         <module>web</module>
         <module>gf-admingui-connector</module>

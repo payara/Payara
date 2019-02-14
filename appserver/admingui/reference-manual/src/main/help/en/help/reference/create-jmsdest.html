@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-jmsdest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-jmsdest</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-jdbc-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jms-host.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-jmsdest-1"></a><a id="GSRFM00038"></a><a id="create-jmsdest"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_jmsdest">create-jmsdest</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates a JMS physical destination</p>
+</div>
+<div id="sthref336" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jmsdest [--help]
+--desttype dest_type
+[--property (name=value)[:name=value]*]
+[--target target]
+[--force={false|true}]
+dest_name</code></pre>
+</div>
+</div>
+<div id="sthref337" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-jmsdest</code> subcommand creates a Java Message Service (JMS)
+physical destination. Typically, you use the <code>create-jms-resource</code>
+subcommand to create a JMS destination resource that has a <code>Name</code>
+property that specifies the physical destination. The physical
+destination is created automatically when you run an application that
+uses the destination resource. Use the <code>create-jmsdest</code> subcommand if
+you want to create a physical destination with non-default property
+settings.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only. Remote <code>asadmin</code>
+subcommands require a running domain administration server (DAS).</p>
+</div>
+<div id="sthref338" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--desttype</code></dt>
+<dd>
+<p>The type of the JMS destination. Valid values are <code>topic</code> and <code>queue</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the physical
+destination. You can specify the following properties for a physical
+destination.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>MaxNumMsgs</code></dt>
+<dd>
+<p>The maximum number of unconsumed messages permitted for the
+destination. A value of -1 denotes an unlimited number of messages.
+The default value is -1. For the dead message queue, the default
+value is 1000.<br>
+If the <code>limitBehavior</code> property is set to <code>FLOW_CONTROL</code>, it is
+possible for the specified message limit to be exceeded because the
+broker cannot react quickly enough to stop the flow of incoming
+messages. In such cases, the value specified for <code>maxNumMsgs</code> serves
+as merely a hint for the broker rather than a strictly enforced
+limit.</p>
+</dd>
+<dt class="hdlist1"><code>MaxBytesPerMsg</code></dt>
+<dd>
+<p>The maximum size, in bytes, of any single message. Rejection of a
+persistent message is reported to the producing client with an
+exception; no notification is sent for non-persistent messages.<br>
+The value may be expressed in bytes, kilobytes, or megabytes, using</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">the following suffixes</dt>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>b</code></dt>
+<dd>
+<p>Bytes</p>
+</dd>
+<dt class="hdlist1"><code>k</code></dt>
+<dd>
+<p>Kilobytes (1024 bytes)</p>
+</dd>
+<dt class="hdlist1"><code>m</code></dt>
+<dd>
+<p>  Megabytes (1024 x 1024 = 1,048,576 bytes)<br>
+A value with no suffix is expressed in bytes; a value of -1 denotes
+an unlimited message size. The default value is -1.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>MaxTotalMsgBytes</code></dt>
+<dd>
+<p>The maximum total memory, in bytes, for unconsumed messages. The
+default value is -1. The syntax is the same as for <code>maxBytesPerMsg</code>.
+For the dead message queue, the default value is <code>10m</code>.</p>
+</dd>
+<dt class="hdlist1"><code>LimitBehavior</code></dt>
+<dd>
+<p>The behavior of the message queue broker when the memory-limit</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1">threshold is reached. Valid values are as follows.</dt>
+<dt class="hdlist1"><code>REJECT_NEWEST</code></dt>
+<dd>
+<p>Reject newest messages and notify the producing client with an
+exception only if the message is persistent. This is the default
+value.</p>
+</dd>
+<dt class="hdlist1"><code>FLOW_CONTROL</code></dt>
+<dd>
+<p>Slow the rate at which message producers send messages.</p>
+</dd>
+<dt class="hdlist1"><code>REMOVE_OLDEST</code></dt>
+<dd>
+<p>Throw out the oldest messages.</p>
+</dd>
+<dt class="hdlist1"><code>REMOVE_LOW_PRIORITY</code></dt>
+<dd>
+<p>  Throw out the lowest-priority messages according to age, with no
+  notification to the producing client.<br>
+If the value is <code>REMOVE_OLDEST</code> or <code>REMOVE_LOW_PRIORITY</code> and the
+<code>useDMQ</code> property is set to <code>true</code>, excess messages are moved to the
+dead message queue. For the dead message queue itself, the default
+limit behavior is <code>REMOVE_OLDEST</code>, and the value cannot be set to
+<code>FLOW_CONTROL</code>.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>MaxNumProducers</code></dt>
+<dd>
+<p>The maximum number of message producers for the destination. When
+this limit is reached, no new producers can be created. A value of
+-1 denotes an unlimited number of producers. The default value is</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>This property does not apply to the dead message queue.</p>
+</li>
+</ol>
+</div>
+</dd>
+<dt class="hdlist1"><code>ConsumerFlowLimit</code></dt>
+<dd>
+<p>The maximum number of messages that can be delivered to a consumer
+in a single batch. A value of -1 denotes an unlimited number of
+messages. The default value is 1000. The client runtime can override
+this limit by specifying a lower value on the connection factory
+object.<br>
+In load-balanced queue delivery, this is the initial number of
+queued messages routed to active consumers before load balancing
+begins.</p>
+</dd>
+<dt class="hdlist1"><code>UseDMQ</code></dt>
+<dd>
+<p>If set to <code>true</code>, dead messages go to the dead message queue. If set
+to <code>false</code>, dead messages are discarded. The default value is
+<code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>ValidateXMLSchemaEnabled</code></dt>
+<dd>
+<p>If set to <code>true</code>, XML schema validation is enabled for the
+destination. The default value is <code>false</code>.<br>
+When XML validation is enabled, the Message Queue client runtime
+will attempt to validate an XML message against the specified XSDs
+(or against the DTD, if no XSD is specified) before sending it to
+the broker. If the specified schema cannot be located or the message
+cannot be validated, the message is not sent, and an exception is
+thrown.<br>
+This property should be set when a destination is inactive: that is,
+when it has no consumers or producers and when there are no messages
+in the destination. Otherwise the producer must reconnect.</p>
+</dd>
+<dt class="hdlist1"><code>XMLSchemaURIList</code></dt>
+<dd>
+<p>A space-separated list of XML schema document (XSD) URI strings. The
+URIs point to the location of one or more XSDs to use for XML schema
+validation, if <code>validateXMLSchemaEnabled</code> is set to <code>true</code>. The
+default value is <code>null</code>.<br>
+Use double quotes around this value if multiple URIs are specified,
+as in the following example:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">"http://foo/flap.xsd http://test.com/test.xsd"</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>  If this property is not set or <code>null</code> and XML validation is enabled,
+  XML validation is performed using a DTD specified in the XML
+  document. If an XSD is changed as a result of changing application
+  requirements, all client applications that produce XML messages
+  based on the changed XSD must reconnect to the broker.<br>
+To modify the value of these properties, you can use the
+as-install`/mq/bin/imqcmd` command. See "<a href="../../openmq/mq-admin-guide/physical-destination-properties.html#GMADG00049">Physical
+Destination Property Reference</a>" in Open Message Queue Administration
+Guide for more information.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the physical destination only for the specified target.
+Although the <code>create-jmsdest</code> subcommand is related to resources, a
+physical destination is created using the JMS Service (JMS Broker),
+which is part of the configuration. A JMS Broker is configured in the
+config section of <code>domain.xml</code>. Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the physical destination for the default server instance.
+This is the default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the physical destination in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the physical destination for every server instance in the
+specified cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Creates the physical destination for the specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--force</code></dt>
+<dd>
+<p>Specifies whether the subcommand overwrites the existing JMS physical
+destination of the same name. The default value is <code>false</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref339" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">dest_name</dt>
+<dd>
+<p>A unique identifier for the JMS destination to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref340" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM495"></a><a id="sthref341"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a JMS physical destination</p>
+</div>
+<div class="paragraph">
+<p>The following subcommand creates a JMS physical queue named
+<code>PhysicalQueue</code> with non-default property values.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jmsdest --desttype queue
+--property maxNumMsgs=1000:maxBytesPerMsg=5k PhysicalQueue
+Command create-jmsdest executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref342" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref343" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-jms-resource.html#create-jms-resource-1"><code>create-jms-resource</code>(1)</a>,
+<a href="delete-jmsdest.html#delete-jmsdest-1"><code>delete-jmsdest</code>(1)</a>,
+<a href="flush-jmsdest.html#flush-jmsdest-1"><code>flush-jmsdest</code>(1)</a>,
+<a href="list-jmsdest.html#list-jmsdest-1"><code>list-jmsdest</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-jdbc-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jms-host.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

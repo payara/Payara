@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>import-sync-bundle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>import-sync-bundle</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="get-health.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="install-node.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="import-sync-bundle-1"></a><a id="GSRFM00142"></a><a id="import-sync-bundle"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_import_sync_bundle">import-sync-bundle</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>imports the configuration data of a clustered instance or standalone
+instance from an archive file</p>
+</div>
+<div id="sthref1243" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] import-sync-bundle [--help]
+--instance instance-name
+[--nodedir node-dir] [--node node-name]
+file-name</code></pre>
+</div>
+</div>
+<div id="sthref1244" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>import-sync-bundle</code> subcommand imports the configuration data of a
+clustered instance or standalone instance from an archive file that was
+created by the
+<a href="export-sync-bundle.html#export-sync-bundle-1"><code>export-sync-bundle</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>You must run this subcommand on the host where the instance resides. To
+contact the domain administration server (DAS), this subcommand requires
+the name of the host where the DAS is running. If a nondefault port is
+used for administration, this subcommand also requires the port number.
+You must provide this information through the <code>--host</code> option and the
+<code>--port</code> option of the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a>
+utility.</p>
+</div>
+<div class="paragraph">
+<p>Importing an instance&#8217;s configuration data transfers the data to a host
+for an instance without the need for the instance to be able to
+communicate with the DAS. Importing an instance&#8217;s configuration data is
+typically required for the following reasons:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To reestablish the instance after an upgrade</p>
+</li>
+<li>
+<p>To synchronize the instance manually with the domain administration
+server (DAS) when the instance cannot contact the DAS</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The subcommand imports an instance&#8217;s configuration data by performing
+the following operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Creating or updating the instance&#8217;s files and directories</p>
+</li>
+<li>
+<p>Attempting to register the instance with the DAS</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the attempt to register the instance with the DAS fails, the
+subcommand does not fail. Instead, the subcommand displays a warning
+that the attempt failed. The warning contains the command to run to
+register the instance with the DAS.</p>
+</div>
+<div class="paragraph">
+<p>The <code>import-sync-bundle</code> subcommand does not contact the DAS to
+determine the node on which the instance resides. If the node is not
+specified as an option of the subcommand, the subcommand determines the
+node from the DAS configuration in the archive file.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div id="sthref1245" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--instance</code></dt>
+<dd>
+<p>The instance for which configuration data is being imported. The
+instance must already exist in the DAS configuration. The archive file
+from which the data is being imported must contain data for the
+specified instance.</p>
+</dd>
+<dt class="hdlist1"><code>--nodedir</code></dt>
+<dd>
+<p>The directory that contains the instance&#8217;s node directory. The
+instance&#8217;s files are stored in the instance&#8217;s node directory. The
+default is as-install`/nodes`.</p>
+</dd>
+<dt class="hdlist1"><code>--node</code></dt>
+<dd>
+<p>The node on which the instance resides. If this option is omitted, the
+subcommand determines the node from the DAS configuration in the
+archive file.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1246" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">file-name</dt>
+<dd>
+<p>The name of the file, including the path, that contains the archive
+file to import. This operand is required.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1247" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM624"></a><a id="sthref1248"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Importing Configuration Data for a Clustered Instance</p>
+</div>
+<div class="paragraph">
+<p>This example imports the configuration for the clustered instance
+<code>ymli2</code> on the node <code>sj02</code> from the archive file
+<code>/export/glassfish3/glassfish/domains/domain1/sync/ymlcluster-sync-bundle.zip</code>.</p>
+</div>
+<div class="paragraph">
+<p>The command is run on the host <code>sj02</code>, which is the host that the node
+<code>sj02</code> represents. The DAS is running on the host <code>sr04</code> and uses the
+default HTTP port for administration.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">sj02# asadmin --host sr04 import-sync-bundle --node sj02 --instance ymli2
+/export/glassfish3/glassfish/domains/domain1/sync/ymlcluster-sync-bundle.zip
+Command import-sync-bundle executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1249" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1250" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="export-sync-bundle.html#export-sync-bundle-1"><code>export-sync-bundle</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="get-health.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="install-node.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

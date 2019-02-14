@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-application-ref</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-application-ref</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-admin-object.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-audit-module.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-application-ref-1"></a><a id="GSRFM00064"></a><a id="delete-application-ref"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_application_ref">delete-application-ref</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>removes a reference to an application</p>
+</div>
+<div id="sthref585" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-application-ref [--help]
+[--target target]
+[--cascade=false] reference_name</code></pre>
+</div>
+</div>
+<div id="sthref586" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-application-ref</code> subcommand removes a reference from a
+cluster or an unclustered server instance to an application. This
+effectively results in the application element being undeployed and no
+longer available on the targeted instance or cluster.</p>
+</div>
+<div class="paragraph">
+<p>The target instance or instances making up the cluster need not be
+running or available for this subcommand to succeed. If one or more
+instances are not available, they will no longer load the application
+the next time they start.</p>
+</div>
+<div class="paragraph">
+<p>Removal of the reference does not result in removal of the application
+from the domain. The bits are removed only by the <code>undeploy</code> subcommand.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref587" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target from which you are removing the application
+reference. Valid values are<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>server</code>- Specifies the default server instance as the target.
+<code>server</code> is the name of the default server instance and is the default
+value.</p>
+</li>
+<li>
+<p>cluster_name- Specifies a certain cluster as the target.</p>
+</li>
+<li>
+<p>instance_name- Specifies a certain stand-alone server instance as
+the target.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--cascade</code></dt>
+<dd>
+<p>For a connector module, indicates whether the resources dependent on
+the module should also be recursively deleted. The default is <code>false</code>.
+The connector module can be either a stand-alone RAR file or a module
+within an EAR file.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref588" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">reference_name</dt>
+<dd>
+<p>The name of the application or module, which can be a Java EE
+application module, Web module, EJB module, connector module,
+application client module, or lifecycle module.<br>
+The name can include an optional version identifier, which follows the
+name and is separated from the name by a colon (<code>:</code>). The version
+identifier must begin with a letter or number. It can contain
+alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period
+(<code>.</code>) characters. To delete references to multiple versions, you can
+use an asterisk (<code>*</code>) as a wildcard character. For more information
+about module and application versions, see "<a href="../application-deployment-guide/overview.html#GSDPG00324">Module
+and Application Versions</a>" in GlassFish Server Open Source Edition
+Application Deployment Guide.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref589" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM531"></a><a id="sthref590"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deleting an Application Reference</p>
+</div>
+<div class="paragraph">
+<p>The following example removes a reference to the Web module <code>MyWebApp</code>
+from the unclustered server instance <code>NewServer</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-application-ref --target NewServer MyWebApp
+Command delete-application-ref executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref591" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref592" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-application-ref.html#create-application-ref-1"><code>create-application-ref</code>(1)</a>,
+<a href="list-application-refs.html#list-application-refs-1"><code>list-application-refs</code>(1)</a>,
+<a href="undeploy.html#undeploy-1"><code>undeploy</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../application-deployment-guide/toc.html#GSDPG">GlassFish Server Open Source Edition Application Deployment
+Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="delete-admin-object.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-audit-module.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>package-appclient</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>package-appclient</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="capture-schema.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="manvol5asc.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="package-appclient-1m"></a><a id="GSRFM00264"></a><a id="package-appclient"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_package_appclient">package-appclient</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>packs the application client container libraries and jar files</p>
+</div>
+<div id="sthref2387" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">package-appclient</code></pre>
+</div>
+</div>
+<div id="sthref2388" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>Use the <code>package-appclient</code> command to pack the application client
+container libraries and jar files into an <code>appclient.jar</code> file, which is
+created in the as-install`/lib` directory on the machine on which
+\{product---name} is installed. The <code>appclient.jar</code> file provides an
+application client container package targeted at remote hosts that do
+not contain a server installation.</p>
+</div>
+<div class="paragraph">
+<p>After copying the <code>appclient.jar</code> file to a remote location, unjar or
+unzip it to get a set of libraries and jar files in the <code>appclient</code>
+directory under the current directory.</p>
+</div>
+<div class="paragraph">
+<p>After unjarring on the client machine, modify
+<code>appclient/glassfish/config/asenv.conf</code> (<code>asenv.bat</code> for Windows) as
+follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>set <code>AS_WEBSERVICES_LIB</code> to path-to-appclient`/appclient/lib`</p>
+</li>
+<li>
+<p>set <code>AS_IMQ_LIB</code> to path-to-appclient`/appclient/mq/lib`</p>
+</li>
+<li>
+<p>set <code>AS_INSTALL</code> to path-to-appclient`/appclient`</p>
+</li>
+<li>
+<p>set <code>AS_JAVA</code> to your JDK 7 or JRE 7 home directory</p>
+</li>
+<li>
+<p>set <code>AS_ACC_CONFIG</code> to
+path-to-appclient`/appclient/glassfish/domains/domain1/config/sun-acc.xml`</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Modify <code>appclient/glassfish/domains/domain1/config/sun-acc.xml</code> as
+follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Ensure the <code>DOCTYPE</code> file references
+path-to-appclient`/appclient/glassfish/lib/dtds`</p>
+</li>
+<li>
+<p>Ensure that <code>target-server</code> address attribute references the server
+machine.</p>
+</li>
+<li>
+<p>Ensure that <code>target-server</code> port attribute references the ORB port on
+the remote machine.</p>
+</li>
+<li>
+<p>Ensure that <code>log-service</code> references a log file; if the user wants to
+put log messages to a log file.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To use the newly installed application client container, you must do the
+following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Obtain the application client files for your target application,
+including the generated yourAppClient.jar file.</p>
+</li>
+<li>
+<p>Execute the <code>appclient</code> utility: `appclient -`client yourAppClient.jar</p>
+</li>
+</ul>
+</div>
+<div id="sthref2389" class="paragraph">
+<p>Attributes</p>
+</div>
+<div class="paragraph">
+<p>See
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN5attributes-5"><code>attributes</code>(5)</a>
+for descriptions of the following attributes:</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ATTRIBUTE TYPE</th>
+<th class="tableblock halign-left valign-top">ATTRIBUTE VALUE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interface Stability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unstable</p></td>
+</tr>
+</tbody>
+</table>
+<div id="sthref2390" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="appclient.html#appclient-1m"><code>appclient</code>(1M)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="capture-schema.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="manvol5asc.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

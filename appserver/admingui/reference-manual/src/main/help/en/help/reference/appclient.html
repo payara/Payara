@@ -1,0 +1,380 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>appclient</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>appclient</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="manvol1m.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="asadmin.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="appclient-1m"></a><a id="GSRFM00262"></a><a id="appclient"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appclient">appclient</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>launches the Application Client Container and invokes the client
+application typically packaged in the application JAR file</p>
+</div>
+<div id="sthref2357" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">appclient [client_application_classfile | -client client_application_jar]
+[-mainclass main_class_name | -name display_name]
+[-xml sun-acc.xml file] [-textauth]
+[-targetserver host[:port][,host[:port]...]]
+[-user username] [-passwordfile password_file]
+[application-options]
+
+appclient [jvm-options]
+[-mainclass main_class_name | -name display_name]
+[-xml client_config_xml_file] [-textauth]
+[-targetserver host[:port][,host[:port]...]]
+[-user username] [-passwordfile password_file]
+class-selector [application-options]</code></pre>
+</div>
+</div>
+<div id="sthref2358" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>Use the <code>appclient</code> command to launch the Application Client Container
+and invoke a client application that is typically packaged in an
+application JAR file. The application client JAR file is specified and
+created during deployment by the Administration Console or the
+<code>asadmin deploy</code> command with the <code>--retrieve</code> option. You can also
+retrieve the client JAR file using the <code>asadmin get-client-stubs</code>
+command.</p>
+</div>
+<div class="paragraph">
+<p>The Application Client Container is a set of Java classes, libraries,
+and other files that are required to execute a first-tier application
+client program on a Virtual Machine for the Java platform (JVM machine).
+The Application Client Container communicates with the server using
+RMI-IIOP.</p>
+</div>
+<div class="paragraph">
+<p>The client JAR file that is retrieved after deploying an application
+should be passed with the <code>-client</code> or <code>-jar</code> option when running the
+<code>appclient</code> utility. The client JAR file name is of the form
+app-name`Client.jar`. For multiple application clients in an EAR file,
+you must use the <code>-mainclass</code> or <code>-name</code> option to specify which client
+to invoke.</p>
+</div>
+<div class="paragraph">
+<p>If the application client is a stand-alone module or the only client in
+an EAR file, the Application Client Container can find the client
+without using the <code>-mainclass</code> or <code>-name</code> options. If you provide a
+<code>-mainclass</code> or <code>-name</code> value that does not match what is in the client,
+the Application Client Container launches the client anyway but issues a
+warning that the selection did not match the information in the client.
+The warning also displays what the actual main class and name values are
+for the client.</p>
+</div>
+<div id="sthref2359" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jvm-options</dt>
+<dd>
+<p>optional; you can set JVM options for the client application. These
+can be any valid <code>java</code> command options except <code>-client</code> or <code>-jar</code>.
+JVM options can be intermixed with other <code>appclient</code> command options
+as long as both types of options appear before the class-selector.</p>
+</dd>
+<dt class="hdlist1">client_application_classfile</dt>
+<dd>
+<p>optional; the file system pathname of the client application <code>.class</code>
+file. A relative pathname must be relative to the current directory.
+This class file must contain the <code>main()</code> method to be invoked by the
+Application Client Container.<br>
+If you use client_application_classfile and the class is dependent on
+other user classes, you must also set the classpath. You can either
+use the <code>-classpath</code> JVM option in the <code>appclient</code> command or set the
+<code>CLASSPATH</code> environment variable. For more information about setting a
+classpath, see Setting the Class Path, Oracle Solaris Version
+(<code>http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/classpath.html</code>)
+or Setting the Class Path, Windows Version
+(<code>http://docs.oracle.com/javase/6/docs/technotes/tools/windows/classpath.html</code>).</p>
+</dd>
+<dt class="hdlist1"><code>-client</code></dt>
+<dd>
+<p>optional; the name and location for the client JAR file.</p>
+</dd>
+<dt class="hdlist1"><code>-mainclass</code></dt>
+<dd>
+<p>optional; the full classname of the main client application as
+specified in the <code>Main-Class</code> entry in the <code>MANIFEST.MF</code> file. Used
+for a multiple client applications. By default, uses the class
+specified in the <code>client jar</code>. For example,
+<code>com.example.test.AppClient</code>.</p>
+</dd>
+<dt class="hdlist1"><code>-name</code></dt>
+<dd>
+<p>optional; the display name for the client application. Used for
+multiple client applications. By default, the display name is
+specified in the client jar <code>application-client.xml</code> file which is
+identified by the <code>display-name</code> attribute.</p>
+</dd>
+<dt class="hdlist1"><code>-xml</code></dt>
+<dd>
+<p>optional if using the default domain, instance, and name
+(<code>sun-acc.xml</code>), otherwise it is required; identifies the name and
+location of the client configuration XML file. If not specified,
+defaults to the <code>sun-acc.xml</code> file in the domain-dir`/config`
+directory.</p>
+</dd>
+<dt class="hdlist1"><code>-textauth</code></dt>
+<dd>
+<p>optional; used to specify using text format authentication when
+authentication is needed.</p>
+</dd>
+<dt class="hdlist1"><code>-targetserver</code></dt>
+<dd>
+<p>optional; a comma-separated list of one or more server specifications
+for ORB endpoints. Each server specification must include at least the
+host. Optionally, a server specification can include the port as well.
+If the port is omitted from a server specification, the default value,
+<code>3700</code>, is used for that host.</p>
+</dd>
+<dt class="hdlist1"><code>-user</code></dt>
+<dd>
+<p>optional; the application user who is authorized to have access to
+particular guarded components in the application, such as EJB
+components.</p>
+</dd>
+<dt class="hdlist1"><code>-passwordfile</code></dt>
+<dd>
+<p>optional; specifies the name, including the full path, of a file that
+contains the password for application clients in the following format:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">PASSWORD=appclient-password</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>If this option is omitted, the password is specified interactively at
+the command prompt.<br></p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Caution:</p>
+</div>
+<div class="paragraph">
+<p>Avoid specifying a password interactively at the command prompt. Such
+a password can be seen by users who can run commands to display
+running processes and the commands to start them, such as <code>ps</code>.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="content">
+<pre>  For security reasons, a password that is specified as an environment
+  variable is not read by the `appclient` utility.
+class-selector::
+  required; you must specify the client application class using one of
+  the following class selectors. +
+  `-jar` jar-file;;
+    the name and location of the client JAR file. The application client
+    JAR file is specified and created during deployment by the
+    `asadmin deploy` command. If specified, the `-classpath` setting is
+    ignored in deference to the `Class-Path` setting in the client JAR
+    file's manifest.
+  class-name;;
+    the fully qualified name of the application client's main class. The
+    Application Client Container invokes the `main` method of this class
+    to start the client. For example, `com.example.test.AppClient`. +
+    If you use class-name as the class selector, you must also set the
+    classpath. You can either use the `-classpath` JVM option in the
+    `appclient` command or set the `CLASSPATH` environment variable. For
+    more information about setting a classpath, see Setting the Class
+    Path, Oracle Solaris Version
+    (`http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/classpath.html`)
+    or Setting the Class Path, Windows Version
+    (`http://docs.oracle.com/javase/6/docs/technotes/tools/windows/classpath.html`).
+application-options::
+  optional; you can set client application arguments.</pre>
+</div>
+</div>
+<div id="sthref2360" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM804"></a><a id="sthref2361"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Using the <code>appclient</code> command</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">appclient -xml sun-acc.xml -jar myclientapp.jar scott sample</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where: <code>sun-acc.xml</code> is the name of the client configuration XML file,
+<code>myclientapp.jar</code> is the client application <code>.jar</code> file, and <code>scott</code> and
+<code>sample</code> are arguments to pass to the application. If <code>sun-acc.xml</code> and
+<code>myclientapp.jar</code> are not in the current directory, you must give the
+absolute path locations; otherwise the relative paths are used. The
+relative path is relative to the directory where the command is being
+executed.</p>
+</div>
+<div id="sthref2362" class="paragraph">
+<p>Attributes</p>
+</div>
+<div class="paragraph">
+<p>See
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN5attributes-5"><code>attributes</code>(5)</a>
+for descriptions of the following attributes:</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ATTRIBUTE TYPE</th>
+<th class="tableblock halign-left valign-top">ATTRIBUTE VALUE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interface Stability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unstable</p></td>
+</tr>
+</tbody>
+</table>
+<div id="sthref2363" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get-client-stubs.html#get-client-stubs-1"><code>get-client-stubs</code>(1)</a>,
+<a href="package-appclient.html#package-appclient-1m"><code>package-appclient</code>(1M)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="manvol1m.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="asadmin.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>get-client-stubs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>get-client-stubs</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="get-active-module-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="get-health.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="get-client-stubs-1"></a><a id="GSRFM00140"></a><a id="get-client-stubs"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_get_client_stubs">get-client-stubs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>retrieves the application JAR files needed to launch the application
+client.</p>
+</div>
+<div id="sthref1227" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] get-client-stubs [--help]
+--appname application_name
+local_directory_path</code></pre>
+</div>
+</div>
+<div id="sthref1228" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>get-client-stubs</code> subcommand copies the required JAR files for an
+<code>AppClient</code> standalone module or each <code>AppClient</code> module in an
+application from the server machine to the local directory. Each
+client&#8217;s generated JAR file is retrieved, along with any required
+supporting JAR files . The client JAR file name is of the form
+app-name`Client.jar`. Before executing the <code>get-client-stubs</code>
+subcommand, you must deploy the application or module. The generated
+client JAR file is useful for running the application using the
+<code>appclient</code> utility. This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1229" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--appname</code></dt>
+<dd>
+<p>The name of the application or stand-alone client module.<br>
+The name can include an optional version identifier, which follows the
+name and is separated from the name by a colon (<code>:</code>). The version
+identifier must begin with a letter or number. It can contain
+alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period
+(<code>.</code>) characters. For more information about module and application
+versions, see "<a href="../application-deployment-guide/overview.html#GSDPG00324">Module and Application Versions</a>" in
+GlassFish Server Open Source Edition Application Deployment Guide.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1230" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">local_directory_path</dt>
+<dd>
+<p>The path to the local directory where the client stub JAR file should
+be stored.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1231" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM622"></a><a id="sthref1232"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Using get-client-stubs</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; get-client-stubs --appname myapplication /sample/example
+Command get-client-stubs executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1233" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1234" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="deploy.html#deploy-1"><code>deploy</code>(1)</a>,
+<a href="redeploy.html#redeploy-1"><code>redeploy</code>(1)</a>,
+<a href="undeploy.html#undeploy-1"><code>undeploy</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="appclient.html#appclient-1m"><code>appclient</code>(1M)</a>,
+<a href="package-appclient.html#package-appclient-1m"><code>package-appclient</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../application-deployment-guide/toc.html#GSDPG">GlassFish Server Open Source Edition Application Deployment
+Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="get-active-module-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="get-health.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

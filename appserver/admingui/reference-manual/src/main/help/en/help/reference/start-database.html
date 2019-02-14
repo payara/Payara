@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>start-database</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>start-database</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="start-cluster.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="start-domain.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="start-database-1"></a><a id="GSRFM00234"></a><a id="start-database"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_start_database">start-database</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>starts the Java DB</p>
+</div>
+<div id="sthref2117" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] start-database [--help]
+[--jvmoptions jvm-options]
+[--dbhost host] [--dbport port-no]
+[--dbhome db-file-path]</code></pre>
+</div>
+</div>
+<div id="sthref2118" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>start-database</code> subcommand starts the Java DB server that is
+available for use with \{product---name}. Java DB is based upon Apache
+Derby. Use this subcommand only for working with applications deployed
+to the server.</p>
+</div>
+<div class="paragraph">
+<p>When you start Java DB server by using the <code>start-database</code> subcommand,
+the database server is started in Network Server mode. Clients
+connecting to it must use the Java DB ClientDriver. For details on
+connecting to the database, refer to the Apache Derby documentation.</p>
+</div>
+<div class="paragraph">
+<p>When the database server starts, or a client connects to it
+successfully, the following files are created:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>derby.log</code> file that contains the database server process log
+along with its standard output and standard error information</p>
+</li>
+<li>
+<p>The database files that contain your schema (for example, database
+tables)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These files are created at the location that is specified by the
+<code>--dbhome</code> option. To create the database files at a particular
+location, you must set the <code>--dbhome</code> option. If the <code>--dbhome</code> option
+is not specified, the <code>start-database</code> subcommand determines where to
+create these files as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the current working directory contains a file that is named
+<code>derby.log</code>, the <code>start-database</code> subcommand creates the files in the
+current working directory.</p>
+</li>
+<li>
+<p>Otherwise, the <code>start-database</code> subcommand creates the files in the
+as-install`/databases` directory.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>start-database</code> subcommand starts the database process, even if it
+cannot write to the log file.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div id="sthref2119" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--jvmoptions</code></dt>
+<dd>
+<p>A space-separated list of command-line options that are passed to the
+Java application launcher when the database is started. By default, no
+options are passed.<br>
+The format of an option depends on whether the option has a name and a
+value or only a name:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the option has a name and a value, the format is
+option-name=value.</p>
+</li>
+<li>
+<p>If the option has only a name, the format is option-name. For
+example, <code>-Xmx512m</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--dbhost</code></dt>
+<dd>
+<p>The host name or IP address of the Java DB server process. The default
+is the IP address 0.0.0.0, which denotes all network interfaces on the
+host where you run the <code>start-database</code> subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--dbport</code></dt>
+<dd>
+<p>The port number where the Java DB server listens for client
+connections. This port must be available for the listen socket,
+otherwise the database server will not start. The default is 1527.</p>
+</dd>
+<dt class="hdlist1"><code>--dbhome</code></dt>
+<dd>
+<p>The absolute path to the directory where the database files and the
+<code>derby.log</code> file are created. If the <code>--dbhome</code> option is not
+specified, the <code>start-database</code> subcommand determines where to create
+these files as follows:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the current working directory contains a file that is named
+<code>derby.log</code>, the <code>start-database</code> subcommand creates the files in the
+current working directory.</p>
+</li>
+<li>
+<p>Otherwise, the <code>start-database</code> subcommand creates the files in the
+as-install`/databases` directory.<br>
+To create the database files at a particular location, you must set
+the <code>--dbhome</code> option.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2120" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM759"></a><a id="sthref2121"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Starting Java DB</p>
+</div>
+<div class="paragraph">
+<p>This example starts Java DB on the host <code>host1</code> and port 5001.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; start-database --dbhost host1 --dbport 5001 --terse=true
+Starting database in the background.  Log redirected to
+/opt/SUNWappserver/databases/derby.log.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM833"></a><a id="sthref2122"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Starting Java DB With Options for the Java Application
+Launcher</p>
+</div>
+<div class="paragraph">
+<p>This example starts Java DB with the options for setting the minimum
+heap memory size to 128 megabytes and the maximum heap memory size to
+512 megabytes.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; start-database --jvmoptions="-Xms128m -Xmx512m" --terse=true
+Starting database in the background.
+Log redirected to /export/glassfish3/glassfish/databases/derby.log.</code></pre>
+</div>
+</div>
+<div id="sthref2123" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="paragraph">
+<p>The exit status applies to errors in executing the <code>asadmin</code> utility.
+For information on database errors, see the <code>derby.log</code> file. This file
+is located in the directory you specify by using the <code>--dbhome</code> option
+when you run the <code>start-database</code> subcommand. If you did not specify
+<code>--dbhome</code>, the value of <code>DERBY_INSTALL</code> defaults to
+as-install`/javadb`.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2124" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="stop-database.html#stop-database-1"><code>stop-database</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p>"<a href="../administration-guide/jdbc.html#GSADG00015">Administering Database Connectivity</a>" in GlassFish
+Server Open Source Edition Administration Guide</p>
+</div>
+<div class="paragraph">
+<p>For more information about the Java application launcher, see the
+reference page for the operating system that you are using:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Oracle Solaris and Linux: java - the Java application launcher
+(<code>http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/java.html</code>)</p>
+</li>
+<li>
+<p>Windows: java - the Java application launcher
+(<code>http://docs.oracle.com/javase/6/docs/technotes/tools/windows/java.html</code>)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="start-cluster.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="start-domain.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>ping-node-ssh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>ping-node-ssh</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="ping-node-dcom.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="recover-transactions.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="ping-node-ssh-1"></a><a id="GSRFM00215"></a><a id="ping-node-ssh"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ping_node_ssh">ping-node-ssh</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>tests if a node that is enabled for communication over SSH is usable</p>
+</div>
+<div id="sthref1943" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] ping-node-ssh [--help]
+[--validate={false|true}] node-name</code></pre>
+</div>
+</div>
+<div id="sthref1944" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>ping-node-ssh</code> subcommand tests if a node that is enabled for
+communication over secure shell (SSH) is usable. This subcommand
+requires secure shell (SSH) to be configured on the machine where the
+domain administration server (DAS) is running and on the machine where
+the node resides. You may run this command from any machine that can
+contact the DAS.</p>
+</div>
+<div class="paragraph">
+<p>If the node is usable, the subcommand displays a confirmation that the
+subcommand could connect to the node through SSH. This confirmation
+includes the name of the host that the node represents.</p>
+</div>
+<div class="paragraph">
+<p>Optionally, the subcommand can also validate the node to determine if
+the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> utility can run on the
+host that the node represents. To validate a node, the subcommand runs
+the <a href="version.html#version-1"><code>version</code>(1)</a> subcommand. If the node is
+valid, the subcommand displays the version that the <code>version</code> subcommand
+returns.</p>
+</div>
+<div class="paragraph">
+<p>The node that is specified as the operand of this subcommand must be
+enabled for communication over SSH. If the node is not enabled for
+communication over SSH, an error occurs. To determine whether a node is
+enabled for communication over SSH, use the
+<a href="list-nodes.html#list-nodes-1"><code>list-nodes</code>(1)</a> subcommand.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>To test whether a node that is enabled for communication over the
+Distributed Component Object Model (DCOM) remote protocol is usable, use
+the <a href="ping-node-dcom.html#ping-node-dcom-1"><code>ping-node-dcom</code>(1)</a>
+subcommand.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1945" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--validate</code></dt>
+<dd>
+<p>Specifies whether the subcommand validates the node.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The node is validated.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The node is not validated (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1946" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">node-name</dt>
+<dd>
+<p>The name of the node to test. The node must be enabled for
+communication over SSH. Otherwise, an error occurs.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1947" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM731"></a><a id="sthref1948"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Testing if an SSH-Enabled Node Is Usable</p>
+</div>
+<div class="paragraph">
+<p>This example tests if the SSH-enabled node <code>sj03-node</code> is usable.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; ping-node-ssh sj03-node
+Successfully made SSH connection to node sj03-node (sj03.example.com)
+Command ping-node-ssh executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM732"></a><a id="sthref1949"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Validating an SSH-Enabled Node</p>
+</div>
+<div class="paragraph">
+<p>This example validates the SSH-enabled node <code>adc-node</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; ping-node-ssh --validate=true adc-node
+Successfully made SSH connection to node adcnode (adc.example.com)
+GlassFish version found at /export/glassfish3:
+Using locally retrieved version string from version class.
+Version = GlassFish Server Open Source Edition 3.1 (build 40)
+Command version executed successfully.
+Command ping-node-ssh executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1950" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1951" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-node-ssh.html#create-node-ssh-1"><code>create-node-ssh</code>(1)</a>,
+<a href="delete-node-ssh.html#delete-node-ssh-1"><code>delete-node-ssh</code>(1)</a>,
+<a href="list-nodes.html#list-nodes-1"><code>list-nodes</code>(1)</a>,
+<a href="ping-node-dcom.html#ping-node-dcom-1"><code>ping-node-dcom</code>(1)</a>,
+<a href="setup-ssh.html#setup-ssh-1"><code>setup-ssh</code>(1)</a>,
+<a href="update-node-ssh001.html#update-node-ssh-1"><code>update-node-ssh</code>(1)</a>,
+<a href="version.html#version-1"><code>version</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="ping-node-dcom.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="recover-transactions.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

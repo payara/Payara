@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>rotate-log</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>rotate-log</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="rollback-transaction.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="rotate-log-1"></a><a id="GSRFM00224"></a><a id="rotate-log"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rotate_log">rotate-log</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>rotates the log file</p>
+</div>
+<div id="sthref2016" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] rotate-log [--help]</code></pre>
+</div>
+</div>
+<div id="sthref2017" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>rotate-log</code> subcommand rotates the server log by renaming the file
+with a timestamp name in the format `server.log_`date-and-time, and
+creating a new log file. Changes take effect dynamically, that is,
+server restart is not required.</p>
+</div>
+<div class="paragraph">
+<p>The size of the log queue is configurable through the
+<code>logging.properties</code> file. Log rotation is based on file size or elapsed
+time since the last log rotation. In some circumstances, the queue might
+fill up, especially if the log level is set to <code>FINEST</code> and there is
+heavy activity on the server. In this case, the <code>rotate-log</code> subcommand
+can be used to rotate the server log immediately. This subcommand is
+also useful in creating scripts for rotating the log at convenient
+times.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref2018" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>The server, cluster, or server instance for which logs will be
+rotated. If this option is omitted, logs are rotated for the default
+server.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2019" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">target</dt>
+<dd>
+<p>Valid values are:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>server_name - Default target is <code>server</code>. If no target is specified
+then logs are rotated for the server.</p>
+</li>
+<li>
+<p>cluster_name - The name of a target cluster.</p>
+</li>
+<li>
+<p>instance_name - The name of a target server instance.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2020" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM742"></a><a id="sthref2021"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Rotating the Server Log</p>
+</div>
+<div class="paragraph">
+<p>This example rotates the server log.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; rotate-log
+Command rotate-log executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2022" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2023" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="collect-log-files.html#collect-log-files-1"><code>collect-log-files</code>(1)</a>,
+<a href="list-log-attributes.html#list-log-attributes-1"><code>list-log-attributes</code>(1)</a>,
+<a href="list-log-levels.html#list-log-levels-1"><code>list-log-levels</code>(1)</a>,
+<a href="set-log-attributes.html#set-log-attributes-1"><code>set-log-attributes</code>(1)</a>,
+<a href="set-log-levels.html#set-log-levels-1"><code>set-log-levels</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p>"<a href="../administration-guide/logging.html#GSADG00010">Administering the Logging Service</a>" in GlassFish
+Server Open Source Edition Administration Guide</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="rollback-transaction.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

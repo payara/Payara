@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>set-log-attributes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>set-log-attributes</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="set-batch-runtime-configuration.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-log-file-format.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="set-log-attributes-1"></a><a id="GSRFM00227"></a><a id="set-log-attributes"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_set_log_attributes">set-log-attributes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>sets the logging attributes for one or more loggers</p>
+</div>
+<div id="sthref2041" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] set-log-attributes [--help]
+[--target=target]
+attribute-name=attribute-value[:attribute-name=attribute-value]*</code></pre>
+</div>
+</div>
+<div id="sthref2042" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>set-log-attributes</code> subcommand sets logging attributes for one or
+more loggers. The attributes you can set correspond to the attributes
+that are available in the <code>logging.properties</code> file for the domain.
+Depending on the attributes you set, a server restart may be necessary.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref2043" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>The server domain, instance, or cluster for which logger attributes
+will be set. If this option is omitted, attributes are set for the
+default server.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2044" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">target</dt>
+<dd>
+<p>Valid values are:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>server_name - Default target is <code>server</code>. If no target is specified
+then log attributes are set for the server.</p>
+</li>
+<li>
+<p>cluster_name - The name of a target cluster.</p>
+</li>
+<li>
+<p>instance_name - The name of a target server instance.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1">attribute-name</dt>
+<dd>
+<p>The fully scoped name of the logging attribute. The
+<code>list-log-attributes</code> subcommand can be used to list the names of all
+currently defined attributes.</p>
+</dd>
+<dt class="hdlist1">attribute-value</dt>
+<dd>
+<p>The value to apply to the specified attribute.<br>
+The attribute values that can be specified include the following.
+Refer to "<a href="../administration-guide/logging.html#GSADG00010">Administering the Logging Service</a>" in
+GlassFish Server Open Source Edition Administration Guide for complete
+explanations of each of these values.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.alarms</code></dt>
+<dd>
+<p>Default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.excludeFields</code></dt>
+<dd>
+<p>Default is an empty string.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.file</code></dt>
+<dd>
+<p>Default is <code>${com.sun.aas.instanceRoot}/logs/server.log</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.flushFrequency</code></dt>
+<dd>
+<p>Default is <code>1</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.formatter</code></dt>
+<dd>
+<p>Default is <code>com.sun.enterprise.server.logging.UniformLogFormatter</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.logtoConsole</code></dt>
+<dd>
+<p>Default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles</code></dt>
+<dd>
+<p>Default is <code>0</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.multiLineMode</code></dt>
+<dd>
+<p>Default is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours</code></dt>
+<dd>
+<p>Default is <code>0</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes</code></dt>
+<dd>
+<p>Default is <code>2000000</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes</code></dt>
+<dd>
+<p>Default is <code>0</code>.</p>
+</dd>
+<dt class="hdlist1"><code>com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging</code></dt>
+<dd>
+<p>Default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>handlers</code></dt>
+<dd>
+<p>Default is <code>java.util.logging.ConsoleHandler</code>.</p>
+</dd>
+<dt class="hdlist1"><code>java.util.logging.ConsoleHandler.formatter</code></dt>
+<dd>
+<p>Default is <code>com.sun.enterprise.server.logging.UniformLogFormatter</code>.</p>
+</dd>
+<dt class="hdlist1"><code>java.util.logging.FileHandler.count</code></dt>
+<dd>
+<p>Default is <code>1</code>.</p>
+</dd>
+<dt class="hdlist1"><code>java.util.logging.FileHandler.formatter</code></dt>
+<dd>
+<p>Default is <code>java.util.logging.XMLFormatter</code>.</p>
+</dd>
+<dt class="hdlist1"><code>java.util.logging.FileHandler.limit</code></dt>
+<dd>
+<p>Default is <code>50000</code>.</p>
+</dd>
+<dt class="hdlist1"><code>java.util.logging.FileHandler.pattern</code></dt>
+<dd>
+<p>Default is <code>%h/java%u.log</code>.</p>
+</dd>
+<dt class="hdlist1"><code>log4j.logger.org.hibernate.validator.util.Version</code></dt>
+<dd>
+<p>Default is <code>warn</code>.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2045" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM748"></a><a id="sthref2046"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Setting the Maximum Number of Log History Files to Maintain</p>
+</div>
+<div class="paragraph">
+<p>This example sets to 8 the maximum number of log history files for the
+server as a whole.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-log-attributes --target=server \
+com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles=8
+com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles logging
+attribute set with value 8.
+These logging attributes are set for server.
+Command set-log-attributes executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2047" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2048" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="collect-log-files.html#collect-log-files-1"><code>collect-log-files</code>(1)</a>,
+<a href="list-log-attributes.html#list-log-attributes-1"><code>list-log-attributes</code>(1)</a>,
+<a href="list-log-levels.html#list-log-levels-1"><code>list-log-levels</code>(1)</a>,
+<a href="rotate-log.html#rotate-log-1"><code>rotate-log</code>(1)</a>,
+<a href="set-log-levels.html#set-log-levels-1"><code>set-log-levels</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p>"<a href="../administration-guide/logging.html#GSADG00010">Administering the Logging Service</a>" in GlassFish
+Server Open Source Edition Administration Guide</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="set-batch-runtime-configuration.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-log-file-format.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

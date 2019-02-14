@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>copy-config</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>copy-config</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="configure-managed-jobs.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-admin-object.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="copy-config-1"></a><a id="GSRFM00011"></a><a id="copy-config"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_copy_config">copy-config</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>copies an existing named configuration to create another configuration</p>
+</div>
+<div id="sthref107" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] copy-config [--help]
+[--systemproperties (name=value)[:name=value]*]
+source-configuration-name destination-configuration-name</code></pre>
+</div>
+</div>
+<div id="sthref108" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>copy-config</code> subcommand creates a named configuration in the
+configuration of the domain administration server (DAS) by copying an
+existing configuration. The new configuration is identical to the copied
+configuration, except for any properties that you specify in the
+<code>--systemproperties</code> option.</p>
+</div>
+<div class="paragraph">
+<p>The <code>default-config</code> configuration is copied when a standalone sever
+instance or standalone cluster is created.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref109" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--systemproperties</code></dt>
+<dd>
+<p>Optional attribute name-value pairs for the configuration. These
+properties override port settings in the configuration.<br>
+The following properties are available:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>ASADMIN_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the HTTP port or HTTPS
+port through which the DAS connects to the instance to manage the
+instance. Valid values are 1-65535. On UNIX, creating sockets that
+listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>HTTP_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used to
+listen for HTTP requests. Valid values are 1-65535. On UNIX,
+creating sockets that listen on ports 1-1024 requires superuser
+privileges.</p>
+</dd>
+<dt class="hdlist1"><code>HTTP_SSL_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used to
+listen for HTTPS requests. Valid values are 1-65535. On UNIX,
+creating sockets that listen on ports 1-1024 requires superuser
+privileges.</p>
+</dd>
+<dt class="hdlist1"><code>IIOP_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for
+IIOP connections. Valid values are 1-65535. On UNIX, creating
+sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>IIOP_SSL_LISTENER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for
+secure IIOP connections. Valid values are 1-65535. On UNIX, creating
+sockets that listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>IIOP_SSL_MUTUALAUTH_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for
+secure IIOP connections with client authentication. Valid values are
+1-65535. On UNIX, creating sockets that listen on ports 1-1024
+requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>JAVA_DEBUGGER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for
+connections to the Java Platform Debugger Architecture (JPDA)
+(<a href="http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html" class="bare">http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html</a>)
+debugger. Valid values are 1-65535. On UNIX, creating sockets that
+listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>JMS_PROVIDER_PORT</code></dt>
+<dd>
+<p>This property specifies the port number for the Java Message Service
+provider. Valid values are 1-65535. On UNIX, creating sockets that
+listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>JMX_SYSTEM_CONNECTOR_PORT</code></dt>
+<dd>
+<p>This property specifies the port number on which the JMX connector
+listens. Valid values are 1-65535. On UNIX, creating sockets that
+listen on ports 1-1024 requires superuser privileges.</p>
+</dd>
+<dt class="hdlist1"><code>OSGI_SHELL_TELNET_PORT</code></dt>
+<dd>
+<p>This property specifies the port number of the port that is used for
+connections to the Apache Felix Remote Shell
+(<code>http://felix.apache.org/site/apache-felix-remote-shell.html</code>).
+This shell uses the Felix shell service to interact with the OSGi
+module management subsystem. Valid values are 1-65535. On UNIX,
+creating sockets that listen on ports 1-1024 requires superuser
+privileges.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref110" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">source-configuration-name</dt>
+<dd>
+<p>The name of the configuration that you are copying.</p>
+</dd>
+<dt class="hdlist1">destination-configuration-name</dt>
+<dd>
+<p>The name of the configuration that you are creating by copying the
+source configuration.<br>
+The name must meet the following requirements:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>The name may contain only ASCII characters.</p>
+</li>
+<li>
+<p>The name must start with a letter, a number, or an underscore.</p>
+</li>
+<li>
+<p>The name may contain only the following characters:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Lowercase letters</p>
+</li>
+<li>
+<p>Uppercase letters</p>
+</li>
+<li>
+<p>Numbers</p>
+</li>
+<li>
+<p>Hyphen</p>
+</li>
+<li>
+<p>Period</p>
+</li>
+<li>
+<p>Underscore</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The name must be unique in the domain and must not be the name of a
+another named configuration, a cluster, a \{product---name} instance ,
+or a node.</p>
+</li>
+<li>
+<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that
+is reserved by \{product---name}.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref111" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM456"></a><a id="sthref112"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Copying a Configuration</p>
+</div>
+<div class="paragraph">
+<p>This example copies the <code>default-config</code> configuration to the
+<code>pmdsaconfig</code> configuration, overriding the settings for the following
+ports:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>HTTP listener port</p>
+</li>
+<li>
+<p>HTTPS listener port</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; copy-config
+--systemproperties HTTP_LISTENER_PORT=2000:HTTP_SSL_LISTENER_PORT=3000
+default-config pmdsaconfig
+
+Command copy-config executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref113" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref114" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-config.html#delete-config-1"><code>delete-config</code>(1)</a>,
+<a href="list-configs.html#list-configs-1"><code>list-configs</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="configure-managed-jobs.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-admin-object.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

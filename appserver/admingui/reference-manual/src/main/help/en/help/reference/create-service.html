@@ -1,0 +1,536 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-service</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-resource-ref.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-ssl.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-service-1"></a><a id="GSRFM00057"></a><a id="create-service"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_service">create-service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>configures the starting of a DAS or a \{product---name} instance on an
+unattended boot</p>
+</div>
+<div id="sthref527" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-service [--help]
+[--name service-name]
+[--serviceproperties service-properties]
+[--dry-run={false|true}] [--force={false|true}]
+[--serviceuser service-user]
+[--domaindir domain-dir]
+[--nodedir node-dir] [--node node]
+[domain-or-instance-name]</code></pre>
+</div>
+</div>
+<div id="sthref528" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-service</code> subcommand configures the starting of a domain
+administration server (DAS) or a \{product---name} instance on an
+unattended boot on Windows, Linux, and Oracle Solaris systems.</p>
+</div>
+<div class="paragraph">
+<p>If no operand is specified and the domains directory contains only one
+domain, the subcommand configures the starting of the DAS for the
+default domain. If no operand is specified and the domains directory
+contains multiple domains, an error occurs.</p>
+</div>
+<div class="paragraph">
+<p>If the operand specifies an instance, the <code>create-service</code> subcommand
+does not contact the domain administration server (DAS) to determine the
+node on which the instance resides. To determine the node on which the
+instance resides, the subcommand searches the directory that contains
+the node directories. If multiple node directories exist, the node must
+be specified as an option of the subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The subcommand contains internal logic to determine whether the supplied
+operand is a DAS or an instance.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div class="paragraph">
+<p>Behavior of <code>create-service</code> on Windows Systems</p>
+</div>
+<div class="paragraph">
+<p>On Windows systems, the <code>create-service</code> subcommand creates a Windows
+service to represent the DAS or instance. The service is created in the
+disabled state. After this subcommand creates the service, you must use
+the Windows Services Manager or the Windows Services Wrapper to start,
+stop, uninstall, or install the service.</p>
+</div>
+<div class="paragraph">
+<p>On Windows systems, this subcommand must be run as the OS-level
+administrator user.</p>
+</div>
+<div class="paragraph">
+<p>The subcommand creates the following Windows Services Wrapper files for
+the service in the domain-dir`\bin` directory or the instance-dir`\bin`
+directory:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Configuration file: service-name`Service.xml`</p>
+</li>
+<li>
+<p>Executable file: service-name`Service.exe`</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>On Windows systems, this subcommand requires the
+<a href="http://www.microsoft.com/net/">Microsoft .NET Framework</a>
+(<a href="http://www.microsoft.com/net/" class="bare">http://www.microsoft.com/net/</a>). Otherwise, the subcommand fails.</p>
+</div>
+<div class="paragraph">
+<p>Behavior of <code>create-service</code> on Linux Systems</p>
+</div>
+<div class="paragraph">
+<p>On Linux systems, the <code>create-service</code> subcommand creates a
+System-V-style initialization script
+<code>/etc/init.d/GlassFish_`domain-or-instance-name and installs a link to
+this script in the `/etc/rc?.d</code> directories. After this subcommand
+creates the script, you must use this script to start, stop, or restart
+the domain or instance.</p>
+</div>
+<div class="paragraph">
+<p>On Linux systems, this subcommand must be run as the OS-level root user.</p>
+</div>
+<div class="paragraph">
+<p>Behavior of <code>create-service</code> on Oracle Solaris Systems</p>
+</div>
+<div class="paragraph">
+<p>On Oracle Solaris systems, the <code>create-service</code> subcommand creates a
+Service Management Facility (SMF) service to represent the DAS or
+instance. The service is created in the disabled state. After this
+subcommand creates the service, you must use SMF commands to start,
+enable, disable, delete, or stop the service. For more information about
+SMF, see the following documentation for the Oracle Solaris operating
+system:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>"http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=SYSADV1hbrunlevels-25516[Managing
+Services (Overview)]" in System Administration Guide: Basic
+Administration</p>
+</li>
+<li>
+<p>"http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=SYSADV1faauf[Managing
+Services (Tasks)]" in System Administration Guide: Basic Administration</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>On Oracle Solaris systems, this subcommand must be run as the OS-level
+user with superuser privileges. The configuration file for the DAS or
+instance must be stored in a directory to which the superuser has access
+and cannot be stored on a network file system. The service that is
+created is controlled by the OS-level user who owns the directory where
+the configuration of the DAS or instance resides.</p>
+</div>
+<div class="paragraph">
+<p>On Oracle Solaris systems, the manifest file is created in the following
+directory by default:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">/var/svc/manifest/application/GlassFish/domain-or-instance-name_domain-or-instance-root-dir</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To run this subcommand, you must have <code>solaris.smf.*</code> authorization. For
+information about how to grant authorizations to users, see the
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Museradd-1m"><code>useradd</code>(1M)</a>
+and
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Musermod-1m"><code>usermod</code>(1M)</a>
+man pages.</p>
+</div>
+<div class="paragraph">
+<p>To run these commands as non-root user, the system administrator must be
+contacted so that the relevant authorizations are granted. You must also
+ensure that the following conditions are met:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Oracle Solaris 10 administration commands such as
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Msvccfg-1m"><code>svccfg</code>(1M)</a>,
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1svcs-1"><code>svcs</code>(1)</a>,
+and
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1auths-1"><code>auths</code>(1)</a>
+are available through the <code>PATH</code> statement, so that these commands can
+be executed. A simple test to do so is to run the command <code>which svccfg</code>
+in the shell.</p>
+</li>
+<li>
+<p>You must have write permission for the path
+<code>/var/svc/manifest/application/GlassFish</code>. Usually, the superuser has
+write permission to this path.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you delete a service that you created by using the <code>create-service</code>
+subcommand, you must delete the directory that contains the manifest
+file and the entire contents of the directory. Otherwise, an attempt to
+re-create the service by using the <code>create-service</code> subcommand fails.
+The Oracle Solaris command <code>svccfg</code> does not delete this directory.</p>
+</div>
+<div id="sthref529" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--name</code></dt>
+<dd>
+<p>(Windows and Oracle Solaris systems only) The name of the service that
+you will use when administering the service through Oracle Solaris SMF
+commands or the service management features of the Windows operating
+system. The default is the name of the domain or instance that is
+specified as the operand of this subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--serviceproperties</code></dt>
+<dd>
+<p>Specifies a colon(:)-separated list of various properties that are
+specific to the service.<br>
+To customize the display name of the service in the Windows Service
+list, set the <code>DISPLAY_NAME</code> property to the required name.<br>
+For Oracle Solaris 10 systems, if you specify <code>net_privaddr</code>, the
+service&#8217;s processes will be able to bind to the privileged ports
+(&lt;1024) on the platform. You can bind to ports&lt; 1024 only if the owner
+of the service is superuser, otherwise, this is not allowed.</p>
+</dd>
+<dt class="hdlist1"><code>--dry-run</code></dt>
+<dt class="hdlist1"><code>-n</code></dt>
+<dd>
+<p>Previews your attempt to create a service. Indicates issues and the
+outcome that will occur if you run the command without using the
+<code>--dry-run</code> option. Nothing is actually configured. Default is false.</p>
+</dd>
+<dt class="hdlist1"><code>--force</code></dt>
+<dd>
+<p>Specifies whether the service is created even if validation of the
+service fails.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The service is created even if validation of the service fails.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The service is not created (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--serviceuser</code></dt>
+<dd>
+<p>(Linux systems only) The user that is to run the \{product---name}
+software when the service is started. The default is the user that is
+running the subcommand. Specify this option if the \{product---name}
+software is to be run by a user other than the root user.</p>
+</dd>
+<dt class="hdlist1"><code>--domaindir</code></dt>
+<dd>
+<p>The absolute path of the directory on the disk that contains the
+configuration of the domain. If this option is specified, the operand
+must specify a domain.</p>
+</dd>
+<dt class="hdlist1"><code>--nodedir</code></dt>
+<dd>
+<p>Specifies the directory that contains the instance&#8217;s node directory.
+The instance&#8217;s files are stored in the instance&#8217;s node directory. The
+default is as-install`/nodes`. If this option is specified, the
+operand must specify an instance.</p>
+</dd>
+<dt class="hdlist1"><code>--node</code></dt>
+<dd>
+<p>Specifies the node on which the instance resides. This option may be
+omitted only if the directory that the <code>--nodedir</code> option specifies
+contains only one node directory. Otherwise, this option is required.
+If this option is specified, the operand must specify an instance.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref530" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">domain-or-instance-name</dt>
+<dd>
+<p>The name of the domain or instance to configure. If no operand is
+specified, the default domain is used.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref531" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM522"></a><a id="sthref532"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Service on a Windows System</p>
+</div>
+<div class="paragraph">
+<p>This example creates a service for the default domain on a system that
+is running Windows.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-service
+Found the Windows Service and successfully uninstalled it.
+The Windows Service was created successfully.  It is ready to be started.  Here are
+the details:
+ID of the service: domain1
+Display Name of the service:domain1 GlassFish Server
+Domain Directory: C:\glassfish3\glassfish\domains\domain1
+Configuration file for Windows Services Wrapper: C:\glassfish3\glassfish\domains\
+domain1\bin\domain1Service.xml
+The service can be controlled using the Windows Services Manager or you can use the
+Windows Services Wrapper instead:
+Start Command:  C:\glassfish3\glassfish\domains\domain1\bin\domain1Service.exe  start
+Stop Command:   C:\glassfish3\glassfish\domains\domain1\bin\domain1Service.exe  stop
+Uninstall Command:  C:\glassfish3\glassfish\domains\domain1\bin\domain1Service.exe
+uninstall
+Install Command:  C:\glassfish3\glassfish\domains\domain1\bin\domain1Service.exe
+install
+
+This message is also available in a file named PlatformServices.log in the domain's
+root directory
+Command create-service executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM523"></a><a id="sthref533"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Creating a Service on a Linux System</p>
+</div>
+<div class="paragraph">
+<p>This example creates a service for the default domain on a system that
+is running Linux.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-service
+Found the Linux Service and successfully uninstalled it.
+The Service was created successfully. Here are the details:
+Name of the service:domain1
+Type of the service:Domain
+Configuration location of the service:/etc/init.d/GlassFish_domain1
+User account that will run the service: root
+You have created the service but you need to start it yourself.
+Here are the most typical Linux commands of interest:
+
+* /etc/init.d/GlassFish_domain1 start
+* /etc/init.d/GlassFish_domain1 stop
+* /etc/init.d/GlassFish_domain1 restart
+
+For your convenience this message has also been saved to this file:
+/export/glassfish3/glassfish/domains/domain1/PlatformServices.log
+Command create-service executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM524"></a><a id="sthref534"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Creating a Service on an Oracle Solaris System</p>
+</div>
+<div class="paragraph">
+<p>This example creates a service for the default domain on a system that
+is running Oracle Solaris.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-service
+The Service was created successfully. Here are the details:
+Name of the service:application/GlassFish/domain1
+Type of the service:Domain
+Configuration location of the service:/home/gfuser/glassfish-installations
+/glassfish3/glassfish/domains
+Manifest file location on the system:/var/svc/manifest/application
+/GlassFish/domain1_home_gfuser_glassfish-installations_glassfish3
+_glassfish_domains/Domain-service-smf.xml.
+You have created the service but you need to start it yourself.
+Here are the most typical Solaris commands of interest:
+* /usr/bin/svcs -a | grep domain1 // status
+* /usr/sbin/svcadm enable domain1 // start
+* /usr/sbin/svcadm disable domain1 // stop
+* /usr/sbin/svccfg delete domain1 // uninstall
+Command create-service executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref535" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref536" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1auths-1"><code>auths</code>(1)</a>,
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1svcs-1"><code>svcs</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Msvccfg-1m"><code>svccfg</code>(1M)</a>,
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Museradd-1m"><code>useradd</code>(1M)</a>,
+<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Musermod-1m"><code>usermod</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p>"http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=SYSADV1hbrunlevels-25516[Managing
+Services (Overview)]" in System Administration Guide: Basic
+Administration,
+"http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=SYSADV1faauf[Managing
+Services (Tasks)]" in System Administration Guide: Basic Administration</p>
+</div>
+<div class="paragraph">
+<p>Microsoft .NET Framework (<code>http://www.microsoft.com/net/</code>)</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-resource-ref.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-ssl.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

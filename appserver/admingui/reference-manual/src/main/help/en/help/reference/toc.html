@@ -1,0 +1,1042 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Eclipse GlassFish Server Reference Manual, Release 5.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>Eclipse GlassFish Server Reference Manual, Release 5.1</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+
+		<td align="left">
+		<a href="title.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div class="sect1">
+<h2 id="contents">Contents</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="title-and-copyright-information"><a href="title.html">Title and Copyright Information</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="preface"><a href="preface.html#sthref2">Preface</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="preface.html#sthref3">Overview</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="glassfish-server-open-source-edition-5.0-asadmin-utility-subcommands"><a href="manvol1.html#sthref6">1 Eclipse GlassFish Server 5.1 asadmin Utility Subcommands</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="add-library.html#add-library-1">add-library</a></p>
+</li>
+<li>
+<p><a href="add-resources.html#add-resources-1">add-resources</a></p>
+</li>
+<li>
+<p><a href="apply-http-lb-changes.html#apply-http-lb-changes-1">apply-http-lb-changes</a></p>
+</li>
+<li>
+<p><a href="attach.html#attach-1">attach</a></p>
+</li>
+<li>
+<p><a href="backup-domain.html#backup-domain-1">backup-domain</a></p>
+</li>
+<li>
+<p><a href="change-admin-password.html#change-admin-password-1">change-admin-password</a></p>
+</li>
+<li>
+<p><a href="change-master-broker.html#change-master-broker-1">change-master-broker</a></p>
+</li>
+<li>
+<p><a href="change-master-password.html#change-master-password-1">change-master-password</a></p>
+</li>
+<li>
+<p><a href="collect-log-files.html#collect-log-files-1">collect-log-files</a></p>
+</li>
+<li>
+<p><a href="configure-jms-cluster.html#configure-jms-cluster-1">configure-jms-cluster</a></p>
+</li>
+<li>
+<p><a href="configure-lb-weight.html#configure-lb-weight-1">configure-lb-weight</a></p>
+</li>
+<li>
+<p><a href="configure-ldap-for-admin.html#configure-ldap-for-admin-1">configure-ldap-for-admin</a></p>
+</li>
+<li>
+<p><a href="configure-managed-jobs.html#configure-managed-jobs-1">configure-managed-jobs</a></p>
+</li>
+<li>
+<p><a href="copy-config.html#copy-config-1">copy-config</a></p>
+</li>
+<li>
+<p><a href="create-admin-object.html#create-admin-object-1">create-admin-object</a></p>
+</li>
+<li>
+<p><a href="create-application-ref.html#create-application-ref-1">create-application-ref</a></p>
+</li>
+<li>
+<p><a href="create-audit-module.html#create-audit-module-1">create-audit-module</a></p>
+</li>
+<li>
+<p><a href="create-auth-realm.html#create-auth-realm-1">create-auth-realm</a></p>
+</li>
+<li>
+<p><a href="create-cluster.html#create-cluster-1">create-cluster</a></p>
+</li>
+<li>
+<p><a href="create-connector-connection-pool.html#create-connector-connection-pool-1">create-connector-connection-pool</a></p>
+</li>
+<li>
+<p><a href="create-connector-resource.html#create-connector-resource-1">create-connector-resource</a></p>
+</li>
+<li>
+<p><a href="create-connector-security-map.html#create-connector-security-map-1">create-connector-security-map</a></p>
+</li>
+<li>
+<p><a href="create-connector-work-security-map.html#create-connector-work-security-map-1">create-connector-work-security-map</a></p>
+</li>
+<li>
+<p><a href="create-context-service.html#create-context-service-1">create-context-service</a></p>
+</li>
+<li>
+<p><a href="create-custom-resource.html#create-custom-resource-1">create-custom-resource</a></p>
+</li>
+<li>
+<p><a href="create-domain.html#create-domain-1">create-domain</a></p>
+</li>
+<li>
+<p><a href="create-file-user.html#create-file-user-1">create-file-user</a></p>
+</li>
+<li>
+<p><a href="create-http.html#create-http-1">create-http</a></p>
+</li>
+<li>
+<p><a href="create-http-health-checker.html#create-http-health-checker-1">create-http-health-checker</a></p>
+</li>
+<li>
+<p><a href="create-http-lb.html#create-http-lb-1">create-http-lb</a></p>
+</li>
+<li>
+<p><a href="create-http-lb-config.html#create-http-lb-config-1">create-http-lb-config</a></p>
+</li>
+<li>
+<p><a href="create-http-lb-ref.html#create-http-lb-ref-1">create-http-lb-ref</a></p>
+</li>
+<li>
+<p><a href="create-http-listener.html#create-http-listener-1">create-http-listener</a></p>
+</li>
+<li>
+<p><a href="create-http-redirect.html#create-http-redirect-1">create-http-redirect</a></p>
+</li>
+<li>
+<p><a href="create-iiop-listener.html#create-iiop-listener-1">create-iiop-listener</a></p>
+</li>
+<li>
+<p><a href="create-instance.html#create-instance-1">create-instance</a></p>
+</li>
+<li>
+<p><a href="create-jacc-provider.html#create-jacc-provider-1">create-jacc-provider</a></p>
+</li>
+<li>
+<p><a href="create-javamail-resource.html#create-javamail-resource-1">create-javamail-resource</a></p>
+</li>
+<li>
+<p><a href="create-jdbc-connection-pool.html#create-jdbc-connection-pool-1">create-jdbc-connection-pool</a></p>
+</li>
+<li>
+<p><a href="create-jdbc-resource.html#create-jdbc-resource-1">create-jdbc-resource</a></p>
+</li>
+<li>
+<p><a href="create-jmsdest.html#create-jmsdest-1">create-jmsdest</a></p>
+</li>
+<li>
+<p><a href="create-jms-host.html#create-jms-host-1">create-jms-host</a></p>
+</li>
+<li>
+<p><a href="create-jms-resource.html#create-jms-resource-1">create-jms-resource</a></p>
+</li>
+<li>
+<p><a href="create-jndi-resource.html#create-jndi-resource-1">create-jndi-resource</a></p>
+</li>
+<li>
+<p><a href="create-jvm-options.html#create-jvm-options-1">create-jvm-options</a></p>
+</li>
+<li>
+<p><a href="create-lifecycle-module.html#create-lifecycle-module-1">create-lifecycle-module</a></p>
+</li>
+<li>
+<p><a href="create-local-instance.html#create-local-instance-1">create-local-instance</a></p>
+</li>
+<li>
+<p><a href="create-managed-executor-service.html#create-managed-executor-service-1">create-managed-executor-service</a></p>
+</li>
+<li>
+<p><a href="create-managed-scheduled-executor-service.html#create-managed-scheduled-executor-service-1">create-managed-scheduled-executor-service</a></p>
+</li>
+<li>
+<p><a href="create-managed-thread-factory.html#create-managed-thread-factory-1">create-managed-thread-factory</a></p>
+</li>
+<li>
+<p><a href="create-message-security-provider.html#create-message-security-provider-1">create-message-security-provider</a></p>
+</li>
+<li>
+<p><a href="create-module-config.html#create-module-config-1">create-module-config</a></p>
+</li>
+<li>
+<p><a href="create-network-listener.html#create-network-listener-1">create-network-listener</a></p>
+</li>
+<li>
+<p><a href="create-node-config.html#create-node-config-1">create-node-config</a></p>
+</li>
+<li>
+<p><a href="create-node-dcom.html#create-node-dcom-1">create-node-dcom</a></p>
+</li>
+<li>
+<p><a href="create-node-ssh.html#create-node-ssh-1">create-node-ssh</a></p>
+</li>
+<li>
+<p><a href="create-password-alias.html#create-password-alias-1">create-password-alias</a></p>
+</li>
+<li>
+<p><a href="create-profiler.html#create-profiler-1">create-profiler</a></p>
+</li>
+<li>
+<p><a href="create-protocol.html#create-protocol-1">create-protocol</a></p>
+</li>
+<li>
+<p><a href="create-protocol-filter.html#create-protocol-filter-1">create-protocol-filter</a></p>
+</li>
+<li>
+<p><a href="create-protocol-finder.html#create-protocol-finder-1">create-protocol-finder</a></p>
+</li>
+<li>
+<p><a href="create-resource-adapter-config.html#create-resource-adapter-config-1">create-resource-adapter-config</a></p>
+</li>
+<li>
+<p><a href="create-resource-ref.html#create-resource-ref-1">create-resource-ref</a></p>
+</li>
+<li>
+<p><a href="create-service.html#create-service-1">create-service</a></p>
+</li>
+<li>
+<p><a href="create-ssl.html#create-ssl-1">create-ssl</a></p>
+</li>
+<li>
+<p><a href="create-system-properties.html#create-system-properties-1">create-system-properties</a></p>
+</li>
+<li>
+<p><a href="create-threadpool.html#create-threadpool-1">create-threadpool</a></p>
+</li>
+<li>
+<p><a href="create-transport.html#create-transport-1">create-transport</a></p>
+</li>
+<li>
+<p><a href="create-virtual-server.html#create-virtual-server-1">create-virtual-server</a></p>
+</li>
+<li>
+<p><a href="delete-admin-object.html#delete-admin-object-1">delete-admin-object</a></p>
+</li>
+<li>
+<p><a href="delete-application-ref.html#delete-application-ref-1">delete-application-ref</a></p>
+</li>
+<li>
+<p><a href="delete-audit-module.html#delete-audit-module-1">delete-audit-module</a></p>
+</li>
+<li>
+<p><a href="delete-auth-realm.html#delete-auth-realm-1">delete-auth-realm</a></p>
+</li>
+<li>
+<p><a href="delete-cluster.html#delete-cluster-1">delete-cluster</a></p>
+</li>
+<li>
+<p><a href="delete-config.html#delete-config-1">delete-config</a></p>
+</li>
+<li>
+<p><a href="delete-connector-connection-pool.html#delete-connector-connection-pool-1">delete-connector-connection-pool</a></p>
+</li>
+<li>
+<p><a href="delete-connector-resource.html#delete-connector-resource-1">delete-connector-resource</a></p>
+</li>
+<li>
+<p><a href="delete-connector-security-map.html#delete-connector-security-map-1">delete-connector-security-map</a></p>
+</li>
+<li>
+<p><a href="delete-connector-work-security-map.html#delete-connector-work-security-map-1">delete-connector-work-security-map</a></p>
+</li>
+<li>
+<p><a href="delete-context-service.html#delete-context-service-1">delete-context-service</a></p>
+</li>
+<li>
+<p><a href="delete-custom-resource.html#delete-custom-resource-1">delete-custom-resource</a></p>
+</li>
+<li>
+<p><a href="delete-domain.html#delete-domain-1">delete-domain</a></p>
+</li>
+<li>
+<p><a href="delete-file-user.html#delete-file-user-1">delete-file-user</a></p>
+</li>
+<li>
+<p><a href="delete-http.html#delete-http-1">delete-http</a></p>
+</li>
+<li>
+<p><a href="delete-http-health-checker.html#delete-http-health-checker-1">delete-http-health-checker</a></p>
+</li>
+<li>
+<p><a href="delete-http-lb.html#delete-http-lb-1">delete-http-lb</a></p>
+</li>
+<li>
+<p><a href="delete-http-lb-config.html#delete-http-lb-config-1">delete-http-lb-config</a></p>
+</li>
+<li>
+<p><a href="delete-http-lb-ref.html#delete-http-lb-ref-1">delete-http-lb-ref</a></p>
+</li>
+<li>
+<p><a href="delete-http-listener.html#delete-http-listener-1">delete-http-listener</a></p>
+</li>
+<li>
+<p><a href="delete-http-redirect.html#delete-http-redirect-1">delete-http-redirect</a></p>
+</li>
+<li>
+<p><a href="delete-iiop-listener.html#delete-iiop-listener-1">delete-iiop-listener</a></p>
+</li>
+<li>
+<p><a href="delete-instance.html#delete-instance-1">delete-instance</a></p>
+</li>
+<li>
+<p><a href="delete-jacc-provider.html#delete-jacc-provider-1">delete-jacc-provider</a></p>
+</li>
+<li>
+<p><a href="delete-javamail-resource.html#delete-javamail-resource-1">delete-javamail-resource</a></p>
+</li>
+<li>
+<p><a href="delete-jdbc-connection-pool.html#delete-jdbc-connection-pool-1">delete-jdbc-connection-pool</a></p>
+</li>
+<li>
+<p><a href="delete-jdbc-resource.html#delete-jdbc-resource-1">delete-jdbc-resource</a></p>
+</li>
+<li>
+<p><a href="delete-jmsdest.html#delete-jmsdest-1">delete-jmsdest</a></p>
+</li>
+<li>
+<p><a href="delete-jms-host.html#delete-jms-host-1">delete-jms-host</a></p>
+</li>
+<li>
+<p><a href="delete-jms-resource.html#delete-jms-resource-1">delete-jms-resource</a></p>
+</li>
+<li>
+<p><a href="delete-jndi-resource.html#delete-jndi-resource-1">delete-jndi-resource</a></p>
+</li>
+<li>
+<p><a href="delete-jvm-options.html#delete-jvm-options-1">delete-jvm-options</a></p>
+</li>
+<li>
+<p><a href="delete-lifecycle-module.html#delete-lifecycle-module-1">delete-lifecycle-module</a></p>
+</li>
+<li>
+<p><a href="delete-local-instance.html#delete-local-instance-1">delete-local-instance</a></p>
+</li>
+<li>
+<p><a href="delete-managed-executor-service.html#delete-managed-executor-service-1">delete-managed-executor-service</a></p>
+</li>
+<li>
+<p><a href="delete-managed-scheduled-executor-service.html#delete-managed-scheduled-executor-service-1">delete-managed-scheduled-executor-service</a></p>
+</li>
+<li>
+<p><a href="delete-managed-thread-factory.html#delete-managed-thread-factory-1">delete-managed-thread-factory</a></p>
+</li>
+<li>
+<p><a href="delete-message-security-provider.html#delete-message-security-provider-1">delete-message-security-provider</a></p>
+</li>
+<li>
+<p><a href="delete-module-config.html#delete-module-config-1">delete-module-config</a></p>
+</li>
+<li>
+<p><a href="delete-network-listener.html#delete-network-listener-1">delete-network-listener</a></p>
+</li>
+<li>
+<p><a href="delete-node-config.html#delete-node-config-1">delete-node-config</a></p>
+</li>
+<li>
+<p><a href="delete-node-dcom.html#delete-node-dcom-1">delete-node-dcom</a></p>
+</li>
+<li>
+<p><a href="delete-node-ssh.html#delete-node-ssh-1">delete-node-ssh</a></p>
+</li>
+<li>
+<p><a href="delete-password-alias.html#delete-password-alias-1">delete-password-alias</a></p>
+</li>
+<li>
+<p><a href="delete-profiler.html#delete-profiler-1">delete-profiler</a></p>
+</li>
+<li>
+<p><a href="delete-protocol.html#delete-protocol-1">delete-protocol</a></p>
+</li>
+<li>
+<p><a href="delete-protocol-filter.html#delete-protocol-filter-1">delete-protocol-filter</a></p>
+</li>
+<li>
+<p><a href="delete-protocol-finder.html#delete-protocol-finder-1">delete-protocol-finder</a></p>
+</li>
+<li>
+<p><a href="delete-resource-adapter-config.html#delete-resource-adapter-config-1">delete-resource-adapter-config</a></p>
+</li>
+<li>
+<p><a href="delete-resource-ref.html#delete-resource-ref-1">delete-resource-ref</a></p>
+</li>
+<li>
+<p><a href="delete-ssl.html#delete-ssl-1">delete-ssl</a></p>
+</li>
+<li>
+<p><a href="delete-system-property.html#delete-system-property-1">delete-system-property</a></p>
+</li>
+<li>
+<p><a href="delete-threadpool.html#delete-threadpool-1">delete-threadpool</a></p>
+</li>
+<li>
+<p><a href="delete-transport.html#delete-transport-1">delete-transport</a></p>
+</li>
+<li>
+<p><a href="delete-virtual-server.html#delete-virtual-server-1">delete-virtual-server</a></p>
+</li>
+<li>
+<p><a href="deploy.html#deploy-1">deploy</a></p>
+</li>
+<li>
+<p><a href="deploydir.html#deploydir-1">deploydir</a></p>
+</li>
+<li>
+<p><a href="disable.html#disable-1">disable</a></p>
+</li>
+<li>
+<p><a href="disable-http-lb-application.html#disable-http-lb-application-1">disable-http-lb-application</a></p>
+</li>
+<li>
+<p><a href="disable-http-lb-server.html#disable-http-lb-server-1">disable-http-lb-server</a></p>
+</li>
+<li>
+<p><a href="disable-monitoring.html#disable-monitoring-1">disable-monitoring</a></p>
+</li>
+<li>
+<p><a href="disable-secure-admin.html#disable-secure-admin-1">disable-secure-admin</a></p>
+</li>
+<li>
+<p><a href="disable-secure-admin-internal-user.html#disable-secure-admin-internal-user-1">disable-secure-admin-internal-user</a></p>
+</li>
+<li>
+<p><a href="disable-secure-admin-principal.html#disable-secure-admin-principal-1">disable-secure-admin-principal</a></p>
+</li>
+<li>
+<p><a href="enable.html#enable-1">enable</a></p>
+</li>
+<li>
+<p><a href="enable-http-lb-application.html#enable-http-lb-application-1">enable-http-lb-application</a></p>
+</li>
+<li>
+<p><a href="enable-http-lb-server.html#enable-http-lb-server-1">enable-http-lb-server</a></p>
+</li>
+<li>
+<p><a href="enable-monitoring.html#enable-monitoring-1">enable-monitoring</a></p>
+</li>
+<li>
+<p><a href="enable-secure-admin.html#enable-secure-admin-1">enable-secure-admin</a></p>
+</li>
+<li>
+<p><a href="enable-secure-admin-internal-user.html#enable-secure-admin-internal-user-1">enable-secure-admin-internal-user</a></p>
+</li>
+<li>
+<p><a href="enable-secure-admin-principal.html#enable-secure-admin-principal-1">enable-secure-admin-principal</a></p>
+</li>
+<li>
+<p><a href="export.html#export-1">export</a></p>
+</li>
+<li>
+<p><a href="export-http-lb-config.html#export-http-lb-config-1">export-http-lb-config</a></p>
+</li>
+<li>
+<p><a href="export-sync-bundle.html#export-sync-bundle-1">export-sync-bundle</a></p>
+</li>
+<li>
+<p><a href="flush-connection-pool.html#flush-connection-pool-1">flush-connection-pool</a></p>
+</li>
+<li>
+<p><a href="flush-jmsdest.html#flush-jmsdest-1">flush-jmsdest</a></p>
+</li>
+<li>
+<p><a href="freeze-transaction-service.html#freeze-transaction-service-1">freeze-transaction-service</a></p>
+</li>
+<li>
+<p><a href="generate-jvm-report.html#generate-jvm-report-1">generate-jvm-report</a></p>
+</li>
+<li>
+<p><a href="get.html#get-1">get</a></p>
+</li>
+<li>
+<p><a href="get-active-module-config.html#get-active-module-config-1">get-active-module-config</a></p>
+</li>
+<li>
+<p><a href="get-client-stubs.html#get-client-stubs-1">get-client-stubs</a></p>
+</li>
+<li>
+<p><a href="get-health.html#get-health-1">get-health</a></p>
+</li>
+<li>
+<p><a href="import-sync-bundle.html#import-sync-bundle-1">import-sync-bundle</a></p>
+</li>
+<li>
+<p><a href="install-node.html#install-node-1">install-node</a></p>
+</li>
+<li>
+<p><a href="install-node-dcom.html#install-node-dcom-1">install-node-dcom</a></p>
+</li>
+<li>
+<p><a href="install-node-ssh.html#install-node-ssh-1">install-node-ssh</a></p>
+</li>
+<li>
+<p><a href="jms-ping.html#jms-ping-1">jms-ping</a></p>
+</li>
+<li>
+<p><a href="list.html#list-1">list</a></p>
+</li>
+<li>
+<p><a href="list-admin-objects.html#list-admin-objects-1">list-admin-objects</a></p>
+</li>
+<li>
+<p><a href="list-application-refs.html#list-application-refs-1">list-application-refs</a></p>
+</li>
+<li>
+<p><a href="list-applications.html#list-applications-1">list-applications</a></p>
+</li>
+<li>
+<p><a href="list-audit-modules.html#list-audit-modules-1">list-audit-modules</a></p>
+</li>
+<li>
+<p><a href="list-auth-realms.html#list-auth-realms-1">list-auth-realms</a></p>
+</li>
+<li>
+<p><a href="list-backups.html#list-backups-1">list-backups</a></p>
+</li>
+<li>
+<p><a href="list-batch-job-executions.html#list-batch-job-executions-1">list-batch-job-executions</a></p>
+</li>
+<li>
+<p><a href="list-batch-jobs.html#list-batch-jobs-1">list-batch-jobs</a></p>
+</li>
+<li>
+<p><a href="list-batch-job-steps.html#list-batch-job-steps-1">list-batch-job-steps</a></p>
+</li>
+<li>
+<p><a href="list-batch-runtime-configuration.html#list-batch-runtime-configuration-1">list-batch-runtime-configuration</a></p>
+</li>
+<li>
+<p><a href="list-clusters.html#list-clusters-1">list-clusters</a></p>
+</li>
+<li>
+<p><a href="list-commands.html#list-commands-1">list-commands</a></p>
+</li>
+<li>
+<p><a href="list-components.html#list-components-1">list-components</a></p>
+</li>
+<li>
+<p><a href="list-configs.html#list-configs-1">list-configs</a></p>
+</li>
+<li>
+<p><a href="list-connector-connection-pools.html#list-connector-connection-pools-1">list-connector-connection-pools</a></p>
+</li>
+<li>
+<p><a href="list-connector-resources.html#list-connector-resources-1">list-connector-resources</a></p>
+</li>
+<li>
+<p><a href="list-connector-security-maps.html#list-connector-security-maps-1">list-connector-security-maps</a></p>
+</li>
+<li>
+<p><a href="list-connector-work-security-maps.html#list-connector-work-security-maps-1">list-connector-work-security-maps</a></p>
+</li>
+<li>
+<p><a href="list-containers.html#list-containers-1">list-containers</a></p>
+</li>
+<li>
+<p><a href="list-context-services.html#list-context-services-1">list-context-services</a></p>
+</li>
+<li>
+<p><a href="list-custom-resources.html#list-custom-resources-1">list-custom-resources</a></p>
+</li>
+<li>
+<p><a href="list-domains.html#list-domains-1">list-domains</a></p>
+</li>
+<li>
+<p><a href="list-file-groups.html#list-file-groups-1">list-file-groups</a></p>
+</li>
+<li>
+<p><a href="list-file-users.html#list-file-users-1">list-file-users</a></p>
+</li>
+<li>
+<p><a href="list-http-lb-configs.html#list-http-lb-configs-1">list-http-lb-configs</a></p>
+</li>
+<li>
+<p><a href="list-http-lbs.html#list-http-lbs-1">list-http-lbs</a></p>
+</li>
+<li>
+<p><a href="list-http-listeners.html#list-http-listeners-1">list-http-listeners</a></p>
+</li>
+<li>
+<p><a href="list-iiop-listeners.html#list-iiop-listeners-1">list-iiop-listeners</a></p>
+</li>
+<li>
+<p><a href="list-instances.html#list-instances-1">list-instances</a></p>
+</li>
+<li>
+<p><a href="list-jacc-providers.html#list-jacc-providers-1">list-jacc-providers</a></p>
+</li>
+<li>
+<p><a href="list-javamail-resources.html#list-javamail-resources-1">list-javamail-resources</a></p>
+</li>
+<li>
+<p><a href="list-jdbc-connection-pools.html#list-jdbc-connection-pools-1">list-jdbc-connection-pools</a></p>
+</li>
+<li>
+<p><a href="list-jdbc-resources.html#list-jdbc-resources-1">list-jdbc-resources</a></p>
+</li>
+<li>
+<p><a href="list-jmsdest.html#list-jmsdest-1">list-jmsdest</a></p>
+</li>
+<li>
+<p><a href="list-jms-hosts.html#list-jms-hosts-1">list-jms-hosts</a></p>
+</li>
+<li>
+<p><a href="list-jms-resources.html#list-jms-resources-1">list-jms-resources</a></p>
+</li>
+<li>
+<p><a href="list-jndi-entries.html#list-jndi-entries-1">list-jndi-entries</a></p>
+</li>
+<li>
+<p><a href="list-jndi-resources.html#list-jndi-resources-1">list-jndi-resources</a></p>
+</li>
+<li>
+<p><a href="list-jobs.html#list-jobs-1">list-jobs</a></p>
+</li>
+<li>
+<p><a href="list-jvm-options.html#list-jvm-options-1">list-jvm-options</a></p>
+</li>
+<li>
+<p><a href="list-libraries.html#list-libraries-1">list-libraries</a></p>
+</li>
+<li>
+<p><a href="list-lifecycle-modules.html#list-lifecycle-modules-1">list-lifecycle-modules</a></p>
+</li>
+<li>
+<p><a href="list-log-attributes.html#list-log-attributes-1">list-log-attributes</a></p>
+</li>
+<li>
+<p><a href="list-loggers.html#list-loggers-1">list-loggers</a></p>
+</li>
+<li>
+<p><a href="list-log-levels.html#list-log-levels-1">list-log-levels</a></p>
+</li>
+<li>
+<p><a href="list-managed-executor-services.html#list-managed-executor-services-1">list-managed-executor-services</a></p>
+</li>
+<li>
+<p><a href="list-managed-scheduled-executor-services.html#list-managed-scheduled-executor-services-1">list-managed-scheduled-executor-services</a></p>
+</li>
+<li>
+<p><a href="list-managed-thread-factories.html#list-managed-thread-factories-1">list-managed-thread-factories</a></p>
+</li>
+<li>
+<p><a href="list-message-security-providers.html#list-message-security-providers-1">list-message-security-providers</a></p>
+</li>
+<li>
+<p><a href="list-modules.html#list-modules-1">list-modules</a></p>
+</li>
+<li>
+<p><a href="list-network-listeners.html#list-network-listeners-1">list-network-listeners</a></p>
+</li>
+<li>
+<p><a href="list-nodes.html#list-nodes-1">list-nodes</a></p>
+</li>
+<li>
+<p><a href="list-nodes-config.html#list-nodes-config-1">list-nodes-config</a></p>
+</li>
+<li>
+<p><a href="list-nodes-dcom.html#list-nodes-dcom-1">list-nodes-dcom</a></p>
+</li>
+<li>
+<p><a href="list-nodes-ssh.html#list-nodes-ssh-1">list-nodes-ssh</a></p>
+</li>
+<li>
+<p><a href="list-password-aliases.html#list-password-aliases-1">list-password-aliases</a></p>
+</li>
+<li>
+<p><a href="list-persistence-types.html#list-persistence-types-1">list-persistence-types</a></p>
+</li>
+<li>
+<p><a href="list-protocol-filters.html#list-protocol-filters-1">list-protocol-filters</a></p>
+</li>
+<li>
+<p><a href="list-protocol-finders.html#list-protocol-finders-1">list-protocol-finders</a></p>
+</li>
+<li>
+<p><a href="list-protocols.html#list-protocols-1">list-protocols</a></p>
+</li>
+<li>
+<p><a href="list-resource-adapter-configs.html#list-resource-adapter-configs-1">list-resource-adapter-configs</a></p>
+</li>
+<li>
+<p><a href="list-resource-refs.html#list-resource-refs-1">list-resource-refs</a></p>
+</li>
+<li>
+<p><a href="list-secure-admin-internal-users.html#list-secure-admin-internal-users-1">list-secure-admin-internal-users</a></p>
+</li>
+<li>
+<p><a href="list-secure-admin-principals.html#list-secure-admin-principals-1">list-secure-admin-principals</a></p>
+</li>
+<li>
+<p><a href="list-sub-components.html#list-sub-components-1">list-sub-components</a></p>
+</li>
+<li>
+<p><a href="list-supported-cipher-suites.html#list-supported-cipher-suites-1">list-supported-cipher-suites</a></p>
+</li>
+<li>
+<p><a href="list-system-properties.html#list-system-properties-1">list-system-properties</a></p>
+</li>
+<li>
+<p><a href="list-threadpools.html#list-threadpools-1">list-threadpools</a></p>
+</li>
+<li>
+<p><a href="list-timers.html#list-timers-1">list-timers</a></p>
+</li>
+<li>
+<p><a href="list-transports.html#list-transports-1">list-transports</a></p>
+</li>
+<li>
+<p><a href="list-virtual-servers.html#list-virtual-servers-1">list-virtual-servers</a></p>
+</li>
+<li>
+<p><a href="list-web-context-param.html#list-web-context-param-1">list-web-context-param</a></p>
+</li>
+<li>
+<p><a href="list-web-env-entry.html#list-web-env-entry-1">list-web-env-entry</a></p>
+</li>
+<li>
+<p><a href="login.html#login-1">login</a></p>
+</li>
+<li>
+<p><a href="migrate-timers.html#migrate-timers-1">migrate-timers</a></p>
+</li>
+<li>
+<p><a href="monitor.html#monitor-1">monitor</a></p>
+</li>
+<li>
+<p><a href="multimode.html#multimode-1">multimode</a></p>
+</li>
+<li>
+<p><a href="osgi.html#osgi-1">osgi</a></p>
+</li>
+<li>
+<p><a href="osgi-shell.html#osgi-shell-1">osgi-shell</a></p>
+</li>
+<li>
+<p><a href="ping-connection-pool.html#ping-connection-pool-1">ping-connection-pool</a></p>
+</li>
+<li>
+<p><a href="ping-node-dcom.html#ping-node-dcom-1">ping-node-dcom</a></p>
+</li>
+<li>
+<p><a href="ping-node-ssh.html#ping-node-ssh-1">ping-node-ssh</a></p>
+</li>
+<li>
+<p><a href="recover-transactions.html#recover-transactions-1">recover-transactions</a></p>
+</li>
+<li>
+<p><a href="redeploy.html#redeploy-1">redeploy</a></p>
+</li>
+<li>
+<p><a href="remove-library.html#remove-library-1">remove-library</a></p>
+</li>
+<li>
+<p><a href="restart-domain.html#restart-domain-1">restart-domain</a></p>
+</li>
+<li>
+<p><a href="restart-instance.html#restart-instance-1">restart-instance</a></p>
+</li>
+<li>
+<p><a href="restart-local-instance.html#restart-local-instance-1">restart-local-instance</a></p>
+</li>
+<li>
+<p><a href="restore-domain.html#restore-domain-1">restore-domain</a></p>
+</li>
+<li>
+<p><a href="rollback-transaction.html#rollback-transaction-1">rollback-transaction</a></p>
+</li>
+<li>
+<p><a href="rotate-log.html#rotate-log-1">rotate-log</a></p>
+</li>
+<li>
+<p><a href="set.html#set-1">set</a></p>
+</li>
+<li>
+<p><a href="set-batch-runtime-configuration.html#set-batch-runtime-configuration-1">set-batch-runtime-configuration</a></p>
+</li>
+<li>
+<p><a href="set-log-attributes.html#set-log-attributes-1">set-log-attributes</a></p>
+</li>
+<li>
+<p><a href="set-log-file-format.html#set-log-file-format-1">set-log-file-format</a></p>
+</li>
+<li>
+<p><a href="set-log-levels.html#set-log-levels-1">set-log-levels</a></p>
+</li>
+<li>
+<p><a href="setup-local-dcom.html#setup-local-dcom-1">setup-local-dcom</a></p>
+</li>
+<li>
+<p><a href="setup-ssh.html#setup-ssh-1">setup-ssh</a></p>
+</li>
+<li>
+<p><a href="set-web-context-param.html#set-web-context-param-1">set-web-context-param</a></p>
+</li>
+<li>
+<p><a href="set-web-env-entry.html#set-web-env-entry-1">set-web-env-entry</a></p>
+</li>
+<li>
+<p><a href="show-component-status.html#show-component-status-1">show-component-status</a></p>
+</li>
+<li>
+<p><a href="start-cluster.html#start-cluster-1">start-cluster</a></p>
+</li>
+<li>
+<p><a href="start-database.html#start-database-1">start-database</a></p>
+</li>
+<li>
+<p><a href="start-domain.html#start-domain-1">start-domain</a></p>
+</li>
+<li>
+<p><a href="start-instance.html#start-instance-1">start-instance</a></p>
+</li>
+<li>
+<p><a href="start-local-instance.html#start-local-instance-1">start-local-instance</a></p>
+</li>
+<li>
+<p><a href="stop-cluster.html#stop-cluster-1">stop-cluster</a></p>
+</li>
+<li>
+<p><a href="stop-database.html#stop-database-1">stop-database</a></p>
+</li>
+<li>
+<p><a href="stop-domain.html#stop-domain-1">stop-domain</a></p>
+</li>
+<li>
+<p><a href="stop-instance.html#stop-instance-1">stop-instance</a></p>
+</li>
+<li>
+<p><a href="stop-local-instance.html#stop-local-instance-1">stop-local-instance</a></p>
+</li>
+<li>
+<p><a href="undeploy.html#undeploy-1">undeploy</a></p>
+</li>
+<li>
+<p><a href="unfreeze-transaction-service.html#unfreeze-transaction-service-1">unfreeze-transaction-service</a></p>
+</li>
+<li>
+<p><a href="uninstall-node.html#uninstall-node-1">uninstall-node</a></p>
+</li>
+<li>
+<p><a href="uninstall-node-dcom.html#uninstall-node-dcom-1">uninstall-node-dcom</a></p>
+</li>
+<li>
+<p><a href="uninstall-node-ssh.html#uninstall-node-ssh-1">uninstall-node-ssh</a></p>
+</li>
+<li>
+<p><a href="unset.html#unset-1">unset</a></p>
+</li>
+<li>
+<p><a href="unset-web-context-param.html#unset-web-context-param-1">unset-web-context-param</a></p>
+</li>
+<li>
+<p><a href="unset-web-env-entry.html#unset-web-env-entry-1">unset-web-env-entry</a></p>
+</li>
+<li>
+<p><a href="update-connector-security-map.html#update-connector-security-map-1">update-connector-security-map</a></p>
+</li>
+<li>
+<p><a href="update-connector-work-security-map.html#update-connector-work-security-map-1">update-connector-work-security-map</a></p>
+</li>
+<li>
+<p><a href="update-file-user.html#update-file-user-1">update-file-user</a></p>
+</li>
+<li>
+<p><a href="update-node-config.html#update-node-config-1">update-node-config</a></p>
+</li>
+<li>
+<p><a href="update-node-ssh.html#update-node-dcom-1">update-node-dcom</a></p>
+</li>
+<li>
+<p><a href="update-node-ssh001.html#update-node-ssh-1">update-node-ssh</a></p>
+</li>
+<li>
+<p><a href="update-password-alias.html#update-password-alias-1">update-password-alias</a></p>
+</li>
+<li>
+<p><a href="uptime.html#uptime-1">uptime</a></p>
+</li>
+<li>
+<p><a href="validate-dcom.html#validate-dcom-1">validate-dcom</a></p>
+</li>
+<li>
+<p><a href="validate-multicast.html#validate-multicast-1">validate-multicast</a></p>
+</li>
+<li>
+<p><a href="verify-domain-xml.html#verify-domain-xml-1">verify-domain-xml</a></p>
+</li>
+<li>
+<p><a href="version.html#version-1">version</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="glassfish-server-open-source-edition-5.0-utility-commands"><a href="manvol1m.html#sthref2356">2 Eclipse GlassFish Server 5.1 Utility Commands</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="appclient.html#appclient-1m">appclient</a></p>
+</li>
+<li>
+<p><a href="asadmin.html#asadmin-1m">asadmin</a></p>
+</li>
+<li>
+<p><a href="capture-schema.html#capture-schema-1m">capture-schema</a></p>
+</li>
+<li>
+<p><a href="package-appclient.html#package-appclient-1m">package-appclient</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="glassfish-server-open-source-edition-5.0-glassfish-server-concepts"><a href="manvol5asc.html#sthref2391">3 Eclipse GlassFish Server 5.1 GlassFish Server Concepts</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="application.html#application-5asc">application</a></p>
+</li>
+<li>
+<p><a href="configuration.html#configuration-5asc">configuration</a></p>
+</li>
+<li>
+<p><a href="domain.html#domain-5asc">domain</a></p>
+</li>
+<li>
+<p><a href="dotted-names.html#dotted-names-5asc">dotted-names</a></p>
+</li>
+<li>
+<p><a href="instance.html#instance-5asc">instance</a></p>
+</li>
+<li>
+<p><a href="logging.html#logging-5asc">logging</a></p>
+</li>
+<li>
+<p><a href="monitoring.html#monitoring-5asc">monitoring</a></p>
+</li>
+<li>
+<p><a href="passwords.html#passwords-5asc">passwords</a></p>
+</li>
+<li>
+<p><a href="resource.html#resource-5asc">resource</a></p>
+</li>
+<li>
+<p><a href="security.html#security-5asc">security</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+
+		<td align="left">
+		<a href="title.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

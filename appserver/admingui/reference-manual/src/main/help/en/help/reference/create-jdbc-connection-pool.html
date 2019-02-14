@@ -1,0 +1,835 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-jdbc-connection-pool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-jdbc-connection-pool</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-javamail-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jdbc-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-jdbc-connection-pool-1"></a><a id="GSRFM00036"></a><a id="create-jdbc-connection-pool"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_jdbc_connection_pool">create-jdbc-connection-pool</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>registers a JDBC connection pool</p>
+</div>
+<div id="sthref320" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jdbc-connection-pool [--help]
+[--datasourceclassname=datasourceclassname]
+[--restype=resourcetype]
+[--steadypoolsize=poolsize]
+[--maxpoolsize=maxpoolsize]
+[--maxwait=maxwaittime]
+[--poolresize=poolresizelimit]
+[--idletimeout=idletimeout]
+[--initsql=initsqlstring]
+[--isolationlevel=isolationlevel]
+[--isisolationguaranteed={true|false}]
+[--isconnectvalidatereq={false|true}]
+[--validationmethod=validationmethod]
+[--validationtable=validationtable]
+[--failconnection={false|true}]
+[--allownoncomponentcallers={false|true}]
+[--nontransactionalconnections={false|true}]
+[--validateatmostonceperiod=validationinterval]
+[--leaktimeout=leaktimeout]
+[--leakreclaim={false|true}]
+[--statementleaktimeout=satementleaktimeout]
+[--statmentleakreclaim={false|true}]
+[--creationretryattempts=creationretryattempts]
+[--creationretryinterval=creationretryinterval]
+[--sqltracelisteners=sqltracelisteners[,sqltracelisteners]]
+[--statementtimeout=statementtimeout]
+[--lazyconnectionenlistment={false|true}]
+[--lazyconnectionassociation={false|true}]
+[--associatewiththread={false|true}]
+[--driverclassname=jdbcdriverclassname]
+[--matchconnections={false|true}]
+[--maxconnectionusagecount=maxconnectionusagecount]
+[--ping={false|true}]
+[--pooling={false|true}]
+[--statementcachesize=statementcachesize]
+[--validationclassname=validationclassname]
+[--wrapjdbcobjects={false|true}]
+[--description description]
+[--property name=value)[:name=value]*]
+[--target=target]
+connectionpoolid</code></pre>
+</div>
+</div>
+<div id="sthref321" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-jdbc-connection-pool</code> subcommand registers a new Java
+Database Connectivity ("JDBC") software connection pool with the
+specified JDBC connection pool name.</p>
+</div>
+<div class="paragraph">
+<p>A JDBC connection pool with authentication can be created either by
+using a <code>--property</code> option to specify user, password, or other
+connection information, or by specifying the connection information in
+the XML descriptor file.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref322" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--datasourceclassname</code></dt>
+<dd>
+<p>  The name of the vendor-supplied JDBC datasource resource manager. An
+  XA or global transactions capable datasource class will implement the
+  <code>javax.sql.XADatasource</code> interface. Non-XA or exclusively local
+  transaction datasources will implement the <code>javax.sql.Datasource</code>
+  interface.
+<code>--restype</code><br>
+Required when a datasource class implements two or more interfaces
+(<code>javax.sql.DataSource</code>, <code>javax.sql.XADataSource</code>, or
+<code>javax.sql.ConnectionPoolDataSource</code>), or when a driver classname must</p>
+</dd>
+<dt class="hdlist1">be provided.</dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>--restype</code> = <code>java.sql.Driver</code>, then the <code>--driverclassname</code>
+option is required.</p>
+</li>
+<li>
+<p>If <code>--restype</code> = <code>javax.sql.DataSource</code>, <code>javax.sql.XADataSource</code>,
+or <code>javax.sql.ConnectionPoolDataSource</code>, then the
+<code>--datasourceclassname</code> option is required.</p>
+</li>
+<li>
+<p>If <code>--restype</code> is not specified, then either the <code>--driverclassname</code>
+or <code>--datasourceclassname</code> option must be specified, but not both.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--steadypoolsize</code></dt>
+<dd>
+<p>The minimum and initial number of connections maintained in the pool.
+The default value is 8.</p>
+</dd>
+<dt class="hdlist1"><code>--maxpoolsize</code></dt>
+<dd>
+<p>The maximum number of connections that can be created. The default
+value is 32.</p>
+</dd>
+<dt class="hdlist1"><code>--maxwait</code></dt>
+<dd>
+<p>The amount of time, in milliseconds, that a caller will wait before a
+connection timeout is sent. The default is 60000 (60 seconds). A value
+of 0 forces the caller to wait indefinitely.</p>
+</dd>
+<dt class="hdlist1"><code>--poolresize</code></dt>
+<dd>
+<p>Number of connections to be removed when <code>idle-timeout-in-seconds</code>
+timer expires. This is the quantity by which the pool will scale up or
+scale down the number of connections. Scale up: When the pool has no
+free connections, pool will scale up by this quantity. Scale down: All
+the invalid and idle connections are removed, sometimes resulting in
+removing connections of quantity greater than this value. Connections
+that have been idle for longer than the timeout are candidates for
+removal. Steadypoolsize will be ensured. Possible values are from 0 to
+<code>MAX_INTEGER</code>. The default value is 2.</p>
+</dd>
+<dt class="hdlist1"><code>--idletimeout</code></dt>
+<dd>
+<p>The maximum time, in seconds, that a connection can remain idle in the
+pool. After this time, the implementation can close this connection.
+This timeout value must be kept shorter than the database server side
+timeout value to prevent the accumulation of unusable connections in
+the application. The default value is 300.</p>
+</dd>
+<dt class="hdlist1"><code>--initsql</code></dt>
+<dd>
+<p>An SQL string that is executed whenever a connection is created from
+the pool. If an existing connection is reused, this string is not
+executed. Connections that have idled for longer than the timeout are
+candidates for removal. This option has no default value.</p>
+</dd>
+<dt class="hdlist1"><code>--isolationlevel</code></dt>
+<dd>
+<p>The transaction-isolation-level on the pooled database connections.
+This option does not have a default value. If not specified, the pool
+operates with the default isolation level that the JDBC driver
+provides. You can set a desired isolation level using one of the
+standard transaction isolation levels: <code>read-uncommitted</code>,
+<code>read-committed</code>, <code>repeatable-read</code>, <code>serializable</code>. Applications that
+change the isolation level on a pooled connection programmatically
+risk polluting the pool. This could lead to program errors.</p>
+</dd>
+<dt class="hdlist1"><code>--isisolationguaranteed</code></dt>
+<dd>
+<p>This is applicable only when a particular isolation level is specified
+for transaction-isolation-level. The default value is true.<br>
+This option assures that every time a connection is obtained from the
+pool, isolation level is set to the desired value. This could have
+some performance impact on some JDBC drivers. Administrators can set
+this to false when the application does not change <code>--isolationlevel</code>
+before returning the connection.</p>
+</dd>
+<dt class="hdlist1"><code>--isconnectvalidatereq</code></dt>
+<dd>
+<p>If set to true, connections are validated or checked to see if they
+are usable before giving out to the application. The default value is
+false.</p>
+</dd>
+<dt class="hdlist1"><code>--validationmethod</code></dt>
+<dd>
+<p>Type of validation to be performed when
+<code>is-connection-validation-required</code> is true. Valid settings are:
+<code>auto-commit</code>, <code>meta-data</code>, <code>table</code>, or <code>custom-validation</code>. The
+default value is <code>table</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--validationtable</code></dt>
+<dd>
+<p>The name of the validation table used to perform a query to validate a
+connection. If <code>is-connection-validation-required</code> is set to true and
+connection-validation-type set to table, this option is mandatory.</p>
+</dd>
+<dt class="hdlist1"><code>--failconnection</code></dt>
+<dd>
+<p>If set to true, all connections in the pool must be closed when a
+single validation check fails. The default value is false. One attempt
+is made to reestablish failed connections.</p>
+</dd>
+<dt class="hdlist1"><code>--allownoncomponentcallers</code></dt>
+<dd>
+<p>A pool with this property set to true can be used by non-Java EE
+components, that is, components other than EJBs or Servlets. The
+returned connection is enlisted automatically with the transaction
+context obtained from the transaction manager. Connections obtained by
+non-component callers are not automatically cleaned by the container
+at the end of a transaction. These connections need to be explicitly
+closed by the caller.</p>
+</dd>
+<dt class="hdlist1"><code>--nontransactionalconnections</code></dt>
+<dd>
+<p>A pool with this property set to true returns non-transactional
+connections. This connection does not get automatically enlisted with
+the transaction manager.</p>
+</dd>
+<dt class="hdlist1"><code>--validateatmostonceperiod</code></dt>
+<dd>
+<p>Specifies the time interval in seconds between successive requests to
+validate a connection at most once. Setting this attribute to an
+appropriate value minimizes the number of validation requests by a
+connection. Default value is 0, which means that the attribute is not
+enabled.</p>
+</dd>
+<dt class="hdlist1"><code>--leaktimeout</code></dt>
+<dd>
+<p>Specifies the amount of time, in seconds, for which connection leaks
+in a connection pool are to be traced. When a connection is not
+returned to the pool by the application within the specified period,
+it is assumed to be a potential leak, and stack trace of the caller
+will be logged. This option only detects if there is a connection
+leak. The connection can be reclaimed only if
+<code>connection-leak-reclaim</code> is set to true.<br>
+If connection leak tracing is enabled, you can use the Administration
+Console to enable monitoring of the JDBC connection pool to get
+statistics on the number of connection leaks. The default value is 0,
+which disables connection leak tracing.</p>
+</dd>
+<dt class="hdlist1"><code>--leakreclaim</code></dt>
+<dd>
+<p>Specifies whether leaked connections are restored to the connection
+pool after leak connection tracing is complete. Possible values are as
+follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Leaked connections are not restored to the connection pool
+(default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Leaked connections are restored to the connection pool.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--statementleaktimeout</code></dt>
+<dd>
+<p>Specifies the amount of time, in seconds, after which any statements
+that have not been closed by an application are to be detected.
+Applications can run out of cursors if statement objects are not
+properly closed. This option only detects if there is a statement
+leak. The statement can be reclaimed only if <code>statement-leak-reclaim</code>
+is set to true. The leaked statement is closed when it is reclaimed.<br>
+The stack trace of the caller that creates the statement will be
+logged when a statement leak is detected. If statement leak tracing is
+enabled, you can use the Administration Console to enable monitoring
+of the JDBC connection pool to get statistics on the number of
+statement leaks. The default value is 0, which disables statement leak
+tracing.<br>
+The following limitations apply to the statement leak timeout value:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>The value must be less than the value set for the connection
+<code>leak-timeout</code>.</p>
+</li>
+<li>
+<p>The value must be greater than the value set for
+<code>statement-timeout</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--statementleakreclaim</code></dt>
+<dd>
+<p>Specifies whether leaked statements are reclaimed after the statements
+leak. Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Leaked statements are not reclaimed (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Leaked statements are reclaimed.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--creationretryattempts</code></dt>
+<dd>
+<p>Specifies the maximum number of times that \{product---name} retries
+to create a connection if the initial attempt fails. The default value
+is 0, which specifies that \{product---name} does not retry to create
+the connection.</p>
+</dd>
+<dt class="hdlist1"><code>--creationretryinterval</code></dt>
+<dd>
+<p>Specifies the interval, in seconds, between successive attempts to
+create a connection.<br>
+If <code>--creationretryattempts</code> is 0, the <code>--creationretryinterval</code>
+option is ignored. The default value is 10.</p>
+</dd>
+<dt class="hdlist1"><code>--sqltracelisteners</code></dt>
+<dd>
+<p>A list of one or more custom modules that provide custom logging of
+database activities. Each module must implement the
+<code>org.glassfish.api.jdbc.SQLTraceListener</code> public interface. When set
+to an appropriate value, SQL statements executed by applications are
+traced. This option has no default value.</p>
+</dd>
+<dt class="hdlist1"><code>--statementtimeout</code></dt>
+<dd>
+<p>Specifies the length of time in seconds after which a query that is
+not completed is terminated.<br>
+A query that remains incomplete for a long period of time might cause
+the application that submitted the query to hang. To prevent this
+occurrence, use this option set a timeout for all statements that will
+be created from the connection pool that you are creating. When
+creating a statement, \{product---name} sets the <code>QueryTimeout</code>
+property on the statement to the length of time that is specified. The
+default value is -1, which specifies that incomplete queries are never
+terminated.</p>
+</dd>
+<dt class="hdlist1"><code>--lazyconnectionenlistment</code></dt>
+<dd>
+<p>Specifies whether a resource to a transaction is enlisted only when a
+method actually uses the resource. Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Resources to a transaction are always enlisted and not only when a
+method actually uses the resource (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Resources to a transaction are enlisted only when a method actually
+uses the resource.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--lazyconnectionassociation</code></dt>
+<dd>
+<p>Specifies whether a physical connection should be associated with the
+logical connection only when the physical connection is used, and
+disassociated when the transaction is completed. Such association and
+dissociation enable the reuse of physical connections. Possible values
+are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A physical connection is associated with the logical connection even
+before the physical connection is used, and is not disassociated
+when the transaction is completed (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A physical connection is associated with the logical connection only
+when the physical connection is used, and disassociated when the
+transaction is completed. The <code>--lazyconnectionenlistment</code> option
+must also be set to <code>true</code>.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--associatewiththread</code></dt>
+<dd>
+<p>Specifies whether a connection is associated with the thread to enable
+the thread to reuse the connection. If a connection is not associated
+with the thread, the thread must obtain a connection from the pool
+each time that the thread requires a connection. Possible values are
+as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A connection is not associated with the thread (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A connection is associated with the thread.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--driverclassname</code></dt>
+<dd>
+<p>The name of the vendor-supplied JDBC driver class. This driver should
+implement the <code>java.sql.Driver</code> interface.</p>
+</dd>
+<dt class="hdlist1"><code>--matchconnections</code></dt>
+<dd>
+<p>Specifies whether a connection that is selected from the pool should
+be matched by the resource adaptor. If all the connections in the pool
+are homogenous, a connection picked from the pool need not be matched
+by the resource adapter, which means that this option can be set to
+false. Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A connection should not be matched by the resource adaptor
+(default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A connection should be matched by the resource adaptor.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--maxconnectionusagecount</code></dt>
+<dd>
+<p>Specifies the maximum number of times that a connection can be reused.
+When this limit is reached, the connection is closed. By limiting the
+maximum number of times that a connection can be reused, you can avoid
+statement leaks.<br>
+The default value is 0, which specifies no limit on the number of
+times that a connection can be reused.</p>
+</dd>
+<dt class="hdlist1"><code>--ping</code></dt>
+<dd>
+<p>Specifies if the pool is pinged during pool creation or
+reconfiguration to identify and warn of any erroneous values for its
+attributes. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>--pooling</code></dt>
+<dd>
+<p>Specifies if connection pooling is enabled for the pool. The default
+value is true.</p>
+</dd>
+<dt class="hdlist1"><code>--statementcachesize</code></dt>
+<dd>
+<p>The number of SQL statements to be cached using the default caching
+mechanism (Least Recently Used). The default value is 0, which
+indicates that statement caching is not enabled.</p>
+</dd>
+<dt class="hdlist1"><code>--validationclassname</code></dt>
+<dd>
+<p>The name of the class that provides custom validation when the value
+of <code>validationmethod</code> is <code>custom-validation</code>. This class must
+implement the <code>org.glassfish.api.jdbc.ConnectionValidation</code> interface,
+and it must be accessible to \{product---name}. This option is
+mandatory if the connection validation type is set to custom
+validation.</p>
+</dd>
+<dt class="hdlist1"><code>--wrapjdbcobjects</code></dt>
+<dd>
+<p>Specifies whether the pooling infrastructure provides wrapped JDBC
+objects to applications. By providing wrapped JDBC objects, the
+pooling infrastructure prevents connection leaks by ensuring that
+applications use logical connections from the connection pool, not
+physical connections. The use of logical connections ensures that the
+connections are returned to the connection pool when they are closed.
+However, the provision of wrapped JDBC objects can impair the
+performance of applications. The default value is true.<br>
+The pooling infrastructure provides wrapped objects for
+implementations of the following interfaces in the JDBC API:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>java.sql.CallableStatement</code></p>
+</li>
+<li>
+<p><code>java.sql.DatabaseMetaData</code></p>
+</li>
+<li>
+<p><code>java.sql.PreparedStatement</code></p>
+</li>
+<li>
+<p><code>java.sql.ResultSet</code></p>
+</li>
+<li>
+<p><code>java.sql.Statement</code><br>
+Possible values of <code>--wrapjdbcobjects</code> are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The pooling infrastructure does not provide wrapped JDBC objects to
+applications. (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The pooling infrastructure provides wrapped JDBC objects to
+applications.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Text providing details about the specified JDBC connection pool.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the pool. The
+following properties are available:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>user</code></dt>
+<dd>
+<p>Specifies the user name for connecting to the database.</p>
+</dd>
+<dt class="hdlist1"><code>password</code></dt>
+<dd>
+<p>Specifies the password for connecting to the database.</p>
+</dd>
+<dt class="hdlist1"><code>databaseName</code></dt>
+<dd>
+<p>Specifies the database for this connection pool.</p>
+</dd>
+<dt class="hdlist1"><code>serverName</code></dt>
+<dd>
+<p>Specifies the database server for this connection pool.</p>
+</dd>
+<dt class="hdlist1"><code>port</code></dt>
+<dd>
+<p>Specifies the port on which the database server listens for
+requests.</p>
+</dd>
+<dt class="hdlist1"><code>networkProtocol</code></dt>
+<dd>
+<p>Specifies the communication protocol.</p>
+</dd>
+<dt class="hdlist1"><code>roleName</code></dt>
+<dd>
+<p>Specifies the initial SQL role name.</p>
+</dd>
+<dt class="hdlist1"><code>datasourceName</code></dt>
+<dd>
+<p>Specifies an underlying <code>XADataSource</code>, or a
+<code>ConnectionPoolDataSource</code> if connection pooling is done.</p>
+</dd>
+<dt class="hdlist1"><code>description</code></dt>
+<dd>
+<p>Specifies a text description.</p>
+</dd>
+<dt class="hdlist1"><code>url</code></dt>
+<dd>
+<p>Specifies the URL for this connection pool. Although this is not a
+standard property, it is commonly used.</p>
+</dd>
+<dt class="hdlist1"><code>dynamic-reconfiguration-wait-timeout-in-seconds</code></dt>
+<dd>
+<p>Used to enable dynamic reconfiguration of the connection pool
+transparently to the applications that are using the pool, so that
+applications need not be re-enabled for the attribute or property
+changes to the pool to take effect. Any in-flight transaction&#8217;s
+connection requests will be allowed to complete with the old pool
+configuration as long as the connection requests are within the
+timeout period, so as to complete the transaction. New connection
+requests will wait for the pool reconfiguration to complete and
+connections will be acquired using the modified pool configuration.</p>
+</dd>
+<dt class="hdlist1"><code>LazyConnectionEnlistment</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent attribute. The default value is
+false.</p>
+</dd>
+<dt class="hdlist1"><code>LazyConnectionAssociation</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent attribute. The default value is
+false.</p>
+</dd>
+<dt class="hdlist1"><code>AssociateWithThread</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent attribute. The default value is
+false.</p>
+</dd>
+<dt class="hdlist1"><code>MatchConnections</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent attribute. The default value is true.</p>
+</dd>
+<dt class="hdlist1"><code>Prefer-Validate-Over-Recreate</code></dt>
+<dd>
+<p>Specifies whether pool resizer should validate idle connections
+before destroying and recreating them. The default value is true.</p>
+</dd>
+<dt class="hdlist1"><code>time-to-keep-queries-in-minutes</code></dt>
+<dd>
+<p>Specifies the number of minutes that will be cached for use in
+calculating frequently used queries. Takes effect when SQL tracing
+and monitoring are enabled for the JDBC connection pool. The default
+value is 5 minutes.</p>
+</dd>
+<dt class="hdlist1"><code>number-of-top-queries-to-report</code></dt>
+<dd>
+<p>Specifies the number of queries to list when reporting the top and
+most frequently used queries. Takes effect when SQL tracing and
+monitoring are enabled for the JDBC connection pool. The default
+value is 10 queries.<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>If an attribute name or attribute value contains a colon, the
+backslash (<code>\</code>) must be used to escape the colon in the name or value.
+Other characters might also require an escape character. For more
+information about escape characters in command options, see the
+<a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> man page.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref323" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">connectionpoolid</dt>
+<dd>
+<p>The name of the JDBC connection pool to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref324" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM493"></a><a id="sthref325"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a JDBC Connection Pool</p>
+</div>
+<div class="paragraph">
+<p>This example creates a JDBC connection pool named <code>sample_derby_pool</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jdbc-connection-pool
+--datasourceclassname org.apache.derby.jdbc.ClientDataSource
+--restype javax.sql.XADataSource
+--property portNumber=1527:password=APP:user=APP:serverName=
+localhost:databaseName=sun-appserv-samples:connectionAttributes=\;
+create\\=true sample_derby_pool
+Command create-jdbc-connection-pool executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The escape character backslash (<code>\</code>) is used in the <code>--property</code> option
+to distinguish the semicolon (<code>;</code>). Two backslashes (<code>\\</code>) are used to
+distinguish the equal sign (<code>=</code>).</p>
+</div>
+<div id="sthref326" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref327" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-jdbc-connection-pool.html#delete-jdbc-connection-pool-1"><code>delete-jdbc-connection-pool</code>(1)</a>,
+<a href="list-jdbc-connection-pools.html#list-jdbc-connection-pools-1"><code>list-jdbc-connection-pools</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-javamail-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jdbc-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

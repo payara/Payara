@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-persistence-types</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-persistence-types</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-password-aliases.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-protocol-filters.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-persistence-types-1"></a><a id="GSRFM00191"></a><a id="list-persistence-types"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_persistence_types">list-persistence-types</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists registered persistence types for HTTP sessions and SFSB instances</p>
+</div>
+<div id="sthref1743" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-persistence-types [--help]
+--type={web|ejb}</code></pre>
+</div>
+</div>
+<div id="sthref1744" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-persistence-types</code> subcommand lists registered persistence
+types for HTTP sessions and stateful session bean (SFSB) instances. The
+built-in persistence types are <code>memory</code>, <code>file</code>, and <code>replicated</code>. The
+<code>memory</code> type does not apply to SFSB instances.</p>
+</div>
+<div class="paragraph">
+<p>Other persistence types can be added using the <code>StrategyBuilder</code> class.
+For more information, see the <a href="../add-on-component-development-guide/toc.html#GSACG">GlassFish Server Open Source
+Edition Add-On Component Development Guide</a>.</p>
+</div>
+<div class="paragraph">
+<p>To set the persistence type for HTTP sessions, use the <code>set</code> subcommand
+to set the <code>persistence-type</code> attribute. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set c1-config.availability-service.web-container-availability.persistence-type=file</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To set the persistence type for SFSB instances without availability
+enabled, use the <code>set</code> subcommand to set the <code>sfsb-persistence-type</code>
+attribute. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set c1-config.availability-service.ejb-container-availability.sfsb-persistence-type=file</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To set the persistence type for SFSB instances with availability
+enabled, use the <code>set</code> subcommand to set the <code>sfsb-ha-persistence-type</code>
+attribute. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set
+c1-config.availability-service.ejb-container-availability.sfsb-ha-persistence-type=replicated</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1745" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--type</code></dt>
+<dd>
+<p>Specifies the type of sessions for which persistence types are listed.
+Allowed values are as follows:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>web</code> — Lists persistence types for HTTP sessions.</p>
+</li>
+<li>
+<p><code>ejb</code> — Lists persistence types for SFSB instances.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1746" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM701"></a><a id="sthref1747"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Persistence Types for HTTP Sessions</p>
+</div>
+<div class="paragraph">
+<p>This example lists persistence types for HTTP sessions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-persistence-types --type=web
+memory
+file
+replicated
+
+Command list-persistence-types executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1748" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1749" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="list.html#list-1"><code>list</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../add-on-component-development-guide/toc.html#GSACG">GlassFish Server Open Source Edition Add-On Component
+Development Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-password-aliases.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-protocol-filters.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

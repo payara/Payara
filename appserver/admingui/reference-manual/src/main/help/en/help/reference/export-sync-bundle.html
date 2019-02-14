@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>export-sync-bundle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>export-sync-bundle</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="export-http-lb-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="flush-connection-pool.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="export-sync-bundle-1"></a><a id="GSRFM00134"></a><a id="export-sync-bundle"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_export_sync_bundle">export-sync-bundle</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>exports the configuration data of a cluster or standalone instance to an
+archive file</p>
+</div>
+<div id="sthref1170" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] export-sync-bundle [--help]
+--target target
+[--retrieve={false|true}]
+[file-name]</code></pre>
+</div>
+</div>
+<div id="sthref1171" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>export-sync-bundle</code> subcommand exports the configuration data of a
+cluster or standalone instance to an archive file. The archive file can
+then be used with the
+<a href="import-sync-bundle.html#import-sync-bundle-1"><code>import-sync-bundle</code>(1)</a>
+subcommand to restore the configuration data.</p>
+</div>
+<div class="paragraph">
+<p>Importing an instance&#8217;s configuration data transfers the data to a host
+for an instance without the need for the instance to be able to
+communicate with the domain administration server (DAS). Importing an
+instance&#8217;s configuration data is typically required for the following
+reasons:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To reestablish the instance after an upgrade</p>
+</li>
+<li>
+<p>To synchronize the instance manually with the DAS when the instance
+cannot contact the DAS</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The subcommand creates an archive that contains the following files and
+directories in the current domain directory:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>All the files in the following directories:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>config</code></p>
+</li>
+<li>
+<p><code>docroot</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>The entire contents of the following directories and their
+subdirectories:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>applications</code></p>
+</li>
+<li>
+<p>`config/`target, where target is the cluster or standalone instance
+for which configuration data is being exported</p>
+</li>
+<li>
+<p><code>generated</code></p>
+</li>
+<li>
+<p><code>lib</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1172" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>The cluster or standalone instance for which to export configuration
+data. The <code>--target</code> option is required.<br>
+This option must not specify a clustered \{product---name} instance.
+If this option specifies a clustered instance, an error occurs. To
+export configuration data for a clustered instance, specify the name
+of the cluster of which the instance is a member, not the instance.</p>
+</dd>
+<dt class="hdlist1"><code>--retrieve</code></dt>
+<dd>
+<p>Specifies whether the archive file is downloaded from the DAS host to
+the host where the subcommand is run.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The archive file is downloaded to the host where the subcommand is
+run.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The archive file is not downloaded and remains on the DAS host
+(default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1173" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">file-name</dt>
+<dd>
+<p>The file name and location of the archive file to which to export the
+data.<br>
+The default depends on the setting of the <code>--retrieve</code> option:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If <code>--retrieve</code> is <code>false</code>, the default is
+<code>sync/`target</code>-sync-bundle.zip` in the current domain directory.</p>
+</li>
+<li>
+<p>If <code>--retrieve</code> is <code>true</code>, the default is target`-sync-bundle.zip`
+in the current working directory.<br>
+target is the cluster or standalone instance that the <code>--target</code>
+option specifies.<br>
+If a relative path is specified, the directory to which the path is
+appended depends on the setting of the <code>--retrieve</code> option:<br></p>
+</li>
+<li>
+<p>If <code>--retrieve</code> is <code>false</code>, the path is appended to the <code>config</code>
+subdirectory of the current domain directory.</p>
+</li>
+<li>
+<p>If <code>--retrieve</code> is <code>true</code>, the path is appended to the current
+working directory.<br>
+If an existing directory is specified without a filename, the file
+name of the archive file is target`-sync-bundle.zip`, where target is
+the cluster or standalone instance that the <code>--target</code> option
+specifies.</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1174" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM614"></a><a id="sthref1175"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Exporting the Configuration Data of a Cluster</p>
+</div>
+<div class="paragraph">
+<p>This example exports the configuration data of the cluster <code>pmdcluster</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; export-sync-bundle --target=pmdcluster
+Sync bundle: /export/glassfish3/glassfish/domains/domain1/sync/
+pmdcluster-sync-bundle.zip
+
+Command export-sync-bundle executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1176" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1177" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="import-sync-bundle.html#import-sync-bundle-1"><code>import-sync-bundle</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="export-http-lb-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="flush-connection-pool.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

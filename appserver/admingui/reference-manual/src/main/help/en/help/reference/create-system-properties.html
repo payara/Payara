@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-system-properties</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-system-properties</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-ssl.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-threadpool.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-system-properties-1"></a><a id="GSRFM00059"></a><a id="create-system-properties"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_system_properties">create-system-properties</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds one or more system property elements that can be referenced
+elsewhere in the configuration.</p>
+</div>
+<div id="sthref545" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-system-properties [--help]
+[--target target]
+[name=value)[:name=value]*]</code></pre>
+</div>
+</div>
+<div id="sthref546" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-system-properties</code> subcommand adds or updates system
+properties that can be referenced elsewhere on the server.</p>
+</div>
+<div class="paragraph">
+<p>\{product---name} provides hooks where tokens (system properties) can be
+specified. Because \{product---name} does not have multiple server
+elements, you can specify a particular token at any level. When a domain
+supports multiple servers, the override potential can be exploited. When
+a domain is started or restarted, all <code>&lt;system-property&gt;</code> elements are
+resolved and available to the Java Virtual Machine by using the
+<code>System.setProperty()</code> call on each of them (with its name and value
+derived from the corresponding attributes of the element). This is
+analogous to sending the elements as <code>-D</code> parameters on the Java command
+line.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref547" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>The target on which you are creating the system properties.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref548" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">target</dt>
+<dd>
+<p>The valid targets for this subcommand are instance, cluster,
+configuration, domain, and server. Server is the default option. Valid
+values are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the properties on the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Creates the properties for all server instances in the default
+domain.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Creates the properties in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the properties on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the properties on a specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1">name=value</dt>
+<dd>
+<p>The name value pairs of the system properties to add to the specified
+target. Multiple system properties must be separated by a : (colon).
+If a : (colon) appears in the name or value of a system property, it
+must be escaped with a \ (blackslash). If any system properties were
+previously defined, they are updated with the new values.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref549" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM526"></a><a id="sthref550"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating System Properties</p>
+</div>
+<div class="paragraph">
+<p>This example creates a system property associated with an HTTP listener
+on a server instance named <code>myserver</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-system-properties --target myserver http-listener-port=1088
+Command create-system-properties executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref551" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref552" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-system-property.html#delete-system-property-1"><code>delete-system-property</code>(1)</a>,
+<a href="list-system-properties.html#list-system-properties-1"><code>list-system-properties</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-ssl.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-threadpool.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-http</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-http</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-file-user.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-http-health-checker.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-http-1"></a><a id="GSRFM00025"></a><a id="create-http"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_http">create-http</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>sets HTTP parameters for a protocol</p>
+</div>
+<div id="sthref227" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-http [--help]
+--default-virtual-server virtual-server
+[--request-timeout-seconds timeout]
+[--timeout-seconds timeout]
+[--max-connection max-keepalive]
+[--dns-lookup-enabled={false|true}]
+[--servername server-name]
+[--target target]
+protocol-name</code></pre>
+</div>
+</div>
+<div id="sthref228" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-http</code> subcommand creates a set of HTTP parameters for a
+protocol, which in turn configures one or more network listeners. This
+subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref229" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--default-virtual-server</code></dt>
+<dd>
+<p>The ID attribute of the default virtual server for the associated
+network listeners.</p>
+</dd>
+<dt class="hdlist1"><code>--request-timeout-seconds</code></dt>
+<dd>
+<p>The time in seconds at which the request times out. If you do not set
+this option, the request times out in 30 seconds.</p>
+</dd>
+<dt class="hdlist1"><code>--timeout-seconds</code></dt>
+<dd>
+<p>The maximum time in seconds for which a keep alive connection is kept
+open. A value of <code>0</code> or less means keep alive connections are kept
+open indefinitely. The default is <code>30</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--max-connection</code></dt>
+<dd>
+<p>The maximum number of HTTP requests that can be pipelined until the
+connection is closed by the server. Set this property to <code>1</code> to
+disable HTTP/1.0 keep-alive, as well as HTTP/1.1 keep-alive and
+pipelining. The default is <code>256</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--dns-lookup-enabled</code></dt>
+<dd>
+<p>If set to <code>true</code>, looks up the DNS entry for the client. The default
+is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--servername</code></dt>
+<dd>
+<p>Tells the server what to put in the host name section of any URLs it
+sends to the client. This affects URLs the server automatically
+generates; it doesn&#8217;t affect the URLs for directories and files stored
+in the server. This name should be the alias name if your server uses
+an alias. If a colon and port number are appended, that port will be
+used in URLs that the server sends to the client.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the set of HTTP parameters only on the specified target. Valid
+values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the set of HTTP parameters on the default server instance.
+This is the default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the set of HTTP parameters in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the set of HTTP parameters on all server instances in the
+specified cluster.</p>
+</dd>
+<dt class="hdlist1">standalone-instance-name</dt>
+<dd>
+<p>Creates the set of HTTP parameters on the specified standalone
+server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref230" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">protocol-name</dt>
+<dd>
+<p>The name of the protocol to which this HTTP parameter set applies.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref231" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM476"></a><a id="sthref232"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Using the <code>create-http</code> Subcommand</p>
+</div>
+<div class="paragraph">
+<p>The following command creates an HTTP parameter set for the protocol
+named <code>http-1</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-http --timeout-seconds 60 --default-virtual-server server http-1
+Command create-http executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref233" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref234" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-network-listener.html#create-network-listener-1"><code>create-network-listener</code>(1)</a>,
+<a href="create-protocol.html#create-protocol-1"><code>create-protocol</code>(1)</a>,
+<a href="create-virtual-server.html#create-virtual-server-1"><code>create-virtual-server</code>(1)</a>,
+<a href="delete-http.html#delete-http-1"><code>delete-http</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-file-user.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-http-health-checker.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

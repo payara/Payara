@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-jms-resource</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-jms-resource</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-jms-host.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jndi-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-jms-resource-1"></a><a id="GSRFM00040"></a><a id="create-jms-resource"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_jms_resource">create-jms-resource</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates a JMS resource</p>
+</div>
+<div id="sthref352" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jms-resource [--help]
+--restype type
+[--target target]
+[--enabled={true|false}]
+[--description text]
+[--property (name=value)[:name=value]*]
+[--force={false|true}]
+jndi_name</code></pre>
+</div>
+</div>
+<div id="sthref353" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-jms-resource</code> subcommand creates a Java Message Service
+(JMS) connection factory resource or a JMS destination resource.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only. Remote <code>asadmin</code>
+subcommands require a running domain administration server (DAS).</p>
+</div>
+<div id="sthref354" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--restype</code></dt>
+<dd>
+<p>The JMS resource type, which can be <code>javax.jms.Topic</code>,
+<code>javax.jms.Queue</code>, <code>javax.jms.ConnectionFactory</code>,
+<code>javax.jms.TopicConnectionFactory</code>, or
+<code>javax.jms.QueueConnectionFactory</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the JMS resource only for the specified target. Valid values
+are as follows:<br></p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>The resource is always created for the domain as a whole, but the
+<code>&lt;resource-ref&gt;</code> element for the resource is only created for the
+specified <code>--target</code>. This means that although the resource is defined
+at the domain level, it is only active at the specified <code>--target</code>.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the JMS resource for the default server instance. This is
+the default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Creates the JMS resource for the domain.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the JMS resource for every server instance in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Creates the JMS resource for the specified server instance.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>If set to true (the default), the resource is enabled at runtime.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Text providing details about the JMS resource.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the JMS resource.<br>
+You can specify the following properties for a connection factory
+resource:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>ClientId</code></dt>
+<dd>
+<p>A client ID for a connection factory that will be used by a durable
+subscriber.</p>
+</dd>
+<dt class="hdlist1"><code>AddressList</code></dt>
+<dd>
+<p>A comma-separated list of message queue addresses that specify the
+host names (and, optionally, port numbers) of a message broker
+instance or instances with which your application will communicate.
+For example, the value could be <code>earth</code> or <code>earth:7677</code>. Specify the
+port number if the message broker is running on a port other than
+the default (7676). The default value is an address list composed
+from the JMS hosts defined in the server&#8217;s JMS service
+configuration. The default value is <code>localhost</code> and the default port
+number is 7676. The client will attempt a connection to a broker on
+port 7676 of the local host.</p>
+</dd>
+<dt class="hdlist1"><code>UserName</code></dt>
+<dd>
+<p>The user name for the connection factory. The default value is
+<code>guest</code>.</p>
+</dd>
+<dt class="hdlist1"><code>Password</code></dt>
+<dd>
+<p>The password for the connection factory. The default value is
+<code>guest</code>.</p>
+</dd>
+<dt class="hdlist1"><code>ReconnectEnabled</code></dt>
+<dd>
+<p>A value of <code>true</code> indicates that the client runtime attempts to
+reconnect to a message server (or the list of addresses in the
+<code>AddressList</code>) when a connection is lost. The default value is
+<code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>ReconnectAttempts</code></dt>
+<dd>
+<p>The number of attempts to connect (or reconnect) for each address in
+the <code>AddressList</code> before the client runtime tries the next address
+in the list. A value of -1 indicates that the number of reconnect
+attempts is unlimited (the client runtime attempts to connect to the
+first address until it succeeds). The default value is 6.</p>
+</dd>
+<dt class="hdlist1"><code>ReconnectInterval</code></dt>
+<dd>
+<p>The interval in milliseconds between reconnect attempts. This
+applies to attempts on each address in the <code>AddressList</code> and for
+successive addresses in the list. If the interval is too short, the
+broker does not have time to recover. If it is too long, the
+reconnect might represent an unacceptable delay. The default value
+is 30,000 milliseconds.</p>
+</dd>
+<dt class="hdlist1"><code>AddressListBehavior</code></dt>
+<dd>
+<p>Specifies whether connection attempts are in the order of addresses
+in the <code>AddressList</code> (<code>PRIORITY</code>) or in a random order (<code>RANDOM</code>).
+<code>PRIORITY</code> means that the reconnect will always try to connect to
+the first server address in the <code>AddressList</code> and will use another
+one only if the first broker is not available. If you have many
+clients attempting a connection using the same connection factory,
+specify <code>RANDOM</code> to prevent them from all being connected to the
+same address. The default value is the <code>AddressListBehavior</code> value
+of the server&#8217;s JMS service configuration.</p>
+</dd>
+<dt class="hdlist1"><code>AddressListIterations</code></dt>
+<dd>
+<p>  The number of times the client runtime iterates through the
+  <code>AddressList</code> in an effort to establish (or re-establish) a
+  connection). A value of -1 indicates that the number of attempts is
+  unlimited. The default value is -1.<br>
+Additionally, you can specify <code>connector-connection-pool</code> attributes
+as connector resource properties. For a list of these attributes, see
+"<a href="../application-deployment-guide/dd-elements.html#GSDPG00124">connector-connection-pool</a>" in GlassFish Server Open
+Source Edition Application Deployment Guide.<br>
+You can specify the following properties for a destination resource:<br></p>
+</dd>
+<dt class="hdlist1"><code>Name</code></dt>
+<dd>
+<p>The name of the physical destination to which the resource will
+refer. The physical destination is created automatically when you
+run an application that uses the destination resource. You can also
+create a physical destination with the <code>create-jmsdest</code> subcommand.
+If you do not specify this property, the JMS service creates a
+physical destination with the same name as the destination resource
+(replacing any forward slash in the JNDI name with an underscore).</p>
+</dd>
+<dt class="hdlist1"><code>Description</code></dt>
+<dd>
+<p>A description of the physical destination.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--force</code></dt>
+<dd>
+<p>Specifies whether the subcommand overwrites the existing JMS resource
+of the same name. The default value is <code>false</code>.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref355" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jndi_name</dt>
+<dd>
+<p>The JNDI name of the JMS resource to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref356" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM497"></a><a id="sthref357"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a JMS connection factory resource for durable
+subscriptions</p>
+</div>
+<div class="paragraph">
+<p>The following subcommand creates a connection factory resource of type
+<code>javax.jms.ConnectionFactory</code> whose JNDI name is
+<code>jms/DurableConnectionFactory</code>. The <code>ClientId</code> property sets a client ID
+on the connection factory so that it can be used for durable
+subscriptions. The JNDI name for a JMS resource customarily includes the
+<code>jms/</code> naming subcontext.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype javax.jms.ConnectionFactory
+--description "connection factory for durable subscriptions"
+--property ClientId=MyID jms/DurableConnectionFactory
+Connector resource jms/DurableConnectionFactory created.
+Command create-jms-resource executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM498"></a><a id="sthref358"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Creating a JMS destination resource</p>
+</div>
+<div class="paragraph">
+<p>The following subcommand creates a destination resource whose JNDI name
+is <code>jms/MyQueue</code>. The <code>Name</code> property specifies the physical destination
+to which the resource refers.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jms-resource --restype javax.jms.Queue
+--property Name=PhysicalQueue jms/MyQueue
+Administered object jms/MyQueue created.
+Command create-jms-resource executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref359" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref360" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-jms-resource.html#delete-jms-resource-1"><code>delete-jms-resource</code>(1)</a>,
+<a href="list-jms-resources.html#list-jms-resources-1"><code>list-jms-resources</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-jms-host.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-jndi-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

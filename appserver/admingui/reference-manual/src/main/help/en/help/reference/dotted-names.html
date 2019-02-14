@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>dotted-names</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>dotted-names</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="domain.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="instance.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="dotted-names-5asc"></a><a id="GSRFM00268"></a><a id="dotted-names"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dotted_names">dotted-names</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>syntax for using periods to separate name elements</p>
+</div>
+<div id="sthref2398" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>A dotted name is an identifier for a particular \{product---name}
+element, such as a configurable or a monitorable object. A dotted name
+uses the period (.), known as dot, as a delimiter to separate the parts
+of an element name. The period in a dotted name is similar to the slash
+(/) character that delimits the levels in the absolute path name of a
+file in the UNIX file system.</p>
+</div>
+<div class="paragraph">
+<p>The subcommands of the <code>asadmin</code> utility use dotted names as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>list</code> subcommand provides the fully qualified dotted names of the
+management components' attributes.</p>
+</li>
+<li>
+<p>The <code>get</code> subcommand provides access to the attributes.</p>
+</li>
+<li>
+<p>The <code>set</code> subcommand enables you to modify configurable attributes and
+set properties.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The configuration hierarchy is loosely based on the domain&#8217;s schema
+document, and the attributes are modifiable. The attributes of the
+monitoring hierarchy are read-only.</p>
+</div>
+<div class="paragraph">
+<p>The following format is used for configuration dotted names (italic
+indicates replaceable):</p>
+</div>
+<div class="paragraph">
+<p>config-name`.<code>config-element-name</code>.<code>primary-key</code>.<code>attribute-name `|</code>
+instance-name`.<code>config-element-name</code>.<code>primary-key</code>.`attribute-name</p>
+</div>
+<div class="paragraph">
+<p>The following format is used for resource dotted names (italic indicates
+replaceable):</p>
+</div>
+<div class="paragraph">
+<p>server-name`.<code>resource-name</code>.<code>primary-key</code>.<code>attribute-name
+`| domain.resources.`resource-name</code>.<code>primary-key</code>.`attribute-name</p>
+</div>
+<div class="paragraph">
+<p>The following rules apply to forming dotted names:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The top-level is configuration, server, or domain name. For example,
+<code>server-config</code> (default configuration), <code>server</code> (default server), or
+<code>domain1</code> (default domain).</p>
+</li>
+<li>
+<p>A dot (.) always separates two sequential parts of the name.</p>
+</li>
+<li>
+<p>A part of the name usually identifies a server subsystem or its
+specific instance. For example, <code>web-container</code>, <code>log-service</code>,
+<code>thread-pool-1</code>.</p>
+</li>
+<li>
+<p>If any part of the name itself contains a dot (.), then the dot must
+be escaped with a leading <code>\</code> (backslash) so that the <code>.</code> (dot) does not
+act like a delimiter. For further information on escape characters, see
+the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</li>
+<li>
+<p>An <code>*</code> (asterisk) character can be used anywhere in the dotted name
+and acts like the wildcard character in regular expressions.
+Additionally, an <code>*</code> can collapse all the parts of the dotted name. For
+example, a long dotted name such as <code>this.is.really.long.hierarchy</code> can
+be abbreviated to <code>th*.hierarchy</code>. The <code>.</code> (dot) always delimits the
+parts of the dotted name.<br></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Characters that have special meaning to the shell or command
+interpreter, such as * (asterisk), should be quoted or escaped as
+appropriate to the shell, for example, by enclosing the argument in
+quotes. In multimode, quotes are needed only for arguments that include
+spaces, quotes, or backslash.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>--monitor</code> option of the <code>get</code> and <code>list</code> subcommands selects the
+monitoring or configuration hierarchy. If the subcommand specifies
+<code>--monitor`</code>=false` (the default), the configuration hierarchy is
+selected. If the subcommand specifies <code>--monitor`</code>=true`, the monitoring
+hierarchy is selected.</p>
+</li>
+<li>
+<p>If you know the complete dotted name and do not need to use a
+wildcard, the <code>list</code>, <code>get</code>, and <code>set</code> subcommands treat the name
+differently:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>list</code> subcommand treats a complete dotted name as the name of a
+parent node in the abstract hierarchy. When you specify this name to the
+<code>list</code> subcommand, the names of the immediate children at that level are
+returned. For example, the following command lists all the web modules
+deployed to the domain or the default server:<br></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>asadmin&gt; list server.applications.web-module</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The`get` and <code>set</code> subcommands treat a complete dotted name as the
+fully qualified name of the attribute of a node (whose dotted name
+itself is the name that you get when you remove the last part of this
+dotted name). When you specify this name to the <code>get</code> or <code>set</code>
+subcommand, the subcommand acts on the value of that attribute, if such
+an attribute exists. You will never start with this case because in
+order to find out the names of attributes of a particular node in the
+hierarchy, you must use the * wildcard character . For example, the
+following dotted name returns the context root of the web application
+deployed to the domain or default server:<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>server.applications.web-module.JSPWiki.context-root</pre>
+</div>
+</div>
+<div id="sthref2399" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM815"></a><a id="sthref2400"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing All Configurable Elements</p>
+</div>
+<div class="paragraph">
+<p>This example lists all the configurable elements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list *</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Output similar to the following is displayed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">applications
+configs
+configs.config.server-config
+configs.config.server-config.admin-service
+configs.config.server-config.admin-service.das-config
+configs.config.server-config.admin-service.jmx-connector.system
+configs.config.server-config.admin-service.property.adminConsoleContextRoot
+configs.config.server-config.admin-service.property.adminConsoleDownloadLocation
+configs.config.server-config.admin-service.property.ipsRoot
+configs.config.server-config.ejb-container
+configs.config.server-config.ejb-container.ejb-timer-service
+configs.config.server-config.http-service
+configs.config.server-config.http-service.access-log
+configs.config.server-config.http-service.virtual-server.__asadmin
+configs.config.server-config.http-service.virtual-server.server
+configs.config.server-config.iiop-service
+configs.config.server-config.iiop-service.iiop-listener.SSL
+configs.config.server-config.iiop-service.iiop-listener.SSL.ssl
+configs.config.server-config.iiop-service.iiop-listener.SSL_MUTUALAUTH
+configs.config.server-config.iiop-service.iiop-listener.SSL_MUTUALAUTH.ssl
+configs.config.server-config.iiop-service.iiop-listener.orb-listener-1
+configs.config.server-config.iiop-service.orb
+configs.config.server-config.java-config
+configs.config.server-config.jms-service
+configs.config.server-config.jms-service.jms-host.default_JMS_host
+configs.config.server-config.mdb-container
+configs.config.server-config.monitoring-service
+configs.config.server-config.monitoring-service.module-monitoring-levels
+...
+property.administrative.domain.name
+resources
+resources.jdbc-connection-pool.DerbyPool
+resources.jdbc-connection-pool.DerbyPool.property.DatabaseName
+resources.jdbc-connection-pool.DerbyPool.property.Password
+resources.jdbc-connection-pool.DerbyPool.property.PortNumber
+resources.jdbc-connection-pool.DerbyPool.property.User
+resources.jdbc-connection-pool.DerbyPool.property.connectionAttributes
+resources.jdbc-connection-pool.DerbyPool.property.serverName
+resources.jdbc-connection-pool.__TimerPool
+resources.jdbc-connection-pool.__TimerPool.property.connectionAttributes
+resources.jdbc-connection-pool.__TimerPool.property.databaseName
+resources.jdbc-resource.jdbc/__TimerPool
+resources.jdbc-resource.jdbc/__default
+servers
+servers.server.server
+servers.server.server.resource-ref.jdbc/__TimerPool
+servers.server.server.resource-ref.jdbc/__default
+system-applications
+Command list executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM816"></a><a id="sthref2401"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Listing All the Monitorable Objects</p>
+</div>
+<div class="paragraph">
+<p>The following example lists all the monitorable objects.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list --monitor *</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Output similar to the following is displayed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">server
+server.jvm
+server.jvm.class-loading-system
+server.jvm.compilation-system
+server.jvm.garbage-collectors
+server.jvm.garbage-collectors.Copy
+server.jvm.garbage-collectors.MarkSweepCompact
+server.jvm.memory
+server.jvm.operating-system
+server.jvm.runtime
+server.network
+server.network.admin-listener
+server.network.admin-listener.connections
+server.network.admin-listener.file-cache
+server.network.admin-listener.keep-alive
+server.network.admin-listener.thread-pool
+server.network.http-listener-1
+server.network.http-listener-1.connections
+server.network.http-listener-1.file-cache
+server.network.http-listener-1.keep-alive
+server.network.http-listener-1.thread-pool
+server.transaction-service
+Command list executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2402" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="list.html#list-1"><code>list</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="domain.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="instance.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

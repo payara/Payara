@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>export</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>export</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="enable-secure-admin-principal.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="export-http-lb-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="export-1"></a><a id="GSRFM00132"></a><a id="export"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_export">export</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>marks a variable name for automatic export to the environment of
+subsequent commands in multimode</p>
+</div>
+<div id="sthref1151" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] export [--help]
+[variable-name=value [variable-name=value]*]</code></pre>
+</div>
+</div>
+<div id="sthref1152" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>In multimode, the <code>export</code> subcommand marks an environment variable for
+automatic export to the environment of subsequent commands. All
+subsequent commands use the variable name value as specified unless you
+exit multimode, or use the <code>unset</code> subcommand to unset the variable. If
+only the variable name is specified, the current value of that variable
+name is displayed.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>export</code> subcommand is used without any arguments, a list of all
+the exported variables and their values is displayed. Exported shell
+environment variables set prior to invoking the <code>asadmin</code> utility are
+imported automatically and set as exported variables within <code>asadmin</code>.
+Environment variables that are not exported cannot be read by the
+<code>asadmin</code> utility.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div id="sthref1153" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1154" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">variable-name=value</dt>
+<dd>
+<p>Variable name and value for automatic export to the environment to be
+used by subsequent commands.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1155" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM609"></a><a id="sthref1156"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing the Environment Variables That Are Set</p>
+</div>
+<div class="paragraph">
+<p>This example lists the environment variables that have been set.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; export
+AS_ADMIN_USER = admin
+AS_ADMIN_HOST = bluestar
+AS_ADMIN_PREFIX = server1.jms-service
+AS_ADMIN_PORT = 8000
+Command export executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM610"></a><a id="sthref1157"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Setting an Environment Variable</p>
+</div>
+<div class="paragraph">
+<p>This example sets the <code>AS_ADMIN_HOST</code> environment variable to
+<code>bluestar</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; export AS_ADMIN_HOST=bluestar
+Command export executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM611"></a><a id="sthref1158"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Setting Multiple Environment Variables</p>
+</div>
+<div class="paragraph">
+<p>This example sets a number of environment variables for the multimode
+environment.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; export AS_ADMIN_HOST=bluestar AS_ADMIN_PORT=8000
+AS_ADMIN_USER=admin AS_ADMIN_PREFIX=server1.jms-service
+Command export executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1159" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1160" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="multimode.html#multimode-1"><code>multimode</code>(1)</a>,
+<a href="unset.html#unset-1"><code>unset</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="enable-secure-admin-principal.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="export-http-lb-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

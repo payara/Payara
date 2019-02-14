@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>capture-schema</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>capture-schema</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="asadmin.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="package-appclient.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="capture-schema-1m"></a><a id="GSRFM00821"></a><a id="capture-schema"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_capture_schema">capture-schema</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>stores the database metadata (schema) in a file for use in mapping and
+execution</p>
+</div>
+<div id="sthref2381" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">capture-schema -username name -password password
+[-dburl url] [-driver jdbc_driver_classname]
+[-schemaname schemaname] [-table tablename]
+-out filename]</code></pre>
+</div>
+</div>
+<div id="sthref2382" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>Stores the database metadata (schema) in a file.</p>
+</div>
+<div class="paragraph">
+<p>Run <code>capture-schema</code> as the same database user that owns the table(s),
+and use that same username with the <code>-username</code> option (and
+<code>-schemaname</code>, if required).</p>
+</div>
+<div class="paragraph">
+<p>When running <code>capture-schema</code> against an Oracle database, you should
+grant the database user running the <code>capture-schema</code> command the
+<code>ANALYZE ANY TABLE</code> privilege.</p>
+</div>
+<div id="sthref2383" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>-username</code></dt>
+<dd>
+<p>user name for authenticating access to a database.</p>
+</dd>
+<dt class="hdlist1"><code>-password</code></dt>
+<dd>
+<p>password for accessing the selected database.</p>
+</dd>
+<dt class="hdlist1"><code>-dburl</code></dt>
+<dd>
+<p>JDBC URL required by the driver for accessing a database.</p>
+</dd>
+<dt class="hdlist1"><code>-driver</code></dt>
+<dd>
+<p>JDBC driver classname in your <code>CLASSPATH</code>.</p>
+</dd>
+<dt class="hdlist1"><code>-schemaname</code></dt>
+<dd>
+<p>name of the user schema being captured. If not specified, the default
+will capture metadata for all tables from all the schemas accessible
+to this user.<br>
+Specifying this parameter is highly recommended. Without this option,
+if more than one schema is accessible to this user, more than one
+table with the same name may be captured, which will cause problems
+when mapping CMP fields to tables.<br>
+The specified schema name must be uppercase.</p>
+</dd>
+<dt class="hdlist1"><code>-table</code></dt>
+<dd>
+<p>name of a table; multiple table names can be specified. If no table is
+specified, all the tables in the database or named schema are
+captured.<br>
+The specified table name or names are case sensitive. Be sure to match
+the case of the previously created table names.</p>
+</dd>
+<dt class="hdlist1"><code>-out</code></dt>
+<dd>
+<p>name of the output file. This option is required. If the specified
+output file does not contain the .dbschema suffix, it will be appended
+to the filename.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2384" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM813"></a><a id="sthref2385"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Using the <code>capture-schema</code> command</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">capture-schema -username cantiflas -password enigma
+-dburl jdbc:oracle:thin:@sadbuttrue:1521:ora817
+-driver oracle.jdbc.driver.OracleDriver
+-schemaname CANTIFLAS -out cantiflas.dbschema</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where: <code>sun-acc.xml</code> is the name of the client configuration XML file,
+<code>myclientapp.jar</code> is the client application <code>.jar</code> file, and <code>scott</code> and
+<code>sample</code> are arguments to pass to the application. If <code>sun-acc.xml</code> and
+<code>myclientapp.jar</code> are not in the current directory, you must give the
+absolute path locations; otherwise the relative paths are used. The
+relative path is relative to the directory where the command is being
+executed.</p>
+</div>
+<div id="sthref2386" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="asadmin.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="package-appclient.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>multimode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>multimode</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="monitor.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="osgi.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="multimode-1"></a><a id="GSRFM00213"></a><a id="multimode"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multimode">multimode</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>allows multiple subcommands to be run while preserving environment
+settings and remaining in the asadmin utility</p>
+</div>
+<div id="sthref1900" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] multimode [--help]
+[--file filename]
+[--printprompt={true|false}] [--encoding encode]</code></pre>
+</div>
+</div>
+<div id="sthref1901" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>multimode</code> subcommand processes <code>asadmin</code> subcommands sequentially
+in a single session. The command-line interface prompts for a
+subcommand, runs that subcommand, displays the results of that
+subcommand, and then prompts for the next subcommand. All the <code>asadmin</code>
+options set in multimode apply to subsequent commands until the
+multimode session is exited. You exit <code>multimode</code> by typing <code>exit</code>,
+<code>quit</code>, or Ctrl-D.</p>
+</div>
+<div class="paragraph">
+<p>You can use the <code>export</code> subcommand to set your environment, or use the
+<code>unset</code> subcommand to remove environment variables from the multimode
+environment.</p>
+</div>
+<div class="paragraph">
+<p>You can also provide subcommands by passing a previously prepared list
+of subcommands from a file or standard input (pipe). When you use a
+file, you can include comment lines in the file by entering the hash
+symbol (<code>#</code>) as the first character of the line.</p>
+</div>
+<div class="paragraph">
+<p>You can invoke <code>multimode</code> from within a multimode session. When you
+exit the second multimode environment, you return to your original
+multimode environment.</p>
+</div>
+<div class="paragraph">
+<p>All the remote <code>asadmin</code> utility options can be supplied when invoking
+the <code>multimode</code> subcommand. The settings will apply as defaults for all
+subcommands that are run within the multimode session. For a list of the
+<code>asadmin</code> utility options, see the
+<a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</div>
+<div id="sthref1902" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--file</code></dt>
+<dt class="hdlist1"><code>-f</code></dt>
+<dd>
+<p>Reads the subcommands in the specified file.</p>
+</dd>
+<dt class="hdlist1"><code>--printprompt</code></dt>
+<dd>
+<p>Controls printing of the <code>asadmin</code> prompt. By default, this option is
+set to the same value as the <code>--interactive</code> <code>asadmin</code> utility option.
+Normally you will not need to specify this option. Default is true.</p>
+</dd>
+<dt class="hdlist1"><code>--encoding</code></dt>
+<dd>
+<p>Specifies the character set for the file to be decoded. By default,
+the system character set is used.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1903" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM725"></a><a id="sthref1904"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Starting a Multimode Session</p>
+</div>
+<div class="paragraph">
+<p>This example starts a multimode session where: <code>%</code> is the system prompt.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">% asadmin multimode
+asadmin&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also start a multimode session by typing <code>asadmin</code> without
+options or subcommands at the system prompt.</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM726"></a><a id="sthref1905"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Running Multiple Commands From a File</p>
+</div>
+<div class="paragraph">
+<p>This example runs a sequence of subcommands from the <code>commands_file.txt</code>
+file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">% asadmin multimode --file commands_file.txt</code></pre>
+</div>
+</div>
+<div id="sthref1906" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1907" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="export.html#export-1"><code>export</code>(1)</a>,
+<a href="unset.html#unset-1"><code>unset</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="monitor.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="osgi.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

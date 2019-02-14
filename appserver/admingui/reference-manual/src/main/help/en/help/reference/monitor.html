@@ -1,0 +1,481 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>monitor</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="migrate-timers.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="multimode.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The script content on this page is for navigation purposes only and does
+not alter the content in any way.</p>
+</div>
+<div class="paragraph">
+<p><a id="monitor-1"></a><a id="GSRFM00212"></a><a id="monitor"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_monitor">monitor</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>displays monitoring data for commonly used components and services</p>
+</div>
+<div id="sthref1890" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] monitor [--help]
+--type type
+[--filename filename]
+[--interval interval]
+[--filter filter]
+instance-name</code></pre>
+</div>
+</div>
+<div id="sthref1891" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>monitor</code> subcommand displays statistics for commonly monitored
+\{product---name} components and services. The <code>--type</code> option must be
+used to specify the object for which statistics are to be displayed.
+Data is displayed continuously in a tabular form, or the data can be
+displayed at a particular time interval by using the <code>--interval</code>
+option.</p>
+</div>
+<div class="paragraph">
+<p>Before a given component or service can be monitored, monitoring must be
+enabled (set to HIGH or LOW) for the component or service by using the
+Administration Console, the enable-monitoring subcommand, or the set
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The monitor subcommand has options for filtering the results and
+capturing the output in a Comma Separated Values (CSV) file. The output
+appears in a table format. To view the legend of the table header, type
+<code>h</code>.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div id="sthref1892" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--type</code></dt>
+<dd>
+<p>The component or service to monitor. This option is required. No
+default value is defined.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>httplistener</code></dt>
+<dd>
+<p>For this type, the attribute
+<code>server.monitoring-service.module-monitoring-levels.http-service</code>
+must be set to LOW or HIGH.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Displays the following statistics for the HTTP listener service</dt>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>ec</code></dt>
+<dd>
+<p>The total number errors in the processing of HTTP requests.</p>
+</dd>
+<dt class="hdlist1"><code>mt</code></dt>
+<dd>
+<p>The longest response time (in milliseconds) for the processing of
+a single HTTP request.</p>
+</dd>
+<dt class="hdlist1"><code>pt</code></dt>
+<dd>
+<p>The total amount of time (in milliseconds) that the HTTP listener
+service has spent in processing HTTP requests.</p>
+</dd>
+<dt class="hdlist1"><code>rc</code></dt>
+<dd>
+<p>The total number of requests that the HTTP listener service has
+processed.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>jvm</code></dt>
+<dd>
+<p>For this type, the attribute
+<code>server.server-config.monitoring-service.module-monitoring-levels.jvm</code>
+must be set to LOW or HIGH.<br>
+Displays the following statistics for the Virtual Machine for the
+Java platform (Java Virtual Machine or JVM</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1">machine):<a href="#sthref1893"><sup>Foot 2 </sup></a></dt>
+<dt class="hdlist1"><code>UpTime</code></dt>
+<dd>
+<p>The number of milliseconds that the JVM machine has been running
+since it was last started.</p>
+</dd>
+<dt class="hdlist1"><code>min</code></dt>
+<dd>
+<p>The initial amount of memory (in bytes) that the JVM machine
+requests from the operating system for memory management during
+startup.</p>
+</dd>
+<dt class="hdlist1"><code>max</code></dt>
+<dd>
+<p>The maximum amount of memory that can be used for memory
+management.</p>
+</dd>
+<dt class="hdlist1"><code>low</code></dt>
+<dd>
+<p>Retained for compatibility with other releases.</p>
+</dd>
+<dt class="hdlist1"><code>high</code></dt>
+<dd>
+<p>Retained for compatibility with other releases.</p>
+</dd>
+<dt class="hdlist1"><code>count</code></dt>
+<dd>
+<p>The amount of memory (in bytes) that is guaranteed to be available
+for use by the JVM machine.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>webmodule</code></dt>
+<dd>
+<p>For this type, the attribute
+<code>server.server-config.monitoring-service.module-monitoring-levels.web-container</code>
+must be set to LOW or HIGH.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Displays the following statistics for all deployed web modules</dt>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>asc</code></dt>
+<dd>
+<p>The number of currently active sessions.</p>
+</dd>
+<dt class="hdlist1"><code>ast</code></dt>
+<dd>
+<p>The total number of sessions that are currently active or have
+been active previously.</p>
+</dd>
+<dt class="hdlist1"><code>rst</code></dt>
+<dd>
+<p>The total number of rejected sessions.</p>
+</dd>
+<dt class="hdlist1"><code>st</code></dt>
+<dd>
+<p>The total number of sessions that have been created.</p>
+</dd>
+<dt class="hdlist1"><code>ajlc</code></dt>
+<dd>
+<p>The number of currently active JavaServer Pages ( JSP) technology
+pages that are loaded.</p>
+</dd>
+<dt class="hdlist1"><code>mjlc</code></dt>
+<dd>
+<p>The maximum number of JSP technology pages that were active at any
+time simultaneously.</p>
+</dd>
+<dt class="hdlist1"><code>tjlc</code></dt>
+<dd>
+<p>Total number of JSP technology pages that have been loaded.</p>
+</dd>
+<dt class="hdlist1"><code>aslc</code></dt>
+<dd>
+<p>The number of currently active Java servlets that are loaded.</p>
+</dd>
+<dt class="hdlist1"><code>mslc</code></dt>
+<dd>
+<p>The maximum number of Java servlets that were active at any time
+simultaneously.</p>
+</dd>
+<dt class="hdlist1"><code>tslc</code></dt>
+<dd>
+<p>The total number of Java servlets that have been loaded.</p>
+</dd>
+<dt class="hdlist1"><code>--filename</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+<dt class="hdlist1"><code>--interval</code></dt>
+<dd>
+<p>The interval in seconds before capturing monitoring attributes. The
+interval must be greater than 0. The monitoring attributes are
+displayed on <code>stdout</code> until you type Control-C or <code>q</code>. The default
+value is 30.</p>
+</dd>
+<dt class="hdlist1"><code>--filter</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1894" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>The server instance for which to view monitoring data. The default
+value is <code>server</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1895" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM723"></a><a id="sthref1896"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Displaying Monitoring Statistics by Interval</p>
+</div>
+<div class="paragraph">
+<p>This example displays monitoring data for the JVM machine every 2000
+seconds.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; monitor --type=jvm --interval 2000 server
+                               JVM Monitoring
+UpTime(ms)                          Heap and NonHeap Memory(bytes)
+current                   min        max        low        high       count
+957843                    29523968   188284928  0          0          60370944
+
+q
+Command monitor executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM724"></a><a id="sthref1897"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Filtering the Monitoring Data</p>
+</div>
+<div class="paragraph">
+<p>This example uses the filter option to show <code>http-listener-1</code>
+statistics.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; monitor --type httplistener --filter http-listener-1 server
+
+                   HTTP Listener Monitoring: http-listener-1
+br   bs   c200 c2xx c302 c304 c3xx c400 c401 c403 c404 c4xx c503 c5xx coc  co
+ctc  ctb  ec   moc  mst  mt   mtm  mst  pt   rc
+0    0    0    0    0    3    3    0    0    0    0    0    0    0    0    0
+2    0    0    1    20   20   2    2    6    3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To see the legend for the table headings, type <code>h</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">******************************************************************************************
+* br   = Cumulative value of the Bytes received by each of the Request Processors        *
+* bs   = Cumulative value of the Bytes sent by each of the Request Processors            *
+* c200 = Number of responses with a status code equal to 200                             *
+* c2xx = Number of responses with a status code in the 2xx range                         *
+* c302 = Number of responses with a status code equal to 302                             *
+* c304 = Number of responses with a status code equal to 304                             *
+* c3xx = Number of responses with a status code in the 3xx range                         *
+* c400 = Number of responses with a status code equal to 400                             *
+* c401 = Number of responses with a status code equal to 401                             *
+* c403 = Number of responses with a status code equal to 403                             *
+* c404 = Number of responses with a status code equal to 404                             *
+* c4xx = Number of responses with a status code equal to 4xx                             *
+* c504 = Number of responses with a status code equal to 504                             *
+* c5xx = Number of responses with a status code equal to 5xx                             *
+* coc  = Number of open connections                                                      *
+* co   = Number of responses with a status code outside the 2xx, 3xx, 4xx, and 5xx range *
+* ctc  = Number of request processing threads currently in the listener thread pool      *
+* ctb  = Number of request processing threads currently in use in the listener thread    *
+*        pool serving requests                                                           *
+* ec   = Number of responses with a status code equal to 400                             *
+* moc  = Maximum number of open connections                                              *
+* mst  = Minimum number of request processing threads that will be created at listener   *
+*        startup time and maintained as spare threads above the current thread count     *
+* mt   = Maximum number of request processing threads that are created by the listener   *
+* mtm  = Provides the longest response time for a request - not a cumulative value, but  *
+*        the largest response time from among the response times                         *
+* pt   = Cumulative value of the times taken to process each request. The processing     *
+*        time is the average of request processing times over the request count          *
+* rc   = Cumulative number of the requests processed so far                              *
+******************************************************************************************</code></pre>
+</div>
+</div>
+<div id="sthref1898" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1899" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="enable-monitoring.html#enable-monitoring-1"><code>enable-monitoring</code>(1)</a>,
+<a href="disable-monitoring.html#disable-monitoring-1"><code>disable-monitoring</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="monitoring.html#monitoring-5asc"><code>monitoring</code>(5ASC)</a></p>
+</div>
+<div class="paragraph">
+<p>"<a href="../administration-guide/monitoring.html#GSADG00011">Administering the Monitoring Service</a>" in GlassFish
+Server Open Source Edition Administration Guide</p>
+</div>
+<hr>
+<div class="paragraph">
+<p>Footnote Legend</p>
+</div>
+<div class="paragraph">
+<p>Footnote 2: The terms "Java Virtual Machine" and "JVM" mean a Virtual
+Machine for the Java platform.<br></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="migrate-timers.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="multimode.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,675 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>deploydir</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>deploydir</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="deploy.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="disable.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="deploydir-1"></a><a id="GSRFM00115"></a><a id="deploydir"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deploydir">deploydir</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>deploys an exploded format of application archive</p>
+</div>
+<div id="sthref1031" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] deploydir [--help]
+[--force={false|true}]
+[--virtualservers virtual_servers]
+[--contextroot context_root]
+[--verify={false|true}]
+[--precompilejsp={false|true}]
+[--name component-name]
+[--retrieve local_dirpath]
+[--uniquetablenames={true|false}]
+[--dbvendorname dbvendorname]
+[--createtables={false|true}|--dropandcreatetables={false|true}]
+[--deploymentplan deployment_plan]
+[--altdd alternate_deploymentdescriptor]
+[--runtimealtdd runtime_alternate_deploymentdescriptor]
+[--deploymentorder deployment_order]
+[--enabled={true|false}]
+[--generatermistubs={false|true}]
+[--availabilityenabled={false|true}]
+[--asyncreplication={true|false}]
+[--lbenabled={true|false}]
+[--keepstate={false|true}]
+[--libraries jar_file[,jar_file]*]
+[--target target]
+[--type pkg-type]
+[--properties(name=value)[:name=value]*]
+dirpath</code></pre>
+</div>
+</div>
+<div id="sthref1032" class="paragraph">
+<p>Description</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>deploydir</code> subcommand is deprecated. Use the <code>deploy</code> subcommand
+instead.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>deploydir</code> subcommand deploys an application directly from a
+development directory. The appropriate directory hierarchy and
+deployment descriptors conforming to the Java EE specification must
+exist in the deployment directory.</p>
+</div>
+<div class="paragraph">
+<p>Directory deployment is for advanced developers only. Do not use
+<code>deploydir</code> in production environments. Instead, use the <code>deploy</code>
+subcommand. Directory deployment is only supported on localhost, that
+is, the client and server must reside on the same machine. For this
+reason, the only values for the <code>--host</code> option are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>localhost</code></p>
+</li>
+<li>
+<p>The value of the <code>$HOSTNAME</code> environment variable</p>
+</li>
+<li>
+<p>The IP address of the machine</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>--uniquetablenames</code>, <code>--createtables</code>, and
+<code>--dropandcreatetables</code> options are not specified, the entries in the
+deployment descriptors are used.</p>
+</div>
+<div class="paragraph">
+<p>The <code>--force</code> option makes sure the component is forcefully (re)deployed
+even if the specified component has already been deployed or already
+exists. Set the <code>--force</code> option to false for an initial deployment. If
+the specified application is running and the <code>--force</code> option is set to
+false, the subcommand fails.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1033" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--force</code></dt>
+<dd>
+<p>If set to <code>true</code>, redeploys the component even if the specified
+component has already been deployed or already exists. Default is
+<code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--virtualservers</code></dt>
+<dd>
+<p>One or more virtual server IDs. Multiple IDs are separated by commas.</p>
+</dd>
+<dt class="hdlist1"><code>--contextroot</code></dt>
+<dd>
+<p>Valid only if the archive is a web module. It is ignored for other
+archive types; it will be the value specified by default-context-path
+in web.xml, if specified; defaults to filename without extension.</p>
+</dd>
+<dt class="hdlist1"><code>--precompilejsp</code></dt>
+<dd>
+<p>By default this option does not allow the JSP to be precompiled during
+deployment. Instead, JSPs are compiled during runtime. Default is
+<code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--verify</code></dt>
+<dd>
+<p>If set to true and the required verifier packages are installed from
+the Update Tool, the syntax and semantics of the deployment descriptor
+is verified. Default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--name</code></dt>
+<dd>
+<p>Name of the deployable component.<br>
+The name can include an optional version identifier, which follows the
+name and is separated from the name by a colon (<code>:</code>). The version
+identifier must begin with a letter or number. It can contain
+alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period
+(<code>.</code>) characters. For more information about module and application
+versions, see "<a href="../application-deployment-guide/overview.html#GSDPG00324">Module and Application Versions</a>" in
+GlassFish Server Open Source Edition Application Deployment Guide.</p>
+</dd>
+<dt class="hdlist1"><code>--retrieve</code></dt>
+<dd>
+<p>Retrieves the client stub JAR file from the server machine to the
+local directory.</p>
+</dd>
+<dt class="hdlist1"><code>--dbvendorname</code></dt>
+<dd>
+<p>Specifies the name of the database vendor for which tables are
+created. Supported values include <code>db2</code>, <code>mssql</code>, <code>mysql</code>, <code>oracle</code>,
+<code>derby</code>, <code>javadb</code>, <code>postgresql</code>, and <code>sybase</code>. These values are
+case-insensitive. If not specified, the value of the
+<code>database-vendor-name</code> attribute in <code>glassfish-ejb-jar.xml</code> is used.
+If no value is specified, a connection is made to the resource
+specified by the <code>jndi-name</code> subelement of the <code>cmp-resource</code> element
+in the <code>glassfish-ejb-jar.xml</code> file, and the database vendor name is
+read. If the connection cannot be established, or if the value is not
+recognized, SQL-92 compliance is presumed.</p>
+</dd>
+<dt class="hdlist1"><code>--createtables</code></dt>
+<dd>
+<p>If specified as true, creates tables at deployment of an application
+with unmapped CMP beans. If specified as false, tables are not
+created. If not specified, the value of the <code>create-tables-at-deploy</code>
+entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
+file determines whether or not tables are created. No unique
+constraints are created for the tables.</p>
+</dd>
+<dt class="hdlist1"><code>--dropandcreatetables</code></dt>
+<dd>
+<p>If specified as true when the component is redeployed, the tables
+created by the previous deployment are dropped before creating the new
+tables. Applies to deployed applications with unmapped CMP beans.
+Preexisting tables will not be dropped on the initial deployment of an
+application or on a deployment that follows an explicit undeploy. If
+specified as false, tables are neither dropped nor created. If not
+specified, the tables are dropped if the <code>drop-tables-at-undeploy</code>
+entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
+file is set to true, and the new tables are created if the
+<code>create-tables-at-deploy</code> entry in the <code>cmp-resource</code> element of the
+<code>glassfish-ejb-jar.xml</code> file is set to true.</p>
+</dd>
+<dt class="hdlist1"><code>--uniquetablenames</code></dt>
+<dd>
+<p>Guarantees unique table names for all the beans and results in a hash
+code added to the table names. This is useful if you have an
+application with case-sensitive bean names. Applies to applications
+with unmapped CMP beans.</p>
+</dd>
+<dt class="hdlist1"><code>--deploymentplan</code></dt>
+<dd>
+<p>Deploys the deployment plan, which is a JAR file that contains
+\{product---name} descriptors. Specify this option when deploying a
+pure EAR file. A pure EAR file is an EAR without \{product---name}
+descriptors.</p>
+</dd>
+<dt class="hdlist1"><code>--altdd</code></dt>
+<dd>
+<p>Deploys the application using a Java EE standard deployment descriptor
+that resides outside of the application archive. Specify an absolute
+path or a relative path to the alternate deployment descriptor file.
+The alternate deployment descriptor overrides the top-level deployment
+descriptor packaged in the archive. For example, for an EAR, the
+<code>--altdd</code> option overrides <code>application.xml</code>. For a standalone module,
+the <code>--altdd</code> option overrides the top-level module descriptor such as
+<code>web.xml</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--runtimealtdd</code></dt>
+<dd>
+<p>Deploys the application using a \{product---name} runtime deployment
+descriptor that resides outside of the application archive. Specify an
+absolute path or a relative path to the alternate deployment
+descriptor file. The alternate deployment descriptor overrides the
+top-level deployment descriptor packaged in the archive. For example,
+for an EAR, the <code>--runtimealtdd</code> option overrides
+<code>glassfish-application.xml</code>. For a standalone module, the
+<code>--runtimealtdd</code> option overrides the top-level module descriptor such
+as <code>glassfish-web.xml</code>. Applies to \{product---name} deployment
+descriptors only (<code>glassfish-*.xml</code>); the name of the alternate
+deployment descriptor file must begin with <code>glassfish-</code>. Does not
+apply to <code>sun-*.xml</code> deployment descriptors, which are deprecated.</p>
+</dd>
+<dt class="hdlist1"><code>--deploymentorder</code></dt>
+<dd>
+<p>Specifies the deployment order of the application. This is useful if
+the application has dependencies and must be loaded in a certain order
+at server startup. The deployment order is specified as an integer.
+The default value is 100. Applications with lower numbers are loaded
+before applications with higher numbers. For example, an application
+with a deployment order of 102 is loaded before an application with a
+deployment order of 110. If a deployment order is not specified, the
+default value of 100 is assigned. If two applications have the same
+deployment order, the first application to be deployed is the first
+application to be loaded at server startup.<br>
+The deployment order is typically specified when the application is
+first deployed but can also be specified or changed after initial
+deployment using the <code>set</code> subcommand. You can view the deployment
+order of an application using the <code>get</code> subcommand</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>Allows users to access the application. If set to <code>false</code>, users will
+not be able to access the application. This option enables the
+application on the specified target instance or cluster. If you deploy
+to the target <code>domain</code>, this option is ignored, since deploying to the
+domain doesn&#8217;t deploy to a specific instance or cluster. The default
+is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--generatermistubs</code></dt>
+<dd>
+<p>If set to <code>true</code>, static RMI-IIOP stubs are generated and put into the
+<code>client.jar</code>. If set to <code>false</code>, the stubs are not generated. Default
+is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--availabilityenabled</code></dt>
+<dd>
+<p>This option controls whether high-availability is enabled for web
+sessions and for stateful session bean (SFSB) checkpointing and
+potentially passivation. If set to false (default) all web session
+saving and SFSB checkpointing is disabled for the specified
+application, web application, or EJB module. If set to true, the
+specified application or module is enabled for high-availability. Set
+this option to true only if high availability is configured and
+enabled at higher levels, such as the server and container levels.</p>
+</dd>
+<dt class="hdlist1"><code>--asyncreplication</code></dt>
+<dd>
+<p>This option controls whether web session and SFSB states for which
+high availability is enabled are first buffered and then replicated
+using a separate asynchronous thread. If set to true (default),
+performance is improved but availability is reduced. If the instance
+where states are buffered but not yet replicated fails, the states are
+lost. If set to false, performance is reduced but availability is
+guaranteed. States are not buffered but immediately transmitted to
+other instances in the cluster.</p>
+</dd>
+<dt class="hdlist1"><code>--lbenabled</code></dt>
+<dd>
+<p>This option controls whether the deployed application is available for
+load balancing. The default is true.</p>
+</dd>
+<dt class="hdlist1"><code>--keepstate</code></dt>
+<dd>
+<p>This option controls whether web sessions, SFSB instances, and
+persistently created EJB timers are retained between redeployments.<br>
+The default is false. This option is supported only on the default
+server instance, named <code>server</code>. It is not supported and ignored for
+any other target.<br>
+Some changes to an application between redeployments prevent this
+feature from working properly. For example, do not change the set of
+instance variables in the SFSB bean class.<br>
+For web applications, this feature is applicable only if in the
+<code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the
+<code>session-manager</code> element is <code>file</code>.<br>
+For stateful session bean instances, the persistence type without high
+availability is set in the server (the <code>sfsb-persistence-type</code>
+attribute) and must be set to <code>file</code>, which is the default and
+recommended value.<br>
+If any active web session, SFSB instance, or EJB timer fails to be
+preserved or restored, none of these will be available when the
+redeployment is complete. However, the redeployment continues and a
+warning is logged.<br>
+To preserve active state data, \{product---name} serializes the data
+and saves it in memory. To restore the data, the class loader of the
+newly redeployed application deserializes the data that was previously
+saved.</p>
+</dd>
+<dt class="hdlist1"><code>--libraries</code></dt>
+<dd>
+<p>A comma-separated list of library JAR files. Specify the library JAR
+files by their relative or absolute paths. Specify relative paths
+relative to domain-dir`/lib/applibs`. The libraries are made available
+to the application in the order specified.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target to which you are deploying. Valid values are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Deploys the component to the default server instance <code>server</code> and is
+the default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Deploys the component to the domain. If <code>domain</code> is the target for
+an initial deployment, the application is deployed to the domain,
+but no server instances or clusters reference the application. If
+<code>domain</code> is the target for a redeployment (the <code>--force</code> option is
+set to true), and dynamic reconfiguration is enabled for the
+clusters or server instances that reference the application, the
+referencing clusters or server instances automatically get the new
+version of the application. If redeploying, and dynamic
+configuration is disabled, the referencing clusters or server
+instances do not get the new version of the application until the
+clustered or standalone server instances are restarted.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Deploys the component to every server instance in the cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Deploys the component to a particular stand-alone server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--type</code></dt>
+<dd>
+<p>The packaging archive type of the component that is being deployed.
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>car</code></dt>
+<dd>
+<p>The component is packaged as a CAR file.</p>
+</dd>
+<dt class="hdlist1"><code>ear</code></dt>
+<dd>
+<p>The component is packaged as an EAR file.</p>
+</dd>
+<dt class="hdlist1"><code>ejb</code></dt>
+<dd>
+<p>The component is an EJB packaged as a JAR file.</p>
+</dd>
+<dt class="hdlist1"><code>osgi</code></dt>
+<dd>
+<p>The component is packaged as an OSGi bundle.</p>
+</dd>
+<dt class="hdlist1"><code>rar</code></dt>
+<dd>
+<p>The component is packaged as a RAR file.</p>
+</dd>
+<dt class="hdlist1"><code>war</code></dt>
+<dd>
+<p>The component is packaged as a WAR file.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--properties</code> or <code>--property</code></dt>
+<dd>
+<p>Optional keyword-value pairs that specify additional properties for
+the deployment. The available properties are determined by the
+implementation of the component that is being deployed or redeployed.
+The <code>--properties</code> option and the <code>--property</code> option are equivalent.
+You can use either option regardless of the number of properties that
+you specify.<br>
+You can specify the following properties for a deployment:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>jar-signing-alias</code></dt>
+<dd>
+<p>Specifies the alias for the security certificate with which the
+application client container JAR file is signed. Java Web Start will
+not run code that requires elevated permissions unless it resides in
+a JAR file signed with a certificate that the user&#8217;s system trusts.
+For your convenience, \{product---name} signs the JAR file
+automatically using the certificate with this alias from the
+domain&#8217;s keystore. Java Web Start then asks the user whether to
+trust the code and displays the \{product---name} certificate
+information. To sign this JAR file with a different certificate, add
+the certificate to the domain keystore, then use this property. For
+example, you can use a certificate from a trusted authority, which
+avoids the Java Web Start prompt, or from your own company, which
+users know they can trust. Default is <code>s1as</code>, the alias for the
+self-signed certificate created for every domain.</p>
+</dd>
+<dt class="hdlist1"><code>java-web-start-enabled</code></dt>
+<dd>
+<p>Specifies whether Java Web Start access is permitted for an
+application client module. Default is true.</p>
+</dd>
+<dt class="hdlist1"><code>compatibility</code></dt>
+<dd>
+<p>Specifies the \{product---name} release with which to be backward
+compatible in terms of JAR visibility requirements for applications.
+The only allowed value is <code>v2</code>, which refers to Sun GlassFish
+Enterprise Server version 2 or Sun Java System Application Server
+version 9.1 or 9.1.1. Beginning in Java EE 6, the Java EE platform
+specification imposed stricter requirements than Java EE 5 did on
+which JAR files can be visible to various modules within an EAR
+file. In particular, application clients must not have access to EJB
+JAR files or other JAR files in the EAR file unless references use
+the standard Java SE mechanisms (extensions, for example) or the
+Java EE library-directory mechanism. Setting this property to <code>v2</code>
+removes these restrictions.</p>
+</dd>
+<dt class="hdlist1"><code>keepSessions={false|true}</code></dt>
+<dd>
+<p>Superseded by the <code>--keepstate</code> option.<br>
+If the <code>--force</code> option is set to <code>true</code>, this property can by used
+to specify whether active sessions of the application that is being
+redeployed are preserved and then restored when the redeployment is
+complete. Applies to HTTP sessions in a web container. Default is</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>false</code>.</dt>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Active sessions of the application are not preserved and restored
+(default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Active sessions of the application are preserved and restored.<br>
+If any active session of the application fails to be preserved or
+restored, none of the sessions will be available when the
+redeployment is complete. However, the redeployment continues and
+a warning is logged.<br>
+To preserve active sessions, \{product---name} serializes the
+sessions and saves them in memory. To restore the sessions, the
+class loader of the newly redeployed application deserializes any
+sessions that were previously saved.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>preserveAppScopedResources</code></dt>
+<dd>
+<p>  If set to <code>true</code>, preserves any application-scoped resources and
+  restores them during redeployment. Default is <code>false</code>.<br>
+Other available properties are determined by the implementation of the
+component that is being redeployed.<br>
+For components packaged as OSGi bundles (<code>--type=osgi</code>), the <code>deploy</code>
+subcommand accepts properties arguments that can be used to wrap a WAR
+file as a WAB (Web Application Bundle). The subcommand looks for a key
+named <code>UriScheme</code> and, if present, uses the key as a URL stream
+handler to decorate the input stream. Other properties are used in the
+decoration process. The \{product---name} OSGi web container registers
+a URL stream handler named <code>webbundle</code>, which is used to wrap a plain
+WAR file as a WAB. For more information about usage, see the related
+example in the <a href="deploy.html#deploy-1"><code>deploy</code>(1)</a> help page.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1034" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">dirpath</dt>
+<dd>
+<p>Path to the directory containing the exploded format of the deployable
+archive. This is the path to the directory on the server machine.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1035" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM589"></a><a id="sthref1036"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deploying an Application From a Directory</p>
+</div>
+<div class="paragraph">
+<p>In this example, the exploded application to be deployed is in the
+<code>/home/temp/sampleApp</code> directory. Because the <code>--force</code> option is set to
+true, if an application of that name already exists, the application is
+redeployed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; deploydir --force=true --precompilejsp=true /home/temp/sampleApp
+Application deployed successfully with name sampleApp.
+WARNING : deploydir command deprecated. Please use deploy command instead.
+Command deploydir executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1037" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1038" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="deploy.html#deploy-1"><code>deploy</code>(1)</a>,
+<a href="redeploy.html#redeploy-1"><code>redeploy</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a>,
+<a href="undeploy.html#undeploy-1"><code>undeploy</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../application-deployment-guide/toc.html#GSDPG">GlassFish Server Open Source Edition Application Deployment
+Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="deploy.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="disable.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

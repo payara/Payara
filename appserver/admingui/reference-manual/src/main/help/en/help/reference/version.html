@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>version</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>version</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="verify-domain-xml.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="manvol1m.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="version-1"></a><a id="GSRFM00261"></a><a id="version"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_version">version</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>displays version information for\{product---name}</p>
+</div>
+<div id="sthref2347" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] version [--help]
+[--verbose={false|true}]
+[--local={false|true}]</code></pre>
+</div>
+</div>
+<div id="sthref2348" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>version</code> subcommand displays version information for
+\{product---name}. By default, if the subcommand cannot contact the
+domain administration server (DAS), the subcommand retrieves the version
+information locally and displays a warning message.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode and local mode.</p>
+</div>
+<div id="sthref2349" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--verbose</code></dt>
+<dt class="hdlist1"><code>-v</code></dt>
+<dd>
+<p>If this option is set to <code>true</code>, the subcommand provides the version
+of the Java Runtime Environment (JRE) that the server is running. The
+default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--local</code></dt>
+<dd>
+<p>If this option is set to <code>true</code>, the subcommand obtains the version
+locally from the installation of \{product---name} on the host where
+the subcommand is run.<br>
+If this option is set to <code>false</code> (default), the subcommand attempts to
+contact the DAS to obtain the version. If the attempt to contact the
+DAS fails, the subcommand retrieves the version locally and displays a
+warning message.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2350" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM800"></a><a id="sthref2351"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Obtaining Version Information From a Running DAS</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; version
+Version = Oracle GlassFish Server 3.1 (build 34)
+Command version executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM801"></a><a id="sthref2352"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Obtaining Version Information When the DAS Cannot be Reached</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; version
+Version string could not be obtained from Server [localhost:4848] for some reason.
+(Turn debugging on e.g. by setting AS_DEBUG=true in your environment, to see the
+ details).
+Using locally retrieved version string from version class.
+Version = Oracle GlassFish Server 3.1 (build 34)
+Command version executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM802"></a><a id="sthref2353"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Obtaining Version Information Locally</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; version --local
+Using locally retrieved version string from version class.
+Version = Oracle GlassFish Server 3.1 (build 34)
+Command version executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2354" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2355" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-modules.html#list-modules-1"><code>list-modules</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="verify-domain-xml.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="manvol1m.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

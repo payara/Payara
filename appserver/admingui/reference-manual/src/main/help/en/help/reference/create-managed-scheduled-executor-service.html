@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-managed-scheduled-executor-service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-managed-scheduled-executor-service</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-managed-executor-service.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-managed-thread-factory.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-managed-scheduled-executor-service-1"></a><a id="GSRFM680"></a><a id="create-managed-scheduled-executor-service"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_managed_scheduled_executor_service">create-managed-scheduled-executor-service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates a managed scheduled executor service resource</p>
+</div>
+<div id="sthref405" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-managed-scheduled-executor-service [--help]
+[--enabled={false|true}]
+[--contextinfoenabled={false|true}]
+[--contextinfo={Classloader|JNDI|Security|WorkArea}]
+[--threadpriority threadpriority]
+[--longrunningtasks={false|true}]
+[--hungafterseconds hungafterseconds]
+[--corepoolsize corepoolsize]
+[--keepaliveseconds keepaliveseconds]
+[--threadlifetimeseconds threadlifetimeseconds]
+[--description description]
+[--property property]
+[--target target]
+jndi_name</code></pre>
+</div>
+</div>
+<div id="sthref406" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-managed-scheduled-executor-service</code> subcommand creates a
+managed scheduled executor service resource.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref407" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>Determines whether the resource is enabled at runtime. The default
+value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--contextinfoenabled</code></dt>
+<dd>
+<p>Determines whether container contexts are propagated to threads. If
+set to <code>true</code>, the contexts specified in the <code>--contextinfo</code> option
+are propagated. If set to <code>false</code>, no contexts are propagated and the
+<code>--contextinfo</code> option is ignored. The default value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--contextinfo</code></dt>
+<dd>
+<p>Specifies individual container contexts to propagate to threads. Valid
+values are Classloader, JNDI, Security, and WorkArea. Values are
+specified in a comma-separated list and are case-insensitive. All
+contexts are propagated by default.</p>
+</dd>
+<dt class="hdlist1"><code>--threadpriority</code></dt>
+<dd>
+<p>Specifies the priority to assign to created threads. The default value
+is 5.</p>
+</dd>
+<dt class="hdlist1"><code>--longrunningtasks</code></dt>
+<dd>
+<p>Specifies whether the resource should be used for long-running tasks.
+The default value is <code>false</code>. If set to <code>true</code>, long-running tasks are
+not reported as stuck.</p>
+</dd>
+<dt class="hdlist1"><code>--hungafterseconds</code></dt>
+<dd>
+<p>Specifies the number of seconds that a task can execute before it is
+considered unresponsive. The default value is 0, which means that
+tasks are never considered unresponsive.</p>
+</dd>
+<dt class="hdlist1"><code>--corepoolsize</code></dt>
+<dd>
+<p>Specifies the number of threads to keep in a thread pool, even if they
+are idle. The default value is 0, which means that a thread is created
+when the first task is scheduled.</p>
+</dd>
+<dt class="hdlist1"><code>--keepaliveseconds</code></dt>
+<dd>
+<p>Specifies the number of seconds that threads can remain idle when the
+number of threads is greater than <code>corepoolsize</code>. The default value is
+60.</p>
+</dd>
+<dt class="hdlist1"><code>--threadlifetimeseconds</code></dt>
+<dd>
+<p>Specifies the number of seconds that threads can remain in a thread
+pool before being purged, regardless of whether the number of threads
+is greater than <code>corepoolsize</code> or whether the threads are idle. The
+default value is 0, which means that threads are never purged.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Descriptive details about the resource.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the resource.<br>
+\{product---name} does not define any additional properties for this
+resource. Moreover, this resource does not currently use any
+additional properties.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the resource. Valid
+targets are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the resource for the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Creates the resource for the domain.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the resource for every server instance in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the resource for the specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref408" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jndi_name</dt>
+<dd>
+<p>The JNDI name of this resource.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref409" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM461"></a><a id="sthref410"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Managed Scheduled Executor Service Resource</p>
+</div>
+<div class="paragraph">
+<p>This example creates a managed scheduled executor service resource named
+<code>concurrent/myScheduledExecutor</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-managed-scheduled-executor-service concurrent/myScheduledExecutor
+Managed scheduled executor service concurrent/myScheduledExecutor created successfully.
+Command create-managed-scheduled-executor-service executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref411" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref412" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-managed-scheduled-executor-service.html#delete-managed-scheduled-executor-service-1"><code>delete-managed-scheduled-executor-service</code>(1)</a>,
+<a href="list-managed-scheduled-executor-services.html#list-managed-scheduled-executor-services-1"><code>list-managed-scheduled-executor-services</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-managed-executor-service.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-managed-thread-factory.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

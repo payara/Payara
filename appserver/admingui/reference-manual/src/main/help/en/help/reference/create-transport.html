@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-transport</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-transport</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-threadpool.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-virtual-server.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-transport-1"></a><a id="GSRFM00061"></a><a id="create-transport"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_transport">create-transport</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds a new transport</p>
+</div>
+<div id="sthref561" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-transport [--help]
+[--acceptorthreads acceptor-threads]
+[--buffersizebytes buffer-size]
+[--bytebuffertype byte-buffer-type]
+[--classname class-name]
+[--displayconfiguration={false|true}]
+[--enablesnoop={false|true}]
+[--idlekeytimeoutseconds idle-key-timeout]
+[--maxconnectionscount max-connections]
+[--readtimeoutmillis read-timeout]
+[--writetimeoutmillis write-timeout]
+[--selectionkeyhandler selection-key-handler]
+[--selectorpolltimeoutmillis selector-poll-timeout]
+[--tcpnodelay={false|true}]
+[--target target]
+transport-name</code></pre>
+</div>
+</div>
+<div id="sthref562" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-transport</code> subcommand creates a transport for a network
+listener. This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref563" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--acceptorthreads</code></dt>
+<dd>
+<p>The number of acceptor threads for the transport. The recommended
+value is the number of processors in the machine. The default value is
+<code>1</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--buffersizebytes</code></dt>
+<dd>
+<p>The size, in bytes, of the buffer to be provided for input streams
+created by the network listener that references this transport. The
+default value is <code>8192</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--bytebuffertype</code></dt>
+<dd>
+<p>The type of the buffer to be provided for input streams created by a
+network-listener. Allowed values are <code>HEAP</code> and <code>DIRECT</code>. The default
+value is <code>HEAP</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--classname</code></dt>
+<dd>
+<p>The fully qualified name of the Java class that implements the
+transport. The default is <code>org.glassfish.grizzly.TCPSelectorHandler</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--displayconfiguration</code></dt>
+<dd>
+<p>If <code>true</code>, flushes the internal network configuration to the server
+log. Useful for debugging, but reduces performance. The default is
+<code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--enablesnoop</code></dt>
+<dd>
+<p>If <code>true</code>, writes request/response information to the server log.
+Useful for debugging, but reduces performance. The default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--idlekeytimeoutseconds</code></dt>
+<dd>
+<p>The idle key timeout. The default is <code>30</code> seconds.</p>
+</dd>
+<dt class="hdlist1"><code>--maxconnectionscount</code></dt>
+<dd>
+<p>The maximum number of connections for the network listener that
+references this transport. A value of <code>-1</code> specifies no limit. The
+default value is <code>4096</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--readtimeoutmillis</code></dt>
+<dd>
+<p>The amount of time the server waits during the header and body parsing
+phase. The default is <code>30000</code> milliseconds, or 30 seconds.</p>
+</dd>
+<dt class="hdlist1"><code>--writetimeoutmillis</code></dt>
+<dd>
+<p>The amount of time the server waits before considering the remote
+client disconnected when writing the response. The default is <code>30000</code>
+milliseconds, or 30 seconds.</p>
+</dd>
+<dt class="hdlist1"><code>--selectionkeyhandler</code></dt>
+<dd>
+<p>The name of the selection key handler associated with this transport.
+There is no default.</p>
+</dd>
+<dt class="hdlist1"><code>--selectorpolltimeoutmillis</code></dt>
+<dd>
+<p>The number of milliseconds a NIO Selector blocks waiting for events
+(user requests). The default value is <code>1000</code> milliseconds.</p>
+</dd>
+<dt class="hdlist1"><code>--tcpnodelay</code></dt>
+<dd>
+<p>If <code>true</code>, the default, enables <code>TCP_NODELAY</code> (also called Nagle&#8217;s
+algorithm). The default is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the transport only on the specified target. Valid values are
+as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the transport on the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the transport in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the transport on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">standalone-instance-name</dt>
+<dd>
+<p>Creates the transport on the specified standalone server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref564" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">transport-name</dt>
+<dd>
+<p>The name of the transport.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref565" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM528"></a><a id="sthref566"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Transport</p>
+</div>
+<div class="paragraph">
+<p>The following command creates a transport named <code>http1-trans</code> that uses
+a non-default number of acceptor threads:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-transport --acceptorthreads 100 http1-trans
+Command create-transport executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref567" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref568" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-network-listener.html#create-network-listener-1"><code>create-network-listener</code>(1)</a>,
+<a href="delete-transport.html#delete-transport-1"><code>delete-transport</code>(1)</a>,
+<a href="list-transports.html#list-transports-1"><code>list-transports</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-threadpool.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-virtual-server.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

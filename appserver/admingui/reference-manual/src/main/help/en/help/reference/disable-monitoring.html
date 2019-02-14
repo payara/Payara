@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>disable-monitoring</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>disable-monitoring</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="disable-http-lb-server.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="disable-secure-admin.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="disable-monitoring-1"></a><a id="GSRFM00120"></a><a id="disable-monitoring"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_disable_monitoring">disable-monitoring</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>disables monitoring for the server or for specific monitorable modules</p>
+</div>
+<div id="sthref1063" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] disable-monitoring [--help]
+[--modules module-name][:module-name]*</code></pre>
+</div>
+</div>
+<div id="sthref1064" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>disable-monitoring</code> subcommand is used to turn off monitoring for
+\{product---name} or for particular modules during runtime. Changes are
+dynamic, that is, server restart is not required.</p>
+</div>
+<div class="paragraph">
+<p>Running the <code>disable-monitoring</code> subcommand without the <code>--module</code>
+option disables the monitoring service by setting the
+<code>monitoring-enabled</code> attribute of the <code>monitoring-service</code> element to
+<code>false</code>. The individual modules retain their monitoring levels, but no
+monitoring data is generated because the entire monitoring service is
+disabled.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand used with the <code>--modules</code> option disables monitoring for
+a module by setting the monitoring level to OFF. The status of the
+monitoring service is not affected. For a list of monitorable modules,
+see the <code>--modules</code> option in this help page.</p>
+</div>
+<div class="paragraph">
+<p>An alternative method for disabling monitoring is to use the <code>set</code>
+subcommand. In this case, the server must be restarted for changes to
+take effect.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1065" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--modules</code></dt>
+<dd>
+<p>Disables the specified module or modules by setting the monitoring
+level to OFF. Multiple modules are separated by : (colon). Monitorable
+modules include <code>connector-connection-pool</code>, <code>connector-service</code>,
+<code>ejb-container</code>, <code>http-service</code>, <code>jdbc-connection-pool</code>, <code>jersey</code>,
+<code>jpa</code>, <code>jms-service</code>, <code>jvm</code>, <code>security</code>, <code>thread-pool</code>,
+<code>transaction-service</code>, <code>web-container</code>, and <code>web-services-container</code>.
+Additional modules can be listed by using the <code>get</code> subcommand.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1066" class="paragraph">
+<p>Operands</p>
+</div>
+<div id="sthref1067" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM594"></a><a id="sthref1068"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Disabling the Monitoring Service for \{product---name}</p>
+</div>
+<div class="paragraph">
+<p>This example disables monitoring for \{product---name} in general by
+setting the <code>enable-monitoring</code> flag to <code>false</code> (default is <code>true</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; disable-monitoring
+Command disable-monitoring executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM595"></a><a id="sthref1069"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Disabling Monitoring for the Web and EJB Containers</p>
+</div>
+<div class="paragraph">
+<p>This example disables monitoring for specific containers. Their
+monitoring levels will be set to OFF.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; disable-monitoring --modules web-container:ejb-container
+Command disable-monitoring executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1070" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1071" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>,
+<a href="enable-monitoring.html#enable-monitoring-1"><code>enable-monitoring</code>(1)</a>,
+<a href="list.html#list-1"><code>list</code>(1)</a>,
+<a href="monitor.html#monitor-1"><code>monitor</code>(1)</a>, <a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="monitoring.html#monitoring-5asc"><code>monitoring</code>(5ASC)</a></p>
+</div>
+<div class="paragraph">
+<p>"<a href="../administration-guide/monitoring.html#GSADG00011">Administering the Monitoring Service</a>" in GlassFish
+Server Open Source Edition Administration Guide</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="disable-http-lb-server.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="disable-secure-admin.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

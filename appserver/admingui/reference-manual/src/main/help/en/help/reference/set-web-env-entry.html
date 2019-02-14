@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>set-web-env-entry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>set-web-env-entry</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="set-web-context-param.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="show-component-status.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="set-web-env-entry-1"></a><a id="GSRFM00231"></a><a id="set-web-env-entry"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_set_web_env_entry">set-web-env-entry</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>sets an environment entry for a deployed web application or module</p>
+</div>
+<div id="sthref2092" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] set-web-env-entry [--help]
+--name=env-entry-name --type=env-entry-type
+{--value=value|--ignoredescriptoritem={true|false}}
+[--description=description] application-name[/module]</code></pre>
+</div>
+</div>
+<div id="sthref2093" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>set-web-env-entry</code> subcommand sets an environment entry for one of
+the following items:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A deployed web application</p>
+</li>
+<li>
+<p>A web module in a deployed Java Platform, Enterprise Edition (Java EE)
+application</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The application must already be deployed. Otherwise, an error occurs.</p>
+</div>
+<div class="paragraph">
+<p>An application uses the values of environment entries to customize its
+behavior or presentation.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand enables you to change the configuration of a deployed
+application without the need to modify the application&#8217;s deployment
+descriptors and repackage and redeploy the application.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref2094" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--name</code></dt>
+<dd>
+<p>The name of the environment entry that is to be set. The name is a
+JNDI name relative to the <code>java:comp/env</code> context. The name must be
+unique within a deployment component.</p>
+</dd>
+<dt class="hdlist1"><code>--type</code></dt>
+<dd>
+<p>The fully-qualified Java type of the environment entry value that is
+expected by the application&#8217;s code. This type must be one of the
+following Java types:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>java.lang.Boolean</code></p>
+</li>
+<li>
+<p><code>java.lang.Byte</code></p>
+</li>
+<li>
+<p><code>java.lang.Character</code></p>
+</li>
+<li>
+<p><code>java.lang.Double</code></p>
+</li>
+<li>
+<p><code>java.lang.Float</code></p>
+</li>
+<li>
+<p><code>java.lang.Integer</code></p>
+</li>
+<li>
+<p><code>java.lang.Long</code></p>
+</li>
+<li>
+<p><code>java.lang.Short</code></p>
+</li>
+<li>
+<p><code>java.lang.String</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--value</code></dt>
+<dd>
+<p>The value to which the environment entry is to be set. If the <code>--type</code>
+is <code>java.lang.Character</code>, the value must be a single character.
+Otherwise, the value must be a string that is valid for the
+constructor of the specified type.<br>
+Either the <code>--value</code> option or the <code>--ignoredescriptoritem</code> option
+must be set.</p>
+</dd>
+<dt class="hdlist1"><code>--ignoredescriptoritem</code></dt>
+<dd>
+<p>Specifies whether the environment entry is ignored if it is set in the
+application&#8217;s deployment descriptor. When an environment entry is
+ignored, the application behaves as if the entry had never been set in
+the application&#8217;s deployment descriptor. The behavior of an
+application in this situation depends on the application.<br>
+The possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The value is not ignored (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>  The value is ignored.<br>
+Either the <code>--value</code> option or the <code>--ignoredescriptoritem</code> option
+must be set.<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>Do not use the <code>--ignoredescriptoritem</code> option to unset an environment
+entry that has previously been set by using the <code>set-web-env-entry</code>
+subcommand. Instead, use the
+<a href="unset-web-env-entry.html#unset-web-env-entry-1"><code>unset-web-env-entry</code>(1)</a>
+subcommand for this purpose.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>An optional textual description of the environment entry that is being
+set.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2095" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">application-name</dt>
+<dd>
+<p>The name of the application. This name can be obtained from the
+Administration Console or by using the
+<a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>
+subcommand.<br>
+The application must already be deployed. Otherwise, an error occurs.</p>
+</dd>
+<dt class="hdlist1">module</dt>
+<dd>
+<p>The relative path to the module within the application&#8217;s enterprise
+archive (EAR) file. The path to the module is specified in the
+<code>module</code> element of the application&#8217;s <code>application.xml</code> file.<br>
+module is required only if the environment entry applies to a web
+module of a Java EE application. If specified, module must follow
+application-name, separated by a slash (/).<br>
+For example, the <code>application.xml</code> file for the <code>myApp</code> application
+might specify the following web module:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;module&gt;
+    &lt;web&gt;
+        &lt;web-uri&gt;myWebModule.war&lt;/web-uri&gt;
+    &lt;/web&gt;
+&lt;/module&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>The module would be specified as the operand of this command as
+<code>myApp/myWebModule.war</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2096" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM755"></a><a id="sthref2097"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Setting an Environment Entry for a Web Application</p>
+</div>
+<div class="paragraph">
+<p>This example sets the environment entry <code>Hello User</code> of the application
+hello to <code>techscribe</code>. The Java type of this entry is
+<code>java.lang.String</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-env-entry --name="Hello User"
+--type=java.lang.String --value=techscribe
+--description="User authentication for Hello appplication" hello
+
+Command set-web-env-entry executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM756"></a><a id="sthref2098"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Ignoring an Environment Entry That Is Defined in a
+Deployment Descriptor</p>
+</div>
+<div class="paragraph">
+<p>This example ignores the environment entry <code>Hello Port</code> of the web
+application <code>hello</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-web-env-entry --name="Hello Port"
+--type=java.lang.Integer --ignoredescriptoritem=true hello
+
+Command set-web-env-entry executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2099" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2100" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>,
+<a href="list-web-env-entry.html#list-web-env-entry-1"><code>list-web-env-entry</code>(1)</a>,
+<a href="unset-web-env-entry.html#unset-web-env-entry-1"><code>unset-web-env-entry</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="set-web-context-param.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="show-component-status.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>
