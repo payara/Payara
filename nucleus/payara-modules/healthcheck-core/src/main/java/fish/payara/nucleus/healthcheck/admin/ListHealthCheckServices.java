@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,31 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import org.glassfish.api.ActionReport;
+import javax.inject.Inject;
+
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import java.util.List;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
- * Admin command to list the names of all available health check services
+ * Admin command to list the names of all available health check services.
  *
- * @author mertcaliskan
- * @deprecated replaced by {@link ListHealthCheckServices}
+ * @author Jan Bernitt
+ * @since 5.191
  */
-@Deprecated
-@Service(name = "healthcheck-list-services")
+@Service(name = "list-healthcheck-services")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.list.services")
@@ -72,44 +72,17 @@ import java.util.List;
 @RestEndpoints({
         @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "healthcheck-list-services",
+                path = "list-healthcheck-services",
                 description = "Lists the names of all available health check services")
 })
-public class HealthCheckServiceLister implements AdminCommand {
-
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceLister.class);
-    final static String serviceHeaders[] = {"Name", "Description"};
+public class ListHealthCheckServices implements AdminCommand {
 
     @Inject
     ServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {
-
-        ColumnFormatter serviceListerColumnFormatter = new ColumnFormatter(serviceHeaders);
-
-        final ActionReport report = context.getActionReport();
-        List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
-
-        if (allServiceHandles.isEmpty()) {
-            report.appendMessage(strings.getLocalString("healthcheck.list.services.warning",
-                    "No registered health check service found."));
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(strings.getLocalString("healthcheck.list.services.availability.info",
-                    "Available Health Check Services") + ":\n");
-            for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
-
-                Object values[] = new Object[2];
-                values[0] = serviceHandle.getActiveDescriptor().getName();
-                values[1] = serviceHandle.getService().resolveDescription();
-                serviceListerColumnFormatter.addRow(values);
-            }
-
-            sb.append(serviceListerColumnFormatter.toString());
-            report.setMessage(sb.toString());
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        }
+        // just forward to the old command until it is replaced
+        habitat.getService(HealthCheckServiceLister.class).execute(context);
     }
 }
