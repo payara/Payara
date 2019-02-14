@@ -56,6 +56,10 @@ public interface HazelcastRuntimeConfiguration
     String getHazelcastConfigurationFile();
     public void setHazelcastConfigurationFile(String value);
     
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getPortAutoIncrement();
+    public void setPortAutoIncrement(String value);
+    
     @Attribute(defaultValue = "5900")
     String getStartPort();
     public void setStartPort(String value);

@@ -404,13 +404,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
         if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
-        
 
         MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
         memberAddressProviderConfig.setEnabled(enabled);
         memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
 
-        
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
@@ -433,7 +431,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-            config.getNetworkConfig().setPortAutoIncrement(true);
             mcConfig.setEnabled(true);                       
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
@@ -454,6 +451,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
+        config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getPortAutoIncrement()));
     }
 
     private void shutdownHazelcast() {

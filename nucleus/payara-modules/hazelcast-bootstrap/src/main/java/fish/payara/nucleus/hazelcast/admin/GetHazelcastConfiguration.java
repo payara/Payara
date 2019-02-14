@@ -109,6 +109,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
         columnFormatter.addRow(new Object[]{"Configuration File",runtimeConfiguration.getHazelcastConfigurationFile(),"Domain"});
         columnFormatter.addRow(new Object[]{"Interfaces",runtimeConfiguration.getInterface(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Port Auto Increment", runtimeConfiguration.getPortAutoIncrement(), "Domain"});
         columnFormatter.addRow(new Object[]{"Start Port",runtimeConfiguration.getStartPort(),"Domain"});
         columnFormatter.addRow(new Object[]{"Cluster Name",runtimeConfiguration.getClusterGroupName(),"Domain"});
         columnFormatter.addRow(new Object[]{"Cluster Password",runtimeConfiguration.getClusterGroupPassword(),"Domain"});
@@ -141,6 +142,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", runtimeConfiguration.getHazelcastConfigurationFile());
         map.put("enabled", nodeConfiguration.getEnabled());
+        map.put("enableAutoPortSelection", runtimeConfiguration.getPortAutoIncrement());
         map.put("startPort", runtimeConfiguration.getStartPort());
         map.put("multicastGroup", runtimeConfiguration.getMulticastGroup());
         map.put("multicastPort", runtimeConfiguration.getMulticastPort());

@@ -112,6 +112,9 @@
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
+        <sun:property id="enableAutoPortSelection" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.enableAutoPortSelection}"  helpText="$resource{i18nhc.hazelcast.configuration.enableAutoPortSelectionHelp}">
+            <sun:checkbox id="enableAutoPortSelection" selected="#{pageSession.valueMap['enableAutoPortSelection']}" selectedValue="true" />
+        </sun:property>
         <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
             <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />
         </sun:property>
