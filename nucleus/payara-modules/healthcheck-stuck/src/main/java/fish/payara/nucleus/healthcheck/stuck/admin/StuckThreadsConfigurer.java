@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.admin.HealthCheckServiceConfigurer;
+import fish.payara.nucleus.healthcheck.admin.SetHealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsHealthCheck;
@@ -75,7 +76,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  * @since 4.1.2.173
  * @author jonathan coustick
+ * @deprecated Replaced by {@link SetHealthCheckServiceConfiguration}
  */
+@Deprecated
 @Service(name = "healthcheck-stuckthreads-configure")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
