@@ -17,6 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -134,7 +135,7 @@ for self-signed certificates.</p>
 <dd>
 <p>The distinguished name of the certificate, specified as a
 comma-separated list in quotes. For example,
-<code>"CN=system.amer.oracle.com,OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US"</code>
+<code>"CN=localhost-instance,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"</code>
 .</p>
 </dd>
 </dl>
@@ -155,8 +156,7 @@ access in secure administration.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; disable-secure-admin-principal
-"CN=system.amer.oracle.com,OU=GlassFish,
-O=Oracle Corporation,L=Santa Clara,ST=California,C=US"
+"CN=localhost-instance,OU=Payara,O=Payara Foundation,L=Great Malvern,ST=Worcestershire,C=UK"
 
 Command disable-secure-admin-principal executed successfully.</code></pre>
 </div>

@@ -17,6 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -145,14 +146,12 @@ following prerequisites must be met:</p>
 <ul>
 <li>
 <p>The
-<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1ssh-1"><code>ssh</code>(1)</a>
-client is installed on the DAS host and is accessible through the DAS
+<code>ssh</code> client is installed on the DAS host and is accessible through the DAS
 user&#8217;s path.</p>
 </li>
 <li>
 <p>The
-<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Msshd-1m"><code>sshd</code>(1M)</a>
-daemon is installed and running on all hosts where an SSH key is to be
+<code>sshd</code> daemon is installed and running on all hosts where an SSH key is to be
 set up.</p>
 </li>
 <li>
@@ -161,7 +160,7 @@ hosts where an SSH key is to be set up.</p>
 </li>
 <li>
 <p>The
-<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1ssh-keygen-1"><code>ssh-keygen</code>(1)</a>
+<code>ssh-keygen</code>
 utility is installed on the DAS host either at the default location or
 in a location that is defined in the DAS user&#8217;s path.</p>
 </li>
@@ -187,7 +186,7 @@ behavior of the subcommand is to prompt the user to generate an SSH key
 pair. The SSH key pair is generated without an encryption passphrase. If
 a passphrase-protected key pair is required, the key pair must be
 generated manually by using the SSH
-commandhttp://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1ssh-keygen-1[<code>ssh-keygen</code>(1)].</p>
+command <code>ssh-keygen</code></p>
 </li>
 <li>
 <p>Distributing the public key. The subcommand appends the content of the
@@ -430,13 +429,6 @@ Command setup-ssh executed successfully.</code></pre>
 </div>
 <div class="paragraph">
 <p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
-</div>
-<div class="paragraph">
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1ssh-1"><code>ssh</code>(1)</a>,
-<a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1ssh-keygen-1"><code>ssh-keygen</code>(1)</a></p>
-</div>
-<div class="paragraph">
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E18752&amp;id=REFMAN1Msshd-1m"><code>sshd</code>(1M)</a></p>
 </div>
 <div class="paragraph">
 <p>Cygwin Information and Installation (<code>http://www.cygwin.com/</code>), MKS

@@ -17,6 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -252,10 +253,7 @@ requires superuser privileges.</p>
 <dt class="hdlist1"><code>JAVA_DEBUGGER_PORT</code></dt>
 <dd>
 <p>This property specifies the port number of the port that is used for
-connections to the
-<a href="http://java.sun.com/javase/technologies/core/toolsapis/jpda/">Java
-Platform Debugger Architecture (JPDA)</a>
-(<a href="http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html" class="bare">http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html</a>)
+connections to the Java Platform Debugger Architecture (JPDA)
 debugger. Valid values are 1-65535. On UNIX, creating sockets that
 listen on ports 1-1024 requires superuser privileges.</p>
 </dd>
@@ -319,11 +317,7 @@ host on which the instance is running.</p>
 <li>
 <p>port is the port number of the port on which the instance listens
 for messages from GMS. The system property
-`GMS_LISTENER_PORT-`clustername must be set for the instance. For
-information about how to set this system property for an instance,
-see "<a href="../ha-administration-guide/clusters.html#GSHAG00373">Discovering a Cluster When Multicast Transport
-Is Unavailable</a>" in GlassFish Server Open Source Edition High
-Availability Administration Guide.</p>
+`GMS_LISTENER_PORT-`clustername must be set for the instance.</p>
 </li>
 </ul>
 </div>
@@ -673,11 +667,7 @@ characters in options for the <code>asadmin</code> utility, see the
 <div class="paragraph">
 <p>This example assumes that the port on which each instance listens for
 GMS messages is set independently for the instance through the
-<code>GMS_LISTENER_PORT-tcpcluster</code> system property. For information about
-how to set the port on which an instance listens for GMS messages, see
-"<a href="../ha-administration-guide/clusters.html#GSHAG00373">Discovering a Cluster When Multicast Transport Is
-Unavailable</a>" in GlassFish Server Open Source Edition High Availability
-Administration Guide.</p>
+<code>GMS_LISTENER_PORT-tcpcluster</code> system property.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -771,15 +761,8 @@ Command create-cluster executed successfully.</code></pre>
 <a href="validate-multicast.html#validate-multicast-1"><code>validate-multicast</code>(1)</a></p>
 </div>
 <div class="paragraph">
-<p>"<a href="../ha-administration-guide/clusters.html#GSHAG00373">Discovering a Cluster When Multicast Transport Is
-Unavailable</a>" in GlassFish Server Open Source Edition High Availability
-Administration Guide</p>
-</div>
-<div class="paragraph">
 <p>Apache Felix Remote Shell
-(<a href="http://felix.apache.org/site/apache-felix-remote-shell.html" class="bare">http://felix.apache.org/site/apache-felix-remote-shell.html</a>), Java
-Platform Debugger Architecture (JPDA)
-(<a href="http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html" class="bare">http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html</a>)</p>
+(<a href="http://felix.apache.org/site/apache-felix-remote-shell.html" class="bare">http://felix.apache.org/site/apache-felix-remote-shell.html</a>)
 </div>
 </div>
 </div>
