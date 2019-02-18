@@ -201,8 +201,8 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "kubernetesServiceName", optional = true, alias = "kubernetesservicename")
     private String kubernetesServiceName;
 
-    @Param(name = "enableAutoPortSelection", optional = true, defaultValue = "true")
-    private boolean enableAutoPortSelection;
+    @Param(name = "autoIncrementPort", optional = true)
+    private Boolean autoIncrementPort;
     
     @Inject
     ServiceLocator serviceLocator;
@@ -285,7 +285,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         if (kubernetesServiceName != null) {
                             hazelcastRuntimeConfigurationProxy.setKubernetesServiceName(kubernetesServiceName);
                         }
-                        hazelcastRuntimeConfigurationProxy.setPortAutoIncrement(String.valueOf(enableAutoPortSelection));
+                        if (autoIncrementPort != null) {
+                            hazelcastRuntimeConfigurationProxy.setAutoIncrementPort(autoIncrementPort.toString());
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
                     }

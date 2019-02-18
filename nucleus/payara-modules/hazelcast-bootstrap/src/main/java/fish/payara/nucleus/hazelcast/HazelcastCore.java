@@ -451,7 +451,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
-        config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getPortAutoIncrement()));
+        config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getAutoIncrementPort()));
     }
 
     private void shutdownHazelcast() {
