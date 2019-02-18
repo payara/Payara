@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool;
 
@@ -89,14 +90,14 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      */
     protected ResourceHandle prefetch(ResourceSpec spec,
                                       ResourceAllocator alloc, Transaction tran) {
-        AssocWithThreadResourceHandle ar = localResource.get();
-        if (ar != null) {
+        AssocWithThreadResourceHandle assocHandle = localResource.get();
+        if (assocHandle != null) {
             //synch on ar and do a quick-n-dirty check to see if the local
             //resource is usable at all
-            synchronized (ar.lock) {
-                if ((ar.getThreadId() != Thread.currentThread().getId()) ||
-                        ar.hasConnectionErrorOccurred() ||
-                        ar.isDirty() || !ar.isAssociated()) {
+            synchronized (assocHandle.lock) {
+                if ((assocHandle.getThreadId() != Thread.currentThread().getId()) ||
+                        assocHandle.hasConnectionErrorOccurred() ||
+                        assocHandle.isDirty() || !assocHandle.isAssociated()) {
                     //we were associated with someone else or resource error 
                     //occurred or resource was disassociated and used by some one else. So evict
                     //NOTE: We do not setAssociated to false here since someone
@@ -108,16 +109,16 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
                     return null;
                 }
 
-                if (ar.getResourceState().isFree() &&
-                        ar.getResourceState().isUnenlisted()) {
+                if (assocHandle.getResourceState().isFree() &&
+                        assocHandle.getResourceState().isUnenlisted()) {
                     if (matchConnections) {
-                        if (!alloc.matchConnection(ar)) {
+                        if (!alloc.matchConnection(assocHandle)) {
                             //again, since the credentials of the caller don't match
                             //evict from ThreadLocal
                             //also, mark the resource as unassociated and make this resource
                             //potentially usable
                             localResource.remove();
-                            ar.setAssociated(false);
+                            assocHandle.setAssociated(false);
                             if(poolLifeCycleListener != null){
                                 poolLifeCycleListener.connectionNotMatched();
                             }
@@ -128,27 +129,27 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
                         }
                     }
 
-                    if (!isConnectionValid(ar, alloc)) {
+                    if (!isConnectionValid(assocHandle, alloc)) {
                         localResource.remove();
-                        ar.setAssociated(false);
+                        assocHandle.setAssociated(false);
                         // disassociating the connection from the thread.
                         // validation failure will mark the connectionErrorOccurred flag
                         // and the connection will be removed whenever it is retrieved again
                         // from the pool.
                         return null;
                     }
-                    _logger.log(Level.INFO, "Retrieved a connection that was thread local and with state free:{0}", ar.getResourceState().isFree());
-                    setResourceStateToBusy(ar);
+                    _logger.log(Level.INFO, "Retrieved a connection that was thread local and with state free:{0}", assocHandle.getResourceState().isFree());
+                    setResourceStateToBusy(assocHandle);
                     if (maxConnectionUsage_ > 0) {
-                        ar.incrementUsageCount();
+                        assocHandle.incrementUsageCount();
                     }
                     if(poolLifeCycleListener != null) {
-                        poolLifeCycleListener.connectionUsed(ar.getId());
+                        poolLifeCycleListener.connectionUsed(assocHandle.getId());
                         //Decrement numConnFree
                         poolLifeCycleListener.decrementNumConnFree();
                         
                     }
-                    return ar;
+                    return assocHandle;
                 }
             }
         }

@@ -71,11 +71,11 @@ public class ResourceState {
 
     public void setBusy(boolean busy) {
         this.busy = busy;
-        if (busy) {
-            busyException.addError(new SetBusy());
-        } else {
-            busyException.addError(new SetFree());
-        }
+//        if (busy) {
+//            busyException.addError(new SetBusy(Thread.currentThread().getName()));
+//        } else {
+//            busyException.addError(new SetFree(Thread.currentThread().getName()));
+//        }
     }
     
     /**
@@ -113,8 +113,16 @@ public class ResourceState {
         return "Enlisted :" + enlisted + " Busy :" + busy;
     }
     
-    public class SetBusy extends Exception {}
+    public class SetBusy extends Exception { 
+        public SetBusy(String threadName) {
+            super(threadName);
+        }
+    }
     
-    public class SetFree extends Exception {}
+    public class SetFree extends Exception {
+        public SetFree(String threadName) {
+            super(threadName);
+        }
+    }
     
 }

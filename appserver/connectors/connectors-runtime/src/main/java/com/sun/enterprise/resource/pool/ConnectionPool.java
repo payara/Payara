@@ -566,13 +566,16 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     Iterator iter = set.iterator();
                     while (iter.hasNext()) {
                             ResourceHandle resourceHandle = (ResourceHandle) iter.next();
-                            synchronized (resourceHandle.lock) {
                             if (resourceHandle.hasConnectionErrorOccurred()) {
                                 iter.remove();
                                 continue;
                             }
 
                             ResourceState state = resourceHandle.getResourceState();
+                            synchronized (resourceHandle) {
+                                resourceHandle.setBusy(true);
+                            }
+                            
                             /*
                             * One can share a resource only for the following conditions:
                             * 1. The caller resource is shareable (look at the outermost
@@ -602,21 +605,27 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                                                 break;
                                             }
                                             iter.remove();
+                                            resourceHandle.setBusy(false);
                                             continue;
                                         }
                                         if (poolLifeCycleListener != null) {
                                             poolLifeCycleListener.connectionMatched();
                                         }
                                     }
-                                    if (state.isFree()) {
-                                        setResourceStateToBusy(resourceHandle);
+                                    synchronized (resourceHandle.lock) {
+                                        if (state.isFree()) {
+                                            setResourceStateToBusy(resourceHandle);
+                                            _logger.log(Level.FINE, "Retrieved a shared connection with state free:{0}", state.isFree());
+                                            result = resourceHandle;
+                                        } else {
+                                            iter.remove();
+                                            resourceHandle.setBusy(false);
+                                            continue;
+                                        }
                                     }
-                                    _logger.log(Level.FINE, "Retrieved a shared connection with state free:{0}", state.isFree());
-                                    result = resourceHandle;
                                     break;
                                 }
                             }
-                            } // end of synchonized block
                         }
                     }
                 }
@@ -726,42 +735,46 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         // free and enlisted in a different transaction
         ResourceHandle result = null;
 
-        ResourceHandle h;
+        ResourceHandle resourceHandle;
         ArrayList<ResourceHandle> freeResources = new ArrayList<ResourceHandle>();
-        try{
-            while ((h = ds.getResource()) != null) {
+        try {
+            while ((resourceHandle = ds.getResource()) != null) {
 
-                if (h.hasConnectionErrorOccurred()) {
-                    ds.removeResource(h);
-                    continue;
-                }
+                    if (resourceHandle.hasConnectionErrorOccurred()) {
+                        ds.removeResource(resourceHandle);
+                        continue;
+                    }
 
-                if (matchConnection(h, alloc)) {
+                    if (matchConnection(resourceHandle, alloc)) {
 
-                    boolean isValid = isConnectionValid(h, alloc);
-                    if (h.hasConnectionErrorOccurred() || !isValid) {
-                        if (failAllConnections) {
-                             result = createSingleResourceAndAdjustPool(alloc, spec);
-                            //no need to match since the resource is created with the allocator of caller.
-                            break;
-                        } else {
-                            ds.removeResource(h);
-                            //resource is invalid, continue iteration.
-                            continue;
+                        boolean isValid = isConnectionValid(resourceHandle, alloc);
+                        if (resourceHandle.hasConnectionErrorOccurred() || !isValid) {
+                            if (failAllConnections) {
+                                result = createSingleResourceAndAdjustPool(alloc, spec);
+                                setResourceStateToBusy(result);
+                                //no need to match since the resource is created with the allocator of caller.
+                                break;
+                            } else {
+                                ds.removeResource(resourceHandle);
+                                //resource is invalid, continue iteration.
+                                continue;
+                            }
                         }
+                        synchronized (resourceHandle.lock) {
+                            if (resourceHandle.isShareable() == alloc.shareableWithinComponent() && resourceHandle.getResourceState().isFree()) {
+                                // got a matched, valid resource
+                                _logger.log(Level.FINE, "Retrieved a connection that was unenlisted with state free:{0} and shareable:{1}",
+                                        new Object[]{!resourceHandle.isBusy(), resourceHandle.isShareable()});
+                                result = resourceHandle;
+                                setResourceStateToBusy(result);
+                                break;
+                            } else {
+                                freeResources.add(resourceHandle);
+                            }
+                        }
+                    } else {
+                        freeResources.add(resourceHandle);
                     }
-                    if(h.isShareable() == alloc.shareableWithinComponent()){
-                        // got a matched, valid resource
-                        _logger.log(Level.FINE, "Retrieved a connection that was unenlisted with state free:{0} and shareable:{1}",
-                                new Object[]{!h.isBusy(), h.isShareable()});
-                        result = h;
-                        break;
-                    }else{
-                        freeResources.add(h);
-                    }
-                } else {
-                    freeResources.add(h);
-                }
             }
         }finally{
             //return all unmatched, free resources
@@ -771,10 +784,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
             freeResources.clear();
         }
 
-        if (result != null) {
-            // set correct state
-            setResourceStateToBusy(result);
-        } else {
+        if (result == null) {
             result = resizePoolAndGetNewResource(alloc);
         }
         return result;
@@ -830,13 +840,13 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
         try{
             while ((handle = ds.getResource()) != null) {
                 if (matchConnection(handle, alloc)) {
-                    result = handle;
-                    setResourceStateToBusy(result);
-                    break;
-                } else {
-                    activeResources.add(handle);
-            }
-        }
+                        result = handle;
+                        setResourceStateToBusy(result);
+                        break;
+                    } else {
+                        activeResources.add(handle);
+                    }
+                }
         }finally{
             //return unmatched resources
             for (ResourceHandle activeResource : activeResources) {
