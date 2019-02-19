@@ -104,18 +104,8 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public AsyncInvoker async() {
-        // Get the ServiceLocator and OpenTracing services
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-        
-        // Get the currently active span if present
-        Span activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                serviceLocator.getService(InvocationManager.class))).activeSpan();
-        
-        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
-        if (activeSpan != null) {
-            this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
-        }
+        // Instrument invocation builder with OpenTracing
+        instrumentInvocationBuilder();
         
         // Return the asynchronous invoker - end of the decorated chain.
         return this.invocationBuilder.async();
@@ -189,11 +179,17 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public CompletionStageRxInvoker rx() {
+        // Instrument invocation builder with OpenTracing
+        instrumentInvocationBuilder();
+
         return this.invocationBuilder.rx();
     }
 
     @Override
     public <T extends RxInvoker> T rx(Class<T> clazz) {
+        // Instrument invocation builder with OpenTracing
+        instrumentInvocationBuilder();
+
         return this.invocationBuilder.rx(clazz);
     }
 
@@ -321,5 +317,23 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
     public <T> T method(String name, Entity<?> entity, GenericType<T> responseType) {
         return this.invocationBuilder.method(name, entity, responseType);
     }
-    
+
+    /**
+     * Instruments this InvocationBuilder instance with OpenTracing
+     */
+    private void instrumentInvocationBuilder() {
+        // Get the ServiceLocator and OpenTracing services
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
+
+        // Get the currently active span if present
+        Span activeSpan = openTracing.getTracer(
+                openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)))
+                .activeSpan();
+
+        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
+        if (activeSpan != null) {
+            this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
+        }
+    }
 }
