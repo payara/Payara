@@ -180,11 +180,10 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 }
 
                 ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
-                boolean monitoring = false;
+                boolean monitoring = context.equals("/monitoring");
                 try {
                     // Temporarily switch classloader for monitoring so that the HK2 injection manager can be found
-                    if (context.equals("/monitoring")) {
-                        monitoring = true;
+                    if (monitoring) {
                         ClassLoader apiClassLoader = sc.getCommonClassLoader();
                         Thread.currentThread().setContextClassLoader(apiClassLoader);
                     }
