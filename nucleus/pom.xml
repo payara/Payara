@@ -1385,6 +1385,14 @@ Parent is ${project.parent}</echo>
 
     <profiles>
         <profile>
+            <id>ci</id>
+            <modules>
+                <module>tests</module>
+            </modules>
+        </profile>
+    
+        
+        <profile>
             <id>default</id>
             <activation>
                 <file>
