@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +66,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -156,18 +158,22 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     private void updateConfig(HealthCheckServiceConfiguration config, AdminCommandContext context) {
         final ActionReport report = initActionReport(context);
         try {
-            ConfigSupport.apply(configProxy -> {
-                    configProxy.enabled(String.valueOf(enabled));
-                    configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
-                    if (historicalTraceEnabled != null) {
-                        configProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
-                    }
-                    if (historicalTraceStoreTimeout != null) {
-                        configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
-                    }
-                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return configProxy;
-                }, config);
+            ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                @Override
+                public Object run(HealthCheckServiceConfiguration configProxy)
+                        throws PropertyVetoException, TransactionFailure {
+                                configProxy.enabled(String.valueOf(enabled));
+                                configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
+                                if (historicalTraceEnabled != null) {
+                                    configProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                                }
+                                if (historicalTraceStoreTimeout != null) {
+                                    configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                                }
+                                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                return configProxy;
+                            }
+            }, config);
         } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             report.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());

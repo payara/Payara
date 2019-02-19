@@ -39,12 +39,9 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
 import java.util.Properties;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Max;
@@ -68,6 +65,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -205,8 +203,13 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         serviceType = parseServiceType(serviceName);
 
         if (serviceType == null) {
-            String values = Arrays.asList(CheckerType.values())
-                    .stream().map(type -> type.name().toLowerCase().replace('_', '-')).collect(Collectors.joining(", "));
+            StringBuilder values = new StringBuilder();
+            for (CheckerType type : CheckerType.values()) {
+                if (values.length() > 0) {
+                    values.append(", ");
+                }
+                values.append(type.name().toLowerCase().replace('_', '-'));
+            }
             report.setMessage("No such service: " + serviceName + ".\nChoose one of: " + values
                     + ".\nThe name can also be given in short form consisting only of the first letters of each word.");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -234,8 +237,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private static CheckerType parseServiceType(String serviceName) {
         if (serviceName.length() < 4) {
             for (CheckerType type : CheckerType.values()) {
-                if (Arrays.asList(type.name().split("_")).stream().map(w -> w.charAt(0) + "")
-                        .collect(Collectors.joining("")).equals(serviceName.toUpperCase())) {
+                String shortName = "";
+                for (String word : type.name().split("_")) {
+                    shortName += word.charAt(0);
+                }
+                if (shortName.equals(serviceName.toUpperCase())) {
                     return type;
                 }
             }
@@ -263,14 +269,23 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         C checker = config.getCheckerByType(checkerType);
         try {
             if (checker == null) {
-                ConfigSupport.apply(configProxy-> {
-                    Checker newChecker = configProxy.createChild(checkerType);
-                    configProxy.getCheckerList().add(newChecker);
-                    updateProperties(newChecker, checkerType);
-                    return configProxy;
+                ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                    @Override
+                    public Object run(HealthCheckServiceConfiguration configProxy)
+                            throws PropertyVetoException, TransactionFailure {
+                                Checker newChecker = configProxy.createChild(checkerType);
+                                configProxy.getCheckerList().add(newChecker);
+                                updateProperties(newChecker, checkerType);
+                                return configProxy;
+                            }
                 }, config);
             } else {
-                ConfigSupport.apply(proxy -> updateProperties(proxy, checkerType), checker);
+                ConfigSupport.apply(new SingleConfigCode<C>() {
+                    @Override
+                    public Object run(C proxy) throws PropertyVetoException, TransactionFailure {
+                        return updateProperties(proxy, checkerType);
+                    }
+                }, checker);
             }
             if (ThresholdDiagnosticsChecker.class.isAssignableFrom(checkerType)) {
                 ThresholdDiagnosticsChecker thresholdDiagnosisConfig = (ThresholdDiagnosticsChecker) config
@@ -326,22 +341,43 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     }
 
     private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
-        updateProperty(config, "enabled", config.getEnabled(), String.valueOf(enabled), Checker::setEnabled);
-        updateProperty(config, "time", config.getTime(), time, Checker::setTime);
-        updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
+        String enabled = updateProperty("enabled", config.getEnabled(), String.valueOf(this.enabled));
+        if (enabled != null) {
+            config.setEnabled(enabled);
+        }
+        String time = updateProperty("time", config.getTime(), this.time);
+        if (time != null) {
+            config.setTime(time);
+        }
+        String unit = updateProperty("time-unit", config.getUnit(), timeUnit);
+        if (unit != null) {
+            config.setUnit(unit);
+        }
         if (HoggingThreadsChecker.class.isAssignableFrom(type)) {
             HoggingThreadsChecker hoggingThreadsConfig = (HoggingThreadsChecker) config;
-            updateProperty(hoggingThreadsConfig, "hogging-threads-threshold", hoggingThreadsConfig.getThresholdPercentage(), 
-                    hogginThreadsThreshold, HoggingThreadsChecker::setThresholdPercentage);
-            updateProperty(hoggingThreadsConfig, "hogging-threads-retry-count", hoggingThreadsConfig.getRetryCount(), 
-                    hogginThreadsRetryCount, HoggingThreadsChecker::setRetryCount);
+            String hoggingThreshold = updateProperty("hogging-threads-threshold",
+                    hoggingThreadsConfig.getThresholdPercentage(), hogginThreadsThreshold);
+            if (hoggingThreshold != null) {
+                hoggingThreadsConfig.setThresholdPercentage(hoggingThreshold);
+            }
+            String retryCount = updateProperty("hogging-threads-retry-count", hoggingThreadsConfig.getRetryCount(),
+                    hogginThreadsRetryCount);
+            if (retryCount != null) {
+                hoggingThreadsConfig.setRetryCount(retryCount);
+            }
         }
         if (StuckThreadsChecker.class.isAssignableFrom(type)) {
             StuckThreadsChecker stuckThreadsConfig = (StuckThreadsChecker) config;
-            updateProperty(stuckThreadsConfig, "stuck-threads-threshold", stuckThreadsConfig.getThreshold(), 
-                    stuckThreadsThreshold, StuckThreadsChecker::setThreshold);
-            updateProperty(stuckThreadsConfig, "stuck-threads-threshold-unit", stuckThreadsConfig.getThresholdTimeUnit(), 
-                    stuckThreadsThresholdUnit, StuckThreadsChecker::setThresholdTimeUnit);
+            String stuckThreshold = updateProperty("stuck-threads-threshold", stuckThreadsConfig.getThreshold(),
+                    stuckThreadsThreshold);
+            if (stuckThreshold != null) {
+                stuckThreadsConfig.setThreshold(stuckThreshold);
+            }
+            String stuckThresholdUnit = updateProperty("stuck-threads-threshold-unit",
+                    stuckThreadsConfig.getThresholdTimeUnit(), stuckThreadsThresholdUnit);
+            if (stuckThresholdUnit != null) {
+                stuckThreadsConfig.setThresholdTimeUnit(stuckThresholdUnit);
+            }
         }
         return config;
     }
@@ -354,21 +390,28 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             throws TransactionFailure {
         Property prop = config.getProperty(name);
         if (prop == null) {
-            ConfigSupport.apply(configProxy -> {
-                Property newProp = configProxy.createChild(Property.class);
-                updateProperty(newProp, name, value);
-                configProxy.getProperty().add(newProp);
-                return configProxy;
+            ConfigSupport.apply(new SingleConfigCode<ThresholdDiagnosticsChecker>() {
+                @Override
+                public Object run(ThresholdDiagnosticsChecker configProxy)
+                        throws PropertyVetoException, TransactionFailure {
+                            Property newProp = configProxy.createChild(Property.class);
+                            updateProperty(newProp, name, value);
+                            configProxy.getProperty().add(newProp);
+                            return configProxy;
+                        }
             }, config);
         } else {
-            ConfigSupport.apply(propertyProxy -> {
-                updateProperty(propertyProxy, name, value);
-                return propertyProxy;
+            ConfigSupport.apply(new SingleConfigCode<Property>() {
+                @Override
+                public Object run(Property propertyProxy) throws PropertyVetoException, TransactionFailure {
+                    updateProperty(propertyProxy, name, value);
+                    return propertyProxy;
+                }
             }, prop);
         }
     }
 
-    private void updateProperty(Property prop, String name, String value) throws PropertyVetoException {
+    void updateProperty(Property prop, String name, String value) throws PropertyVetoException {
         String from = prop.getValue();
         if (value != null && !value.equals(from)) {
             report.appendMessage(serviceName + "." + name +" was " + from + " set to " + value + "\n");
@@ -377,33 +420,12 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         }
     }
 
-    private <T> void updateProperty(T config, String name, String from, String to, PropertyBiConsumer<T, String> setter) throws PropertyVetoException {
+    private <T> String updateProperty(String name, String from, String to) {
         if (to != null && !to.equals(from)) {
             report.appendMessage(serviceName + "." + name +" was " + from + " set to " + to + "\n");
-            try {
-                setter.accept(config, to.toString());
-            } catch (RuntimeException ex) {
-                if (ex.getCause() != null && PropertyVetoException.class.isAssignableFrom(ex.getCause().getClass())) {
-                    throw (PropertyVetoException) ex.getCause();
-                }
-                throw ex;
-            }
+            return to;
         }
-    }
-
-    @FunctionalInterface
-    static interface PropertyBiConsumer<A, B> extends BiConsumer<A, B> {
-
-        @Override
-        default void accept(A a, B b) {
-            try {
-                acceptChange(a, b);
-            } catch (PropertyVetoException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        void acceptChange(A a, B b) throws PropertyVetoException;
+        return null;
     }
 
 }

@@ -40,12 +40,10 @@ package fish.payara.nucleus.healthcheck.admin;
 
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -149,8 +147,13 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         try {
             notifierType = NotifierType.valueOf(notifierName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            String values = Arrays.asList(NotifierType.values())
-                    .stream().map(t -> t.name().toLowerCase()).collect(Collectors.joining(","));
+            StringBuilder values = new StringBuilder();
+            for (NotifierType type : NotifierType.values()) {
+                if (values.length() > 0) {
+                    values.append(',');
+                }
+                values.append(type.name().toLowerCase());
+            }
             report.setMessage("Unknown notifier `" + notifierName + "`. Known are: " + values);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -161,18 +164,25 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         final Notifier notifier = selectByType(Notifier.class, config.getNotifierList());
         try {
             if (notifier == null) {
-                ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) configProxy -> {
-                    @SuppressWarnings("unchecked")
-                    Notifier newNotifier = configProxy.createChild(selectByType(Class.class,
-                            configModularityUtils.getInstalledExtensions(Notifier.class)));
-                    configProxy.getNotifierList().add(newNotifier);
-                    applyValues(newNotifier);
-                    return configProxy;
+                ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                    @Override
+                    public Object run(HealthCheckServiceConfiguration configProxy)
+                            throws PropertyVetoException, TransactionFailure {
+                                @SuppressWarnings("unchecked")
+                                Notifier newNotifier = (Notifier)configProxy.createChild(selectByType(Class.class,
+                                        configModularityUtils.getInstalledExtensions(Notifier.class)));
+                                configProxy.getNotifierList().add(newNotifier);
+                                applyValues(newNotifier);
+                                return configProxy;
+                            }
                 }, config);
             } else {
-                ConfigSupport.apply(notifierProxy -> {
-                    applyValues(notifierProxy);
-                    return notifierProxy;
+                ConfigSupport.apply(new SingleConfigCode<Notifier>() {
+                    @Override
+                    public Object run(Notifier notifierProxy) throws PropertyVetoException, TransactionFailure {
+                        applyValues(notifierProxy);
+                        return notifierProxy;
+                    }
                 }, notifier);
             }
             if (dynamic && (!server.isDas() || targetUtil.getConfig(target).isDas())) {
@@ -185,7 +195,7 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         }
     }
 
-    private void applyValues(Notifier notifier) throws PropertyVetoException {
+    void applyValues(Notifier notifier) throws PropertyVetoException {
         if (Boolean.parseBoolean(notifier.getEnabled()) != enabled) {
             report.appendMessage(notifierName + ".enabled was " + notifier.getEnabled() + " set to " + enabled + "\n");
             notifier.enabled(enabled);
@@ -205,7 +215,7 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
-    private <T> T selectByType(Class<? super T> commonInterface, List<T> candidates) {
+    <T> T selectByType(Class<? super T> commonInterface, List<T> candidates) {
         for (T candidate : candidates) {
             Class<?> annotatedType = candidate instanceof Class ? (Class<?>) candidate : candidate.getClass();
             if (Proxy.isProxyClass(annotatedType)) {
