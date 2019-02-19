@@ -340,7 +340,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         }
     }
 
-    private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
+    <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
         String enabled = updateProperty("enabled", config.getEnabled(), String.valueOf(this.enabled));
         if (enabled != null) {
             config.setEnabled(enabled);
@@ -420,7 +420,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         }
     }
 
-    private <T> String updateProperty(String name, String from, String to) {
+    private String updateProperty(String name, String from, String to) {
         if (to != null && !to.equals(from)) {
             report.appendMessage(serviceName + "." + name +" was " + from + " set to " + to + "\n");
             return to;
