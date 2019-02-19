@@ -55,6 +55,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
+=======
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+package org.apache.catalina.authenticator;
+
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static org.apache.catalina.LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE;
+import static org.apache.catalina.authenticator.Constants.FORM_ACTION;
+import static org.apache.catalina.authenticator.Constants.FORM_METHOD;
+import static org.apache.catalina.authenticator.Constants.FORM_PASSWORD;
+import static org.apache.catalina.authenticator.Constants.FORM_PRINCIPAL_NOTE;
+import static org.apache.catalina.authenticator.Constants.FORM_REQUEST_NOTE;
+import static org.apache.catalina.authenticator.Constants.FORM_USERNAME;
+import static org.apache.catalina.authenticator.Constants.REQ_SSOID_NOTE;
+import static org.apache.catalina.authenticator.Constants.REQ_SSO_VERSION_NOTE;
+import static org.apache.catalina.authenticator.Constants.SESS_PASSWORD_NOTE;
+import static org.apache.catalina.authenticator.Constants.SESS_USERNAME_NOTE;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+>>>>>>> 58f2d0dadc... PAYARA-3318 addressed arjans review comments
 
 package org.apache.catalina.authenticator;
 
@@ -108,6 +139,9 @@ public class FormAuthenticator
         "org.apache.catalina.authenticator.FormAuthenticator/1.0";
 
 
+    protected static final Logger log = LogFacade.getLogger();
+    protected static final ResourceBundle rb = log.getResourceBundle();
+    
     // ---------------------------------------------------------- Properties
 
 
@@ -155,11 +189,9 @@ public class FormAuthenticator
         boolean loginAction =
             requestURI.startsWith(contextPath) &&
             requestURI.endsWith(Constants.FORM_ACTION);
-        if (loginAction) {
-            if (!isPermittedHttpMethod(hreq.getMethod())) {
-                forwardToErrorPage(request, response, config);
-                return false;
-            }
+        if (loginAction && !isPermittedHttpMethod(hreq.getMethod())) {
+            hres.sendError(SC_FORBIDDEN, rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
+            return false;
         }
 
         // Have we already authenticated someone?
