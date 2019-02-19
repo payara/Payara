@@ -61,6 +61,7 @@ package org.apache.catalina.authenticator;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.apache.catalina.LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE;
 import static org.apache.catalina.authenticator.Constants.FORM_ACTION;
 import static org.apache.catalina.authenticator.Constants.FORM_METHOD;
@@ -79,7 +80,9 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -88,6 +91,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.deploy.LoginConfig;
@@ -118,6 +122,9 @@ public class FormAuthenticator extends AuthenticatorBase {
      */
     protected static final String info = "org.apache.catalina.authenticator.FormAuthenticator/1.0";
 
+    protected static final Logger log = LogFacade.getLogger();
+    protected static final ResourceBundle rb = log.getResourceBundle();
+    
     // ---------------------------------------------------------- Properties
 
     /**
@@ -153,11 +160,9 @@ public class FormAuthenticator extends AuthenticatorBase {
         
         // Is this the action request from the login page?
         boolean loginAction = requestURI.startsWith(contextPath) && requestURI.endsWith(FORM_ACTION);
-        if (loginAction) {
-            if (!isPermittedHttpMethod(hreq.getMethod())) {
-                forwardToErrorPage(request, response, config);
-                return false;
-            }
+        if (loginAction && !isPermittedHttpMethod(hreq.getMethod())) {
+            hres.sendError(SC_FORBIDDEN, rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
+            return false;
         }
 
         // Have we already authenticated someone?
