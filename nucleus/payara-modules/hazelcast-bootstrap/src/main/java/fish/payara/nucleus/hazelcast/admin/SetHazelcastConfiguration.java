@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -201,6 +201,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "kubernetesServiceName", optional = true, alias = "kubernetesservicename")
     private String kubernetesServiceName;
 
+    @Param(name = "autoIncrementPort", optional = true)
+    private Boolean autoIncrementPort;
+    
     @Inject
     ServiceLocator serviceLocator;
 
@@ -281,6 +284,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (kubernetesServiceName != null) {
                             hazelcastRuntimeConfigurationProxy.setKubernetesServiceName(kubernetesServiceName);
+                        }
+                        if (autoIncrementPort != null) {
+                            hazelcastRuntimeConfigurationProxy.setAutoIncrementPort(autoIncrementPort.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
