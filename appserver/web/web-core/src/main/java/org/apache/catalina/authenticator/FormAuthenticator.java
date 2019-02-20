@@ -58,36 +58,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.WARNING;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static org.apache.catalina.LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE;
-import static org.apache.catalina.authenticator.Constants.FORM_ACTION;
-import static org.apache.catalina.authenticator.Constants.FORM_METHOD;
-import static org.apache.catalina.authenticator.Constants.FORM_PASSWORD;
-import static org.apache.catalina.authenticator.Constants.FORM_PRINCIPAL_NOTE;
-import static org.apache.catalina.authenticator.Constants.FORM_REQUEST_NOTE;
-import static org.apache.catalina.authenticator.Constants.FORM_USERNAME;
-import static org.apache.catalina.authenticator.Constants.REQ_SSOID_NOTE;
-import static org.apache.catalina.authenticator.Constants.REQ_SSO_VERSION_NOTE;
-import static org.apache.catalina.authenticator.Constants.SESS_PASSWORD_NOTE;
-import static org.apache.catalina.authenticator.Constants.SESS_USERNAME_NOTE;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.LogFacade;
@@ -95,6 +67,20 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
