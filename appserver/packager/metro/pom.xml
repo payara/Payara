@@ -150,16 +150,12 @@
            <artifactId>jaxb-osgi</artifactId>
         </dependency>
         <dependency>
-           <groupId>com.sun.xml.bind</groupId>
-           <artifactId>jaxb-extra-osgi</artifactId>
-        </dependency>
-        <dependency>
            <groupId>javax.xml.bind</groupId>
            <artifactId>jaxb-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.codehaus.woodstox</groupId>
-           <artifactId>woodstox-core-asl</artifactId>
+           <groupId>com.fasterxml.woodstox</groupId>
+           <artifactId>woodstox-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.metro</groupId>
