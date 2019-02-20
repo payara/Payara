@@ -40,76 +40,6 @@
 // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
-import static com.sun.enterprise.security.SecurityContext.setUnauthenticatedContext;
-import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
-import static com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator.HTTP_DIGEST;
-import static com.sun.logging.LogDomains.WEB_LOGGER;
-import static java.net.URLEncoder.encode;
-import static java.security.AccessController.doPrivileged;
-import static java.util.Arrays.asList;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
-import static org.apache.catalina.realm.Constants.FORM_ACTION;
-import static org.apache.catalina.realm.Constants.FORM_METHOD;
-import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.security.auth.Subject;
-import javax.security.auth.message.AuthException;
-import javax.security.jacc.PolicyContext;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.catalina.Authenticator;
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.HttpResponse;
-import org.apache.catalina.authenticator.AuthenticatorBase;
-import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.realm.RealmBase;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Service;
-
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -134,8 +64,63 @@ import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
 import com.sun.web.security.realmadapter.AuthenticatorProxy;
 import com.sun.web.security.realmadapter.JaspicRealm;
-
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import org.apache.catalina.*;
+import org.apache.catalina.authenticator.AuthenticatorBase;
+import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.realm.RealmBase;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.security.auth.Subject;
+import javax.security.auth.message.AuthException;
+import javax.security.jacc.PolicyContext;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.security.SecurityContext.setUnauthenticatedContext;
+import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
+import static com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator.HTTP_DIGEST;
+import static com.sun.logging.LogDomains.WEB_LOGGER;
+import static java.net.URLEncoder.encode;
+import static java.security.AccessController.doPrivileged;
+import static java.util.Arrays.asList;
+import static java.util.logging.Level.*;
+import static javax.servlet.http.HttpServletResponse.*;
+import static org.apache.catalina.realm.Constants.FORM_ACTION;
+import static org.apache.catalina.realm.Constants.FORM_METHOD;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
 /**
  * This is the realm adapter used to authenticate users and authorize access to web resources. The authenticate method
@@ -1156,7 +1141,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return false;
         }
 
-        StringBuffer file = new StringBuffer(httpServletRequest.getRequestURI());
+        StringBuilder file = new StringBuilder(httpServletRequest.getRequestURI());
 
         String requestedSessionId = httpServletRequest.getRequestedSessionId();
         if (requestedSessionId != null && httpServletRequest.isRequestedSessionIdFromURL()) {

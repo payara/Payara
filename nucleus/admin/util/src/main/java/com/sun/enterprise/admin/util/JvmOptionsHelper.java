@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions COpyright [2018] Payara Foundation and/or affiliates
+// Portions COpyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * $Id: JvmOptionsHelper.java,v 1.3 2007/04/03 01:13:42 llc Exp $
@@ -45,6 +45,7 @@
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.util.i18n.StringManager;
+
 import java.util.*;
 
 /**
@@ -136,7 +137,7 @@ public final class JvmOptionsHelper {
         if (null == options) {
             throw new IllegalArgumentException();
         }
-        
+
         final Set donotExist = new HashSet();
         for (int i = 0; i < options.length; i++) {
             if (!head.deleteJvmOption(options[i])) {
@@ -328,7 +329,7 @@ class JvmOptionsElement {
         if (jvmOptions.isEmpty()) {
             return "";
         }
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         final Iterator it = jvmOptions.iterator();
         while (it.hasNext()) {
             sb.append(it.next());

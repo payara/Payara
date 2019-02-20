@@ -166,7 +166,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
-    
+
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
     private static final String MQ_PASS_FILE_PREFIX = "asmq";
@@ -576,7 +576,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * URL, apart from the default URL derived from brokerhost:brokerport
      * and reported a PE connection url limitation.
      *
-     * @return 
+     * @return
      */
     @Override
      protected Set mergeRAConfiguration(ResourceAdapterConfig raConfig, List<Property> raConfigProps) {
@@ -1536,7 +1536,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static String convertStringToValidMQIdentifier(String s) {
         if (s == null) return "";
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(int i = 0; i < s.length(); i++) {
             if(Character.isLetterOrDigit(s.charAt(i))){
                             //|| s.charAt(i) == '_'){
@@ -1830,7 +1830,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 configuredPort = getConfiguredRmiRegistryPort();
             } catch (Exception ex) {
                 if (_logger.isLoggable(Level.WARNING)) {
-                    _logger.log(Level.WARNING, JMSLoggerInfo.GET_RMIPORT_FAIL, 
+                    _logger.log(Level.WARNING, JMSLoggerInfo.GET_RMIPORT_FAIL,
                             new Object[]{ex.getLocalizedMessage()});
                 }
                 if (_logger.isLoggable(Level.FINE)) {
@@ -1972,7 +1972,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * solutuion is available from the broker.
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
-     * @return 
+     * @return
      */
     @Override
    public ManagedConnectionFactory [] createManagedConnectionFactories
@@ -2085,7 +2085,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
-     * @return 
+     * @return
      */
     @Override
     public ManagedConnectionFactory createManagedConnectionFactory
@@ -2241,7 +2241,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 destination.getInterfaceName(), null));
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME, 
+                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME,
                             new Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
                 }
             } else {
@@ -2723,7 +2723,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             Method m = c.getMethod("setClusterBrokerList", String.class);
             m.invoke(resourceadapter_, brokerList);
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, JMSLoggerInfo.CLUSTER_BROKER_SUCCESS, 
+                _logger.log(Level.INFO, JMSLoggerInfo.CLUSTER_BROKER_SUCCESS,
                         new Object[]{brokerList});
             }
         }catch (Exception ex){

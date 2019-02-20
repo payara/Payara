@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * FormattedWriter.java
@@ -46,7 +47,9 @@
 
 package com.sun.jdo.spi.persistence.utility.generator.io;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 
 /**
@@ -59,7 +62,7 @@ class FormattedWriter
 		System.getProperty("line.separator");
 	static private final String indent = "    ";	// NOI18N
 
-	private StringBuffer _buffer;
+	private StringBuilder _buffer;
 	private int _initialIndents = 0;
 
 	/** Creates new FormattedWriter */
@@ -67,18 +70,18 @@ class FormattedWriter
 	{
 	}
 
-	private StringBuffer getBuffer ()
+	private StringBuilder getBuffer ()
 	{
 		if (_buffer == null)
-			_buffer = new StringBuffer();
+			_buffer = new StringBuilder();
 
 		return _buffer;
 	}
 
 	/** Returns a string representation of the FormattedWriter.
-	 * @return The string representation of the internal StringBuffer 
+	 * @return The string representation of the internal StringBuilder
 	 * used by this object.
-	 */	
+	 */
 	public String toString () { return getBuffer().toString(); }
 
 	void writeComments (final String[] comments)
@@ -95,7 +98,7 @@ class FormattedWriter
 
 	private void _write (final int indents, final String s)
 	{
-		final StringBuffer buffer = getBuffer();
+		final StringBuilder buffer = getBuffer();
 
 		if (!s.equals(lineSeparator))
 		{
@@ -134,13 +137,13 @@ class FormattedWriter
 		writeln(0, "");			// NOI18N
 	}
 
-	void writeList (final int indents, final List list, 
+	void writeList (final int indents, final List list,
 		final boolean addSeparator)
 	{
 		if ((list != null) && (list.size() > 0))
 		{
 			Iterator iterator = list.iterator();
-	
+
 			while (iterator.hasNext())
 			{
 				indent(indents, iterator.next().toString());

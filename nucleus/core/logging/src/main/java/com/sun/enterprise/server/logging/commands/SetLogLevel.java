@@ -41,34 +41,25 @@
 
 package com.sun.enterprise.server.logging.commands;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.inject.Inject;
-
+import com.sun.common.util.logging.LoggingConfigFactory;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.LogManager;
-import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -95,8 +86,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 @I18n("set.log.level")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="set-log-levels", 
+        opType=RestEndpoint.OpType.POST,
+        path="set-log-levels",
         description="set-log-levels")
 })
 public class SetLogLevel implements AdminCommand {
@@ -112,7 +103,7 @@ public class SetLogLevel implements AdminCommand {
 
     @Inject
     Domain domain;
-    
+
     @Inject
     ServerEnvironment env;
 
@@ -125,7 +116,7 @@ public class SetLogLevel implements AdminCommand {
 
 
         final ActionReport report = context.getActionReport();
-        StringBuffer successMsg = new StringBuffer();
+        StringBuilder successMsg = new StringBuilder();
         boolean success = false;
         boolean invalidLogLevels = false;
 
@@ -156,30 +147,30 @@ public class SetLogLevel implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
-            
+
             TargetInfo targetInfo = new TargetInfo(domain, target);
             String targetConfigName = targetInfo.getConfigName();
             boolean isDas = targetInfo.isDas();
-            
+
             if (targetConfigName != null && !targetConfigName.isEmpty()) {
                 loggingConfigFactory.provide(targetConfigName).setLoggingProperties(m);
                 success = true;
             } else if (isDas) {
                 loggingConfigFactory.provide().setLoggingProperties(m);
                 success = true;
-            } 
+            }
 
             if (success) {
                 if (env.isMicro()) {
                     LogManager.getLogManager().readConfiguration();
                 }
-                
+
                 successMsg.append(localStrings.getLocalString(
                         "set.log.level.success", "These logging levels are set for {0}.", target));
                 report.setMessage(successMsg.toString());
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
-            
+
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("set.log.level.failed",
                     "Could not set logger levels for {0}.", target));

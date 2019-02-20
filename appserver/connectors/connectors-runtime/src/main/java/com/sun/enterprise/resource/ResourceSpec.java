@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource;
 
@@ -170,7 +171,7 @@ public class ResourceSpec implements Serializable {
     public boolean isPM() {
         return pmResource;
     }
-    
+
     /**
      * Returns the status of the noTxResource flag
      *
@@ -215,7 +216,7 @@ public class ResourceSpec implements Serializable {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer("ResourceSpec :- ");
+        StringBuilder sb = new StringBuilder("ResourceSpec :- ");
         sb.append("\nconnectionPoolName : ").append(poolInfo);
         sb.append("\nisXA_ : ").append(isXA_);
         sb.append("\nresoureId : ").append(resourceId);

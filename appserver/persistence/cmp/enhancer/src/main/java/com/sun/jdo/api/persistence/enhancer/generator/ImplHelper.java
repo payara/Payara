@@ -37,17 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.generator;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.sun.jdo.api.persistence.enhancer.meta.ExtendedJDOMetaData;
 import com.sun.jdo.api.persistence.enhancer.util.Assertion;
 import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
 import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriterHelper;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -175,7 +176,7 @@ final class ImplHelper extends Assertion
         className = normalizeClassName(className);
         String[] bodies = new String[4];
         int i = 0;
-        bodies[i++] = (new StringBuffer(className)).append(" clone = (")
+        bodies[i++] = (new StringBuilder(className)).append(" clone = (")
                  .append(className).append(")super.clone();").toString();
         bodies[i++] = "clone.jdoFlags = (byte)0;";
         bodies[i++] = "clone.jdoStateManager = null;";
@@ -197,7 +198,7 @@ final class ImplHelper extends Assertion
                                       String statemanager)
     {
         className = getClassName(className);
-        return new String[] { (new StringBuffer("return new "))
+        return new String[] { (new StringBuilder("return new "))
                   .append(className).append("(").append(statemanager)
                   .append(");").toString() };
     }
@@ -221,13 +222,13 @@ final class ImplHelper extends Assertion
         String[] bodies = new String[6];
         int i = 0;
         bodies[i++] = "// annotation: mediate read access";
-        bodies[i++] = (new StringBuffer("final "))
+        bodies[i++] = (new StringBuilder("final "))
                  .append(CLASSNAME_JDO_STATE_MANAGER)
                  .append(" stateManager = this.")
                  .append(FIELDNAME_JDO_STATE_MANAGER)
                  .append(JavaClassWriterHelper.delim_).toString();
         bodies[i++] = "if (stateManager != null) {";
-        bodies[i++] = (new StringBuffer("    "))
+        bodies[i++] = (new StringBuilder("    "))
                 .append("stateManager.prepareGetField(").append(fieldNumber)
                 .append(");").toString();
         bodies[i++] = "}";
@@ -243,7 +244,7 @@ final class ImplHelper extends Assertion
         int i = 0;
         normalizeClassName(fieldType);
         bodies[i++] = "// annotation: check read access";
-        bodies[i++] = (new StringBuffer("if ("))
+        bodies[i++] = (new StringBuilder("if ("))
                  .append(FIELDNAME_JDO_FLAGS).append(" > 0) {").toString();
         bodies[i++] = "   " + FIELDNAME_JDO_STATE_MANAGER + ".loadForRead();";
         bodies[i++] = "}";
@@ -259,7 +260,7 @@ final class ImplHelper extends Assertion
         normalizeClassName(fieldType);
         return new String[] {
             "// annotation: grant direct write access",
-            (new StringBuffer("this."))
+            (new StringBuilder("this."))
                  .append(fieldName).append(" = ").append(newvalue)
                  .append(JavaClassWriterHelper.delim_).toString()
         };
@@ -274,18 +275,18 @@ final class ImplHelper extends Assertion
         int i = 0;
         fieldType = normalizeClassName(fieldType);
         bodies[i++] = "// annotation: mediate write access";
-        bodies[i++] = (new StringBuffer("final "))
+        bodies[i++] = (new StringBuilder("final "))
                  .append(CLASSNAME_JDO_STATE_MANAGER)
                  .append(" stateManager = this.")
                  .append(FIELDNAME_JDO_STATE_MANAGER)
                  .append(JavaClassWriterHelper.delim_).toString();
         bodies[i++] = "if (stateManager == null) {";
-        bodies[i++] = (new StringBuffer("    this."))
+        bodies[i++] = (new StringBuilder("    this."))
                  .append(fieldName).append(" = ")
                  .append(newvalue).append(JavaClassWriterHelper.delim_)
                  .toString();
         bodies[i++] = "} else {";
-        bodies[i++] = (new StringBuffer("    stateManager."))
+        bodies[i++] = (new StringBuilder("    stateManager."))
                  .append(getMethodNameSetField(fieldType)).append('(')
                  .append(fieldNumber).append(", ").append(newvalue)
                  .append(");").toString();
@@ -305,7 +306,7 @@ final class ImplHelper extends Assertion
         bodies[i++] = "if (" + FIELDNAME_JDO_FLAGS + " != 0) {";
         bodies[i++] = "    " + FIELDNAME_JDO_STATE_MANAGER + ".loadForUpdate();";
         bodies[i++] = "}";
-        bodies[i++] = (new StringBuffer("this.")).append(fieldName)
+        bodies[i++] = (new StringBuilder("this.")).append(fieldName)
                  .append(" = ").append(newvalue)
                  .append(JavaClassWriterHelper.delim_).toString();
         return bodies;
@@ -323,11 +324,11 @@ final class ImplHelper extends Assertion
             }
             String primClass = JavaTypeHelper.getWrapperName(fieldType);
             if (meta.isMutableSecondClassObjectType(fieldTypeClassPath)) {
-                impl.add((new StringBuffer("if ("))
+                impl.add((new StringBuilder("if ("))
                         .append(fieldName).append(" instanceof ")
                         .append(CLASSNAME_JDO_SCO).append(") {")
                         .toString());
-                impl.add((new StringBuffer("    (("))
+                impl.add((new StringBuilder("    (("))
                         .append(CLASSNAME_JDO_SCO).append(")")
                         .append(fieldName).append(").unsetOwner();")
                         .toString());
@@ -358,7 +359,7 @@ final class ImplHelper extends Assertion
             if (primClass == null) {
                 impl.add("    return " + fieldNames[i] + ";");
             } else {
-                impl.add((new StringBuffer("    return new "))
+                impl.add((new StringBuilder("    return new "))
                           .append(primClass).append("(")
                           .append(fieldNames[i]).append(");").toString());
             }
@@ -381,13 +382,13 @@ final class ImplHelper extends Assertion
             impl.add("case " + i + ':');
             String primClass = JavaTypeHelper.getWrapperName(fieldType);
             if (primClass == null) {
-                impl.add((new StringBuffer("    this."))
+                impl.add((new StringBuilder("    this."))
                           .append(fieldNames[i])
                           .append(" = (").append(fieldType)
                           .append(")").append(objName)
                           .append(";").toString());
             } else {
-                impl.add((new StringBuffer("    this."))
+                impl.add((new StringBuilder("    this."))
                           .append(fieldNames[i])
                           .append(" = ((").append(primClass)
                           .append(")").append(objName).append(").")
@@ -407,14 +408,14 @@ final class ImplHelper extends Assertion
     private static String[] getJDOStateManagerDelegationImpl(
             String delegation, String returnType) {
         final List impl = new ArrayList(7);
-        impl.add((new StringBuffer("final "))
+        impl.add((new StringBuilder("final "))
                  .append(CLASSNAME_JDO_STATE_MANAGER)
                  .append(" stateManager = this.")
                  .append(FIELDNAME_JDO_STATE_MANAGER)
                  .append(JavaClassWriterHelper.delim_)
                  .toString());
         impl.add("if (stateManager != null) {");
-        StringBuffer buf = new StringBuffer("    ");
+        StringBuilder buf = new StringBuilder("    ");
         if (returnType != null) {
             buf.append("return ");
         }
@@ -422,7 +423,7 @@ final class ImplHelper extends Assertion
                   .append(delegation).append(";")).toString());
         impl.add("}");
         if (returnType != null) {
-            impl.add((new StringBuffer("return ")).append(returnType)
+            impl.add((new StringBuilder("return ")).append(returnType)
                         .append(";").toString());
         };
         String[] strArr = new String[impl.size()];

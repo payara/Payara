@@ -1004,8 +1004,8 @@ public class MappingPolicy implements Cloneable {
     // XXX FIXME: If the user needs to provide a unique name, why do we
     // invoke getUniqueGlobalName on it?
     public String getTableName(String name, String uniqueName) {
-        StringBuffer key =
-            new StringBuffer(name).append(DOT).append(INDICATOR_TABLE_NAME);
+        StringBuilder key =
+            new StringBuilder(name).append(DOT).append(INDICATOR_TABLE_NAME);
         String rc = (String)namingPolicy.get(key.toString());
 
         if (rc == null) {
@@ -1039,14 +1039,14 @@ public class MappingPolicy implements Cloneable {
             String tableName) {
 
         // Get column naming policy based on className and fieldName
-        StringBuffer key = new StringBuffer(className)
+        StringBuilder key = new StringBuilder(className)
             .append(DOT).append(fieldName)
             .append(DOT).append(INDICATOR_COLUMN_NAME);
         String rc = (String)namingPolicy.get(key.toString());
 
         if (rc == null) {
             // No fieldName specific policy, so use default for className
-            key = new StringBuffer(className)
+            key = new StringBuilder(className)
                 .append(DOT).append(FIELD_BASE)
                 .append(DOT).append(INDICATOR_COLUMN_NAME);
             rc = (String)namingPolicy.get(key.toString());
@@ -1080,7 +1080,7 @@ public class MappingPolicy implements Cloneable {
             String columnName) {
 
        return getUniqueLocalName(
-               new StringBuffer(tableName)
+               new StringBuilder(tableName)
                    .append(DatabaseConstants.NAME_SEPARATOR)
                    .append(columnName).toString(),
                tableName,
@@ -1525,7 +1525,7 @@ public class MappingPolicy implements Cloneable {
      * Basically, all it's "interesting" values.
      */
     public String toString() {
-        StringBuffer rc = new StringBuffer(
+        StringBuilder rc = new StringBuilder(
             "statementSeparator=" + statementSeparator // NOI18N
             + "\ncreateTableStart=" + createTableStart // NOI18N
             + "\ncreateTableEnd=" + createTableEnd // NOI18N
@@ -1559,7 +1559,7 @@ public class MappingPolicy implements Cloneable {
      * from the next by a newline, with keys separated from values by '='.
      */
     private String stringifyMap(Map m) {
-        StringBuffer rc = new StringBuffer();
+        StringBuilder rc = new StringBuilder();
         for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
             rc.append(e.getKey()).append("=") // NOI18N
@@ -1575,7 +1575,7 @@ public class MappingPolicy implements Cloneable {
      * line.
      */
     private String stringifySet(Set s) {
-        StringBuffer rc = new StringBuffer();
+        StringBuilder rc = new StringBuilder();
         int count = 0;
         for (Iterator i = s.iterator(); i.hasNext();) {
             rc.append(i.next()).append(" "); // NOI18N

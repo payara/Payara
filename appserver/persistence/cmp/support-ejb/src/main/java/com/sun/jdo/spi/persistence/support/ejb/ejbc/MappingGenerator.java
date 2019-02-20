@@ -103,16 +103,16 @@ import org.netbeans.modules.schema2beans.ValidateException;
 
 /*
  * This class will generate mapping classes from sun-cmp-mappings.xml
- * and dbschema if they are available in the jar, or it will generate mapping 
- * classes based on ejb-jar.xml, bean classes and policy by invoking the 
+ * and dbschema if they are available in the jar, or it will generate mapping
+ * classes based on ejb-jar.xml, bean classes and policy by invoking the
  * database generation backend.
  *
- * @author Jie Leng 
+ * @author Jie Leng
  */
-public class MappingGenerator extends 
+public class MappingGenerator extends
     com.sun.jdo.api.persistence.mapping.ejb.MappingGenerator {
 
-    // XXX To be removed when all callers are switched to use 
+    // XXX To be removed when all callers are switched to use
     // DatabaseConstants.JAVA_TO_DB_FLAG directly.
     public static final String JAVA_TO_DB_FLAG = DatabaseConstants.JAVA_TO_DB_FLAG;
 
@@ -127,17 +127,17 @@ public class MappingGenerator extends
     private String dbVendorName = null;
     private boolean isJavaToDatabaseFlag = false;
     private boolean isVerifyFlag = false;
-        
+
     /**
      * I18N message handler
      */
     private final static ResourceBundle messages = I18NHelper.loadBundle(
             MappingGenerator.class);
 
-    /** 
+    /**
      * Constructor
      * @param bundle an ejb bundle
-     * @param model a model containing mapping class and 
+     * @param model a model containing mapping class and
      * persistence class information
      * @param nameMapper a nameMapper for name lookup
      * @param loader a class loader
@@ -148,13 +148,13 @@ public class MappingGenerator extends
         this.bundle = bundle;
     }
 
-    /** 
+    /**
      * This method will load mapping classes if there is sun-cmp-mappings.xml,
-     * otherwise it will call the database generation backend to create 
-     * mapping classes and schema.  It also generates *.dbschema and 
+     * otherwise it will call the database generation backend to create
+     * mapping classes and schema.  It also generates *.dbschema and
      * sun-cmp-mappings.xml in application dir if it is
      * in creating mapping classes mode.
-     * @param ctx an object containing CLI options for 
+     * @param ctx an object containing CLI options for
      * the database generation backend
      * @param inputFilesPath the directory where sun-cmp-mappings.xml is located
      * @param generatedXmlsPath the directory where the generated files are located
@@ -166,22 +166,22 @@ public class MappingGenerator extends
      * @throws ModelException
      * @throws Schema2BeansException
      * @throws SQLException
-     * @throws GeneratorException 
-     * @throws ConversionException 
+     * @throws GeneratorException
+     * @throws ConversionException
      */
     public SchemaElement generateMapping(
             DeploymentContext ctx, String inputFilesPath,
             String generatedXmlsPath,  File classout,
-            boolean ignoreSunDeploymentDescriptors) 
-            throws IOException, DBException, ModelException, 
-            Schema2BeansException, SQLException, GeneratorException, 
+            boolean ignoreSunDeploymentDescriptors)
+            throws IOException, DBException, ModelException,
+            Schema2BeansException, SQLException, GeneratorException,
             ConversionException {
 
         SchemaElement schema = null;
         if (ctx == null)
             isVerifyFlag = true;
         File cmpMappingFile = getSunCmpMappingFile(inputFilesPath);
-        boolean mappedBeans = !ignoreSunDeploymentDescriptors 
+        boolean mappedBeans = !ignoreSunDeploymentDescriptors
                 && cmpMappingFile.exists();
         ResourceReferenceDescriptor cmpResource = checkOrCreateCMPResource(
                 mappedBeans);
@@ -194,7 +194,7 @@ public class MappingGenerator extends
         // they are mapped and the javaToDatabase flag is set.
         boolean mustHaveDBVendorName =
             !mappedBeans || (mappedBeans && isJavaToDatabaseFlag);
-        
+
         // Read deployment settings from the deployment descriptor
         // and CLI options.
         Results deploymentArguments = getDeploymentArguments(
@@ -214,7 +214,7 @@ public class MappingGenerator extends
                     // that flag into account.  I.e., the tables will be generated
                     // as per the mapping.
                     if (deploymentArguments.hasUniqueTableNames()) {
-                        warning = 
+                        warning =
                             I18NHelper.getMessage(
                                 messages,
                                 "EXC_DisallowJava2DBUniqueTableNames", //NOI18N
@@ -227,7 +227,7 @@ public class MappingGenerator extends
                     // If beans are already mapped but the user gave any Java2DB
                     // command line arguments, warn the user that these args
                     // should not be used when module is already mapped.
-                    warning = 
+                    warning =
                         I18NHelper.getMessage(
                             messages,
                             "EXC_DisallowJava2DBCLIOverrides", //NOI18N
@@ -253,10 +253,10 @@ public class MappingGenerator extends
             // load real mapping model and jdo model in memory
             Map mappingClasses = loadMappingClasses(sunCmpMappings, getClassLoader());
 
-            // Get schema from one of the mapping classes. 
-            // The mapping class element may be null if there is inconsistency 
-            // in sun-cmp-mappings.xml and ejb-jar.xml. For example, 
-            // the bean has mapping information in sun-cmp-mappings.xml but 
+            // Get schema from one of the mapping classes.
+            // The mapping class element may be null if there is inconsistency
+            // in sun-cmp-mappings.xml and ejb-jar.xml. For example,
+            // the bean has mapping information in sun-cmp-mappings.xml but
             // no definition in the ejb-jar.xml.
             // So iterate over the mappings until the 1st non-null is found.
             MappingClassElement mc = null;
@@ -280,14 +280,14 @@ public class MappingGenerator extends
             // sun-cmp-mappings.xml does not exist (e.g. user didn't yet map)
             // or DeploymentContext is null (e.g. running under auspices of AVK).
             DatabaseGenerator.Results results  = generateMappingClasses(
-                    dbVendorName, deploymentArguments.getUseUniqueTableNames(), 
+                    dbVendorName, deploymentArguments.getUseUniqueTableNames(),
                     deploymentArguments.getUserPolicy(), inputFilesPath);
 
             // java2db from verifier should not save anything to disk
             if (!isVerifyFlag) {
-                // save SunCmpMapping to sun-cmp-mappings.xml 
+                // save SunCmpMapping to sun-cmp-mappings.xml
                 // in generated XML dir
-                writeSunCmpMappingFile(results.getMappingClasses(), 
+                writeSunCmpMappingFile(results.getMappingClasses(),
                     getSunCmpMappingFile(generatedXmlsPath));
 
                 schema = results.getSchema();
@@ -319,7 +319,7 @@ public class MappingGenerator extends
      * @param cmpResource a ResourceReferenceDescriptor
      * @param value a string containing true or false
      */
-    private void setJavaToDatabase(ResourceReferenceDescriptor 
+    private void setJavaToDatabase(ResourceReferenceDescriptor
             cmpResource, boolean value) {
 
         if (logger.isLoggable(Logger.FINE)) {
@@ -333,7 +333,7 @@ public class MappingGenerator extends
             cmpResource.setSchemaGeneratorProperties(schemaGeneratorProperties);
         }
 
-        schemaGeneratorProperties.setProperty(DatabaseConstants.JAVA_TO_DB_FLAG, 
+        schemaGeneratorProperties.setProperty(DatabaseConstants.JAVA_TO_DB_FLAG,
                 String.valueOf(value));
 
         isJavaToDatabaseFlag = value;
@@ -343,7 +343,7 @@ public class MappingGenerator extends
      * Loads sun-cmp-mapping.xml into memory as SunCmpMappings
      * @param cmpMappingFile a file of sun-cmp-mappings.xml
      * @return a SunCmpMappings object
-     * @throws IOException 
+     * @throws IOException
      * @throws Schema2BeansException
      */
     private SunCmpMappings getSunCmpMappings(File cmpMappingFile)
@@ -392,13 +392,13 @@ public class MappingGenerator extends
         return sunCmpMapping;
     }
 
-    /** 
+    /**
      * Gets sun-cmp-mappings.xml file
      * @param filesPath a string consisting file path
      * @return a file of sun-cmp-mappings.xml
      */
     private static File getSunCmpMappingFile(String filesPath) {
-        String cmpMappingFile = (new StringBuffer(filesPath).
+        String cmpMappingFile = (new StringBuilder(filesPath).
                 append(File.separator).
                 append(MappingFile.DEFAULT_LOCATION_IN_EJB_JAR)).toString();
 
@@ -414,12 +414,12 @@ public class MappingGenerator extends
 
         return new File(cmpMappingFile);
     }
-    
 
-    /** 
+
+    /**
      * Writes to sun-cmp-mappings.xml from mappings classes
      * @param mappingClasses a set of mapping classes
-     * @param cmpMappingFile corresponds to sun-cmp-mappings.xml 
+     * @param cmpMappingFile corresponds to sun-cmp-mappings.xml
      * @throws IOException
      * @throws ConversionException
      * @throws Schema2BeansException
@@ -440,11 +440,11 @@ public class MappingGenerator extends
             mappingMap.put(ejbName, mappingClass);
         }
         MappingFile mf = new MappingFile();
-        OutputStream sunCmpMapping = null; 
+        OutputStream sunCmpMapping = null;
         try {
             sunCmpMapping = new FileOutputStream(
                 cmpMappingFile);
-            mf.fromMappingClasses(sunCmpMapping, mappingMap, 
+            mf.fromMappingClasses(sunCmpMapping, mappingMap,
                 getConversionHelper());
         } catch (IOException ex) {
             throw ex;
@@ -460,13 +460,13 @@ public class MappingGenerator extends
         }
     }
 
-    /** 
+    /**
      * Writes to *.dbschema file from schema
      * @param schema a SchemaElement
      * @param filePath a directory where *.dbschema is located
      * @throws IOException
      */
-    private static void writeSchemaFile(SchemaElement schema, File filePath) 
+    private static void writeSchemaFile(SchemaElement schema, File filePath)
             throws IOException {
         OutputStream schemaStream = null;
         try {
@@ -512,7 +512,7 @@ public class MappingGenerator extends
 
         // XXX Get rid of getUseUniqueTableNames from all call sites that need a
         // boolean (probably all of them), using hasUniqueTableNames instead
-        
+
         /** @return useUniqueTableNames */
         public Boolean getUseUniqueTableNames() {
             return useUniqueTableNames;
@@ -527,7 +527,7 @@ public class MappingGenerator extends
 
         /**
          * Returns true if any Java2DB arguments were given on the command
-         * line. 
+         * line.
          * @return javaToDatabaseArgs */
         public boolean hasJavaToDatabaseArgs() {
             return javaToDatabaseArgs;
@@ -601,7 +601,7 @@ public class MappingGenerator extends
                 } catch (Exception ex) {
                     // Ignore exceptions and use default.
                 }
-            }                    
+            }
             Boolean createTables = cliOverrides.createtables;
             javaToDatabaseArgs |= (createTables != null);
 
@@ -635,13 +635,13 @@ public class MappingGenerator extends
     private ResourceReferenceDescriptor checkOrCreateCMPResource(
             boolean mappedBeans)
             throws GeneratorException {
-        ResourceReferenceDescriptor cmpResource = 
+        ResourceReferenceDescriptor cmpResource =
                 bundle.getCMPResourceReference();
         if (mappedBeans) {
             if (cmpResource == null) {
                 // If mapping exists, the cmpResource must specify a
                 // database or a PMF JNDI name.
-                throw JDOCodeGeneratorHelper.createGeneratorException( 
+                throw JDOCodeGeneratorHelper.createGeneratorException(
                         "EXC_MissingCMPResource", bundle); //NOI18N
             }
         } else {
@@ -665,7 +665,7 @@ public class MappingGenerator extends
     * @param cmpResource Provides JNDI name for getting database connection
     * @param sunCmpMappings SunCmpMappings which is checked for having schema
     * @param inputFilesPath the directory where this bundle's files are located
-    * @param classout the directory where the classes are located 
+    * @param classout the directory where the classes are located
     * @exception DBException Thrown if database model throws it
     * @exception IOException Thrown if .dbschema file cannot be created.
     * @exception SQLException Thrown if we cannot get get required info from
@@ -673,7 +673,7 @@ public class MappingGenerator extends
     */
     private void ensureDBSchemaExistence(
             ResourceReferenceDescriptor cmpResource,
-            SunCmpMappings sunCmpMappings, 
+            SunCmpMappings sunCmpMappings,
             String inputFilesPath,
             File classout)
             throws DBException, SQLException, GeneratorException {
@@ -700,10 +700,10 @@ public class MappingGenerator extends
                     // to perform sun-cmp-mappings.xml and EJB validation
                     getConversionHelper().setEnsureValidation(false);
                 }
-                 
+
             } else {
                 File dbschemaFile = new File(
-                        new StringBuffer(inputFilesPath)
+                        new StringBuilder(inputFilesPath)
                             .append(File.separator)
                             .append(schemaName)
                             .append(DBSCHEMA_EXTENSION).toString());
@@ -714,7 +714,7 @@ public class MappingGenerator extends
                             I18NHelper.getMessage(
                             messages, "CMG.MissingDBSchema", // NOI18N
                             bundle.getApplication().getRegistrationName(),
-                            JDOCodeGeneratorHelper.getModuleName(bundle), 
+                            JDOCodeGeneratorHelper.getModuleName(bundle),
                             schemaName));
                 }
             }
@@ -748,7 +748,7 @@ public class MappingGenerator extends
                     outSchemaImpl.initTables(cp, new LinkedList(tables), new LinkedList(), false);
                 outstream = new FileOutputStream(
                         new File(classout,
-                        new StringBuffer(generatedSchemaName)
+                        new StringBuilder(generatedSchemaName)
                             .append(DBSCHEMA_EXTENSION).toString()));
 
                 // XXX Unfortunately, if SchemaElement.save gets an
@@ -758,14 +758,14 @@ public class MappingGenerator extends
 
             } catch (IOException ex) {
                 // Catch FileNotFound, etc.
-                throw JDOCodeGeneratorHelper.createGeneratorException( 
+                throw JDOCodeGeneratorHelper.createGeneratorException(
                         "CMG.CannotSaveDBSchema", bundle, ex); // NOI18N
             } finally {
                 cp.closeConnection();
                 try {
                     if (outstream != null) {
                         outstream.close();
-                    } 
+                    }
                 } catch (IOException ex) {
                     if (logger.isLoggable(Logger.FINE))
                         logger.fine(ex.toString());
@@ -777,7 +777,7 @@ public class MappingGenerator extends
     /**
      * Adds all table names referenced by this <code>SunCmpMapping</code> element
      * to this Set.
-     * 
+     *
      * @param sunCmpMapping the SunCmpMapping element to check.
      * @param tables the Set to update.
      */
@@ -813,10 +813,10 @@ public class MappingGenerator extends
         }
     }
 
-    /** 
+    /**
      * Add a valid (not null and not all spaces) table name to the
      * Set of known table names.
-     * 
+     *
      * @param name the table name to add if it's a valid name.
      * @param tables the Set to update.
      */
@@ -833,10 +833,10 @@ public class MappingGenerator extends
     /**
      * Adds a table name, if it is specified as a part of the column name,
      * to the Set of known table names.
-     *   
+     *
      * @param columnName the name of the column to use.
      * @param tables the Set to update.
-     */  
+     */
     private void addRelatedTableName(String columnName, Set tables) {
         if (!StringHelper.isEmpty(columnName)) {
             int l = columnName.indexOf(DOT);

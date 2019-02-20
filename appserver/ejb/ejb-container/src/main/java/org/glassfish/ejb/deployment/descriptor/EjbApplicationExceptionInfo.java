@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -44,9 +45,9 @@ import java.io.Serializable;
 
 /**
  * Contains information about an ejb application exception.
- */ 
+ */
 
-public class EjbApplicationExceptionInfo implements Serializable 
+public class EjbApplicationExceptionInfo implements Serializable
 {
     private String exceptionClassName;
     private boolean rollback;
@@ -78,7 +79,7 @@ public class EjbApplicationExceptionInfo implements Serializable
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("exception class name = " + exceptionClassName + "\t");
         sb.append("rollback = " + rollback);
         sb.append("inherited = " + inherited);

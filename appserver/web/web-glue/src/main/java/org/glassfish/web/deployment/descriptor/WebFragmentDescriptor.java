@@ -37,17 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.web.EnvironmentEntry;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.deployment.web.MimeMapping;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.ServletFilter;
+import com.sun.enterprise.deployment.web.*;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.Set;
@@ -96,7 +92,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
     public void setExists(boolean exists) {
         this.exists = exists;
     }
-    
+
     @Override
     protected WebComponentDescriptor combineWebComponentDescriptor(
             WebComponentDescriptor webComponentDescriptor) {
@@ -254,7 +250,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                 if (jdr.isConflict((ResourceEnvReferenceDescriptor)jdRef)) {
                     conflictResourceEnvReference = true;
                 }
-                combineInjectionTargets(jdr, jdRef);   
+                combineInjectionTargets(jdr, jdRef);
             } else {
                 addResourceEnvReferenceDescriptor(jdRef);
             }
@@ -326,15 +322,15 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
     /**
      * Return a formatted version as a String.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nWeb Fragment descriptor");
-        toStringBuffer.append("\n");
-        printCommon(toStringBuffer);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nWeb Fragment descriptor");
+        toStringBuilder.append("\n");
+        printCommon(toStringBuilder);
         if (jarName != null) {
-            toStringBuffer.append("\njar name " + jarName);
+            toStringBuilder.append("\njar name " + jarName);
         }
         if (ordering != null) {
-            toStringBuffer.append("\nordering " + ordering);
+            toStringBuilder.append("\nordering " + ordering);
         }
     }
 

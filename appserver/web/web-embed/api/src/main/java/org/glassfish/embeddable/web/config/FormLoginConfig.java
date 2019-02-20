@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable.web.config;
 
@@ -59,7 +60,7 @@ public class FormLoginConfig {
     /**
      * Creates an instance of the <tt>FormLoginConfig</tt> with the specified <tt>loginPage</tt> and
      * <tt>errorPage</tt>
-     * 
+     *
      * @param loginPage the login page
      * @param errorPage the form error page
      */
@@ -90,11 +91,11 @@ public class FormLoginConfig {
      * Returns a formatted string of the state.
      */
     public String toString() {
-        StringBuffer toStringBuffer = new StringBuffer();
-        toStringBuffer.append("FormLoginConfig: ");
-        toStringBuffer.append(" loginPage: ").append(loginPage);
-        toStringBuffer.append(" errorPage: ").append(errorPage);
-        return toStringBuffer.toString();
+        StringBuilder toStringBuilder = new StringBuilder();
+        toStringBuilder.append("FormLoginConfig: ");
+        toStringBuilder.append(" loginPage: ").append(loginPage);
+        toStringBuilder.append(" errorPage: ").append(errorPage);
+        return toStringBuilder.toString();
     }
 
 }

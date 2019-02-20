@@ -40,57 +40,9 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.deployment.descriptor;
 
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_HOME;
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_LOCAL;
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_LOCALHOME;
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_REMOTE;
-import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
-import static java.util.logging.Level.SEVERE;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.CommonResourceDescriptor;
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.EjbInterceptor;
-import com.sun.enterprise.deployment.EjbReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.InjectionCapable;
-import com.sun.enterprise.deployment.InjectionInfo;
-import com.sun.enterprise.deployment.InjectionTarget;
-import com.sun.enterprise.deployment.InterceptorDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.deployment.OrderedSet;
-import com.sun.enterprise.deployment.ResourceDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WritableJndiNameEnvironment;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -102,11 +54,20 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.glassfish.ejb.deployment.util.EjbVisitor;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator.TranslationResults;
-import org.glassfish.security.common.Role;
-import org.glassfish.internal.api.Globals;
-import com.sun.enterprise.container.common.spi.JCDIService;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.security.common.Role;
+
 import javax.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.deployment.MethodDescriptor.*;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * This abstract class encapsulates the meta-information describing Entity, Session and MessageDriven EJBs.
@@ -118,7 +79,7 @@ import javax.inject.Inject;
 public abstract class EjbDescriptor extends CommonResourceDescriptor implements com.sun.enterprise.deployment.EjbDescriptor {
 
     private static final long serialVersionUID = -6857481243635762536L;
-    
+
     private String homeClassName;
     private String remoteClassName;
     private String localHomeClassName;
@@ -305,7 +266,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the classname of the Home interface of this ejb.
-     * 
+     *
      * @return
      */
     @Override
@@ -315,7 +276,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the classname of the Home interface of this ejb.
-     * 
+     *
      * @param homeClassName
      */
     public void setHomeClassName(String homeClassName) {
@@ -324,7 +285,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the classname of the Remote interface of this ejb.
-     * 
+     *
      * @param remoteClassName
      */
     public void setRemoteClassName(String remoteClassName) {
@@ -333,7 +294,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the classname of the Remote interface of this ejb.
-     * 
+     *
      * @return
      */
     @Override
@@ -343,7 +304,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the classname for the local home interface of this ejb
-     * 
+     *
      * @param localHomeClassName fully qualified class name for the interface
      */
     public void setLocalHomeClassName(String localHomeClassName) {
@@ -360,7 +321,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the classname for the local interface of this ejb
-     * 
+     *
      * @param localClassName fully qualified class name for the interface
      */
     public void setLocalClassName(String localClassName) {
@@ -377,7 +338,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Add a classname for a no-interface view of the local ejb
-     * 
+     *
      * @param className fully qualified class name for the interface
      */
     public void addNoInterfaceLocalBeanClass(String className) {
@@ -402,7 +363,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * Returns the set of remote business interface names for this ejb. If the bean does not expose a remote business view,
      * return a set of size 0.
-     * 
+     *
      * @return
      */
     @Override
@@ -413,7 +374,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * Returns the set of local business interface names for this ejb. If the bean does not expose a local business view,
      * return a set of size 0.
-     * 
+     *
      * @return
      */
     @Override
@@ -512,7 +473,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the classname of the ejb.
-     * 
+     *
      * @param ejbClassName
      */
     public void setEjbClassName(String ejbClassName) {
@@ -532,7 +493,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Bean Managed Persistence Entity Beans but is different for Container Mananged Persistence Entity Bean Therefore,the
      * implementation in the base class is to return {@link getEjbClassName()} and the method is redefined in
      * IASEjbCMPDescriptor.
-     * 
+     *
      * @return
      */
     @Override
@@ -542,7 +503,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the remote home implementation classname of the ejb.
-     * 
+     *
      * @param name
      */
     public void setRemoteHomeImplClassName(String name) {
@@ -551,7 +512,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the classname of the remote home impl.
-     * 
+     *
      * @return
      */
     public String getRemoteHomeImplClassName() {
@@ -560,7 +521,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the Local home implementation classname of the ejb.
-     * 
+     *
      * @param name
      */
     public void setLocalHomeImplClassName(String name) {
@@ -569,7 +530,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the classname of the Local home impl.
-     * 
+     *
      * @return
      */
     public String getLocalHomeImplClassName() {
@@ -578,7 +539,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the EJBLocalObject implementation classname of the ejb.
-     * 
+     *
      * @param name
      */
     public void setEJBLocalObjectImplClassName(String name) {
@@ -594,7 +555,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Sets the EJBObject implementation classname of the ejb.
-     * 
+     *
      * @param name
      */
     public void setEJBObjectImplClassName(String name) {
@@ -603,7 +564,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the classname of the EJBObject impl.
-     * 
+     *
      * @return
      */
     public String getEJBObjectImplClassName() {
@@ -612,7 +573,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * The transaction type of this ejb.
-     * 
+     *
      * @return
      */
     @Override
@@ -622,7 +583,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Set the transaction type of this ejb.
-     * 
+     *
      * @param transactionType
      */
     public abstract void setTransactionType(String transactionType);
@@ -644,7 +605,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns true if a timer has been set with this object
-     * 
+     *
      * @return
      */
     public boolean isTimedObject() {
@@ -665,7 +626,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Special method for overrides because more than one schedule can be specified on a single method
-     * 
+     *
      * @param scheduleDescriptor
      */
     public void addScheduledTimerDescriptorFromDD(ScheduledTimerDescriptor scheduleDescriptor) {
@@ -806,7 +767,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Derive all interceptors that are applicable to this bean.
-     * 
+     *
      * @param bindingTranslator
      */
     public void applyInterceptors(InterceptorBindingTranslator bindingTranslator) {
@@ -923,7 +884,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Return the ordered list of interceptor info for AroundInvoke behavior of a particular business method. This list
      * *does* include the info on any bean class interceptor. If present, this would always be the last element in the list
      * because of the precedence defined by the spec.
-     * 
+     *
      * @param businessMethod
      * @return
      */
@@ -956,7 +917,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Return the ordered list of interceptor info for AroundTimeout behavior of a particular business method. This list
      * *does* include the info on any bean class interceptor. If present, this would always be the last element in the list
      * because of the precedence defined by the spec.
-     * 
+     *
      * @param businessMethod
      * @return
      */
@@ -1039,7 +1000,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Return the ordered list of interceptor info for a particular callback event type. This list *does* include the info
      * on any bean class callback. If present, this would always be the last element in the list because of the precedence
      * defined by the spec.
-     * 
+     *
      * @param type
      * @return
      */
@@ -1159,7 +1120,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Set the transaction scope of this ejb.
-     * 
+     *
      * @param scope
      */
     public void setDistributedTransactionScope(boolean scope) {
@@ -1168,7 +1129,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Set the usesCallerIdentity flag
-     * 
+     *
      * @param flag
      */
     @Override
@@ -1188,7 +1149,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Get the description field of security-identity
-     * 
+     *
      * @return
      */
     public String getSecurityIdentityDescription() {
@@ -1199,7 +1160,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Set the description field of security-identity
-     * 
+     *
      * @param s
      */
     public void setSecurityIdentityDescription(String s) {
@@ -1247,7 +1208,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * Sets the container transaction for the given method descriptor. Throws an Illegal argument if this ejb has
      * transaction type BEAN_TRANSACTION_TYPE.
-     * 
+     *
      * @param methodDescriptor
      * @param containerTransaction
      */
@@ -1271,7 +1232,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
      * Sets the container transactions for all the method descriptors of this ejb. The Hashtable is keyed by method
      * descriptor and the values are the corresponding container transaction objects.. Throws an Illegal argument if this
      * ejb has transaction type BEAN_TRANSACTION_TYPE.
-     * 
+     *
      * @param methodContainerTransactions
      */
     public void setMethodContainerTransactions(Hashtable methodContainerTransactions) {
@@ -1301,7 +1262,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Fetches the assigned container transaction object for the given method object or null.
-     * 
+     *
      * @param methodDescriptor
      * @return
      */
@@ -1365,7 +1326,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * returns a ContainerTransaction if all the transactional methods on the ejb descriptor have the same transaction type
      * else return null
-     * 
+     *
      * @return
      */
     public ContainerTransaction getContainerTransaction() {
@@ -1397,7 +1358,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @return the set of roles to which have been assigned method permissions.
      */
     @Override
@@ -1469,14 +1430,14 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         // Use Array List as opposed to HashMap or Table because MethodDescriptor
         // Equality once did not take into account differences in
         // method interface, and will process sequentially.
-        
+
         methodPermissionsFromDD.computeIfAbsent(methodPermission, e -> new ArrayList<>())
                                .add(methodDescriptor);
     }
 
     /**
      * Get a record of all the Method Permissions exactly as they were in the`DD
-     * 
+     *
      * @return
      */
     @Override
@@ -1720,13 +1681,13 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         if (needToConvertMethodPermissions()) {
             convertMethodPermissions();
         }
-        
+
         return getMethodPermissions(methodDescriptor);
     }
 
     private Set<MethodPermission> getMethodPermissions(MethodDescriptor methodDescriptor) {
         Set<MethodPermission> methodPermissionsForMethod = new HashSet<>();
-        
+
         for (Iterator e = this.getPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
             MethodPermission nextPermission = (MethodPermission) e.next();
             Set permissionedMethods = (Set) this.getPermissionedMethodsByPermission().get(nextPermission);
@@ -1737,7 +1698,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
                 }
             }
         }
-        
+
         return methodPermissionsForMethod;
     }
 
@@ -1745,7 +1706,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the set of ejb references this ejb declares.
-     * 
+     *
      * @return
      */
     @Override
@@ -1758,7 +1719,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Adds a reference to another ejb to me.
-     * 
+     *
      * @param ejbReference
      */
     @Override
@@ -1871,7 +1832,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Looks up an service reference with the given name. Throws an IllegalArgumentException if it is not found.
-     * 
+     *
      * @param name
      * @return
      */
@@ -1926,7 +1887,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Looks up an message destination reference with the given name. Throws an IllegalArgumentException if it is not found.
-     * 
+     *
      * @param name
      * @return
      */
@@ -1986,7 +1947,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the set of resource environment references this ejb declares.
-     * 
+     *
      * @return
      */
     @Override
@@ -2036,7 +1997,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the set of resource references this ejb declares.
-     * 
+     *
      * @return
      */
     @Override
@@ -2049,7 +2010,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Adds a resource reference to me.
-     * 
+     *
      * @param resourceReference
      */
     @Override
@@ -2083,7 +2044,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * Returns the environment property object searching on the supplied key. throws an illegal argument exception if no
      * such environment property exists.
-     * 
+     *
      * @param name
      */
     @Override
@@ -2150,7 +2111,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the entity manager factory reference descriptor corresponding to the given name.
-     * 
+     *
      * @param name
      * @return
      */
@@ -2197,7 +2158,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the entity manager factory reference descriptor corresponding to the given name.
-     * 
+     *
      * @param name
      * @return
      */
@@ -2265,7 +2226,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the set of resource references this ejb declares that have been resolved.
-     * 
+     *
      * @return
      */
     public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors(boolean resolved) {
@@ -2281,7 +2242,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the resource object corresponding to the supplied name or throw an illegal argument exception.
-     * 
+     *
      * @param name
      * @return
      */
@@ -2330,7 +2291,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return a reference to another ejb by the same name or throw an IllegalArgumentException.
-     * 
+     *
      * @param name
      * @return
      */
@@ -2360,7 +2321,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return a copy of the role references set.
-     * 
+     *
      * @return
      */
     public Set<RoleReference> getRoleReferences() {
@@ -2372,7 +2333,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Adds a role reference.
-     * 
+     *
      * @param roleReference
      */
     @Override
@@ -2383,7 +2344,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Removes a role reference.
-     * 
+     *
      * @param roleReference
      */
     public void removeRoleReference(RoleReference roleReference) {
@@ -2393,7 +2354,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns a matching role reference by name or throw an IllegalArgumentException.
-     * 
+     *
      * @param roleReferenceName
      * @return
      */
@@ -2410,7 +2371,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Gets the containing ejb bundle descriptor..
-     * 
+     *
      * @return
      */
     @Override
@@ -2424,7 +2385,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Called by WebArchivist to notify this EjbDescriptor that it has been associated with a web bundle.
-     * 
+     *
      * @param wbd
      */
     @Override
@@ -2458,7 +2419,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the full set of method descriptors (from all the methods on the home and remote interfaces).
-     * 
+     *
      * @return the full set of method descriptors
      */
     @Override
@@ -2479,13 +2440,13 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
             _logger.log(SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { "(EjbDescriptor.getMethods())" });
             throw new RuntimeException(t);
         }
-        
+
         return methods;
     }
 
     /**
      * Returns the full set of transactional business method descriptors I have.
-     * 
+     *
      * @return
      */
     public Set getTxBusinessMethodDescriptors() {
@@ -2501,7 +2462,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the full set of security business method descriptors.
-     * 
+     *
      * @return
      */
     @Override
@@ -2511,7 +2472,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns the set of local/remote/no-interface view business method descriptors.
-     * 
+     *
      * @return
      */
     public Set getClientBusinessMethodDescriptors() {
@@ -2557,7 +2518,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
             throw new RuntimeException(t);
         }
-        
+
         return methods;
     }
 
@@ -2578,7 +2539,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
             throw new RuntimeException(t);
         }
-        
+
         return methods;
     }
 
@@ -2636,7 +2597,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the set of method objects representing no-interface view
-     * 
+     *
      * @return
      */
     public Set<Method> getOptionalLocalBusinessMethods() {
@@ -2669,7 +2630,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return the ejb method objects, i.e. the methods on the home and remote interfaces.
-     * 
+     *
      * @param classLoader
      * @return
      */
@@ -2685,7 +2646,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Return a Vector of the Field objects of this ejb.
-     * 
+     *
      * @return
      */
     public Vector getFields() {
@@ -2708,7 +2669,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     }
 
     /**
-     * 
+     *
      * @return
      */
     public Vector getFieldDescriptors() {
@@ -2770,53 +2731,53 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     /**
      * Returns a formatted String of the attributes of this object.
-     * 
-     * @param toStringBuffer
+     *
+     * @param toStringBuilder
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append("\n homeClassName ").append(homeClassName);
-        toStringBuffer.append("\n remoteClassName ").append(remoteClassName);
-        toStringBuffer.append("\n remoteBusinessIntfs ").append(remoteBusinessClassNames).append("\n");
-        toStringBuffer.append("\n localhomeClassName ").append(localHomeClassName);
-        toStringBuffer.append("\n localClassName ").append(localClassName);
-        toStringBuffer.append("\n localBusinessIntfs ").append(localBusinessClassNames);
-        toStringBuffer.append("\n isLocalBean ").append(isLocalBean()).append("\n");
-        toStringBuffer.append("\n jndiName ").append(jndiName).append("\n");
-        toStringBuffer.append("\n ejbClassName ").append(ejbClassName);
-        toStringBuffer.append("\n transactionType ").append(transactionType);
-        toStringBuffer.append("\n methodContainerTransactions ").append(getMethodContainerTransactions());
-        toStringBuffer.append("\n environmentProperties ");
+    public void print(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append("\n homeClassName ").append(homeClassName);
+        toStringBuilder.append("\n remoteClassName ").append(remoteClassName);
+        toStringBuilder.append("\n remoteBusinessIntfs ").append(remoteBusinessClassNames).append("\n");
+        toStringBuilder.append("\n localhomeClassName ").append(localHomeClassName);
+        toStringBuilder.append("\n localClassName ").append(localClassName);
+        toStringBuilder.append("\n localBusinessIntfs ").append(localBusinessClassNames);
+        toStringBuilder.append("\n isLocalBean ").append(isLocalBean()).append("\n");
+        toStringBuilder.append("\n jndiName ").append(jndiName).append("\n");
+        toStringBuilder.append("\n ejbClassName ").append(ejbClassName);
+        toStringBuilder.append("\n transactionType ").append(transactionType);
+        toStringBuilder.append("\n methodContainerTransactions ").append(getMethodContainerTransactions());
+        toStringBuilder.append("\n environmentProperties ");
         if (environmentProperties != null)
-            printDescriptorSet(environmentProperties, toStringBuffer);
-        toStringBuffer.append("\n ejbReferences ");
+            printDescriptorSet(environmentProperties, toStringBuilder);
+        toStringBuilder.append("\n ejbReferences ");
         if (ejbReferences != null)
-            printDescriptorSet(ejbReferences, toStringBuffer);
-        toStringBuffer.append("\n resourceEnvReferences ");
+            printDescriptorSet(ejbReferences, toStringBuilder);
+        toStringBuilder.append("\n resourceEnvReferences ");
         if (resourceEnvReferences != null)
-            printDescriptorSet(resourceEnvReferences, toStringBuffer);
-        toStringBuffer.append("\n messageDestReferences ");
+            printDescriptorSet(resourceEnvReferences, toStringBuilder);
+        toStringBuilder.append("\n messageDestReferences ");
         if (messageDestReferences != null)
-            printDescriptorSet(messageDestReferences, toStringBuffer);
-        toStringBuffer.append("\n resourceReferences ");
+            printDescriptorSet(messageDestReferences, toStringBuilder);
+        toStringBuilder.append("\n resourceReferences ");
         if (resourceReferences != null)
-            printDescriptorSet(resourceReferences, toStringBuffer);
-        toStringBuffer.append("\n serviceReferences ");
+            printDescriptorSet(resourceReferences, toStringBuilder);
+        toStringBuilder.append("\n serviceReferences ");
         if (serviceReferences != null)
-            printDescriptorSet(serviceReferences, toStringBuffer);
-        toStringBuffer.append("\n roleReferences ");
+            printDescriptorSet(serviceReferences, toStringBuilder);
+        toStringBuilder.append("\n roleReferences ");
         if (roleReferences != null)
-            printDescriptorSet(roleReferences, toStringBuffer);
+            printDescriptorSet(roleReferences, toStringBuilder);
         for (Iterator e = this.getPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
             MethodPermission nextPermission = (MethodPermission) e.next();
-            toStringBuffer.append("\n method-permission->method: ");
-            nextPermission.print(toStringBuffer);
-            toStringBuffer.append(" -> ").append(this.getPermissionedMethodsByPermission().get(nextPermission));
+            toStringBuilder.append("\n method-permission->method: ");
+            nextPermission.print(toStringBuilder);
+            toStringBuilder.append(" -> ").append(this.getPermissionedMethodsByPermission().get(nextPermission));
         }
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
         for (Iterator itr = descSet.iterator(); itr.hasNext();) {
             Object obj = itr.next();
             if (obj instanceof Descriptor)
@@ -2852,7 +2813,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     /**
      * This method determines if all the mechanisms defined in the CSIV2 CompoundSecMechList structure require protected
      * invocations.
-     * 
+     *
      * @return
      */
     @Override

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -136,8 +136,8 @@ public final class ContainerTransaction extends Descriptor {
     /**
      * Returns a formatted String representing my state.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Container Transaction: ").append(this.getTransactionAttribute()).append("@").append(this.getDescription());
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Container Transaction: ").append(this.getTransactionAttribute()).append("@").append(this.getDescription());
     }
 }
 

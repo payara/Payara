@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package test.admin.util;
+
+import org.testng.Reporter;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -46,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import org.testng.Reporter;
 
 /** Provides several utilities. Please see v3/core/kernel/../AdminAdapter to see
  *  what it does when finally the command invocation returns.
@@ -54,14 +56,14 @@ import org.testng.Reporter;
  * @since GlassFish v3 Prelude
  */
 public final class GeneralUtils {
-    
+
     public enum AsadminManifestKeyType {
         EXIT_CODE("exit-code"),
         CHILDREN ("children"),
         MESSAGE  ("message"),
         CAUSE    ("cause");
         private final String name;
-        
+
         AsadminManifestKeyType(String name) {
             this.name = name;
         }
@@ -70,14 +72,14 @@ public final class GeneralUtils {
             return name;
         }
     }
-    
+
     public static final String SUCCESS = "SUCCESS";
     public static final String FAILURE = "FAILURE";
-    
+
     /* These can't change. They are buried in CLI code on server side! */
-    
+
     /** Creates the final asadmin URL with command's bells and whistles.
-     * 
+     *
      * @param adminUrl
      * @param cmd
      * @param options
@@ -87,7 +89,7 @@ public final class GeneralUtils {
     public static String toFinalURL(String adminUrl, String cmd, Map<String, String>options, String operand) {
         if (adminUrl == null || cmd == null)
             throw new IllegalArgumentException("null adminURL/cmd not allowed");
-        StringBuffer buffer = new StringBuffer(adminUrl);
+        StringBuilder buffer = new StringBuilder(adminUrl);
         if (!adminUrl.endsWith("/"))
             buffer.append("/");
         buffer.append(cmd);
@@ -113,7 +115,7 @@ public final class GeneralUtils {
         }
         return ( buffer.toString());
     }
-    
+
     public static String getValueForTypeFromManifest(Manifest man, AsadminManifestKeyType key) {
         if (man == null)
             throw new IllegalArgumentException("null manifest received");
@@ -139,17 +141,17 @@ public final class GeneralUtils {
             String cause = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.CAUSE);
             Reporter.log("Cause: " + cause);
             throw new RuntimeException("" + cause);
-        }        
+        }
     }
-    
+
     ///// private methods /////
     private static String encodePair(String name, String value) {
         try {
             String en = URLEncoder.encode(name, "UTF-8");
             String ev = URLEncoder.encode(value, "UTF-8");
-            return ( new StringBuffer(en).append("=").append(ev).toString() );
+            return ( new StringBuilder(en).append("=").append(ev).toString() );
         } catch(UnsupportedEncodingException ue) {
             throw new RuntimeException(ue);
         }
-    }    
+    }
 }

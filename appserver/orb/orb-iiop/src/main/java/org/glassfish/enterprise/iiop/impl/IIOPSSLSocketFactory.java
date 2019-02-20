@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -50,30 +50,6 @@ import com.sun.corba.ee.spi.transport.ORBSocketFactory;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.security.integration.AppClientSSL;
 import com.sun.logging.LogDomains;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -86,6 +62,20 @@ import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
 import org.glassfish.security.common.CipherInfo;
 
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * This is socket factory used to create either plain sockets or SSL
@@ -95,7 +85,9 @@ import org.glassfish.security.common.CipherInfo;
  * @author Shing Wai Chan
  */
 public class IIOPSSLSocketFactory implements ORBSocketFactory {
-    private static final Logger _logger = LogDomains.getLogger(IIOPSSLSocketFactory.class, LogDomains.CORBA_LOGGER);
+
+    private static final Logger _logger = LogDomains.getLogger(
+            IIOPSSLSocketFactory.class, LogDomains.CORBA_LOGGER);
 
     private static final String TLS12 = "TLSv1.2";
     private static final String TLS11 = "TLSv1.1";
@@ -113,6 +105,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     private static final String SO_KEEPALIVE_DEPRECATED = "fish.payara.SOKeepAlive";
 
 
+
     //private static SecureRandom sr = null;
 
     /* this is stored for the Server side of SSL Connections.
@@ -123,7 +116,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * @todo provide an interface to the admin, so that whenever a iiop-listener
      * is added / removed, we modify the hashtable,
      */
-    private Map portToSSLInfo = new ConcurrentHashMap();
+    private Map<Integer, SSLInfo> portToSSLInfo = new ConcurrentHashMap<>();
 
     /* this is stored for the client side of SSL Connections.
      * Note: There will be only 1 ctx for the client side, as we will reuse the
@@ -140,7 +133,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
         try {
             ProcessEnvironment penv = null;
             ProcessType processType = null;
-            boolean notServerOrACC = Globals.getDefaultHabitat() == null ? true : false;
+            boolean notServerOrACC = Globals.getDefaultHabitat() == null;
             if (!notServerOrACC) {
                 penv = Globals.get(ProcessEnvironment.class);
                 processType = penv.getProcessType();
@@ -196,7 +189,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     clientSslInfo = getDefaultSslInfo();
                 }
             } else {
-                if ((processType != null) && (processType == ProcessType.ACC)) {
+                if (processType == ProcessType.ACC) {
                     IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
                     AppClientSSL clientSsl = (AppClientSSL) sslUtil.getAppClientSSL();
                     if (clientSsl != null) {
@@ -308,9 +301,10 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                     + " inetSocketAddress =" + inetSocketAddress);
         }
 
-        if (type.equals(SSL_MUTUALAUTH) || type.equals(SSL) || type.equals(PERSISTENT_SSL)) {
-            return createSSLServerSocket(type, inetSocketAddress);
-        } else {
+	if(type.equals(SSL_MUTUALAUTH) || type.equals(SSL) ||
+		type.equals(PERSISTENT_SSL)) {
+	    return createSSLServerSocket(type, inetSocketAddress);
+	} else {
             ServerSocket serverSocket = null;
             if (orb.getORBData().acceptorSocketType().equals(ORBConstants.SOCKETCHANNEL)) {
                 ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
@@ -357,7 +351,6 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
 
                 // Enable SO_KEEPALIVE if required
                 enableSOKeepAliveAsRequired(socket);
-
                 // Disable Nagle's algorithm (i.e. always send immediately).
                 socket.setTcpNoDelay(true);
                 return socket;
@@ -581,7 +574,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
         int eSize = (enableCiphers != null) ? enableCiphers.length : 0;
 
         if (_logger.isLoggable(Level.FINE)) {
-            StringBuffer buf = new StringBuffer("Default socket ciphers: ");
+            StringBuilder buf = new StringBuilder("Default socket ciphers: ");
             for (int i = 0; i < eSize; i++) {
                 buf.append(enableCiphers[i] + ", ");
             }
@@ -756,4 +749,4 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             return ssl2Ciphers;
         }
     }
-} 
+}

@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import org.glassfish.deployment.common.Descriptor;
 
-/** 
+/**
  * Objects exhibiting this interface represent an event listener descriptor.
  * This represents the <listener-class> XML element defined in the
  * Servlet 2.3 spec.
@@ -56,12 +56,12 @@ public class AppListenerDescriptorImpl extends Descriptor
 {
     private String listenerClass;
     private String displayName;
-    
+
     /** The default constructor.
     */
     public AppListenerDescriptorImpl() {
     }
-    
+
     /**
      * Create an instance of the descriptor with the specified listener class.
      * @param the listener class name.
@@ -69,9 +69,9 @@ public class AppListenerDescriptorImpl extends Descriptor
     public AppListenerDescriptorImpl(String clz) {
 	this.listenerClass = clz;
     }
-    
-    /** 
-     * Return the listener class. 
+
+    /**
+     * Return the listener class.
      * @return the listener class name or empty string if none.
      */
     public String getListener() {
@@ -80,8 +80,8 @@ public class AppListenerDescriptorImpl extends Descriptor
 	}
 	return this.listenerClass;
     }
-    
-    /** 
+
+    /**
      * Sets the listener class.
      * @param the listener class name.
      */
@@ -103,8 +103,8 @@ public class AppListenerDescriptorImpl extends Descriptor
 	return n;
     }
 
-    /** 
-     * Test for equals 
+    /**
+     * Test for equals
      */
     public boolean equals(Object obj) {
 	return (obj instanceof AppListenerDescriptorImpl)?
@@ -120,11 +120,11 @@ public class AppListenerDescriptorImpl extends Descriptor
     }
 
 
-    /** 
-     * A formatted version of the state as a String. 
+    /**
+     * A formatted version of the state as a String.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Listener Class ").append(this.getListener());
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Listener Class ").append(this.getListener());
     }
 }
 

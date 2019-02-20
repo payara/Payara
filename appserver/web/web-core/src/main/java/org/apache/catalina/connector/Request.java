@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//Portions Copyright [2016-2018] [Payara Foundation]
+//Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.apache.catalina.connector;
 
@@ -2573,14 +2573,14 @@ public class Request
      * number, and server path, but it does not include query
      * string parameters.
      * <p>
-     * Because this method returns a <code>StringBuffer</code>,
+     * Because this method returns a <code>StringBuilder</code>,
      * not a <code>String</code>, you can modify the URL easily,
      * for example, to append query parameters.
      * <p>
      * This method is useful for creating redirect messages and
      * for reporting errors.
      *
-     * @return A <code>StringBuffer</code> object containing the
+     * @return A <code>StringBuilder</code> object containing the
      *  reconstructed URL
      */
     @Override

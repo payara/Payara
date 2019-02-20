@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.util;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
-import java.io.File;
-import java.io.IOException;
-import java.io.FilenameFilter;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Abstract base class for components of a class path.
@@ -60,16 +61,16 @@ abstract class ClassPathElement {
   /* package local accessors */
 
   /**
-   * If this class path element resolves the class, return a 
+   * If this class path element resolves the class, return a
    * ClassFileSource for the class.
    */
   public abstract ClassFileSource sourceOf(String className);
 
   /**
-   * Return an enumeration of all of the class files in the specified 
+   * Return an enumeration of all of the class files in the specified
    * package in this class path element.
    *
-   * @param packageName specifies the VM format package name 
+   * @param packageName specifies the VM format package name
    *    to which class files must belong.
    * @returns an Enumeration of the VM format class names which
    *    can be found.  The return value may be null if the class
@@ -84,21 +85,21 @@ abstract class ClassPathElement {
   abstract boolean matches(File directory);
 
   /**
-   * Return the next class path element in the chain 
+   * Return the next class path element in the chain
    */
   ClassPathElement next() {
     return this.next;
   }
 
   /**
-   * Set the the next class path element in the chain 
+   * Set the the next class path element in the chain
    */
   void setNext(ClassPathElement next) {
     this.next = next;
   }
 
   /**
-   * Construct a class path element 
+   * Construct a class path element
    */
   ClassPathElement() {
   }
@@ -151,7 +152,7 @@ class DirectoryClassPathElement extends ClassPathElement {
   /* package local accessors */
 
   /**
-   * If this class path element resolves the class, return a 
+   * If this class path element resolves the class, return a
    * ClassFileSource for the class.
    */
   public ClassFileSource sourceOf(String className) {
@@ -176,7 +177,7 @@ class DirectoryClassPathElement extends ClassPathElement {
   }
 
   /**
-   * Construct a class path element 
+   * Construct a class path element
    */
   DirectoryClassPathElement(File dirSpec) {
     directory = dirSpec;
@@ -191,7 +192,7 @@ class DirectoryClassPathElement extends ClassPathElement {
    */
   private File fileOf(String className) {
     if (exists && directory.isDirectory()) {
-      StringBuffer newPath = new StringBuffer(directory.getPath());
+      StringBuilder newPath = new StringBuilder(directory.getPath());
       if (newPath.charAt(newPath.length() - 1) != File.separatorChar)
 	newPath.append(File.separatorChar);
       newPath.append(ClassPath.fileNameOf(className));
@@ -230,7 +231,7 @@ class ZipFileClassPathElement extends ClassPathElement {
   /* package local accessors */
 
   /**
-   * If this class path element resolves the class, return a 
+   * If this class path element resolves the class, return a
    * ClassFileSource for the class.
    */
   public ClassFileSource sourceOf(String className) {
@@ -256,7 +257,7 @@ class ZipFileClassPathElement extends ClassPathElement {
   }
 
   /**
-   * Construct a zip file class path element 
+   * Construct a zip file class path element
    */
   ZipFileClassPathElement(File elementSpec) {
     zipFileElement = elementSpec;
@@ -285,7 +286,7 @@ class ZipFileClassPathElement extends ClassPathElement {
  * can be found relative to a particular directory.
  */
 
-class DirectoryClassPackageEnumerator 
+class DirectoryClassPackageEnumerator
   implements Enumeration, FilenameFilter {
 
   private String[] matches;
@@ -293,14 +294,14 @@ class DirectoryClassPackageEnumerator
   String searchPackage;
 
   /**
-   * Constructor 
+   * Constructor
    * @param directory The directory to be used as the root of the
    *   package structure.
    * @param packageName The name of the package to search (in VM form).
    */
   DirectoryClassPackageEnumerator(File directory, String packageName) {
     searchPackage = packageName;
-    String packageDirName = directory.getPath() + File.separator + 
+    String packageDirName = directory.getPath() + File.separator +
       packageName.replace('/', File.separatorChar);
 
     File packageDir = new File(packageDirName);
@@ -366,7 +367,7 @@ class ZipFileClassPackageEnumerator implements Enumeration {
 	 character identical to the VM package separator */
 
       if (memNameLength > packageNameLength + 1 &&
-	  memName.regionMatches(false, 0, packageName, 
+	  memName.regionMatches(false, 0, packageName,
 				0, packageNameLength) &&
 	  memName.charAt(packageNameLength) == '/') {
 	if (memName.indexOf('/', packageNameLength+1) == -1) {

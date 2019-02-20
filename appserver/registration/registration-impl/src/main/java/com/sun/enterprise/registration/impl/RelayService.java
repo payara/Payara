@@ -37,21 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.registration.impl;
-import java.util.*;
-import java.io.*;
-import java.text.*;
 
 import com.sun.enterprise.registration.RegistrationException;
 import com.sun.enterprise.registration.impl.environment.EnvironmentInformation;
 
-import java.util.logging.Logger;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Level;
-import java.util.Formatter;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.util.logging.Logger;
 
 public class RelayService {
 
@@ -79,7 +76,7 @@ public class RelayService {
     public void generateRegistrationPage(String outputFile) throws Exception {
         generateRegistrationPage(outputFile, Locale.getDefault());
     }
-    
+
     public void generateRegistrationPage(String outputFile, Locale locale) throws Exception {
         bundle = getResourceBundle(locale);
         InputStream is = getClass().getClassLoader().getResourceAsStream(TEMPLATE_FILE);
@@ -93,7 +90,7 @@ public class RelayService {
                 productName = productName.append(" + ");
             productName = productName.append(tag.getSource());
         }
-        
+
         String tags = getHtml(serviceTags);
         String env = getEnvironmentInformation();
 
@@ -116,7 +113,7 @@ public class RelayService {
                 bw.newLine();
             }
             bw.flush();
-        } 
+        }
         finally {
             if (br != null) {
                 try {
@@ -134,7 +131,7 @@ public class RelayService {
 
     private String replaceStringTokens(String line) {
         int start = 0, end = 0;
-        StringBuffer buf = new StringBuffer("");
+        StringBuilder buf = new StringBuilder("");
 
         while (start != -1) {
             // Find start of token
@@ -239,7 +236,7 @@ public class RelayService {
             //ignore.
         }
     }
-    
+
     private String getHtml(ServiceTag tag) {
         StringBuilder html = new StringBuilder();
         Formatter fmt = new Formatter(html);

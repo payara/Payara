@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JDOQLCodeGeneration.g
@@ -47,7 +48,7 @@
 header
 {
     package com.sun.jdo.spi.persistence.support.ejb.ejbqlc;
-    
+
     import java.util.ResourceBundle;
     import org.glassfish.persistence.common.I18NHelper;
     import org.glassfish.common.util.StringHelper;
@@ -74,14 +75,14 @@ options
 {
     /** Type helper. */
     protected TypeSupport typeSupport;
-    
+
     /** Parameter helper. */
     protected ParameterSupport paramSupport;
-    
+
     /** I18N support. */
-    protected final static ResourceBundle msgs = 
+    protected final static ResourceBundle msgs =
         I18NHelper.loadBundle(JDOQLCodeGeneration.class);
-    
+
     /** The identification variable used for the candidate class. */
     private String candidateClassIdentificationVar;
 
@@ -89,19 +90,19 @@ options
     private String candidateClassName;
 
     /** The parameter declarations. */
-    private StringBuffer parameterDecls;
+    private StringBuilder parameterDecls;
 
     /** The variable declarations. */
-    private StringBuffer variableDecls;
+    private StringBuilder variableDecls;
 
     /** The filter expression. */
-    private StringBuffer filter;
+    private StringBuilder filter;
 
     /** The ordering expression. */
-    private StringBuffer ordering;
+    private StringBuilder ordering;
 
     /** The result expression. */
-    private StringBuffer result;
+    private StringBuilder result;
 
     /** The result type. */
     private String resultType;
@@ -118,12 +119,12 @@ options
     /** Counter for variables defined during codegen. */
     private int tmpVarCount = 0;
 
-    /** 
-     * Counter indicating how many parenthesis need to be closed 
-     * at the end of the filter expr. 
+    /**
+     * Counter indicating how many parenthesis need to be closed
+     * at the end of the filter expr.
      */
     private int parenCount = 0;
-    
+
     /** Flag indicates whether the select clause has DISTINCT. */
     private boolean isDistinct = false;
 
@@ -138,19 +139,19 @@ options
 
     /** */
     public void reportError(RecognitionException ex) {
-        ErrorMsg.fatal(I18NHelper.getMessage(msgs, 
+        ErrorMsg.fatal(I18NHelper.getMessage(msgs,
                 "ERR_JDOQLCodeGenerationError"), ex); //NOI18N
     }
 
     /** */
     public void reportError(String s) {
-        ErrorMsg.fatal(I18NHelper.getMessage(msgs, 
+        ErrorMsg.fatal(I18NHelper.getMessage(msgs,
                 "ERR_JDOQLCodeGenerationError") + s); //NOI18N
     }
 
-    /** 
-     * Returns the result of an EJBQL compile process. 
-     * A JDOQLElements instances represents all the necessary information to 
+    /**
+     * Returns the result of an EJBQL compile process.
+     * A JDOQLElements instances represents all the necessary information to
      * create a JDOQL query instance that corresponds to the EJBQL query.
      * @return JDOQLElements instance representing the JDOQL query.
      */
@@ -166,7 +167,7 @@ options
     //========= Internal helper methods ==========
 
     /**
-     * Extracts the name of the candidate class of the JDOQL query from the 
+     * Extracts the name of the candidate class of the JDOQL query from the
      * select- and from-clause of the EJBQL query.
      */
     private void handleCandidateClass(EJBQLAST query)
@@ -178,17 +179,17 @@ options
         var = extractIdentificationVariable(select);
         var = getIdentificationVarDecl(from, var.getText());
         candidateClassIdentificationVar = var.getText();
-        candidateClassName = 
+        candidateClassName =
             typeSupport.getPCForTypeInfo(var.getTypeInfo());
     }
 
-    /** 
-     * Calculates the parameter declarations of the JDOQL query from the 
+    /**
+     * Calculates the parameter declarations of the JDOQL query from the
      * signature of the EJB finsder or selector method.
      */
     private void initParameterDeclarations()
     {
-        parameterDecls = new StringBuffer();
+        parameterDecls = new StringBuilder();
         for (int i = 1; i <= paramSupport.getParameterCount(); i++) {
             String name = paramSupport.getParameterName(i);
             Object type = typeSupport.getTypeInfo(paramSupport.getParameterType(i));
@@ -198,7 +199,7 @@ options
                 pcClassName = typeSupport.getPCForTypeInfo(ejbName);
             } else if (typeSupport.isLocalInterface(type) ||
                     typeSupport.isRemoteInterface(type)) {
-                // This parameter corresponds to an EJB but the ejbName 
+                // This parameter corresponds to an EJB but the ejbName
                 // cannot be determined from query.
                 // Since different EJBs may have the same interfaces,
                 // the explicit pcClassName cannot be determined.
@@ -214,9 +215,9 @@ options
         }
     }
 
-    /** 
-     * EJBQL string literals escape a single quote using two single quotes. 
-     * In JDOQL string literals single quotes need not to be escaped => 
+    /**
+     * EJBQL string literals escape a single quote using two single quotes.
+     * In JDOQL string literals single quotes need not to be escaped =>
      * replace '' by '.
      */
     private String convertStringLiteral(String ejbqlStringLiteral)
@@ -224,15 +225,15 @@ options
         // first replace '' by '
         String ret = StringHelper.replace(ejbqlStringLiteral, "''", "'"); //NOI18N
         // Add a hack for a backslash at the end of the literal
-        // Note, we might need to escape backslashes in the entire string 
-        // literal, if the character following the backslash is an "escaped" 
+        // Note, we might need to escape backslashes in the entire string
+        // literal, if the character following the backslash is an "escaped"
         // char such as \n, \n, etc. Needs some further investigation.
         if (ret.endsWith("\\")) {
             ret = ret + "\\";
         }
         return ret;
     }
-    
+
     /** */
     private EJBQLAST getIdentificationVarDecl(EJBQLAST from, String varName)
         throws RecognitionException
@@ -252,14 +253,14 @@ options
                     return varNode;
                 else
                     // domain is a collectionMemberDecl => use its var decl
-                    return getIdentificationVarDecl(from, 
+                    return getIdentificationVarDecl(from,
                         extractIdentificationVariable(domain).getText());
             }
         }
         return null;
     }
 
-    /** 
+    /**
      * Returns the name of a new variable of the JDOQL query.
      */
     private String getTmpVarName()
@@ -268,7 +269,7 @@ options
         int no = tmpVarCount++;
         return "_jdoVar" + no; //NOI18N
     }
-    
+
     /**
      * Returns the typeInfo of the element type of a collection valued CMR field.
      */
@@ -280,23 +281,23 @@ options
             classExpr.getTypeInfo(), cmrField.getText());
         return typeSupport.getElementType(fieldInfo);
     }
-    
+
 }
 
 // rules
 
 query
-    :   #(  q:QUERY 
+    :   #(  q:QUERY
             {
                 initParameterDeclarations();
-                variableDecls = new StringBuffer();
-                filter = new StringBuffer();
-                ordering = new StringBuffer();
-                result = new StringBuffer();
+                variableDecls = new StringBuilder();
+                filter = new StringBuilder();
+                ordering = new StringBuilder();
+                result = new StringBuilder();
                 handleCandidateClass(q);
             }
-            fromClause 
-            selectClause 
+            fromClause
+            selectClause
             whereClause
             orderbyClause
         )
@@ -330,17 +331,17 @@ identificationVarDecl
     ;
 
 collectionMemberDecl
-    :   #(  IN 
+    :   #(  IN
             {
                 if (filter.length() > 0) {
-                    // Please note, the FROM clause is processed prior to the 
-                    // WHERE clause, so a filter of length == 0 means we are 
+                    // Please note, the FROM clause is processed prior to the
+                    // WHERE clause, so a filter of length == 0 means we are
                     // processing the first IN clause of the FROM clause.
-                    // We need to add an & operator and an open parenthesis for 
-                    // all IN clauses but the first one. The parenthesis ensure 
-                    // the resulting filter is portable, meaning the contains 
-                    // clause must be the left expression of an AND-expression 
-                    // where the variable is used in the right expression. 
+                    // We need to add an & operator and an open parenthesis for
+                    // all IN clauses but the first one. The parenthesis ensure
+                    // the resulting filter is portable, meaning the contains
+                    // clause must be the left expression of an AND-expression
+                    // where the variable is used in the right expression.
                     filter.append(" & ("); //NOI18N
                     parenCount++;
                 }
@@ -356,19 +357,19 @@ collectionMemberDecl
                 variableDecls.append("; "); //NOI18N
                 // now generate the contains clause
                 filter.append(".contains("); //NOI18N
-                filter.append(v.getText()); 
+                filter.append(v.getText());
                 filter.append(')');
             }
         )
     ;
 
 rangeVarDecl
-    :   #(  RANGE 
-            ABSTRACT_SCHEMA_NAME 
+    :   #(  RANGE
+            ABSTRACT_SCHEMA_NAME
             v:IDENTIFICATION_VAR_DECL
         )
         {
-            // Do not generate variable decl for identification variable 
+            // Do not generate variable decl for identification variable
             // that represents the candidate class
             if (!v.getText().equalsIgnoreCase(candidateClassIdentificationVar)) {
                 variableDecls.append(typeSupport.getPCForTypeInfo(
@@ -388,13 +389,13 @@ selectClause
     :   #(  SELECT distinct[result] p:projection[result] )
         {
             isPCResult = typeSupport.isEjbName(p.getTypeInfo());
-            resultType = isPCResult ? 
+            resultType = isPCResult ?
                 typeSupport.getPCForTypeInfo(p.getTypeInfo()) :
                 typeSupport.getTypeName(p.getTypeInfo());
         }
     ;
 
-distinct[StringBuffer buf]
+distinct[StringBuilder buf]
     :   // the code generation of this distinct is postponed until projection
         // checking as there is no need to generate distinct outside
         // aggregate functions
@@ -402,12 +403,12 @@ distinct[StringBuffer buf]
     |   // empty rule
     ;
 
-aggregateDistinct[StringBuffer buf]
+aggregateDistinct[StringBuilder buf]
     :   DISTINCT { buf.append("distinct "); } //NOI18N
     |   // empty rule
     ;
 
-projection[StringBuffer buf]
+projection[StringBuilder buf]
     :   #( AVG
             {
                 isAggregate = true;
@@ -459,7 +460,7 @@ projection[StringBuffer buf]
                 buf.append("distinct "); //NOI18N
             }
         }
-        #( o:OBJECT pathExpr[buf] ) 
+        #( o:OBJECT pathExpr[buf] )
     ;
 
 // ----------------------------------
@@ -467,12 +468,12 @@ projection[StringBuffer buf]
 // ----------------------------------
 
 whereClause
-    :   #(  WHERE 
+    :   #(  WHERE
             {
                 if (filter.length() > 0) {
                     filter.append(" & ("); //NOI18N
-                    // filter.length() > 0 means there are one or more contains 
-                    // clauses generated from parsing the from clause => 
+                    // filter.length() > 0 means there are one or more contains
+                    // clauses generated from parsing the from clause =>
                     // enclose the where clause expression into parenthesis.
                     parenCount++;
                 }
@@ -496,11 +497,11 @@ orderbyClause
                 (
                     {
                         if (ordering.length() > 0) {
-                            ordering.append(", ");  
+                            ordering.append(", ");
                         }
                     }
                     pathExpr[ordering]
-                    ( 
+                    (
                         ASC { ordering.append(" ascending"); } //NOI18N
                         |
                         DESC { ordering.append(" descending"); } //NOI18N
@@ -514,7 +515,7 @@ orderbyClause
 // rules: expression
 // ----------------------------------
 
-expression[StringBuffer buf]
+expression[StringBuilder buf]
     :   conditionalExpr[buf]
     |   relationalExpr[buf]
     |   binaryArithmeticExpr[buf]
@@ -529,7 +530,7 @@ expression[StringBuffer buf]
     |   primary[buf]
     ;
 
-conditionalExpr[StringBuffer buf]
+conditionalExpr[StringBuilder buf]
     :   #(  AND             { buf.append("("); } //NOI18N
             expression[buf] { buf.append(" & "); } //NOI18N
             expression[buf] { buf.append(")"); } //NOI18N
@@ -540,7 +541,7 @@ conditionalExpr[StringBuffer buf]
         )
     ;
 
-relationalExpr[StringBuffer buf]
+relationalExpr[StringBuilder buf]
     :   #(  EQUAL           { buf.append("("); } //NOI18N
             expression[buf] { buf.append(" == "); } //NOI18N
             expression[buf] { buf.append(")"); } //NOI18N
@@ -567,7 +568,7 @@ relationalExpr[StringBuffer buf]
         )
     ;
 
-binaryArithmeticExpr[StringBuffer buf]
+binaryArithmeticExpr[StringBuilder buf]
     :   #(  PLUS            { buf.append("("); } //NOI18N
             expression[buf] { buf.append(" + "); } //NOI18N
             expression[buf] { buf.append(")"); } //NOI18N
@@ -586,7 +587,7 @@ binaryArithmeticExpr[StringBuffer buf]
         )
     ;
 
-unaryExpr[StringBuffer buf]
+unaryExpr[StringBuilder buf]
     :   #(  UNARY_PLUS
             expression[buf]
         )
@@ -598,21 +599,21 @@ unaryExpr[StringBuffer buf]
         )
     ;
 
-betweenExpr[StringBuffer buf]
+betweenExpr[StringBuilder buf]
 {
-    StringBuffer tmp = new StringBuffer();
+    StringBuilder tmp = new StringBuilder();
 }
     :   #(  BETWEEN
             expression[tmp]
-            {   
-                buf.append('('); 
-                buf.append(tmp.toString()); 
+            {
+                buf.append('(');
+                buf.append(tmp.toString());
                 buf.append(" >= "); // NOI18N
             }
             expression[buf]
-            { 
+            {
                 buf.append(" & "); // NOI18N
-                buf.append(tmp.toString());  
+                buf.append(tmp.toString());
                 buf.append(" <= "); // NOI18N
             }
             expression[buf]
@@ -620,15 +621,15 @@ betweenExpr[StringBuffer buf]
         )
     |   #(  NOT_BETWEEN
             expression[tmp]
-            {   
-                buf.append('('); 
-                buf.append(tmp.toString()); 
+            {
+                buf.append('(');
+                buf.append(tmp.toString());
                 buf.append(" < "); // NOI18N
             }
             expression[buf]
-            { 
+            {
                 buf.append(" | "); // NOI18N
-                buf.append(tmp.toString());  
+                buf.append(tmp.toString());
                 buf.append(" > "); // NOI18N
             }
             expression[buf]
@@ -636,8 +637,8 @@ betweenExpr[StringBuffer buf]
         )
     ;
 
-likeExpr[StringBuffer buf]
-    :   #(  LIKE 
+likeExpr[StringBuilder buf]
+    :   #(  LIKE
             expression[buf]     { buf.append(".like("); } //NOI18N
             ( stringLiteral[buf] | parameter[buf] )
             escape[buf]         { buf.append(')'); }
@@ -649,43 +650,43 @@ likeExpr[StringBuffer buf]
         )
     ;
 
-escape[StringBuffer buf]
+escape[StringBuilder buf]
     :   #(  ESCAPE { buf.append (", "); } //NOI18N
             ( singleCharStringLiteral[buf] | parameter[buf] ) )
     |   // empty rule
     ;
 
-singleCharStringLiteral[StringBuffer buf]
-    :   s:STRING_LITERAL  
+singleCharStringLiteral[StringBuilder buf]
+    :   s:STRING_LITERAL
         {
             buf.append('\'');
-            buf.append(convertStringLiteral(s.getText())); 
+            buf.append(convertStringLiteral(s.getText()));
             buf.append('\'');
         }
     ;
 
-inExpr[StringBuffer buf]
+inExpr[StringBuilder buf]
 {
-    StringBuffer expr = new StringBuffer();
-    StringBuffer elementExpr = new StringBuffer();
+    StringBuilder expr = new StringBuilder();
+    StringBuilder elementExpr = new StringBuilder();
 }
-    :   #(  IN 
-            expression[expr]  
-            { buf.append('('); } 
+    :   #(  IN
+            expression[expr]
+            { buf.append('('); }
             primary[elementExpr]
-            { 
+            {
                 buf.append('(');
                 buf.append(expr.toString());
                 buf.append(" == "); //NOI18N
                 buf.append(elementExpr.toString());
                 buf.append(')');
             }
-            (   
-                {   
-                    // create a new StringBuffer for the new elementExpr
-                    elementExpr = new StringBuffer(); 
+            (
+                {
+                    // create a new StringBuilder for the new elementExpr
+                    elementExpr = new StringBuilder();
                 }
-                primary[elementExpr] 
+                primary[elementExpr]
                 {
                     buf.append(" | "); //NOI18N
                     buf.append('(');
@@ -696,26 +697,26 @@ inExpr[StringBuffer buf]
                 }
             )*
             {
-                buf.append(')'); 
+                buf.append(')');
             }
         )
-    |   #(  NOT_IN 
+    |   #(  NOT_IN
             expression[expr]
-            { buf.append('('); } 
+            { buf.append('('); }
             primary[elementExpr]
-            { 
+            {
                 buf.append('(');
                 buf.append(expr.toString());
                 buf.append(" != "); //NOI18N
                 buf.append(elementExpr.toString());
                 buf.append(')');
             }
-            (               
-                {   
-                    // create a new StringBuffer for the new elementExpr
-                    elementExpr = new StringBuffer(); 
+            (
+                {
+                    // create a new StringBuilder for the new elementExpr
+                    elementExpr = new StringBuilder();
                 }
-                primary[elementExpr] 
+                primary[elementExpr]
                 {
                     buf.append(" & "); //NOI18N
                     buf.append('(');
@@ -726,22 +727,22 @@ inExpr[StringBuffer buf]
                 }
             )*
             {
-                buf.append(')'); 
+                buf.append(')');
             }
         )
     ;
 
-nullComparisonExpr[StringBuffer buf]
-    :   #(  NULL 
+nullComparisonExpr[StringBuilder buf]
+    :   #(  NULL
             expression[buf] { buf.append(" == null"); } //NOI18N
         )
-    |   #(  NOT_NULL 
+    |   #(  NOT_NULL
             expression[buf] { buf.append(" != null"); } //NOI18N
         )
     ;
 
-emptyCollectionComparisonExpr[StringBuffer buf]
-    :   #(  EMPTY 
+emptyCollectionComparisonExpr[StringBuilder buf]
+    :   #(  EMPTY
             expression[buf] { buf.append(".isEmpty()"); } //NOI18N
         )
     |   #(  NOT_EMPTY       { buf.append("!"); } //NOI18N
@@ -749,18 +750,18 @@ emptyCollectionComparisonExpr[StringBuffer buf]
         )
     ;
 
-collectionMemberExpr[StringBuffer buf]
+collectionMemberExpr[StringBuilder buf]
 {
-    StringBuffer member = new StringBuffer();
-    StringBuffer col = new StringBuffer();
+    StringBuilder member = new StringBuilder();
+    StringBuilder col = new StringBuilder();
 }
-    :   #(  MEMBER 
+    :   #(  MEMBER
             expression[member]
             cmrAccess1:expression[col]
-            { 
+            {
                 String varName = getTmpVarName();
-                // Use the element type as variable type. The value might be 
-                // an input parameter of a local/remote interface which we 
+                // Use the element type as variable type. The value might be
+                // an input parameter of a local/remote interface which we
                 // cannot uniquely map to a PC class during deployment.
                 Object varType = getElementTypeOfCollectionValuedCMR(cmrAccess1);
                 // generate varibale declaration
@@ -779,13 +780,13 @@ collectionMemberExpr[StringBuffer buf]
                 buf.append(")"); //NOI18N
             }
         )
-    |   #(  NOT_MEMBER 
+    |   #(  NOT_MEMBER
             expression[member]
             cmrAccess2:expression[col]
-            { 
+            {
                 String varName = getTmpVarName();
-                // Use the element type as variable type. The value might be 
-                // an input parameter of a local/remote interface which we 
+                // Use the element type as variable type. The value might be
+                // an input parameter of a local/remote interface which we
                 // cannot uniquely map to a PC class during deployment.
                 Object varType = getElementTypeOfCollectionValuedCMR(cmrAccess2);
                 // generate varibale declaration
@@ -808,7 +809,7 @@ collectionMemberExpr[StringBuffer buf]
         )
     ;
 
-function[StringBuffer buf]
+function[StringBuilder buf]
     :   concat[buf]
     |   substring[buf]
     |   length[buf]
@@ -818,27 +819,27 @@ function[StringBuffer buf]
     |   mod[buf]
     ;
 
-concat[StringBuffer buf]
+concat[StringBuilder buf]
     :   #(  CONCAT          { buf.append("("); } //NOI18N
             expression[buf] { buf.append(" + "); } //NOI18N
-            expression[buf] { buf.append(")"); } //NOI18N 
+            expression[buf] { buf.append(")"); } //NOI18N
         )
     ;
 
-substring[StringBuffer buf]
+substring[StringBuilder buf]
     :   // EJBQL: SUBSTRING(string, start, length) ->
         // JDOQL: string.substring(start-1, start+length-1)
-        #(  SUBSTRING 
-            expression[buf]   
+        #(  SUBSTRING
+            expression[buf]
             { buf.append(".substring("); } //NOI18N
             start:.
             length:.
         )
         {
-            if ((start.getType() == INT_LITERAL) && 
+            if ((start.getType() == INT_LITERAL) &&
                 (length.getType() == INT_LITERAL)) {
                 // Optimization: start and length are constant values =>
-                // calulate beginIndex and endIndex of the JDOQL substring 
+                // calulate beginIndex and endIndex of the JDOQL substring
                 // call at compile time.
                 int startValue = Integer.parseInt(start.getText());
                 int lengthValue = Integer.parseInt(length.getText());
@@ -847,9 +848,9 @@ substring[StringBuffer buf]
                 buf.append(startValue - 1 + lengthValue);
             }
             else {
-                StringBuffer startBuf = new StringBuffer();
+                StringBuilder startBuf = new StringBuilder();
                 expression(start, startBuf);
-                buf.append(startBuf.toString()); 
+                buf.append(startBuf.toString());
                 buf.append(" - 1, "); //NOI18N
                 buf.append(startBuf.toString());
                 buf.append(" - 1 + "); //NOI18N
@@ -859,32 +860,32 @@ substring[StringBuffer buf]
         }
     ;
 
-length[StringBuffer buf]
-    :   #(  LENGTH 
+length[StringBuilder buf]
+    :   #(  LENGTH
             expression[buf] { buf.append(".length()"); } //NOI18N
         )
     ;
 
-locate[StringBuffer buf]
+locate[StringBuilder buf]
 {
-    StringBuffer pattern = new StringBuffer();
+    StringBuilder pattern = new StringBuilder();
 }
     :   // EJBQL: LOCATE(pattern, string) ->
         // JDOQL: (string.indexOf(pattern) + 1)
         // EJBQL: LOCATE(pattern, string, start) ->
         // JDOQL: (string.indexOf(pattern, start - 1) + 1)
         #(  LOCATE              { buf.append("("); } //NOI18N
-            expression[pattern] 
+            expression[pattern]
             expression[buf]     { buf.append(".indexOf(");  //NOI18N
                                   buf.append(pattern.toString()); }
             locateStartPos[buf] { buf.append(") + 1)"); } //NOI18N
         )
     ;
 
-locateStartPos[StringBuffer buf]
+locateStartPos[StringBuilder buf]
     :   start:.
         {
-            buf.append(", ");  //NOI18N 
+            buf.append(", ");  //NOI18N
             if (start.getType() == INT_LITERAL) {
                 // Optimization: start is a constant value =>
                 // calulate startIndex of JDOQL indexOf call at compile time.
@@ -898,23 +899,23 @@ locateStartPos[StringBuffer buf]
     |   // empty rule
     ;
 
-abs[StringBuffer buf]
-    :   #(  ABS  
+abs[StringBuilder buf]
+    :   #(  ABS
             { buf.append ("java.lang.Math.abs("); } //NOI18N
             expression[buf]
             { buf.append (")"); } //NOI18N
         )
     ;
 
-sqrt[StringBuffer buf]
-    :   #(  SQRT 
+sqrt[StringBuilder buf]
+    :   #(  SQRT
             { buf.append ("java.lang.Math.sqrt("); } //NOI18N
             expression[buf]
             { buf.append (")"); } //NOI18N
         )
     ;
 
-mod[StringBuffer buf]
+mod[StringBuilder buf]
     :   #(  MOD
             { buf.append("("); } //NOI18N
             expression[buf]
@@ -922,49 +923,49 @@ mod[StringBuffer buf]
             expression[buf]
             { buf.append(")"); } //NOI18N
         )
-    ;   
+    ;
 
-primary[StringBuffer buf]
+primary[StringBuilder buf]
     :   literal[buf]
     |   pathExpr[buf]
     |   parameter[buf]
     ;
 
-literal[StringBuffer buf]
-    :   TRUE           
+literal[StringBuilder buf]
+    :   TRUE
         { buf.append("true"); } // NOI18N
-    |   FALSE          
+    |   FALSE
         { buf.append("false"); } // NOI18N
     |   stringLiteral[buf]
-    |   i:INT_LITERAL  
-        { 
-            buf.append(i.getText()); 
-        }  
-    |   l:LONG_LITERAL   
-        { 
-            buf.append(l.getText()); 
-        }  
-    |   f:FLOAT_LITERAL  
-        { 
-            buf.append(f.getText()); 
+    |   i:INT_LITERAL
+        {
+            buf.append(i.getText());
         }
-    |   d:DOUBLE_LITERAL 
-        { 
-            buf.append(d.getText()); 
+    |   l:LONG_LITERAL
+        {
+            buf.append(l.getText());
+        }
+    |   f:FLOAT_LITERAL
+        {
+            buf.append(f.getText());
+        }
+    |   d:DOUBLE_LITERAL
+        {
+            buf.append(d.getText());
         }
     ;
 
 
-stringLiteral[StringBuffer buf]
-    :   s:STRING_LITERAL  
+stringLiteral[StringBuilder buf]
+    :   s:STRING_LITERAL
         {
             buf.append('"'); // NOI18N
-            buf.append(convertStringLiteral(s.getText())); 
+            buf.append(convertStringLiteral(s.getText()));
             buf.append('"'); // NOI18N
         }
     ;
 
-pathExpr[StringBuffer buf]
+pathExpr[StringBuilder buf]
     :   #(  CMP_FIELD_ACCESS
             pathExpr[buf]
             { buf.append('.'); }
@@ -1008,7 +1009,7 @@ field
     |   SINGLE_CMR_FIELD
     ;
 
-parameter [StringBuffer buf]
+parameter [StringBuilder buf]
     :   param:INPUT_PARAMETER
         {
             buf.append(paramSupport.getParameterName(param.getText()));

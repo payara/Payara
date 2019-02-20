@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.provider;
 
@@ -124,7 +125,7 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
 //    //get xml representation for the method query parameters
 //    private String getQueryParams(MethodMetaData methodMetaData,
 //            String indent) {
-//        //TODO too many string concatenations happening here. Change this and other methods in this class to use StringBuffer
+//        //TODO too many string concatenations happening here. Change this and other methods in this class to use StringBuilder
 //        String result = "";
 //        if (methodMetaData.sizeQueryParamMetaData() > 0) {
 //            result = result + "\n" + indent;

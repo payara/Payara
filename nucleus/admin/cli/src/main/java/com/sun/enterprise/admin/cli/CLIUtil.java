@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -47,7 +47,6 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.logging.Level;
-import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
@@ -208,7 +207,9 @@ public class CLIUtil {
         try {
             remoteCommands = getRemoteCommands(container, options, env);
         } catch (CommandException ex) {
-            LOGGER.log(SEVERE, "Remote commands not fetched : {0}", ex.getMessage());
+            LOGGER.severe("Remote commands not fetched");
+            LOGGER.finest(ex.getMessage());
+
             remoteCommands = new String[]{};
         }
         localCommands = getLocalCommands(container);

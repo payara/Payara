@@ -251,7 +251,7 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p6</grizzly.version>
+        <grizzly.version>2.4.3.payara-p7</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
@@ -266,8 +266,8 @@
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.13.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.13.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.0.14.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.14.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
         <javax.el.version>3.0.1-b11</javax.el.version>
@@ -276,9 +276,6 @@
         <!-- JAX-B -->
         <jaxb-api.version>2.3.0</jaxb-api.version>
         <jaxb.version>2.3.0</jaxb.version>
-
-        <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
 
         <!-- Cache -->
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
@@ -974,7 +971,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.jersey.inject</groupId>
                 <artifactId>jersey-hk2</artifactId>
-                <version>2.26-b06</version>
+                <version>${jersey.version}</version>
             </dependency>
 
 
@@ -1379,6 +1376,21 @@ Parent is ${project.parent}</echo>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${javax.cache-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-kubernetes</artifactId>
+                <version>${hazelcast.kubernetes.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

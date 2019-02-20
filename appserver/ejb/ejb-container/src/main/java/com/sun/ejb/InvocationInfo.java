@@ -40,12 +40,11 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb;
 
-import java.lang.reflect.Method;
-
 import com.sun.ejb.containers.interceptors.InterceptorManager;
 import com.sun.enterprise.security.jacc.cache.CachedPermission;
-
 import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
+
+import java.lang.reflect.Method;
 
 /**
  * InvocationInfo caches various attributes of the method that
@@ -74,10 +73,10 @@ public class InvocationInfo {
     public boolean    isCreateHomeFinder;
     public boolean    startsWithCreate;
     public boolean    startsWithFind;
-    public boolean    startsWithRemove; 
+    public boolean    startsWithRemove;
     public boolean    startsWithFindByPrimaryKey;
-    
-    // Used by InvocationHandlers to cache bean class methods that 
+
+    // Used by InvocationHandlers to cache bean class methods that
     // correspond to ejb interface methods.
     public Method     targetMethod1;
     public Method     targetMethod2;
@@ -106,7 +105,7 @@ public class InvocationInfo {
     public String str_method_sig;
 
     public InvocationInfo() {}
-    
+
     public InvocationInfo(Method method) {
         this.method = method;
     }
@@ -120,7 +119,7 @@ public class InvocationInfo {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("Invocation Info for ejb " + ejbName + "\t");
         sb.append("method=" + method + "\t");
         sb.append("methodIntf = " + methodIntf + "\t");

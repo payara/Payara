@@ -2,7 +2,7 @@
 
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,7 @@
     <!beforeCreate
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic","autoIncrementPort","hostAwarePartitioning"});
         setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
@@ -111,6 +111,9 @@
     <sun:propertySheetSection id="networking">
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="autoIncrementPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.autoIncrementPort}"  helpText="$resource{i18nhc.hazelcast.configuration.autoIncrementPortHelp}">
+            <sun:checkbox id="autoIncrementPort" selected="#{pageSession.valueMap['autoIncrementPort']}" selectedValue="true" />
         </sun:property>
         <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
             <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />

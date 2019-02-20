@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017] Payara Foundation and/or affiliates
+//Portions Copyright [2017-2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.common;
 
@@ -74,11 +74,7 @@ public class DataSourceObjectBuilder implements java.io.Serializable {
 
     private MethodExecutor executor = null;
 
-    private static Logger _logger;
-
-    static {
-        _logger = LogDomains.getLogger(MethodExecutor.class, LogDomains.RSR_LOGGER);
-    }
+    private static final Logger _logger = LogDomains.getLogger(MethodExecutor.class, LogDomains.RSR_LOGGER);
 
     private static boolean jdbc40;
     private static boolean jdbc41;
@@ -90,10 +86,7 @@ public class DataSourceObjectBuilder implements java.io.Serializable {
         jdbc42 = detectJDBC42();
     }
 
-    private boolean debug = false;
-
-    private static final StringManager sm = StringManager.getManager(
-            DataSourceObjectBuilder.class);
+    private static final StringManager sm = StringManager.getManager(DataSourceObjectBuilder.class);
 
     /**
      * Construct a DataSource Object from the spec.
