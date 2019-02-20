@@ -248,6 +248,7 @@
         <ant.version>1.9.13</ant.version>
         <ant-launcher.version>1.9.13</ant-launcher.version>
         <ldapbp.version>1.0</ldapbp.version>
+        <maven.jar.plugin.version>2.6</maven.jar.plugin.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
@@ -470,7 +471,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>${maven.jar.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
