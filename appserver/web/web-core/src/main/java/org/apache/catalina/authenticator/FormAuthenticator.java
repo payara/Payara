@@ -55,8 +55,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-<<<<<<< HEAD
-=======
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
@@ -76,27 +74,6 @@ import static org.apache.catalina.authenticator.Constants.REQ_SSO_VERSION_NOTE;
 import static org.apache.catalina.authenticator.Constants.SESS_PASSWORD_NOTE;
 import static org.apache.catalina.authenticator.Constants.SESS_USERNAME_NOTE;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
->>>>>>> 58f2d0dadc... PAYARA-3318 addressed arjans review comments
-
-package org.apache.catalina.authenticator;
-
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.HttpResponse;
-import org.apache.catalina.LogFacade;
-import org.apache.catalina.Realm;
-import org.apache.catalina.Session;
-import org.apache.catalina.deploy.LoginConfig;
-import org.apache.catalina.deploy.SecurityConstraint;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -105,8 +82,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.catalina.HttpRequest;
+import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
+import org.apache.catalina.Realm;
+import org.apache.catalina.Session;
+import org.apache.catalina.deploy.LoginConfig;
+import org.apache.catalina.deploy.SecurityConstraint;
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
