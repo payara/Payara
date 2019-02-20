@@ -66,7 +66,6 @@ pkg = {
 		 	"pkg:/shoal@" + conf.shoal_version : {"type" : "incorporate" },
 			"pkg:/glassfish-cluster@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-ha@" + conf.glassfish_version : {"type" : "incorporate" },
-			"pkg:/glassfish-registration@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/jersey@2" : {"type" : "incorporate" },
 			"pkg:/glassfish-management@" + conf.glassfish_version : {"type" : "incorporate" },
                         "pkg:/glassfish-commons-web@" + conf.glassfish_version : {"type" : "incorporate" },

@@ -186,24 +186,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>registration-api</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>registration-impl</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>glassfish-registration</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.admingui.connector</groupId>
             <artifactId>gf-admingui-connector</artifactId>
             <version>${project.version}</version>

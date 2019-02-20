@@ -63,12 +63,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-registration</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jpa</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
