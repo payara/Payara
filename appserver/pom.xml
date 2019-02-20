@@ -144,7 +144,7 @@
         <!-- JAX-WS -->
 
         <!-- Metro Webservices is the JAX-WS impl -->
-        <webservices.version>2.4.2</webservices.version>
+        <webservices.version>2.4.3</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
         <woodstox.version>5.1.0</woodstox.version>
         <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
@@ -781,8 +781,8 @@
                 <version>${jaxb.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
 	        <dependency>

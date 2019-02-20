@@ -274,8 +274,8 @@
         <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JAX-B -->
-        <jaxb-api.version>2.3.1</jaxb-api.version>
-        <jaxb.version>2.3.1</jaxb.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
+        <jaxb.version>2.3.2</jaxb.version>
 
         <!-- EJB -->
         <javax.ejb-api.version>3.2</javax.ejb-api.version>

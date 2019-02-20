@@ -150,8 +150,8 @@
            <artifactId>jaxb-osgi</artifactId>
         </dependency>
         <dependency>
-           <groupId>javax.xml.bind</groupId>
-           <artifactId>jaxb-api</artifactId>
+           <groupId>jakarta.xml.bind</groupId>
+           <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
            <groupId>com.fasterxml.woodstox</groupId>

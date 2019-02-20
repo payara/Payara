@@ -73,8 +73,8 @@
                                     <version>${webservices.version}</version>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
+                                    <groupId>jakarta.xml.bind</groupId>
+                                    <artifactId>jakarta.xml.bind-api</artifactId>
                                     <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
                                     <version>${jaxb-api.version}</version>
                                 </artifactItem>
@@ -154,8 +154,8 @@
             <artifactId>jaxb-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>

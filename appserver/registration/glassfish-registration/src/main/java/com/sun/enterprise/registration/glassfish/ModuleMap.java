@@ -109,7 +109,7 @@ public class ModuleMap {
                 put("javax.persistence", 50);
                 put("javax.servlet-api", 51);
                 put("javax.xml.jaxrpc-api-osgi", 52);
-                put("jaxb-api", 53);
+                put("jakarta.xml.bind-api", 53);
                 put("org.glassfish.external.management-api", 54);
                 put("org.apache.felix.configadmin", 55);
                 put("org.apache.felix.eventadmin", 56);

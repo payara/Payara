@@ -167,7 +167,7 @@ perform() {
   theCP="${theCP}:${INSTALL_HOME}/lib/external/freemarker/freemarker.jar"
   theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-impl.jar"
   theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-jsr173_1.0_api.jar"
-  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-api.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jakarta.xml.bind-api.jar"
   theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/activation.jar"
   theCP="${theCP}:${INSTALL_HOME}/lib/external/apache/commons-logging.jar"
   if [ -n "${ADDITIONALCLASSPATHS}" ]; then
