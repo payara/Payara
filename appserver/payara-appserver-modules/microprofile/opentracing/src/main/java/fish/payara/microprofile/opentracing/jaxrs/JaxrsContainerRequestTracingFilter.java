@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -259,9 +259,8 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 Path classLevelAnnotation = resourceInfo.getResourceClass().getAnnotation(Path.class);
                 Path methodLevelAnnotation = resourceInfo.getResourceMethod().getAnnotation(Path.class);
 
-                // If the provider is set to "http-path" and the @Path annotations are actually present
-                if (operationNameProvider.equals("http-path")
-                        && (classLevelAnnotation != null && methodLevelAnnotation != null)) {
+                // If the provider is set to "http-path" and the class-level @Path annotation is actually present
+                if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
                     String operationName = requestContext.getMethod() + ":";
 
                     if (classLevelAnnotation.value().startsWith("/")) {
@@ -270,10 +269,13 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                         operationName += "/" + classLevelAnnotation.value();
                     }
 
-                    if (methodLevelAnnotation.value().startsWith("/")) {
-                        operationName += methodLevelAnnotation.value();
-                    } else {
-                        operationName += "/" + methodLevelAnnotation.value();
+                    // If the method-level @Path annotation is present, use its value
+                    if (methodLevelAnnotation != null) {
+                        if (methodLevelAnnotation.value().startsWith("/")) {
+                            operationName += methodLevelAnnotation.value();
+                        } else {
+                            operationName += "/" + methodLevelAnnotation.value();
+                        }
                     }
 
                     return operationName;

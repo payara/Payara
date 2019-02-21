@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -67,9 +67,16 @@ import java.util.Locale;
 public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     protected Invocation.Builder invocationBuilder;
-    
+
+    private ServiceLocator serviceLocator;
+    private OpenTracingService openTracing;
+
     public JaxrsInvocationBuilderDecorator(Invocation.Builder invocationBuilder) {
         this.invocationBuilder = invocationBuilder;
+
+        // Get the ServiceLocator and OpenTracing services
+        serviceLocator = Globals.getDefaultBaseServiceLocator();
+        openTracing = serviceLocator.getService(OpenTracingService.class);
     }
 
     @Override
@@ -322,18 +329,16 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
      * Instruments this InvocationBuilder instance with OpenTracing
      */
     private void instrumentInvocationBuilder() {
-        // Get the ServiceLocator and OpenTracing services
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-
         // Get the currently active span if present
-        Span activeSpan = openTracing.getTracer(
-                openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)))
-                .activeSpan();
+        if (openTracing != null) {
+            Span activeSpan = openTracing.getTracer(
+                    openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)))
+                    .activeSpan();
 
-        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
-        if (activeSpan != null) {
-            this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
+            // If there is an active span, add its context to the request as a property so it can be picked up by the filter
+            if (activeSpan != null) {
+                this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
+            }
         }
     }
 }
