@@ -61,6 +61,7 @@ package org.apache.catalina.authenticator;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.apache.catalina.LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE;
 import static org.apache.catalina.authenticator.Constants.FORM_ACTION;
 import static org.apache.catalina.authenticator.Constants.FORM_METHOD;
@@ -79,7 +80,9 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -88,6 +91,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.deploy.LoginConfig;
@@ -109,10 +113,18 @@ public class FormAuthenticator extends AuthenticatorBase {
     // -------------------------------------------------- Instance Variables
 
     /**
+     * Property that can be set to restrict the HTTP methods permitted when doing a FORM based authentication.
+     */
+    private static final String PERMITTED_FORM_BASED_AUTH_HTTP_METHODS_PROPERTY = "fish.payara.permittedFormBasedAuthHttpMethods";
+
+    /**
      * Descriptive information about this implementation.
      */
     protected static final String info = "org.apache.catalina.authenticator.FormAuthenticator/1.0";
 
+    protected static final Logger log = LogFacade.getLogger();
+    protected static final ResourceBundle rb = log.getResourceBundle();
+    
     // ---------------------------------------------------------- Properties
 
     /**
@@ -148,6 +160,10 @@ public class FormAuthenticator extends AuthenticatorBase {
         
         // Is this the action request from the login page?
         boolean loginAction = requestURI.startsWith(contextPath) && requestURI.endsWith(FORM_ACTION);
+        if (loginAction && !isPermittedHttpMethod(hreq.getMethod())) {
+            hres.sendError(SC_FORBIDDEN, rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
+            return false;
+        }
 
         // Have we already authenticated someone?
         Principal principal = hreq.getUserPrincipal();
@@ -602,5 +618,18 @@ public class FormAuthenticator extends AuthenticatorBase {
         }
         
         return ssoVersion;
+    }
+    
+    private static boolean isPermittedHttpMethod(String usedMethod) {
+        String permittedHttpMethods = System.getProperty(PERMITTED_FORM_BASED_AUTH_HTTP_METHODS_PROPERTY);
+        if (permittedHttpMethods == null) {
+            return true;
+        }
+        for (String validMethod : permittedHttpMethods.split(",")) {
+            if (validMethod.equalsIgnoreCase(usedMethod)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

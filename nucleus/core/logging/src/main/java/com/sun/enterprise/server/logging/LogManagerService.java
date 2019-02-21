@@ -131,7 +131,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     FileMonitoring fileMonitoring;
 
     @Inject
-    private LoggingConfigFactory loggingConfigFactory;
+    LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     UnprocessedConfigListener ucl;
@@ -213,6 +213,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter";
      
     private static final String PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG = "Payara Notification Service isn't using a separate Log File";
+    
+    private static final String PAYARA_STDIO_DISABLE_REDIRECT_PROPERTY = "fish.payara.enterprise.server.logging.stdio.disable";
     /**
      * @deprecated for backwards compatibility pre-5.182
      */
@@ -459,7 +461,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             }
 
+            String disableStdIO = props.get(PAYARA_STDIO_DISABLE_REDIRECT_PROPERTY);
+            boolean doRedirectStdIO = !Boolean.valueOf(disableStdIO);
+            if (doRedirectStdIO) {
+               redirectStandardStreams(); 
+            }
         } catch (Exception e) {
+            // In case of error, retain functionality of previous releases, and redirect the streams
+            redirectStandardStreams();
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
         }
 
@@ -488,18 +497,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
         }
 
-        // redirect stderr and stdout, a better way to do this
-        //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
 
-        Logger _ologger = LogFacade.STDOUT_LOGGER;
-        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
-        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
-        System.setOut(pout);
-
-        Logger _elogger = LogFacade.STDERR_LOGGER;
-        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
-        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
-        System.setErr(perr);
                 
         // finally listen to changes to the logging.properties file
         if (logging != null) {
@@ -880,6 +878,21 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 LOGGER.log(logRecord);
             }
         }
+    }
+
+    private void redirectStandardStreams() {
+        // redirect stderr and stdout, a better way to do this
+        //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
+        
+        Logger _ologger = LogFacade.STDOUT_LOGGER;
+        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
+        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
+        System.setOut(pout);
+        
+        Logger _elogger = LogFacade.STDERR_LOGGER;
+        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
+        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
+        System.setErr(perr);
     }
     
     private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props, LogManager logMgr) {

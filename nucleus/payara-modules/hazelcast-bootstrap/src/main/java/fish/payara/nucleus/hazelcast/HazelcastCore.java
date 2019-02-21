@@ -176,12 +176,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberGroup = nodeConfig.getMemberGroup();
         } else {
             memberName = context.getInstanceName();
-            Cluster cluster = context.getConfigBean().getCluster();
-            if (cluster == null) {
-                memberGroup = context.getConfigBean().getConfigRef();
-            } else {
-                memberGroup = cluster.getName();
-            }
+            memberGroup = nodeConfig.getMemberGroup();
         }
     }
     

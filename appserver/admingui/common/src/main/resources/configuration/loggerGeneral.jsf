@@ -135,6 +135,10 @@
                     values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
           </sun:property>
 
+        <sun:property id="disableStdioRedirect" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.DirectStdIO}" helpText="$resource{i18nc.log.DirectStdIOHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.stdio.disable']}" selectedValue="true"/>
+        </sun:property>
+
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
           <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.formatter']}"
                 labels={ "ULF","ODL","JSON"}
