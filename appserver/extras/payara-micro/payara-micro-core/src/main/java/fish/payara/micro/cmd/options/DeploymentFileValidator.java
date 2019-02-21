@@ -39,9 +39,11 @@
  */
 package fish.payara.micro.cmd.options;
 
+import java.io.File;
+
 /**
  *
- * @author steve
+ * @author Steve Millidge
  */
 public class DeploymentFileValidator  extends FileSystemItemValidator {
     
@@ -53,9 +55,9 @@ public class DeploymentFileValidator  extends FileSystemItemValidator {
     boolean validate(String optionValue) throws ValidationException {
         // first look for a : to indicate a context root
         String filePath = optionValue;
-        if (optionValue.contains(":")) {
-            filePath = filePath.substring(0,optionValue.indexOf(':'));
-        }
+        if (optionValue.contains(File.pathSeparator)) {
+            filePath = filePath.substring(0,optionValue.indexOf(File.pathSeparator));
+        } 
         return super.validate(filePath);
     }
     

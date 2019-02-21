@@ -1194,9 +1194,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }                        
                         String fileName = value;
                         String deployContext = null;
-                        if (value.contains(":")) {
-                            fileName = value.substring(0,value.indexOf(':'));
-                            deployContext = value.substring(value.indexOf(':')+1);
+                        if (value != null && value.contains(File.pathSeparator)) {
+                            fileName = value.substring(0,value.indexOf(File.pathSeparatorChar));
+                            deployContext = value.substring(value.indexOf(File.pathSeparatorChar)+1);
                         }
                         File deployment = new File(fileName);
                         deployments.add(deployment);
@@ -2016,12 +2016,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     deploymentURLsMap = new LinkedHashMap<>();
                 }
 
-                String contextRoot = artefactMapEntry.getKey();
-                if ("ROOT".equals(contextRoot)) {
-                    contextRoot = "/";
+                String defaultContext = artefactMapEntry.getKey();
+                if (this.contextRoot == null) {
+                    if ("ROOT".equals(defaultContext)) {
+                        defaultContext = "/";
+                    }
+                } else {
+                    defaultContext = this.contextRoot;
+                    contextRoot = null; // use only once
                 }
 
-                deploymentURLsMap.put(contextRoot, artefactMapEntry.getValue());
+                deploymentURLsMap.put(defaultContext, artefactMapEntry.getValue());
             } catch (MalformedURLException ex) {
                 throw new GlassFishException(ex.getMessage());
             }
