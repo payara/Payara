@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-virtualserverprops" name="ref-virtualserverprops"></a><a id="GHWEB00012" name="GHWEB00012"></a></p>
 
@@ -49,7 +50,7 @@
 <p>The <code>JSESSIONIDSSO</code> cookie inherits the <code>Secure</code> setting of the first session participating in SSO.</p>
 </dd>
 </dl>
-<p>To set the Secure attribute of a <code>JSESSIONID</code> cookie, use the <code>cookieSecure</code> <code>cookie-properties</code> property in the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00130"><i>cookie-properties</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>To set the Secure attribute of a <code>JSESSIONID</code> cookie, use the <code>cookieSecure</code> <code>cookie-properties</code> property in the <code>sun-web.xml</code> file.</p>
 </dd>
 <dt><code>setCacheControl</code></dt>
 <dd>
@@ -82,12 +83,12 @@
 </dd>
 <dt><code>authRealm</code></dt>
 <dd>
-<p>Specifies the name of an authentication realm, which overrides the server instance's default realm for standalone web applications deployed to this virtual server. A realm defined in a standalone web application's <code>web.xml</code> file overrides the virtual server's realm. For more information, see <a href="../../../common/en/help/ref-realms.html">Realms</a>.</p>
+<p>Specifies the name of an authentication realm, which overrides the server instance's default realm for standalone web applications deployed to this virtual server. A realm defined in a standalone web application's <code>web.xml</code> file overrides the virtual server's realm.</p>
 </dd>
 <dt><code>securePagesWithPragma</code></dt>
 <dd>
 <p>Set this property to <code>false</code> to ensure that for all web applications on this virtual server file downloads using SSL work properly in Internet Explorer.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
 <p>The default value is <code>true</code>.</p>
 </dd>
 <dt><code>alternatedocroot_</code><i>n</i></dt>
@@ -115,11 +116,11 @@
    value="from=/jpg/* dir=/src/images"/&gt;
 </pre>
 <p>The <code>value</code> of each alternate docroot has two components: The first component, <code>from</code>, specifies the alternate docroot's URI pattern, and the second component, <code>dir</code>, specifies the alternate docroot's physical location (directory). Spaces are allowed in the <code>dir</code> component.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
 </dd>
 <dt><code>contextXmlDefault</code></dt>
 <dd>
-<p>Specifies the location, relative to <i>domain-dir</i>, of the <code>context.xml</code> file for this virtual server, if one is used. For more information about the <code>context.xml</code> file, see The Context Container (<code><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/context.html">http://tomcat.apache.org/tomcat-5.5-doc/config/context.html</a></code>).</p>
+<p>Specifies the location, relative to <i>domain-dir</i>, of the <code>context.xml</code> file for this virtual server, if one is used.xml</code> file, see The Context Container (<code><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/context.html">http://tomcat.apache.org/tomcat-5.5-doc/config/context.html</a></code>).</p>
 </dd>
 <dt><code>allowLinking</code></dt>
 <dd>
@@ -130,7 +131,6 @@
       value="{true|false}"/&gt;
 &lt;/sun-web-app&gt;
 </pre>
-<p>For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
 <p>The default value is <code>false</code>.</p>
 
 <hr>
@@ -186,7 +186,7 @@ HTTP/1.1 401 MY-401-REASON
 &lt;property name="valve_1"
 value="org.glassfish.extension.Valve"/&gt;
 </pre>
-<p>You can set this property for a specific web application. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>You can set this property for a specific web application.</p>
 </dd>
 <dt><code>listener_</code><i>n</i></dt>
 <dd>
@@ -195,7 +195,7 @@ value="org.glassfish.extension.Valve"/&gt;
 &lt;property name="listener_1"
 value="org.glassfish.extension.MyLifecycleListener"/&gt;
 </pre>
-<p>You can set this property for a specific web application. For details, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDPG00161"><i>glassfish-web-app</i> in <i>Oracle GlassFish Server Application Deployment Guide</i></a>.</p>
+<p>You can set this property for a specific web application.</p>
 </dd>
 <dt><code>errorReportValve</code></dt>
 <dd>

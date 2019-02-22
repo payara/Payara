@@ -15,13 +15,13 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="task-jmsservice" name="task-jmsservice"></a><a id="GHJMS00026" name="GHJMS00026"></a></p>
 
 <h4><a id="sthref20" name="sthref20"></a>To Configure the JMS Service</h4>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use the JMS Service page to configure settings to be used by all JMS connections.</p>
-<p>For more information about configuring the JMS service, see <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSDVG00020">Chapter 19, <i>Using the Java Message Service,</i> in <i>Oracle GlassFish Server Application Development Guide</i></a>.</p>
 <ol>
 <li>
 <p>In the navigation tree, expand the Configuration node.</p>
@@ -54,7 +54,7 @@
 </li>
 <li>
 <p>Select REMOTE to access the JMS service on another system or on a cluster.</p>
-<p>If you choose REMOTE, the JMS service is not started by GlassFish Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. For information about starting the broker, see the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GMADG00227"><i>Starting Brokers</i> in <i>Oracle GlassFish Server Message Queue Administration Guide</i></a>. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
+<p>If you choose REMOTE, the JMS service is not started by GlassFish Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
 </li>
 </ul>
 </li>
@@ -104,7 +104,6 @@
 </li>
 <li>
 <p>In the Additional Properties area, specify additional properties for the JMS service.</p>
-<p>For information on available properties, see <a href="ref-jmsservice-additional-props.html">Properties Specific to the JMS Service</a>.</p>
 <ul>
 <li>
 <p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>

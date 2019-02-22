@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-messagesecurityproviderconfignew" name="ref-messagesecurityproviderconfignew"></a><a id="GHCOM00122" name="GHCOM00122"></a></p>
 
@@ -61,7 +62,6 @@
 <dd>
 <p>The type of required authentication for the request policy. The request policy determines the request processing that the authentication provider performs. The request policy fields are optional, but if they are not specified, the authentication provider does not authenticate request messages.</p>
 <p>Select <code>sender</code> to specify message-layer sender authentication (for example, username and password) of request messages. Select <code>content</code> to specify content authentication (for example, digital signature) of request messages. Leave the field empty to not authenticate the source of requests. By default, no authentication type is selected.</p>
-<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
 </dd>
 <dt>Authenticate Recipient (for Request Policy)</dt>
 <dd>
@@ -72,7 +72,6 @@
 <dd>
 <p>The type of required authentication for the response policy. The response policy determines the response processing that the authentication provider performs. The response policy fields are optional, but if they are not specified, no authentication is applied to response messages.</p>
 <p>Select <code>sender</code> to specify message-layer sender authentication (for example, username password) of response messages. Select <code>content</code> to specify content authentication (for example, digital signature) of response messages. Leave the field empty to not authenticate response sources. By default, no authentication type is selected.</p>
-<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
 </dd>
 <dt>Authenticate Recipient (for Response Policy)</dt>
 <dd>
@@ -81,7 +80,7 @@
 </dd>
 <dt>Additional Properties</dt>
 <dd>
-<p>Additional properties for the message security provider configuration. For a description of the additional properties available for provider configurations, see <a href="ref-messagesecurityproviderconfigprops.html">Properties Specific to Message Security Provider Configurations</a>.</p>
+<p>Additional properties for the message security provider configuration.</p>
 </dd>
 </dl>
 <a id="GHCOM465" name="GHCOM465"></a>
@@ -116,13 +115,13 @@
 <h5>Related asadmin Commands</h5>
 <ul>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00045"><code>create-message-security-provider</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/create-message-security-provider"><code>create-message-security-provider</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00184"><code>list-message-security-providers</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-message-security-providers"><code>list-message-security-providers</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00097"><code>delete-message-security-provider</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/delete-message-security-provider"><code>delete-message-security-provider</code>(1)</a></p>
 </li>
 </ul>
 

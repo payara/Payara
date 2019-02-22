@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-jmsconnectionproperties" name="ref-jmsconnectionproperties"></a><a id="GHJMS00005" name="GHJMS00005"></a></p>
 
@@ -29,7 +30,6 @@
 <dt><code>AddressList</code></dt>
 <dd>
 <p>Specifies the names (and, optionally, port numbers) of a message broker instance or instances with which applications will communicate. Each address in the list specifies the host name (and, optionally, host port and connection service) for the connection. For example, the value might be <code>earth</code> or <code>earth:7677</code>. Specify the port number if the message broker is running on a port other than the default (7676). If the property setting specifies multiple hosts and ports in a clustered environment, the first available host on the list is used unless the <code>AddressListBehavior</code> property is set to <code>RANDOM</code>.</p>
-<p>For details, see the <i>Message Queue Developer's Guide for Java Clients</i>.</p>
 <p>The default value is the local host and default port number (7676). The client will attempt a connection to a broker on port 7676 of the local host.</p>
 </dd>
 <dt><code>UserName</code></dt>

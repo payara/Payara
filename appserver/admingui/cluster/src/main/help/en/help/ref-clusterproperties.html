@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-clusterproperties" name="ref-clusterproperties"></a><a id="GHCLU00014" name="GHCLU00014"></a></p>
 
@@ -67,7 +68,7 @@
 <p><i>host-name-or -IP-address</i> is the host name or IP address of the host on which the instance is running.</p>
 </li>
 <li>
-<p><i>port</i> is the port number of the port on which the instance listens for messages from GMS. The system property <code>GMS_LISTENER_PORT-</code><i>clustername</i> must be set for the instance. For information about how to set this system property for an instance, see "<a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSHAG00373">Discovering a Cluster When Multicast Transport Is Unavailable</a>" in <i>Oracle GlassFish Server High Availability Administration Guide</i>.</p>
+<p><i>port</i> is the port number of the port on which the instance listens for messages from GMS. The system property <code>GMS_LISTENER_PORT-</code><i>clustername</i> must be set for the instance.</p>
 </li>
 </ul>
 </li>
@@ -115,7 +116,7 @@
 <p>Membership changes</p>
 </li>
 </ul>
-<p>To match the configuration of the network on which the DAS and clustered instances are deployed, set this value as low as possible. To determine the lowest possible value for your system, use the <a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00259"><code>validate-multicast</code>(1)</a> subcommand.</p>
+<p>To match the configuration of the network on which the DAS and clustered instances are deployed, set this value as low as possible. To determine the lowest possible value for your system, use the <a href="/resource/reference/en/help/reference/validate-multicast"><code>validate-multicast</code>(1)</a> subcommand.</p>
 <p>A value of 0 ensures that multicast messages never leave the host from which they are broadcast.</p>
 <p>A value of 1 might prevent the broadcast of messages between hosts on same subnet that are connected by a switch or a router.</p>
 <p>The default is 4, which ensures that messages are successfully broadcast to all cluster members in networks where hosts are connected by switches or routers.</p>
@@ -133,13 +134,13 @@
 <h5>Equivalent asadmin Subcommands</h5>
 <ul>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00139"><code>get</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/get"><code>get</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00145"><code>list</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list"><code>list</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00226"><code>set</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/set"><code>set</code>(1)</a></p>
 </li>
 </ul>
 

@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="task-messagesecurityproviderconfigedit" name="task-messagesecurityproviderconfigedit"></a><a id="GHCOM00208" name="GHCOM00208"></a></p>
 
@@ -76,7 +77,6 @@
 <p>In the Request Policy area, from the Authenticate Source drop-down list, select the type of required authentication for the request policy.</p>
 <p>The request policy determines the request processing that the authentication provider performs. The request policy fields are optional, but if they are not specified, the authentication provider does not authenticate request messages.</p>
 <p>Select <code>sender</code> to specify message-layer sender authentication (for example, username and password) of request messages. Select <code>content</code> to specify content authentication (for example, digital signature) of request messages. Leave the field empty to not authenticate the source of requests. By default, no authentication type is selected.</p>
-<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
 </li>
 <li>
 <p>From the Authenticate Recipient drop-down list, select whether recipient authentication occurs before or after content authentication for the request policy.</p>
@@ -86,7 +86,6 @@
 <p>In the Response Policy area, from the Authenticate Source drop-down list, select the type of required authentication for the response policy.</p>
 <p>The response policy determines the response processing that the authentication provider performs. The response policy fields are optional, but if they are not specified, no authentication is applied to response messages.</p>
 <p>Select <code>sender</code> to specify message-layer sender authentication (for example, username password) of response messages. Select <code>content</code> to specify content authentication (for example, digital signature) of response messages. Leave the field empty to not authenticate response sources. By default, no authentication type is selected.</p>
-<p>For a description of the actions performed by the SOAP message security providers, see <a href="ref-configreq-respolicy.html">Request and Response Policy Configurations</a>.</p>
 </li>
 <li>
 <p>From the Authenticate Recipient drop-down list, select whether recipient authentication occurs before or after content authentication for the response policy.</p>
@@ -94,7 +93,6 @@
 </li>
 <li>
 <p>In the Additional Properties section, specify additional properties.</p>
-<p>For a description of the additional properties available for provider configurations, see <a href="ref-messagesecurityproviderconfigprops.html">Properties Specific to Message Security Provider Configurations</a>.</p>
 <ul>
 <li>
 <p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>

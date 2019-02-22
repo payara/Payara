@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-security" name="ref-security"></a><a id="GHCOM00096" name="GHCOM00096"></a></p>
 
@@ -56,7 +57,7 @@
 </dd>
 <dt>Audit Modules</dt>
 <dd>
-<p>The audit provider modules that will be used by the audit subsystem if audit logging is enabled. By default, the server uses an audit module named <code>default</code>. For information on creating new audit modules, see <a href="task-auditmodulenew.html">To Create an Audit Module</a>.</p>
+<p>The audit provider modules that will be used by the audit subsystem if audit logging is enabled. By default, the server uses an audit module named <code>default</code>.</p>
 </dd>
 <dt>Default Principal To Role Mapping Enabled</dt>
 <dd>
@@ -69,10 +70,7 @@
 <dt>Additional Properties</dt>
 <dd>
 <p>Additional security properties for the server.</p>
-<p>Valid properties are dependent on the type of realm selected in the Default Realm field and are typically specified when you edit a realm. For details, see the following topics:</p>
-<ul>
-<li>
-<p><a href="ref-editfile-adminrealm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
+<p>Valid properties are dependent on the type of realm selected in the Default Realm field and are typically specified when you edit a realm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
 </li>
 <li>
 <p><a href="ref-editcertrealm.html">Properties Specific to the <code>CertificateRealm</code> Class</a></p>
@@ -112,52 +110,52 @@
 <h5>Related asadmin Commands</h5>
 <ul>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00004"><code>change-admin-password</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/change-admin-password"><code>change-admin-password</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00015"><code>create-auth-realm</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/create-auth-realm"><code>create-auth-realm</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00024"><code>create-file-user</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/create-file-user"><code>create-file-user</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00034"><code>create-jacc-provider</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/create-jacc-provider"><code>create-jacc-provider</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00049"><code>create-password-alias</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/create-password-alias"><code>create-password-alias</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00066"><code>delete-auth-realm</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/delete-auth-realm"><code>delete-auth-realm</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00076"><code>delete-file-user</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/delete-file-user"><code>delete-file-user</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00086"><code>delete-jacc-provider</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/delete-jacc-provider"><code>delete-jacc-provider</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00101"><code>delete-password-alias</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/delete-password-alias"><code>delete-password-alias</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00150"><code>list-auth-realms</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-auth-realms"><code>list-auth-realms</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00164"><code>list-file-groups</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-file-groups"><code>list-file-groups</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00165"><code>list-file-users</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-file-users"><code>list-file-users</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00171"><code>list-jacc-providers</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-jacc-providers"><code>list-jacc-providers</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00190"><code>list-password-aliases</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/list-password-aliases"><code>list-password-aliases</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00254"><code>update-file-user</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/update-file-user"><code>update-file-user</code>(1)</a></p>
 </li>
 <li>
-<p><a href="http://www.oracle.com/pls/topic/lookup?ctx=E26576_01&id=GSRFM00257"><code>update-password-alias</code>(1)</a></p>
+<p><a href="/resource/reference/en/help/reference/update-password-alias"><code>update-password-alias</code>(1)</a></p>
 </li>
 </ul>
 
