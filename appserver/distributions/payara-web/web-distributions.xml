@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <project name="Web IPS distribution" default="create-web-distributions" basedir=".">
     <import file="../distributions.xml" />
