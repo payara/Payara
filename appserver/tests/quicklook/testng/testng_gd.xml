@@ -148,6 +148,7 @@
     </classes>
   </test>
   <!-- MDB tests parameters -->
+  <!--  IGNORED. JIRA to fix = QA-185
   <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>
   <parameter name="BATCH_FILE1" value="ejb/mdb/create_resources.asadmin"/>
   <parameter name="BATCH_FILE2" value="ejb/mdb/delete_resources.asadmin"/>
@@ -155,7 +156,7 @@
     <classes>
       <class name="test.mdb.MDBTests"/>
     </classes>
-  </test>
+  </test>-->
   <!-- JRuby test is temporarily commented as we are waiting for RE to promote a new version.
   <test name="JRuby_tests">
     <classes>
