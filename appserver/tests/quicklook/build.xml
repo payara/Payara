@@ -307,7 +307,6 @@
         -->
 		<!--<ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>-->
 		<ant dir="wsit/jsr109tester" target="build-deploy"/>
-		<ant dir="wsit/jaxbosgi" target="build-deploy"/>
 		<ant dir="security/appperms" target="build-deploy"/>
 	</target>
 
@@ -341,7 +340,6 @@
         -->
 		<!--<ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>-->
 		<ant dir="wsit/jsr109tester" target="undeploy"/>
-		<ant dir="wsit/jaxbosgi" target="undeploy"/>
 		<ant dir="security/appperms" target="undeploy"/>
 	</target>
 

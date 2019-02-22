@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 #ifndef _SETUP_H_
 #define _SETUP_H_
@@ -44,9 +45,9 @@
 #include "java.h"
 
 #ifdef WIN32
-#define CLASSPATH_ELEMENTS { ";.\\registration-api.jar;.\\registration-impl.jar;.\\commons-codec-1.3.jar;.\\pkg-bootstrap.jar;.\\pkg-client.jar;.\\sysnet-registration.jar;.\\install\\lib\\bootstrap.jar;.\\install\\lib\\bindings.jar;.\\install\\lib\\external\\beanshell\\bsh.jar;.\\install\\lib\\external\\chaxml\\chaxml.jar;.\\install\\lib\\external\\charva\\charva.jar;.\\install\\lib\\external\\swixml\\swixml.jar;.\\install\\lib\\external\\swixml\\j2h.jar;.\\install\\lib\\external\\swixml\\ui.jar;.\\install\\lib\\external\\jdom\\jdom.jar;.\\install\\lib\\external\\freemarker\\freemarker.jar;.\\install\\lib\\external\\jaxb\\jaxb-impl.jar;.\\install\\lib\\external\\jaxb\\jaxb-jsr173_1.0_api.jar;.\\install\\lib\\external\\jaxb\\jaxb-api.jar;.\\install\\lib\\external\\jaxb\\activation.jar;.\\install\\lib\\external\\apache\\commons-logging.jar;" }
+#define CLASSPATH_ELEMENTS { ";.\\registration-api.jar;.\\registration-impl.jar;.\\commons-codec-1.3.jar;.\\pkg-bootstrap.jar;.\\pkg-client.jar;.\\sysnet-registration.jar;.\\install\\lib\\bootstrap.jar;.\\install\\lib\\bindings.jar;.\\install\\lib\\external\\beanshell\\bsh.jar;.\\install\\lib\\external\\chaxml\\chaxml.jar;.\\install\\lib\\external\\charva\\charva.jar;.\\install\\lib\\external\\swixml\\swixml.jar;.\\install\\lib\\external\\swixml\\j2h.jar;.\\install\\lib\\external\\swixml\\ui.jar;.\\install\\lib\\external\\jdom\\jdom.jar;.\\install\\lib\\external\\freemarker\\freemarker.jar;.\\install\\lib\\external\\jaxb\\jaxb-impl.jar;.\\install\\lib\\external\\jaxb\\jaxb-jsr173_1.0_api.jar;.\\install\\lib\\external\\jaxb\\jakarta.xml.bind-api.jar;.\\install\\lib\\external\\jaxb\\activation.jar;.\\install\\lib\\external\\apache\\commons-logging.jar;" }
 #else
-#define CLASSPATH_ELEMENTS { ":./registration-api.jar:./registration-impl.jar:./commons-codec-1.3.jar:./sysnet-registration.jar:./install/lib/bootstrap.jar:./install/lib/bindings.jar:./install/lib/external/beanshell/bsh.jar:./install/lib/external/chaxml/chaxml.jar:./install/lib/external/charva/charva.jar:./install/lib/external/swixml/swixml.jar:./install/lib/external/swixml/j2h.jar:./install/lib/external/swixml/ui.jar:./install/lib/external/jdom/jdom.jar:./install/lib/external/freemarker/freemarker.jar:./install/lib/external/jaxb/jaxb-impl.jar:./install/lib/external/jaxb/jaxb-jsr173_1.0_api.jar:./install/lib/external/jaxb/jaxb-api.jar:./install/lib/external/jaxb/activation.jar:./install/lib/external/apache/commons-logging.jar:" }
+#define CLASSPATH_ELEMENTS { ":./registration-api.jar:./registration-impl.jar:./commons-codec-1.3.jar:./sysnet-registration.jar:./install/lib/bootstrap.jar:./install/lib/bindings.jar:./install/lib/external/beanshell/bsh.jar:./install/lib/external/chaxml/chaxml.jar:./install/lib/external/charva/charva.jar:./install/lib/external/swixml/swixml.jar:./install/lib/external/swixml/j2h.jar:./install/lib/external/swixml/ui.jar:./install/lib/external/jdom/jdom.jar:./install/lib/external/freemarker/freemarker.jar:./install/lib/external/jaxb/jaxb-impl.jar:./install/lib/external/jaxb/jaxb-jsr173_1.0_api.jar:./install/lib/external/jaxb/jakarta.xml.bind-api.jar:./install/lib/external/jaxb/activation.jar:./install/lib/external/apache/commons-logging.jar:" }
 #endif
 
 

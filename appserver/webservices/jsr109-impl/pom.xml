@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -73,8 +73,8 @@
                                     <version>${webservices.version}</version>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
+                                    <groupId>jakarta.xml.bind</groupId>
+                                    <artifactId>jakarta.xml.bind-api</artifactId>
                                     <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
                                     <version>${jaxb-api.version}</version>
                                 </artifactItem>
@@ -154,8 +154,8 @@
             <artifactId>jaxb-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>

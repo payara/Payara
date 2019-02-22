@@ -274,8 +274,8 @@
         <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JAX-B -->
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0</jaxb.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
+        <jaxb.version>2.3.2</jaxb.version>
 
         <!-- Cache -->
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
@@ -1396,6 +1396,14 @@ Parent is ${project.parent}</echo>
     </dependencyManagement>
 
     <profiles>
+        <profile>
+            <id>ci</id>
+            <modules>
+                <module>tests</module>
+            </modules>
+        </profile>
+    
+        
         <profile>
             <id>default</id>
             <activation>

@@ -92,6 +92,7 @@ import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 
@@ -1210,7 +1211,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         autoBindRange = Integer.parseInt(value);
                         break;
                     case enablehealthcheck:
-                        enableHealthCheck = Boolean.valueOf(value);
+                        enableHealthCheck = Boolean.parseBoolean(value);
                         break;
                     case deployfromgav:
                         if (GAVs == null) {
@@ -1241,40 +1242,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             if (requestTracing.length <= 2) {
                                 // If the first entry is a number
                                 if (requestTracing[0].matches("\\d+")) {
-                                    try {
-                                        requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
-                                        
-                                    } catch (NumberFormatException e) {
-                                        LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
-                                                + "threshold value", requestTracing[0]);
-                                        throw e;
-                                    }
+                                    requestTracingThresholdValue = parseArgument(requestTracing[0], 
+                                            "request tracing threshold value", Long::parseLong).longValue();
                                     // If there is a second entry, and it's a String
                                     if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
-                                        String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
-                                        try {
-                                            TimeUnit.valueOf(parsedUnit.toUpperCase());
-                                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                                        } catch (IllegalArgumentException e) {
-                                            LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                                    + "tracing threshold unit", requestTracing[1]);
-                                            throw e;
-                                        }
+                                        requestTracingThresholdUnit = parseTimeUnit(requestTracing[1], 
+                                                "request tracing threshold unit").name();
                                     } // If there is a second entry, and it's not a String
                                     else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
                                         throw new IllegalArgumentException();
                                     }
                                 } // If the first entry is a String
                                 else if (requestTracing[0].matches("\\D+")) {
-                                    String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
-                                    try {
-                                        TimeUnit.valueOf(parsedUnit.toUpperCase());
-                                        requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                                    } catch (IllegalArgumentException e) {
-                                        LOGGER.log(Level.WARNING, "{0} is not a valid request "
-                                                + "tracing threshold unit", requestTracing[0]);
-                                        throw e;
-                                    }
+                                    requestTracingThresholdUnit = parseTimeUnit(requestTracing[0], 
+                                            "request tracing threshold unit").name();
                                     // There shouldn't be a second entry
                                     if (requestTracing.length == 2) {
                                         throw new IllegalArgumentException();
@@ -1286,55 +1267,29 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                         break;
                     case requesttracingthresholdunit:
-                        try {
-                            String parsedUnit = parseRequestTracingUnit(value);
-                            TimeUnit.valueOf(parsedUnit.toUpperCase());
-                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
-                        } catch (IllegalArgumentException e) {
-                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit",
-                                    value);
-                            throw e;
-                        }
+                        requestTracingThresholdUnit = parseTimeUnit(value, "value for --requestTracingThresholdUnit").name();
                         break;
                     case requesttracingthresholdvalue:
-                        try {
-                            requestTracingThresholdValue = Long.parseLong(value);
-                        } catch (NumberFormatException e) {
-                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue",
-                                    value);
-                            throw e;
-                        }
+                        requestTracingThresholdValue = parseArgument(value, "value for --requestTracingThresholdValue", 
+                                Long::parseLong).longValue();
                         break;
                     case enablerequesttracingadaptivesampling:
                         enableRequestTracingAdaptiveSampling = true;
                         break;
                     case requesttracingadaptivesamplingtargetcount:
                         enableRequestTracingAdaptiveSampling = true;
-                        try {
-                            requestTracingAdaptiveSamplingTargetCount = Integer.parseInt(value);
-                        } catch (NumberFormatException e) {
-                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTargetCount", value);
-                            throw e;
-                        }
+                        requestTracingAdaptiveSamplingTargetCount = parseArgument(value,
+                                "value for --requestTracingAdaptiveSamplingTargetCount", Integer::parseInt).intValue();
                         break;
                     case requesttracingadaptivesamplingtimevalue:
                         enableRequestTracingAdaptiveSampling = true;
-                        try {
-                            requestTracingAdaptiveSamplingTimeValue = Integer.parseInt(value);
-                        } catch (NumberFormatException e) {
-                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTimeValue", value);
-                            throw e;
-                        }
+                        requestTracingAdaptiveSamplingTimeValue = parseArgument(value,
+                                "value for --requestTracingAdaptiveSamplingTimeValue", Integer::parseInt).intValue();
                         break;
                     case requesttracingadaptivesamplingtimeunit:
                         enableRequestTracingAdaptiveSampling = true;
-                        try {
-                            TimeUnit.valueOf(value.toUpperCase());
-                            requestTracingAdaptiveSamplingTimeUnit = value.toUpperCase();
-                        } catch (IllegalArgumentException e) {
-                            LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingAdaptiveSamplingTimeUnit", value);
-                            throw e;
-                        }
+                        requestTracingAdaptiveSamplingTimeUnit = parseTimeUnit(value,
+                                "value for --requestTracingAdaptiveSamplingTimeUnit").name();
                         break;
                     case help:
                         RuntimeOptions.printHelp();
@@ -1370,7 +1325,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case interfaces:
                         interfaces = value;
-			            break;
+                        break;
                     case secretsdir:
                         secretsDir = value;
                         break;
@@ -2353,44 +2308,48 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         creator.buildUberJar();
     }
 
-    private String parseRequestTracingUnit(String option) {
-        String returnValue = option;
-
+    private static String unifyTimeUnit(String option) {
         switch (option.toLowerCase()) {
             case "nanosecond":
             case "ns":
-                returnValue = "NANOSECONDS";
-                break;
+                return "NANOSECONDS";
             case "microsecond":
             case "us":
             case "µs":
-                returnValue = "MICROSECONDS";
-                break;
+                return "MICROSECONDS";
             case "millisecond":
             case "ms":
-                returnValue = "MILLISECONDS";
-                break;
+                return "MILLISECONDS";
             case "second":
             case "s":
-                returnValue = "SECONDS";
-                break;
+                return "SECONDS";
             case "m":
             case "minute":
             case "min":
             case "mins":
-                returnValue = "MINUTES";
-                break;
+                return "MINUTES";
             case "hour":
             case "h":
-                returnValue = "HOURS";
-                break;
+                return "HOURS";
             case "day":
             case "d":
-                returnValue = "DAYS";
-                break;
+                return "DAYS";
+            default:
+                return option;
         }
+    }
 
-        return returnValue;
+    private static TimeUnit parseTimeUnit(String value, String errorText) {
+        return parseArgument(value, errorText, val -> TimeUnit.valueOf(unifyTimeUnit(val).toUpperCase()));
+    }
+
+    private static <T> T parseArgument(String value, String errorText, Function<String, T> parser) {
+        try {
+            return parser.apply(value);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "{0} is not a valid " + errorText, value);
+            throw e;
+        }
     }
 
     private void printVersion() {
@@ -2531,7 +2490,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), bootTime});
     }
 
-    private String getProperty(String value) {
+    private static String getProperty(String value) {
         String result;
         result = System.getProperty(value);
         if (result == null) {
@@ -2540,7 +2499,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         return result;
     }
 
-    private String getProperty(String value, String defaultValue) {
+    private static String getProperty(String value, String defaultValue) {
         String result = getProperty(value);
         if (result == null) {
             result = defaultValue;
@@ -2548,7 +2507,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         return result;
     }
 
-    private Boolean getBooleanProperty(String value) {
+    private static boolean getBooleanProperty(String value) {
         String property;
         property = System.getProperty(value);
         if (property == null) {
@@ -2556,8 +2515,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         return "true".equals(property);
     }
-    
-    private Boolean getBooleanProperty(String value, String defaultValue) {
+
+    private static boolean getBooleanProperty(String value, String defaultValue) {
         String property;
         property = System.getProperty(value);
         if (property == null) {
@@ -2570,7 +2529,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
 
-    private Integer getIntegerProperty(String value, Integer defaultValue) {
+    private static int getIntegerProperty(String value, int defaultValue) {
         String property;
         property = System.getProperty(value);
         if (property == null) {
@@ -2578,12 +2537,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         if (property == null) {
             return defaultValue;
-        } else {
-            return Integer.decode(property);
         }
+        return Integer.decode(property).intValue();
     }
 
-    private Long getLongProperty(String value, Long defaultValue) {
+    private static long getLongProperty(String value, long defaultValue) {
         String property;
         property = System.getProperty(value);
         if (property == null) {
@@ -2591,9 +2549,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
         if (property == null) {
             return defaultValue;
-        } else {
-            return Long.decode(property);
         }
+        return Long.decode(property).longValue();
     }
 
     /**
