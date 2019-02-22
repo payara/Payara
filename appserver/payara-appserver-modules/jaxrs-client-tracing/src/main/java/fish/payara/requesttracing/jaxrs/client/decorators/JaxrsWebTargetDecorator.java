@@ -72,56 +72,47 @@ public class JaxrsWebTargetDecorator implements WebTarget {
 
     @Override
     public WebTarget path(String path) {
-        webTarget = webTarget.path(path);
-        return this;
+        return new JaxrsWebTargetDecorator(this.webTarget.path(path));
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value) {
-        webTarget = webTarget.resolveTemplate(name, value);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplate(name, value));
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value, boolean encodeSlashInPath) {
-        webTarget = webTarget.resolveTemplate(name, value, encodeSlashInPath);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplate(name, value, encodeSlashInPath));
     }
 
     @Override
     public WebTarget resolveTemplateFromEncoded(String name, Object value) {
-        webTarget = webTarget.resolveTemplateFromEncoded(name, value);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplateFromEncoded(name, value));
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues) {
-        webTarget = webTarget.resolveTemplates(templateValues);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplates(templateValues));
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues, boolean encodeSlashInPath) {
-        webTarget = webTarget.resolveTemplates(templateValues, encodeSlashInPath);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplates(templateValues, encodeSlashInPath));
     }
 
     @Override
     public WebTarget resolveTemplatesFromEncoded(Map<String, Object> templateValues) {
-        webTarget = webTarget.resolveTemplatesFromEncoded(templateValues);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplatesFromEncoded(templateValues));
     }
 
     @Override
     public WebTarget matrixParam(String name, Object... values) {
-        webTarget = webTarget.matrixParam(name, values);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.matrixParam(name, values));
     }
 
     @Override
     public WebTarget queryParam(String name, Object... values) {
-        webTarget = webTarget.queryParam(name, values);
-        return this;
+        return new JaxrsWebTargetDecorator(webTarget.queryParam(name, values));
     }
 
     @Override
