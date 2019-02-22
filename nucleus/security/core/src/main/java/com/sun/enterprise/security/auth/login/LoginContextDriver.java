@@ -500,13 +500,13 @@ public class LoginContextDriver  {
 
         String userName = "";
         try {
-            final Principal principl = new X500Principal(
+            final Principal principal = new X500Principal(
                 x500Principal.getName(X500Principal.RFC1779));
-            userName = principl.toString();
+            userName = principal.toString();
 
             AppservAccessController.doPrivileged(new PrivilegedAction(){
                 public java.lang.Object run(){
-                    fs.getPublicCredentials().add(principl);
+                    fs.getPublicCredentials().add(principal);
                     return fs;
                 }
             });
@@ -519,7 +519,7 @@ public class LoginContextDriver  {
                 LoginContext lg = new LoginContext(jaasCtx, fs, dummyCallback);
                 lg.login();
             }
-            certRealm.authenticate(fs, principl);
+            certRealm.authenticate(fs, principal);
         } catch(Exception ex) {
             if (_logger.isLoggable(Level.INFO)) {
                 _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError,
