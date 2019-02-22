@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.191-RC99</version>
     </parent>
     <groupId>fish.payara.distributions</groupId>
     <artifactId>payara-web-ml</artifactId>
