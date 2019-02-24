@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -71,6 +72,7 @@ public class WebComponentInvocation extends ComponentInvocation {
         
         moduleName = wm.getModuleName();
         appName = wm.getWebBundleDescriptor().getApplication().getAppName();
+        registrationName = wm.getWebBundleDescriptor().getApplication().getRegistrationName();
     }
     
     public WebComponentInvocation(WebModule wm, Object instance, String instanceName) {

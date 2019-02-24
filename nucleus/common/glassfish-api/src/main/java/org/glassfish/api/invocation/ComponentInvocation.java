@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.invocation;
 
@@ -108,6 +109,8 @@ public class ComponentInvocation
     
     protected String moduleName;
 
+    protected String registrationName;
+
     public ComponentInvocation() {
         
     }
@@ -116,12 +119,14 @@ public class ComponentInvocation
             ComponentInvocationType invocationType,
             Object container,
             String appName,
-            String moduleName) {
+            String moduleName,
+            String registrationName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.container = container;
         this.appName = appName;
         this.moduleName = moduleName;
+        this.registrationName = registrationName;
     }
 
 
@@ -175,7 +180,7 @@ public class ComponentInvocation
     public void setTransaction(Object t) {
         this.transaction = t;
     }
-
+    
     private Object transactionOperationsManager;
     public void setTransactionOperationsManager(Object transactionOperationsManager) {
         this.transactionOperationsManager = transactionOperationsManager;
@@ -287,6 +292,19 @@ public class ComponentInvocation
      */
     public String getModuleName() {
         return moduleName;
+    }
+
+    /**
+     * Returns the unique registration name of application.
+     *
+     * @return
+     */
+    public String getRegistrationName() {
+        return registrationName;
+    }
+
+    public void setRegistrationName(String registrationName) {
+        this.registrationName = registrationName;
     }
 
     public ComponentInvocation clone() {

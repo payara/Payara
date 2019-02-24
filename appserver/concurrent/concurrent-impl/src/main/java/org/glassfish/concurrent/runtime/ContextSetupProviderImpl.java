@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -188,9 +188,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         ClassLoader backupClassLoader = null;
         if (handle.getInvocation() != null) {
-            appName = handle.getInvocation().getAppName();
+            appName = handle.getInvocation().getRegistrationName();
             if (appName == null && handle.getInvocation().getJNDIEnvironment() != null) {
-                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getName();
+                appName = DOLUtils.getApplicationFromEnv((JndiNameEnvironment) handle.getInvocation().getJNDIEnvironment()).getRegistrationName();
             }
             if (appName == null) {
                 // try to get environment from component ID
@@ -199,7 +199,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     if (currJndiEnv != null) {
                         com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
                         if (appInfo != null) {
-                            appName = appInfo.getName();
+                            appName = appInfo.getRegistrationName();
                             // cache JNDI environment
                             handle.getInvocation().setJNDIEnvironment(currJndiEnv);
                             backupClassLoader = appInfo.getClassLoader();
