@@ -51,7 +51,6 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.x500.X500Principal;
-import com.sun.logging.*;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.security.SecurityContext;
@@ -501,13 +500,13 @@ public class LoginContextDriver  {
 
         String userName = "";
         try {
-            final X500Principal x500principl = new X500Principal(
+            final Principal principal = new X500Principal(
                 x500Principal.getName(X500Principal.RFC1779));
-            userName = x500principl.toString();
+            userName = principal.toString();
 
             AppservAccessController.doPrivileged(new PrivilegedAction(){
                 public java.lang.Object run(){
-                    fs.getPublicCredentials().add(x500principl);
+                    fs.getPublicCredentials().add(principal);
                     return fs;
                 }
             });
@@ -520,7 +519,7 @@ public class LoginContextDriver  {
                 LoginContext lg = new LoginContext(jaasCtx, fs, dummyCallback);
                 lg.login();
             }
-            certRealm.authenticate(fs, x500principl);
+            certRealm.authenticate(fs, principal);
         } catch(Exception ex) {
             if (_logger.isLoggable(Level.INFO)) {
                 _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError,
@@ -683,8 +682,8 @@ public class LoginContextDriver  {
        String user = null;
        String realm_name = null;
        try{
-            X500Principal x500principal = (X500Principal)getPublicCredentials(s, X500Principal.class);
-            user = x500principal.getName();
+            Principal principal = (Principal)getPublicCredentials(s, Principal.class);
+            user = principal.getName();
         
             // In the RI-inherited implementation this directly creates
             // some credentials and sets the security context. This means
@@ -706,7 +705,7 @@ public class LoginContextDriver  {
                     LoginContext lg = new LoginContext(jaasCtx, s, new ServerLoginCallbackHandler(user, null, appModuleID));
                     lg.login();
                 }
-                certRealm.authenticate(s, x500principal);
+                certRealm.authenticate(s, principal);
                 realm_name = CertificateRealm.AUTH_TYPE;
                 if(getAuditManager().isAuditOn()){
                     getAuditManager().authentication(user, realm_name, true);

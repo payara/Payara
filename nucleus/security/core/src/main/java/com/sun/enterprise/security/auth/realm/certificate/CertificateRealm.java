@@ -66,8 +66,6 @@ import java.util.logging.Level;
 
 
 import org.jvnet.hk2.annotations.Service;
-import javax.security.auth.x500.X500Principal;
-
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -215,14 +213,14 @@ public final class CertificateRealm extends IASRealm
      * Returns the name of all the groups that this user belongs to.
      *
      * @param subject The Subject object for the authentication request.
-     * @param x500principal The X500Name object from the user certificate.
+     * @param principal The Principal object from the user certificate.
      *
      */
-    public void authenticate(Subject subject, X500Principal x500principal) {
+    public void authenticate(Subject subject, Principal principal) {
         // It is important to use x500name.getName() in order to be
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
-        String name = x500principal.getName();
+        String name = principal.getName();
 
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINEST, "Certificate realm setting up security context for: {0}", name);
@@ -236,7 +234,7 @@ public final class CertificateRealm extends IASRealm
 	}
 
         if (!subject.getPrincipals().isEmpty()) {
-            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(x500principal));
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(principal));
         }
         
         SecurityContext.setCurrent(new SecurityContext(name, subject));
