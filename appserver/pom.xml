@@ -252,6 +252,7 @@
         <module>appclient</module>
         <module>ant-tasks</module>
         <module>payara-appserver-modules</module>
+        <module>wars</module>
     </modules>
 
 

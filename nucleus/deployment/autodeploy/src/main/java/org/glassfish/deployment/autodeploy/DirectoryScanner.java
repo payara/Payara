@@ -48,15 +48,10 @@ import java.io.File;
  *
  * @author vikas
  */
-public interface DirectoryScanner{
-    
-     public File[] getAllDeployableModules(File autodeployDir, boolean includeSubDir);
-     public boolean hasNewDeployableEntity(File autodeployDir);
-     public File[] getAllFilesForUndeployment(File autodeployDir, boolean includeSubdir);
-     public void deployedEntity(File autodeployDir, File deployedEntity);
-     public void undeployedEntity(File autodeployDir, File undeployedEntity);
-    
-
+public interface DirectoryScanner {
+    File[] getAllDeployableModules(File autodeployDir, boolean includeSubDir);
+    boolean hasNewDeployableEntity(File autodeployDir);
+    File[] getAllFilesForUndeployment(File autodeployDir, boolean includeSubdir);
+    void deployedEntity(File autodeployDir, File deployedEntity);
+    void undeployedEntity(File autodeployDir, File undeployedEntity);
 }
-
-
