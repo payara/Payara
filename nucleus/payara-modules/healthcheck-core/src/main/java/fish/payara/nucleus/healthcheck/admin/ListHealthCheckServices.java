@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck.admin.notifier;
+package fish.payara.nucleus.healthcheck.admin;
 
+import javax.inject.Inject;
 
-import fish.payara.nucleus.healthcheck.admin.SetHealthCheckServiceNotifierConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.DatadogNotifier;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -50,36 +52,37 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
- * @author mertcaliskan
- * @deprecated replaced by {@link SetHealthCheckServiceNotifierConfiguration}
+ * Admin command to list the names of all available health check services.
+ *
+ * @author Jan Bernitt
+ * @since 5.191
  */
-@Deprecated
-@Service(name = "healthcheck-datadog-notifier-configure")
+@Service(name = "list-healthcheck-services")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("healthcheck.list.services")
+@ExecuteOn(RuntimeType.INSTANCE)
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
         @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "healthcheck-datadog-notifier-configure",
-                description = "Configures Datadog Notifier for HealthCheck Service")
+                opType = RestEndpoint.OpType.GET,
+                path = "list-healthcheck-services",
+                description = "Lists the names of all available health check services")
 })
-public class DatadogHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<DatadogNotifier> {
+public class ListHealthCheckServices implements AdminCommand {
+
+    @Inject
+    ServiceLocator habitat;
 
     @Override
-    protected void applyValues(DatadogNotifier notifier) throws PropertyVetoException {
-        if(this.enabled != null) {
-            notifier.enabled(enabled);
-        }
-        if (this.noisy != null) {
-            notifier.noisy(noisy);
-        } else {
-            notifier.noisy(getNotifierNoisy("get-datadog-notifier-configuration"));
-        }
-   }
+    public void execute(AdminCommandContext context) {
+        // just forward to the old command until it is replaced
+        habitat.getService(HealthCheckServiceLister.class).execute(context);
+    }
 }

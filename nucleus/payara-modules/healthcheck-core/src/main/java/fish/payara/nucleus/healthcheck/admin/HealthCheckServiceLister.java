@@ -60,7 +60,9 @@ import java.util.List;
  * Admin command to list the names of all available health check services
  *
  * @author mertcaliskan
+ * @deprecated replaced by {@link ListHealthCheckServices}
  */
+@Deprecated
 @Service(name = "healthcheck-list-services")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
