@@ -49,6 +49,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -189,19 +190,19 @@ public class CircuitBreakerInterceptor implements Serializable {
         
         Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
         try {
-            String failOnString = ((String) FaultToleranceCdiUtils.getOverrideValue(
-                    config, Retry.class, "failOn", invocationContext, String.class).get());
-
-            List<Class> classList = new ArrayList<>();
-
-            // Remove any curly or square brackets from the string, as well as any spaces and ".class"es and loop
-            for (String className : failOnString.replaceAll("[\\{\\[ \\]\\}]", "")
-                    .replaceAll("\\.class", "").split(",")) {
-                // Get a class object
-                classList.add(Class.forName(className));
+            Optional optionalFailOn = FaultToleranceCdiUtils.getOverrideValue(
+                    config, CircuitBreaker.class, "failOn", invocationContext, String.class);
+            if (optionalFailOn.isPresent()) {
+                String failOnString = (String) optionalFailOn.get();
+                List<Class> classList = new ArrayList<>();
+                // Remove any curly or square brackets from the string, as well as any spaces and ".class"es and loop
+                for (String className : failOnString.replaceAll("[\\{\\[ \\]\\}]", "")
+                        .replaceAll("\\.class", "").split(",")) {
+                    // Get a class object
+                    classList.add(Class.forName(className));
+                }
+                failOn = classList.toArray(failOn);
             }
-
-            failOn = classList.toArray(failOn);
         } catch (NoSuchElementException nsee) {
             logger.log(Level.FINER, "Could not find element in config", nsee);
         } catch (ClassNotFoundException cnfe) {
