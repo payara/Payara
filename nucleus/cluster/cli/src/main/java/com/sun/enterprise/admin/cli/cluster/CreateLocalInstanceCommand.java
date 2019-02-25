@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -80,10 +80,8 @@ import java.util.logging.Level;
 @PerLookup
 @I18n("create.local.instance")
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
-    private final String CONFIG = "config";
-    private final String CLUSTER = "cluster";
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(CreateLocalInstanceCommand.class);
+    private static final String CONFIG = "config";
+    private static final String CLUSTER = "cluster";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
@@ -119,21 +117,16 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
     private ParamModelData masterPasswordOption;
     private static final String MASTER_PASSWORD_ALIAS="master-password";
-
-    /**
-     */
+    
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
         echoCommand();
         if (configName != null && clusterName != null) {
-            throw new CommandException(
-                    Strings.get("ConfigClusterConflict"));
+            throw new CommandException(Strings.get("ConfigClusterConflict"));
         }
 
         if (lbEnabled != null && clusterName == null) {
-            throw new CommandException(
-                    Strings.get("lbenabledNotForStandaloneInstance"));
+            throw new CommandException(Strings.get("lbenabledNotForStandaloneInstance"));
         }
 
         setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
@@ -155,12 +148,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         }
 
         if (!rendezvousWithDAS()) {
-            throw new CommandException(
-                    Strings.get("Instance.rendezvousFailed", DASHost, "" + DASPort));
+            throw new CommandException(Strings.get("Instance.rendezvousFailed", DASHost, "" + DASPort));
         }
         if (instanceName != null && instanceName.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            throw new CommandException(
-                    Strings.get("Instance.alreadyExists", SystemPropertyConstants.DAS_SERVER_NAME));
+            throw new CommandException(Strings.get("Instance.alreadyExists", SystemPropertyConstants.DAS_SERVER_NAME));
         }
         setDomainName();
         setDasDefaultsOnly = false;
@@ -252,8 +243,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int bootstrapSecureAdminFiles() throws CommandException {
         RemoteCLICommand rc = new RemoteCLICommand("_bootstrap-secure-admin", this.programOpts, this.env);
         rc.setFileOutputDirectory(instanceDir);
-        final int result = rc.execute(new String[] {"_bootstrap-secure-admin"});
-        return result;
+        return rc.execute(new String[] {"_bootstrap-secure-admin"});
     }
 
     /**
@@ -313,8 +303,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     protected void createMasterPasswordFile(String masterPassword) throws CommandException {
         final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTER_PASSWORD_ALIAS);
         try {
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(),
-                MASTER_PASSWORD_ALIAS.toCharArray());
+            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTER_PASSWORD_ALIAS.toCharArray());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
@@ -326,7 +315,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     private boolean rendezvousWithDAS() {
         try {
-            //logger.info(Strings.get("Instance.rendezvousAttempt", DASHost, "" + DASPort));
             getUptime();
             logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
             return true;
@@ -394,7 +382,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         try {
             rc = new RemoteCLICommand("get", this.programOpts, this.env);
             String s = rc.executeAndReturnOutput("get", RENDEZVOUS_DOTTED_NAME);
-            String val = s.substring(s.indexOf("=") + 1);
+            String val = s.substring(s.indexOf('=') + 1);
             rendezvousOccurred = Boolean.parseBoolean(val);
             logger.log(Level.FINER, "rendezvousOccurred = {0} for instance {1}", new Object[]{val, instanceName});
         } catch (CommandException ce) {
@@ -467,14 +455,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));
         if (canonicalNodeInstallDir == null || canonicalInstallDir == null) {
             throw new CommandValidationException(
-                Strings.get("Instance.installdir.null", node,
-                           canonicalInstallDir, canonicalNodeInstallDir));
+                Strings.get("Instance.installdir.null", node, canonicalInstallDir, canonicalNodeInstallDir));
         }
 
         if ( !canonicalInstallDir.equals(canonicalNodeInstallDir) ) {
             throw new CommandValidationException(
-                Strings.get("Instance.installdir.mismatch", node,
-                           canonicalInstallDir, canonicalNodeInstallDir));
+                Strings.get("Instance.installdir.mismatch", node, canonicalInstallDir, canonicalNodeInstallDir));
         }
     }
 
@@ -522,11 +508,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     @Override
     protected boolean setServerDirs() {
-        if (setDasDefaultsOnly) {
-            return false;
-        } else {
-            return true;
-        }
+        return !setDasDefaultsOnly;
     }
 
     private void echoCommand() {

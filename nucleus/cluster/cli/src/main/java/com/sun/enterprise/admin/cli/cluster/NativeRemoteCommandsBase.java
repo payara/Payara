@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -227,30 +227,27 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 //only if file is present in DAS, it is targeted for removal on remote host
                 //using force deletes all files on remote host
                 if (force) {
-                    if (logger.isLoggable(Level.FINE))
+                    if (logger.isLoggable(Level.FINE)) {
                         logger.fine("Force removing directory " + f1);
+                    }
                     if (isRemoteDirectoryEmpty(sftpClient, f1)) {
                         sftpClient.rmdir(f1);
                     }
-                }
-                else {
-                    if (dasFiles.contains(f1)) {
-                        if (isRemoteDirectoryEmpty(sftpClient, f1)) {
-                            sftpClient.rmdir(f1);
-                        }
+                } else {
+                    if (dasFiles.contains(f1) && isRemoteDirectoryEmpty(sftpClient, f1)) {
+                        sftpClient.rmdir(f1);
                     }
                 }
-            }
-            else {
+            } else {
                 String f2 = dir + "/" + directoryEntry.filename;
                 if (force) {
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Force removing file " + f2);
                     sftpClient.rm(f2);
-                }
-                else {
-                    if (dasFiles.contains(f2))
+                } else {
+                    if (dasFiles.contains(f2)) {
                         sftpClient.rm(f2);
+                    }
                 }
             }
         }
@@ -266,9 +263,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      */
     boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
         List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
-        if (l.size() > 2)
-            return false;
-        return true;
+        return l.size() <= 2;
     }
 
     /**
@@ -301,6 +296,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
 
             //get the list of domains
             File[] files = domainsDirFile.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory();
                 }
@@ -316,8 +312,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         String mPass = getMasterPassword(f.getName());
                         expandedPassword = new PasswordAdapter(mPass.toCharArray()).getPasswordForAlias(alias);
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     if (logger.isLoggable(Level.FINER)) {
                         logger.finer(StringUtils.cat(": ", alias, e.getMessage()));
                     }
@@ -334,8 +329,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         if (!connStatus) {
                             logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
                         }
-                    }
-                    else {
+                    } else {
                         sshkeypassphrase = expandedPassword;
                         if (verifyConn) {
                             sshL.init(getRemoteUser(), hosts[0], getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
@@ -351,8 +345,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     }
                 }
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer(ioe.getMessage());
             }
@@ -364,7 +357,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
      * This method first obtains a list of files under the product installation
      * directory. It then modifies each path by prepending it with remote install dir path.
      * For ex. glassfish/lib/appserv-rt.jar becomes
-     * <remote-install-path>/glassfish/lib/appserv-rt.jar
+     * &lt;remote-install-path&gt;/glassfish/lib/appserv-rt.jar
      * @return List of files and directories
      * @throws IOException
      */
@@ -372,8 +365,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         String ins = resolver.resolve("${com.sun.aas.productRoot}");
         Set files = FileUtils.getAllFilesAndDirectoriesUnder(new File(ins));
         if (logger.isLoggable(Level.FINER))
-            logger.finer("Total number of files under " + ins + " = " +
-                                                                files.size());
+            logger.log(Level.FINER, "Total number of files under {0} = {1}", new Object[]{ins, files.size()});
         String remoteDir = installDir;
         if (!installDir.endsWith("/")) {
             remoteDir = remoteDir + "/";

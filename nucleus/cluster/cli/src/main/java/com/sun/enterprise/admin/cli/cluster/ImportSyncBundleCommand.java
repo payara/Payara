@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
@@ -46,8 +47,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
-//import java.net.InetAddress;
-//import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
@@ -118,7 +117,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private String instanceName0;
 
     @Param(name = "node", optional = true, alias = "nodeagent")
-    protected String _node;
+    protected String nodeParam;
 
     String DASHost;
     int DASPort = -1;
@@ -133,28 +132,27 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private File backupDir;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
-    private String INSTANCE_DOTTED_NAME;
-    private String RENDEZVOUS_DOTTED_NAME;
+    private String instanceDottedName;
+    private String rendevousDottedName;
 
-    /**
-     */
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
 
-        if(ok(instanceName0))
+        if(ok(instanceName0)) {
             instanceName = instanceName0;
-        else
+        } else {
             throw new CommandException(Strings.get("Instance.badInstanceName"));
+        }
 
         syncBundleFile = new File(syncBundle);
-        if (!syncBundleFile.isFile())
+        if (!syncBundleFile.isFile()) {
             throw new CommandException(Strings.get("noFile", syncBundle));
+        }
 
         if (!isRegisteredToDAS()) {
             throw new CommandException(Strings.get("import.sync.bundle.invalidInstance", instanceName));
         }
-        node = _node;
+        node = nodeParam;
 
         super.validate(); // set ServerDirs
         init();
@@ -173,8 +171,8 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         dasIsSecure = programOpts.isSecure();
         DASProtocol = "http";
 
-        INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
-        RENDEZVOUS_DOTTED_NAME = INSTANCE_DOTTED_NAME + ".property." + RENDEZVOUS_PROPERTY_NAME;
+        instanceDottedName = "servers.server." + instanceName;
+        rendevousDottedName = instanceDottedName + ".property." + RENDEZVOUS_PROPERTY_NAME;
     }
 
     private boolean isRegisteredToDAS() throws CommandException {
@@ -207,21 +205,18 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                         String thisName = map.get("name");
                         if (instanceName != null && instanceName.equals(thisName)) {
                             isRegisteredOnDAS = true;
-                            if (_node == null) {  // if node not specified
-                                _node = map.get("node"); // find it in domain.xml
+                            if (nodeParam == null) {  // if node not specified
+                                nodeParam = map.get("node"); // find it in domain.xml
                             }
                         }
                     }
                 }
             } else {
-                throw new CommandException(Strings.get("import.sync.bundle.domainXmlNotFound",
-                    syncBundle));
+                throw new CommandException(Strings.get("import.sync.bundle.domainXmlNotFound", syncBundle));
             }
         } catch (IOException | XMLStreamException ex) {
-            logger.log(Level.SEVERE, Strings.get("import.sync.bundle.inboundPayloadFailed",
-                    syncBundle, ex.getLocalizedMessage()), ex);
-            throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed",
-                    syncBundle, ex.getLocalizedMessage()), ex);
+            logger.log(Level.SEVERE, Strings.get("import.sync.bundle.inboundPayloadFailed", syncBundle, ex.getLocalizedMessage()), ex);
+            throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed", syncBundle, ex.getLocalizedMessage()), ex);
         } finally {
             if (input != null) {
                 try {
@@ -248,17 +243,14 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
 
         return isRegisteredOnDAS;
     }
-
-    /**
-     */
+    
     @Override
-    protected int executeCommand()
-            throws CommandException {
-            int exitCode = createDirectories();
-            if (exitCode == SUCCESS) {
-                setRendezvousOccurred("true");
-            }
-            return exitCode;
+    protected int executeCommand() throws CommandException {
+        int exitCode = createDirectories();
+        if (exitCode == SUCCESS) {
+            setRendezvousOccurred("true");
+        }
+        return exitCode;
     }
 
     private int createDirectories() throws CommandException {
@@ -277,13 +269,13 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
             payload = PayloadImpl.Inbound.newInstance("application/zip", in);
         } catch (IOException ex) {
             try {
-                if (in != null) in.close();
+                if (in != null) {
+                    in.close();
+                }
             } catch (IOException ioe) {
-                logger.warning(Strings.get("import.sync.bundle.closeStreamFailed",
-                            syncBundle, ioe.getLocalizedMessage()));
+                logger.warning(Strings.get("import.sync.bundle.closeStreamFailed", syncBundle, ioe.getLocalizedMessage()));
             }
-            throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed",
-                    syncBundle, ex.getLocalizedMessage()), ex);
+            throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed", syncBundle, ex.getLocalizedMessage()), ex);
         }
         backupInstanceDir();
         File targetDir = this.getServerDirs().getServerDir();
@@ -298,17 +290,17 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
             perm.processParts(payload);
         } catch (Exception ex) {
             restoreInstanceDir();
-            String msg = Strings.get("import.sync.bundle.extractBundleFailed",
-                    syncBundle, targetDir.getAbsolutePath());
-            if (ex.getLocalizedMessage() != null)
+            String msg = Strings.get("import.sync.bundle.extractBundleFailed", syncBundle, targetDir.getAbsolutePath());
+            if (ex.getLocalizedMessage() != null) {
                 msg = msg + "\n" + ex.getLocalizedMessage();
+            }
             throw new CommandException(msg, ex);
         } finally {
             try {
-                if (in != null) in.close();
+                in.close();
             } catch (IOException ex) {
                 logger.warning(Strings.get("import.sync.bundle.closeStreamFailed",
-                            syncBundle, ex.getLocalizedMessage()));
+                        syncBundle, ex.getLocalizedMessage()));
             }
         }
 
@@ -339,7 +331,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         }
     }
 
-    private void backupInstanceDir() throws CommandException {
+    private void backupInstanceDir() {
         File f = getServerDirs().getServerDir();
         if (f != null && f.isDirectory()) {
             SecureRandom r = new SecureRandom();
@@ -383,7 +375,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     }
 
     private void setRendezvousOccurred(String rendezVal) {
-        String dottedName = RENDEZVOUS_DOTTED_NAME + "=" + rendezVal;
+        String dottedName = rendevousDottedName + "=" + rendezVal;
         try {
             RemoteCLICommand rc = new RemoteCLICommand("set", this.programOpts, this.env);
             rc.executeAndReturnOutput("set", dottedName);
