@@ -213,9 +213,8 @@ public class CircuitBreakerInterceptor implements Serializable {
         long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "delay", invocationContext, Long.class)
                 .orElse(circuitBreaker.delay());
-        // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
         ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "delayUnit", invocationContext, String.class)
+                config, CircuitBreaker.class, "delayUnit", invocationContext, ChronoUnit.class)
                 .orElse(circuitBreaker.delayUnit());
         int requestVolumeThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "requestVolumeThreshold", invocationContext, Integer.class)
