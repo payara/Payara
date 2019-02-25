@@ -37,11 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 package org.glassfish.deployment.autodeploy;
-
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Application;
 
 import static com.sun.enterprise.util.io.FileUtils.deleteFile;
 import static com.sun.enterprise.util.io.FileUtils.liquidate;
@@ -51,18 +48,20 @@ import static org.glassfish.deployment.common.DeploymentProperties.DEFAULT_APP_N
 
 import java.io.File;
 import java.util.Properties;
-import java.util.List;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;
-import org.glassfish.deployment.common.DeploymentProperties;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
 
 /**
  * Performs a single auto-undeploy operation for a single file.

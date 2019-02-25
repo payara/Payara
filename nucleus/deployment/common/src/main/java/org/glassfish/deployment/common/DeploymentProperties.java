@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * DeploymentProperties.java
  *
  * Created on August 7, 2003, 10:15 PM
  */
-
 package org.glassfish.deployment.common;
 
 import java.io.File;

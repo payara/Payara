@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 package org.glassfish.deployment.autodeploy;
 
 import static org.glassfish.deployment.common.DeploymentProperties.LOG_REPORTED_ERRORS;
