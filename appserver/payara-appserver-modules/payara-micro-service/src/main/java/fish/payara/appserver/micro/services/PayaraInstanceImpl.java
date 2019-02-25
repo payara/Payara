@@ -243,22 +243,24 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
-            for(String appName : appRegistry.getAllApplicationNames()) {
+            
+            for (String appName : appRegistry.getAllApplicationNames()) {
                 me.addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
             }
+            
             cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             executor.scheduleAtFixedRate(() -> {
-            me.setLastHeartBeat(System.currentTimeMillis());
-            if (myCurrentID != null) {
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
-            }
+                me.setLastHeartBeat(System.currentTimeMillis());
+                if (myCurrentID != null) {
+                    cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+                }
             }, 0, 5, TimeUnit.SECONDS);
         } 
         // Adds the application to the clustered register of deployed applications
         else if (event.is(Deployment.APPLICATION_STARTED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                if (me == null){//race check
+                if (me == null) {//race check
                     initialiseInstanceDescriptor();
                 }
                 me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
