@@ -88,8 +88,8 @@
                                 </artifactItem>
 
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.web</groupId>
-                                    <artifactId>ejb-invoke</artifactId>
+                                    <groupId>fish.payara.ejb.rest</groupId>
+                                    <artifactId>ejb-rest-endpoint</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>false</overWrite>

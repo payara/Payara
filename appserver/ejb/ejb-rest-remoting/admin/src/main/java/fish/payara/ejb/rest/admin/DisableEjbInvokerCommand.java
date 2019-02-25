@@ -84,7 +84,6 @@ public class DisableEjbInvokerCommand implements AdminCommand {
         Path endPointsPath = serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINTS);
         Path ejbInvokerPath = endPointsPath.resolve(EJB_INVOKER);
         
-        
         AutoUndeploymentOperation autoUndeploymentOperation = AutoUndeploymentOperation.newInstance(
                 serviceLocator, 
                 ejbInvokerPath.toFile(), 
