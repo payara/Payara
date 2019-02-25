@@ -192,7 +192,7 @@ public class CircuitBreakerInterceptor implements Serializable {
         Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
         try {
             Optional optionalFailOn = FaultToleranceCdiUtils.getOverrideValue(
-                    config, Retry.class, "failOn", invocationContext, String.class);
+                    config, CircuitBreaker.class, "failOn", invocationContext, String.class);
             if (optionalFailOn.isPresent()) {
                 String failOnString = (String) optionalFailOn.get();
                 List<Class> classList = new ArrayList<>();
