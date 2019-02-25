@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -61,6 +62,7 @@ public class ConnectionManagerImplementation implements javax.resource.spi.Conne
      * @return A <code>Connection</code> Object.
      * @throws ResourceException In case of an error in getting the <code>Connection</code>.
      */
+    @Override
     public Object allocateConnection(ManagedConnectionFactory mcf,
                                      ConnectionRequestInfo info)
             throws ResourceException {

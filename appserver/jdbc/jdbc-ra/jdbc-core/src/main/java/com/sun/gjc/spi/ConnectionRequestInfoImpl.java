@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -85,6 +86,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      *
      * @return True, if they are equal and false otherwise.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (obj instanceof ConnectionRequestInfoImpl) {
@@ -101,6 +103,7 @@ public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionR
      *
      * @return hashCode.
      */
+    @Override
     public int hashCode() {
         String result = "" + user + password;
         return result.hashCode();

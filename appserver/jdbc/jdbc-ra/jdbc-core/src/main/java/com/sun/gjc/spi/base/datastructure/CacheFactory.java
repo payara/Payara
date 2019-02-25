@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base.datastructure;
 
@@ -59,11 +60,9 @@ import java.util.logging.Logger;
  * @author Shalini M
  */
 public class CacheFactory {
-    protected final static Logger _logger = 
-            LogDomains.getLogger(CacheFactory.class, LogDomains.RSR_LOGGER);
+    protected static final Logger _logger = LogDomains.getLogger(CacheFactory.class, LogDomains.RSR_LOGGER);
 
-    protected final static StringManager localStrings =
-            StringManager.getManager(DataSourceObjectBuilder.class);
+    protected static final  StringManager localStrings = StringManager.getManager(DataSourceObjectBuilder.class);
 
     public static Cache getDataStructure(PoolInfo poolInfo, String cacheType,
             int maxSize) throws ResourceException {
@@ -88,6 +87,7 @@ public class CacheFactory {
     private static Cache initCustomCacheStructurePrivileged(
             final String className, final int cacheSize) throws ResourceException {
         Object result = AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
 
                 Object result = null;
