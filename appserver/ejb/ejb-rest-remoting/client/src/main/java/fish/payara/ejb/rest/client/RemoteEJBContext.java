@@ -64,7 +64,37 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Configuration;
 
-public class RemoteEJBContext implements Context {
+/**
+ * This is the context used for looking up and invoking remote EJBs via
+ * REST in Payara 5.191+.
+ * 
+ * <p>
+ * Note that at the moment only the <code>lookup</code> methods are implemented.
+ * 
+ * <p>
+ * This context supports the following Payara specific properties in its environment:
+ * 
+ * <ul>
+ *     <li>fish.payara.connectTimeout</li>
+ *     <li>fish.payara.executorService</li>
+ *     <li>fish.payara.hostnameVerifier</li>
+ *     <li>fish.payara.keyStore</li>
+ *     <li>fish.payara.readTimeout</li>
+ *     <li>fish.payara.hostnameVerifier</li>
+ *     <li>fish.payara.scheduledExecutorService"</li>
+ *     <li>fish.payara.sslContext</li>
+ *     <li>fish.payara.trustStore</li>
+ *     <li>fish.payara.withConfig</li>
+ * </ul>
+ * 
+ * All properties corresponds to the simularly named settings on the JAX-RS {@link ClientBuilder}.
+ * Times are in microseconds, and values can either be given as Strings, number values or object instances.
+ * 
+ * @author Arjan Tijms
+ * @since Payara 5.191
+ *
+ */
+class RemoteEJBContext implements Context {
     
     private Hashtable<String, Object> environment;
     
@@ -128,48 +158,44 @@ public class RemoteEJBContext implements Context {
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
         
-        if (environment.containsKey("connectTimeout")) {
-            clientBuilder.connectTimeout(getLong(environment.get("connectTimeout")).longValue(), MICROSECONDS);
+        if (environment.containsKey("fish.payara.connectTimeout")) {
+            clientBuilder.connectTimeout(getLong(environment.get("fish.payara.connectTimeout")).longValue(), MICROSECONDS);
         }
         
-        if (environment.contains("executorService")) {
-            clientBuilder.executorService(getInstance(environment.get("executorService"), ExecutorService.class));
+        if (environment.contains("fish.payara.executorService")) {
+            clientBuilder.executorService(getInstance(environment.get("fish.payara.executorService"), ExecutorService.class));
         }
         
-        if (environment.contains("hostnameVerifier")) {
-            clientBuilder.hostnameVerifier(getInstance(environment.get("hostnameVerifier"), HostnameVerifier.class));
+        if (environment.contains("fish.payara.hostnameVerifier")) {
+            clientBuilder.hostnameVerifier(getInstance(environment.get("fish.payara.hostnameVerifier"), HostnameVerifier.class));
         }
         
-        if (environment.contains("keyStore")) {
-            clientBuilder.keyStore(getInstance(environment.get("keyStore"), KeyStore.class), getPassword(environment.get("keyStorePassword")));
+        if (environment.contains("fish.payara.keyStore")) {
+            clientBuilder.keyStore(getInstance(environment.get("fish.payara.keyStore"), KeyStore.class), getPassword(environment.get("keyStorePassword")));
         }
         
-        if (environment.containsKey("readTimeout")) {
-            clientBuilder.readTimeout(getLong(environment.get("readTimeout")).longValue(), MICROSECONDS);
+        if (environment.containsKey("fish.payara.readTimeout")) {
+            clientBuilder.readTimeout(getLong(environment.get("fish.payara.readTimeout")).longValue(), MICROSECONDS);
         }
         
-        if (environment.contains("hostnameVerifier")) {
-            clientBuilder.hostnameVerifier(getInstance(environment.get("hostnameVerifier"), HostnameVerifier.class));
+        if (environment.contains("fish.payara.hostnameVerifier")) {
+            clientBuilder.hostnameVerifier(getInstance(environment.get("fish.payara.hostnameVerifier"), HostnameVerifier.class));
         }
         
-        if (environment.contains("scheduledExecutorService")) {
-            clientBuilder.scheduledExecutorService(getInstance(environment.get("scheduledExecutorService"), ScheduledExecutorService.class));
+        if (environment.contains("fish.payara.scheduledExecutorService")) {
+            clientBuilder.scheduledExecutorService(getInstance(environment.get("fish.payara.scheduledExecutorService"), ScheduledExecutorService.class));
         }
         
-        if (environment.contains("scheduledExecutorService")) {
-            clientBuilder.scheduledExecutorService(getInstance(environment.get("scheduledExecutorService"), ScheduledExecutorService.class));
+        if (environment.contains("fish.payara.sslContext")) {
+            clientBuilder.sslContext(getInstance(environment.get("fish.payara.sslContext"), SSLContext.class));
         }
         
-        if (environment.contains("sslContext")) {
-            clientBuilder.sslContext(getInstance(environment.get("sslContext"), SSLContext.class));
+        if (environment.contains("fish.payara.trustStore")) {
+            clientBuilder.trustStore(getInstance(environment.get("fish.payara.trustStore"), KeyStore.class));
         }
         
-        if (environment.contains("trustStore")) {
-            clientBuilder.trustStore(getInstance(environment.get("trustStore"), KeyStore.class));
-        }
-        
-        if (environment.contains("withConfig")) {
-            clientBuilder.withConfig(getInstance(environment.get("withConfig"), Configuration.class));
+        if (environment.contains("fish.payara.withConfig")) {
+            clientBuilder.withConfig(getInstance(environment.get("fish.payara.withConfig"), Configuration.class));
         }
         
         return clientBuilder;

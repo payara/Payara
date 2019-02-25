@@ -53,7 +53,10 @@
     <name>EJB - REST</name>
 
     <description>
-        This module ...
+        This module is the parent module for the lightweight REST-based EJB remote system. It contains an admin
+        module that has CLI (AsAdmin) commands for configuring the server side. An endpoint module that implements
+        the endpoint which receives the REST calls from the client and invoked an EJB, and finally a client module
+        which is used by the client to lookup and invoke EJB methods on a proxy.
     </description>
 
     <modules>
@@ -61,6 +64,5 @@
         <module>endpoint</module>
         <module>client</module>
     </modules>
-   
    
 </project>

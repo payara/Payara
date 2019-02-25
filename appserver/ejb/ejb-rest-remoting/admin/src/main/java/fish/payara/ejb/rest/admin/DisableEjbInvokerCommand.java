@@ -63,6 +63,18 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * This command disables the EJB invoker endpoint.
+ * 
+ * <p>
+ * This happens by undeploying the small application in <code>/domains/[domain]/endpoints/ejb-invoker</code>.
+ * Note that by default this application is not deployed. The default context root of this application is 
+ * <code>/ejb-invoker</code>, but it may have been set to a different root by the {@link EnableEjbInvokerCommand}
+ * command.
+ * 
+ * @author Arjan Tijms
+ *
+ */
 @Service(name = "disable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)

@@ -45,6 +45,26 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
+/**
+ * This is the context factory that creates the context used for looking up and invoking
+ * remote EJBs.
+ * 
+ * <p>
+ * Clients wanting to use remote EJB in this way should set the property in the initial context
+ * environment as follows:
+ * 
+ * <pre>
+ * <code>
+ *   Hashtable&lt;String, String&gt; environment = new Hashtable&lt;&gt;();
+ *   environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.rest.client.RemoteEJBContextFactory");
+ *    ...
+ *   new InitialContext(environment);
+ * <code>
+ * </pre>
+ * 
+ * @author Arjan Tijms
+ * @since Payara 5.191
+ */
 public class RemoteEJBContextFactory implements InitialContextFactory {
 
     @Override

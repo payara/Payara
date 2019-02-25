@@ -61,6 +61,18 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * This command enables the EJB invoker endpoint and optionally allows it to set an
+ * alternative context root.
+ * 
+ * <p>
+ * This happens by the deploying a small application in <code>/domains/[domain]/endpoints/ejb-invoker</code>
+ * which by default is not deployed. The default context root of this application is 
+ * <code>/ejb-invoker</code>.
+ * 
+ * @author Arjan Tijms
+ *
+ */
 @Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
