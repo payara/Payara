@@ -1,0 +1,74 @@
+delete-custom-resource(1)  asadmin Utility Subcommands  delete-custom-resource(1)
+
+NAME
+       delete-custom-resource - removes a custom resource
+
+SYNOPSIS
+           delete-custom-resource [--help] [--target target] jndi-name
+
+DESCRIPTION
+       The delete-custom-resource subcommand removes a custom resource.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option helps specify the location of the custom resources that
+           you are deleting. Valid targets are server, domain, cluster, and
+           instance. The default is server.
+
+               Note
+               +----------------------------------------+
+               |Resources are always created for a      |
+               |domain as a whole but are only active   |
+               |for targets for which a <resource-ref>  |
+               |has been created using the --target     |
+               |option when the resource was created.   |
+               |This means that deleting a resource     |
+               |only deletes the <resource-ref> element |
+               |for the specified --target, and does    |
+               |not delete the resource from the domain |
+               |as a whole unless domain is specified   |
+               |as the --target for the deletion.       |
+               +----------------------------------------+
+
+           server
+               Deletes the resource for the default server instance. This is
+               the default value.
+
+           domain
+               Deletes the resource for the domain.
+
+           cluster_name
+               Deletes the resource for every server instance in the cluster.
+
+           instance_name
+               Deletes the resource for a particular server instance.
+
+OPERANDS
+       jndi-name
+           The JNDI name of this resource.
+
+EXAMPLES
+       Example 1, Deleting a Custom Resource
+           This example deletes a custom resource named mycustomresource.
+
+               asadmin> delete-custom-resource mycustomresource
+               Command delete-custom-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-custom-resource(1), list-custom-resources(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017        delete-custom-resource(1)

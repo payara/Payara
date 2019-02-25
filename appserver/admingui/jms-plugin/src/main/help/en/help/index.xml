@@ -1,0 +1,98 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="availability">
+    <indexitem text="EJB container (reference)" target="ref-jmsavailability"></indexitem>
+  </indexitem>
+  <indexitem text="connection factories">
+    <indexitem text="creating (reference)" target="ref-jmsconnectionnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsconnectionnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsconnectiondelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsconnectionedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsconnectionedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsconnectionfactories"></indexitem>
+  </indexitem>
+  <indexitem text="destination resources">
+    <indexitem text="creating (reference)" target="ref-jmsdestinationnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsdestinationnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsdestinationdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsdestinationedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsdestinationedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsdestinationresources"></indexitem>
+  </indexitem>
+  <indexitem text="EJB container">
+    <indexitem text="configuring availability settings (reference)" target="ref-jmsavailability"></indexitem>
+  </indexitem>
+  <indexitem text="JMS connection factory resources">
+    <indexitem text="creating (reference)" target="ref-jmsconnectionnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsconnectionnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsconnectiondelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsconnectionedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsconnectionedit"></indexitem>
+    <indexitem text="properties" target="ref-jmsconnectionproperties"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsconnectionfactories"></indexitem>
+  </indexitem>
+  <indexitem text="JMS destination resources">
+    <indexitem text="creating (reference)" target="ref-jmsdestinationnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsdestinationnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsdestinationdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsdestinationedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsdestinationedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsdestinationresources"></indexitem>
+  </indexitem>
+  <indexitem text="JMS hosts">
+    <indexitem text="creating (reference)" target="ref-jmshostnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmshostnew"></indexitem>
+    <indexitem text="deleting" target="task-jmshostdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmshostedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmshostedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmshosts"></indexitem>
+  </indexitem>
+  <indexitem text="JMS physical destinations">
+    <indexitem text="creating (reference)" target="ref-jmsphysicaldestnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsphysicaldestnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsphysicaldestdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsphysicaldestedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsphysicaldestedit"></indexitem>
+    <indexitem text="removing messages from" target="task-jmsflushmessages"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsphysicaldest"></indexitem>
+    <indexitem text="viewing statistics (reference)" target="ref-jmsphysicaldeststats"></indexitem>
+    <indexitem text="viewing statistics (task)" target="task-jmsphysicaldeststats"></indexitem>
+  </indexitem>
+  <indexitem text="JMS service">
+    <indexitem text="configuring (reference)" target="ref-jmsservice"></indexitem>
+    <indexitem text="configuring (task)" target="task-jmsservice"></indexitem>
+    <indexitem text="properties" target="ref-jmsservice-additional-props"></indexitem>
+  </indexitem>
+  <indexitem text="physical destinations">
+    <indexitem text="creating (reference)" target="ref-jmsphysicaldestnew"></indexitem>
+    <indexitem text="creating (task)" target="task-jmsphysicaldestnew"></indexitem>
+    <indexitem text="deleting" target="task-jmsphysicaldestdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jmsphysicaldestedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jmsphysicaldestedit"></indexitem>
+    <indexitem text="removing messages from" target="task-jmsflushmessages"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jmsphysicaldest"></indexitem>
+    <indexitem text="viewing statistics (reference)" target="ref-jmsphysicaldeststats"></indexitem>
+    <indexitem text="viewing statistics (task)" target="task-jmsphysicaldeststats"></indexitem>
+  </indexitem>
+  <indexitem text="properties">
+    <indexitem text="JMS connection factories" target="ref-jmsconnectionproperties"></indexitem>
+    <indexitem text="JMS service" target="ref-jmsservice-additional-props"></indexitem>
+  </indexitem>
+</index>

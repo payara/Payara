@@ -1,0 +1,194 @@
+list-instances(1)         asadmin Utility Subcommands        list-instances(1)
+
+NAME
+       list-instances - lists GlassFish Server instances in a domain
+
+SYNOPSIS
+           list-instances [--help] [--timeoutmsec timeout]
+           [--long={false|true} | --nostatus={false|true}]
+           [--standaloneonly={false|true} | target]
+
+DESCRIPTION
+       The list-instances subcommand lists GlassFish Server instances in a
+       domain. The list can be filtered by cluster, instance, node, or
+       configuration.
+
+       The subcommand displays every GlassFish Server instance in the
+       specified target, regardless of how each instance was created. For
+       example, this subcommand lists instances that were created by using the
+       create-instance(1) subcommand and by using the create-local-instance(1)
+       subcommand.
+
+       By default, the subcommand indicates whether each instance that is
+       listed is running. Options of this subcommand control the information
+       that is displayed for each instance.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --timeoutmsec
+           The time limit in milliseconds for determining the status of
+           instances. The default is 2,000, which is equivalent to 2 seconds.
+
+       --long, -l
+           Specifies whether detailed information is displayed for each
+           instance that is listed.
+
+           The --long option and --nostatus option are mutually exclusive. If
+           both options are specified in the same command, an error occurs.
+
+           Valid values are as follows:
+
+           true
+               The following details are displayed for each instance that is
+               listed:
+
+               *   The name of the instance
+
+               *   The name of the host where the instance's node resides
+
+               *   The HTTP port on which the instance listens for
+                   administration requests
+
+               *   The process identifier (PID) of the instance process or -1
+                   if the instance is not running
+
+               *   The name of the cluster of which the instance is a member,
+                   if any
+
+               *   The state of the instance, which is running or not running
+
+                   When an instance is listed, some configuration changes in
+                   the domain administration server (DAS) for the instance
+                   might not have been applied to the instance itself. In this
+                   situation, the commands that are required to apply the
+                   changes are listed adjacent to the state of the instance.
+                   The maximum number of commands that are listed for an
+                   instance is 10.
+
+           false
+               Only the name of the instance and an indication of whether the
+               instance is running are displayed (default). The length of time
+               that the instance has been running is not displayed.
+
+       --nostatus
+           Specifies whether information about whether instances are running
+           is suppressed.
+
+           The --long option and --nostatus option are mutually exclusive. If
+           both options are specified in the same command, an error occurs.
+
+           Valid values are as follows:
+
+           true
+               Information about whether instances are running is suppressed.
+               Only the name of each instance is displayed.
+
+           false
+               Information about whether instances are running is displayed
+               (default).
+
+       --standaloneonly
+           Specifies whether only standalone instances are listed.
+
+           The --standaloneonly option and the target operand and are mutually
+           exclusive. If both the --standaloneonly option and the target
+           operand are specified in the same command, an error occurs.
+
+           Valid values are as follows:
+
+           true
+               Only standalone instances are listed.
+
+           false
+               All instances in the specified target are listed (default).
+
+OPERANDS
+       target
+           Filters the list of GlassFish Server instances by specifying the
+           target for which instances are listed.
+
+           The target operand and the --standaloneonly option are mutually
+           exclusive. If both the target operand and the --standaloneonly
+           option are specified in the same command, an error occurs.
+
+           Valid values are as follows:
+
+           domain
+               Lists all instances in the domain (default).
+
+           cluster-name
+               Lists the instances that are members of the specified cluster.
+
+           instance-name
+               Lists only the specified instance.
+
+           node-name
+               Lists the instances that reside on the specified node.
+
+           configuration-name
+               Lists all instances whose configuration is defined by the
+               specified named configuration.
+
+EXAMPLES
+       Example 1, Listing Basic Information About All GlassFish Server
+       Instances in a Domain
+           This example lists the name and status of all GlassFish Server
+           instances in the current domain.
+
+               asadmin> list-instances
+               pmd-i-sj02 running
+               yml-i-sj02 running
+               pmd-i-sj01 running
+               yml-i-sj01 running
+               pmdsa1 not running
+
+               Command list-instances executed successfully.
+
+       Example 2, Listing Detailed Information About All GlassFish Server
+       Instances in a Domain
+           This example lists detailed information about all GlassFish Server
+           instances in the current domain.
+
+               asadmin> list-instances --long=true
+               NAME        HOST       PORT   PID    CLUSTER     STATE
+               pmd-i-sj01  sj01       24848  31310  pmdcluster   running
+               yml-i-sj01  sj01       24849  25355  ymlcluster   running
+               pmdsa1      localhost  24848  -1     ---          not running
+               pmd-i-sj02  sj02       24848  22498  pmdcluster   running
+               yml-i-sj02  sj02       24849  20476  ymlcluster   running
+               ymlsa1      localhost  24849  -1     ---          not running
+               Command list-instances executed successfully.
+
+       Example 3, Displaying the Status of an Instance
+           This example displays status of the instance pmd-i-sj01, which is
+           running.
+
+               asadmin> list-instances pmd-i-sj01
+               pmd-i-sj01 running
+               Command list-instances executed successfully.
+
+       Example 4, Listing Only Standalone Instances in a Domain
+           This example lists only the standalone instances in the current
+           domain.
+
+               asadmin> list-instances --standaloneonly=true
+               pmdsa1 not running
+               Command list-instances executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1)
+
+       asadmin(1M)
+
+Java EE 8                         10 Dec 2010                list-instances(1)

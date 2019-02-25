@@ -1,0 +1,80 @@
+update-connector-security-map(1)  asadmin Utility Subcommands  update-connector-security-map(1)
+
+NAME
+       update-connector-security-map - modifies a security map for the
+       specified connector connection pool
+
+SYNOPSIS
+           update-connector-security-map [--help]
+           --poolname connector_connection_pool_name
+           [--addprincipals principal_name1[,principal_name2]*]
+           [--addusergroups user_group1[,user_group2]*]
+           [--removeprincipals principal_name1[,principal_name2]*]
+           [--removeusergroups user_group1[,user_group2]*]
+           [--mappedusername username]
+           mapname
+
+DESCRIPTION
+       The update-connector-security-map subcommand modifies a security map
+       for the specified connector connection pool.
+
+       For this subcommand to succeed, you must have first created a connector
+       connection pool using the create-connector-connection-pool subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --poolname
+           Specifies the name of the connector connection pool to which the
+           security map that is to be updated belongs.
+
+       --addprincipals
+           Specifies a comma-separated list of EIS-specific principals to be
+           added. Use either the --addprincipals or --addusergroups options,
+           but not both in the same command.
+
+       --addusergroups
+           Specifies a comma-separated list of EIS user groups to be added.
+           Use either the --addprincipals or --addusergroups options, but not
+           both in the same command.
+
+       --removeprincipals
+           Specifies a comma-separated list of EIS-specific principals to be
+           removed.
+
+       --removeusergroups
+           Specifies a comma-separated list of EIS user groups to be removed.
+
+       --mappedusername
+           Specifies the EIS username.
+
+OPERANDS
+       mapname
+           The name of the security map to be updated.
+
+EXAMPLES
+       Example 1, Updating a Connector Security Map
+           This example adds principals to the existing security map named
+           securityMap1.
+
+               asadmin> update-connector-security-map --poolname connector-pool1
+               --addprincipals principal1,principal2 securityMap1
+               Command update-connector-security-map executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-security-map(1), delete-connector-security-map(1),
+       list-connector-security-maps(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        update-connector-security-map(1)

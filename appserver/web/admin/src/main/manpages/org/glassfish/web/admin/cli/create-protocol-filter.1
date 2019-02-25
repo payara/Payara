@@ -1,0 +1,71 @@
+create-protocol-filter(1)  asadmin Utility Subcommands  create-protocol-filter(1)
+
+NAME
+       create-protocol-filter - adds a new protocol filter
+
+SYNOPSIS
+           create-protocol-filter [--help]
+           --protocol protocol-name
+           --classname class-name
+           [--target server]
+           protocol-filter-name
+
+DESCRIPTION
+       The create-protocol-filter subcommand creates a protocol filter for a
+       protocol. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --protocol
+           The name of the associated protocol.
+
+       --classname
+           The fully qualified name of the Java class that implements the
+           protocol filter.
+
+       --target
+           Creates the protocol filter only on the specified target. Valid
+           values are as follows:
+
+           server
+               Creates the protocol filter on the default server instance.
+               This is the default value.
+
+           configuration-name
+               Creates the protocol filter in the specified configuration.
+
+           cluster-name
+               Creates the protocol filter on all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Creates the protocol filter on the specified standalone server
+               instance.
+
+OPERANDS
+       protocol-filter-name
+           The name of the protocol filter.
+
+EXAMPLES
+       Example 1, Creating a Protocol Filter
+           The following command creates a protocol filter named http1-filter:
+
+               asadmin> create-protocol-filter --protocol http1
+               --classname com.company22.MyProtocolFilter http1-filter
+               Command create-protocol-filter executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-protocol-filter(1), list-protocol-filters(1), create-protocol(1)
+
+       asadmin(1M)
+
+Java EE 8                   09 Aug 2017            create-protocol-filter(1)

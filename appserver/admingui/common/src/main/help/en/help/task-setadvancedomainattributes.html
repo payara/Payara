@@ -1,0 +1,100 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-setadvancedomainattributes" name="task-setadvancedomainattributes"></a><a id="GHCOM00143" name="GHCOM00143"></a></p>
+
+<h4><a id="sthref4" name="sthref4"></a>To Set the Domain Attributes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, select the Domain node.</p>
+<p>The Domain Attributes page opens.</p>
+</li>
+<li>
+<p>In the Load Console After DAS Startup field, select one of the following options from the drop-down list:</p>
+<dl>
+<dt>Usage Based</dt>
+<dd>
+<p>Loads the Administration Console after the Domain Administration Server (DAS) if the console has been used in the last 24 hours or if other server instances exist aside from the DAS. This is the default.</p>
+</dd>
+<dt>Always</dt>
+<dd>
+<p>Always loads the Administration Console after the DAS. The console is loaded after the main GlassFish Server startup sequence has completed.</p>
+</dd>
+<dt>Never</dt>
+<dd>
+<p>Never loads the Administration Console after the DAS. The console is loaded when access to it is requested.</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>In the Application Root field, type the full path of the directory where deployed applications reside.</p>
+<p>The default value is <i>domain-dir</i><code>/applications</code>.</p>
+</li>
+<li>
+<p>In the Log Root field, type the full path of the directory where the server log files are kept.</p>
+<p>The default value is <i>domain-dir</i><code>/logs</code>.</p>
+</li>
+<li>
+<p>Leave the Locale field blank to use the default locale of the host.</p>
+<p>A locale is an identifier that specifies a particular combination of language and region. For example, the locale for American English is <code>en_US</code>, and for Japanese it is <code>ja_JP</code>. To use a non-English locale, the GlassFish Server must be localized, a process that includes translating English into another language.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+<li>
+<p>Restart the server.</p>
+</li>
+</ol>
+<a id="GHCOM222" name="GHCOM222"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-generaltab.html">To View General Information for the DAS</a></p>
+</li>
+<li>
+<p><a href="task-logviewer.html">To View Log Files for the DAS</a></p>
+</li>
+<li>
+<p><a href="task-filter-logs.html">To Filter Displayed Log Records</a></p>
+</li>
+<li>
+<p><a href="task-setadvanceappconfig.html">To Set the Applications Configuration</a></p>
+</li>
+<li>
+<p><a href="task-collectdomainlogs.html">To Collect and Download Domain Logs</a></p>
+</li>
+<li>
+<p><a href="task-setadminpassword.html">To Change the Administrator Password</a></p>
+</li>
+<li>
+<p><a href="task-systemproperties.html">To Manage System Properties</a></p>
+</li>
+<li>
+<p><a href="task-appmonitoringdata.html">To View Application Monitoring Data</a></p>
+</li>
+<li>
+<p><a href="task-servermonitoringdata.html">To View Server Monitoring Data</a></p>
+</li>
+<li>
+<p><a href="task-resourcemonitoringdata.html">To View Resource Monitoring Data</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

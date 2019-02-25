@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-iiop-listener</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-iiop-listener</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-http-redirect.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-instance.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-iiop-listener-1"></a><a id="GSRFM00032"></a><a id="create-iiop-listener"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_iiop_listener">create-iiop-listener</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds an IIOP listener</p>
+</div>
+<div id="sthref284" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-iiop-listener [--help]
+--listeneraddress address
+[--iiopport iiop-port-number] [--securityenabled={false|true}] [--enabled={true|false}]
+[--property (name=value)[:name=value]*]
+[--target target] listener_id</code></pre>
+</div>
+</div>
+<div id="sthref285" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-iiop-listener</code> subcommand creates an IIOP listener. This
+subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref286" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--listeneraddress</code></dt>
+<dd>
+<p>Either the IP address or the hostname (resolvable by DNS).</p>
+</dd>
+<dt class="hdlist1"><code>--iiopport</code></dt>
+<dd>
+<p>The IIOP port number. The default value is 1072.</p>
+</dd>
+<dt class="hdlist1"><code>--securityenabled</code></dt>
+<dd>
+<p>If set to true, the IIOP listener runs SSL. You can turn SSL2 or SSL3
+ON or OFF and set ciphers using an SSL element. The security setting
+globally enables or disables SSL by making certificates available to
+the server instance. The default value is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>If set to true, the IIOP listener is enabled at runtime. The default
+value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the IIOP listener.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the IIOP listener.
+Valid values are<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the listener for the default server instance <code>server</code> and is
+the default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Creates the listener for the named configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the listener for every server instance in the cluster.</p>
+</dd>
+<dt class="hdlist1">stand-alone_instance_name</dt>
+<dd>
+<p>Creates the listener for a particular standalone server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref287" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">listener_id</dt>
+<dd>
+<p>A unique identifier for the IIOP listener to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref288" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM485"></a><a id="sthref289"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating an IIOP Listener</p>
+</div>
+<div class="paragraph">
+<p>The following command creates an IIOP listener named
+<code>sample_iiop_listener</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-iiop-listener --listeneraddress 192.168.1.100
+--iiopport 1400 sample_iiop_listener
+Command create-iiop-listener executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM486"></a><a id="sthref290"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Creating an IIOP Listener with a Target Cluster</p>
+</div>
+<div class="paragraph">
+<p>The following command creates an IIOP listener named <code>iiop_listener_2</code>
+for the cluster <code>mycluster</code>. It uses the target option.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-iiop-listener --listeneraddress 0.0.0.0 --iiopport 1401
+--target mycluster iiop_listener_2
+Command create-iiop-listener executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref291" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref292" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-ssl.html#create-ssl-1"><code>create-ssl</code>(1)</a>,
+<a href="delete-iiop-listener.html#delete-iiop-listener-1"><code>delete-iiop-listener</code>(1)</a>,
+<a href="list-iiop-listeners.html#list-iiop-listeners-1"><code>list-iiop-listeners</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-http-redirect.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-instance.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

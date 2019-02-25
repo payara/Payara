@@ -1,0 +1,48 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmsservice-additional-props" name="ref-jmsservice-additional-props"></a><a id="GHJMS00012" name="GHJMS00012"></a></p>
+
+<h4><a id="sthref77" name="sthref77"></a><a id="sthref78" name="sthref78"></a>Properties Specific to the JMS Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following Oracle Message Queue broker configuration properties are available for the JMS Service.</p>
+<dl>
+<dt><code>instance-name</code></dt>
+<dd>
+<p>Specifies the full Message Queue broker instance name. The default is <code>imqbroker</code>.</p>
+</dd>
+<dt><code>instance-name-suffix</code></dt>
+<dd>
+<p>Specifies a suffix to add to the full Message Queue broker instance name. The suffix is separated from the instance name by an underscore character (<code>_</code>). For example, if the instance name is <code>imqbroker</code>, appending the suffix <code>xyz</code> changes the instance name to <code>imqbroker_xyz</code>.</p>
+</dd>
+<dt><code>append-version</code></dt>
+<dd>
+<p>If <code>true</code>, appends the major and minor version numbers, preceded by underscore characters (<code>_</code>), to the full Message Queue broker instance name. For example, if the instance name is <code>imqbroker</code>, appending the version numbers changes the instance name to <code>imqbroker_8_0</code>. The default is <code>false</code>.</p>
+</dd>
+<dt><code>user-name</code></dt>
+<dd>
+<p>The user name for creating the JMS connection. Needed only if the default username/password of <code>guest</code>/<code>guest</code> is not available in the broker. The default value is <code>guest</code>.</p>
+</dd>
+<dt><code>password</code></dt>
+<dd>
+<p>The password for creating the JMS connection. Needed only if the default username/password of <code>guest</code>/<code>guest</code> is not available in the broker. The default value is <code>guest</code>.</p>
+</dd>
+</dl>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

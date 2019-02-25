@@ -244,8 +244,8 @@
                 <artifactId>junit</artifactId>
             </dependency>
             <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>javax.faces-api</artifactId>
+                <groupId>jakarta.faces</groupId>
+                <artifactId>jakarta.faces-api</artifactId>
                 <version>2.1</version>
                 <scope>provided</scope>
             </dependency>

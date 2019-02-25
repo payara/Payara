@@ -1,0 +1,379 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="admin realm">
+    <indexitem text="adding users (task)" target="task-adminuserscreate"></indexitem>
+    <indexitem text="deleting users" target="task-adminusersdelete"></indexitem>
+    <indexitem text="editing users (task)" target="task-adminusersedit"></indexitem>
+    <indexitem text="viewing and configuring users" target="ref-manageadminrealm"></indexitem>
+  </indexitem>
+  <indexitem text="administration tools">
+    <indexitem text="granting access" target="task-accessadmintools"></indexitem>
+  </indexitem>
+  <indexitem text="administrator password">
+    <indexitem text="changing (reference)" target="ref-setadminpassword"></indexitem>
+    <indexitem text="changing (task)" target="task-setadminpassword"></indexitem>
+  </indexitem>
+  <indexitem text="application clients">
+    <indexitem text="deploying (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying (task)" target="task-appdeployclient"></indexitem>
+    <indexitem text="downloading stubs" target="task-appclientstubs"></indexitem>
+    <indexitem text="launching" target="task-appclientlaunch"></indexitem>
+  </indexitem>
+  <indexitem text="applications">
+    <indexitem text="autodeploy settings (reference)" target="ref-serverinstappsconfig"></indexitem>
+    <indexitem text="autodeploy settings (task)" target="task-setadvanceappconfig"></indexitem>
+    <indexitem text="deploying" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying application clients" target="task-appdeployclient"></indexitem>
+    <indexitem text="deploying connector modules" target="task-appdeployconn"></indexitem>
+    <indexitem text="deploying EJB jars" target="task-appdeployejb"></indexitem>
+    <indexitem text="deploying enterprise" target="task-deployentapp"></indexitem>
+    <indexitem text="deploying web" target="task-appdeployweb"></indexitem>
+    <indexitem text="editing (reference)" target="ref-appedit"></indexitem>
+    <indexitem text="editing (task)" target="task-appedit"></indexitem>
+    <indexitem text="launching (reference)" target="ref-appclientlaunch"></indexitem>
+    <indexitem text="launching (task)" target="task-applaunch"></indexitem>
+    <indexitem text="managing targets (reference)" target="ref-appmanagetargets"></indexitem>
+    <indexitem text="managing virtual servers (reference)" target="ref-managevirtualservers"></indexitem>
+    <indexitem text="redeploying (reference)" target="ref-redeploy"></indexitem>
+    <indexitem text="redeploying (task)" target="task-appredeploy"></indexitem>
+    <indexitem text="reload settings (reference)" target="ref-serverinstappsconfig"></indexitem>
+    <indexitem text="reload settings (task)" target="task-setadvanceappconfig"></indexitem>
+    <indexitem text="reloading" target="task-apprestart"></indexitem>
+    <indexitem text="viewing application scoped resources (reference)" target="ref-appscopedresources"></indexitem>
+    <indexitem text="viewing deployed (reference)" target="ref-applications"></indexitem>
+    <indexitem text="viewing deployed (task)" target="task-applistdeployed"></indexitem>
+    <indexitem text="viewing deployment descriptors (reference)" target="ref-webapp-editdd"></indexitem>
+    <indexitem text="viewing deployment descriptors (task)" target="task-appviewdesc"></indexitem>
+    <indexitem text="viewing monitoring data (reference)" target="ref-appmonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data (task)" target="task-appmonitoringdata"></indexitem>
+    <indexitem text="viewing targets (reference)" target="ref-apptargets"></indexitem>
+    <indexitem text="viewing web service endpoint information (reference)" target="ref-endpoint"></indexitem>
+    <indexitem text="viewing web service endpoint information (task)" target="task-endpoint"></indexitem>
+  </indexitem>
+  <indexitem text="audit modules">
+    <indexitem text="creating (reference)" target="ref-auditmodulenew"></indexitem>
+    <indexitem text="creating (task)" target="task-auditmodulenew"></indexitem>
+    <indexitem text="deleting" target="task-auditmoduledelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-auditmoduleedit"></indexitem>
+    <indexitem text="editing (task)" target="task-auditmoduleedit"></indexitem>
+    <indexitem text="enabling and disabling" target="task-enabledisableauditmod"></indexitem>
+    <indexitem text="properties" target="ref-auditmoduleprop"></indexitem>
+    <indexitem text="setting active" target="task-setactiveauditmod"></indexitem>
+    <indexitem text="using the default" target="task-usedefaultauditmod"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-auditmodules"></indexitem>
+  </indexitem>
+  <indexitem text="autodeploy settings for applications (reference)" target="ref-serverinstappsconfig"></indexitem>
+  <indexitem text="autodeploy settings for applications (task)" target="task-setadvanceappconfig"></indexitem>
+  <indexitem text="certificate realm">
+    <indexitem text="properties" target="ref-editcertrealm"></indexitem>
+  </indexitem>
+  <indexitem text="clustered instances">
+    <indexitem text="system properties (reference)" target="ref-sysinstancevalues"></indexitem>
+  </indexitem>
+  <indexitem text="configurations">
+    <indexitem text="clustered instances (reference)" target="ref-sysinstancevalues"></indexitem>
+    <indexitem text="standalone instances (reference)" target="ref-sysinstancevalues"></indexitem>
+    <indexitem text="system properties (reference)" target="ref-configurationsystemproperties"></indexitem>
+  </indexitem>
+  <indexitem text="connector modules">
+    <indexitem text="deploying (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying (task)" target="task-appdeployconn"></indexitem>
+  </indexitem>
+  <indexitem text="custom realms">
+    <indexitem text="creating" target="task-createcustomrealm"></indexitem>
+  </indexitem>
+  <indexitem text="deploying">
+    <indexitem text="application clients (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="application clients (task)" target="task-appdeployclient"></indexitem>
+    <indexitem text="applications (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="connector modules (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="connector modules (task)" target="task-appdeployconn"></indexitem>
+    <indexitem text="EJB jars (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="EJB jars (task)" target="task-appdeployejb"></indexitem>
+    <indexitem text="enterprise applications (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="enterprise applications (task)" target="task-deployentapp"></indexitem>
+    <indexitem text="web applications (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="web applications (task)" target="task-appdeployweb"></indexitem>
+  </indexitem>
+  <indexitem text="deployment descriptors">
+    <indexitem text="viewing (reference)" target="ref-webapp-editdd"></indexitem>
+    <indexitem text="viewing (task)" target="task-appviewdesc"></indexitem>
+  </indexitem>
+  <indexitem text="domain logs">
+    <indexitem text="collecting (task)" target="task-collectdomainlogs"></indexitem>
+  </indexitem>
+  <indexitem text="downloading application client stubs" target="task-appclientstubs"></indexitem>
+  <indexitem text="EJB jars">
+    <indexitem text="deploying (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying (task)" target="task-appdeployejb"></indexitem>
+  </indexitem>
+  <indexitem text="endpoints">
+    <indexitem text="viewing information (reference)" target="ref-endpoint"></indexitem>
+    <indexitem text="viewing information (task)" target="task-endpoint"></indexitem>
+  </indexitem>
+  <indexitem text="enterprise applications">
+    <indexitem text="deploying (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying (task)" target="task-deployentapp"></indexitem>
+  </indexitem>
+  <indexitem text="file realm">
+    <indexitem text="adding users (reference)" target="ref-filerealmusernew"></indexitem>
+    <indexitem text="adding users (task)" target="task-fileuserscreate"></indexitem>
+    <indexitem text="deleting users" target="task-fileusersdelete"></indexitem>
+    <indexitem text="editing users (reference)" target="ref-filerealmuseredit"></indexitem>
+    <indexitem text="editing users (task)" target="task-fileusersedit"></indexitem>
+    <indexitem text="properties" target="ref-editfile-adminrealm"></indexitem>
+    <indexitem text="viewing and configuring users" target="ref-managefilerealm"></indexitem>
+  </indexitem>
+  <indexitem text="GlassFish News page">
+    <indexitem text="viewing" target="task-support"></indexitem>
+  </indexitem>
+  <indexitem text="GlassFish Server">
+    <indexitem text="applications configuration (reference)" target="ref-serverinstappsconfig"></indexitem>
+    <indexitem text="applications configuration (task)" target="task-setadvanceappconfig"></indexitem>
+    <indexitem text="domain attributes (reference)" target="ref-domainattributestab"></indexitem>
+    <indexitem text="domain attributes (task)" target="task-setadvancedomainattributes"></indexitem>
+    <indexitem text="domain logs (reference)" target="ref-domainlogstab"></indexitem>
+    <indexitem text="predefined system properties" target="ref-preconfiguredprops"></indexitem>
+    <indexitem text="stopping and restarting (reference)" target="ref-generaltab"></indexitem>
+    <indexitem text="stopping and restarting (task)" target="task-generaltab"></indexitem>
+    <indexitem text="system properties (reference)" target="ref-systemproperties"></indexitem>
+    <indexitem text="system properties (task)" target="task-systemproperties"></indexitem>
+    <indexitem text="viewing general information (reference)" target="ref-generaltab"></indexitem>
+    <indexitem text="viewing general information (task)" target="task-generaltab"></indexitem>
+    <indexitem text="viewing monitoring data for applications (reference)" target="ref-appmonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data for applications (task)" target="task-appmonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data for resources (reference)" target="ref-resourcemonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data for resources (task)" target="task-resourcemonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data for virtual servers (reference)" target="ref-servermonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data for virtual servers (task)" target="task-servermonitoringdata"></indexitem>
+    <indexitem text="viewing the server log (reference)" target="ref-logviewer"></indexitem>
+    <indexitem text="viewing the server log (task)" target="task-logviewer"></indexitem>
+  </indexitem>
+  <indexitem text="history files">
+    <indexitem text="limiting number of" target="task-logging-max-logfiles"></indexitem>
+  </indexitem>
+  <indexitem text="instances">
+    <indexitem text="clustered">
+    <indexitem text="system properties (reference)" target="ref-sysinstancevalues"></indexitem>
+    </indexitem>
+    <indexitem text="standalone">
+    <indexitem text="system properties (reference)" target="ref-sysinstancevalues"></indexitem>
+    </indexitem>
+  </indexitem>
+  <indexitem text="JACC providers">
+    <indexitem text="creating (reference)" target="ref-jaccprovidernew"></indexitem>
+    <indexitem text="creating (task)" target="task-jaccprovidernew"></indexitem>
+    <indexitem text="deleting" target="task-jaccproviderdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jaccprovideredit"></indexitem>
+    <indexitem text="editing (task)" target="task-jaccprovideredit"></indexitem>
+    <indexitem text="properties" target="ref-jaccproviderprop"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jaccproviders"></indexitem>
+  </indexitem>
+  <indexitem text="JDBC realm">
+    <indexitem text="properties" target="ref-editjdbcrealm"></indexitem>
+  </indexitem>
+  <indexitem text="JMX connector">
+    <indexitem text="configuring (reference)" target="ref-jmxconnectoredit"></indexitem>
+    <indexitem text="configuring (task)" target="task-jmxconnectoredit"></indexitem>
+    <indexitem text="editing SSL settings (reference)" target="ref-jmxconnectorssledit"></indexitem>
+    <indexitem text="editing SSL settings (task)" target="task-jmxconnectorssledit"></indexitem>
+  </indexitem>
+  <indexitem text="JVM general settings">
+    <indexitem text="configuring (reference)" target="ref-serverinstjvmgeneral"></indexitem>
+    <indexitem text="configuring (task)" target="task-jvmsettings"></indexitem>
+  </indexitem>
+  <indexitem text="JVM options">
+    <indexitem text="configuring (reference)" target="ref-serverinstjvmoptions"></indexitem>
+    <indexitem text="configuring (task)" target="task-jvmoptions"></indexitem>
+  </indexitem>
+  <indexitem text="JVM path settings">
+    <indexitem text="configuring (reference)" target="ref-serverinstjvmpathsettings"></indexitem>
+    <indexitem text="configuring (task)" target="task-jvmpathsettings"></indexitem>
+  </indexitem>
+  <indexitem text="JVM profiler settings">
+    <indexitem text="configuring (reference)" target="ref-serverinstjvmprofiler"></indexitem>
+    <indexitem text="configuring (task)" target="task-jvmprofilersettings"></indexitem>
+  </indexitem>
+  <indexitem text="launching application clients" target="task-appclientlaunch"></indexitem>
+  <indexitem text="launching applications (reference)" target="ref-appclientlaunch"></indexitem>
+  <indexitem text="launching applications (task)" target="task-applaunch"></indexitem>
+  <indexitem text="LDAP realm">
+    <indexitem text="properties" target="ref-ldaprealmprop"></indexitem>
+  </indexitem>
+  <indexitem text="lifecycle modules">
+    <indexitem text="creating (reference)" target="ref-lifecyclemodulenew"></indexitem>
+    <indexitem text="creating (task)" target="task-lifecyclemodulenew"></indexitem>
+    <indexitem text="deleting" target="task-lifecyclemoduledelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-lifecyclemoduleedit"></indexitem>
+    <indexitem text="editing (task)" target="task-lifecyclemoduleedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-lifecyclemodules"></indexitem>
+  </indexitem>
+  <indexitem text="log levels">
+    <indexitem text="configuring (reference)" target="ref-eelogginglevels"></indexitem>
+    <indexitem text="configuring (task)" target="task-eelogginglevels"></indexitem>
+  </indexitem>
+  <indexitem text="logging">
+    <indexitem text="configuring general settings (reference)" target="ref-eelogging"></indexitem>
+    <indexitem text="configuring general settings (task)" target="task-eelogging"></indexitem>
+    <indexitem text="configuring levels (reference)" target="ref-eelogginglevels"></indexitem>
+    <indexitem text="configuring levels (task)" target="task-eelogginglevels"></indexitem>
+    <indexitem text="configuring maximum number of log files (task)" target="task-logging-max-logfiles"></indexitem>
+    <indexitem text="viewing the server log (reference)" target="ref-logviewer"></indexitem>
+    <indexitem text="viewing the server log (task)" target="task-logviewer"></indexitem>
+  </indexitem>
+  <indexitem text="logs">
+    <indexitem text="domain - collecting (task)" target="task-collectdomainlogs"></indexitem>
+  </indexitem>
+  <indexitem text="message security">
+    <indexitem text="configuring" target="task-configmsgsecproviders"></indexitem>
+    <indexitem text="enabling for application clients" target="task-enablemesec4appclients"></indexitem>
+    <indexitem text="request and response policy configurations" target="ref-configreq-respolicy"></indexitem>
+  </indexitem>
+  <indexitem text="message security configurations">
+    <indexitem text="creating (reference)" target="ref-messagesecurityconfignew"></indexitem>
+    <indexitem text="creating (task)" target="task-messagesecurityconfignew"></indexitem>
+    <indexitem text="deleting" target="task-messagesecurityconfigdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-messagesecurityconfigedit"></indexitem>
+    <indexitem text="editing (task)" target="task-messagesecurityconfigedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-messagesecurityconfig"></indexitem>
+  </indexitem>
+  <indexitem text="message security provider configurations">
+    <indexitem text="creating (reference)" target="ref-messagesecurityproviderconfignew"></indexitem>
+    <indexitem text="creating (task)" target="task-messagesecurityproviderconfignew"></indexitem>
+    <indexitem text="deleting" target="task-messagesecurityproviderconfigdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-messagesecurityproviderconfigedit"></indexitem>
+    <indexitem text="editing (task)" target="task-messagesecurityproviderconfigedit"></indexitem>
+    <indexitem text="properties" target="ref-messagesecurityproviderconfigprops"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-messagesecurityproviderconfig"></indexitem>
+  </indexitem>
+  <indexitem text="monitoring">
+    <indexitem text="configuring (reference)" target="ref-monitoringservice"></indexitem>
+    <indexitem text="configuring (task)" target="task-confmonitor"></indexitem>
+  </indexitem>
+  <indexitem text="monitoring data" target="ref-monitoring">
+    <indexitem text="viewing for applications (reference)" target="ref-appmonitoringdata"></indexitem>
+    <indexitem text="viewing for applications (task)" target="task-appmonitoringdata"></indexitem>
+    <indexitem text="viewing for resources (reference)" target="ref-resourcemonitoringdata"></indexitem>
+    <indexitem text="viewing for resources (task)" target="task-resourcemonitoringdata"></indexitem>
+    <indexitem text="viewing for virtual servers (reference)" target="ref-servermonitoringdata"></indexitem>
+    <indexitem text="viewing for virtual servers (task)" target="task-servermonitoringdata"></indexitem>
+  </indexitem>
+  <indexitem text="PAM realm">
+    <indexitem text="properties" target="ref-pamrealmprop"></indexitem>
+  </indexitem>
+  <indexitem text="password">
+    <indexitem text="changing administrator (reference)" target="ref-setadminpassword"></indexitem>
+    <indexitem text="changing administrator (task)" target="task-setadminpassword"></indexitem>
+    <indexitem text="changing for user in admin realm" target="task-changeadminpasswd"></indexitem>
+  </indexitem>
+  <indexitem text="password aliases">
+    <indexitem text="creating (reference)" target="ref-pswdaliasnew"></indexitem>
+    <indexitem text="creating (reference)" target="ref-pswdaliasedit"></indexitem>
+    <indexitem text="deleting (reference)" target="ref-pswdaliases"></indexitem>
+    <indexitem text="listing (reference)" target="ref-pswdaliases"></indexitem>
+  </indexitem>
+  <indexitem text="properties">
+    <indexitem text="audit modules" target="ref-auditmoduleprop"></indexitem>
+    <indexitem text="certificate realm" target="ref-editcertrealm"></indexitem>
+    <indexitem text="file realm" target="ref-editfile-adminrealm"></indexitem>
+    <indexitem text="JACC providers" target="ref-jaccproviderprop"></indexitem>
+    <indexitem text="JDBC realm" target="ref-editjdbcrealm"></indexitem>
+    <indexitem text="LDAP realm" target="ref-ldaprealmprop"></indexitem>
+    <indexitem text="message security provider configurations" target="ref-messagesecurityproviderconfigprops"></indexitem>
+    <indexitem text="PAM realm" target="ref-pamrealmprop"></indexitem>
+    <indexitem text="predefined system" target="ref-preconfiguredprops"></indexitem>
+    <indexitem text="Solaris realm" target="ref-solarisrealmprop"></indexitem>
+    <indexitem text="system (reference)" target="ref-systemproperties"></indexitem>
+    <indexitem text="system (task)" target="task-systemproperties"></indexitem>
+  </indexitem>
+  <indexitem text="realms">
+    <indexitem text="creating (reference)" target="ref-realmsnew"></indexitem>
+    <indexitem text="creating (task)" target="task-realmnew"></indexitem>
+    <indexitem text="creating custom" target="task-createcustomrealm"></indexitem>
+    <indexitem text="deleting" target="task-todeleterealm"></indexitem>
+    <indexitem text="editing (reference)" target="ref-realmedit"></indexitem>
+    <indexitem text="editing (task)" target="task-realmedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-realms"></indexitem>
+  </indexitem>
+  <indexitem text="redeploying applications (reference)" target="ref-redeploy"></indexitem>
+  <indexitem text="redeploying applications (task)" target="task-appredeploy"></indexitem>
+  <indexitem text="registering GlassFish Server (task)" target="task-register"></indexitem>
+  <indexitem text="reload settings for applications (reference)" target="ref-serverinstappsconfig"></indexitem>
+  <indexitem text="reload settings for applications (task)" target="task-setadvanceappconfig"></indexitem>
+  <indexitem text="reloading applications" target="task-apprestart"></indexitem>
+  <indexitem text="resources">
+    <indexitem text="adding from an XML file (task)" target="task-addresources"></indexitem>
+    <indexitem text="viewing monitoring data (reference)" target="ref-resourcemonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data (task)" target="task-resourcemonitoringdata"></indexitem>
+  </indexitem>
+  <indexitem text="rotated log files">
+    <indexitem text="limiting number of" target="task-logging-max-logfiles"></indexitem>
+  </indexitem>
+  <indexitem text="security">
+    <indexitem text="JMX connector (reference)" target="ref-jmxconnectorssledit"></indexitem>
+    <indexitem text="JMX connector (task)" target="task-jmxconnectorssledit"></indexitem>
+  </indexitem>
+  <indexitem text="security manager">
+    <indexitem text="disabling" target="task-securitymanagerdisable"></indexitem>
+    <indexitem text="enabling (reference)" target="ref-security"></indexitem>
+    <indexitem text="enabling (task)" target="task-securitysettings"></indexitem>
+  </indexitem>
+  <indexitem text="security settings">
+    <indexitem text="configuring (reference)" target="ref-security"></indexitem>
+    <indexitem text="configuring (task)" target="task-securitysettings"></indexitem>
+  </indexitem>
+  <indexitem text="server log">
+    <indexitem text="viewing (reference)" target="ref-logviewer"></indexitem>
+    <indexitem text="viewing (task)" target="task-logviewer"></indexitem>
+  </indexitem>
+  <indexitem text="Solaris realm">
+    <indexitem text="properties" target="ref-solarisrealmprop"></indexitem>
+  </indexitem>
+  <indexitem text="SSL settings">
+    <indexitem text="JMX connector (reference)" target="ref-jmxconnectorssledit"></indexitem>
+    <indexitem text="JMX connector (task)" target="task-jmxconnectorssledit"></indexitem>
+  </indexitem>
+  <indexitem text="standalone instances">
+    <indexitem text="system properties (reference)" target="ref-sysinstancevalues"></indexitem>
+  </indexitem>
+  <indexitem text="system properties">
+    <indexitem text="clustered instances (reference)" target="ref-sysinstancevalues"></indexitem>
+    <indexitem text="configurations (reference)" target="ref-configurationsystemproperties"></indexitem>
+    <indexitem text="predefined" target="ref-preconfiguredprops"></indexitem>
+    <indexitem text="standalone instances (reference)" target="ref-sysinstancevalues"></indexitem>
+  </indexitem>
+  <indexitem text="system properties (reference)" target="ref-systemproperties"></indexitem>
+  <indexitem text="system properties (task)" target="task-systemproperties"></indexitem>
+  <indexitem text="transactions">
+    <indexitem text="recovering (reference)" target="ref-recovertransactions"></indexitem>
+  </indexitem>
+  <indexitem text="virtual servers">
+    <indexitem text="viewing monitoring data (reference)" target="ref-servermonitoringdata"></indexitem>
+    <indexitem text="viewing monitoring data (task)" target="task-servermonitoringdata"></indexitem>
+  </indexitem>
+  <indexitem text="web applications">
+    <indexitem text="deploying (reference)" target="ref-uploaddev"></indexitem>
+    <indexitem text="deploying (task)" target="task-appdeployweb"></indexitem>
+  </indexitem>
+  <indexitem text="web services">
+    <indexitem text="viewing endpoint information (reference)" target="ref-endpoint"></indexitem>
+    <indexitem text="viewing endpoint information (task)" target="task-endpoint"></indexitem>
+  </indexitem>
+</index>

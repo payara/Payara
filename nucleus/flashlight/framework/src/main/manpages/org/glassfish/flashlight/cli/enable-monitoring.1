@@ -1,0 +1,129 @@
+enable-monitoring(1)      asadmin Utility Subcommands     enable-monitoring(1)
+
+NAME
+       enable-monitoring - enables monitoring for the server or for specific
+       monitorable modules
+
+SYNOPSIS
+           enable-monitoring [--help]
+           [--target target]
+           [--mbean={false|true}]
+           [--dtrace={true|false}]
+           [--modules modules[=level][:module[=level]]*
+           [--pid pid]
+           [--options options]]
+
+DESCRIPTION
+       The enable-monitoring subcommand is used to turn on monitoring for
+       GlassFish Server or for particular modules during runtime. Changes are
+       dynamic, that is, server restart is not required.
+
+       By default, the monitoring service is enabled, that is, the
+       monitoring-enabled attribute of the monitoring-service element is true.
+       However, the default monitoring level for individual modules is OFF.
+       This subcommand used with the --modules option can enable monitoring
+       for a given module by setting the monitoring level to HIGH or LOW. If
+       level is not specified when running the subcommand, the level defaults
+       to HIGH.
+
+       The specific meanings of HIGH or LOW are determined by the individual
+       containers. For a list of monitorable modules, see the --modules option
+       in this help page.
+
+       An alternative method for enabling monitoring is to use the set
+       subcommand. In this case, the server must be restarted for changes to
+       take effect.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target on which to enabling monitoring. Valid values
+           are as follows:
+
+           server
+               Enables monitoring for the default server instance server and
+               is the default value.
+
+           configuration-name
+               Enables monitoring for the named configuration.
+
+           cluster-name
+               Enables monitoring for every server instance in the cluster.
+
+           instance-name
+               Enables monitoring for a particular server instance.
+
+       --mbean
+           Enables Mbean monitoring. Default value is false.
+
+       --dtrace
+           Only usable if the DTrace Monitoring module is present. Enables
+           Oracle Solaris DTrace monitoring. Default value is false.
+
+       --modules
+           Enables specified module or modules by indicating monitoring level.
+           Valid levels are OFF, HIGH, LOW. If level is not specified, the
+           default setting is HIGH. Multiple modules are separated by :
+           (colon). Monitorable modules include connector-connection-pool,
+           connector-service, ejb-container, http-service,
+           jdbc-connection-pool, jersey, jpa, jms-service, jvm, security,
+           thread-pool, transaction-service, web-container, and
+           web-services-container. Additional modules can be listed by using
+           the get subcommand.
+
+       --pid
+           Specifies the GlassFish Server JVM process identifier (PID). When
+           monitoring is enabled, the btrace-agent is attached, based on the
+           specified PID. Need to specify only in exceptional cases when the
+           system cannot determine the PID. In this situation, the subcommand
+           prompts for the PID of the corresponding GlassFish Serverprocess.
+
+       --options
+           Sets the following btrace-agent options:
+
+           debug
+               Enables debugging for BTrace. Default value is false.
+
+EXAMPLES
+       Example 1, Enabling the Monitoring Service for GlassFish Server
+           This example enables monitoring for GlassFish Server in general by
+           setting the enable-monitoring flag to true (default is true).
+
+               asadmin> enable-monitoring
+               Command enable-monitoring executed successfully
+
+       Example 2, Enabling Monitoring for the Web and EJB Containers
+           This example enables monitoring for specific containers by setting
+           their monitoring levels.
+
+               asadmin> enable-monitoring --modules web-container=LOW:ejb-container=HIGH
+               Command enable-monitoring executed successfully
+
+       Example 3, Turning on Debugging for Monitoring
+           This example turns on debugging.
+
+               asadmin> enable-monitoring --options debug=true
+               Command enable-monitoring executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       disable-monitoring(1), monitor(1), list(1), get(1), set(1)
+
+       monitoring(5ASC)
+
+       asadmin(1M)
+
+       "Administering the Monitoring Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         01 Nov 2010             enable-monitoring(1)

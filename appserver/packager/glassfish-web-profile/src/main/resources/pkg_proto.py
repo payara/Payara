@@ -39,6 +39,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 import imp
 
@@ -66,7 +67,6 @@ pkg = {
 			"pkg:/shoal" : {"type" : "require" },
 			"pkg:/glassfish-cluster" : {"type" : "require" },
 			"pkg:/glassfish-ha" : {"type" : "require" },
-			"pkg:/glassfish-registration" : {"type" : "require" },
 			"pkg:/jersey@1.8" : {"type" : "require" },
 			"pkg:/glassfish-management" : {"type" : "require" },
                         "pkg:/glassfish-common-web" : {"type" : "require" },

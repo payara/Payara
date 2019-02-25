@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-commands</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-commands</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-clusters.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-components.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-commands-1"></a><a id="GSRFM00154"></a><a id="list-commands"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_commands">list-commands</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists available commands</p>
+</div>
+<div id="sthref1381" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-commands [--help]
+[--localonly={false|true}] [--remoteonly={false|true}]
+
+pattern-list</code></pre>
+</div>
+</div>
+<div id="sthref1382" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-commands</code> subcommand lists the <code>asadmin</code> subcommands.</p>
+</div>
+<div class="paragraph">
+<p>By default, the <code>list-commands</code> subcommand displays a list of local
+subcommands followed by a list of remote subcommands. You can specify
+that only remote subcommands or only local subcommands are listed and
+that only subcommands whose names contain a specified text string are
+listed.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode and remote mode.</p>
+</div>
+<div id="sthref1383" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--localonly</code></dt>
+<dd>
+<p>If this option is set to true, only local commands are listed. Default
+is false.<br>
+If this option is set to true, the <code>--remoteonly</code> option must be set
+to false. Otherwise, an error occurs.</p>
+</dd>
+<dt class="hdlist1"><code>--remoteonly</code></dt>
+<dd>
+<p>If this option is set to true, only remote commands are listed.
+Default is false.<br>
+If this option is set to true, the <code>--localonly</code> option must be set to
+false. Otherwise, an error occurs.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1384" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">pattern-list</dt>
+<dd>
+<p>A space-separated list of text strings on which to filter the list of
+subcommands. Only the subcommands that contain any one of the
+specified text strings is listed.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1385" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM644"></a><a id="sthref1386"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing the Local Subcommands</p>
+</div>
+<div class="paragraph">
+<p>This example lists only the local subcommands.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-commands --localonly=true
+********** Local Commands **********
+change-admin-password
+change-master-password
+create-domain
+create-service
+delete-domain
+export
+help
+list-commands
+list-domains
+login
+monitor
+multimode
+restart-domain
+start-database
+start-domain
+stop-database
+stop-domain
+unset
+verify-domain-xml
+version
+Command list-commands executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM645"></a><a id="sthref1387"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Filtering the Subcommands That Are Listed</p>
+</div>
+<div class="paragraph">
+<p>This example lists only the subcomands whose names contain the text
+<code>configure</code> or <code>set</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-commands configure set
+********** Local Commands **********
+setup-ssh
+unset
+
+********** Remote Commands **********
+configure-jms-cluster                   set-log-levels
+configure-lb-weight                     set-web-context-param
+configure-ldap-for-admin                set-web-env-entry
+set                                     unset-web-context-param
+set-log-attributes                      unset-web-env-entry
+
+Command list-commands executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM646"></a><a id="sthref1388"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Listing All Subcommands</p>
+</div>
+<div class="paragraph">
+<p>This example first displays a list of the local subcommands, followed by
+a partial list of the remote subcommands.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-commands
+********** Local Commands **********
+change-admin-password
+change-master-password
+create-domain
+create-service
+delete-domain
+export
+help
+list-commands
+list-domains
+login
+monitor
+multimode
+restart-domain
+start-database
+start-domain
+stop-database
+stop-domain
+unset
+verify-domain-xml
+version
+********** Remote Commands **********
+__locations                             enable
+add-resources                           enable-monitoring
+configure-ldap-for-admin                flush-jmsdest
+create-admin-object                     freeze-transaction-service
+create-audit-module                     generate-jvm-report
+create-auth-realm                       get
+create-connector-connection-pool        get-client-stubs
+create-connector-resource               get-host-and-port
+create-connector-security-map           jms-ping
+create-connector-work-security-map      list
+create-custom-resource                  list-admin-objects
+create-file-user                        list-app-refs
+create-http                             list-applications
+create-http-listener                    list-audit-modules
+create-iiop-listener                    list-auth-realms
+create-javamail-resource                list-components
+create-jdbc-connection-pool             list-connector-connection-pools
+create-jdbc-resource                    list-connector-resources
+create-jms-host                         list-connector-security-maps
+create-jms-resource                     list-connector-work-security-maps
+create-jmsdest                          list-containers
+create-jndi-resource                    list-custom-resources
+create-jvm-options                      list-file-groups
+create-lifecycle-module                 list-file-users
+create-message-security-provider        list-http-listeners
+create-network-listener                 list-iiop-listeners
+create-password-alias                   list-javamail-resources
+create-profiler                         list-jdbc-connection-pools
+create-protocol                         list-jdbc-resources
+create-resource-adapter-config          list-jms-hosts
+create-resource-ref                     list-jms-resources
+create-ssl                              list-jmsdest
+create-system-properties                list-jndi-entries
+create-threadpool                       list-jndi-resources
+create-transport                        list-jvm-options
+create-virtual-server                   list-lifecycle-modules
+delete-admin-object                     list-logger-levels
+delete-audit-module                     list-message-security-providers
+...</code></pre>
+</div>
+</div>
+<div id="sthref1389" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1390" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-components.html#list-components-1"><code>list-components</code>(1)</a>,
+<a href="list-containers.html#list-containers-1"><code>list-containers</code>(1)</a>,
+<a href="list-modules.html#list-modules-1"><code>list-modules</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-clusters.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-components.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

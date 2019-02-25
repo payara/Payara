@@ -1,0 +1,417 @@
+create-local-instance(1)  asadmin Utility Subcommands create-local-instance(1)
+
+NAME
+       create-local-instance - creates a GlassFish Server instance on the host
+       where the subcommand is run
+
+SYNOPSIS
+           create-local-instance [--help]
+           [--node node-name] [--nodedir node-dir]
+           [--config config-name | --cluster cluster-name]
+           [--lbenabled={true|false}]
+           [--portbase port-number] [--checkports={true|false}]
+           [--savemasterpassword={false|true}]
+           [--usemasterpassword={false|true}]
+           [--systemproperties (name=value)[:name=value]* ]
+           instance-name
+
+DESCRIPTION
+       The create-local-instance subcommand creates a GlassFish Server
+       instance on the node that represents the host where the subcommand is
+       run. This subcommand does not require the secure shell (SSH) to be configured.
+
+       You must run this subcommand from the host that is represented by the
+       node where the instance is to reside. To contact the domain
+       administration server (DAS), this subcommand requires the name of the
+       host where the DAS is running. If a nondefault port is used for
+       administration, this subcommand also requires the port number. If you
+       are adding the first instance to a node, you must provide this
+       information through the --host option and the --port option of the
+       asadmin(1M) utility. For the second and later instances, this
+       information is obtained from the DAS properties of the node.
+
+       A GlassFish Server instance is a single Virtual Machine for the Java
+       platform (Java Virtual Machine or JVM machine) on a single node in
+       which GlassFish Server is running. A node defines the host where the
+       GlassFish Server instance resides. The JVM machine must be compatible
+       with the Java Platform, Enterprise Edition (Java EE).
+
+       A GlassFish Server instance requires a reference to the following
+       items:
+
+       *   The node that defines the host where the instance resides. The node
+           can be specified in the command to create the instance, but is
+           required only if more than one node exists in the directory where
+           files for nodes are stored. If no node is specified, the behavior
+           of the subcommand depends on the number of existing nodes in the
+           directory where nodes are stored:
+
+           *   If no nodes exist, the subcommand creates a node for the
+               instance. The name of the node is the name of the host on which
+               the subcommand is run.
+
+           *   If only one node exists, the subcommand creates a reference to
+               the existing node for the instance.
+
+           *   If two or more nodes exist, an error occurs.
+
+       *   The named configuration that defines the configuration of the
+           instance. The configuration can be specified in the command to
+           create the instance, but is not required. If no configuration is
+           specified for an instance that is not joining a cluster, the
+           subcommand creates a configuration for the instance. An instance
+           that is joining a cluster receives its configuration from its
+           parent cluster.
+
+       Each GlassFish Server instance is one of the following types of
+       instance:
+
+       Standalone instance
+           A standalone instance does not share its configuration with any
+           other instances or clusters. A standalone instance is created if
+           either of the following conditions is met:
+
+           *   No configuration or cluster is specified in the command to
+               create the instance.
+
+           *   A configuration that is not referenced by any other instances
+               or clusters is specified in the command to create the instance.
+
+           When no configuration or cluster is specified, a copy of the
+           default-config configuration is created for the instance. The name
+           of this configuration is instance-name-config, where instance-name
+           represents the name of an unclustered server instance.
+
+       Shared instance
+           A shared instance shares its configuration with other instances or
+           clusters. A shared instance is created if a configuration that is
+           referenced by other instances or clusters is specified in the
+           command to create the instance.
+
+       Clustered instance
+           A clustered instance inherits its configuration from the cluster to
+           which the instance belongs and shares its configuration with other
+           instances in the cluster. A clustered instance is created if a
+           cluster is specified in the command to create the instance.
+
+           Any instance that is not part of a cluster is considered an
+           unclustered server instance. Therefore, standalone instances and
+           shared instances are unclustered server instances.
+
+       By default, this subcommand attempts to resolve possible port conflicts
+       for the instance that is being created. The subcommand also assigns
+       ports that are currently not in use and not already assigned to other
+       instances on the same node. The subcommand assigns these ports on the
+       basis of an algorithm that is internal to the subcommand. Use the
+       --systemproperties option to resolve port conflicts for additional
+       instances on the same node. System properties of an instance can be
+       manipulated by using the create-system-properties(1) subcommand and the
+       delete-system-property(1) subcommand.
+
+       When creating an instance, the subcommand retrieves the files that are
+       required for secure synchronization with the domain administration
+       server (DAS). The instance is synchronized with the DAS when the
+       instance is started
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --node
+           The name of the node that defines the host where the instance is to
+           be created. The node must be specified only if more than one node
+           exists in the directory where nodes are stored. Otherwise, the node
+           may be omitted. If a node is specified, the node must exist.
+
+           If no node is specified, the behavior of the subcommand depends on
+           the number of existing nodes in the directory where nodes are
+           stored:
+
+           *   If no nodes exist, the subcommand creates a node for the
+               instance. The name of the node is the name of the host on which
+               the subcommand is run.
+
+           *   If only one node exists, the subcommand creates a reference to
+               the existing node for the instance.
+
+           *   If two or more nodes exist, an error occurs.
+
+       --nodedir
+           The path to the directory in which the files for instance's node is
+           to be stored. The default is as-install/nodes.
+
+       --config
+           Specifies the named configuration that the instance references. The
+           configuration must exist and must not be named default-config or
+           server-config. Specifying the --config option creates a shared
+           instance.
+
+           The --config option and the --cluster option are mutually
+           exclusive. If both options are omitted, a standalone instance is
+           created.
+
+       --cluster
+           Specifies the cluster from which the instance inherits its
+           configuration. Specifying the --cluster option creates a clustered
+           instance.
+
+           The --config option and the --cluster option are mutually
+           exclusive. If both options are omitted, a standalone instance is
+           created.
+
+       --lbenabled
+           Specifies whether the instance is enabled for load balancing.
+           Possible values are as follows:
+
+           true
+               The instance is enabled for load balancing (default).
+
+               When an instance is enabled for load balancing, a load balancer
+               sends requests to the instance.
+
+           false
+               The instance is disabled for load balancing.
+
+               When an instance is disabled for load balancing, a load
+               balancer does not send requests to the instance.
+
+       --portbase
+           Determines the number with which the port assignment should start.
+           An instance uses a certain number of ports that are statically
+           assigned. The portbase value determines where the assignment should
+           start. The values for the ports are calculated as follows:
+
+           *   Administration port: portbase + 48
+
+           *   HTTP listener port: portbase + 80
+
+           *   HTTPS listener port: portbase + 81
+
+           *   JMS port: portbase + 76
+
+           *   IIOP listener port: portbase + 37
+
+           *   Secure IIOP listener port: portbase + 38
+
+           *   Secure IIOP with mutual authentication port: portbase + 39
+
+           *   JMX port: portbase + 86
+
+           *   JPA debugger port: portbase + 9
+
+           *   Felix shell service port for OSGi module management: portbase +
+               66
+
+           When the --portbase option is specified, the output of this
+           subcommand includes a complete list of used ports.
+
+       --checkports
+           Specifies whether to check for the availability of the
+           administration, HTTP, JMS, JMX, and IIOP ports. The default value
+           is true.
+
+       --savemasterpassword
+           Setting this option to true allows the master password to be
+           written to the file system. If the master password is written to
+           the file system, the instance can be started without the need to
+           prompt for the password. If this option is true, the
+           --usemasterpassword option is also true, regardless of the value
+           that is specified on the command line. Because writing the master
+           password to the file system is an insecure practice, the default is
+           false.
+
+           The master-password file for an instance is saved in the node
+           directory, not the domain directory. Therefore, this option is
+           required only for the first instance that is created for each node
+           in a domain.
+
+       --usemasterpassword
+           Specifies whether the key store is encrypted with a master password
+           that is built into the system or a user-defined master password.
+
+           If false (default), the keystore is encrypted with a well-known
+           password that is built into the system. Encrypting the keystore
+           with a password that is built into the system provides no
+           additional security.
+
+           If true, the subcommand obtains the master password from the
+           AS_ADMIN_MASTERPASSWORD entry in the password file or prompts for
+           the master password. The password file is specified in the
+           --passwordfile option of the asadmin(1M)utility.
+
+           If the --savemasterpassword option is true, this option is also
+           true, regardless of the value that is specified on the command
+           line.
+
+           The master password must be the same for all instances in a domain.
+
+       --systemproperties
+           Defines system properties for the instance. These properties
+           override property definitions for port settings in the instance's
+           configuration. Predefined port settings must be overridden if, for
+           example, two clustered instances reside on the same host. In this
+           situation, port settings for one instance must be overridden
+           because both instances share the same configuration.
+
+           The following properties are available:
+
+           ASADMIN_LISTENER_PORT
+               This property specifies the port number of the HTTP port or
+               HTTPS port through which the DAS connects to the instance to
+               manage the instance. Valid values are 1-65535. On UNIX,
+               creating sockets that listen on ports 1-1024 requires superuser
+               privileges.
+
+           HTTP_LISTENER_PORT
+               This property specifies the port number of the port that is
+               used to listen for HTTP requests. Valid values are 1-65535. On
+               UNIX, creating sockets that listen on ports 1-1024 requires
+               superuser privileges.
+
+           HTTP_SSL_LISTENER_PORT
+               This property specifies the port number of the port that is
+               used to listen for HTTPS requests. Valid values are 1-65535. On
+               UNIX, creating sockets that listen on ports 1-1024 requires
+               superuser privileges.
+
+           IIOP_LISTENER_PORT
+               This property specifies the port number of the port that is
+               used for IIOP connections. Valid values are 1-65535. On UNIX,
+               creating sockets that listen on ports 1-1024 requires superuser
+               privileges.
+
+           IIOP_SSL_LISTENER_PORT
+               This property specifies the port number of the port that is
+               used for secure IIOP connections. Valid values are 1-65535. On
+               UNIX, creating sockets that listen on ports 1-1024 requires
+               superuser privileges.
+
+           IIOP_SSL_MUTUALAUTH_PORT
+               This property specifies the port number of the port that is
+               used for secure IIOP connections with client authentication.
+               Valid values are 1-65535. On UNIX, creating sockets that listen
+               on ports 1-1024 requires superuser privileges.
+
+           JAVA_DEBUGGER_PORT
+               This property specifies the port number of the port that is
+               used for connections to the Java Platform Debugger Architecture
+               (JPDA)
+               (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+               debugger. Valid values are 1-65535. On UNIX, creating sockets
+               that listen on ports 1-1024 requires superuser privileges.
+
+           JMS_PROVIDER_PORT
+               This property specifies the port number for the Java Message
+               Service provider. Valid values are 1-65535. On UNIX, creating
+               sockets that listen on ports 1-1024 requires superuser
+               privileges.
+
+           JMX_SYSTEM_CONNECTOR_PORT
+               This property specifies the port number on which the JMX
+               connector listens. Valid values are 1-65535. On UNIX, creating
+               sockets that listen on ports 1-1024 requires superuser
+               privileges.
+
+           OSGI_SHELL_TELNET_PORT
+               This property specifies the port number of the port that is
+               used for connections to the Apache Felix Remote Shell
+               (http://felix.apache.org/site/apache-felix-remote-shell.html).
+               This shell uses the Felix shell service to interact with the
+               OSGi module management subsystem. Valid values are 1-65535. On
+               UNIX, creating sockets that listen on ports 1-1024 requires
+               superuser privileges.
+
+OPERANDS
+       instance-name
+           The name of the instance that is being created.
+
+           The name must meet the following requirements:
+
+           *   The name may contain only ASCII characters.
+
+           *   The name must start with a letter, a number, or an underscore.
+
+           *   The name may contain only the following characters:
+
+               *   Lowercase letters
+
+               *   Uppercase letters
+
+               *   Numbers
+
+               *   Hyphen
+
+               *   Period
+
+               *   Underscore
+
+           *   The name must be unique in the domain and must not be the name
+               of another GlassFish Server instance, a cluster, a named
+               configuration, or a node.
+
+           *   The name must not be domain, server, or any other keyword that
+               is reserved by GlassFish Server.
+
+EXAMPLES
+       Example 1, Creating a Standalone GlassFish Server Instance
+           This example creates the standalone instance il3 on the host where
+           the command is run. The DAS is running on the same host. The
+           instance references the only existing node.
+
+               asadmin> create-local-instance il3
+               Rendezvoused with DAS on localhost:4848.
+               Port Assignments for server instance il3:
+               JMX_SYSTEM_CONNECTOR_PORT=28686
+               JMS_PROVIDER_PORT=27676
+               HTTP_LISTENER_PORT=28080
+               ASADMIN_LISTENER_PORT=24848
+               JAVA_DEBUGGER_PORT=29009
+               IIOP_SSL_LISTENER_PORT=23820
+               IIOP_LISTENER_PORT=23700
+               OSGI_SHELL_TELNET_PORT=26666
+               HTTP_SSL_LISTENER_PORT=28181
+               IIOP_SSL_MUTUALAUTH_PORT=23920
+               Command create-local-instance executed successfully.
+
+       Example 2, Creating a Clustered GlassFish Server Instance on a Specific
+       Node
+           This example creates the clustered instance ymli2 on node sj02. The
+           instance is a member of the cluster ymlclust.
+
+           The command is run on the host sj02, which is the host that the
+           node sj02 represents. The DAS is running on the host sr04 and uses
+           the default HTTP port for administration. Because no instances
+           exist on the node, the host on which the DAS is running is provided
+           through the --host option of the asadmin utility.
+
+               sj02# asadmin --host sr04 create-local-instance --cluster ymlclust --node sj02 ymli2
+               Rendezvoused with DAS on sr04:4848.
+               Port Assignments for server instance ymli2:
+               JMX_SYSTEM_CONNECTOR_PORT=28686
+               JMS_PROVIDER_PORT=27676
+               HTTP_LISTENER_PORT=28080
+               ASADMIN_LISTENER_PORT=24848
+               JAVA_DEBUGGER_PORT=29009
+               IIOP_SSL_LISTENER_PORT=23820
+               IIOP_LISTENER_PORT=23700
+               OSGI_SHELL_TELNET_PORT=26666
+               HTTP_SSL_LISTENER_PORT=28181
+               IIOP_SSL_MUTUALAUTH_PORT=23920
+               Command create-local-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-node-config(1),
+       create-node-ssh(1), create-system-properties(1),
+       delete-local-instance(1), delete-system-property(1), list-instances(1),
+       start-local-instance(1), stop-local-instance(1)
+
+       asadmin(1M)
+
+Java EE 8                         21 Aug 2017         create-local-instance(1)

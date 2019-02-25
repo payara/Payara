@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2009, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<a name="task-appdeployruby"></a><h4>To Deploy a Ruby Application</h4><a name="indexterm-46"></a><a name="indexterm-47"></a><a name="indexterm-48"></a><ol>
+<li><b>In the navigation tree, select the Applications node.</b><p>The Applications page opens.</p></li>
+<li><b>In the Deployed Applications table, click the Deploy button.</b><p>The Deploy Applications or Modules page opens.</p></li>
+<li><b>Specify the location of the application to deploy.</b><ul>
+<li><b>If the application is an archive file that resides on or is
+accessible from the client machine, select the option Packaged File to Be Uploaded
+to the Server.</b><p>The client machine is the host on which you are viewing the Administration
+Console through a browser.</p><p>Click Browse to browse to the file, or type the full path
+to the file.</p></li>
+<li><b>If the application is an archive file that resides on the server machine,
+or is an unpackaged application from an exploded directory, select the option Local
+Packaged File or Directory That Is Accessible From the GlassFish Server.</b><p>The server machine is the host that is running the domain administration server
+(DAS). </p><p>Click Browse Files to browse to a file, or Browse Folders to
+browse to a directory. Alternatively, type the full path name to the file
+or directory. It is common to deploy a JRuby application from a directory.</p></li></ul></li>
+<li><b>From the Type drop-down list, select Ruby Application.</b><p>If you specified either a Packaged File to Be Uploaded to the Server
+or a Local Packaged File That Is Accessible From the GlassFish Server, the
+application type is detected automatically. If you specified a Directory That Is Accessible From
+the GlassFish Server, you must specify the type manually.</p></li>
+<li><b>In the Application Name field, retain the default name, which is the directory
+name or the prefix of the file name, or type another name.</b><p>The default name appears if you chose to upload a file. The
+application name must be unique.</p></li>
+<li><b>In the Context Root field, type a string that identifies the Ruby application.</b><p>In the URL of the Ruby application, the context root immediately follows the
+port number (<tt>http://</tt><i>host</i><tt>:</tt><i>port</i><tt>/</tt><i>context-root</i><tt>/...</tt>). The context root must start with a forward slash, for
+example, <tt>/hello</tt>.</p></li>
+<li><b>Select the Status Enabled checkbox to enable the application.</b><p>This option is selected by default. If this option is disabled, the application
+is unavailable.</p></li>
+<li><b>Select the Force Redeploy checkbox to force redeployment if the application is already
+deployed.</b><p>If this option is not selected, an attempt to deploy an application that
+is already deployed results in an error. This option is disabled by default.</p></li>
+<li><b>In the JRuby Home field, type the path to the directory where the
+JRuby container is installed.</b><p>The default location is <tt></tt><i>as-install</i><tt>/jruby</tt>. If you specify a value for this
+field, the application value overrides the JRuby Home value set for the Ruby
+container.</p></li>
+<li><b>In the Initial Pool Size field, type the initial number of JRuby runtimes
+to start.</b><p>The value must be greater than or equal to the value in the
+Minimum Pool Size field and less than or equal to the value in
+the Maximum Pool Size field. The default value is 1. If you
+specify a value for this field, the application value overrides the Initial Pool
+Size value set for the Ruby container.</p></li>
+<li><b>In the Minimum Pool Size field, type the minimum number of JRuby runtimes
+in the pool.</b><p>The value must be less than or equal to the value in the
+Initial Pool Size field and less than or equal to the value in
+the Maximum Pool Size field. The default value is 1. If you
+specify a value for this field, the application value overrides the Minimum Pool
+Size value set for the Ruby container.</p></li>
+<li><b>In the Maximum Pool Size field, type the maximum number of JRuby runtimes
+in the pool.</b><p>The value must be greater than or equal to the value in the
+Minimum Pool Size field and greater than or equal to the value in
+the Initial Pool Size field. The default value is 1. If you
+specify a value for this field, the application value overrides the Maximum Pool
+Size value set for the Ruby container.</p></li>
+<li><b>From the Framework drop-down list, select the framework on which the application is
+to be deployed.</b><p>Available choices are <tt>rails</tt>, <tt>merb</tt>, <tt>sinatra</tt>, and <tt>auto-detection</tt>. The default is <tt>auto-detection</tt>.
+Setting this property to a value other than <tt>auto-detection</tt> bypasses the normal, and potentially
+lengthy, auto-detection process and forces deployment on the specified framework. If the deployed
+application is not written for the specified framework, errors result.</p></li>
+<li><b>From the Rack Environment drop-down list, select the environment in which the JRuby
+framework, such as Rails or Merb, runs.</b><p>Available choices are <tt>production</tt>, <tt>development</tt>, and <tt>test</tt>. The default is <tt>development</tt>.</p></li>
+<li><b>From the MT-Safe drop-down list, select the thread-safe setting for the framework in
+which the application will run.</b><p>This property affects applications started using an auto-detected user-provided startup script. Available choices are:</p><dl><dt><tt>true</tt></dt>
+<dd><p>Specifies that the framework is thread-safe and therefore does not need a pool created for it.</p>
+
+</dd>
+<dt><tt>false</tt></dt>
+<dd><p>Specifies that the application starts with a pool of application instances, and each instance of the application is accessed by one thread at a time.</p>
+
+</dd>
+<dt><tt>default</tt></dt>
+<dd><p>The GlassFish Server tries to detect thread safety automatically. This value is the default.</p>
+
+</dd>
+</dl>
+<p>This property only affects frameworks being launched where the thread safety cannot be
+automatically determined. Setting this value to <tt>true</tt> does not cause an auto-detected Rails
+2.1.<i>x</i> application to be launched in thread-safe mode, nor can it be used
+to force a thread-safe framework to start in pooled mode.</p></li>
+<li><b>From the Virtual Servers drop-down list, select the virtual server to be associated
+with this application.</b></li>
+<li><b>In the Description field, type a description for this application.</b></li>
+<li><b>Click OK.</b></li></ol><h6>See Also</h6>
+<ul><li><p><a href="task-applistdeployed.html">To View a List of Deployed Applications</a></p>
+
+</li>
+<li><p><a href="task-appdeployweb.html">To Deploy a Web Application</a></p>
+
+</li>
+<li><p><a href="task-deployentapp.html">To Deploy an Enterprise Application</a></p>
+
+</li>
+<li><p><a href="task-appdeployclient.html">To Deploy an Application Client</a></p>
+
+</li>
+<li><p><a href="task-appdeployconn.html">To Deploy a Connector Module</a></p>
+
+</li>
+<li><p><a href="task-appdeployejb.html">To Deploy an EJB Jar</a></p>
+
+</li>
+<li><p><a href="task-appedit.html">To Edit a Deployed Application</a></p>
+
+</li>
+<li><p><a href="task-appviewdesc.html">To View Descriptors of an Application</a></p>
+
+</li>
+<li><p><a href="task-endpoint.html">To View Endpoint Information for a Web Service</a></p>
+
+</li>
+<li><p><a href="task-applaunch.html">To Launch an Application</a></p>
+
+</li>
+<li><p><a href="task-appclientlaunch.html">To Launch an Application Client</a></p>
+
+</li>
+<li><p><a href="task-appredeploy.html">To Redeploy a Deployed Application</a></p>
+
+</li>
+<li><p><a href="task-apprestart.html">To Restart a Deployed Application</a></p>
+
+</li></ul>
+
+
+<small>Copyright &#169; 2010, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,120 @@
+list-batch-job-steps(1)   asadmin Utility Subcommands  list-batch-job-steps(1)
+
+NAME
+       list-batch-job-steps - lists steps for a specific batch job execution
+
+SYNOPSIS
+           list-batch-job-steps [--help]
+           [--long={false|true}]
+           [--target target]
+           [--output output]
+           [--header={false|true}]
+           execution_id
+
+DESCRIPTION
+       The list-batch-job-steps subcommand lists steps for a specific batch
+       job execution.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which to list batch job steps. Valid
+           values are as follows:
+
+           server
+               Lists steps for the default server instance server and is the
+               default value.
+
+           cluster-name
+               Lists steps for every server instance in the cluster.
+
+           instance-name
+               Lists steps for a particular server instance.
+
+       --long, -l
+           Displays detailed information about batch job steps. The default
+           value is false.
+
+       --output, -o
+           Displays specific details about batch job steps. Use a
+           comma-separated list to specify the details to display and their
+           order. The values are case-insensitive. A subset of all possible
+           headings is displayed by default.
+
+           Possible values are as follows:
+
+           stepname
+               Displays the name of the step.
+
+           stepid
+               Displays the step ID.
+
+           starttime
+               Displays the start time of the step.
+
+           endtime
+               Displays the finish time of the step.
+
+           batchstatus
+               Displays the status of the step as set by the batch runtime.
+
+           exitstatus
+               Displays the status of the step as set by the Job XML for the
+               job or by the batch application. By default, the exit status
+               and the batch status are the same unless the exit status is
+               explicitly overridden.
+
+           stepmetrics
+               Displays metrics for the step.
+
+           value
+               Displays a value for each step metric. The value represents the
+               number of items read, written, committed, and so on.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       execution_id
+           The ID of the execution for which to list batch job steps and
+           details.
+
+EXAMPLES
+       Example 1, Listing Batch Job Steps
+           This example lists batch job steps and specific step details for a
+           job execution with the execution ID of 7. The target is the default
+           server instance.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> list-batch-job-steps o=stepname,stepid,batchstatus,stepmetrics 7
+               STEPNAME   STEPID   BATCHSTATUS   STEPMETRICS
+               prepare    7        COMPLETED     METRICNAME          VALUE
+                                                 READ_COUNT          8
+                                                 WRITE_COUNT         8
+                                                 PROCESS_SKIP_COUNT  0
+               process    8        COMPLETED     METRICNAME          VALUE
+                                                 READ_COUNT          8
+                                                 WRITE_COUNT         8
+                                                 PROCESS_SKIP_COUNT  0
+               ...
+               Command list-batch-job-steps executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-jobs(1), list-batch-job-executions(1),
+       set-batch-runtime-configuration(1), list-batch-runtime-configuration(1)
+
+       asadmin(1M)
+
+Java EE 8                         18 Mar 2013          list-batch-job-steps(1)

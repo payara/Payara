@@ -1,0 +1,58 @@
+delete-connector-work-security-map(1)  asadmin Utility Subcommands  delete-connector-work-security-map(1)
+
+NAME
+       delete-connector-work-security-map - deletes a work security map for
+       the specified resource adapter
+
+SYNOPSIS
+           delete-connector-work-security-map [--help] --raname raname
+           mapname
+
+DESCRIPTION
+       The delete-connector-work-security-map subcommand deletes a security
+       map associated with the specified resource adapter. For this subcommand
+       to succeed, you must have first created and deployed the specified
+       resource adapter.
+
+       The enterprise information system (EIS) is any system that holds the
+       data of an organization. It can be a mainframe, a messaging system, a
+       database system, or an application.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --raname
+           Indicates the connector module name with which the work security
+           map is associated.
+
+OPERANDS
+       mapname
+           The name of the work security map to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Connector Work Security Map
+           This example deletes the work security map named
+           work_security_map_name for the resource adapter named ra_name.
+
+               asadmin delete-connector-work-security-map
+               --raname ra_name work_security_map_name
+               Command delete-connector-work-security-map executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-work-security-map(1),
+       list-connector-work-security-maps(1),
+       update-connector-work-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8            09 Aug 2017      delete-connector-work-security-map(1)

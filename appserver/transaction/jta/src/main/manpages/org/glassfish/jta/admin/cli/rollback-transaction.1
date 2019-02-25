@@ -1,0 +1,66 @@
+rollback-transaction(1)   asadmin Utility Subcommands  rollback-transaction(1)
+
+NAME
+       rollback-transaction - rolls back the named transaction
+
+SYNOPSIS
+           rollback-transaction [--help] [--target target]
+            transaction_id
+
+DESCRIPTION
+       The rollback-transaction subcommand rolls back the named transaction.
+
+       Before you can roll back a transaction, you must do the following:
+
+        1. Enable monitoring using the set subcommand. For example:
+
+               asadmin> set clstr1-config.monitoring-service.module-monitoring-levels.transaction-service=HIGH
+
+        2. Use the freeze-transaction-service subcommand to halt in-process
+           transactions.
+
+        3. Look up the active transactions using the get subcommand with the
+           --monitor option. For example:
+
+               asadmin> get --monitor inst1.server.transaction-service.activeids-current
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are rolling back the
+           transactions. Valid values are server or any other clustered or
+           stand-alone instance.
+
+OPERANDS
+       transaction_id
+           Identifier for the transaction to be rolled back.
+
+EXAMPLES
+       Example 1, Using rollback-transaction command
+
+               % asadmin rollback-transaction 0000000000000001_00
+               Command rollback-transaction executed succeessfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       freeze-transaction-service(1), unfreeze-transaction-service(1),
+       recover-transactions(1)
+
+       asadmin(1M)
+
+       "Administering Transactions" in Oracle GlassFish Server Administration
+       Guide
+
+       "Transactions" in The Java EE 6 Tutorial
+
+Java EE 8                         17 Nov 2010          rollback-transaction(1)
