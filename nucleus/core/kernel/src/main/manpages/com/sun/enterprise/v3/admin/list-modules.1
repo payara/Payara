@@ -1,0 +1,63 @@
+list-modules(1)           asadmin Utility Subcommands          list-modules(1)
+
+NAME
+       list-modules - lists GlassFish Server modules
+
+SYNOPSIS
+           list-modules [--help]
+
+DESCRIPTION
+       The list-modules subcommand displays a list of modules that are
+       accessible to the GlassFish Server module subsystem. The version of
+       each module is shown.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Listing GlassFish Server Modules
+           This example provides a partial listing of modules that are
+           accessible to the GlassFish Server module subsystem
+
+               asadmin> list-modules
+               List Of Modules
+
+               Module : org.glassfish.transaction.jts:3.0.0.b66
+                   Module Characteristics : List of Jars implementing the module
+                       Jar : file:/home/gfuser/GlassFish/glassfishv3/glassfish/modules/jts.jar
+                   Module Characteristics : Provides to following services
+                   Module Characteristics : List of imported modules
+                       Imports : org.glassfish.transaction.jts:3.0.0.b66
+               Module : com.sun.enterprise.tiger-types-osgi:0.3.96
+               Module : org.glassfish.bean-validator:3.0.0.JBoss-400Beta3A
+               Module : org.glassfish.core.kernel:3.0.0.b66
+                   Module Characteristics : Provides to following services
+                   Module Characteristics : List of imported modules
+                       Imports : org.glassfish.core.kernel:3.0.0.b66
+                   Module Characteristics : List of Jars implementing the module
+                       Jar : file:/home/gfuser/GlassFish/glassfishv3/glassfish/modules/kernel.jar
+               Module : org.glassfish.common.util:3.0.0.b66
+                   Module Characteristics : List of Jars implementing the module
+                       Jar : file:/home/gfuser/GlassFish/glassfishv3/glassfish/modules/common-util.jar
+                   Module Characteristics : Provides to following services
+                   Module Characteristics : List of imported modules
+                       Imports : org.glassfish.common.util:3.0.0.b66
+               ...
+               Command list-modules executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-commands(1), list-components(1), list-containers(1)
+
+       asadmin(1M)
+
+Java EE 8                         9 Oct 2009                   list-modules(1)

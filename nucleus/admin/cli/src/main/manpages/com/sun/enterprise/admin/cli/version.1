@@ -1,0 +1,73 @@
+version(1)                asadmin Utility Subcommands               version(1)
+
+NAME
+       version - displays version information forGlassFish Server
+
+SYNOPSIS
+           version [--help] [--verbose={false|true}]
+           [--local={false|true}]
+
+DESCRIPTION
+       The version subcommand displays version information for GlassFish
+       Server. By default, if the subcommand cannot contact the domain
+       administration server (DAS), the subcommand retrieves the version
+       information locally and displays a warning message.
+
+       This subcommand is supported in remote mode and local mode.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --verbose, -v
+           If this option is set to true, the subcommand provides the version
+           of the Java Runtime Environment (JRE) that the server is running.
+           The default is false.
+
+       --local
+           If this option is set to true, the subcommand obtains the version
+           locally from the installation of GlassFish Server on the host where
+           the subcommand is run.
+
+           If this option is set to false (default), the subcommand attempts
+           to contact the DAS to obtain the version. If the attempt to contact
+           the DAS fails, the subcommand retrieves the version locally and
+           displays a warning message.
+
+EXAMPLES
+       Example 1, Obtaining Version Information From a Running DAS
+
+               asadmin> version
+               Version = Oracle GlassFish Server 3.1 (build 34)
+               Command version executed successfully.
+
+       Example 2, Obtaining Version Information When the DAS Cannot be Reached
+
+               asadmin> version
+               Version string could not be obtained from Server [localhost:4848] for some reason.
+               (Turn debugging on e.g. by setting AS_DEBUG=true in your environment, to see the
+                details).
+               Using locally retrieved version string from version class.
+               Version = Oracle GlassFish Server 3.1 (build 34)
+               Command version executed successfully.
+
+       Example 3, Obtaining Version Information Locally
+
+               asadmin> version --local
+               Using locally retrieved version string from version class.
+               Version = Oracle GlassFish Server 3.1 (build 34)
+               Command version executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-modules(1)
+
+       asadmin(1M)
+
+Java EE 8                         20 Dec 2010                       version(1)

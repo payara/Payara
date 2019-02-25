@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-virtual-server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-virtual-server</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-transport.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-admin-object.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-virtual-server-1"></a><a id="GSRFM00062"></a><a id="create-virtual-server"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_virtual_server">create-virtual-server</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates the named virtual server</p>
+</div>
+<div id="sthref569" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-virtual-server [--help]
+--hosts hosts
+[--httplisteners http-listeners]
+[--networklisteners network-listeners]
+[--defaultwebmodule default-web-module]
+[--state={on|off}]
+[--logfile log-file]
+[--property (name=value)[:name=value]*]
+[--target target]
+virtual-server-id</code></pre>
+</div>
+</div>
+<div id="sthref570" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-virtual-server</code> subcommand creates the named virtual server.
+Virtualization in the \{product---name} allows multiple URL domains to
+be served by a single HTTP server process that is listening on multiple
+host addresses. If the application is available at two virtual servers,
+they still share the same physical resource pools.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref571" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--hosts</code></dt>
+<dd>
+<p>A comma-separated (,) list of values allowed in the host request
+header to select the current virtual server. Each virtual server that
+is configured to the same connection group must have a unique host for
+that group.</p>
+</dd>
+<dt class="hdlist1"><code>--httplisteners</code></dt>
+<dd>
+<p>A comma-separated (,) list of HTTP listener IDs. Required only for a
+virtual server that is not the default virtual server. HTTP listeners
+are converted to network listeners. This option is deprecated but
+maintained for backward compatibility. Use <code>--networklisteners</code>
+instead. If <code>--networklisteners</code> is used, this option is ignored.</p>
+</dd>
+<dt class="hdlist1"><code>--networklisteners</code></dt>
+<dd>
+<p>A comma-separated (,) list of network listener IDs. Required only for
+a virtual server that is not the default virtual server.</p>
+</dd>
+<dt class="hdlist1"><code>--defaultwebmodule</code></dt>
+<dd>
+<p>The standalone web module associated with this virtual server by
+default.</p>
+</dd>
+<dt class="hdlist1"><code>--state</code></dt>
+<dd>
+<p>Determines whether a virtual server is active (<code>on</code>) or inactive
+(<code>off</code> or disabled). Default is <code>on</code>. When inactive, the virtual
+server does not service requests.</p>
+</dd>
+<dt class="hdlist1"><code>--logfile</code></dt>
+<dd>
+<p>Name of the file where log entries for this virtual server are to be
+written. By default, this is the server log. The file and directory in
+which the access log is kept must be writable by the user account
+under which the server runs.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional property name/value pairs for configuring the virtual server.
+The following properties are available:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>sso-max-inactive-seconds</code></dt>
+<dd>
+<p>Specifies the number of seconds after which a user&#8217;s single sign-on
+record becomes eligible for purging if no client activity is
+received. Since single sign-on applies across several applications
+on the same virtual server, access to any of the applications keeps
+the single sign-on record active. The default value is 300 seconds
+(5 minutes). Higher values provide longer single sign-on persistence
+for users, but at the expense of more memory use on the server.</p>
+</dd>
+<dt class="hdlist1"><code>sso-reap-interval-seconds</code></dt>
+<dd>
+<p>Specifies the number of seconds between purges of expired single
+sign-on records. The default value is 60.</p>
+</dd>
+<dt class="hdlist1"><code>setCacheControl</code></dt>
+<dd>
+<p>Specifies a comma-separated list of <code>Cache-Control</code> response
+directives. For a list of valid directives, see section 14.9 of the
+document at <a href="http://www.ietf.org/rfc/rfc2616.txt" class="bare">http://www.ietf.org/rfc/rfc2616.txt</a>
+(<code>http://www.ietf.org/rfc/rfc2616.txt</code>).</p>
+</dd>
+<dt class="hdlist1"><code>allowLinking</code></dt>
+<dd>
+<p>If the value of this property is <code>true</code>, resources that are symbolic
+links will be served for all web applications deployed on this
+virtual server. Individual web applications may override this
+setting by using the property <code>allowLinking</code> under the <code>sun-web-app</code>
+element in the <code>sun-web.xml</code> file:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;sun-web-app&gt;
+&lt;property name="allowLinking" value="[true|false]"/&gt;
+&lt;/sun-web-app&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>The default value is <code>true</code>.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>accessLogWriteInterval</code></dt>
+<dd>
+<p>Indicates the number of seconds before the log will be written to
+the disk. The access log is written when the buffer is full or when
+the interval expires. If the value is 0 (zero), then the buffer is
+always written even if it is not full. This means that each time the
+server is accessed, the log message is stored directly to the file.</p>
+</dd>
+<dt class="hdlist1"><code>accessLogBufferSize</code></dt>
+<dd>
+<p>Specifies the size, in bytes, of the buffer where access log calls
+are stored.</p>
+</dd>
+<dt class="hdlist1"><code>allowRemoteAddress</code></dt>
+<dd>
+<p>This is a comma-separated list of regular expression patterns to
+which the remote client&#8217;s IP address is compared. If this property
+is specified, the remote address must match for this request to be
+accepted. If this property is not specified, all requests will be
+accepted unless the remote address matches a <code>denyRemoteAddress</code>
+pattern. The default value for this property is null.</p>
+</dd>
+<dt class="hdlist1"><code>denyRemoteAddress</code></dt>
+<dd>
+<p>This is a comma-separated list of regular expression patterns to
+which the remote client&#8217;s IP address is compared. If this property
+is specified, the remote address must not match for this request to
+be accepted. If this property is not specified, request acceptance
+is governed solely by the <code>allowRemoteAddress</code> property. The default
+value for this property is null.</p>
+</dd>
+<dt class="hdlist1"><code>allowRemoteHost</code></dt>
+<dd>
+<p>This is a comma-separated list of regular expression patterns to
+which the remote client&#8217;s host name (as returned by
+<code>java.net.Socket.getInetAddress().getHostName()</code>) is compared. If
+this property is specified, the remote host name must match for this
+request to be accepted. If this property is not specified, all
+requests will be accepted unless the remote host name matches a
+denyRemoteHost pattern. The default value for this property is null.</p>
+</dd>
+<dt class="hdlist1"><code>denyRemoteHost</code></dt>
+<dd>
+<p>This is a comma-separated list of regular expression patterns to
+which the remote client&#8217;s host name (as returned by
+<code>java.net.Socket.getInetAddress().getHostName()</code>) is compared. If
+this property is specified, the remote host name must not match for
+this request to be accepted. If this property is not specified,
+request acceptance is governed solely by the <code>allowRemoteHost</code>
+property. The default value for this property is null.</p>
+</dd>
+<dt class="hdlist1"><code>authRealm</code></dt>
+<dd>
+<p>Specifies the <code>name</code> attribute of an <code>auth-realm</code>, which overrides
+the server instance&#8217;s default realm for standalone web applications
+deployed to this virtual server. A realm defined in a standalone web
+application&#8217;s <code>web.xml</code> file overrides the virtual server&#8217;s realm.</p>
+</dd>
+<dt class="hdlist1"><code>securePagesWithPragma</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to ensure that for all web applications
+on this virtual server file downloads using SSL work properly in
+Internet Explorer.<br>
+You can set this property for a specific web application. For
+details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
+Server Open Source Edition Application Deployment Guide.</p>
+</dd>
+<dt class="hdlist1"><code>contextXmlDefault</code></dt>
+<dd>
+<p>Specifies the location, relative to domain-dir, of the <code>context.xml</code>
+file for this virtual server, if one is used. For more information
+about the <code>context.xml</code> file, see "<a href="../application-development-guide/webapps.html#GSDVG00416">Using a
+context.xml File</a>" in GlassFish Server Open Source Edition
+Application Development Guide and The Context Container
+(<code>http://tomcat.apache.org/tomcat-5.5-doc/config/context.html</code>).
+Context parameters, environment entries, and resource definitions in
+<code>context.xml</code> are supported in the \{product---name}.</p>
+</dd>
+<dt class="hdlist1"><code>alternatedocroot_n</code></dt>
+<dd>
+<p>Specifies an alternate document root (docroot), where n is a
+positive integer that allows specification of more than one.
+Alternate docroots allow web applications to serve requests for
+certain resources from outside their own docroot, based on whether
+those requests match one (or more) of the URI patterns of the web
+application&#8217;s alternate docroots.<br>
+If a request matches an alternate docroot&#8217;s URI pattern, it is
+mapped to the alternate docroot by appending the request URI (minus
+the web application&#8217;s context root) to the alternate docroot&#8217;s
+physical location (directory). If a request matches multiple URI
+patterns, the alternate docroot is determined according to the
+following precedence order:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Exact match</p>
+</li>
+<li>
+<p>Longest path match</p>
+</li>
+<li>
+<p>Extension match<br>
+For example, the following properties specify three alternate
+docroots. The URI pattern of the first alternate docroot uses an
+exact match, whereas the URI patterns of the second and third
+alternate docroots use extension and longest path prefix matches,
+respectively.<br></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="alternatedocroot_1"
+   value="from=/my.jpg dir=/srv/images/jpg"/&gt;
+&lt;property name="alternatedocroot_2"
+   value="from=*.jpg dir=/srv/images/jpg"/&gt;
+&lt;property name="alternatedocroot_3"
+   value="from=/jpg/* dir=/src/images"/&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>The <code>value</code> of each alternate docroot has two components: The first
+component, <code>from</code>, specifies the alternate docroot&#8217;s URI pattern,
+and the second component, <code>dir</code>, specifies the alternate docroot&#8217;s
+physical location (directory). Spaces are allowed in the <code>dir</code>
+component.<br>
+You can set this property for a specific web application. For
+details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
+Server Open Source Edition Application Deployment Guide.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>send-error_n</code></dt>
+<dd>
+<p>Specifies custom error page mappings for the virtual server, which
+are inherited by all web applications deployed on the virtual
+server. A web application can override these custom error page
+mappings in its <code>web.xml</code> deployment descriptor. The value of each
+<code>send-error_n</code> property has three components, which may be specified
+in any order:<br>
+The first component, <code>code</code>, specifies the three-digit HTTP response
+status code for which the custom error page should be returned in
+the response.<br>
+The second component, <code>path</code>, specifies the absolute or relative
+file system path of the custom error page. A relative file system
+path is interpreted as relative to the domain-dir`/config`
+directory.<br>
+The third component, <code>reason</code>, is optional and specifies the text of
+the reason string (such as <code>Unauthorized</code> or <code>Forbidden</code>) to be
+returned.<br>
+For example:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="send-error_1"
+   value="code=401 path=/myhost/401.html reason=MY-401-REASON"/&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>This example property definition causes the contents of
+<code>/myhost/401.html</code> to be returned with 401 responses, along with
+this response line:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">HTTP/1.1 401 MY-401-REASON</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">`redirect_`n</dt>
+<dd>
+<p>Specifies that a request for an old URL is treated as a request for
+a new URL. These properties are inherited by all web applications
+deployed on the virtual server. The value of each <code>redirect_n</code>
+property has two components, which may be specified in any order:<br>
+The first component, <code>from</code>, specifies the prefix of the requested
+URI to match.<br>
+The second component, <code>url-prefix</code>, specifies the new URL prefix to
+return to the client. The from prefix is simply replaced by this URL
+prefix.<br>
+For example:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="redirect_1"
+value="from=/dummy url-prefix=http://etude"/&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">`valve_`n</dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom valve, where n is
+a positive integer that allows specification of more than one. The
+valve class must implement the <code>org.apache.catalina.Valve</code> interface
+from Tomcat or previous \{product---name} releases, or the
+<code>org.glassfish.web.valve.GlassFishValve</code> interface from the current
+\{product---name} release. For example:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="valve_1"
+   value="org.glassfish.extension.Valve"/&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>You can set this property for a specific web application. For
+details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
+Server Open Source Edition Application Deployment Guide.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>listener_n</code></dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom Catalina
+listener, where n is a positive integer that allows specification of
+more than one. The listener class must implement the
+<code>org.apache.catalina.ContainerListener</code> or
+<code>org.apache.catalina.LifecycleListener</code> interface. For example:<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="listener_1"
+   value="org.glassfish.extension.MyLifecycleListener"/&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>You can set this property for a specific web application. For
+details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
+Server Open Source Edition Application Deployment Guide.</p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>docroot</code></dt>
+<dd>
+<p>Absolute path to root document directory for server. Deprecated.
+Replaced with a <code>virtual-server</code> attribute, <code>docroot</code>, that is
+accessible using the <code>get</code>, <code>set</code>, and <code>list</code> subcommands.</p>
+</dd>
+<dt class="hdlist1"><code>accesslog</code></dt>
+<dd>
+<p>Absolute path to server access logs. Deprecated. Replaced with a
+<code>virtual-server</code> attribute , <code>access-log</code>, that is accessible using
+the <code>get</code>, <code>set</code>, and <code>list</code> subcommands.</p>
+</dd>
+<dt class="hdlist1"><code>accessLoggingEnabled</code></dt>
+<dd>
+<p>If <code>true</code>, access logging is enabled for this virtual server.
+Deprecated. Replaced with a <code>virtual-server</code> attribute,
+<code>access-logging-enabled</code>, that is accessible using the <code>get</code>, <code>set</code>,
+and <code>list</code> subcommands.</p>
+</dd>
+<dt class="hdlist1"><code>sso-enabled</code></dt>
+<dd>
+<p>If <code>true</code>, single sign-on is enabled for web applications on this
+virtual server that are configured for the same realm. Deprecated.
+Replaced with a <code>virtual-server</code> attribute, <code>sso-enabled</code>, that is
+accessible using the <code>get</code>, <code>set</code>, and <code>list</code> subcommands.</p>
+</dd>
+<dt class="hdlist1"><code>ssoCookieSecure</code></dt>
+<dd>
+<p>Sets the <code>Secure</code> attribute of any <code>JSESSIONIDSSO</code> cookies
+associated with the web applications deployed to this virtual
+server. Deprecated. Replaced with a <code>virtual-server</code> attribute,
+<code>sso-cookie-secure</code>, that is accessible using the <code>get</code>, <code>set</code>, and
+<code>list</code> subcommands.</p>
+</dd>
+<dt class="hdlist1"><code>errorReportValve</code></dt>
+<dd>
+<p>Specifies a fully qualified class name of a custom valve that
+produces default error pages for applications on this virtual
+server. Specify an empty string to disable the default error page
+mechanism for this virtual server.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the virtual server only on the specified target. Valid values
+are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the virtual server on the default server instance. This is
+the default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the virtual server in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the virtual server on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">standalone-instance-name</dt>
+<dd>
+<p>Creates the virtual server on the specified standalone server
+instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref572" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">virtual-server-id</dt>
+<dd>
+<p>Identifies the unique ID for the virtual server to be created. This ID
+cannot begin with a number.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref573" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM529"></a><a id="sthref574"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Virtual Server</p>
+</div>
+<div class="paragraph">
+<p>The following command creates a virtual server named <code>sampleServer</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-virtual-server --hosts pigeon,localhost
+--property authRealm=ldap sampleServer
+Command create-virtual-server executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref575" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref576" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-virtual-server.html#delete-virtual-server-1"><code>delete-virtual-server</code>(1)</a>,
+<a href="list-virtual-servers.html#list-virtual-servers-1"><code>list-virtual-servers</code>(1)</a>,
+<a href="create-http-listener.html#create-http-listener-1"><code>create-http-listener</code>(1)</a>,
+<a href="create-network-listener.html#create-network-listener-1"><code>create-network-listener</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="list.html#list-1"><code>list</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-transport.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-admin-object.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

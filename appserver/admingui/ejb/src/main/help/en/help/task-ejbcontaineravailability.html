@@ -1,0 +1,89 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-ejbcontaineravailability" name="task-ejbcontaineravailability"></a><a id="GHEJB00006" name="GHEJB00006"></a></p>
+
+<h4><a id="sthref10" name="sthref10"></a><a id="sthref11" name="sthref11"></a><a id="sthref12" name="sthref12"></a><a id="sthref13" name="sthref13"></a>To Configure Availability Settings for the EJB Container</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the configuration's node, select the Availability Service node.</p>
+<p>The Availability Service page opens.</p>
+</li>
+<li>
+<p>On the Availability Service page, click the EJB Container Availability tab.</p>
+<p>The EJB Container Availability page opens.</p>
+</li>
+<li>
+<p>Check the Availability Service Enabled box to enable availability for the EJB container.</p>
+<p>To disable availability, remove the check from the Availability Service Enabled box.</p>
+</li>
+<li>
+<p>The HA Persistence Type is <code>replicated</code>.</p>
+<p>This is the persistence mechanism used when Availability Service Enabled is checked. Persistence is based on failover in a cluster. Do not change this value.</p>
+</li>
+<li>
+<p>The SFSB Persistence Type is <code>file</code>.</p>
+<p>This is the persistence mechanism used when Availability Service Enabled is <i>not</i> checked. Persistence is based on the file system. Do not change this value.</p>
+<p>The Session Store Location field determines where SFSB checkpoint states are persisted. To set the Session Store Location, see <a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a>.</p>
+</li>
+<li>
+<p>To restore default values, click the Load Defaults button.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>The GlassFish Server does not define any additional properties for EJB container availability.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="sthref14" name="sthref14"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbmdbpoolsettings.html">To Configure MDB Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbtimerservice.html">To Configure the EJB Timer Service</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

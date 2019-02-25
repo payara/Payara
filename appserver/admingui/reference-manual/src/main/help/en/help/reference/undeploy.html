@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>undeploy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>undeploy</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="stop-local-instance.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="unfreeze-transaction-service.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="undeploy-1"></a><a id="GSRFM00244"></a><a id="undeploy"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_undeploy">undeploy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>removes a deployed component</p>
+</div>
+<div id="sthref2189" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] undeploy [--help]
+[--target target] [--droptables={true|false}]
+[--cascade={false|true}] name</code></pre>
+</div>
+</div>
+<div id="sthref2190" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>undeploy</code> subcommand uninstalls a deployed application or module
+and removes it from the repository.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref2191" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--cascade</code></dt>
+<dd>
+<p>If set to <code>true</code>, deletes all the connection pools and connector
+resources associated with the resource adapter being undeployed. If
+set to <code>false</code>, the undeploy fails if any pools and resources are
+still associated with the resource adapter. Then, either those pools
+and resources must be deleted explicitly, or the option must be set to
+<code>true</code>. If the option is set to <code>false</code>, and if there are no pools and
+resources still associated with the resource adapter, the resource
+adapter is undeployed. This option is applicable to connectors
+(resource adapters) and applications. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>--droptables</code></dt>
+<dd>
+<p>If set to true, drops the tables that the application created by using
+CMP beans during deployment. If set to false, tables are not dropped.
+If not specified, the value of the <code>drop-tables-at-deploy</code> entry in
+the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code> file
+determines whether or not tables are dropped. Default value is true.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target from which you are undeploying. Valid values are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Undeploys the component from the default server instance <code>server</code>
+and is the default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Undeploys the component from the domain.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Undeploys the component from every server instance in the cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Undeploys the component from a particular stand-alone server
+instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2192" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">name</dt>
+<dd>
+<p>Name of the deployed component.<br>
+The name can include an optional version identifier, which follows the
+name and is separated from the name by a colon (<code>:</code>). The version
+identifier must begin with a letter or number. It can contain
+alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period
+(<code>.</code>) characters. To delete multiple versions, you can use an asterisk
+(<code>*</code>) as a wildcard character. For more information about module and
+application versions, see "<a href="../application-deployment-guide/overview.html#GSDPG00324">Module and Application
+Versions</a>" in GlassFish Server Open Source Edition Application
+Deployment Guide.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2193" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM769"></a><a id="sthref2194"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Undeploying an Enterprise Application</p>
+</div>
+<div class="paragraph">
+<p>This example undeploys an enterprise application named <code>Cart.ear</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; undeploy Cart
+Command undeploy executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM770"></a><a id="sthref2195"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Undeploying an Enterprise Bean With Container-Managed
+Persistence (CMP)</p>
+</div>
+<div class="paragraph">
+<p>This example undeploys a CMP bean named <code>myejb</code> and drops the
+corresponding database tables.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; undeploy --droptables=true myejb
+Command undeploy executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM771"></a><a id="sthref2196"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Undeploying a Connector (Resource Adapter)</p>
+</div>
+<div class="paragraph">
+<p>This example undeploys the connector module named <code>jdbcra</code> and performs
+a cascading delete to remove the associated resources and connection
+pools.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; undeploy --cascade=true jdbcra
+Command undeploy executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2197" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2198" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="deploy.html#deploy-1"><code>deploy</code>(1)</a>,
+<a href="list-components.html#list-components-1"><code>list-components</code>(1)</a>,
+<a href="redeploy.html#redeploy-1"><code>redeploy</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../application-deployment-guide/toc.html#GSDPG">GlassFish Server Open Source Edition Application Deployment
+Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="stop-local-instance.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="unfreeze-transaction-service.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+ping-connection-pool(1)  asadmin Utility Subcommands  ping-connection-pool(1)
+
+NAME
+       ping-connection-pool - tests if a connection pool is usable
+
+SYNOPSIS
+           ping-connection-pool [--help] pool_name
+           [--appname application [--modulename module]
+
+DESCRIPTION
+       The ping-connection-pool subcommand tests if an existing JDBC or
+       connector connection pool is usable . For example, if you create a new
+       JDBC connection pool for an application that is expected to be deployed
+       later, the JDBC pool is tested with this subcommand before deploying
+       the application.
+
+       Before testing availability of a connection pool, you must create the
+       connection pool with authentication and ensure that the server or
+       database is started.
+
+       This subcommand is supported in remote mode only.
+
+   Application Scoped Resources
+       The ping-connection-pool subcommand can target resources that are
+       scoped to a specific application or module, as defined in the
+       glassfish-resources.xml for the GlassFish domain.
+
+       *   To reference the jndi-name for an application scoped resource,
+           perform the lookup using the java:app prefix.
+
+       *   To reference the jndi-name for a module scoped resource, perform
+           the lookup using the java:module prefix.
+
+       The jndi-name for application-scoped-resources or
+       module-scoped-resources are specified using the format
+       java:app/jdbc/myDataSource or java:module/jdbc/myModuleLevelDataSource.
+       This naming scope is defined in the Java EE 6 Specification
+       (http://download.oracle.com/javaee/6/api/).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --appname
+           Name of the application in which the application scoped resource is
+           defined.
+
+       --modulename
+           Name of the module in which the module scoped resource is defined.
+
+OPERANDS
+       pool_name
+           Name of the connection pool to be reinitialized.
+
+EXAMPLES
+       Example 1, Contacting a Connection Pool
+           This example tests to see if the connection pool named DerbyPool is
+           usable.
+
+               asadmin> ping-connection-pool DerbyPool
+               Command ping-connection-pool executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-connection-pool(1),
+       delete-connector-connection-pool(1),
+       list-connector-connection-pools(1), create-jdbc-connection-pool(1),
+       delete-jdbc-connection-pool(1), list-jdbc-connection-pools(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017          ping-connection-pool(1)

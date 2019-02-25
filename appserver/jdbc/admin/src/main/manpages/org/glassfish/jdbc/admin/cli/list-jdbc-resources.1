@@ -1,0 +1,57 @@
+list-jdbc-resources(1)    asadmin Utility Subcommands   list-jdbc-resources(1)
+
+NAME
+       list-jdbc-resources - lists all JDBC resources
+
+SYNOPSIS
+           list-jdbc-resources [--help] [target target]
+
+DESCRIPTION
+       The list-jdbc-resources subcommand displays a list of the existing JDBC
+       resources.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       --target
+           This operand specifies which JDBC resources you can list. Usage of
+           this operand is optional. Valid values are:
+
+           server
+               Lists the JDBC resources in the current server and is the
+               default.
+
+           domain
+               Lists the JDBC resources in the current domain.
+
+           cluster_name
+               Lists the JDBC resources in a cluster.
+
+           instance_name
+               Lists the JDBC resources for a particular instance.
+
+EXAMPLES
+       Example 1, Listing the JDBC Resources
+           This example lists the current JDBC resources.
+
+               asadmin> list-jdbc-resources
+               jdbc/DerbyPool
+               Command list-jdbc-resources executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jdbc-resource(1), delete-jdbc-resource(1)
+
+       asadmin(1M)
+
+Java EE 8                         17 Sep 2010           list-jdbc-resources(1)

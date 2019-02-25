@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>set</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>set</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="rotate-log.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-batch-runtime-configuration.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="set-1"></a><a id="GSRFM00226"></a><a id="set"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_set">set</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>sets the values of configurable attributes</p>
+</div>
+<div id="sthref2024" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] set [--help]
+attribute-name=value</code></pre>
+</div>
+</div>
+<div id="sthref2025" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>set</code> subcommand uses dotted names to modify the values of one or
+more configurable attributes.</p>
+</div>
+<div class="paragraph">
+<p>Attributes from the monitoring hierarchy are read-only, but
+configuration attributes can be modified. You can use the
+<a href="list.html#list-1"><code>list</code>(1)</a> subcommand to display the dotted names
+that represent individual server components and subsystems. For example,
+a dotted name might be <code>server.applications.web-module</code>. After you
+discover the particular component or subsystem, you can then use the
+<code>get</code> subcommand to access the attributes. For more detailed information
+on dotted names, see the
+<a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a> help page.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Characters that have special meaning to the shell or command
+interpreter, such as * (asterisk), should be quoted or escaped as
+appropriate to the shell, for example, by enclosing the argument in
+quotes. In multimode, quotes are needed only for arguments that include
+spaces, quotes, or backslash.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>By modifying attributes, you can enable and disable services, and
+customize how an existing element functions. An <code>asadmin</code> subcommand is
+provided to update some elements. For example, <code>update-password-alias</code>.
+However, to update other elements, you must use the <code>set</code> command. For
+example, you create a JDBC connection pool by using the
+<code>create-jdbc-connection-pool</code> subcommand. To change attribute settings
+later, you use the <code>set</code> command.</p>
+</div>
+<div class="paragraph">
+<p>Any change made by using the <code>asadmin</code> utility subcommands or the
+Administration Console are automatically applied to the associated
+\{product---name} configuration file.</p>
+</div>
+<div id="sthref2026" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2027" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">attribute-name=value</dt>
+<dd>
+<p>Identifies the full dotted name of the attribute name and its value.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2028" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM745"></a><a id="sthref2029"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Setting a JDBC Connection Pool Attribute</p>
+</div>
+<div class="paragraph">
+<p>This example changes the steady pool size of the <code>DerbyPool</code> connection
+pool to 9.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set resources.jdbc-connection-pool.DerbyPool.steady-pool-size=9
+Command set executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM746"></a><a id="sthref2030"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Enabling the Monitoring Service for a Monitorable Object</p>
+</div>
+<div class="paragraph">
+<p>This example enables monitoring for the JVM.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set server.monitoring-service.module-monitoring-levels.jvm=HIGH
+Command set executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM747"></a><a id="sthref2031"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Turning on Automatic Recovery for the Transaction Service</p>
+</div>
+<div class="paragraph">
+<p>This example turns on automatic recovery for the transaction service.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set server.transaction-service.automatic-recovery=true
+Command set executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2032" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2033" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="list.html#list-1"><code>list</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="rotate-log.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-batch-runtime-configuration.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

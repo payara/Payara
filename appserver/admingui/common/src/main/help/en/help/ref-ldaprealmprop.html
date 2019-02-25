@@ -1,0 +1,74 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-ldaprealmprop" name="ref-ldaprealmprop"></a><a id="GHCOM00103" name="GHCOM00103"></a></p>
+
+<h4><a id="sthref206" name="sthref206"></a><a id="sthref207" name="sthref207"></a>Properties Specific to the <code>LDAPRealm</code> Class</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following properties are required for an LDAP realm.</p>
+<dl>
+<dt>JAAS Context</dt>
+<dd>
+<p>The JAAS (Java Authentication and Authorization Service) context (the identifier for the login module to use for this realm). The only valid value is <code>solarisRealm</code>.</p>
+</dd>
+<dt>Directory</dt>
+<dd>
+<p>The LDAP URL for your server.</p>
+</dd>
+<dt>Base DN</dt>
+<dd>
+<p>The LDAP base distinguished name (DN) for the location of user data. This base DN can be at any level above the user data, since a tree scope search is performed. The smaller the search tree, the better the performance.</p>
+</dd>
+</dl>
+<p>The following optional property is available for an LDAP realm.</p>
+<dl>
+<dt>Assign Groups</dt>
+<dd>
+<p>A comma-separated list of group names. All clients who present valid certificates are assigned to these groups, for example, <code>employee,manager</code>, where these are the names of user groups.</p>
+</dd>
+</dl>
+<p>The following additional properties are available for an LDAP realm.</p>
+<dl>
+<dt><code>search-filter</code></dt>
+<dd>
+<p>The search filter to use to find the user. The default is <code>uid=%s</code> (<code>%s</code> expands to the subject name).</p>
+</dd>
+<dt><code>group-base-dn</code></dt>
+<dd>
+<p>The base DN for the location of group data. By default, it is same as the Base DN value, but it can be tuned, if necessary.</p>
+</dd>
+<dt><code>group-search-filter</code></dt>
+<dd>
+<p>The search filter to find group memberships for the user. The default is <code>uniquemember=%d</code> (<code>%d</code> expands to the user element DN).</p>
+</dd>
+<dt><code>group-target</code></dt>
+<dd>
+<p>The LDAP attribute name that contains group name entries. The default is <code>CN</code>.</p>
+</dd>
+<dt><code>search-bind-dn</code></dt>
+<dd>
+<p>An optional DN used to authenticate to the directory for performing the <code>search-filter</code> lookup. Only required for directories that do not allow anonymous search.</p>
+</dd>
+<dt><code>search-bind-password</code></dt>
+<dd>
+<p>The LDAP password for the DN given in <code>search-bind-dn</code>.</p>
+</dd>
+</dl>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

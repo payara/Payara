@@ -1,0 +1,61 @@
+list-resource-refs(1)     asadmin Utility Subcommands    list-resource-refs(1)
+
+NAME
+       list-resource-refs - lists existing resource references
+
+SYNOPSIS
+           list-resource-refs [--help] [target]
+
+DESCRIPTION
+       The list-resource-refs subcommand lists all resource references in a
+       cluster or an unclustered server instance. This effectively lists all
+       the resources (for example, JDBC resources) available in the JNDI tree
+       of the specified target.
+
+       The target instance or instances in the cluster need not be running or
+       available for this subcommand to succeed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           The target for which you are listing the resource references. Valid
+           targets are as follows:
+
+           server
+               Lists the resource references for the default server instance
+               and is the default target.
+
+           cluster_name
+               Lists the resource references for every server instance in the
+               cluster.
+
+           instance_name
+               Lists the resource references for the named unclustered server
+               instance.
+
+EXAMPLES
+       Example 1, Listing Resource References for a Cluster
+           This example lists resource references for the cluster cluster1.
+
+               asadmin> list-resource-refs cluster1
+               jms/Topic
+               Command list-resource-refs executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-resource-ref(1), delete-resource-ref(1)
+
+       asadmin(1M)
+
+Java EE 8                         20 Jun 2011            list-resource-refs(1)

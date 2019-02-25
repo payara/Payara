@@ -82,7 +82,7 @@ public class NameGenerator
             "Lionfish", "Minnow", "Medusafish", "Monkfish", "Nibbler", "Noodlefish", "Opaleye", "Paddlefish", "Pollock", 
             "Quillback", "Rainbowfish", "Rockfish", "Sablefish", "Sardine", "Scorpionfish", "Trout", "Skate", "Sole", 
             "Mackeral", "Dogfish", "Squeaker", "Spookfish", "Stonefish", "Turbot", "Unicornfish", "Velvetfish", "Wahoo",
-            "Whitebait", "Whalefish", "Ziege", "Pirahna"};
+            "Whitebait", "Whalefish", "Ziege", "Piranha"};
     
     /**
      * Generates a new random name of the form adjective + fish.

@@ -266,16 +266,16 @@
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.14.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.14.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.0.15.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.15.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
         <javax.el.version>3.0.1-b11</javax.el.version>
         <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JAX-B -->
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0</jaxb.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
+        <jaxb.version>2.3.2</jaxb.version>
 
         <!-- Cache -->
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
@@ -345,8 +345,6 @@
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <v3-docs.version>4.1</v3-docs.version>
-        <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>7.0</asm.version>
         <ha-api.version>3.1.11</ha-api.version>
@@ -723,6 +721,27 @@
                 </executions>
             </plugin>
 	    -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/manpages</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.glassfish.build</groupId>
@@ -1327,30 +1346,6 @@ Parent is ${project.parent}</echo>
                 <artifactId>logging-annotation-processor</artifactId>
                 <version>${logging-annotation-processor.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.man</groupId>
-                <artifactId>osgi-cli-remote-manpage</artifactId>
-                <version>${v3-docs.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.man</groupId>
-                <artifactId>osgi-cli-interactive-manpage</artifactId>
-                <version>${v3-docs.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
-                <artifactId>osgi-cli-remote-manpage-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
-                <artifactId>osgi-cli-interactive-manpage-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-                <type>zip</type>
-            </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
             <dependency>
                 <groupId>jline</groupId>
@@ -1396,6 +1391,14 @@ Parent is ${project.parent}</echo>
     </dependencyManagement>
 
     <profiles>
+        <profile>
+            <id>ci</id>
+            <modules>
+                <module>tests</module>
+            </modules>
+        </profile>
+    
+        
         <profile>
             <id>default</id>
             <activation>

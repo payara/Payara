@@ -1,0 +1,365 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>get</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>get</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="generate-jvm-report.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="get-active-module-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="get-1"></a><a id="GSRFM00139"></a><a id="get"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_get">get</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>gets the values of configurable or monitorable attributes</p>
+</div>
+<div id="sthref1209" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] get [--help]
+[--monitor={true|false}]
+[--aggregatedataonly={true|false}]
+(dotted-attribute--name)+</code></pre>
+</div>
+</div>
+<div id="sthref1210" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>get</code> subcommand uses dotted names to get the names and values of
+configurable or monitorable attributes for \{product---name} elements.</p>
+</div>
+<div class="paragraph">
+<p>You can use the <a href="list.html#list-1"><code>list</code>(1)</a> subcommand to display
+the dotted names that represent individual server components and
+subsystems. For example, a dotted name might be
+<code>server.applications.web-module</code>. Attributes from the monitoring
+hierarchy are read-only, but configuration attributes can be modified
+using the <a href="set.html#set-1"><code>set</code>(1)</a> subcommand. For more detailed
+information on dotted names, see the
+<a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a> help page.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Characters that have special meaning to the shell or command
+interpreter, such as * (asterisk), should be quoted or escaped as
+appropriate to the shell, for example, by enclosing the argument in
+quotes. In multimode, quotes are needed only for arguments that include
+spaces, quotes, or backslash.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The following list shows common usage of the <code>get</code> subcommand with the *
+(asterisk):</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>get *</code> or <code>get *.*</code></dt>
+<dd>
+<p>Gets all values on all dotted name prefixes.</p>
+</dd>
+<dt class="hdlist1"><code>get domain*</code> or <code>get domain*.*</code></dt>
+<dd>
+<p>Gets all values on the dotted names that begin with <code>domain</code>.</p>
+</dd>
+<dt class="hdlist1"><code>get *config*.*.*</code></dt>
+<dd>
+<p>Gets all values on the dotted names that match <code>*config*.*</code>.</p>
+</dd>
+<dt class="hdlist1"><code>get domain.j2ee-applications.*.ejb-module.*.*</code></dt>
+<dd>
+<p>Gets all values on all EJB modules of all applications.</p>
+</dd>
+<dt class="hdlist1"><code>get *web-modules.*.*</code></dt>
+<dd>
+<p>Gets all values on all web modules whether in an application or
+standalone.</p>
+</dd>
+<dt class="hdlist1"><code>get *.*.*.*</code></dt>
+<dd>
+<p>Gets all values on all dotted names that have four parts.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1211" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--monitor</code></dt>
+<dt class="hdlist1"><code>-m</code></dt>
+<dd>
+<p>Defaults to <code>false</code>. If set to false, the configurable attribute
+values are returned. If set to <code>true</code>, the monitorable attribute
+values are returned.</p>
+</dd>
+<dt class="hdlist1"><code>--aggregatedataonly</code></dt>
+<dt class="hdlist1"><code>-c</code></dt>
+<dd>
+<p>Aggregates monitoring data for all \{product---name} instances in a
+cluster. The default value is <code>false</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1212" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">dotted-attribute-name</dt>
+<dd>
+<p>Identifies the attribute name in the dotted notation. At least one
+dotted name attribute is required. The dotted notation is the syntax
+used to access attributes of configurable entities.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1213" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM619"></a><a id="sthref1214"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Getting the Attributes of a Configurable Element</p>
+</div>
+<div class="paragraph">
+<p>This example gets the attributes of <code>listener.http-listener-1</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; get server.http-service.http-listener.http-listener-1.*
+server.http-service.http-listener.http-listener-1.acceptor-threads = 1
+server.http-service.http-listener.http-listener-1.address = 0.0.0.0
+server.http-service.http-listener.http-listener-1.blocking-enabled = false
+server.http-service.http-listener.http-listener-1.default-virtual-server = server
+server.http-service.http-listener.http-listener-1.enabled = true
+server.http-service.http-listener.http-listener-1.external-port =
+server.http-service.http-listener.http-listener-1.family = inet
+server.http-service.http-listener.http-listener-1.id = http-listener-1
+server.http-service.http-listener.http-listener-1.port = 8080
+server.http-service.http-listener.http-listener-1.redirect-port =
+server.http-service.http-listener.http-listener-1.security-enabled = false
+server.http-service.http-listener.http-listener-1.server-name =
+server.http-service.http-listener.http-listener-1.xpowered-by = true
+Command get executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM620"></a><a id="sthref1215"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Getting Monitorable Objects</p>
+</div>
+<div class="paragraph">
+<p>This example gets the configuration attributes for setting the
+monitoring level and shows whether they are enabled (LOW or HIGH) or
+disabled (OFF). The <code>jvm</code> component is enabled for monitoring.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; get server.monitoring-service.module-monitoring-levels.*
+server.monitoring-service.module-monitoring-levels.connector-connection-pool=OFF
+server.monitoring-service.module-monitoring-levels.connector-service=OFF
+server.monitoring-service.module-monitoring-levels.d-trace=OFF
+server.monitoring-service.module-monitoring-levels.ejb-container=OFF
+server.monitoring-service.module-monitoring-levels.http-service=OFF
+server.monitoring-service.module-monitoring-levels.jdbc-connection-pool=OFF
+server.monitoring-service.module-monitoring-levels.jms-service=OFF
+server.monitoring-service.module-monitoring-levels.jvm=HIGH
+server.monitoring-service.module-monitoring-levels.orb=OFF
+server.monitoring-service.module-monitoring-levels.thread-pool=OFF
+server.monitoring-service.module-monitoring-levels.transaction-service=OFF
+server.monitoring-service.module-monitoring-levels.web-container=OFF
+Command get executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM621"></a><a id="sthref1216"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Getting Attributes and Values for a Monitorable Object</p>
+</div>
+<div class="paragraph">
+<p>This example gets all attributes and values of the <code>jvm</code> monitorable
+object.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; get --monitor server.jvm.*
+server.jvm.HeapSize_Current = 45490176
+server.jvm.HeapSize_Description = Describes JvmHeapSize
+server.jvm.HeapSize_HighWaterMark = 45490176
+server.jvm.HeapSize_LastSampleTime = 1063217002433
+server.jvm.HeapSize_LowWaterMark = 0
+server.jvm.HeapSize_LowerBound = 0
+server.jvm.HeapSize_Name = JvmHeapSize
+server.jvm.HeapSize_StartTime = 1063238840055
+server.jvm.HeapSize_Unit = bytes
+server.jvm.HeapSize_UpperBound = 531628032
+server.jvm.UpTime_Count = 1063238840100
+server.jvm.UpTime_Description = Describes JvmUpTime
+server.jvm.UpTime_LastSampleTime = 1-63238840070
+server.jvm.UpTime_Name = JvmUpTime
+server.jvm.UpTime_StartTime = 1063217002430
+server.jvm.UpTime_Unit = milliseconds
+Command get executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1217" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1218" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list.html#list-1"><code>list</code>(1)</a>, <a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="generate-jvm-report.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="get-active-module-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

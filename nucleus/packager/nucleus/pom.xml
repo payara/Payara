@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright [2018-2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -175,13 +175,6 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs</groupId>
-            <artifactId>basedocs</artifactId>
-            <version>4.1.payara-p3</version>
-            <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>

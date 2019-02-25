@@ -1,0 +1,41 @@
+uptime(1)                 asadmin Utility Subcommands                uptime(1)
+
+NAME
+       uptime - returns the length of time that the DAS has been running
+
+SYNOPSIS
+           uptime [--help]
+
+DESCRIPTION
+       The uptime subcommand returns the length of time that the domain
+       administration server (DAS) has been running since it was last
+       restarted.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Showing How Long the DAS Has Been Running
+           This example shows the length of time that the DAS has been
+           running.
+
+               asadmin> uptime
+               Uptime: 2 days, 1 hours, 30 minutes, 18 seconds, Total milliseconds: 178218706
+               Command uptime executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-domains(1), start-domain(1), stop-domain(1)
+
+       asadmin(1M)
+
+Java EE 8                         8 Sep 2009                         uptime(1)

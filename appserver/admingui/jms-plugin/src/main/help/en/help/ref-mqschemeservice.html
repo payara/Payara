@@ -1,0 +1,126 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-mqschemeservice" name="ref-mqschemeservice"></a><a id="GHJMS00011" name="GHJMS00011"></a></p>
+
+<h4>MQ Scheme and MQ Service Address Syntax</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The full syntax for a message service address is</p>
+<pre>
+<i>scheme</i>://<i>address-syntax</i>
+</pre>
+<p>where the <i>scheme</i> and <i>address-syntax</i> are described in the table below.</p>
+<p>The MQ Scheme and MQ Service are the values shown in the first two columns of the following table.</p>
+
+<table  summary="Add Summary attribute value here." dir="ltr" border="1" width="100%" frame="hsides" rules="rows" cellpadding="3" cellspacing="0">
+<col width="9%" />
+<col width="13%" />
+<col width="36%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t4">Scheme Name</th>
+<th align="left" valign="bottom" id="r1c2-t4">Connection Service</th>
+<th align="left" valign="bottom" id="r1c3-t4">Description</th>
+<th align="left" valign="bottom" id="r1c4-t4">Address Syntax</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t4" headers="r1c1-t4">
+<p><code>mq</code></p>
+</td>
+<td align="left" headers="r2c1-t4 r1c2-t4">
+<p><code>jms</code> and <code>ssljms</code></p>
+</td>
+<td align="left" headers="r2c1-t4 r1c3-t4">
+<p>Message Queue client runtime makes a connection to the MQ Port Mapper at the specified host and port. The Port Mapper returns a list of the dynamically established connection service ports, and the Message Queue client runtime then makes a connection to the port hosting the specified connection service.</p>
+</td>
+<td align="left" headers="r2c1-t4 r1c4-t4">
+<p><code>[</code><i>hostName</i><code>][:</code><i>port</i><code>][/</code><i>serviceName</i><code>]</code></p>
+<p>Defaults: <i>hostName</i> = <code>localhost</code>, <i>port</i> = <code>7676</code>, <i>serviceName</i> = <code>jms</code></p>
+<p>Defaults only apply to the <code>jms</code> connection service. For the <code>ssljms</code> connection service, all variables need to be specified.</p>
+<p>Example: <code>mq:MyHost:7677/ssljms</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t4" headers="r1c1-t4">
+<p><code>mqtcp</code></p>
+</td>
+<td align="left" headers="r3c1-t4 r1c2-t4">
+<p><code>jms</code></p>
+</td>
+<td align="left" headers="r3c1-t4 r1c3-t4">
+<p>Message Queue client runtime makes a TCP connection to the specified host and port (bypassing the MQ Port Mapper) to establish a connection.</p>
+</td>
+<td align="left" headers="r3c1-t4 r1c4-t4">
+<p><i>hostName</i><code>:</code><i>port</i><code>/jms</code></p>
+<p>Example: <code>mqtcp:localhost:7676/jms</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t4" headers="r1c1-t4">
+<p><code>mqssl</code></p>
+</td>
+<td align="left" headers="r4c1-t4 r1c2-t4">
+<p><code>ssljms</code></p>
+</td>
+<td align="left" headers="r4c1-t4 r1c3-t4">
+<p>Message Queue client runtime makes a secure SSL connection to the specified host and port (bypassing the MQ Port Mapper) to establish a connection.</p>
+</td>
+<td align="left" headers="r4c1-t4 r1c4-t4">
+<p><i>hostName</i><code>:</code><i>port</i><code>/ssljms</code></p>
+<p>Example: <code>mqssl:localhost:7676/ssljms</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t4" headers="r1c1-t4">
+<p><code>http</code></p>
+</td>
+<td align="left" headers="r5c1-t4 r1c2-t4">
+<p><code>httpjms</code></p>
+</td>
+<td align="left" headers="r5c1-t4 r1c3-t4">
+<p>Message Queue client runtime makes an HTTP connection to an Message Queue tunnel servlet at the specified URL. (The broker must be configured to access the HTTP tunnel servlet, as described in the Message Queue <i>Administrator's Guide</i>.)</p>
+</td>
+<td align="left" headers="r5c1-t4 r1c4-t4">
+<p><i>hostName</i><code>:</code><i>port</i><code>/</code><i>contextRoot</i><code>/tunnel</code></p>
+<p>If multiple broker instances are using the same tunnel servlet, then the syntax for connecting to a specific broker instance (rather than a randomly selected one) is: <code>http://</code><i>hostName</i><code>:</code><i>port</i><code>/</code><i>contextRoot</i><code>/tunnel?</code><i>serverName</i><code>=</code><i>hostName</i><code>:</code><i>instanceName</i></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t4" headers="r1c1-t4">
+<p><code>https</code></p>
+</td>
+<td align="left" headers="r6c1-t4 r1c2-t4">
+<p><code>httpsjms</code></p>
+</td>
+<td align="left" headers="r6c1-t4 r1c3-t4">
+<p>Message Queue client runtime makes a secure HTTPS connection to the specified Message Queue tunnel servlet URL. (The broker must be configured to access the HTTPS tunnel servlet, as described in the Message Queue <i>Administrator's Guide</i>.)</p>
+</td>
+<td align="left" headers="r6c1-t4 r1c4-t4">
+<p><i>hostName</i><code>:</code><i>port</i><code>/</code><i>contextRoot</i><code>/tunnel</code></p>
+<p>If multiple broker instances are using the same tunnel servlet, then the syntax for connecting to a specific broker instance (rather than a randomly selected one) is: <code>http://</code><i>hostName</i><code>:</code><i>port</i><code>/</code><i>contextRoot</i><code>/tunnel?</code><i>serverName</i><code>=</code><i>hostName</i><code>:</code><i>instanceName</i></p>
+</td>
+</tr>
+</tbody>
+</table>
+<hr>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

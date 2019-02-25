@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates.]
 
 package org.glassfish.concurrent.runtime;
 
@@ -230,7 +229,8 @@ public class InvocationContext implements ContextHandle {
                 ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
                 null,
                 appName,
-                moduleName
+                moduleName,
+                appName
         );
         return newInv;
     }

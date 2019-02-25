@@ -1,0 +1,117 @@
+restart-instance(1)       asadmin Utility Subcommands      restart-instance(1)
+
+NAME
+       restart-instance - restarts a running GlassFish Server instance
+
+SYNOPSIS
+           restart-instance [--help]
+           [--debug={false|true}] instance-name
+
+DESCRIPTION
+       The restart-instance subcommand restarts a running GlassFish Server
+       instance. This subcommand requires secure shell (SSH) to be configured
+       on the machine where the domain administration server (DAS) is running
+       and on the machine where the instance resides.
+
+           Note
+           +----------------------------------------+
+           |           SSH is not required if the   |
+           |           instance resides on a node   |
+           |           of type CONFIG that          |
+           |           represents the local host. A |
+           |           node of type CONFIG is not   |
+           |           enabled for communication    |
+           |           over SSH.                    |
+           +----------------------------------------+
+
+       You may run this subcommand from any machine that can contact the DAS.
+
+       The subcommand can restart any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can restart
+       an instance that was created by using the create-local-instance(1)
+       subcommand.
+
+       When this subcommand restarts an instance, the DAS synchronizes the
+       instance with changes since the last synchronization as follows:
+
+       *   For the config directory, the DAS synchronizes the instance with
+           all changes.
+
+       *   For the applications directory and docroot directory, only a change
+           to a top-level subdirectory causes the DAS to synchronize all files
+           under that subdirectory.
+
+           If a file below a top level subdirectory is changed without a
+           change to a file in the top level subdirectory, full
+           synchronization is required. In normal operation, files below the
+           top level subdirectories of these directories are not changed. If
+           an application is deployed and undeployed, full synchronization is
+           not necessary to update the instance with the change.
+
+       If different synchronization behavior is required, the instance must be
+       stopped and restarted by using following sequence of subcommands:
+
+        1. stop-instance(1)
+
+        2. start-instance(1)
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --debug
+           Specifies whether the instance is restarted with Java Platform
+           Debugger Architecture (JPDA)
+
+           (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+           debugging enabled.
+
+           Possible values are as follows:
+
+           true
+               The instance is restarted with JPDA debugging enabled and the
+               port number for JPDA debugging is displayed.
+
+           false
+               The instance is restarted with JPDA debugging disabled.
+
+           The default is the current setting of this option for the instance
+           that is being restarted.
+
+OPERANDS
+       instance-name
+           The name of the GlassFish Server instance to restart. If the
+           instance is not running, the subcommand displays a warning message
+           and attempts to start the instance.
+
+EXAMPLES
+       Example 1, Restarting a GlassFish Server Instance
+           This example restarts the GlassFish Server instance pmdsa1.
+
+               asadmin> restart-instance pmdsa1
+               Instance pmdsa1 was restarted.
+
+               Command restart-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-instance(1),
+       delete-local-instance(1), restart-local-instance(1), setup-ssh(1),
+       start-instance(1), start-local-instance(1), stop-instance(1),
+       stop-local-instance(1)
+
+       asadmin(1M)
+
+       Java Platform Debugger Architecture (JPDA)
+       (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+Java EE 8                         21 Aug 2017              restart-instance(1)

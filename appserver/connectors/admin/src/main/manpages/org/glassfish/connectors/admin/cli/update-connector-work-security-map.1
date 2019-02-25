@@ -1,0 +1,72 @@
+update-connector-work-security-map(1)  asadmin Utility Subcommands  update-connector-work-security-map(1)
+
+NAME
+       update-connector-work-security-map - modifies a work security map for
+       the specified resource adapter
+
+SYNOPSIS
+           update-connector-work-security-map [--help] --raname raname
+           [--addprincipals eis-principal1=server-principal1[, eis-principal2=server-principal2]*]
+           [--addgroups eis-group1=server-group1[, eis-group2=server-group2]*]
+           [--removeprincipals eis-principal1[,eis-principal2]*]
+           [--removegroups eis-group1[, eis-group2]*]
+           mapname
+
+DESCRIPTION
+       The update-connector-work-security-map subcommand modifies a security
+       map for the specified resource adapter.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --addgroups
+           Specifies a comma-separated list of EIS groups to be added. Use
+           either the --addprincipals option or the --addgroups option, but
+           not both.
+
+       --addprincipals
+           Specifies a comma-separated list of EIS-specific principals to be
+           added. Use either the --addprincipals option or the --addgroups
+           option, but not both.
+
+       --removegroups
+           Specifies a comma-separated list of EIS groups to be removed.
+
+       --removeprincipals
+           Specifies a comma-separated list of EIS-specific principals to be
+           removed.
+
+       --raname
+           Indicates the connector module name with which the work security
+           map is associated.
+
+OPERANDS
+       mapname
+           The name of the work security map to be updated.
+
+EXAMPLES
+       Example 1, Updating a Connector Work Security Map
+           This example updates workSecurityMap2 by removing eis-group-2.
+
+               asadmin> update-connector-work-security-map
+               --raname my-resource-adapter --removegroups eis-group-2 workSecurityMap2
+               Command update-connector-work-security-map executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-work-security-map(1),
+       delete-connector-work-security-map(1),
+       list-connector-work-security-maps(1)
+
+       asadmin(1M)
+
+Java EE 8             09 Aug 2017       update-connector-work-security-map(1)

@@ -1,0 +1,71 @@
+flush-connection-pool(1)  asadmin Utility Subcommands flush-connection-pool(1)
+
+NAME
+       flush-connection-pool - reintializes all connections established in the
+       specified connection pool
+
+SYNOPSIS
+           flush-connection-pool [--help] pool_name
+           [--appname application [--modulename module]
+
+DESCRIPTION
+       The flush-connection-pool subcommand resets a JDBC connection pool or a
+       connector connection pool to its initial state. Any existing live
+       connections are destroyed, which means that the transactions associated
+       with these connections are lost. The subcommand then recreates the
+       initial connections for the pool, and restores the pool to its steady
+       pool size.
+
+       This subcommand is supported in remote mode only.
+
+   Application Scoped Resources
+       The flush-connection-pool subcommand can target resources that are
+       scoped to a specific application or module, as defined in the
+       glassfish-resources.xml for the GlassFish domain.
+
+       *   To reference the jndi-name for an application scoped resource,
+           perform the lookup using the java:app prefix.
+
+       *   To reference the jndi-name for a module scoped resource, perform
+           the lookup using the java:module prefix.
+
+       The jndi-name for application-scoped-resources or
+       module-scoped-resources are specified using the format
+       java:app/jdbc/myDataSource or java:module/jdbc/myModuleLevelDataSource.
+       This naming scope is defined in the Java EE 8 Specification
+       (https://javaee.github.io/javaee-spec/javadocs/).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --appname
+           Name of the application in which the application scoped resource is
+           defined.
+
+       --modulename
+           Name of the module in which the module scoped resource is defined.
+
+OPERANDS
+       pool_name
+           Name of the connection pool to be reinitialized.
+
+FLUSHING A CONNECTION POOL
+       This example reinitializes the JDBC connection pool named __TimerPool.
+
+           asadmin> flush-connection-pool __TimerPool
+           Command flush-connection-pool executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-connector-connection-pools(1), list-jdbc-connection-pools(1)
+
+       asadmin(1M)
+
+Java EE 8                         31 Aug 2017         flush-connection-pool(1)

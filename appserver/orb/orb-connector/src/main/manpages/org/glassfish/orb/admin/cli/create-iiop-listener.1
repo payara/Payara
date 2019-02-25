@@ -1,0 +1,92 @@
+create-iiop-listener(1)   asadmin Utility Subcommands  create-iiop-listener(1)
+
+NAME
+       create-iiop-listener - adds an IIOP listener
+
+SYNOPSIS
+           create-iiop-listener [--help] --listeneraddress address
+           [--iiopport iiop-port-number] [--securityenabled={false|true}] [--enabled={true|false}]
+           [--property (name=value)[:name=value]*]
+           [--target target] listener_id
+
+DESCRIPTION
+       The create-iiop-listener subcommand creates an IIOP listener. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --listeneraddress
+           Either the IP address or the hostname (resolvable by DNS).
+
+       --iiopport
+           The IIOP port number. The default value is 1072.
+
+       --securityenabled
+           If set to true, the IIOP listener runs SSL. You can turn SSL2 or
+           SSL3 ON or OFF and set ciphers using an SSL element. The security
+           setting globally enables or disables SSL by making certificates
+           available to the server instance. The default value is false.
+
+       --enabled
+           If set to true, the IIOP listener is enabled at runtime. The
+           default value is true.
+
+       --property
+           Optional attribute name/value pairs for configuring the IIOP
+           listener.
+
+       --target
+           Specifies the target for which you are creating the IIOP listener.
+           Valid values are
+
+           server
+               Creates the listener for the default server instance server and
+               is the default value.
+
+           configuration_name
+               Creates the listener for the named configuration.
+
+           cluster_name
+               Creates the listener for every server instance in the cluster.
+
+           stand-alone_instance_name
+               Creates the listener for a particular standalone server
+               instance.
+
+OPERANDS
+       listener_id
+           A unique identifier for the IIOP listener to be created.
+
+EXAMPLES
+       Example 1, Creating an IIOP Listener
+           The following command creates an IIOP listener named
+           sample_iiop_listener:
+
+               asadmin> create-iiop-listener --listeneraddress 192.168.1.100
+               --iiopport 1400 sample_iiop_listener
+               Command create-iiop-listener executed successfully.
+
+       Example 2, Creating an IIOP Listener with a Target Cluster
+           The following command creates an IIOP listener named
+           iiop_listener_2 for the cluster mycluster. It uses the target
+           option.
+
+               asadmin> create-iiop-listener --listeneraddress 0.0.0.0 --iiopport 1401
+               --target mycluster iiop_listener_2
+               Command create-iiop-listener executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-iiop-listener(1), list-iiop-listeners(1), create-ssl(1)
+
+       asadmin(1M)
+
+Java EE 8                         18 Aug 2010          create-iiop-listener(1)

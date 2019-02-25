@@ -46,7 +46,7 @@ package fish.payara.micro.cmd.options;
 public enum RUNTIME_OPTION {
     nocluster(false),
     deploydir(true, new DirectoryValidator(true, true, false)),
-    deploy(true, new FileSystemItemValidator(true, true, false, true, true)),
+    deploy(true, new DeploymentFileValidator(true, true, false, true, true)),
     port(true, new PortValidator()),
     sslport(true, new PortValidator()),
     name(true),
@@ -106,6 +106,7 @@ public enum RUNTIME_OPTION {
     hzpublicaddress(true),
     shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE)),
     hzinitialjoinwait(true, new IntegerValidator(0,100000));
+    contextroot(true);
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());

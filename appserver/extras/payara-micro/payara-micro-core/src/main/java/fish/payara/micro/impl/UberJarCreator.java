@@ -85,6 +85,7 @@ public class UberJarCreator {
     private File alternateHZConfigFile;
     private File preBootCommands;
     private File postBootCommands;
+    private Properties contextRoots;
 
     private static final Logger LOGGER = Logger.getLogger(UberJarCreator.class.getName());
     private File postDeployCommands;
@@ -111,6 +112,10 @@ public class UberJarCreator {
 
     public void setAlternateHZConfigFile(File alternateHZConfigFile) {
         this.alternateHZConfigFile = alternateHZConfigFile;
+    }
+    
+    public void setContextRoots(Properties props) {
+        contextRoots = props;
     }
 
     public void setDeploymentDir(File deploymentDir) {
@@ -298,6 +303,15 @@ public class UberJarCreator {
             bootProperties.store(jos, "");
             jos.flush();
             jos.closeEntry();
+            
+            // write context roots
+            if (contextRoots != null) {
+                JarEntry crs = new JarEntry("MICRO-INF/deploy/contexts.properties");
+                jos.putNextEntry(crs);
+                contextRoots.store(jos, "");
+                jos.flush();
+                jos.closeEntry();                
+            }
 
             // add the alternate hazelcast config to the uberJar
             if (alternateHZConfigFile != null) {
