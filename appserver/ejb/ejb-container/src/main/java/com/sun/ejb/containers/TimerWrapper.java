@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -296,7 +296,7 @@ public class TimerWrapper
 
         private final TimerPrimaryKey timerId_;
 
-        private final EJBTimerService timerService_;
+        private transient EJBTimerService timerService_;
         
         public TimerHandleImpl(TimerPrimaryKey timerId, EJBTimerService timerService) {
             timerId_ = timerId;
@@ -338,6 +338,9 @@ public class TimerWrapper
             // Can't store a static ref because in embedded container it can be
             // changed by server restart
             // Timer handles are only available for persistent timers.
+            if (timerService_ == null) {
+                timerService_ = EJBTimerService.getPersistentTimerService();
+            }
 
             if( timerService_ != null ) {
                 if( timerService_.timerExists(timerId_) ) {
