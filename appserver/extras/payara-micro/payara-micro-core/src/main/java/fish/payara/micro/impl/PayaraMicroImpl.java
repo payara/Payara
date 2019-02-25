@@ -91,6 +91,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Formatter;
@@ -109,6 +110,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
     private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
+    private static final String CONTEXT_PROPS_FILE = "MICRO-INF/deploy/contexts.properties";
+    
     private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
     private static PayaraMicroImpl instance;
 
@@ -122,11 +125,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private int maxHttpThreads = Integer.MIN_VALUE;
     private int minHttpThreads = Integer.MIN_VALUE;
     private String instanceName;
+    private String contextRoot;
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
     private File alternateHZConfigFile;
     private List<File> deployments;
+    private Properties contextRoots;
     private List<File> libraries;
     private GlassFish gf;
     private PayaraMicroRuntimeImpl runtime;
@@ -1183,11 +1188,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                         break;
                     case deploy:
-                        File deployment = new File(value);
+                        // check for context root definition
                         if (deployments == null) {
                             deployments = new LinkedList<>();
+                            contextRoots = new Properties();
+                        }                        
+                        String fileName = value;
+                        String deployContext = null;
+                        if (value != null && value.contains(File.pathSeparator)) {
+                            fileName = value.substring(0,value.indexOf(File.pathSeparatorChar));
+                            deployContext = value.substring(value.indexOf(File.pathSeparatorChar)+1);
                         }
+                        File deployment = new File(fileName);
                         deployments.add(deployment);
+                        if (deployContext != null) {
+                            contextRoots.put(deployment.getName(), deployContext);
+                        }
                         break;
                     case domainconfig:
                         alternateDomainXML = new File(value);
@@ -1341,6 +1357,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case shutdowngrace:
                         System.setProperty(GlassFishImpl.PAYARA_SHUTDOWNGRACE_PROPERTY, value);
                         break;
+                    case contextroot:
+                        if (contextRoot != null) {
+                            LOGGER.warning("Multiple --contextroot arguments only the last one will apply");
+                        }
+                        contextRoot = value;
+                        if (contextRoot.equals("ROOT")) {
+                            contextRoot = "/";
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -1441,6 +1466,22 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
+        
+        // load context roots from uber jar
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(CONTEXT_PROPS_FILE)) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                for (Map.Entry<?, ?> entry : props.entrySet()) {
+                    if (contextRoots == null) {
+                        contextRoots = new Properties();
+                    }
+                    contextRoots.setProperty((String)entry.getKey(), (String)entry.getValue());
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "", ex);
+        }
 
         // search and deploy from MICRO-INF/deploy directory.
         // if there is a deployment called ROOT deploy to the root context /
@@ -1462,19 +1503,23 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 for (String entry : microInfEntries) {
                     File file = new File(entry);
-                    String contextRoot = file.getName();
-                    String name = contextRoot.substring(0, contextRoot.length() - 4);
-                    if (contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar") || contextRoot.endsWith(".rar")) {
-                        contextRoot = name;
+                    String deployContext = file.getName();
+                    String name = deployContext.substring(0, deployContext.length() - 4);
+                    if (deployContext.endsWith(".ear") || deployContext.endsWith(".war") || deployContext.endsWith(".jar") || deployContext.endsWith(".rar")) {
+                        deployContext = name;
                     }
 
-                    if (contextRoot.equals("ROOT")) {
-                        contextRoot = "/";
+                    if (deployContext.equals("ROOT")) {
+                        deployContext = "/";
+                    }
+                    
+                    if (contextRoots != null && contextRoots.containsKey(file.getName())) {
+                        deployContext = contextRoots.getProperty(file.getName());
                     }
 
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
                             "true", "--contextroot",
-                            contextRoot, "--name", name, "--force","true", "--loadOnly", "true");
+                            deployContext, "--name", name, "--force","true", "--loadOnly", "true");
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
@@ -1488,11 +1533,19 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy command line provided files
         if (deployments != null) {
             for (File war : deployments) {
+                String deployContext = war.getName().substring(0, war.getName().length() - 4);
+                if (contextRoots != null && contextRoots.containsKey(war.getName())) {
+                    deployContext = contextRoots.getProperty(war.getName());
+                } else if (contextRoot != null) {
+                    deployContext = contextRoot;
+                    // unset so only used once
+                    contextRoot = null;
+                }
                 if (war.exists() && war.canRead()) {
                     if (war.getName().startsWith("ROOT.")) {
                         deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                     }
                     deploymentCount++;
                 } else {
@@ -1511,10 +1564,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             for (File entry : deploymentDirEntries) {
                 String entryPath = entry.getAbsolutePath();
                 if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
+                    String deployContext = entry.getName().substring(0, entry.getName().length() - 4);
+                    if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
+                        deployContext = contextRoots.getProperty(entry.getName());
+                    } else if (contextRoot != null) {
+                        deployContext = contextRoot;
+                        // unset so only used once
+                        contextRoot = null;
+                    }
                     if (entry.getName().startsWith("ROOT.")) {
                         deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot",deployContext);
                     }
                     deploymentCount++;
                 }
@@ -1910,12 +1971,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     deploymentURLsMap = new LinkedHashMap<>();
                 }
 
-                String contextRoot = artefactMapEntry.getKey();
-                if ("ROOT".equals(contextRoot)) {
-                    contextRoot = "/";
+                String defaultContext = artefactMapEntry.getKey();
+                if (this.contextRoot == null) {
+                    if ("ROOT".equals(defaultContext)) {
+                        defaultContext = "/";
+                    }
+                } else {
+                    defaultContext = this.contextRoot;
+                    contextRoot = null; // use only once
                 }
 
-                deploymentURLsMap.put(contextRoot, artefactMapEntry.getValue());
+                deploymentURLsMap.put(defaultContext, artefactMapEntry.getValue());
             } catch (MalformedURLException ex) {
                 throw new GlassFishException(ex.getMessage());
             }
@@ -2086,6 +2152,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         secretsDir = getProperty("payaramicro.secretsDir");
         showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
         publicAddress = getProperty("payaramicro.publicAddress");
+        contextRoot = getProperty("payaramicro.contextRoot");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");
@@ -2146,6 +2213,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (copyDirectory != null) {
             creator.setDirectoryToCopy(copyDirectory);
         }
+        
+        creator.setContextRoots(contextRoots);
 
         if (GAVs != null) {
             try {
@@ -2224,6 +2293,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         
         if (sslCert != null) {
             props.setProperty("payaramicro.sslCert", sslCert);
+        }
+        
+        if (contextRoot != null) {
+            props.setProperty("payaramicro.contextRoot", contextRoot);
         }
 
         props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
