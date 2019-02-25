@@ -187,8 +187,7 @@ public class MultimodeCommand extends CLICommand {
     }
     
     private static void checkToDisableJLineLogging(){
-        String value = System.getProperty("fish.payara.admin.command.jline.log.disable");        
-        if(Objects.equals(value, "true")){
+        if (Boolean.getBoolean("fish.payara.admin.command.jline.log.disable")) {
             System.setProperty("jline.log.jul", "false");
             final OutputStream noOpOutputStream = new OutputStream() {
                 @Override
