@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
@@ -133,6 +134,20 @@ public class OpenTracingService implements EventListener {
 
             if (appName == null) {
                 appName = invocationManager.getCurrentInvocation().getComponentId();
+
+                // If we've found a component name, check if there's an application registered with the same name
+                if (appName != null) {
+                    ApplicationRegistry applicationRegistry = Globals.getDefaultBaseServiceLocator()
+                            .getService(ApplicationRegistry.class);
+
+                    // If it's not directly in the registry, it's possible due to how the componentId is constructed
+                    if (applicationRegistry.get(appName) == null) {
+                        String[] componentIds = appName.split("_/");
+
+                        // The application name should be the first component
+                        appName = componentIds[0];
+                    }
+                }
             }
         }
 

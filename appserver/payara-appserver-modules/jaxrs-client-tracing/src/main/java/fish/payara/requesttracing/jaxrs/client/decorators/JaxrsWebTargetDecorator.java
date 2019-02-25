@@ -72,47 +72,47 @@ public class JaxrsWebTargetDecorator implements WebTarget {
 
     @Override
     public WebTarget path(String path) {
-        return this.webTarget.path(path);
+        return new JaxrsWebTargetDecorator(this.webTarget.path(path));
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value) {
-        return this.webTarget.resolveTemplate(name, value);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplate(name, value));
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value, boolean encodeSlashInPath) {
-        return this.webTarget.resolveTemplate(name, value, encodeSlashInPath);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplate(name, value, encodeSlashInPath));
     }
 
     @Override
     public WebTarget resolveTemplateFromEncoded(String name, Object value) {
-        return this.webTarget.resolveTemplateFromEncoded(name, value);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplateFromEncoded(name, value));
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues) {
-        return this.webTarget.resolveTemplates(templateValues);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplates(templateValues));
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues, boolean encodeSlashInPath) {
-        return this.webTarget.resolveTemplates(templateValues, encodeSlashInPath);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplates(templateValues, encodeSlashInPath));
     }
 
     @Override
     public WebTarget resolveTemplatesFromEncoded(Map<String, Object> templateValues) {
-        return this.webTarget.resolveTemplatesFromEncoded(templateValues);
+        return new JaxrsWebTargetDecorator(webTarget.resolveTemplatesFromEncoded(templateValues));
     }
 
     @Override
     public WebTarget matrixParam(String name, Object... values) {
-        return this.webTarget.matrixParam(name, values);
+        return new JaxrsWebTargetDecorator(webTarget.matrixParam(name, values));
     }
 
     @Override
     public WebTarget queryParam(String name, Object... values) {
-        return this.webTarget.queryParam(name, values);
+        return new JaxrsWebTargetDecorator(webTarget.queryParam(name, values));
     }
 
     @Override
@@ -140,47 +140,56 @@ public class JaxrsWebTargetDecorator implements WebTarget {
 
     @Override
     public WebTarget property(String name, Object value) {
-        return this.webTarget.property(name, value);
+        webTarget = webTarget.property(name, value);
+        return this;
     }
 
     @Override
     public WebTarget register(Class<?> componentClass) {
-        return this.webTarget.register(componentClass);
+        webTarget = webTarget.register(componentClass);
+        return this;
     }
 
     @Override
     public WebTarget register(Class<?> componentClass, int priority) {
-        return this.webTarget.register(componentClass, priority);
+        webTarget = webTarget.register(componentClass, priority);
+        return this;
     }
 
     @Override
     public WebTarget register(Class<?> componentClass, Class<?>... contracts) {
-        return this.webTarget.register(componentClass, contracts);
+        webTarget = webTarget.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public WebTarget register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
-        return this.webTarget.register(componentClass, contracts);
+        webTarget = webTarget.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public WebTarget register(Object component) {
-        return this.webTarget.register(component);
+        webTarget = webTarget.register(component);
+        return this;
     }
 
     @Override
     public WebTarget register(Object component, int priority) {
-        return this.webTarget.register(component, priority);
+        webTarget = webTarget.register(component, priority);
+        return this;
     }
 
     @Override
     public WebTarget register(Object component, Class<?>... contracts) {
-        return this.webTarget.register(component, contracts);
+        webTarget = webTarget.register(component, contracts);
+        return this;
     }
 
     @Override
     public WebTarget register(Object component, Map<Class<?>, Integer> contracts) {
-        return this.webTarget.register(component, contracts);
+        webTarget = webTarget.register(component, contracts);
+        return this;
     }
     
 }

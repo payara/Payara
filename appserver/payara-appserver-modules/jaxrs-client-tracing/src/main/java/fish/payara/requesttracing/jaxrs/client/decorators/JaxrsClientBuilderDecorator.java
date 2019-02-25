@@ -68,27 +68,32 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
     
     @Override
     public ClientBuilder withConfig(Configuration config) {
-        return this.clientBuilder.withConfig(config);
+        clientBuilder = clientBuilder.withConfig(config);
+        return this;
     }
 
     @Override
     public ClientBuilder sslContext(SSLContext sslContext) {
-        return this.clientBuilder.sslContext(sslContext);
+        clientBuilder = clientBuilder.sslContext(sslContext);
+        return this;
     }
 
     @Override
     public ClientBuilder keyStore(KeyStore keyStore, char[] password) {
-        return this.clientBuilder.keyStore(keyStore, password);
+        clientBuilder = clientBuilder.keyStore(keyStore, password);
+        return this;
     }
 
     @Override
     public ClientBuilder trustStore(KeyStore trustStore) {
-        return this.clientBuilder.trustStore(trustStore);
+        clientBuilder = clientBuilder.trustStore(trustStore);
+        return this;
     }
 
     @Override
     public ClientBuilder hostnameVerifier(HostnameVerifier verifier) {
-        return this.clientBuilder.hostnameVerifier(verifier);
+        clientBuilder = clientBuilder.hostnameVerifier(verifier);
+        return this;
     }
 
     @Override
@@ -107,47 +112,56 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     @Override
     public ClientBuilder property(String name, Object value) {
-        return this.clientBuilder.property(name, value);
+        clientBuilder = clientBuilder.property(name, value);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Class<?> componentClass) {
-        return this.clientBuilder.register(componentClass);
+        clientBuilder = clientBuilder.register(componentClass);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Class<?> componentClass, int priority) {
-        return this.clientBuilder.register(componentClass, priority);
+        clientBuilder = clientBuilder.register(componentClass, priority);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Class<?> componentClass, Class<?>... contracts) {
-        return this.clientBuilder.register(componentClass, contracts);
+        clientBuilder = clientBuilder.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
-        return this.clientBuilder.register(componentClass, contracts);
+        clientBuilder = clientBuilder.register(componentClass, contracts);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Object component) {
-        return this.clientBuilder.register(component);
+        clientBuilder = clientBuilder.register(component);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Object component, int priority) {
-        return this.clientBuilder.register(component, priority);
+        clientBuilder = clientBuilder.register(component, priority);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Object component, Class<?>... contracts) {
-        return this.clientBuilder.register(component, contracts);
+        clientBuilder = clientBuilder.register(component, contracts);
+        return this;
     }
 
     @Override
     public ClientBuilder register(Object component, Map<Class<?>, Integer> contracts) {
-        return this.clientBuilder.register(component, contracts);
+        clientBuilder = clientBuilder.register(component, contracts);
+        return this;
     }
     
 }

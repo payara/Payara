@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,13 @@ import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.logging.Logger;
+import org.eclipse.microprofile.opentracing.Traced;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -59,10 +62,10 @@ import javax.ws.rs.HEAD;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import org.eclipse.microprofile.opentracing.Traced;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Interceptor for MicroProfile Traced annotation.
@@ -124,9 +127,10 @@ public class TracedInterceptor implements Serializable {
                     } catch (Exception ex) {
                         // If an exception occurs during processing the method, add error info to the span
                         activeSpan.setTag(Tags.ERROR.getKey(), true);
-                        activeSpan.log(Collections.singletonMap("event", "error"));
-                        activeSpan.log(Collections.singletonMap("error.object", ex));
-                        
+                        Map<String, Object> errorInfoMap = new HashMap<>();
+                        errorInfoMap.put(Fields.EVENT, "error");
+                        errorInfoMap.put(Fields.ERROR_OBJECT, ex);
+                        activeSpan.log(errorInfoMap);
                         // Don't deal with the error here, let it propagate upwards
                         throw ex;
                     }
