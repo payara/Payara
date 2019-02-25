@@ -75,6 +75,7 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.micro.PayaraMicroRuntime;
 import fish.payara.micro.boot.PayaraMicroBoot;
@@ -1311,6 +1312,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case enablesni:
                         sniEnabled = true;
+                        break;
+                    case shutdowngrace:
+                        System.setProperty(GlassFishImpl.PAYARA_SHUTDOWNGRACE_PROPERTY, value);
                         break;
                     default:
                         break;

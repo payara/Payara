@@ -94,7 +94,8 @@ public enum RUNTIME_OPTION {
     unpackdir(true, new DirectoryValidator(true, true, true)),
     sslcert(true),
     help(false),
-    enablesni(false);
+    enablesni(false),
+    shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE));
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());
