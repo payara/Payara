@@ -1,0 +1,73 @@
+list-jndi-entries(1)      asadmin Utility Subcommands     list-jndi-entries(1)
+
+NAME
+       list-jndi-entries - browses and queries the JNDI tree
+
+SYNOPSIS
+           list-jndi-entries [--help]
+           [--context context_name]
+           [target]
+
+DESCRIPTION
+       Use this subcommand to browse and query the JNDI tree.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --context
+           The name of the JNDI context or subcontext. If context is not
+           specified, all entries in the naming service are returned. If
+           context (such as ejb) is specified, all those entries are returned.
+
+OPERANDS
+       target
+           This operand specifies the JNDI tree to browse.
+
+           Possible values are as follows:
+
+           server
+               Browses the JNDI tree for the default GlassFish Server instance
+               (default). The default instance is the domain administration
+               server (DAS).
+
+           domain
+               Browses the JNDI tree for the current domain.
+
+           cluster-name
+               Browses the JNDI tree for the specified cluster.
+
+           instance-name
+               Browses the JNDI tree for the specified GlassFish Server
+               instance.
+
+EXAMPLES
+       Example 1, Browsing the JNDI Tree
+           This example browses the JNDI tree for the default GlassFish Server
+           instance.
+
+               asadmin> list-jndi-entries
+               java:global: com.sun.enterprise.naming.impl.TransientContext
+               jdbc: com.sun.enterprise.naming.impl.TransientContext
+               ejb: com.sun.enterprise.naming.impl.TransientContext
+               com.sun.enterprise.container.common.spi.util.InjectionManager:
+               com.sun.enterprise.container.common.impl.util.InjectionManagerImpl
+
+               Command list-jndi-entries executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jndi-resource(1), delete-jndi-resource(1),
+       list-jndi-resources(1)
+
+       asadmin(1M)
+
+Java EE 8                         7 Dec 2010              list-jndi-entries(1)

@@ -1,0 +1,104 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="administered object resources">
+    <indexitem text="creating (reference)" target="ref-adminobjectnew"></indexitem>
+    <indexitem text="creating (task)" target="task-adminobjectnew"></indexitem>
+    <indexitem text="deleting" target="task-administeredobjectresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-adminobjectedit"></indexitem>
+    <indexitem text="editing (task)" target="task-adminobjectedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-adminobjectresources"></indexitem>
+  </indexitem>
+  <indexitem text="connector connection pool security maps">
+    <indexitem text="creating (reference)" target="ref-connectorsecuritymapnew"></indexitem>
+    <indexitem text="creating (task)" target="task-connectorsecuritymapnew"></indexitem>
+    <indexitem text="deleting" target="task-connectorsecuritymapdel"></indexitem>
+    <indexitem text="editing (reference)" target="ref-connectorsecuritymapedit"></indexitem>
+    <indexitem text="editing (task)" target="task-connectorsecuritymapedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-connectorsecuritymaps"></indexitem>
+  </indexitem>
+  <indexitem text="connector connection pools">
+    <indexitem text="creating (task)" target="task-connectorconnectionpoolnew"></indexitem>
+    <indexitem text="creating step 1 (reference)" target="ref-connectorconnectionpoolnew1"></indexitem>
+    <indexitem text="creating step 2 (reference)" target="ref-connectorconnectionpoolnew2"></indexitem>
+    <indexitem text="deleting" target="task-connectorconnectionpooldel"></indexitem>
+    <indexitem text="editing (reference)" target="ref-connectorconnectionpooledit"></indexitem>
+    <indexitem text="editing (task)" target="task-connectorconnectionpooledit"></indexitem>
+    <indexitem text="editing advanced attributes (reference)" target="ref-connectorconnectionpooladvance"></indexitem>
+    <indexitem text="editing advanced attributes (task)" target="task-connectorconnectionpooladvance"></indexitem>
+    <indexitem text="editing properties" target="task-connectorconnectionpoolproperty"></indexitem>
+    <indexitem text="editing properties (reference)" target="ref-connectorconnectionpoolproperty"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-connectorconnectionpools"></indexitem>
+  </indexitem>
+  <indexitem text="connector resources">
+    <indexitem text="creating (reference)" target="ref-connectorresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-connectorresourcenew"></indexitem>
+    <indexitem text="deleting" target="task-connectorresourcesdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-connectorresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-connectorresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-connectorresources"></indexitem>
+  </indexitem>
+  <indexitem text="connector service">
+    <indexitem text="configuring (reference)" target="ref-connectionservice"></indexitem>
+    <indexitem text="configuring (task)" target="task-connectionservice"></indexitem>
+  </indexitem>
+  <indexitem text="connector work security maps">
+    <indexitem text="creating (reference)" target="ref-worksecuritymapnew"></indexitem>
+    <indexitem text="creating (task)" target="task-worksecuritymapnew"></indexitem>
+    <indexitem text="deleting" target="task-worksecuritymapdelete"></indexitem>
+    <indexitem text="editing (task)" target="task-worksecuritymapedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-worksecuritymaps"></indexitem>
+  </indexitem>
+  <indexitem text="connectors">
+    <indexitem text="concepts" target="ref-connectors"></indexitem>
+  </indexitem>
+  <indexitem text="EIS access">
+    <indexitem text="setting up" target="task-setupeisaccess"></indexitem>
+  </indexitem>
+  <indexitem text="enterprise information systems (EIS)">
+    <indexitem text="setting up access" target="task-setupeisaccess"></indexitem>
+  </indexitem>
+  <indexitem text="properties">
+    <indexitem text="connector connection pools (reference)" target="ref-connectorconnectionpoolproperty"></indexitem>
+    <indexitem text="connector connection pools (task)" target="task-connectorconnectionpoolproperty"></indexitem>
+  </indexitem>
+  <indexitem text="resource adapter configs">
+    <indexitem text="creating (reference)" target="ref-resourceadapterconfignew"></indexitem>
+    <indexitem text="creating (task)" target="task-resourceadapterconfignew"></indexitem>
+    <indexitem text="deleting" target="task-resourceadapterconfigdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-resourceadapterconfigedit"></indexitem>
+    <indexitem text="editing (task)" target="task-resourceadapterconfigedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-resourceadapterconfig"></indexitem>
+  </indexitem>
+  <indexitem text="security maps for connector connection pools">
+    <indexitem text="creating (reference)" target="ref-connectorsecuritymapnew"></indexitem>
+    <indexitem text="creating (task)" target="task-connectorsecuritymapnew"></indexitem>
+    <indexitem text="deleting" target="task-connectorsecuritymapdel"></indexitem>
+    <indexitem text="editing (reference)" target="ref-connectorsecuritymapedit"></indexitem>
+    <indexitem text="editing (task)" target="task-connectorsecuritymapedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-connectorsecuritymaps"></indexitem>
+  </indexitem>
+  <indexitem text="work security maps">
+    <indexitem text="creating (reference)" target="ref-worksecuritymapnew"></indexitem>
+    <indexitem text="creating (task)" target="task-worksecuritymapnew"></indexitem>
+    <indexitem text="deleting" target="task-worksecuritymapdelete"></indexitem>
+    <indexitem text="editing (task)" target="task-worksecuritymapedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-worksecuritymaps"></indexitem>
+  </indexitem>
+</index>

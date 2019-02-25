@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -166,26 +167,7 @@
                  <!--<outputDirectory>${maven.project.build.outputDirectory}</outputDirectory>-->
                  <outputDirectory>target/classes</outputDirectory>
                </configuration>
-             </execution>
-            <execution>
-                <id>unpack</id>
-                <phase>process-classes</phase>
-                <goals>
-                    <goal>unpack</goal>
-                </goals>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>org.glassfish.docs.man</groupId>
-                            <artifactId>security-manpage</artifactId>
-                            <version>${v3-docs.version}</version>
-                            <type>zip</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                        </artifactItem>
-                    </artifactItems>
-                </configuration>
-            </execution>             
+             </execution>           
            </executions>
          </plugin>
         </plugins>

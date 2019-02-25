@@ -1,0 +1,57 @@
+list-connector-resources(1)  asadmin Utility Subcommands  list-connector-resources(1)
+
+NAME
+       list-connector-resources - lists all connector resources
+
+SYNOPSIS
+           list-connector-resources [--help] [target]
+
+DESCRIPTION
+       The list-connector-resources subcommand lists all connector resources.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           The target for which the connector resources are to be listed.
+           Valid values are as follows:
+
+           server
+               Lists the connector resources on the default server instance.
+               This is the default value.
+
+           domain
+               Lists the connector resources for the domain.
+
+           cluster-name
+               Lists the connector resources on all server instances in the
+               specified cluster.
+
+           instance-name
+               Lists the connector resources on a specified server instance.
+
+EXAMPLES
+       Example 1, Listing Connector Resources
+           This example lists all existing connector resources.
+
+               asadmin> list-connector-resources
+               jms/qConnFactory
+               Command list-connector-resources executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-resource(1), delete-connector-resource(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017      list-connector-resources(1)

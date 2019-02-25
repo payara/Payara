@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-managed-executor-services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-managed-executor-services</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-log-levels.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-managed-scheduled-executor-services.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-managed-executor-services-1"></a><a id="GSRFM871"></a><a id="list-managed-executor-services"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_managed_executor_services">list-managed-executor-services</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists managed executor service resources</p>
+</div>
+<div id="sthref1653" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-managed-executor-services [--help]
+[target]</code></pre>
+</div>
+</div>
+<div id="sthref1654" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-managed-executor-services</code> subcommand lists managed executor
+service resources.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1655" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1656" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">target</dt>
+<dd>
+<p>Specifies the target for which managed executor service resources are
+to be listed. Valid targets are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Lists the resources on the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Lists the resources for the domain.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Lists the resources on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Lists the resources on a specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1657" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM872"></a><a id="sthref1658"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Managed Executor Service Resources</p>
+</div>
+<div class="paragraph">
+<p>This example lists managed executor service resources on the default
+server instance.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-managed-executor-services
+concurrent/__defaultManagedExecutorService
+concurrent/myExecutor1
+concurrent/myExecutor2
+Command list-managed-executor-services executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1659" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1660" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-managed-executor-service.html#create-managed-executor-service-1"><code>create-managed-executor-service</code>(1)</a>,
+<a href="delete-managed-executor-service.html#delete-managed-executor-service-1"><code>delete-managed-executor-service</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-log-levels.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-managed-scheduled-executor-services.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

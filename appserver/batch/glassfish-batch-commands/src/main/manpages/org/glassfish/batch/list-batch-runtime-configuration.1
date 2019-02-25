@@ -1,0 +1,86 @@
+list-batch-runtime-configuration(1)  asadmin Utility Subcommands  list-batch-runtime-configuration(1)
+
+NAME
+       list-batch-runtime-configuration - displays the configuration of the
+       batch runtime
+
+SYNOPSIS
+           list-batch-runtime-configuration [--help]
+           [--target target]
+           [--output output]
+           [--header={false|true}]
+
+DESCRIPTION
+       The list-batch-runtime-configuration subcommand displays the
+       configuration of the batch runtime. Batch runtime configuration data is
+       stored in the config element in domain.xml.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which to list the batch runtime
+           configuration. Valid values are as follows:
+
+           server
+               Lists the batch runtime configuration for the default server
+               instance server and is the default value.
+
+           cluster-name
+               Lists the batch runtime configuration for every server instance
+               in the cluster.
+
+           instance-name
+               Lists the batch runtime configuration for a particular server
+               instance.
+
+       --output, -o
+           Displays specific details about the batch runtime configuration.
+           Use a comma-separated list to specify the details to display and
+           their order. The values are case-insensitive. The
+           datasourcelookupname and executorservicelookupname column headings
+           are displayed by default.
+
+           Possible values are as follows:
+
+           datasourcelookupname
+               The JNDI lookup name of the data source used to store job
+               information. By default, the batch runtime uses the default
+               data source jdbc/__TimerPool.
+
+           executorservicelookupname
+               The JNDI lookup name of the managed executor service used to
+               provide threads to jobs. By default, the batch runtime uses the
+               default managed executor service
+               concurrent/__defaultManagedExecutorService.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+EXAMPLES
+       Example 1, Listing Batch Runtime Configuration
+           The following example lists the configuration of the batch runtime
+           for the default server instance.
+
+               asadmin> list-batch-runtime-configuration
+               DATASOURCELOOKUPNAME     EXECUTORSERVICELOOKUPNAME
+               jdbc/_default            concurrent/__defaultManagedExecutorService
+               Command list-batch-runtime-configuration executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       set-batch-runtime-configuration(1), list-batch-jobs(1),
+       list-batch-job-executions(1), list-batch-job-steps(1)
+
+       asadmin(1M)
+
+Java EE 8             09 Aug 2017         list-batch-runtime-configuration(1)

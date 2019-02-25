@@ -107,6 +107,7 @@
         <module>core</module>
         <module>concurrent</module>
         <module>cluster</module>
+        <module>reference-manual</module>
         <module>payara-theme</module>
         <module>web</module>
         <module>gf-admingui-connector</module>
@@ -187,6 +188,18 @@
             </executions>
           </plugin>
         </plugins>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+              <exclude>**/*.jar</exclude>
+              <exclude>**/*.gitkeep_empty_dir</exclude>
+            </excludes>
+          </resource>
+          <resource>
+            <directory>src/main/help</directory>
+          </resource>
+        </resources>
       </build>
 
     <dependencies>

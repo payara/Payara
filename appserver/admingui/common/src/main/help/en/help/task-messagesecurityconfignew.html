@@ -1,0 +1,111 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-messagesecurityconfignew" name="task-messagesecurityconfignew"></a><a id="GHCOM00204" name="GHCOM00204"></a></p>
+
+<h4><a id="sthref102" name="sthref102"></a>To Create a Message Security Configuration</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Normally, you do not need to create a message security configuration. GlassFish Server includes a message security configuration for the SOAP authentication layer. The providers for this configuration are not activated by default, but you can activate them by editing the SOAP message security configuration. You can, however, create a configuration for the HttpServlet authentication layer and specify one or more provider configurations for it.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Expand the Security node.</p>
+</li>
+<li>
+<p>Select the Message Security node.</p>
+<p>The Message Security Configurations page opens.</p>
+</li>
+<li>
+<p>On the Message Security Configurations page, click New.</p>
+<p>The New Message Security Configuration page opens.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>It is not possible to create or delete message security providers for the default <code>server-config</code> configuration. The only message security providers that are supported for the default <code>server-config</code> are SOAP and HttpServlet. Because these two message providers are already created by default when GlassFish Server is installed, the New button is grayed out on the Message Security Configurations page for the default <code>server-config</code>.</p>
+
+<hr>
+
+</li>
+<li>
+<p>On the New Message Security Configuration page, from the Authentication Layer drop-down list, select the message layer for which you are creating a configuration.</p>
+<p>Because a SOAP configuration is available by default, the only choice is <code>HttpServlet</code>.</p>
+</li>
+<li>
+<p>In the Provider ID field, type the unique identifier of the provider configuration for this message security configuration.</p>
+</li>
+<li>
+<p>Select the Default Provider checkbox to specify that this provider configuration is the default provider.</p>
+</li>
+<li>
+<p>From the Provider Type drop-down list, select the type of this provider.</p>
+<p>Available choices are:</p>
+<dl>
+<dt><code>client</code></dt>
+<dd>
+<p>Specifies that the provider is the client authentication provider.</p>
+</dd>
+<dt><code>server</code></dt>
+<dd>
+<p>Specifies that the provider is the server authentication provider.</p>
+</dd>
+<dt><code>client-server</code></dt>
+<dd>
+<p>Specifies that the provider is both a client and a server authentication provider.</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>In the Class Name field, type the name of the Java implementation class of the provider.</p>
+<p>Client authentication providers must implement the <code>com.sun.enterprise.security.jauth.ClientAuthModule</code> interface. Server-side providers must implement the <code>com.sun.enterprise.security.jauth.ServerAuthModule</code> interface. Client-server providers must implement both interfaces.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>The GlassFish Server does not define any additional properties for message security configurations.</p>
+</li>
+</ol>
+<a id="GHCOM310" name="GHCOM310"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigdelete.html">To Delete a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfignew.html">To Create a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigedit.html">To Edit a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigdelete.html">To Delete a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-enablemesec4appclients.html">To Enable Message Security for Application Clients</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

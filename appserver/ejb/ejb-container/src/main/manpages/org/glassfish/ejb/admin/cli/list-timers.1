@@ -1,0 +1,54 @@
+list-timers(1)            asadmin Utility Subcommands           list-timers(1)
+
+NAME
+       list-timers - lists all of the persistent timers owned by server
+       instance(s)
+
+SYNOPSIS
+           list-timers [--help] [target]
+
+DESCRIPTION
+       The list-timers subcommand lists the persistent timers owned by a
+       specific server instance or a cluster of server instances. This command
+       is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           The target is either a standalone server instance or a cluster. If
+           the target is the stand-alone instance, then the number of timers
+           owned by the instance is listed. If the target is a cluster, then
+           the number of timers owned by each instance in the cluster is
+           listed. The default target is server, the default server instance.
+
+EXAMPLES
+       Example 1, Listing Current Timers in a Server Instance
+           This example lists persistent timers in a particular standalone
+           server instance. There is one currently active timer set.
+
+               asadmin> list-timers server
+               1
+
+               The list-timers command was executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       migrate-timers(1)
+
+       asadmin(1M)
+
+       "Using the Timer Service" in The Java EE 8 Tutorial
+
+       "EJB Timer Service" in Oracle GlassFish Server Application Development
+       Guide
+
+Java EE 8                         31 Aug 2017                   list-timers(1)

@@ -1,0 +1,75 @@
+set-log-levels(1)         asadmin Utility Subcommands        set-log-levels(1)
+
+NAME
+       set-log-levels - sets the log level for one or more loggers
+
+SYNOPSIS
+           set-log-levels [--help]
+           [--target=target]
+           logger-name=logger-level[:logger-name=logger-level]*
+
+DESCRIPTION
+       The set-log-levels subcommand sets the log level for one or more
+       loggers. Changes take effect dynamically. Depending on the log levels
+       you set, a server restart may be necessary.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The server instance or cluster for which log levels will be set.
+           Valid values are:
+
+           *   server - The default server instance. If no target is specified
+               then log levels are set for the default server instance.
+
+           *   cluster-name - The name of a cluster.
+
+           *   instance-name - The name of a standalone server instance.
+
+OPERANDS
+       logger-name
+           The name of the logger. The list-log-levels subcommand can be used
+           to list the names of the current loggers.
+
+       logger-level
+           The level to set for the logger. Log level values are SEVERE,
+           WARNING, INFO, CONFIG, FINE, FINER, and FINEST. The default setting
+           is INFO.
+
+EXAMPLES
+       Example 1, Setting a Log Level for a Logger
+           This example sets the log level of the web container logger to
+           WARNING.
+
+               asadmin> set-log-levels javax.enterprise.system.container.web=WARNING
+               Command set-log-level executed successfully.
+
+       Example 2, Setting the Log Level for Multiple Loggers
+           This example sets the log level of the web container logger to FINE
+           and the log level of the EJB container logger to SEVERE:
+
+               asadmin set-log-levels javax.enterprise.system.container.web=FINE:
+               javax.enterprise.system.container.ejb=SEVERE
+               Command set-log-level executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       collect-log-files(1), list-log-attributes(1), list-log-levels(1),
+       rotate-log(1), set-log-attributes(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         12 Feb 2011                set-log-levels(1)

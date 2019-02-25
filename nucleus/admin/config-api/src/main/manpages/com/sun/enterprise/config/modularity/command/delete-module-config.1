@@ -1,0 +1,66 @@
+delete-module-config(1)   asadmin Utility Subcommands  delete-module-config(1)
+
+NAME
+       delete-module-config - removes the configuration of a module from
+       domain.xml
+
+SYNOPSIS
+           delete-module-config [--help]
+           [--target target]
+           service_name
+
+DESCRIPTION
+       The delete-module-config subcommand removes the configuration of a
+       module from domain.xml and causes the module to use the default
+       configuration included in the module.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which the configuration is to be deleted.
+
+           Possible values are as follows:
+
+           server
+               Deletes the configuration from the default server instance.
+               This is the default value.
+
+           domain
+               Deletes the configuration from the default domain.
+
+           cluster-name
+               Deletes the configuration from every server instance in the
+               specified cluster.
+
+           instance-name
+               Deletes the configuration from the specified instance.
+
+OPERANDS
+       service_name
+           The name of the module for which configuration is to be removed.
+
+EXAMPLES
+       Example 1, Deleting a Default Configuration From domain.xml
+           This example deletes the configuration of the web container module
+           from domain1 in server-config (the default configuration).
+
+               asadmin> delete-module-config web-container
+               Command delete-module-config executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-module-config(1), get-active-module-config(1)
+
+       asadmin(1M)
+
+Java EE 8                         06 Feb 2013          delete-module-config(1)

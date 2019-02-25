@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-connector-security-map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-connector-security-map</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-connector-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-connector-work-security-map.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-connector-security-map-1"></a><a id="GSRFM00072"></a><a id="delete-connector-security-map"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_connector_security_map">delete-connector-security-map</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>deletes a security map for the specified connector connection pool</p>
+</div>
+<div id="sthref642" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-connector-security-map [--help]
+--poolname connector_connection_pool_name [--target target] mapname</code></pre>
+</div>
+</div>
+<div id="sthref643" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-connector-security-map</code> subcommand deletes a security map
+for the specified connector connection pool.</p>
+</div>
+<div class="paragraph">
+<p>For this subcommand to succeed, you must have first created a connector
+connection pool using the <code>create-connector-connection-pool</code> subcommand.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref644" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--poolname</code></dt>
+<dd>
+<p>Specifies the name of the connector connection pool to which the
+security map that is to be deleted belongs.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref645" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">mapname</dt>
+<dd>
+<p>Name of the security map to be deleted.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref646" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM540"></a><a id="sthref647"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deleting a Connector Security Map</p>
+</div>
+<div class="paragraph">
+<p>This example deletes <code>securityMap1</code> for the existing connection pool
+named <code>connector-pool1</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-connector-security-map
+--poolname connector-pool1 securityMap1
+Command delete-connector-security-map executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref648" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref649" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-connector-security-map.html#create-connector-security-map-1"><code>create-connector-security-map</code>(1)</a>,
+<a href="list-connector-security-maps.html#list-connector-security-maps-1"><code>list-connector-security-maps</code>(1)</a>,
+<a href="update-connector-security-map.html#update-connector-security-map-1"><code>update-connector-security-map</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="delete-connector-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-connector-work-security-map.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

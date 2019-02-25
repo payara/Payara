@@ -1,0 +1,70 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-domainattributestab" name="ref-domainattributestab"></a><a id="GHCOM00052" name="GHCOM00052"></a></p>
+
+<h4><a id="sthref123" name="sthref123"></a>Domain Attributes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Domain Attributes page to set advanced domain attributes for the GlassFish Server.</p>
+<p>The Domain Attributes page contains the following options.</p>
+<dl>
+<dt>Load Console After DAS Startup</dt>
+<dd>
+<p>Determines when to load the Administration Console:</p>
+<dl>
+<dt>Usage Based</dt>
+<dd>
+<p>Loads the Administration Console after the Domain Administration Server (DAS) if the console has been used in the last 24 hours or if other server instances exist aside from the DAS. This is the default.</p>
+</dd>
+<dt>Always</dt>
+<dd>
+<p>Always loads the Administration Console after the DAS. The console is loaded after the main GlassFish Server startup sequence has completed.</p>
+</dd>
+<dt>Never</dt>
+<dd>
+<p>Never loads the Administration Console after the DAS. The console is loaded when access to it is requested.</p>
+</dd>
+</dl>
+</dd>
+<dt>Application Root</dt>
+<dd>
+<p>The full path of the directory where deployed applications reside. The default value is <i>domain-dir</i><code>/applications</code>.</p>
+</dd>
+<dt>Log Root</dt>
+<dd>
+<p>Identifies where the server log files are kept. The default value is <i>domain-dir</i><code>/logs</code>.</p>
+</dd>
+<dt>Locale</dt>
+<dd>
+<p>If this field is left blank, the default locale of the host will be used.</p>
+<p>A locale is an identifier that specifies a particular combination of language and region. For example, the locale for American English is <code>en_US</code>, and for Japanese it is <code>ja_JP</code>. To use a non-English locale, the GlassFish Server must be localized, a process that includes translating English into another language.</p>
+</dd>
+</dl>
+<a id="GHCOM338" name="GHCOM338"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setadvanceappconfig.html">To Set the Applications Configuration</a></p>
+</li>
+<li>
+<p><a href="task-setadvancedomainattributes.html">To Set the Domain Attributes</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

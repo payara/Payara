@@ -1,0 +1,54 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-configurebatchruntime" name="task-configurebatchruntime"></a><a id="GHJML151" name="GHJML151"></a></p>
+
+<h4><a id="sthref3" name="sthref3"></a>To Configure the Batch Runtime</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, select the GlassFish Server cluster or server instance for which you want to configure the batch runtime.</p>
+<p>The General Information page opens.</p>
+</li>
+<li>
+<p>Click the Batch tab.</p>
+<p>The Batch Job Executions page opens.</p>
+</li>
+<li>
+<p>Click the Configuration tab.</p>
+<p>The Batch Runtime Configuration page opens. The batch runtime uses a managed executor service and a data source to execute batch jobs.</p>
+</li>
+<li>
+<p>From the Executor Service Lookup Name drop-down list, select the managed executor service that will provide threads to batch jobs.</p>
+<p>The default managed executor service is <code>concurrent/__defaultManagedExecutorService</code>. The managed executor service can be changed after a batch job has been submitted to the batch runtime without impacting execution of the job.</p>
+</li>
+<li>
+<p>From the Data Source Lookup Name drop-down list, select the data source that will store job information.</p>
+<p>The default data source is <code>jdbc/__TimerPool</code>. Do not change the data source after the first batch job has been submitted to the batch runtime for execution. If the data source must be changed, stop and restart the domain and then make the change before any jobs are started or restarted. However, once the data source has been changed, information stored in the previous data source becomes inaccessible.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHJML152" name="GHJML152"></a>
+<h5>See Also</h5>
+<p><a href="task-viewbatchjobexecutions.html">To View Batch Job Executions</a></p>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

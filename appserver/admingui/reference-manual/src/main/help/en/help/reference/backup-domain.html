@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>backup-domain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>backup-domain</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="attach.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="change-admin-password.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="backup-domain-1"></a><a id="GSRFM00003"></a><a id="backup-domain"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_backup_domain">backup-domain</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>performs a backup on the domain</p>
+</div>
+<div id="sthref39" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] backup-domain [--help]
+[--long[={false|true}]]
+[--description description-text]
+[--domaindir domain-root-dir]
+[--backupdir backup-directory]
+[--backupconfig backup-config-name]
+[domain_name]</code></pre>
+</div>
+</div>
+<div id="sthref40" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>backup-domain</code> subcommand backs up files under the named domain.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only in GlassFish Server Open
+Source Edition, and is supported in local mode and remote mode in Oracle
+GlassFish Server.</p>
+</div>
+<div class="paragraph">
+<p>In GlassFish Server Open Source Edition, the domain to be backed up must
+be stopped.</p>
+</div>
+<div class="paragraph">
+<p>In Oracle GlassFish Server, the domain to be backed up must be stopped
+or be suspended using the <code>suspend-domain</code>(1) subcommand.</p>
+</div>
+<div id="sthref41" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--long</code></dt>
+<dt class="hdlist1"><code>-l</code></dt>
+<dd>
+<p>Displays detailed information about the backup operation.<br>
+The default value is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Specifies a description to store in the backup file. The description
+is displayed as part of the information about a backup file.<br>
+The default value has this form:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">domain-name backup created on YYYY_MM_DD by user user-name</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--domaindir</code></dt>
+<dd>
+<p>Specifies the domain root directory, the parent directory of the
+domain to back up.<br>
+The default value is as-install`/domains`.</p>
+</dd>
+<dt class="hdlist1"><code>--backupdir</code></dt>
+<dd>
+<p>Specifies the directory under which the backup file is to be stored.<br>
+The default value is as-install`/domains/<code>domain-dir</code>/backups`. If the
+domain is not in the default location, the location is
+domain-dir`/backups`.</p>
+</dd>
+<dt class="hdlist1"><code>--backupconfig</code></dt>
+<dd>
+<p>(Supported only in Oracle GlassFish Server.) The name of the domain
+backup configuration in the backup directory under which the backup
+file is to be stored.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref42" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">domain-name</dt>
+<dd>
+<p>Specifies the name of the domain to be backed up.<br>
+This operand is optional if only one domain exists in the
+\{product---name} installation.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref43" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref44" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-backups.html#list-backups-1"><code>list-backups</code>(1)</a>,
+<a href="restore-domain.html#restore-domain-1"><code>restore-domain</code>(1)</a>,
+<code>resume-domain</code>(1), <code>suspend-domain</code>(1)</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="attach.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="change-admin-password.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

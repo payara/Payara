@@ -1,0 +1,62 @@
+list-managed-thread-factories(1)  asadmin Utility Subcommands  list-managed-thread-factories(1)
+
+NAME
+       list-managed-thread-factories - lists managed thread factory resources
+
+SYNOPSIS
+           list-managed-thread-factories [--help]
+           [target]
+
+DESCRIPTION
+       The list-managed-thread-factories subcommand lists managed thread
+       factory resources.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Specifies the target for which managed thread factory resources are
+           to be listed. Valid targets are:
+
+           server
+               Lists the resources on the default server instance. This is the
+               default value.
+
+           domain
+               Lists the resources for the domain.
+
+           cluster-name
+               Lists the resources on all server instances in the specified
+               cluster.
+
+           instance-name
+               Lists the resources on a specified server instance.
+
+EXAMPLES
+       Example 1, Listing Managed Thread Factory Resources
+           This example lists managed thread factory resources on the default
+           server instance.
+
+               asadmin> list-managed-thread-factories
+               concurrent/__defaultManagedThreadFactory
+               concurrent/myThreadFactory1
+               concurrent/myThreadFactory2
+               Command list-managed-thread-factories executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-managed-thread-factory(1), delete-managed-thread-factory(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017         list-managed-thread-factories(1)

@@ -145,25 +145,6 @@
                        <includes>**/*.dtd,**/*.xsd</includes>
                      </configuration>
                    </execution>
-                       <execution>
-                           <id>unpack</id>
-                           <phase>process-classes</phase>
-                           <goals>
-                             <goal>unpack</goal>
-                           </goals>
-                           <configuration>
-                               <artifactItems>
-                                   <artifactItem>
-                                       <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>gf-client-module-manpage</artifactId>
-                                       <version>${v3-docs.version}</version>
-                                       <type>zip</type>
-                                       <overWrite>true</overWrite>
-                                       <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                                   </artifactItem>
-                                </artifactItems>
-                           </configuration>
-                        </execution>
                   </executions>
             </plugin>
             <plugin>
