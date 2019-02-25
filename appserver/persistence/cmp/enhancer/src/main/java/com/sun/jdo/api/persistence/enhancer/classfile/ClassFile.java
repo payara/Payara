@@ -65,10 +65,16 @@ final public class ClassFile implements VMConstants {
     new short[]{47, 0}, // jdk 1.3
     new short[]{48, 0}, // jdk 1.4
     new short[]{49, 0}, // jdk 1.5
-    new short[]{50, 0}  // jdk 1.6      
+    new short[]{50, 0}, // jdk 1.6
+    new short[]{51, 0}, // jdk 1.7
+    new short[]{52, 0}, // jdk 1.8
+    new short[]{53, 0}, // jdk 9
+    new short[]{54, 0}, // jdk 10
+    new short[]{55, 0}, // jdk 11
+    new short[]{56, 0}, // jdk 12
+    new short[]{57, 0}  // jdk 13
   };
-  public static final List jdkVersions =
-    convertMajorMinorVersions(jdkMajorMinorVersions);
+  public static final List jdkVersions = convertMajorMinorVersions(jdkMajorMinorVersions);
   public static final String supportedVersions = printSupportedVersions();
 
   private int majorVersion = 0;
