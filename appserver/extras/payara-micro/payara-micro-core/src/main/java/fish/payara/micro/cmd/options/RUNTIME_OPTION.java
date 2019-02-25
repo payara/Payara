@@ -105,6 +105,7 @@ public enum RUNTIME_OPTION {
     enablesni(false),
     hzpublicaddress(true),
     shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE)),
+    hzinitialjoinwait(true, new IntegerValidator(0,100000)),
     contextroot(true);
 
     private RUNTIME_OPTION(boolean hasValue) {

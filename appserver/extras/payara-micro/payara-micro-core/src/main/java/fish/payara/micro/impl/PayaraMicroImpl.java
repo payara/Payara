@@ -185,6 +185,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean showServletMappings;
     private boolean sniEnabled = false;
     private String publicAddress = "";
+    private int initialJoinWait = 1;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1357,6 +1358,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case shutdowngrace:
                         System.setProperty(GlassFishImpl.PAYARA_SHUTDOWNGRACE_PROPERTY, value);
                         break;
+                    case hzinitialjoinwait:
+                        initialJoinWait = Integer.parseInt(value);
+                        break;
                     case contextroot:
                         if (contextRoot != null) {
                             LOGGER.warning("Multiple --contextroot arguments only the last one will apply");
@@ -1838,8 +1842,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
+    
     private void configureHazelcast() {
         // check hazelcast cluster overrides
+        // set join wait based on the command flag
+        if (System.getProperty("hazelcast.wait.seconds.before.join") == null) {
+            System.setProperty("hazelcast.wait.seconds.before.join", Integer.toString(initialJoinWait));
+        }
+        
         if (noCluster) {
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.enabled=false"));
             preBootCommands.add(new BootCommand("set", "configs.config.server-config.ejb-container.ejb-timer-service.ejb-timer-service=Dummy"));
@@ -2118,6 +2128,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         autoBindHttp = getBooleanProperty("payaramicro.autoBindHttp");
         autoBindRange = getIntegerProperty("payaramicro.autoBindRange", 5);
+        initialJoinWait = getIntegerProperty("payaramicro.initialJoinWait",1);
         autoBindSsl = getBooleanProperty("payaramicro.autoBindSsl");
         generateLogo = getBooleanProperty("payaramicro.logo");
         logToFile = getBooleanProperty("payaramicro.logToFile");
@@ -2314,6 +2325,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
         props.setProperty("payaramicro.showServletMappings", Boolean.toString(showServletMappings));
         props.setProperty("payaramicro.sniEnabled", Boolean.toString(sniEnabled));
+        props.setProperty("payaramicro.initialJoinWait", Integer.toString(initialJoinWait));
         
         if (publicAddress != null) {
             props.setProperty("payaramicro.publicAddress", publicAddress);
