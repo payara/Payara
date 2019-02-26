@@ -149,6 +149,9 @@ public final class ServerSynchronizer implements PostConstruct {
                 case "docroot":
                     synchronizeDocroot(payload, server, syncRequest);
                     break;
+                case "endpoints":
+                    synchronizeDocroot(payload, server, syncRequest);
+                    break;
                 case "config-specific":
                     synchronizeConfigSpecificDir(payload, server, syncRequest);
                     break;
@@ -469,32 +472,33 @@ public final class ServerSynchronizer implements PostConstruct {
     /**
      * Synchronize the lib directory.
      */
-    private void synchronizeLib(Payload.Outbound payload, Server server, SyncRequest sr) throws URISyntaxException {
-        List<String> skip = new ArrayList<String>();
+    private void synchronizeLib(Payload.Outbound payload, Server server, SyncRequest syncRequest) throws URISyntaxException {
+        List<String> skip = new ArrayList<>();
         skip.add("databases");
-        synchronizeDirectory(payload, server, sr, env.getLibPath(), skip, SyncLevel.RECURSIVE);
+        
+        synchronizeDirectory(payload, server, syncRequest, env.getLibPath(), skip, SyncLevel.RECURSIVE);
     }
 
     /**
      * Synchronize the docroot directory.
      */
-    private void synchronizeDocroot(Payload.Outbound payload, Server server, SyncRequest sr) throws URISyntaxException {
-        synchronizeDirectory(payload, server, sr, new File(env.getInstanceRoot(), "docroot"), null, SyncLevel.DIRECTORY);
+    private void synchronizeDocroot(Payload.Outbound payload, Server server, SyncRequest syncRequest) throws URISyntaxException {
+        synchronizeDirectory(payload, server, syncRequest, new File(env.getInstanceRoot(), "docroot"), null, SyncLevel.DIRECTORY);
     }
 
     /**
      * Synchronize a directory.
      */
-    private void synchronizeDirectory(Payload.Outbound payload, Server server, SyncRequest sr, File dir, List<String> skip, SyncLevel level) throws URISyntaxException {
+    private void synchronizeDirectory(Payload.Outbound payload, Server server, SyncRequest syncRequest, File dir, List<String> skip, SyncLevel level) throws URISyntaxException {
         logger.log(FINEST, "ServerSynchronizer: directory is {0}", dir);
-        synchronizeDirectory(payload, server, sr, dir, getFileNames(dir, skip, level));
+        
+        synchronizeDirectory(payload, server, syncRequest, dir, getFileNames(dir, skip, level));
     }
 
     private void synchronizeDirectory(Payload.Outbound payload, Server server, SyncRequest syncRequest, File dir, List<String> fileSet) throws URISyntaxException {
-
         for (ModTime modTime : syncRequest.files) {
             if (fileSet.contains(modTime.name)) {
-                // if client has file, remove it from set
+                // If client has file, remove it from set
                 fileSet.remove(modTime.name);
                 syncFile(domainRootUri, dir, modTime, payload);
             } else {
@@ -502,7 +506,7 @@ public final class ServerSynchronizer implements PostConstruct {
             }
         }
 
-        // now do all the remaining files the client doesn't have
+        // Now do all the remaining files the client doesn't have
         for (String name : fileSet) {
             syncFile(domainRootUri, dir, new ModTime(name, 0), payload);
         }
@@ -513,21 +517,25 @@ public final class ServerSynchronizer implements PostConstruct {
      * directory, which is in the main config directory. The instance-config-specific config directory is named
      * <config-name>.
      */
-    private void synchronizeConfigSpecificDir(Payload.Outbound payload, Server server, SyncRequest sr) throws URISyntaxException {
+    private void synchronizeConfigSpecificDir(Payload.Outbound payload, Server server, SyncRequest syncRequest) throws URISyntaxException {
         String configDirName = server.getConfigRef();
         File configDir = env.getConfigDirPath();
         File configSpecificDir = new File(configDir, configDirName);
-        if (logger.isLoggable(FINEST))
+        
+        if (logger.isLoggable(FINEST)) {
             logger.finest("ServerSynchronizer: " + "config-specific directory is " + configSpecificDir);
+        }
+        
         if (!configSpecificDir.exists()) {
-            if (logger.isLoggable(FINE))
-                logger.log(FINE, "ServerSynchronizer: no config-specific directory to synchronize: {0}", configSpecificDir);
+            logger.log(FINE, "ServerSynchronizer: no config-specific directory to synchronize: {0}", configSpecificDir);
+            
             return; // nothing to do
         }
 
         List<String> fileSet = new ArrayList<String>();
         getFileNames(configSpecificDir, configDir, null, fileSet, SyncLevel.DIRECTORY);
-        synchronizeDirectory(payload, server, sr, configDir, fileSet);
+        
+        synchronizeDirectory(payload, server, syncRequest, configDir, fileSet);
     }
 
     /**
@@ -552,9 +560,12 @@ public final class ServerSynchronizer implements PostConstruct {
     private int getFileNames(File dir, File baseDir, List<String> skip, List<String> names, SyncLevel level) {
         if (level == SyncLevel.TOP) {
             String name = baseDir.toURI().relativize(dir.toURI()).getPath();
-            // if name is a directory, it will end with "/"
-            if (name.endsWith("/"))
+            
+            // If name is a directory, it will end with "/"
+            if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
+            }
+            
             names.add(name);
             return 1; // nothing else
         }
@@ -563,11 +574,16 @@ public final class ServerSynchronizer implements PostConstruct {
         for (String file : dir.list()) {
             File f = new File(dir, file);
             String name = baseDir.toURI().relativize(f.toURI()).getPath();
-            // if name is a directory, it will end with "/"
-            if (name.endsWith("/"))
+            
+            // If name is a directory, it will end with "/"
+            if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
-            if (skip != null && skip.contains(name))
+            }
+            
+            if (skip != null && skip.contains(name)) {
                 continue;
+            }
+            
             if (f.isDirectory() && level == SyncLevel.RECURSIVE) {
                 int subFileCnt = getFileNames(f, baseDir, skip, names, level);
                 if (subFileCnt == 0) {
@@ -581,6 +597,7 @@ public final class ServerSynchronizer implements PostConstruct {
                 cnt++;
             }
         }
+        
         return cnt;
     }
 
