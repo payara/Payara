@@ -51,6 +51,7 @@ import java.nio.file.Path;
 
 import javax.inject.Inject;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -94,6 +95,9 @@ public class DisableEjbInvokerCommand implements AdminCommand {
     
     @Inject
     private ServiceLocator serviceLocator;
+    
+    @Inject
+    private Domain domain;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -111,6 +115,14 @@ public class DisableEjbInvokerCommand implements AdminCommand {
         
         ActionReport report = context.getActionReport();
         report.setActionExitCode(deploymentStatus.getExitCode());
+        
+        if (deploymentStatus.getExitCode().equals(ActionReport.ExitCode.FAILURE)) {
+            if (domain.getApplications().getApplication("ejb-invoker") == null) {
+                report.appendMessage("\nEJB Invoker is not enabled on any target");
+            } else {
+                report.appendMessage("\nFailed to disable Ejb Invoker - was it enabled on the specified target?");
+            }
+        }
     }
 
 }
