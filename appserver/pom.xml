@@ -88,7 +88,7 @@
         <!-- JSF -->
         <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
         <jakarta.faces-api.version>2.3.1</jakarta.faces-api.version>
-        <mojarra.version>2.3.9.payara-p1</mojarra.version>
+        <mojarra.version>2.3.9.payara-p2</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
