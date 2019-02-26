@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -94,6 +95,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
 
     private final Map<String, Set<HealthCheck>> healthChecks = new ConcurrentHashMap<>();
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
+    private final List<String> applicationsLoaded = new CopyOnWriteArrayList<>();
 
     @PostConstruct
     public void postConstruct() {
@@ -112,6 +114,15 @@ public class HealthCheckService implements EventListener, ConfigListener {
             if (appInfo != null) {
                 healthChecks.remove(appInfo.getName());
                 applicationClassLoaders.remove(appInfo.getName());
+                applicationsLoaded.remove(appInfo.getName());
+            }
+        }
+
+        // Keep track of all deployed applications.
+        if (event.is(Deployment.APPLICATION_STARTED)) {
+            ApplicationInfo appInfo = Deployment.APPLICATION_STARTED.getHook(event);
+            if (appInfo != null) {
+                applicationsLoaded.add(appInfo.getName());
             }
         }
     }
@@ -189,6 +200,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
                     response.setStatus(500);
                 }
             }
+        }
+
+        // No applications (yet), server is not ready.
+        if (applicationsLoaded.isEmpty()) {
+            // Application is not yet deployed
+            healthCheckResponses.add(HealthCheckResponse.builder().name("No Application deployed").down().build());
         }
 
         // If we haven't encountered an exception, construct the JSON response
