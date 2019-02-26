@@ -61,10 +61,13 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * This implementation of the Archive interface maps to a directory/file
@@ -138,6 +141,14 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * be sure that the staleFileManager field has been set.
      */
     private boolean isOpenedOrCreated = false;
+    
+    /**
+     * Cache for {@link #entries()}. This is done as a static variable instead of a service
+     * because FileArchive is commonly created by constructor rather than through injection.
+     * This is not a WeakHashMap because instances of {@link File} pointing to the same location
+     * may be created and used.
+     */
+    private static final Map<File, List> entriesCache = new HashMap<File, List>();
 
     /** 
      * Open an abstract archive
@@ -298,12 +309,19 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * @return an enumeration of the archive file entries. 
      */ 
     @Override
-    public Enumeration<String> entries(String prefix) {
+    public Enumeration<String> entries(String prefix) {        
         prefix = prefix.replace('/', File.separatorChar);
         File file = new File(archive, prefix);
-        List<String> namesList = new ArrayList<String>();
-        getListOfFiles(file, namesList, null);
-        return Collections.enumeration(namesList);
+        
+        if (entriesCache.containsKey(file)) {
+            return Collections.enumeration(entriesCache.get(file));
+        } else {
+            List<String> namesList = new ArrayList<String>();
+            getListOfFiles(file, namesList, null);
+            Enumeration entries = Collections.enumeration(namesList);
+            entriesCache.put(file, namesList);
+            return entries;
+        }
     }
     
     /**
@@ -590,14 +608,14 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
          */
         if (!Files.isSymbolicLink(directory.toPath())) {
             File[] entries = directory.listFiles();
-            for (int i=0;i<entries.length;i++) {
-                if (entries[i].isDirectory()) {
-                    allDeletesSucceeded &= deleteDir(entries[i]);
+            for (File entry : entries) {
+                if (entry.isDirectory()) {
+                    allDeletesSucceeded &= deleteDir(entry);
                 } else {
-                    if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
-                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entries[i]);
+                    if (!entry.equals(StaleFileManager.Util.markerFile(archive))) {
+                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entry);
                         if (fileDeleteOK) {
-                            myStaleFileManager().recordDeletedEntry(entries[i]);
+                            myStaleFileManager().recordDeletedEntry(entry);
                         }
                         allDeletesSucceeded &= fileDeleteOK;
                     }
@@ -745,6 +763,16 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     public String getName() {
         return Util.getURIName(getURI());
     }
+    
+    /**
+     * Empty the cache of file entries
+     * 
+     * This should be called at the end of deployment to ensure that it isn't retained
+     * if an application is redeployed and to clear up the memory
+     */
+    public static void clearCache() {
+        entriesCache.clear();
+    }
 
     /**
      * API which FileArchive methods should use for dealing with the StaleFileManager
@@ -814,19 +842,17 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     return;
                 }
 
-                final URI archiveURI = archiveFile.toURI();
-                PrintStream ps = null;
-                try {
-                    ps = new PrintStream(markerFile(archiveFile));
+                final Path archivePath = archiveFile.toPath();
+
+                try (PrintStream ps = new PrintStream(markerFile(archiveFile))) {
+                    for ( ; staleFileIt.hasNext(); ) {
+                        final Path relativeURI = archivePath.relativize(staleFileIt.next().toPath());
+                        ps.println(relativeURI);
+                        deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
+                    }
                 } catch (FileNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
-                for ( ; staleFileIt.hasNext(); ) {
-                    final URI relativeURI = archiveURI.relativize(staleFileIt.next().toURI());
-                    ps.println(relativeURI);
-                    deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
-                }
-                ps.close();
             }
 
             /**
@@ -955,15 +981,15 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      */
     private static class StaleFileManagerImpl implements StaleFileManager {
 
-        private final static String LINE_SEP = System.getProperty("line.separator");
+        private final static String LINE_SEP = System.lineSeparator();
         private final File archiveFile;
-        private final URI archiveURI;
+        private final Path archivePath;
         private final Collection<String> staleEntryNames;
         private final File markerFile;
         
         private StaleFileManagerImpl(final File archive) throws FileNotFoundException, IOException {
             archiveFile = archive;
-            archiveURI = archive.toURI();
+            archivePath = archive.toPath();
             markerFile = StaleFileManager.Util.markerFile(archive);
             staleEntryNames = readStaleEntryNames(markerFile);
         }
@@ -980,9 +1006,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             if ( ! markerFile.exists()) {
                 return result;
             }
-            LineNumberReader reader = null;
-            try {
-                reader = new LineNumberReader(new FileReader(markerFile));
+            try (LineNumberReader reader = new LineNumberReader(new FileReader(markerFile))) {
 
                 // Avoid some work if logging is coarser than FINE.
                 final boolean isShowEntriesToBeSkipped = deplLogger.isLoggable(DEBUG_LEVEL);
@@ -999,10 +1023,6 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                             new Object[] {LINE_SEP, entriesToSkip.toString()});
                 }
                 return result;
-            } finally {
-                if (reader != null) {
-                    reader.close();
-                }
             }
         }
 
@@ -1014,12 +1034,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
         @Override
         public boolean isEntryValid(final File f, final boolean isLogging, final Logger logger) {
-            final boolean result = ( ! isEntryMarkerFile(f)) && 
-                    ( ! staleEntryNames.contains(archiveURI.relativize(f.toURI()).getPath()));
-            if ( ! result && ! isEntryMarkerFile(f) && isLogging) {
+            final boolean result = ( ! isEntryMarkerFile(f)) && ( !staleEntryNames.contains(archivePath.relativize(f.toPath()).toString()));
+            if (!result && !isEntryMarkerFile(f) && isLogging) {
                 deplLogger.log(Level.WARNING,
                                STALE_FILES_SKIPPED,
-                               new Object[] {archiveURI.relativize(f.toURI()).toASCIIString(), archiveFile.getAbsolutePath()});
+                               new Object[] {archivePath.relativize(f.toPath()).toString(), archiveFile.getAbsolutePath()});
             }
             return result;
         }
@@ -1073,7 +1092,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         }
 
         private boolean isStaleEntryInDir(final File dir) {
-            final String dirURIPath = archiveURI.relativize(dir.toURI()).getPath();
+            final String dirURIPath = archivePath.relativize(dir.toPath()).toString();
             for (String staleEntryName : staleEntryNames) {
                 if (staleEntryName.startsWith(dirURIPath) && ! staleEntryName.equals(dirURIPath)) {
                     deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.isStaleEntryInDir found remaining stale entry {0} in {1}",
@@ -1090,7 +1109,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 return false;
             }
 
-            final String entryName = archiveURI.relativize(f.toURI()).toASCIIString();
+            final String entryName = archivePath.relativize(f.toPath()).toString();
             final boolean wasStale = staleEntryNames.remove(entryName);
             if (wasStale) {
                 deplLogger.log(DEBUG_LEVEL, msg,
