@@ -49,6 +49,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import java.io.ByteArrayInputStream;
@@ -67,7 +68,6 @@ import java.util.logging.Logger;
 
 import static java.lang.Thread.currentThread;
 import static java.util.logging.Level.FINEST;
-import javax.json.JsonValue;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static org.eclipse.microprofile.jwt.config.Names.*;
 
