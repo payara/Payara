@@ -43,6 +43,7 @@ import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
+import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 import javax.inject.Inject;
@@ -76,7 +77,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value = { DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG, DEPLOYMENT_GROUP })
 public class EnableEjbInvokerCommand implements AdminCommand {
 
     private final String ENDPOINT = "endpoints/ejb-invoker";
