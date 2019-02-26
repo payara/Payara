@@ -356,7 +356,7 @@
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
         <guava.version>19.0</guava.version>
-        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
 
         <!-- Build -->
