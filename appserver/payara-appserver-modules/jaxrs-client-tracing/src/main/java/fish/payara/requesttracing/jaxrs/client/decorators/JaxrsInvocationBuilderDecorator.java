@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,10 @@ package fish.payara.requesttracing.jaxrs.client.decorators;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Span;
-import java.util.Locale;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -52,9 +55,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.util.Locale;
 
 /**
  * Decorator class used for instrumenting asynchronous clients.
@@ -64,9 +65,16 @@ import org.glassfish.internal.api.Globals;
 public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     protected Invocation.Builder invocationBuilder;
-    
+
+    private ServiceLocator serviceLocator;
+    private OpenTracingService openTracing;
+
     public JaxrsInvocationBuilderDecorator(Invocation.Builder invocationBuilder) {
         this.invocationBuilder = invocationBuilder;
+
+        // Get the ServiceLocator and OpenTracing services
+        serviceLocator = Globals.getDefaultBaseServiceLocator();
+        openTracing = serviceLocator.getService(OpenTracingService.class);
     }
 
     @Override
@@ -101,18 +109,8 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public AsyncInvoker async() {
-        // Get the ServiceLocator and OpenTracing services
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-        
-        // Get the currently active span if present
-        Span activeSpan = openTracing.getTracer(openTracing.getApplicationName(
-                serviceLocator.getService(InvocationManager.class))).activeSpan();
-        
-        // If there is an active span, add its context to the request as a property so it can be picked up by the filter
-        if (activeSpan != null) {
-            this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
-        }
+        // Instrument invocation builder with OpenTracing
+        instrumentInvocationBuilder();
         
         // Return the asynchronous invoker - end of the decorated chain.
         return this.invocationBuilder.async();
@@ -120,59 +118,69 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
 
     @Override
     public Invocation.Builder accept(String... mediaTypes) {
-        return this.invocationBuilder.accept(mediaTypes);
+        invocationBuilder = invocationBuilder.accept(mediaTypes);
+        return this;
     }
 
     @Override
     public Invocation.Builder accept(MediaType... mediaTypes) {
-        return this.invocationBuilder.accept(mediaTypes);
+        invocationBuilder = invocationBuilder.accept(mediaTypes);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(Locale... locales) {
-        return this.invocationBuilder.acceptLanguage(locales);
+        invocationBuilder = invocationBuilder.acceptLanguage(locales);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptLanguage(String... locales) {
-        return this.invocationBuilder.acceptLanguage(locales);
+        invocationBuilder = invocationBuilder.acceptLanguage(locales);
+        return this;
     }
 
     @Override
     public Invocation.Builder acceptEncoding(String... encodings) {
-        return this.invocationBuilder.acceptEncoding(encodings);
+        invocationBuilder = invocationBuilder.acceptEncoding(encodings);
+        return this;
     }
 
     @Override
     public Invocation.Builder cookie(Cookie cookie) {
-        return this.invocationBuilder.cookie(cookie);
+        invocationBuilder = invocationBuilder.cookie(cookie);
+        return this;
     }
 
     @Override
     public Invocation.Builder cookie(String name, String value) {
-        return this.invocationBuilder.cookie(name, value);
+        invocationBuilder = invocationBuilder.cookie(name, value);
+        return this;
     }
 
     @Override
     public Invocation.Builder cacheControl(CacheControl cacheControl) {
-        return this.invocationBuilder.cacheControl(cacheControl);
+        invocationBuilder = invocationBuilder.cacheControl(cacheControl);
+        return this;
     }
 
     @Override
     public Invocation.Builder header(String name, Object value) {
-        return this.invocationBuilder.header(name, value);
+        invocationBuilder = invocationBuilder.header(name, value);
+        return this;
     }
 
     @Override
     public Invocation.Builder headers(MultivaluedMap<String, Object> headers) {
-        return this.invocationBuilder.headers(headers);
+        invocationBuilder = invocationBuilder.headers(headers);
+        return this;
     }
 
     @Override
     public Invocation.Builder property(String name, Object value) {
-        return this.invocationBuilder.property(name, value);
+        invocationBuilder = invocationBuilder.property(name, value);
+        return this;
     }
-
 
     @Override
     public Response get() {
@@ -298,5 +306,21 @@ public class JaxrsInvocationBuilderDecorator implements Invocation.Builder {
     public <T> T method(String name, Entity<?> entity, GenericType<T> responseType) {
         return this.invocationBuilder.method(name, entity, responseType);
     }
-    
+
+    /**
+     * Instruments this InvocationBuilder instance with OpenTracing
+     */
+    private void instrumentInvocationBuilder() {
+        // Get the currently active span if present
+        if (openTracing != null) {
+            Span activeSpan = openTracing.getTracer(
+                    openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)))
+                    .activeSpan();
+
+            // If there is an active span, add its context to the request as a property so it can be picked up by the filter
+            if (activeSpan != null) {
+                this.property(PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT, activeSpan.context());
+            }
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,8 @@
  */
 package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.notification.requesttracing.EventType;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Scope;
@@ -52,6 +51,18 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientResponseContext;
+import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status.Family;
+import javax.ws.rs.core.Response.StatusType;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -61,17 +72,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.client.ClientResponseContext;
-import javax.ws.rs.client.ClientResponseFilter;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.core.Response.StatusType;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 /**
  * A filter that adds Payara request tracing propagation headers to JAX-RS Client requests.
@@ -83,7 +83,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
     private OpenTracingService openTracing;
-    
+
     /**
      * Initialises the service variables.
      */
@@ -131,40 +131,43 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             }
             
             // ***** OpenTracing Instrumentation *****
-            // Get or create the tracer instance for this application
-            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+            // Check if we should trace this client call
+            if (shouldTrace(requestContext)) {
+                // Get or create the tracer instance for this application
+                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                        Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
 
-            // Build a span with the required MicroProfile Opentracing tags
-            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-                    .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
-                    .withTag(Tags.COMPONENT.getKey(), "jaxrs");
+                // Build a span with the required MicroProfile Opentracing tags
+                SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
+                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+                        .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
+                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
+                        .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
-            // Get the propagated span context from the request if present
-            // This is required to account for asynchronous client requests
-            SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
-                    PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
-            if (parentSpanContext != null) {
-                spanBuilder.asChildOf(parentSpanContext); 
+                // Get the propagated span context from the request if present
+                // This is required to account for asynchronous client requests
+                SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
+                        PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
+
+                // If there is a propagated span context, set it as a parent of the new span
+                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
+
+                // Start the span and mark it as active
+                Span activeSpan = spanBuilder.startActive(true).span();
+
+                // Inject the active span context for propagation
+                tracer.inject(
+                        activeSpan.context(),
+                        Format.Builtin.HTTP_HEADERS,
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
             }
-            
-            // If there is a propagated span context, set it as a parent of the new span
-            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, 
-                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
-            if (parentSpanContext != null) {
-                spanBuilder.asChildOf(parentSpanContext);
-            }
-
-            // Start the span and mark it as active
-            Span activeSpan = spanBuilder.startActive(true).span();
-
-            // Inject the active span context for propagation
-            tracer.inject(
-                    activeSpan.context(),
-                    Format.Builtin.HTTP_HEADERS,
-                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
         }
     }
 
@@ -172,7 +175,8 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()
+                && shouldTrace(requestContext)) {
             // Get the active span from the application's tracer instance
             try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                     serviceLocator.getService(InvocationManager.class)))
@@ -201,6 +205,24 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                 }
             }
         }
+    }
+
+    private boolean shouldTrace(ClientRequestContext requestContext) {
+        boolean shouldTrace = true;
+
+        Map<String, String> skipTracingOn = (Map) requestContext.getClient().getConfiguration()
+                .getProperty("skipTracingOn");
+        if (skipTracingOn != null) {
+            for (String endpoint : skipTracingOn.keySet()) {
+                if (endpoint.equals(requestContext.getUri().getPath())
+                        && skipTracingOn.get(endpoint).equals(requestContext.getMethod())) {
+                    shouldTrace = false;
+                    break;
+                }
+            }
+        }
+
+        return shouldTrace;
     }
 
     /**
