@@ -48,6 +48,7 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 import javax.inject.Inject;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -94,6 +95,9 @@ public class EnableEjbInvokerCommand implements AdminCommand {
     @Inject
     private ServiceLocator serviceLocator;
 
+    @Inject
+    private Domain domain;
+    
     @Override
     public void execute(AdminCommandContext context) {
         AutoDeploymentOperation autoDeploymentOperation = AutoDeploymentOperation.newInstance(
@@ -104,10 +108,17 @@ public class EnableEjbInvokerCommand implements AdminCommand {
                 contextRoot
                 );
         
-        AutodeploymentStatus deploymentStatus = autoDeploymentOperation.run();
-        
-        ActionReport report = context.getActionReport();
-        report.setActionExitCode(deploymentStatus.getExitCode());
+        if (domain.getApplications().getApplication("ejb-invoker") == null) {
+            AutodeploymentStatus deploymentStatus = autoDeploymentOperation.run();
+            ActionReport report = context.getActionReport();
+            report.setActionExitCode(deploymentStatus.getExitCode());
+        } else {
+            ActionReport report = context.getActionReport();
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setMessage("EJB Invoker is already deployed on at least one target, please edit it as you would a " +
+                    "normal application using the create-application-ref, delete-application-ref, " +
+                    "or update-application-ref commands");
+        }
     }
     
     private String getDefaultVirtualServer() {
