@@ -129,6 +129,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         return Boolean.parseBoolean(config.getEnabled());
     }
 
+    public boolean withCorsHeaders() {
+        return Boolean.parseBoolean(config.getCorsHeaders());
+    }
+
     /**
      * Listen for OpenAPI config changes.
      */
@@ -177,8 +181,8 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return the document for the most recently deployed application. Creates one
-     *         if it hasn't already been created.
+     * @return the document for the most recently deployed application. Creates
+     * one if it hasn't already been created.
      * @throws OpenAPIBuildException if creating the document failed.
      */
     public OpenAPI getDocument() throws OpenAPIBuildException {
@@ -201,9 +205,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      */
     private static boolean isValidApp(ApplicationInfo appInfo) {
         return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null
-            && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
-            && !appInfo.getSource().getURI().getPath().contains("javadb/lib")
-            && !appInfo.getSource().getURI().getPath().contains("mq/lib");
+                && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
+                && !appInfo.getSource().getURI().getPath().contains("javadb/lib")
+                && !appInfo.getSource().getURI().getPath().contains("mq/lib");
     }
 
     /**
@@ -215,7 +219,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @param archive        the archive to read from.
+     * @param archive the archive to read from.
      * @param appClassLoader the classloader to use to load the classes.
      * @return a list of all loadable classes in the archive.
      */
@@ -319,27 +323,27 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 .filter(networkListener -> Boolean.parseBoolean(networkListener.getEnabled()))
                 .forEach(networkListener -> {
 
-            int port;
-            try {
-                // get the dynamic config port
-                port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
-            } catch (MultiException ex) {
-                LOGGER.log(WARNING, "Failed to get running Grizzly listener.", ex);
-                // get the port in the domain xml
-                port = Integer.parseInt(networkListener.getPort());
-            }
+                    int port;
+                    try {
+                        // get the dynamic config port
+                        port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
+                    } catch (MultiException ex) {
+                        LOGGER.log(WARNING, "Failed to get running Grizzly listener.", ex);
+                        // get the port in the domain xml
+                        port = Integer.parseInt(networkListener.getPort());
+                    }
 
-            // Check if this listener is using HTTP or HTTPS
-            boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
-            List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
+                    // Check if this listener is using HTTP or HTTPS
+                    boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
+                    List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
 
-            // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
-            if (!networkListener.getName().equals(adminListener)) {
-                ports.add(port);
-            } else if (instanceType.equals("MICRO")) {
-                // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
-                ports.add(port);
-            }
+                    // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
+                    if (!networkListener.getName().equals(adminListener)) {
+                        ports.add(port);
+                    } else if (instanceType.equals("MICRO")) {
+                        // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
+                        ports.add(port);
+                    }
                 });
 
         for (Integer httpPort : httpPorts) {

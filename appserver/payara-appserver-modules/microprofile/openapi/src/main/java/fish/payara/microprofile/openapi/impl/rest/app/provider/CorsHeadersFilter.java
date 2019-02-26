@@ -37,34 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.rest.app;
+package fish.payara.microprofile.openapi.impl.rest.app.provider;
 
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.CorsHeadersFilter;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import fish.payara.microprofile.openapi.impl.OpenApiService;
+import java.io.IOException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.ApplicationPath;
+/**
+ * A respone filter to add CORS deaders to the OpenAPI response.
+ */
+@Provider
+public class CorsHeadersFilter implements ContainerResponseFilter {
 
-import org.glassfish.jersey.server.ResourceConfig;
+    @Override
+    public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
+        OpenApiService openApiService = OpenApiService.getInstance();
+        if (openApiService.isEnabled() && openApiService.withCorsHeaders()) {
+            MultivaluedMap<String, Object> headers = response.getHeaders();
 
-import fish.payara.microprofile.openapi.impl.rest.app.provider.QueryFormatFilter;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.JsonWriter;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.YamlWriter;
-import fish.payara.microprofile.openapi.impl.rest.app.service.OpenApiResource;
-
-@ApplicationPath(OPEN_API_APPLICATION_PATH)
-public class OpenApiApplication extends ResourceConfig {
-
-    public static final String OPEN_API_APPLICATION_PATH = "/openapi";
-    public static final String APPLICATION_YAML = TEXT_PLAIN;
-
-    public OpenApiApplication() {
-        register(OpenApiResource.class);
-        register(QueryFormatFilter.class);
-        register(CorsHeadersFilter.class);
-        register(YamlWriter.class);
-        register(JsonWriter.class);
-        property("payara-internal", "true");
+            headers.add("Access-Control-Allow-Origin", "*");
+            headers.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+            headers.add("Access-Control-Allow-Credentials", "true");
+            headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+        }
     }
 
 }
