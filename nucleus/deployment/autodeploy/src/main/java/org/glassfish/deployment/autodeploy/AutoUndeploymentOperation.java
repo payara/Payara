@@ -133,8 +133,10 @@ public class AutoUndeploymentOperation extends AutoOperation {
                 applicationName = application.getName();
             }
         }
-
+        
         deploymentProperties.setName(applicationName);
+        deploymentProperties.setTarget(target);
+        
         return deploymentProperties;
     }
 

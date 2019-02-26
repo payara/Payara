@@ -217,6 +217,7 @@ public class AutoDeploymentOperation extends AutoOperation {
         DeploymentProperties deploymentProperties = new DeploymentProperties();
         deploymentProperties.setPath(deployablefile.getAbsolutePath());
         deploymentProperties.setVirtualServers(virtualServer);
+        deploymentProperties.setTarget(target);
         deploymentProperties.setContextRoot(contextRoot);
         
         deploymentProperties.setEnabled(enabled);

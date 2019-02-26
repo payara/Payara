@@ -52,6 +52,7 @@ import java.nio.file.Path;
 import javax.inject.Inject;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -85,6 +86,9 @@ public class DisableEjbInvokerCommand implements AdminCommand {
     private final String ENDPOINTS = "endpoints";
     private final String EJB_INVOKER = "ejb-invoker";
     
+    @Param(optional = true)
+    public String target;
+    
     @Inject
     private ServerEnvironment serverEnvironment;
     
@@ -101,7 +105,7 @@ public class DisableEjbInvokerCommand implements AdminCommand {
                 serviceLocator, 
                 ejbInvokerPath.toFile(), 
                 getNameFromFilePath(endPointsPath.toFile(), ejbInvokerPath.toFile()), 
-                getTarget());
+                target);
         
         AutodeploymentStatus deploymentStatus = autoUndeploymentOperation.run();
         
@@ -109,8 +113,4 @@ public class DisableEjbInvokerCommand implements AdminCommand {
         report.setActionExitCode(deploymentStatus.getExitCode());
     }
 
-    private String getTarget() {
-        // XXX write this? Note that AutoDeploymentOperation doesn't support it now.
-        return null;
-    }
 }

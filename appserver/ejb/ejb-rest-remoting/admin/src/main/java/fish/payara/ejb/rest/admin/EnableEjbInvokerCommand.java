@@ -85,6 +85,9 @@ public class EnableEjbInvokerCommand implements AdminCommand {
     @Param(name = "contextRoot", primary = true, optional = true)
     private String contextRoot;
     
+    @Param(optional = true)
+    public String target;
+    
     @Inject
     private ServerEnvironment serverEnvironment;
     
@@ -97,7 +100,7 @@ public class EnableEjbInvokerCommand implements AdminCommand {
                 serviceLocator,
                 serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINT).toFile(), 
                 getDefaultVirtualServer(),
-                getTarget(),
+                target,
                 contextRoot
                 );
         
@@ -112,8 +115,4 @@ public class EnableEjbInvokerCommand implements AdminCommand {
         return null;
     }
 
-    private String getTarget() {
-        // XXX write this? Note that AutoDeploymentOperation doesn't support it now.
-        return null;
-    }
 }

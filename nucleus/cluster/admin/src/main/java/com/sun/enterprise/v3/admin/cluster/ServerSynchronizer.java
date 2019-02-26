@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -150,7 +150,7 @@ public final class ServerSynchronizer implements PostConstruct {
                     synchronizeDocroot(payload, server, syncRequest);
                     break;
                 case "endpoints":
-                    synchronizeDocroot(payload, server, syncRequest);
+                    synchronizeEndpoints(payload, server, syncRequest);
                     break;
                 case "config-specific":
                     synchronizeConfigSpecificDir(payload, server, syncRequest);
@@ -484,6 +484,13 @@ public final class ServerSynchronizer implements PostConstruct {
      */
     private void synchronizeDocroot(Payload.Outbound payload, Server server, SyncRequest syncRequest) throws URISyntaxException {
         synchronizeDirectory(payload, server, syncRequest, new File(env.getInstanceRoot(), "docroot"), null, SyncLevel.DIRECTORY);
+    }
+    
+    /**
+     * Synchronize the endpoints directory.
+     */
+    private void synchronizeEndpoints(Payload.Outbound payload, Server server, SyncRequest syncRequest) throws URISyntaxException {
+        synchronizeDirectory(payload, server, syncRequest, new File(env.getInstanceRoot(), "endpoints"), null, SyncLevel.RECURSIVE);
     }
 
     /**
