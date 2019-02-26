@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -286,7 +286,7 @@
         <hk2.plugin.version>2.5.0-b61.payara-p3</hk2.plugin.version>
 
         <!-- 4.1.1-b001  -->
-        <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
+        <glassfish-corba.version>4.1.1.payara-p2</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
@@ -334,8 +334,8 @@
         <mockito.version>2.2.6</mockito.version>
         <lombok.version>1.18.4</lombok.version>
         <guava.version>19.0</guava.version>
-        <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
-        <jaxb-impl.version>2.4.0-b180830.0438</jaxb-impl.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <jaxb-impl.version>2.3.2</jaxb-impl.version>
 
         <!-- Build -->
 

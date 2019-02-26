@@ -37,10 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
-/* 
- * Portions Copyright [2016] [Payara Foundation] 
- */
 package com.sun.enterprise.util.io;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -65,6 +63,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -1049,10 +1048,11 @@ public class FileUtils  {
                 do {
                     read = inChannel.read(byteBuffer);
                     if (read>0) {
-                        byteBuffer.limit(byteBuffer.position());
-                        byteBuffer.rewind();
+                        Buffer buffer = (Buffer) byteBuffer;
+                        buffer.limit(byteBuffer.position());
+                        buffer.rewind();
                         outChannel.write(byteBuffer);
-                        byteBuffer.clear();
+                        buffer.clear();
                     }
                 } while (read!=-1);
             } else {

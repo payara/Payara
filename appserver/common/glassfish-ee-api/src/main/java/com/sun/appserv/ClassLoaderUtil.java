@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] Payara Foundation and/or affiliates.
+// Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
 package com.sun.appserv;
 
 import static java.util.logging.Level.WARNING;
@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.logging.LogDomains;
+import java.util.ArrayDeque;
 
 
 /**
@@ -76,7 +77,7 @@ public class ClassLoaderUtil {
     private static final String URLCLASSPATH_JDK9_CLASS_NAME = "jdk.internal.loader.URLClassPath";
     
     private static final String URLCLASSPATH_LOADERS_FIELD_NAME = "loaders"; // ArrayList of URLClassPath.Loader 
-    private static final String URLCLASSPATH_URLS_FIELD_NAME = "urls"; // Stack of URL
+    private static final String URLCLASSPATH_URLS_FIELD_NAME = "unopenedUrls"; // The deque of unopened URLs
     private static final String URLCLASSPATH_LMAP_FIELD_NAME = "lmap"; // HashMap of String -> URLClassPath.Loader
 
     private static final String URLCLASSPATH_JARLOADER_INNER_CLASS_NAME = "$JarLoader";
@@ -87,7 +88,7 @@ public class ClassLoaderUtil {
     
     private static Field ucpField;      // The search path for classes and resources           - URLClassPath java.net.URLClassLoader.ucp;
     private static Field loadersField;  // The resulting search path of Loaders                - ArrayList<Loader> java.net.URLClassLoader.loaders = new ArrayList<>();
-    private static Field urlsField;     // The stack of unopened URLs                          - Stack<URL> urls = new Stack<>();
+    private static Field unopenedUrlsField;     // The deque of unopened URLs                          - ArrayDeque<URL> urls = new ArrayDeque<>();
     private static Field lmapField;     //  Map of each URL opened to its corresponding Loader - HashMap<String, Loader> lmap = new HashMap<>();
     
     private static Class<?> jarLoaderInnerClass; // Nested class class used to represent a Loader of resources from a JAR URL. - static class JarLoader extends Loader
@@ -145,19 +146,19 @@ public class ClassLoaderUtil {
 
             Object ucp = ucpField.get(classLoader);
             List<?> loaders = (List<?>) loadersField.get(ucp);
-            List<?> urls = (List<?>) urlsField.get(ucp);
+            ArrayDeque<?> unopenedUrls = (ArrayDeque<?>) unopenedUrlsField.get(ucp);
             Map<String, Object> lmap = (Map<String, Object>) lmapField.get(ucp);
 
             /*
-             * The urls variable in the URLClassPath object holds URLs that have not yet
+             * The unopenedUrls variable in the URLClassPath object holds unopened URLs that have not yet
              * been used to resolve a resource or load a class and, therefore, do
              * not yet have a loader associated with them.  Clear the stack so any
              * future requests that might incorrectly reach the loader cannot be 
              * resolved and cannot open a jar file after we think we've closed 
              * them all.
              */
-            synchronized(urls) {
-                urls.clear();
+            synchronized(unopenedUrls) {
+                unopenedUrls.clear();
             }
 
             /*
@@ -286,7 +287,7 @@ public class ClassLoaderUtil {
         }
         
         loadersField = getField(ucpCLass, URLCLASSPATH_LOADERS_FIELD_NAME);
-        urlsField = getField(ucpCLass, URLCLASSPATH_URLS_FIELD_NAME);
+        unopenedUrlsField = getField(ucpCLass, URLCLASSPATH_URLS_FIELD_NAME);
         lmapField = getField(ucpCLass, URLCLASSPATH_LMAP_FIELD_NAME);
         
         jarLoaderInnerClass = getInnerClass(ucpCLass, jarLoaderClass);
