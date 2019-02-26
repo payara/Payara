@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
@@ -71,6 +72,9 @@ public class JwtTokenParser {
     
     private final boolean enableNamespacedClaims;
     private final Optional<String> customNamespace;
+    
+    private String rawToken;
+    private SignedJWT signedJWT;
 
     public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
@@ -81,14 +85,19 @@ public class JwtTokenParser {
         this(Optional.empty(), Optional.empty());
     }
     
-    public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
-        SignedJWT signedJWT = SignedJWT.parse(bearerToken);
+    public void parse(String bearerToken) throws Exception {
+        rawToken = bearerToken;
+        signedJWT = SignedJWT.parse(rawToken);
 
         // MP-JWT 1.0 4.1 typ
         if (!checkIsJWT(signedJWT.getHeader())) {
             throw new IllegalStateException("Not JWT");
         }
-
+    }
+    
+    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
+        checkState(signedJWT != null, "No parsed SignedJWT.");
+        
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
         if (!signedJWT.getHeader().getAlgorithm().equals(RS256)) {
             throw new IllegalStateException("Not RS256");
@@ -127,10 +136,15 @@ public class JwtTokenParser {
 
             rawClaims.put(
                     raw_token.name(),
-                    createObjectBuilder().add("token", bearerToken).build().get("token"));
+                    createObjectBuilder().add("token", rawToken).build().get("token"));
 
             return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
+    }
+    
+    public String getKeyID() {
+        checkState(signedJWT != null, "No parsed SignedJWT.");
+        return signedJWT.getHeader().getKeyID();
     }
     
     private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
