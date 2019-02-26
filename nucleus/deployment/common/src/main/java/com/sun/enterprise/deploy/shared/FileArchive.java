@@ -147,7 +147,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * This is not a WeakHashMap because instances of {@link File} pointing to the same location
      * may be created and used.
      */
-    private static final Map<File, Enumeration> entriesCache = new HashMap<File, Enumeration>();
+    private static final Map<File, List> entriesCache = new HashMap<File, List>();
 
     /**
      * Open an abstract archive
@@ -311,12 +311,12 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         File file = new File(archive, prefix);
         
         if (entriesCache.containsKey(file)) {
-            return entriesCache.get(file);
+            return Collections.enumeration(entriesCache.get(file));
         } else {
             List<String> namesList = new ArrayList<String>();
             getListOfFiles(file, namesList, null);
             Enumeration entries = Collections.enumeration(namesList);
-            entriesCache.put(file, entries);
+            entriesCache.put(file, namesList);
             return entries;
         }
     }
