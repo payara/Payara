@@ -82,10 +82,13 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
 
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-
+    
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
+    @Param(name = "corsHeaders", optional = true, defaultValue = "false")
+    private Boolean corsHeaders;
+    
     @Param(optional = true, defaultValue = "server-config")
     private String target;
 
@@ -109,6 +112,9 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
+                }
+                if (corsHeaders != null) {
+                    configProxy.setCorsHeaders(Boolean.toString(corsHeaders));
                 }
                 return configProxy;
             }, config);
