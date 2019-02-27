@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.ejb.rest</groupId>
         <artifactId>ejb-rest-remoting</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-rest-endpoint</artifactId>
