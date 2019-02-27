@@ -68,7 +68,7 @@ import fish.payara.micro.PayaraMicroRuntime;
 public final class PayaraMicroServer {
 
     static {
-        System.setProperty("java.util.logging.config.file", "logging.properties");
+        System.setProperty("java.util.logging.config.file", "src/test/resources/logging.properties");
     }
 
     /**
