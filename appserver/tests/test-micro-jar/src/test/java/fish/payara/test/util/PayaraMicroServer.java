@@ -87,7 +87,7 @@ public final class PayaraMicroServer {
     private static final String SERVICE_LOCATOR_CLASS_NAME = "org.glassfish.hk2.api.ServiceLocator";
     private static final String TARGET_CLASS_NAME = "org.glassfish.internal.api.Target";
 
-    private final static String DEPLOYMENT_DIR = System.getProperty("user.dir") + File.separator + "deployments";
+    private final static String DEPLOYMENT_DIR = System.getProperty("user.dir") + File.separator + "target/deployments";
 
     /**
      * The port number to use next if a {@link PayaraMicroServer} instance is started.
