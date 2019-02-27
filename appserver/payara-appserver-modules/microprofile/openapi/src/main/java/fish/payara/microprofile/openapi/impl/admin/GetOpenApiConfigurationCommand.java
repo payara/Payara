@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetOpenApiConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "VirtualServers"};
+    private final String OUTPUT_HEADERS[] = {"Enabled", "VirtualServers", "CorsHeaders"};
 
     @Inject
     private Target targetUtil;
@@ -101,7 +101,8 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             openApiConfig.getEnabled(),
-            openApiConfig.getVirtualServers()
+            openApiConfig.getVirtualServers(),
+            openApiConfig.getCorsHeaders()
         };
         columnFormatter.addRow(outputValues);
 
@@ -110,6 +111,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
         extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
+        extraPropertiesMap.put("corsHeaders", openApiConfig.getCorsHeaders());
 
         Properties extraProperties = new Properties();
         extraProperties.put("openApiConfiguration", extraPropertiesMap);
