@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-local-instance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-local-instance</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-lifecycle-module.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-managed-executor-service.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-local-instance-1"></a><a id="GSRFM00096"></a><a id="delete-local-instance"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_local_instance">delete-local-instance</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>deletes a \{product---name} instance on the machine where the subcommand
+is run</p>
+</div>
+<div id="sthref842" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-local-instance [--help]
+[--nodedir node-dir] [--node node-name]
+[instance-name]</code></pre>
+</div>
+</div>
+<div id="sthref843" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-local-instance</code> subcommand deletes a \{product---name}
+instance on the machine where the subcommand is run. This subcommand
+does not require the Distributed Component Object Model (DCOM) remote
+protocol or secure shell (SSH) to be configured. You must run this
+command from the machine where the instance resides.</p>
+</div>
+<div class="paragraph">
+<p>The subcommand can delete any \{product---name} instance, regardless of
+how the instance was created. For example, this subcommand can delete an
+instance that was created by using the
+<a href="create-instance.html#create-instance-1"><code>create-instance</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The instance that is being deleted must not be running. Otherwise, an
+error occurs.</p>
+</div>
+<div class="paragraph">
+<p>The subcommand deletes an instance by performing the following actions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Removing the instance from the configuration of the domain
+administration server (DAS)</p>
+</li>
+<li>
+<p>Deleting the instance&#8217;s files from file system</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the instance that is being deleted is the only instance that is using
+the node directory, that directory is also removed.</p>
+</div>
+<div class="paragraph">
+<p>If a standalone instance is deleted, the instance&#8217;s standalone
+configuration is also deleted. A standalone instance refers to a
+configuration that is named instance-name`-config` to which no other
+clusters or unclustered instances refer.</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-local-instance</code> subcommand does not contact the DAS to
+determine the node on which the instance resides. To determine the node
+on which the instance resides, the subcommand searches the directory
+that contains the node directories. If multiple node directories exist,
+the node must be specified as an option of the subcommand.</p>
+</div>
+<div class="paragraph">
+<p>If no operand is specified and only one instance resides on the
+specified node, the subcommand deletes the instance. If no operand is
+specified and multiple instances reside on the node, an error occurs.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref844" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--nodedir</code></dt>
+<dd>
+<p>Specifies the directory that contains the instance&#8217;s node directory.
+The instance&#8217;s files are stored in the instance&#8217;s node directory. The
+default is as-install`/nodes`.</p>
+</dd>
+<dt class="hdlist1"><code>--node</code></dt>
+<dd>
+<p>Specifies the node on which the instance resides. This option may be
+omitted only if the directory that the <code>--nodedir</code> option specifies
+contains only one node directory. Otherwise, this option is required.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref845" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>The name of the instance to delete. This operand may be omitted if
+only one instance resides on the specified node. Otherwise, this
+operand is required.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref846" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM565"></a><a id="sthref847"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deleting an Instance</p>
+</div>
+<div class="paragraph">
+<p>This example deletes the instance <code>pmdsainst</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-local-instance pmdsainst
+
+Command delete-local-instance executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref848" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref849" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-instance.html#create-instance-1"><code>create-instance</code>(1)</a>,
+<a href="create-local-instance.html#create-local-instance-1"><code>create-local-instance</code>(1)</a>,
+<a href="delete-instance.html#delete-instance-1"><code>delete-instance</code>(1)</a>,
+<a href="start-instance.html#start-instance-1"><code>start-instance</code>(1)</a>,
+<a href="start-local-instance.html#start-local-instance-1"><code>start-local-instance</code>(1)</a>,
+<a href="stop-instance.html#stop-instance-1"><code>stop-instance</code>(1)</a>,
+<a href="stop-local-instance.html#stop-local-instance-1"><code>stop-local-instance</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="delete-lifecycle-module.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-managed-executor-service.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

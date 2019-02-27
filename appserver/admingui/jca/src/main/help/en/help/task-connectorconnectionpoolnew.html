@@ -1,0 +1,177 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-connectorconnectionpoolnew" name="task-connectorconnectionpoolnew"></a><a id="GHJCA00063" name="GHJCA00063"></a></p>
+
+<h4><a id="sthref9" name="sthref9"></a>To Create a Connector Connection Pool</h4>
+<a name="BEGIN" id="BEGIN"></a><a id="sthref10" name="sthref10"></a>
+<h5>Before You Begin</h5>
+<p>Before creating the pool, deploy the connector module (resource adapter) associated with the pool. The values that are specified for the new pool depend on the connector module that is deployed.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Expand the Connectors node.</p>
+</li>
+<li>
+<p>Under the Connectors node, select the Connector Connection Pools node.</p>
+<p>The Connector Connection Pools page opens.</p>
+</li>
+<li>
+<p>On the Connector Connection Pools page, click New.</p>
+<p>The New Connector Connection Pool (Step 1 of 2) page opens.</p>
+</li>
+<li>
+<p>In the Pool Name field, type a unique name for the pool.</p>
+<p>Specify this name when creating a connector resource.</p>
+</li>
+<li>
+<p>From the Resource Adapter drop-down list, select from the list of deployed resource adapters (connector modules).</p>
+</li>
+<li>
+<p>From the Connection Definition drop-down list, select the connection definition for the connector connection pool.</p>
+<p>The choices in the list depend on the resource adapter you selected. The connection definition identifies a resource adapter's <code>connection-definition</code> element in the<code>ra.xml</code> file.</p>
+</li>
+<li>
+<p>Click Next.</p>
+<p>The New Connector Connection Pool (Step 2 of 2) page opens.</p>
+</li>
+<li>
+<p>Select the Ping Enabled checkbox to ping the connection pool during creation or reconfiguration to identify and warn of any erroneous values for its attributes.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Description field, type a description of the connection pool.</p>
+</li>
+<li>
+<p>In the Initial and Minimum Pool Size field, specify the minimum number of connections in the pool.</p>
+<p>The default value is 8.</p>
+</li>
+<li>
+<p>In the Maximum Pool Size field, specify the maximum number of connections in the pool.</p>
+<p>The default value is 32.</p>
+</li>
+<li>
+<p>In the Pool Resize Quantity field, specify the number of connections to be removed when pool idle timeout expires.</p>
+<p>The default value is 2.</p>
+</li>
+<li>
+<p>In the Idle Timeout field, specify the maximum time in seconds that a connection can remain idle in the pool.</p>
+<p>The default value is 300.</p>
+</li>
+<li>
+<p>In the Max Wait Time field, specify the amount of time the application requesting a connection will wait before getting a connection timeout.</p>
+<p>The default value is 60000.</p>
+</li>
+<li>
+<p>Select the Connection Validation Required checkbox to enable connection validation.</p>
+<p>If the Required checkbox is selected, connections are validated before being given to the application. If a resource's validation fails, it is destroyed, and a new resource is created and returned. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the On Any Failure Close All Connections checkbox so GlassFish Server will close all connections in the pool and reestablish them if a single connection fails.</p>
+<p>If you do not select the checkbox, individual connections will be reestablished only when they are used. This option is disabled by default.</p>
+</li>
+<li>
+<p>From the Transaction Support drop-down list, select the type of transaction support for the connection pool.</p>
+<p>The chosen transaction support overrides the transaction support attribute in the resource adapter associated with this connection pool in a downward compatible way. In other words, it can support a lower transaction level than that specified in the resource adapter, or the same transaction level as that specified in resource adapter, but it cannot specify a higher level.</p>
+<p>The following options are available in the drop-down list:</p>
+<ul>
+<li>
+<p>NoTransaction: Indicates that the resource adapter does not support resource manager local or JTA transactions and does not implement the XAResource or LocalTransaction interfaces.</p>
+</li>
+<li>
+<p>LocalTransaction: Indicates that the resource adapter supports local transactions by implementing the LocalTransaction interface.</p>
+<p>Local transactions are managed internal to a resource manager and involve no external transaction managers.</p>
+</li>
+<li>
+<p>XATransaction: Indicates that the resource adapter supports resource manager local and JTA transactions by implementing the LocalTransaction and XAResource interfaces.</p>
+<p>XA transactions are controlled and coordinated by a transaction manager external to a resource manager.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties for the connector connection pool.</p>
+<p>Available properties depend upon the resource adapter for the connector connection pool.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>If you specify a name but not a value for a property, it is removed from the table when you finish creating the connection pool. If you do not want to set a value for a property now, but you want the property to remain in the table so that the value can be set later, type a set of empty parentheses in the Value field:</p>
+<pre>
+()
+</pre></li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="sthref11" name="sthref11"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-connectorresourcenew.html">To Create a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorresourceedit.html">To Edit a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorresourcesdelete.html">To Delete a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooledit.html">To Edit a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooladvance.html">To Edit Connector Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolproperty.html">To Edit Connector Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapnew.html">To Create a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapedit.html">To Edit a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapdel.html">To Delete a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooldel.html">To Delete a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-setupeisaccess.html">To Set Up EIS Access</a></p>
+</li>
+<li>
+<p><a href="task-adminobjectnew.html">To Create an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-adminobjectedit.html">To Edit an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-administeredobjectresourcedelete.html">To Delete an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapnew.html">To Create a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapedit.html">To Edit a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapdelete.html">To Delete a Work Security Map</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

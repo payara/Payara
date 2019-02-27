@@ -1,0 +1,53 @@
+disable-secure-admin-internal-user(1)  asadmin Utility Subcommands  disable-secure-admin-internal-user(1)
+
+NAME
+       disable-secure-admin-internal-user - Instructs the GlassFish Server DAS
+       and instances to not use the specified admin user to authenticate with
+       each other and to authorize admin operations.
+
+SYNOPSIS
+           disable-secure-admin-internal-user
+           [--help]
+           admin-username
+
+DESCRIPTION
+       The disable-secure-admin-internal-user subcommand disables secure admin
+       from using the username (instead of SSL certificates) to authenticate
+       the DAS and instances with each other and to authorize admin
+       operations.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       admin-username
+           The admin user name that GlassFish Server should not use to
+           authenticate the DAS and instances with each other and to authorize
+           admin operations.
+
+EXAMPLES
+       Example 1, Disabling a user name for secure admin
+           The following example disables secure admin from using username
+           tester to authenticate the DAS and instances with each other and to
+           authorize admin operations.
+
+               asadmin> disable-secure-admin-internal-user tester
+
+               Command disable-secure-admin-internal-user executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       enable-secure-admin-internal-user(1)
+
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017       disable-secure-admin-internal-user(1)

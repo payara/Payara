@@ -1,0 +1,59 @@
+list-transports(1)        asadmin Utility Subcommands       list-transports(1)
+
+NAME
+       list-transports - lists the existing transports
+
+SYNOPSIS
+           list-transports [--help]
+           [target]
+
+DESCRIPTION
+       The list-transports subcommand lists the existing transports. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Restricts the listing to transports for a specified target. Valid
+           values are as follows:
+
+           server
+               Lists the transports for the default server instance. This is
+               the default value.
+
+           configuration-name
+               Lists the transports for the specified configuration.
+
+           cluster-name
+               Lists the transports for all server instances in the specified
+               cluster.
+
+           instance-name
+               Lists the transports for the specified server instance.
+
+EXAMPLES
+       Example 1, Listing Transports
+           The following command lists all the transports for the server
+           instance:
+
+               asadmin> list-transports
+               http1-trans
+               tcp
+               Command list-transports executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-transport(1), delete-transport(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010               list-transports(1)

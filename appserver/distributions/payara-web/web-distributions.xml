@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <project name="Web IPS distribution" default="create-web-distributions" basedir=".">
     <import file="../distributions.xml" />
@@ -47,7 +48,6 @@
     
     <target name="install-packages">
         <install.package name="json"/>
-        <install.package name="glassfish-registration"/>
         <install.package name="glassfish-jpa"/>
         <install.package name="glassfish-jts"/>
         <install.package name="glassfish-ejb-lite"/>
@@ -68,7 +68,6 @@
         <install.package name="glassfish-jpa-l10n"/>
         <install.package name="glassfish-jts-l10n"/>
         <install.package name="glassfish-ejb-lite-l10n"/>
-        <install.package name="glassfish-registration-l10n"/>
         <install.package name="glassfish-gui-l10n"/>
     </target>
 </project>

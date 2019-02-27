@@ -1,0 +1,54 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-logicaljndinames" name="ref-logicaljndinames"></a><a id="GHCOM498" name="GHCOM498"></a></p>
+
+<h4>Logical JNDI Names</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>When you create a resource, you specify a unique JNDI name for the resource. Applications use this name to access the resource.</p>
+<p>The Java EE standard specifies that certain default resources be made available to applications, and defines specific JNDI names for these default resources. GlassFish Server makes these names available through the use of logical JNDI names, which map Java EE standard JNDI names to specific GlassFish Server resources as follows:</p>
+<dl>
+<dt>java:comp/DefaultContextService</dt>
+<dd>
+<p>This Java EE standard name is mapped to the concurrent/__defaultContextService resource.</p>
+</dd>
+<dt>java:comp/DefaultManagedThreadFactory</dt>
+<dd>
+<p>This Java EE standard name is mapped to the concurrent/__defaultManagedThreadFactory resource.</p>
+</dd>
+<dt>java:comp/DefaultManagedExecutorService</dt>
+<dd>
+<p>This Java EE standard name is mapped to the concurrent/__defaultManagedExecutorService resource.</p>
+</dd>
+<dt>java:comp/DefaultManagedScheduledExecutorService</dt>
+<dd>
+<p>This Java EE standard name is mapped to the concurrent/__defaultManagedScheduledExecutorService resource.</p>
+</dd>
+<dt>java:comp/DefaultDataSource</dt>
+<dd>
+<p>This Java EE standard name is mapped to the jdbc/__default resource.</p>
+</dd>
+<dt>java:comp/DefaultJMSConnectionFactory</dt>
+<dd>
+<p>This Java EE standard name is mapped to the jms/__defaultConnectionFactory resource.</p>
+</dd>
+</dl>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

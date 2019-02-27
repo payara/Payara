@@ -1,0 +1,96 @@
+set(1)                    asadmin Utility Subcommands                   set(1)
+
+NAME
+       set - sets the values of configurable attributes
+
+SYNOPSIS
+           set [--help] attribute-name=value
+
+DESCRIPTION
+       The set subcommand uses dotted names to modify the values of one or
+       more configurable attributes.
+
+       Attributes from the monitoring hierarchy are read-only, but
+       configuration attributes can be modified. You can use the list(1)
+       subcommand to display the dotted names that represent individual server
+       components and subsystems. For example, a dotted name might be
+       server.applications.web-module. After you discover the particular
+       component or subsystem, you can then use the get subcommand to access
+       the attributes. For more detailed information on dotted names, see the
+       dotted-names(5ASC) help page.
+
+           Note
+           +----------------------------------------+
+           |           Characters that have special |
+           |           meaning to the shell or      |
+           |           command interpreter, such as |
+           |           * (asterisk), should be      |
+           |           quoted or escaped as         |
+           |           appropriate to the shell,    |
+           |           for example, by enclosing    |
+           |           the argument in quotes. In   |
+           |           multimode, quotes are needed |
+           |           only for arguments that      |
+           |           include spaces, quotes, or   |
+           |           backslash.                   |
+           +----------------------------------------+
+
+       By modifying attributes, you can enable and disable services, and
+       customize how an existing element functions. An asadmin subcommand is
+       provided to update some elements. For example, update-password-alias.
+       However, to update other elements, you must use the set command. For
+       example, you create a JDBC connection pool by using the
+       create-jdbc-connection-pool subcommand. To change attribute settings
+       later, you use the set command.
+
+       Any change made by using the asadmin utility subcommands or the
+       Administration Console are automatically applied to the associated
+       GlassFish Server configuration file.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       attribute-name=value
+           Identifies the full dotted name of the attribute name and its
+           value.
+
+EXAMPLES
+       Example 1, Setting a JDBC Connection Pool Attribute
+           This example changes the steady pool size of the DerbyPool
+           connection pool to 9.
+
+               asadmin> set resources.jdbc-connection-pool.DerbyPool.steady-pool-size=9
+               Command set executed successfully.
+
+       Example 2, Enabling the Monitoring Service for a Monitorable Object
+           This example enables monitoring for the JVM.
+
+               asadmin> set server.monitoring-service.module-monitoring-levels.jvm=HIGH
+               Command set executed successfully.
+
+       Example 3, Turning on Automatic Recovery for the Transaction Service
+           This example turns on automatic recovery for the transaction
+           service.
+
+               asadmin> set server.transaction-service.automatic-recovery=true
+               Command set executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       get(1), list(1)
+
+       dotted-names(5ASC)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Administration Guide
+
+Java EE 8                         10 Sep 2009                           set(1)

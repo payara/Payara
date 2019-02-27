@@ -1,0 +1,73 @@
+list-application-refs(1)  asadmin Utility Subcommands  list-application-refs(1)
+
+NAME
+       list-application-refs - lists the existing application references
+
+SYNOPSIS
+           list-application-refs [--help] [--long={false|true}] [target]
+
+DESCRIPTION
+       The list-application-refs subcommand lists all application references
+       in a cluster or an unclustered server instance. This effectively lists
+       all the modules deployed on the specified target (for example, J2EE
+       applications, Web modules, and enterprise bean modules).
+
+       If multiple versions of a module or application are deployed, this
+       subcommand lists all versions. To list which version is enabled, set
+       the --long option to true. For more information about module and
+       application versions, see "Module and Application Versions" in Oracle
+       GlassFish Server Application Deployment Guide.
+
+       The target instance or instances making up the cluster need not be
+       running or available for this subcommand to succeed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long
+           If true, displays whether each module or application listed is
+           enabled. The default is false.
+
+OPERANDS
+       target
+           The target for which you are listing the application references.
+           Valid values are
+
+           *   server- Specifies the default server instance as the target.
+               server is the name of the default server instance and is the
+               default value.
+
+           *   cluster_name- Specifies a certain cluster as the target.
+
+           *   instance_name- Specifies a certain server instance as the
+               target.
+
+EXAMPLES
+       Example 1, Listing Application References
+           The following example lists the application references for the
+           unclustered server instance NewServer.
+
+               asadmin> list-application-refs NewServer
+               ClientSessionMDBApp
+               MEjbApp
+               __ejb_container_timer_app
+               Command list-application-refs executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-application-ref(1), delete-application-ref(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                   09 Aug 2017            list-application-refs(1)

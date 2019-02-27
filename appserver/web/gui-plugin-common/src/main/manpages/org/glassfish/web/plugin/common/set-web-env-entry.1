@@ -1,0 +1,169 @@
+set-web-env-entry(1)      asadmin Utility Subcommands     set-web-env-entry(1)
+
+NAME
+       set-web-env-entry - sets an environment entry for a deployed web
+       application or module
+
+SYNOPSIS
+           set-web-env-entry [--help]
+           --name=env-entry-name --type=env-entry-type
+           {--value=value|--ignoredescriptoritem={true|false}}
+           [--description=description] application-name[/module]
+
+DESCRIPTION
+       The set-web-env-entry subcommand sets an environment entry for one of
+       the following items:
+
+       *   A deployed web application
+
+       *   A web module in a deployed Java Platform, Enterprise Edition (Java
+           EE) application
+
+       The application must already be deployed. Otherwise, an error occurs.
+
+       An application uses the values of environment entries to customize its
+       behavior or presentation.
+
+       This subcommand enables you to change the configuration of a deployed
+       application without the need to modify the application's deployment
+       descriptors and repackage and redeploy the application.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --name
+           The name of the environment entry that is to be set. The name is a
+           JNDI name relative to the java:comp/env context. The name must be
+           unique within a deployment component.
+
+       --type
+           The fully-qualified Java type of the environment entry value that
+           is expected by the application's code. This type must be one of the
+           following Java types:
+
+           *   java.lang.Boolean
+
+           *   java.lang.Byte
+
+           *   java.lang.Character
+
+           *   java.lang.Double
+
+           *   java.lang.Float
+
+           *   java.lang.Integer
+
+           *   java.lang.Long
+
+           *   java.lang.Short
+
+           *   java.lang.String
+
+       --value
+           The value to which the environment entry is to be set. If the
+           --type is java.lang.Character, the value must be a single
+           character. Otherwise, the value must be a string that is valid for
+           the constructor of the specified type.
+
+           Either the --value option or the --ignoredescriptoritem option must
+           be set.
+
+       --ignoredescriptoritem
+           Specifies whether the environment entry is ignored if it is set in
+           the application's deployment descriptor. When an environment entry
+           is ignored, the application behaves as if the entry had never been
+           set in the application's deployment descriptor. The behavior of an
+           application in this situation depends on the application.
+
+           The possible values are as follows:
+
+           false
+               The value is not ignored (default).
+
+           true
+               The value is ignored.
+
+           Either the --value option or the --ignoredescriptoritem option must
+           be set.
+
+               Note
+               +----------------------------------------+
+               |Do not use the --ignoredescriptoritem   |
+               |option to unset an environment entry    |
+               |that has previously been set by using   |
+               |the set-web-env-entry subcommand.       |
+               |Instead, use the unset-web-env-entry(1) |
+               |subcommand for this purpose.            |
+               +----------------------------------------+
+
+       --description
+           An optional textual description of the environment entry that is
+           being set.
+
+OPERANDS
+       application-name
+           The name of the application. This name can be obtained from the
+           Administration Console or by using the list-applications(1)
+           subcommand.
+
+           The application must already be deployed. Otherwise, an error
+           occurs.
+
+       module
+           The relative path to the module within the application's enterprise
+           archive (EAR) file. The path to the module is specified in the
+           module element of the application's application.xml file.
+
+           module is required only if the environment entry applies to a web
+           module of a Java EE application. If specified, module must follow
+           application-name, separated by a slash (/).
+
+           For example, the application.xml file for the myApp application
+           might specify the following web module:
+
+               <module>
+                   <web>
+                       <web-uri>myWebModule.war</web-uri>
+                   </web>
+               </module>
+           The module would be specified as the operand of this command as
+           myApp/myWebModule.war.
+
+EXAMPLES
+       Example 1, Setting an Environment Entry for a Web Application
+           This example sets the environment entry Hello User of the
+           application hello to techscribe. The Java type of this entry is
+           java.lang.String.
+
+               asadmin> set-web-env-entry --name="Hello User"
+               --type=java.lang.String --value=techscribe
+               --description="User authentication for Hello appplication" hello
+
+               Command set-web-env-entry executed successfully.
+
+       Example 2, Ignoring an Environment Entry That Is Defined in a
+       Deployment Descriptor
+           This example ignores the environment entry Hello Port of the web
+           application hello.
+
+               asadmin> set-web-env-entry --name="Hello Port"
+               --type=java.lang.Integer --ignoredescriptoritem=true hello
+
+               Command set-web-env-entry executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       list-applications(1), list-web-env-entry(1), unset-web-env-entry(1)
+
+       asadmin(1M)
+
+Java EE 8                         15 Jun 2011             set-web-env-entry(1)

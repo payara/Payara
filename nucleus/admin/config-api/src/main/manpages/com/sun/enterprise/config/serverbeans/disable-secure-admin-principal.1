@@ -1,0 +1,62 @@
+disable-secure-admin-principal(1)  asadmin Utility Subcommands  disable-secure-admin-principal(1)
+
+NAME
+       disable-secure-admin-principal - disables the certificate for
+       authorizing access in secure administration.
+
+SYNOPSIS
+           disable-secure-admin-principal
+           [--help]
+           --alias aliasname | DN
+
+DESCRIPTION
+       The disable-secure-admin-principal subcommand disables the certificate
+       as being valid for authorizing access as part of secure administration.
+
+       You must specify either the --alias option, or the DN.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --alias
+           The alias name of the certificate in the truststore. GlassFish
+           Server looks up the certificate in the truststore using that alias
+           and, if found, disables the corresponding DN as being valid for
+           secure administration. Because alias-name must be an alias
+           associated with a certificate currently in the truststore, you may
+           find it most useful for self-signed certificates.
+
+OPERANDS
+       DN
+           The distinguished name of the certificate, specified as a
+           comma-separated list in quotes. For example,
+           "CN=system.amer.oracle.com,OU=GlassFish,O=Oracle
+           Corporation,L=Santa Clara,ST=California,C=US" .
+
+EXAMPLES
+       Example 1, Disables trust of a DN for secure administration
+           The following example shows how to disable trust of a DN for
+           authorizing access in secure administration.
+
+               asadmin> disable-secure-admin-principal
+               "CN=system.amer.oracle.com,OU=GlassFish,
+               O=Oracle Corporation,L=Santa Clara,ST=California,C=US"
+
+               Command disable-secure-admin-principal executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       enable-secure-admin-principal(1)
+
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017         disable-secure-admin-principal(1)

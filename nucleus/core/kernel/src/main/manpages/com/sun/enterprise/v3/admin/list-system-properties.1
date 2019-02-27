@@ -1,0 +1,63 @@
+list-system-properties(1)  asadmin Utility Subcommands  list-system-properties(1)
+
+NAME
+       list-system-properties - lists the system properties of the domain,
+       configuration, cluster, or server instance
+
+SYNOPSIS
+           list-system-properties [--help] [target]
+
+DESCRIPTION
+       The list-system-properties subcommand lists the system properties of a
+       domain, configuration, cluster, or server instance.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           This restricts the listing to system properties for a specific
+           target. Valid values are:
+
+           domain
+               Lists the system properties defined for the domain.
+
+           configuration_name
+               Lists the system properties for the named configuration as well
+               as those the cluster inherits from the domain.
+
+           cluster_name
+               Lists the system properties defined for the named cluster as
+               well as those the cluster. inherits from its configuration and
+               the domain.
+
+           instance_name
+               Lists the system properties defined for the named server
+               instance as well as those the server inherits from its cluster
+               (if the instance is clustered), its configuration, and the
+               domain.
+
+EXAMPLES
+       Example 1, Listing System Properties
+           This example lists the system properties on localhost.
+
+               asadmin> list-system-properties
+               http-listener-port=1088
+               Command list-system-properties executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-system-properties(1), delete-system-property(1)
+
+       asadmin(1M)
+
+Java EE 8                  09 Aug 2017            list-system-properties(1)

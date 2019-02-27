@@ -182,12 +182,14 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             removeSubdirectory("generated");
             removeSubdirectory("lib");
             removeSubdirectory("docroot");
+            removeSubdirectory("endpoints");
         }
 
         File domainXml =
                     new File(new File(instanceDir, "config"), "domain.xml");
         long dtime = domainXml.exists() ? domainXml.lastModified() : -1;
         File docroot = new File(instanceDir, "docroot");
+        File endpoints = new File(instanceDir, "endpoints");
 
         CommandException exc = null;
         try {
@@ -262,6 +264,14 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              */
             sr = getModTimes("docroot", SyncLevel.DIRECTORY);
             synchronizeFiles(sr);
+            
+            /*
+             * Next, the endpoints.
+             * The endpoints too could be full of files, so we only check
+             * one level.
+             */
+            sr = getModTimes("endpoints", SyncLevel.DIRECTORY);
+            synchronizeFiles(sr);
 
             /*
              * Check any subdirectories of the instance config directory.
@@ -314,7 +324,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * If nothing has changed, allow the server to come up.
              */
             if (domainXml.exists() && domainXml.lastModified() == dtime &&
-                    docroot.isDirectory()) {
+                    docroot.isDirectory() && endpoints.isDirectory()) {
                 // nothing changed and sync has completed at least once
                 if (!syncState.delete())
                     logger.warning(

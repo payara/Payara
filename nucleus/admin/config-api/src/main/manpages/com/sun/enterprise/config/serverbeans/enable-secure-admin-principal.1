@@ -1,0 +1,81 @@
+enable-secure-admin-principal(1)  asadmin Utility Subcommands  enable-secure-admin-principal(1)
+
+NAME
+       enable-secure-admin-principal - Instructs GlassFish Server, when secure
+       admin is enabled, to accept admin requests from clients identified by
+       the specified SSL certificate.
+
+SYNOPSIS
+           enable-secure-admin-principal
+           [--help]
+           --alias aliasname | DN
+
+DESCRIPTION
+       The enable-secure-admin-principal subcommand instructs GlassFish Server
+       to accept admin requests when accompanied by an SSL certificate with
+       the specified distinguished name (DN). If you use the "--alias
+       aliasname" form, then GlassFish Server looks in its truststore for a
+       certificate with the specified alias and uses the DN associated with
+       that certificate. Otherwise, GlassFish Server records the value you
+       specify as the DN.
+
+       You must specify either the --alias option, or the DN.
+
+       You can run enable-secure-admin-principal multiple times so that
+       GlassFish Server accepts admin requests from a client sending a
+       certificate with any of the DNs you specify.
+
+       When you run enable-secure-admin, GlassFish Server automatically
+       records the DNs for the admin alias and the instance alias, whether you
+       specify those values or use the defaults. You do not need to run
+       enable-secure-admin-principal yourself for those certificates. Other
+       than these certificates, you must run enable-secure-admin-principal for
+       any other DN that GlassFish Server should authorize to send admin
+       requests. This includes DNs corresponding to trusted certificates
+       (those with a certificate chain to a trusted authority.)
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --alias
+           The alias name of the certificate in the trust store. GlassFish
+           Server looks up certificate in the trust store using that alias
+           and, if found, stores the corresponding DN as being valid for
+           secure administration. Because alias-name must be an alias
+           associated with a certificate currently in the trust store, you may
+           find it most useful for self-signed certificates.
+
+OPERANDS
+       DN
+           The distinguished name of the certificate, specified as a
+           comma-separated list in quotes. For example,
+           "CN=system.amer.oracle.com,OU=GlassFish,O=Oracle
+           Corporation,L=Santa Clara,ST=California,C=US".
+
+EXAMPLES
+       Example 1, Trusting a DN for secure administration
+           The following example shows how to specify a DN for authorizing
+           access in secure administration.
+
+               asadmin> enable-secure-admin-principal
+               "CN=system.amer.oracle.com,OU=GlassFish,
+               O=Oracle Corporation,L=Santa Clara,ST=California,C=US"
+
+               Command enable-secure-admin-principal executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       disable-secure-admin-principal(1)
+
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017         enable-secure-admin-principal(1)

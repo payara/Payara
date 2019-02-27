@@ -1,0 +1,84 @@
+create-jms-host(1)        asadmin Utility Subcommands       create-jms-host(1)
+
+NAME
+       create-jms-host - creates a JMS host
+
+SYNOPSIS
+           create-jms-host [--help]
+           --mqhost mq-host --mqport mq-port
+           --mquser mq-user --mqpassword mq-password
+           [--target target]
+           [--force={false|true}]
+           jms_host_name
+
+DESCRIPTION
+       Creates a Java Message Service (JMS) host within the JMS service.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --mqhost
+           The host name for the JMS service.
+
+       --mqport
+           The port number used by the JMS service.
+
+       --mquser
+           The user name for the JMS service.
+
+       --mqpassword
+           The password for the JMS service.
+
+       --target
+           Creates the JMS host only for the specified target. Valid values
+           are as follows:
+
+           server
+               Creates the JMS host for the default server instance. This is
+               the default value.
+
+           configuration-name
+               Creates the JMS host in the specified configuration.
+
+           cluster-name
+               Creates the JMS host for every server instance in the specified
+               cluster.
+
+           instance-name
+               Creates the JMS host for the specified server instance.
+
+       --force
+           Specifies whether the subcommand overwrites the existing JMS host
+           of the same name. The default value is false.
+
+OPERANDS
+       jms_host_name
+           A unique identifier for the JMS host to be created.
+
+EXAMPLES
+       Example 1, Creating a JMS host using a non-default port
+           The following command creates a JMS host named MyNewHost on the
+           system pigeon.
+
+               asadmin> create-jms-host --mqhost pigeon.example.com --mqport 7677
+               --mquser admin --mqpassword admin MyNewHost
+               Jms Host MyNewHost created.
+               Command create-jms-host executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-jms-hosts(1), delete-jms-host(1), jms-ping(1)
+
+       asadmin(1M)
+
+Java EE 8                         12 Feb 2013               create-jms-host(1)

@@ -1,0 +1,67 @@
+delete-managed-scheduled-executor-service(1)  asadmin Utility Subcommands  delete-managed-scheduled-executor-service(1)
+
+NAME
+       delete-managed-scheduled-executor-service - removes a managed scheduled
+       executor service resource with the specified JNDI name
+
+SYNOPSIS
+           delete-managed-scheduled-executor-service [--help]
+           [--target target]
+           managed_scheduled_executor_service_name
+
+DESCRIPTION
+       The delete-managed-scheduled-executor-service subcommand removes a
+       managed scheduled executor service resource with the specified JNDI
+       name.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the resource.
+           Valid targets are:
+
+           server
+               Deletes the resource from the default server instance. This is
+               the default value.
+
+           domain
+               Deletes the resource from the domain.
+
+           cluster_name
+               Deletes the resource from every server instance in the
+               specified cluster.
+
+           instance_name
+               Deletes the resource from the specified server instance.
+
+OPERANDS
+       managed_scheduled_executor_service_name
+           The JNDI name of the resource to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Managed Scheduled Executor Service Resource
+           This example deletes the managed scheduled executor service
+           resource named concurrent/myScheduledExecutor.
+
+               asadmin> delete-managed-scheduled-executor-service concurrent/myScheduledExecutor
+               Managed scheduled executor service concurrent/myScheduledExecutor deleted successfully.
+               Command delete-managed-scheduled-executor-service executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-managed-scheduled-executor-service(1),
+       list-managed-scheduled-executor-services(1)
+
+       asadmin(1M)
+
+Java EE 8          09 Aug 2017    delete-managed-scheduled-executor-service(1)

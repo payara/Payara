@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
@@ -54,7 +55,7 @@
         <fileSet>
             <directory>${temp.dir}/glassfish</directory>
             <excludes>
-                <exclude>modules/jaxb-api.jar</exclude>
+                <exclude>modules/jakarta.xml.bind-api.jar</exclude>
                 <exclude>modules/webservices-api-osgi.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
@@ -62,7 +63,7 @@
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
             <includes>
-                <include>jaxb-api.jar</include>
+                <include>jakarta.xml.bind-api.jar</include>
                 <include>webservices-api-osgi.jar</include>
             </includes>
             <outputDirectory>${install.dir.name}/glassfish/modules/endorsed</outputDirectory>

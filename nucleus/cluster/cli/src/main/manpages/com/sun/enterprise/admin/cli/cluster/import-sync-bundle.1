@@ -1,0 +1,105 @@
+import-sync-bundle(1)     asadmin Utility Subcommands    import-sync-bundle(1)
+
+NAME
+       import-sync-bundle - imports the configuration data of a clustered
+       instance or standalone instance from an archive file
+
+SYNOPSIS
+           import-sync-bundle [--help]
+           --instance instance-name
+           [--nodedir node-dir] [--node node-name]
+           file-name
+
+DESCRIPTION
+       The import-sync-bundle subcommand imports the configuration data of a
+       clustered instance or standalone instance from an archive file that was
+       created by the export-sync-bundle(1) subcommand.
+
+       You must run this subcommand on the host where the instance resides. To
+       contact the domain administration server (DAS), this subcommand
+       requires the name of the host where the DAS is running. If a nondefault
+       port is used for administration, this subcommand also requires the port
+       number. You must provide this information through the --host option and
+       the --port option of the asadmin(1M) utility.
+
+       Importing an instance's configuration data transfers the data to a host
+       for an instance without the need for the instance to be able to
+       communicate with the DAS. Importing an instance's configuration data is
+       typically required for the following reasons:
+
+       *   To reestablish the instance after an upgrade
+
+       *   To synchronize the instance manually with the domain administration
+           server (DAS) when the instance cannot contact the DAS
+
+       The subcommand imports an instance's configuration data by performing
+       the following operations:
+
+       *   Creating or updating the instance's files and directories
+
+       *   Attempting to register the instance with the DAS
+
+       If the attempt to register the instance with the DAS fails, the
+       subcommand does not fail. Instead, the subcommand displays a warning
+       that the attempt failed. The warning contains the command to run to
+       register the instance with the DAS.
+
+       The import-sync-bundle subcommand does not contact the DAS to determine
+       the node on which the instance resides. If the node is not specified as
+       an option of the subcommand, the subcommand determines the node from
+       the DAS configuration in the archive file.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --instance
+           The instance for which configuration data is being imported. The
+           instance must already exist in the DAS configuration. The archive
+           file from which the data is being imported must contain data for
+           the specified instance.
+
+       --nodedir
+           The directory that contains the instance's node directory. The
+           instance's files are stored in the instance's node directory. The
+           default is as-install/nodes.
+
+       --node
+           The node on which the instance resides. If this option is omitted,
+           the subcommand determines the node from the DAS configuration in
+           the archive file.
+
+OPERANDS
+       file-name
+           The name of the file, including the path, that contains the archive
+           file to import. This operand is required.
+
+EXAMPLES
+       Example 1, Importing Configuration Data for a Clustered Instance
+           This example imports the configuration for the clustered instance
+           ymli2 on the node sj02 from the archive file
+           /export/glassfish3/glassfish/domains/domain1/sync/ymlcluster-sync-bundle.zip.
+
+           The command is run on the host sj02, which is the host that the
+           node sj02 represents. The DAS is running on the host sr04 and uses
+           the default HTTP port for administration.
+
+               sj02# asadmin --host sr04 import-sync-bundle --node sj02 --instance ymli2
+               /export/glassfish3/glassfish/domains/domain1/sync/ymlcluster-sync-bundle.zip
+               Command import-sync-bundle executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       export-sync-bundle(1)
+
+       asadmin(1M)
+
+Java EE 8                         7 Dec 2010             import-sync-bundle(1)

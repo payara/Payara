@@ -904,7 +904,8 @@ public final class MessageBeanContainer extends BaseContainer implements Message
                 ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
                 this,
                 ejbBundleDesc.getApplication().getAppName(),
-                ejbBundleDesc.getModuleName()
+                ejbBundleDesc.getModuleName(),
+                ejbBundleDesc.getApplication().getRegistrationName()
         );
         //newInv.setJNDIEnvironment(getJNDIEnvironment());   ???
         return newInv;

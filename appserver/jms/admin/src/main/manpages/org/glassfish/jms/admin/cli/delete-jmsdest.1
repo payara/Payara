@@ -1,0 +1,72 @@
+delete-jmsdest(1)         asadmin Utility Subcommands        delete-jmsdest(1)
+
+NAME
+       delete-jmsdest - removes a JMS physical destination
+
+SYNOPSIS
+           delete-jmsdest [--help]
+           --desttype type
+           [--target target]
+           dest_name
+
+DESCRIPTION
+       The delete-jmsdest subcommand removes the specified Java Message
+       Service (JMS) physical destination.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --desttype
+           The type of the JMS destination. Valid values are topic and queue.
+
+       --target
+           Deletes the physical destination only from the specified target.
+           Although the delete-jmsdest subcommand is related to resources, a
+           physical destination is deleted using the JMS Service (JMS Broker),
+           which is part of the configuration. A JMS Broker is configured in
+           the config section of domain.xml. Valid values are as follows:
+
+           server
+               Deletes the physical destination from the default server
+               instance. This is the default value.
+
+           configuration-name
+               Deletes the physical destination from the specified
+               configuration.
+
+           cluster-name
+               Deletes the physical destination from every server instance in
+               the specified cluster.
+
+           instance-name
+               Creates the physical destination from the specified server
+               instance.
+
+OPERANDS
+       dest_name
+           The unique identifier of the JMS destination to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a physical destination
+           The following subcommand deletes the queue named PhysicalQueue.
+
+               asadmin> delete-jmsdest --desttype queue PhysicalQueue
+               Command delete-jmsdest executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jmsdest(1), list-jmsdest(1), flush-jmsdest(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011                delete-jmsdest(1)

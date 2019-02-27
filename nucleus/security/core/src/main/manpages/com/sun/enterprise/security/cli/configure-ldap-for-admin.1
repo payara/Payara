@@ -1,0 +1,44 @@
+configure-ldap-for-admin(1)  asadmin Utility Subcommands  configure-ldap-for-admin(1)
+
+NAME
+       configure-ldap-for-admin - configures the authentication realm named
+       admin-realm for the given LDAP
+
+SYNOPSIS
+           configure-ldap-for-admin [--help]
+
+DESCRIPTION
+       The configure-ldap-for-admin subcommand configures the authentication
+       realm named admin-realm for the given LDAP. The
+       configure-ldap-for-admin subcommand is interactive. The subcommand
+       prompts the user for the basedn and ldap-group options.
+
+       This command is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Configuring the LDAP Authentication Realm
+
+               asadmin> configure-ldap-for-admin
+               Enter the value for the basedn option>
+               Enter the value for the ldap-group option>
+               The LDAP Auth Realm admin-realm was configured correctly
+               in admin server's configuration.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       change-admin-password(1), create-auth-realm(1)create-auth-realm(1),
+       list-auth-realms(1)
+
+       asadmin(1M)
+
+Java EE 8                  09 Aug 2017           configure-ldap-for-admin(1)

@@ -1,0 +1,75 @@
+delete-jndi-resource(1)   asadmin Utility Subcommands  delete-jndi-resource(1)
+
+NAME
+       delete-jndi-resource - removes a JNDI resource
+
+SYNOPSIS
+           delete-jndi-resource [--help] [--target target] jndi_name
+
+DESCRIPTION
+       The delete-jndi-resource subcommand removes the specified JNDI
+       resource. You must remove all associations to the JNDI resource before
+       running this subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Valid targets are described below.
+
+               Note
+               +----------------------------------------+
+               |Resources are always created for a      |
+               |domain as a whole but are only active   |
+               |for targets for which a <resource-ref>  |
+               |has been created using the --target     |
+               |option when the resource was created.   |
+               |This means that deleting a resource     |
+               |only deletes the <resource-ref> element |
+               |for the specified --target, and does    |
+               |not delete the resource from the domain |
+               |as a whole unless domain is specified   |
+               |as the --target for the deletion.       |
+               +----------------------------------------+
+
+           server
+               Deletes the resource from the default server instance. This is
+               the default value
+
+           domain
+               Deletes the resource from the domain
+
+           cluster_name
+               Deletes the resource for every server instance in the cluster
+
+           instance_name
+               Deletes the resource from the specified server instance
+
+OPERANDS
+       jndi_name
+           The name of the JNDI resource to be removed.
+
+EXAMPLES
+       Example 1, Deleting a JNDI Resource
+           This example removes an existing JNDI resource named
+           sample_jndi_resource.
+
+               asadmin> delete-jndi-resource sample_jndi_resource
+               Command delete-jndi-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jndi-resource(1), list-jndi-resources(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011          delete-jndi-resource(1)

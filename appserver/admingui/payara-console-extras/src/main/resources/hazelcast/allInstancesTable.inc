@@ -51,25 +51,28 @@
     <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.instanceGroup}" sort="instanceGroup" rowHeader="$boolean{false}" id="col3">
         <staticText id="instanceGroup" value="#{td.value.instanceGroup}" />
     </sun:tableColumn>
-   <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.hostName}" sort="hostName" rowHeader="$boolean{true}" id="col4">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.heartbeat}" sort="heartbeat" rowHeader="$boolean{false}" id="col4">
+        <staticText id="heartbeat" value="#{td.value.heartbeat}" />
+    </sun:tableColumn>
+   <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.hostName}" sort="hostName" rowHeader="$boolean{true}" id="col5">
         <staticText id="hostName" value="#{td.value.hostName}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.httpPorts}" sort="httpPorts" rowHeader="$boolean{false}" id="col5">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.httpPorts}" sort="httpPorts" rowHeader="$boolean{false}" id="col6">
         <staticText id="httpPorts" value="#{td.value.httpPorts}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.httpsPorts}" sort="httpsPorts" rowHeader="$boolean{false}" id="col6">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.httpsPorts}" sort="httpsPorts" rowHeader="$boolean{false}" id="col7">
         <staticText id="httpsPorts" value="#{td.value.httpsPorts}" />
     </sun:tableColumn>result
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.adminPort}" sort="adminPort" rowHeader="$boolean{false}" id="col7">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.adminPort}" sort="adminPort" rowHeader="$boolean{false}" id="col8">
         <staticText id="adminPort" value="#{td.value.adminPort}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.hazelcastPort}" sort="hazelcastPort" rowHeader="$boolean{true}" id="col8">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.hazelcastPort}" sort="hazelcastPort" rowHeader="$boolean{true}" id="col9">
         <staticText id="hazelcastPort" value="#{td.value.hazelcastPort}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.liteMember}" sort="liteMember" rowHeader="$boolean{false}" id="col9">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.liteMember}" sort="liteMember" rowHeader="$boolean{false}" id="col10">
         <staticText id="liteMember" value="#{td.value.liteMember}" />
     </sun:tableColumn>
-    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.applications}" sort="applications" rowHeader="$boolean{false}" id="col10">
+    <sun:tableColumn headerText="$resource{i18nhc.hazelcast.allInstancesTable.applications}" sort="applications" rowHeader="$boolean{false}" id="col11">
         <staticText id="applications" value="#{td.value.applications}" />
     </sun:tableColumn>
 </sun:tableRowGroup>

@@ -59,6 +59,15 @@
         <!-- module>quicklook</module -->
     </modules>
 
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <modules>
+                <module>quicklook</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>

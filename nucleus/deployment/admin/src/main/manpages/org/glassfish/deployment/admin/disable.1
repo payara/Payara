@@ -1,0 +1,72 @@
+disable(1)                asadmin Utility Subcommands               disable(1)
+
+NAME
+       disable - disables the component
+
+SYNOPSIS
+           disable [--help] [--target target_name] component_name
+
+DESCRIPTION
+       The disable subcommand immediately disables the specified deployed
+       component. If the component has not been deployed, an error message is
+       returned.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are disabling the
+           component. Valid values are:
+
+           server
+               Disables the component on the default server instance server
+               and is the default value.
+
+           domain_name
+               Disables the component on the named domain.
+
+           cluster_name
+               Disables the component on every server instance in the cluster.
+
+           instance_name
+               Disables the component on a particular clustered or stand-alone
+               server instance.
+
+OPERANDS
+       component_name
+           name of the component to be disabled.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. To disable multiple versions, you can use an
+           asterisk (*) as a wildcard character. For more information about
+           module and application versions, see "Module and Application
+           Versions" in Oracle GlassFish Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Disabling a Component
+           This example disables the deployed component sampleApp.
+
+               asadmin> disable sampleApp
+               Command disable executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       deploy(1), undeploy(1), enable(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                         17 Nov 2010                       disable(1)

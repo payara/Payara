@@ -1,0 +1,207 @@
+create-jms-resource(1)    asadmin Utility Subcommands   create-jms-resource(1)
+
+NAME
+       create-jms-resource - creates a JMS resource
+
+SYNOPSIS
+           create-jms-resource [--help]
+           --restype type
+           [--target target]
+           [--enabled={true|false}]
+           [--description text]
+           [--property (name=value)[:name=value]*]
+           [--force={false|true}]
+           jndi_name
+
+DESCRIPTION
+       The create-jms-resource subcommand creates a Java Message Service (JMS)
+       connection factory resource or a JMS destination resource.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --restype
+           The JMS resource type, which can be javax.jms.Topic,
+           javax.jms.Queue, javax.jms.ConnectionFactory,
+           javax.jms.TopicConnectionFactory, or
+           javax.jms.QueueConnectionFactory.
+
+       --target
+           Creates the JMS resource only for the specified target. Valid
+           values are as follows:
+
+               Note
+               +----------------------------------------+
+               |The resource is always created for the  |
+               |domain as a whole, but the              |
+               |<resource-ref> element for the resource |
+               |is only created for the specified       |
+               |--target. This means that although the  |
+               |resource is defined at the domain       |
+               |level, it is only active at the         |
+               |specified --target.                     |
+               +----------------------------------------+
+
+           server
+               Creates the JMS resource for the default server instance. This
+               is the default value.
+
+           domain
+               Creates the JMS resource for the domain.
+
+           cluster-name
+               Creates the JMS resource for every server instance in the
+               specified cluster.
+
+           instance-name
+               Creates the JMS resource for the specified server instance.
+
+       --enabled
+           If set to true (the default), the resource is enabled at runtime.
+
+       --description
+           Text providing details about the JMS resource.
+
+       --property
+           Optional attribute name/value pairs for configuring the JMS
+           resource.
+
+           You can specify the following properties for a connection factory
+           resource:
+
+           ClientId
+               A client ID for a connection factory that will be used by a
+               durable subscriber.
+
+           AddressList
+               A comma-separated list of message queue addresses that specify
+               the host names (and, optionally, port numbers) of a message
+               broker instance or instances with which your application will
+               communicate. For example, the value could be earth or
+               earth:7677. Specify the port number if the message broker is
+               running on a port other than the default (7676). composed from
+               the JMS hosts defined in the server's JMS service
+               configuration. The default value is localhost and the default
+               port number is 7676. The client will attempt a connection to a
+               broker on port 7676 of the local host.
+
+           UserName
+               The user name for the connection factory. The default value is
+               guest.
+
+           Password
+               The password for the connection factory. The default value is
+               guest.
+
+           ReconnectEnabled
+               A value of true indicates that the client runtime attempts to
+               reconnect to a message server (or the list of addresses in the
+               AddressList) when a connection is lost. The default value is
+               false.
+
+           ReconnectAttempts
+               The number of attempts to connect (or reconnect) for each
+               address in the AddressList before the client runtime tries the
+               next address in the list. A value of -1 indicates that the
+               number of reconnect attempts is unlimited (the client runtime
+               attempts to connect to the first address until it succeeds).
+               The default value is 6.
+
+           ReconnectInterval
+               The interval in milliseconds between reconnect attempts. This
+               applies to attempts on each address in the AddressList and for
+               successive addresses in the list. If the interval is too short,
+               the broker does not have time to recover. If it is too long,
+               the reconnect might represent an unacceptable delay. The
+               default value is 30,000 milliseconds.
+
+           AddressListBehavior
+               Specifies whether connection attempts are in the order of
+               addresses in the AddressList (PRIORITY) or in a random order
+               (RANDOM).  PRIORITY means that the reconnect will always try to
+               connect to the first server address in the AddressList and will
+               use another one only if the first broker is not available. If
+               you have many clients attempting a connection using the same
+               connection factory, specify RANDOM to prevent them from all
+               being connected to the same address. The default value is the
+               AddressListBehavior value of the server's JMS service
+               configuration.
+
+           AddressListIterations
+               The number of times the client runtime iterates through the
+               AddressList in an effort to establish (or re-establish) a
+               connection). A value of -1 indicates that the number of
+               attempts is unlimited. The default value is -1.
+
+           Additionally, you can specify connector-connection-pool attributes
+           as connector resource properties. For a list of these attributes,
+           see "connector-connection-pool" in Oracle GlassFish Server
+           Application Deployment Guide.
+
+           You can specify the following properties for a destination
+           resource:
+
+           Name
+               The name of the physical destination to which the resource will
+               refer. The physical destination is created automatically when
+               you run an application that uses the destination resource. You
+               can also create a physical destination with the create-jmsdest
+               subcommand. If you do not specify this property, the JMS
+               service creates a physical destination with the same name as
+               the destination resource (replacing any forward slash in the
+               JNDI name with an underscore).
+
+           Description
+               A description of the physical destination.
+
+       --force
+           Specifies whether the subcommand overwrites the existing JMS
+           resource of the same name. The default value is false.
+
+OPERANDS
+       jndi_name
+           The JNDI name of the JMS resource to be created.
+
+EXAMPLES
+       Example 1, Creating a JMS connection factory resource for durable
+       subscriptions
+           The following subcommand creates a connection factory resource of
+           type javax.jms.ConnectionFactory whose JNDI name is
+           jms/DurableConnectionFactory. The ClientId property sets a client
+           ID on the connection factory so that it can be used for durable
+           subscriptions. The JNDI name for a JMS resource customarily
+           includes the jms/ naming subcontext.
+
+               asadmin> create-jms-resource --restype javax.jms.ConnectionFactory
+               --description "connection factory for durable subscriptions"
+               --property ClientId=MyID jms/DurableConnectionFactory
+               Connector resource jms/DurableConnectionFactory created.
+               Command create-jms-resource executed successfully.
+
+       Example 2, Creating a JMS destination resource
+           The following subcommand creates a destination resource whose JNDI
+           name is jms/MyQueue. The Name property specifies the physical
+           destination to which the resource refers.
+
+               asadmin> create-jms-resource --restype javax.jms.Queue
+               --property Name=PhysicalQueue jms/MyQueue
+               Administered object jms/MyQueue created.
+               Command create-jms-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-jms-resource(1), list-jms-resources(1)
+
+       asadmin(1M)
+
+Java EE 8                         12 Feb 2013           create-jms-resource(1)

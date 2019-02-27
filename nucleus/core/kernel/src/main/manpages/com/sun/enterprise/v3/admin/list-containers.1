@@ -1,0 +1,51 @@
+list-containers(1)        asadmin Utility Subcommands       list-containers(1)
+
+NAME
+       list-containers - lists application containers
+
+SYNOPSIS
+           list-containers [--help]
+
+DESCRIPTION
+       The list-containers subcommand displays a list of application
+       containers.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Listing the Application Containers
+           This example lists the current application containers.
+
+               asadmin> list-containers
+               List all known application containers
+               Container : grizzly
+               Container : ejb
+               Container : webservices
+               Container : ear
+               Container : appclient
+               Container : connector
+               Container : jpa
+               Container : web
+               Container : osgi
+               Container : security
+               Container : webbeans
+
+               Command list-containers executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-commands(1), list-components(1), list-modules(1)
+
+       asadmin(1M)
+
+Java EE 8                         9 Oct 2009                list-containers(1)

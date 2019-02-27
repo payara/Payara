@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-jvm-options</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-jvm-options</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-jndi-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-lifecycle-module.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-jvm-options-1"></a><a id="GSRFM00042"></a><a id="create-jvm-options"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_jvm_options">create-jvm-options</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates options for the Java application launcher</p>
+</div>
+<div id="sthref369" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jvm-options [--help]
+[--target target] [--profiler={true|false}]
+(jvm-option-name=jvm-option-value) [:jvm-option-name=jvm-option-value*]</code></pre>
+</div>
+</div>
+<div id="sthref370" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-jvm-options</code> subcommand creates command-line options that
+are passed to the Java application launcher when \{product---name} is
+started. The options that this subcommand creates are in addition to the
+options that are preset with \{product---name}. Java application
+launcher options are stored in the Java configuration <code>java—config</code>
+element or the profiler <code>profiler</code> element of the <code>domain.xml</code> file. The
+options are sent to the command line in the order they appear in the
+<code>java—config</code> element or the profiler <code>profiler</code> element in the
+<code>domain.xml</code> file.</p>
+</div>
+<div class="paragraph">
+<p>Profiler options are used to record the settings that are required to
+start a particular profiler. The profiler must already exist. If
+necessary, use the
+<a href="create-profiler.html#create-profiler-1"><code>create-profiler</code>(1)</a>
+subcommand to create the profiler.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand can be used to create the following types of options:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Java system properties. These options are set through the <code>-D</code> option
+of the Java application launcher. For example:<br>
+<code>-Djava.security.manager</code><br>
+<code>-Denvironment=Production</code></p>
+</li>
+<li>
+<p>Startup parameters for the Java application launcher. These options
+are preceded by the dash character (<code>-</code>). For example:<br>
+<code>--XX:PermSize=`size +
+`-Xmx1024m</code><br>
+<code>-d64</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the subcommand specifies an option that already exists, the command
+does not re-create the option.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Ensure that any option that you create is valid. The subcommand might
+allow you to create an invalid option, but such an invalid option can
+cause startup to fail.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>An option can be verified by examining the server log after
+\{product---name} starts. Options for the Java application launcher are
+written to the <code>server.log</code> file before any other information when
+\{product---name} starts.</p>
+</div>
+<div class="paragraph">
+<p>The addition of some options requires a server restart for changes to
+become effective. Other options are set immediately in the environment
+of the domain administration server (DAS) and do not require a restart.
+Whether a restart is required depends on the type of option.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Restart is not required for Java system properties whose names do not
+start with <code>-Djava.</code> or <code>-Djavax.</code> (including the trailing period). For
+example, restart is not required for the following Java system property:<br>
+<code>-Denvironment=Production</code></p>
+</li>
+<li>
+<p>Restart is required for the following options:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Java system properties whose names start with <code>-Djava.</code> or <code>-Djavax.</code>
+(including the trailing period). For example:<br>
+<code>-Djava.security.manager</code></p>
+</li>
+<li>
+<p>Startup parameters for the Java application launcher. For example:<br>
+<code>-client</code><br>
+<code>-Xmx1024m</code><br>
+<code>-d64</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To restart the DAS, use the
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a> command.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref371" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target on which you are creating Java application
+launcher options.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Specifies the DAS (default).</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Specifies a \{product---name} instance.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Specifies a cluster.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Specifies a named configuration.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--profiler</code></dt>
+<dd>
+<p>Indicates whether the Java application launcher options are for the
+profiler. The profiler must exist for this option to be true. Default
+is false.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref372" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jvm-option-name</dt>
+<dd>
+<p>One or more options delimited by a colon (:). The format of an option
+depends on the following:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the option has a name and a value, the format is
+option-name=value.</p>
+</li>
+<li>
+<p>If the option has only a name, the format is option-name. For
+example, <code>-Xmx2048m</code>.</p>
+</li>
+<li>
+<p>If the first option name could be misinterpreted as one or more
+<code>asadmin</code> short options, the format is <code>--</code> option-name. For example,
+<code>-server</code> in the following command could be misinterpreted as <code>-se</code>,
+the <code>asadmin</code> short forms for <code>--secure</code> and <code>--echo</code>:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">create-jvm-options -server</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>To create the JVM option <code>-server</code>, instead use the command:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">create-jvm-options -- -server</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>+</p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>If an option name or option value contains a colon, the backslash
+(<code>\</code>) must be used to escape the colon in the name or value. Other
+characters might also require an escape character. For more
+information about escape characters in subcommand options, see the
+<a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> man page.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div id="sthref373" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM500"></a><a id="sthref374"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Setting Java System Properties</p>
+</div>
+<div class="paragraph">
+<p>This example sets multiple Java system properties.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jvm-options -Dunixlocation=/root/example:
+-Dvariable=\$HOME:-Dwindowslocation=d\:\\sun\\appserver:-Doption1=-value1
+created 4 option(s)
+Command create-jvm-options executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM501"></a><a id="sthref375"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Setting a Startup Parameter for the Java Application
+Launcher</p>
+</div>
+<div class="paragraph">
+<p>This example sets the maximum available heap size to 1024.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jvm-options -Xmx1024m
+created 1 option(s)
+Command create-jvm-options executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM502"></a><a id="sthref376"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Setting Multiple Startup Parameters for the Java Application
+Launcher</p>
+</div>
+<div class="paragraph">
+<p>This example sets the maximum available heap size to 1024 and requests
+details about garbage collection.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jvm-options "-Xmx1024m:-XX\:+PrintGCDetails"
+created 1 option(s)
+Command create-jvm-options executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this case, one of the two parameters already exists, so the
+subcommand reports that only one option was set.</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM503"></a><a id="sthref377"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 4   Setting a JVM Startup Parameter for the Profiler</p>
+</div>
+<div class="paragraph">
+<p>This example sets a JVM startup parameter for the profiler.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jvm-options --profiler=true -XX\:MaxPermSize=192m
+created 1 option(s)
+Command create-jvm-options executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref378" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref379" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-profiler.html#create-profiler-1"><code>create-profiler</code>(1)</a>,
+<a href="delete-jvm-options.html#delete-jvm-options-1"><code>delete-jvm-options</code>(1)</a>,
+<a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>,
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-jndi-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-lifecycle-module.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

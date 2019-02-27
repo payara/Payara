@@ -1,0 +1,66 @@
+delete-jms-host(1)        asadmin Utility Subcommands       delete-jms-host(1)
+
+NAME
+       delete-jms-host - removes a JMS host
+
+SYNOPSIS
+           delete-jms-host [--help]
+           [--target target]
+           jms_host_name
+
+DESCRIPTION
+       The delete-jms-host subcommand removes the specified Java Message
+       Service (JMS) host.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+       Deleting the default JMS host, named default_JMS_host, is not
+       recommended.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Deletes the JMS host only from the specified target. Valid values
+           are as follows:
+
+           server
+               Deletes the JMS host from the default server instance. This is
+               the default value.
+
+           configuration-name
+               Deletes the JMS host from the specified configuration.
+
+           cluster-name
+               Deletes the JMS host from every server instance in the
+               specified cluster.
+
+           instance-name
+               Deletes the JMS host from the specified server instance.
+
+OPERANDS
+       jms_host_name
+           The name of the host to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a JMS host
+           The following subcommand deletes the JMS host named MyNewHost.
+
+               asadmin> delete-jms-host MyNewHost
+               Command delete-jms-host executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jms-host(1), list-jms-hosts(1), jms-ping(1)
+
+       asadmin(1M)
+
+Java EE 8                         22 Oct 2010               delete-jms-host(1)
