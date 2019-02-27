@@ -236,7 +236,7 @@
         <maven.antlr.plugin.version>2.2</maven.antlr.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
         <maven.jaxws.plugin.version>2.5</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
@@ -467,9 +467,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
                     <configuration>
-                        <additionalOptions>
-                            <additionalOption>${javadoc.options}</additionalOption>
-                        </additionalOptions>
+                        <additionalparam>${javadoc.options}</additionalparam>
                     </configuration>
                 </plugin>
 

@@ -182,9 +182,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <failOnError>false</failOnError>
-                        <additionalOptions>
-                            <additionalOption>${javadoc.options}</additionalOption>
-                        </additionalOptions>
+                        <additionalparam>${javadoc.options}</additionalparam>
                         <attach>false</attach>
                         <doctitle>${project.name}</doctitle>
                         <windowtitle>${project.name}</windowtitle>
