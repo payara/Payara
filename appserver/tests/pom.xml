@@ -55,6 +55,7 @@
     <name>GlassFish Tests related modules</name>
 
     <modules>
+        <module>test-micro-jar</module>
         <!-- module>quicklook</module -->
     </modules>
 
