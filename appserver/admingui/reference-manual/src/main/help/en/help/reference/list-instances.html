@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-instances</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-instances</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-iiop-listeners.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-jacc-providers.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-instances-1"></a><a id="GSRFM00170"></a><a id="list-instances"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_instances">list-instances</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists \{product---name} instances in a domain</p>
+</div>
+<div id="sthref1517" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-instances [--help]
+[--timeoutmsec timeout]
+[--long={false|true} | --nostatus={false|true}]
+[--standaloneonly={false|true} | target]</code></pre>
+</div>
+</div>
+<div id="sthref1518" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-instances</code> subcommand lists \{product---name} instances in a
+domain. The list can be filtered by cluster, instance, node, or
+configuration.</p>
+</div>
+<div class="paragraph">
+<p>The subcommand displays every \{product---name} instance in the
+specified target, regardless of how each instance was created. For
+example, this subcommand lists instances that were created by using the
+<a href="create-instance.html#create-instance-1"><code>create-instance</code>(1)</a>
+subcommand and by using the
+<a href="create-local-instance.html#create-local-instance-1"><code>create-local-instance</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>By default, the subcommand indicates whether each instance that is
+listed is running. Options of this subcommand control the information
+that is displayed for each instance.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref1519" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--timeoutmsec</code></dt>
+<dd>
+<p>The time limit in milliseconds for determining the status of
+instances. The default is 2,000, which is equivalent to 2 seconds.</p>
+</dd>
+<dt class="hdlist1"><code>--long</code></dt>
+<dt class="hdlist1"><code>-l</code></dt>
+<dd>
+<p>Specifies whether detailed information is displayed for each instance
+that is listed.<br>
+The <code>--long</code> option and <code>--nostatus</code> option are mutually exclusive. If
+both options are specified in the same command, an error occurs.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The following details are displayed for each instance that is
+listed:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>The name of the instance</p>
+</li>
+<li>
+<p>The name of the host where the instance&#8217;s node resides</p>
+</li>
+<li>
+<p>The HTTP port on which the instance listens for administration
+requests</p>
+</li>
+<li>
+<p>The process identifier (PID) of the instance process or -1 if the
+instance is not running</p>
+</li>
+<li>
+<p>The name of the cluster of which the instance is a member, if any</p>
+</li>
+<li>
+<p>The state of the instance, which is <code>running</code> or <code>not running</code><br>
+When an instance is listed, some configuration changes in the domain
+administration server (DAS) for the instance might not have been
+applied to the instance itself. In this situation, the commands that
+are required to apply the changes are listed adjacent to the state
+of the instance. The maximum number of commands that are listed for
+an instance is 10.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Only the name of the instance and an indication of whether the
+instance is running are displayed (default). The length of time that
+the instance has been running is not displayed.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--nostatus</code></dt>
+<dd>
+<p>Specifies whether information about whether instances are running is
+suppressed.<br>
+The <code>--long</code> option and <code>--nostatus</code> option are mutually exclusive. If
+both options are specified in the same command, an error occurs.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Information about whether instances are running is suppressed. Only
+the name of each instance is displayed.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Information about whether instances are running is displayed
+(default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--standaloneonly</code></dt>
+<dd>
+<p>Specifies whether only standalone instances are listed.<br>
+The <code>--standaloneonly</code> option and the target operand and are mutually
+exclusive. If both the <code>--standaloneonly</code> option and the target
+operand are specified in the same command, an error occurs.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Only standalone instances are listed.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>All instances in the specified target are listed (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1520" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">target</dt>
+<dd>
+<p>Filters the list of \{product---name} instances by specifying the
+target for which instances are listed.<br>
+The target operand and the <code>--standaloneonly</code> option are mutually
+exclusive. If both the target operand and the <code>--standaloneonly</code>
+option are specified in the same command, an error occurs.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Lists all instances in the domain (default).</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Lists the instances that are members of the specified cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Lists only the specified instance.</p>
+</dd>
+<dt class="hdlist1">node-name</dt>
+<dd>
+<p>Lists the instances that reside on the specified node.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Lists all instances whose configuration is defined by the specified
+named configuration.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1521" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM664"></a><a id="sthref1522"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Basic Information About All \{product---name}
+Instances in a Domain</p>
+</div>
+<div class="paragraph">
+<p>This example lists the name and status of all \{product---name}
+instances in the current domain.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-instances
+pmd-i-sj02 running
+yml-i-sj02 running
+pmd-i-sj01 running
+yml-i-sj01 running
+pmdsa1 not running
+
+Command list-instances executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM665"></a><a id="sthref1523"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Listing Detailed Information About All \{product---name}
+Instances in a Domain</p>
+</div>
+<div class="paragraph">
+<p>This example lists detailed information about all \{product---name}
+instances in the current domain.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-instances --long=true
+NAME        HOST       PORT   PID    CLUSTER     STATE
+pmd-i-sj01  sj01       24848  31310  pmdcluster   running
+yml-i-sj01  sj01       24849  25355  ymlcluster   running
+pmdsa1      localhost  24848  -1     ---          not running
+pmd-i-sj02  sj02       24848  22498  pmdcluster   running
+yml-i-sj02  sj02       24849  20476  ymlcluster   running
+ymlsa1      localhost  24849  -1     ---          not running
+Command list-instances executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM666"></a><a id="sthref1524"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Displaying the Status of an Instance</p>
+</div>
+<div class="paragraph">
+<p>This example displays status of the instance <code>pmd-i-sj01</code>, which is
+running.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-instances pmd-i-sj01
+pmd-i-sj01 running
+Command list-instances executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM667"></a><a id="sthref1525"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 4   Listing Only Standalone Instances in a Domain</p>
+</div>
+<div class="paragraph">
+<p>This example lists only the standalone instances in the current domain.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-instances --standaloneonly=true
+pmdsa1 not running
+Command list-instances executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1526" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1527" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-instance.html#create-instance-1"><code>create-instance</code>(1)</a>,
+<a href="create-local-instance.html#create-local-instance-1"><code>create-local-instance</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-iiop-listeners.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-jacc-providers.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

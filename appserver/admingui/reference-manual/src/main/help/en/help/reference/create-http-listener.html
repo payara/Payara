@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-http-listener</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-http-listener</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-http-lb-ref.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-http-redirect.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-http-listener-1"></a><a id="GSRFM00030"></a><a id="create-http-listener"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_http_listener">create-http-listener</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds a new HTTP network listener socket</p>
+</div>
+<div id="sthref270" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-http-listener [--help]
+--listeneraddress address
+--listenerport listener-port
+{--default-virtual-server | --defaultvs} virtual-server
+[--servername server-name]
+[--acceptorthreads acceptor-threads]
+[--xpowered={true|false}]
+[--redirectport redirect-port]
+[--securityenabled={false|true}]
+[--enabled={true|false}]
+[--target target]
+listener-id</code></pre>
+</div>
+</div>
+<div id="sthref271" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-http-listener</code> subcommand creates an HTTP network listener.
+This subcommand is supported in remote mode only.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you edit the special HTTP network listener named <code>admin-listener</code>,
+you must restart the server for the changes to take effect. The
+Administration Console does not tell you that a restart is required in
+this case.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This subcommand is provided for backward compatibility and as a shortcut
+for creating network listeners that use the HTTP protocol. Behind the
+scenes, this subcommand creates a network listener and its associated
+protocol, transport, and HTTP configuration.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="sthref272" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--listeneraddress</code></dt>
+<dd>
+<p>The IP address or the hostname (resolvable by DNS).</p>
+</dd>
+<dt class="hdlist1"><code>--listenerport</code></dt>
+<dd>
+<p>The port number to create the listen socket on. Legal values are
+1-65535. On UNIX, creating sockets that listen on ports 1-1024
+requires superuser privileges. Configuring an SSL listen socket to
+listen on port 443 is recommended.</p>
+</dd>
+<dt class="hdlist1"><code>--default-virtual-server</code></dt>
+<dt class="hdlist1"><code>--defaultvs</code></dt>
+<dd>
+<p>The ID attribute of the default virtual server for this listener. The
+<code>--defaultvs</code> option is deprecated.</p>
+</dd>
+<dt class="hdlist1"><code>--servername</code></dt>
+<dd>
+<p>Tells the server what to put in the host name section of any URLs it
+sends to the client. This affects URLs the server automatically
+generates; it doesn&#8217;t affect the URLs for directories and files stored
+in the server. This name should be the alias name if your server uses
+an alias. If a colon and port number are appended, that port will be
+used in URLs that the server sends to the client.</p>
+</dd>
+<dt class="hdlist1"><code>--acceptorthreads</code></dt>
+<dd>
+<p>The number of acceptor threads for the listener socket. The
+recommended value is the number of processors in the machine. The
+default value is 1.</p>
+</dd>
+<dt class="hdlist1"><code>--xpowered</code></dt>
+<dd>
+<p>If set to <code>true</code>, adds the <code>X-Powered-By: Servlet/3.0</code> and
+<code>X-Powered-By: JSP/2.0</code> headers to the appropriate responses. The
+Servlet 3.0 specification defines the <code>X-Powered-By: Servlet/3.0</code>
+header, which containers may add to servlet-generated responses.
+Similarly, the JSP 2.0 specification defines the
+<code>X-Powered-By: JSP/2.0</code> header, which containers may add to responses
+that use JSP technology. The goal of these headers is to aid in
+gathering statistical data about the use of Servlet and JSP
+technology. The default value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--redirectport</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+<dt class="hdlist1"><code>--securityenabled</code></dt>
+<dd>
+<p>If set to true, the HTTP listener runs SSL. You can turn SSL2 or SSL3
+ON or OFF and set ciphers using an SSL element. The security setting
+globally enables or disables SSL by making certificates available to
+the server instance. The default value is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>If set to true, the listener is enabled at runtime. The default value
+is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the HTTP listener only on the specified target. Valid values
+are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the HTTP listener on the default server instance. This is
+the default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the HTTP listener in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the HTTP listener on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">standalone-instance-name</dt>
+<dd>
+<p>Creates the HTTP listener on the specified standalone server
+instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref273" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">listener-id</dt>
+<dd>
+<p>The listener ID of the HTTP network listener.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref274" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM484"></a><a id="sthref275"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating an HTTP Network Listener</p>
+</div>
+<div class="paragraph">
+<p>The following command creates an HTTP network listener named
+<code>sampleListener</code> that uses a nondefault number of acceptor threads and
+is not enabled at runtime:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-http-listener --listeneraddress 0.0.0.0 --listenerport 7272
+--defaultvs server --servername host1.sun.com --acceptorthreads 100
+--securityenabled=false --enabled=false sampleListener
+Command create-http-listener executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref276" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref277" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-ssl.html#create-ssl-1"><code>create-ssl</code>(1)</a>,
+<a href="create-network-listener.html#create-network-listener-1"><code>create-network-listener</code>(1)</a>,
+<a href="create-virtual-server.html#create-virtual-server-1"><code>create-virtual-server</code>(1)</a>,
+<a href="delete-http-listener.html#delete-http-listener-1"><code>delete-http-listener</code>(1)</a>,
+<a href="list-http-listeners.html#list-http-listeners-1"><code>list-http-listeners</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-http-lb-ref.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-http-redirect.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

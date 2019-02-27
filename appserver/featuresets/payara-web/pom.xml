@@ -40,18 +40,19 @@
     holder.
 -->
 
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">  <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
         <version>5.191-SNAPSHOT</version>
     </parent>
+    
     <artifactId>payara-web</artifactId>
-    <name>Payara Web Featureset</name>
     <packaging>pom</packaging>
+    
+    <name>Payara Web Featureset</name>
     <description>This pom defines the set of packages for Payara Web distribution</description>
 
     <dependencies>
@@ -61,12 +62,6 @@
             <artifactId>minnow</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-registration</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -110,6 +105,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- json package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -117,6 +113,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- admin ui package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -124,6 +121,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- javadb package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -131,6 +129,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>        
+        
         <!-- h2db package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -138,6 +137,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>      
+        
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -158,6 +158,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- Notifiers -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -219,6 +220,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- phomehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -226,6 +228,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- monitoring -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -233,6 +236,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- payara micro -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -240,6 +244,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- zendesk support --><!-- Removed for now -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -247,6 +252,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency><!---->
+        
         <!-- environment warning -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -254,6 +260,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- payara rest endpoints -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -268,6 +275,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- roles api -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -275,6 +283,7 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        
         <!-- Yubikey Authentication -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -282,23 +291,13 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+
+        <!-- Microprofile -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>microprofile-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
-    
-    <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <dependencies>
-                <!-- Microprofile -->
-                <dependency>
-                    <groupId>org.glassfish.main.packager</groupId>
-                    <artifactId>microprofile-package</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

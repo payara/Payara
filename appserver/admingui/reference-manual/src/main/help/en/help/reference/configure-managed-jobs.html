@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>configure-managed-jobs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>configure-managed-jobs</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="configure-ldap-for-admin.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="copy-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="configure-managed-jobs-1"></a><a id="GSRFM836"></a><a id="configure-managed-jobs"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configure_managed_jobs">configure-managed-jobs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>configures how long information about subcommands that were started
+using <code>asadmin --detach</code> or that contain progress information is kept</p>
+</div>
+<div id="sthref100" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] configure-managed-jobs [--help]
+[--in-memory-retention-period in-memory-retention-period]
+[--job-retention-period job-retention-period]
+[--cleanup-initial-delay cleanup-initial-delay]
+[--cleanup-poll-interval cleanup-poll-interval]</code></pre>
+</div>
+</div>
+<div id="sthref101" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>configure-managed-jobs</code> subcommand configures how long information
+about subcommands (jobs) that were started using the <code>asadmin</code> utility
+option <code>--detach</code> or that contain progress information is kept. The
+<code>--detach</code> option detaches long-running subcommands and executes them in
+the background in detach mode. Job information includes subcommand
+progress and status.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref102" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--in-memory-retention-period</code></dt>
+<dd>
+<p>Specifies how long a completed job is kept in memory after the job is
+finished. The default value is 1 hour.</p>
+</dd>
+<dt class="hdlist1"><code>--job-retention-period</code></dt>
+<dd>
+<p>Specifies how long a job is stored. The default value is 24 hours.</p>
+</dd>
+<dt class="hdlist1"><code>--cleanup-initial-delay</code></dt>
+<dd>
+<p>After server startup, specifies the initial delay after which the
+cleanup service starts purging jobs. The default value is 5 minutes.</p>
+</dd>
+<dt class="hdlist1"><code>--cleanup-poll-interval</code></dt>
+<dd>
+<p>Specifies the time interval after which the cleanup service polls for
+expired jobs. The default value is 20 minutes.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref103" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM837"></a><a id="sthref104"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Configuring the Job Retention Period</p>
+</div>
+<div class="paragraph">
+<p>This example sets the job retention period to 36 hours. Time periods can
+be specified in Hh|Mm|Ss for hours, minutes, or seconds.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; configure-managed-jobs --job-retention-period=36h
+Command configure-managed-jobs executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref105" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref106" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-jobs.html#list-jobs-1"><code>list-jobs</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="configure-ldap-for-admin.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="copy-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

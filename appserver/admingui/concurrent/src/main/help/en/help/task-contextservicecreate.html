@@ -1,0 +1,80 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-contextservicecreate" name="task-contextservicecreate"></a><a id="GHCON103" name="GHCON103"></a></p>
+
+<h4>To Create a Context Service<a id="sthref2" name="sthref2"></a></h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>A context service is used to create dynamic proxy objects that capture the context of a container and enable applications to run within that context at a later time. The context of the container is propagated to the thread executing the task.</p>
+<p>In GlassFish Server, you configure a context service resource and make it available for use by application components such as servlets and EJBs.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Under the Resources node, expand the Concurrent Resources node.</p>
+</li>
+<li>
+<p>Under the Concurrent Resources node, select Context Services.</p>
+<p>The Context Services page opens.</p>
+</li>
+<li>
+<p>On the Context Services page, click New.</p>
+<p>The New Context Service page opens.</p>
+</li>
+<li>
+<p>In the JNDI Name field, type a unique name that identifies the resource.</p>
+<p>The JNDI name is registered in the JNDI naming service and used by applications to look up the resource. Use the <code>concurrent/</code><i>name</i> format. For example, <code>concurrent/myContextService</code>. The name can contain only alphanumeric, underscore, dash, or dot characters.</p>
+</li>
+<li>
+<p>Select the Context Information Enabled checkbox to propagate contexts to threads, and select the contexts that you want to propagate.</p>
+<p>This option is enabled and all contexts are selected by default. Use Shift-click or Control-click to choose multiple contexts. If this option is disabled, contexts are not propagated, even if they are selected.</p>
+</li>
+<li>
+<p>In the Description field, type a short description of the resource.</p>
+<p>This description is a string value and can include a maximum of 250 characters.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the resource.</p>
+<p>This option is enabled by default, which means that the resource is available as soon as it is created.</p>
+</li>
+<li>
+<p>In the Additional Properties section, do not add any additional properties.</p>
+<p>GlassFish Server does not define any additional properties for this resource type. Moreover, this resource type does not currently use any additional properties.</p>
+</li>
+<li>
+<p>In the Targets section, specify the selected targets for the resource.</p>
+<p>Targets are displayed only if clusters and standalone instances have been created in the domain, in addition to the default server instance, <code>server</code>.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCON104" name="GHCON104"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-contextserviceedit.html">To Edit a Context Service</a></p>
+</li>
+<li>
+<p><a href="task-contextservicedelete.html">To Delete a Context Service</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

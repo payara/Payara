@@ -1,0 +1,61 @@
+delete-jdbc-connection-pool(1)  asadmin Utility Subcommands  delete-jdbc-connection-pool(1)
+
+NAME
+       delete-jdbc-connection-pool - removes the specified JDBC connection
+       pool
+
+SYNOPSIS
+           delete-jdbc-connection-pool [--help]
+           [--cascade={false|true}]
+           [--target target]
+           jdbc_connection_pool_id
+
+DESCRIPTION
+       The delete-jdbc-connection-pool subcommand deletes a JDBC connection
+       pool. Before running this subcommand, all associations to the JDBC
+       connection pool must be removed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --cascade
+           If the option is set to true, all the JDBC resources associated
+           with the pool, apart from the pool itself, are deleted. When set to
+           false, the deletion of pool fails if any resources are associated
+           with the pool. Resources must be deleted explicitly or the option
+           must be set to true. The default value is false.
+
+       --target
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+OPERANDS
+       jdbc_connection_pool_id
+           The name of the JDBC resource to be removed.
+
+EXAMPLES
+       Example 1, Deleting a JDBC Connection Pool
+           This example deletes the sample_derby_pool JDBC connection pool.
+
+               asadmin> delete-jdbc-connection-pool --cascade=false sample_derby_pool
+               Command delete-jdbc-connection-pool executed correctly.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jdbc-connection-pool(1),list-jdbc-connection-pools(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        delete-jdbc-connection-pool(1)

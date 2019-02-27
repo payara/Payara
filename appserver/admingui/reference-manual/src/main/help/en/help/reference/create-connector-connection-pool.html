@@ -1,0 +1,492 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-connector-connection-pool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-connector-connection-pool</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-cluster.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-connector-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-connector-connection-pool-1"></a><a id="GSRFM00018"></a><a id="create-connector-connection-pool"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_connector_connection_pool">create-connector-connection-pool</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds a connection pool with the specified connection pool name</p>
+</div>
+<div id="sthref158" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-connector-connection-pool [--help]
+[--target=target]
+--raname raname
+--connectiondefinition connectiondefinitionname
+[--steadypoolsize steadypoolsize]
+[--maxpoolsize maxpoolsize]
+[--maxwait maxwait]
+[--poolresize poolresize]
+[--idletimeout idletimeout]
+[--isconnectvalidatereq={false|true}]
+[--failconnection={false|true}]
+[--leaktimeout=timeout]
+[--leakreclaim={false|true}]
+[--creationretryattempts=attempts]
+[--creationretryinterval=interval]
+[--lazyconnectionenlistment={false|true}]
+[--lazyconnectionassociation={false|true}]
+[--associatewiththread={false|true}]
+[--matchconnections={true|false}]
+[--maxconnectionusagecount=count]
+[--validateatmostonceperiod=interval]
+[--transactionsupport transactionsupport]
+[--descrip[tion description]
+[--ping {false|true}]
+[--pooling {true|false}]
+[--property (name=value)[:name=value]*]
+poolname</code></pre>
+</div>
+</div>
+<div id="sthref159" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-connector-connection-pool</code> subcommand defines a pool of
+connections to an enterprise information system (EIS). The named pool
+can be referred to by multiple connector resources. Each defined pool is
+instantiated at server startup, and is populated when accessed for the
+first time. If two or more connector resources point to the same
+connector connection pool, they are using the same pool of connections
+at run time. There can be more than one pool for a connection definition
+in a single resource adapter.</p>
+</div>
+<div class="paragraph">
+<p>A connector connection pool with authentication can be created either by
+using a <code>--property</code> option to specify user, password, or other
+connection information, or by specifying the connection information in
+the XML descriptor file.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref160" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--associatewiththread</code></dt>
+<dd>
+<p>Specifies whether a connection is associated with the thread to enable
+the thread to reuse the connection. If a connection is not associated
+with the thread, the thread must obtain a connection from the pool
+each time that the thread requires a connection. Possible values are
+as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A connection is not associated with the thread (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A connection is associated with the thread.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--connectiondefinition</code></dt>
+<dd>
+<p>The name of the connection definition.</p>
+</dd>
+<dt class="hdlist1"><code>--creationretryattempts</code></dt>
+<dd>
+<p>Specifies the maximum number of times that the server retries to
+create a connection if the initial attempt fails.<br>
+Default value is 0, which specifies that the server does not retry to
+create the connection.</p>
+</dd>
+<dt class="hdlist1"><code>--creationretryinterval</code></dt>
+<dd>
+<p>Specifies the interval, in seconds, between successive attempts to
+create a connection.<br>
+If <code>--creationretryattempts</code> is 0, the <code>--creationretryinterval</code>
+option is ignored. Default value is 10.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Text providing descriptive details about the connector connection
+pool.</p>
+</dd>
+<dt class="hdlist1"><code>--failconnection</code></dt>
+<dd>
+<p>If set to true, all connections in the pool are closed if a single
+validation check fails. This parameter is mandatory if the
+<code>--isconnectvalidatereq</code> option is set to true. Default value is
+false.</p>
+</dd>
+<dt class="hdlist1"><code>--idletimeout</code></dt>
+<dd>
+<p>The maximum time that a connection can remain idle in the pool. After
+this amount of time, the pool can close this connection. Default value
+is 300.</p>
+</dd>
+<dt class="hdlist1"><code>--isconnectvalidatereq</code></dt>
+<dd>
+<p>If the value is set to true, the connections will be checked to see if
+they are usable, before they are given out to the application. Default
+value is false.</p>
+</dd>
+<dt class="hdlist1"><code>--lazyconnectionenlistment</code></dt>
+<dd>
+<p>Specifies whether a resource to a transaction is enlisted only when a
+method actually uses the resource. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>--lazyconnectionassociation</code></dt>
+<dd>
+<p>Specifies whether a physical connection should be associated with the
+logical connection only when the physical connection is used, and
+disassociated when the transaction is completed. Such association and
+dissociation enable the reuse of physical connections. Possible values
+are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A physical connection is associated with the logical connection even
+before the physical connection is used, and is not disassociated
+when the transaction is completed (default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A physical connection is associated with the logical connection only
+when the physical connection is used, and disassociated when the
+transaction is completed. The <code>--lazyconnectionenlistment</code> option
+must also be set to <code>true</code>.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--leakreclaim</code></dt>
+<dd>
+<p>Specifies whether leaked connections are restored to the connection
+pool after leak connection tracing is complete. Possible values are as
+follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Leaked connections are not restored to the connection pool
+(default).</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Leaked connections are restored to the connection pool.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--leaktimeout</code></dt>
+<dd>
+<p>Specifies the amount of time, in seconds, for which connection leaks
+in a connection pool are to be traced.<br>
+If connection leak tracing is enabled, you can use the Administration
+Console to enable monitoring of the JDBC connection pool to get
+statistics on the number of connection leaks. Default value is 0,
+which disables connection leak tracing.</p>
+</dd>
+<dt class="hdlist1"><code>--matchconnections</code></dt>
+<dd>
+<p>Specifies whether a connection that is selected from the pool should
+be matched with the resource adaptor. If all connections in the pool
+are identical, matching between connections and resource adapters is
+not required. Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>A connection should be matched with the resource adaptor (default).</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>A connection should not be matched with the resource adaptor.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--maxconnectionusagecount</code></dt>
+<dd>
+<p>Specifies the maximum number of times that a connection can be reused.<br>
+When this limit is reached, the connection is closed. Default value is
+0, which specifies no limit on the number of times that a connection
+can be reused.</p>
+</dd>
+<dt class="hdlist1"><code>--maxpoolsize</code></dt>
+<dd>
+<p>The maximum number of connections that can be created to satisfy
+client requests. Default value is 32.</p>
+</dd>
+<dt class="hdlist1"><code>--maxwait</code></dt>
+<dd>
+<p>The amount of time, in milliseconds, that a caller must wait before a
+connection is created, if a connection is not available. If set to 0,
+the caller is blocked indefinitely until a resource is available or
+until an error occurs. Default value is 60000.</p>
+</dd>
+<dt class="hdlist1"><code>--ping</code></dt>
+<dd>
+<p>A pool with this attribute set to true is contacted during creation
+(or reconfiguration) to identify and warn of any erroneous values for
+its attributes. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>--pooling</code></dt>
+<dd>
+<p>When set to false, this attribute disables connection pooling. Default
+value is true.</p>
+</dd>
+<dt class="hdlist1"><code>--poolresize</code></dt>
+<dd>
+<p>Quantity by which the pool will scale up or scale down the number of
+connections. Scale up: When the pool has no free connections, pool
+will scale up by this quantity. Scale down: All the invalid and idle
+connections are removed, sometimes resulting in removing connections
+of quantity greater than this value. The number of connections that is
+specified by <code>--steadypoolsize</code> will be ensured. Possible values are
+from 0 to <code>MAX_INTEGER</code>. Default value is 2.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the pool.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>LazyConnectionEnlistment</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent option. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>LazyConnectionAssociation</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent option. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>AssociateWithThread</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent option. Default value is false.</p>
+</dd>
+<dt class="hdlist1"><code>MatchConnections</code></dt>
+<dd>
+<p>Deprecated. Use the equivalent option. Default value is false.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--raname</code></dt>
+<dd>
+<p>The name of the resource adapter.</p>
+</dd>
+<dt class="hdlist1"><code>--steadypoolsize</code></dt>
+<dd>
+<p>The minimum and initial number of connections maintained in the pool.
+Default value is 8.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Do not specify this option. This option is retained for compatibility
+with earlier releases. If you specify this option, a syntax error does
+not occur. Instead, the subcommand runs successfully and displays a
+warning message that the option is ignored.</p>
+</dd>
+<dt class="hdlist1"><code>--transactionsupport</code></dt>
+<dd>
+<p>Indicates the level of transaction support that this pool will have.
+Possible values are <code>XATransaction</code>, <code>LocalTransaction</code> and
+<code>NoTransaction</code>. This attribute can have a value lower than or equal
+to but not higher than the resource adapter&#8217;s transaction support
+attribute. The resource adapter&#8217;s transaction support attribute has an
+order of values, where <code>XATransaction</code> is the highest, and
+<code>NoTransaction</code> the lowest.</p>
+</dd>
+<dt class="hdlist1"><code>--validateatmostonceperiod</code></dt>
+<dd>
+<p>Specifies the time interval in seconds between successive requests to
+validate a connection at most once. Setting this attribute to an
+appropriate value minimizes the number of validation requests by a
+connection. Default value is 0, which means that the attribute is not
+enabled.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref161" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">poolname</dt>
+<dd>
+<p>The name of the connection pool to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref162" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM464"></a><a id="sthref163"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Connector Connection Pool</p>
+</div>
+<div class="paragraph">
+<p>This example creates a new connector connection pool named
+<code>jms/qConnPool</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-connector-connection-pool --raname jmsra
+--connectiondefinition javax.jms.QueueConnectionFactory --steadypoolsize 20
+--maxpoolsize 100 --poolresize 2 --maxwait 60000 jms/qConnPool
+Command create-connector-connection-pool executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref164" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref165" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-connector-connection-pool.html#delete-connector-connection-pool-1"><code>delete-connector-connection-pool</code>(1)</a>,
+<a href="list-connector-connection-pools.html#list-connector-connection-pools-1"><code>list-connector-connection-pools</code>(1)</a>,
+<a href="ping-connection-pool.html#ping-connection-pool-1"><code>ping-connection-pool</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-cluster.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-connector-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

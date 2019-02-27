@@ -1,0 +1,61 @@
+delete-virtual-server(1)  asadmin Utility Subcommands  delete-virtual-server(1)
+
+NAME
+       delete-virtual-server - removes a virtual server
+
+SYNOPSIS
+           delete-virtual-server [--help]
+           [--target target] virtual-server-id
+
+DESCRIPTION
+       The delete-virtual-server subcommand removes the virtual server with
+       the specified virtual server ID. This subcommand is supported in remote
+       mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Deletes the virtual server only from the specified target. Valid
+           values are as follows:
+
+           server
+               Deletes the virtual server from the default server instance.
+               This is the default value.
+
+           configuration-name
+               Deletes the virtual server from the specified configuration.
+
+           cluster-name
+               Deletes the virtual server from all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Deletes the virtual server from the specified standalone server
+               instance.
+
+OPERANDS
+       virtual-server-id
+           The unique identifier for the virtual server to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Virtual Server
+           The following command deletes the virtual server named sample_vs1:
+
+               asadmin> delete-virtual-server sample_vs1
+               Command delete-virtual-server executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-virtual-server(1), list-virtual-servers(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017         delete-virtual-server(1)

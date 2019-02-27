@@ -1,0 +1,86 @@
+delete-application-ref(1) asadmin Utility Subcommands  delete-application-ref(1)
+
+NAME
+       delete-application-ref - removes a reference to an application
+
+SYNOPSIS
+           delete-application-ref [--help] [--target target]
+            [--cascade=false] reference_name
+
+DESCRIPTION
+       The delete-application-ref subcommand removes a reference from a
+       cluster or an unclustered server instance to an application. This
+       effectively results in the application element being undeployed and no
+       longer available on the targeted instance or cluster.
+
+       The target instance or instances making up the cluster need not be
+       running or available for this subcommand to succeed. If one or more
+       instances are not available, they will no longer load the application
+       the next time they start.
+
+       Removal of the reference does not result in removal of the application
+       from the domain. The bits are removed only by the undeploy subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are removing the application
+           reference. Valid values are
+
+           *   server- Specifies the default server instance as the target.
+               server is the name of the default server instance and is the
+               default value.
+
+           *   cluster_name- Specifies a certain cluster as the target.
+
+           *   instance_name- Specifies a certain stand-alone server instance
+               as the target.
+
+       --cascade
+           For a connector module, indicates whether the resources dependent
+           on the module should also be recursively deleted. The default is
+           false. The connector module can be either a stand-alone RAR file or
+           a module within an EAR file.
+
+OPERANDS
+       reference_name
+           The name of the application or module, which can be a Java EE
+           application module, Web module, EJB module, connector module,
+           application client module, or lifecycle module.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. To delete references to multiple versions, you can
+           use an asterisk (*) as a wildcard character. For more information
+           about module and application versions, see "Module and Application
+           Versions" in Oracle GlassFish Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Deleting an Application Reference
+           The following example removes a reference to the Web module
+           MyWebApp from the unclustered server instance NewServer.
+
+               asadmin> delete-application-ref --target NewServer MyWebApp
+               Command delete-application-ref executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-application-ref(1), list-application-refs(1), undeploy(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                   09 Aug 2017            delete-application-ref(1)

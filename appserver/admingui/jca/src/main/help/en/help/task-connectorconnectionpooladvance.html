@@ -1,0 +1,154 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-connectorconnectionpooladvance" name="task-connectorconnectionpooladvance"></a><a id="GHJCA00065" name="GHJCA00065"></a></p>
+
+<h4><a id="sthref14" name="sthref14"></a>To Edit Connector Connection Pool Advanced Attributes</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Expand the Connectors node.</p>
+</li>
+<li>
+<p>Under the Connectors node, select the Connector Connection Pools node.</p>
+<p>The Connector Connection Pools page opens.</p>
+</li>
+<li>
+<p>On the Connector Connection Pools page, click the name of the connector connection pool that you are editing.</p>
+<p>The Edit Connector Connection Pool page opens.</p>
+</li>
+<li>
+<p>On the Edit Connector Connection Pool page, click the Advanced tab.</p>
+<p>The Edit Connector Connection Pool Advanced Attributes page opens.</p>
+</li>
+<li>
+<p>In the Validate At Most Once field, type the amount of time, in seconds, after which a connection is validated at most once.</p>
+<p>Setting this attribute to an appropriate value minimizes the number of validation requests by a connection. Default value is 0, which means that the attribute is not enabled.</p>
+</li>
+<li>
+<p>In the Leak Timeout field, type the amount of time, in seconds, to trace connection leaks in a connection pool.</p>
+<p>A value of 0 indicates that connection leak tracing is disabled. The default value is 0.</p>
+</li>
+<li>
+<p>Select the Leak Reclaim checkbox to enable leaked connections to be restored to the pool after leak connection tracing is complete.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Creation Retry Attempts field, type the number of attempts that will be made if there is a failure in creating a new connection.</p>
+<p>A value of 0 indicates that no attempts will be made to create the connection again. The default value is 0.</p>
+</li>
+<li>
+<p>In the Retry Interval field, type the interval, in seconds, between two attempts to create a connection.</p>
+<p>This attribute is used only if the value of Creation Retry Attempts is greater than 0. The default value is 10 seconds.</p>
+</li>
+<li>
+<p>Select the Pooling checkbox to enable connection pooling for the pool.</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>Select the Lazy Association checkbox to enable connections to be lazily associated when an operation is performed on them.</p>
+<p>The connections are disassociated when the transaction is completed and a component method ends, which helps reuse of the physical connections. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Lazy Connection Enlistment checkbox to enlist a resource to the transaction only when it is actually used in a method.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Associate with Thread checkbox to associate a connection with a thread.</p>
+<p>When the same thread is in need of a connection, it can reuse the connection already associated with it, thereby not incurring the overhead of getting a connection from the pool. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Match Connections checkbox to enable connection matching for the pool.</p>
+<p>Disable this option if you know that the connections in the pool will always be homogeneous and hence a connection picked from the pool need not be matched by the resource adapter. This option is enabled by default.</p>
+</li>
+<li>
+<p>In the Match Connection Usage field, type the number of times a connection should be reused by the pool.</p>
+<p>Once a connection is reused for the specified number of times, it will be closed. A value of 0 indicates that this attribute is not enabled. The default value is 0.</p>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="sthref15" name="sthref15"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-connectorresourcenew.html">To Create a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorresourceedit.html">To Edit a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorresourcesdelete.html">To Delete a Connector Resource</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolnew.html">To Create a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooledit.html">To Edit a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpoolproperty.html">To Edit Connector Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapnew.html">To Create a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapedit.html">To Edit a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorsecuritymapdel.html">To Delete a Security Map for a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-connectorconnectionpooldel.html">To Delete a Connector Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-setupeisaccess.html">To Set Up EIS Access</a></p>
+</li>
+<li>
+<p><a href="task-adminobjectnew.html">To Create an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-adminobjectedit.html">To Edit an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-administeredobjectresourcedelete.html">To Delete an Administered Object Resource</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapnew.html">To Create a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapedit.html">To Edit a Work Security Map</a></p>
+</li>
+<li>
+<p><a href="task-worksecuritymapdelete.html">To Delete a Work Security Map</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

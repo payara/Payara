@@ -1,0 +1,103 @@
+create-http(1)            asadmin Utility Subcommands           create-http(1)
+
+NAME
+       create-http - sets HTTP parameters for a protocol
+
+SYNOPSIS
+           create-http [--help]
+           --default-virtual-server virtual-server
+           [--request-timeout-seconds timeout]
+           [--timeout-seconds timeout]
+           [--max-connection max-keepalive]
+           [--dns-lookup-enabled={false|true}]
+           [--servername server-name]
+           [--target target]
+
+           protocol-name
+
+DESCRIPTION
+       The create-http subcommand creates a set of HTTP parameters for a
+       protocol, which in turn configures one or more network listeners. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --default-virtual-server
+           The ID attribute of the default virtual server for the associated
+           network listeners.
+
+       --request-timeout-seconds
+           The time in seconds at which the request times out. If you do not
+           set this option, the request times out in 30 seconds.
+
+       --timeout-seconds
+           The maximum time in seconds for which a keep alive connection is
+           kept open. A value of 0 or less means keep alive connections are
+           kept open indefinitely. The default is 30.
+
+       --max-connection
+           The maximum number of HTTP requests that can be pipelined until the
+           connection is closed by the server. Set this property to 1 to
+           disable HTTP/1.0 keep-alive, as well as HTTP/1.1 keep-alive and
+           pipelining. The default is 256.
+
+       --dns-lookup-enabled
+           If set to true, looks up the DNS entry for the client. The default
+           is false.
+
+       --servername
+           Tells the server what to put in the host name section of any URLs
+           it sends to the client. This affects URLs the server automatically
+           generates; it doesn't affect the URLs for directories and files
+           stored in the server. This name should be the alias name if your
+           server uses an alias. If a colon and port number are appended, that
+           port will be used in URLs that the server sends to the client.
+
+       --target
+           Creates the set of HTTP parameters only on the specified target.
+           Valid values are as follows:
+
+           server
+               Creates the set of HTTP parameters on the default server
+               instance. This is the default value.
+
+           configuration-name
+               Creates the set of HTTP parameters in the specified
+               configuration.
+
+           cluster-name
+               Creates the set of HTTP parameters on all server instances in
+               the specified cluster.
+
+           standalone-instance-name
+               Creates the set of HTTP parameters on the specified standalone
+               server instance.
+
+OPERANDS
+       protocol-name
+           The name of the protocol to which this HTTP parameter set applies.
+
+EXAMPLES
+       Example 1, Using the create-http Subcommand
+           The following command creates an HTTP parameter set for the
+           protocol named http-1:
+
+               asadmin> create-http --timeout-seconds 60 --default-virtual-server server http-1
+               Command create-http executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-http(1), create-network-listener(1), create-protocol(1),
+       create-virtual-server(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011                   create-http(1)

@@ -1,0 +1,80 @@
+capture-schema(1M)             Utility Commands             capture-schema(1M)
+
+NAME
+       capture-schema - stores the database metadata (schema) in a file for
+       use in mapping and execution
+
+SYNOPSIS
+           capture-schema -username name -password password
+           [-dburl url] [-driver jdbc_driver_classname]
+           [-schemaname schemaname] [-table tablename]
+           -out filename]
+
+DESCRIPTION
+       Stores the database metadata (schema) in a file.
+
+       Run capture-schema as the same database user that owns the table(s),
+       and use that same username with the -username option (and -schemaname,
+       if required).
+
+       When running capture-schema against an Oracle database, you should
+       grant the database user running the capture-schema command the ANALYZE
+       ANY TABLE privilege.
+
+OPTIONS
+       -username
+           user name for authenticating access to a database.
+
+       -password
+           password for accessing the selected database.
+
+       -dburl
+           JDBC URL required by the driver for accessing a database.
+
+       -driver
+           JDBC driver classname in your CLASSPATH.
+
+       -schemaname
+           name of the user schema being captured. If not specified, the
+           default will capture metadata for all tables from all the schemas
+           accessible to this user.
+
+           Specifying this parameter is highly recommended.  Without this
+           option, if more than one schema is accessible to this user, more
+           than one table with the same name may be captured, which will cause
+           problems when mapping CMP fields to tables.
+
+           The specified schema name must be uppercase.
+
+       -table
+           name of a table; multiple table names can be specified. If no table
+           is specified, all the tables in the database or named schema are
+           captured.
+
+           The specified table name or names are case sensitive. Be sure to
+           match the case of the previously created table names.
+
+       -out
+           name of the output file. This option is required. If the specified
+           output file does not contain the .dbschema suffix, it will be
+           appended to the filename.
+
+EXAMPLES
+       Example 1, Using the capture-schema command
+
+               capture-schema -username cantiflas -password enigma
+               -dburl jdbc:oracle:thin:@sadbuttrue:1521:ora817
+               -driver oracle.jdbc.driver.OracleDriver
+               -schemaname CANTIFLAS -out cantiflas.dbschema
+           Where: sun-acc.xml is the name of the client configuration XML
+           file, myclientapp.jar is the client application .jar file, and
+           scott and sample are arguments to pass to the application. If
+           sun-acc.xml and myclientapp.jar are not in the current directory,
+           you must give the absolute path locations; otherwise the relative
+           paths are used. The relative path is relative to the directory
+           where the command is being executed.
+
+SEE ALSO
+       asadmin(1M)
+
+Java EE 8                         1 Dec 2011                capture-schema(1M)

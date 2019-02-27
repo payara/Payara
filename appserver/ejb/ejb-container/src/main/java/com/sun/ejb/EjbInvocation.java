@@ -94,6 +94,7 @@ public class EjbInvocation
         EjbBundleDescriptor ejbBundleDesc = container.getEjbDescriptor().getEjbBundleDescriptor();
         moduleName = ejbBundleDesc.getModuleName();
         appName = ejbBundleDesc.getApplication().getAppName();
+        registrationName = ejbBundleDesc.getApplication().getRegistrationName();
 
         //By default we enable TransactionOperationsManager checks. But EjbInvocation.clone()
         //  clears transactionOperationsManager so that, be default, cloned invocations

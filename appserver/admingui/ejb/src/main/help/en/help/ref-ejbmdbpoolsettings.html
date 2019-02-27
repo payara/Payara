@@ -1,0 +1,73 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-ejbmdbpoolsettings" name="ref-ejbmdbpoolsettings"></a><a id="GHEJB00002" name="GHEJB00002"></a></p>
+
+<h4><a id="sthref18" name="sthref18"></a><a id="sthref19" name="sthref19"></a><a id="sthref20" name="sthref20"></a>MDB Default Pool Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the MDB Default Pool Settings page to configure the MDB pool.</p>
+<p>The MDB Default Pool Settings page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Initial and Minimum Pool Size</dt>
+<dd>
+<p>The minimum number of message beans to be maintained in the pool. The default value is 0.</p>
+</dd>
+<dt>Maximum Pool Size</dt>
+<dd>
+<p>The maximum number of beans that the container can maintain in the pool at one time. The default value is 32.</p>
+</dd>
+<dt>Pool Resize Quantity</dt>
+<dd>
+<p>The number of beans that are removed from the pool if they are idle for more than the time specified in the Pool Idle Timeout field. The value must be at least 0 and less than the Maximum Pool Size value. The default value is 8.</p>
+</dd>
+<dt>Pool Idle Timeout</dt>
+<dd>
+<p>The time, in seconds, that a bean in the pool can remain idle before it is removed from the pool. After this amount of time, the bean is destroyed. A value of 0 means that a bean can remain idle indefinitely. The default value is 600.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the MDB pool. The GlassFish Server does not define any additional properties for the MDB pool.</p>
+</dd>
+</dl>
+<a id="sthref21" name="sthref21"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-ejbmdbpoolsettings.html">To Configure MDB Pool Settings</a></p>
+</li>
+<li>
+<p><a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbtimerservice.html">To Configure the EJB Timer Service</a></p>
+</li>
+</ul>
+<a id="sthref22" name="sthref22"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

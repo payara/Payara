@@ -1,0 +1,41 @@
+list-connector-connection-pools(1)  asadmin Utility Subcommands  list-connector-connection-pools(1)
+
+NAME
+       list-connector-connection-pools - lists the existing connector
+       connection pools
+
+SYNOPSIS
+           list-connector-connection-pools [--help]
+
+DESCRIPTION
+       The list-connector-connection-pools subcommand list connector
+       connection pools that have been created.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Listing the Connector Connection Pools
+           This example lists the existing connector connection pools.
+
+               asadmin> list-connector-connection-pools
+               jms/qConnPool
+               Command list-connector-connection-pools executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-connection-pool(1),
+       delete-connector-connection-pool(1), ping-connection-pool(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        list-connector-connection-pools(1)

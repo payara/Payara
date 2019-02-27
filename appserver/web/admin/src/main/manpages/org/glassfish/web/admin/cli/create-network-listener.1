@@ -1,0 +1,127 @@
+create-network-listener(1)  asadmin Utility Subcommands  create-network-listener(1)
+
+NAME
+       create-network-listener - adds a new network listener socket
+
+SYNOPSIS
+           create-network-listener [--help]
+           [--address address]
+           --listenerport listener-port
+           [--threadpool thread-pool]
+           --protocol protocol
+           [--transport transport]
+           [--enabled={true|false}]
+           [--jkenabled={false|true}]
+           [--target target]
+           listener-name
+
+DESCRIPTION
+       The create-network-listener subcommand creates a network listener. This
+       subcommand is supported in remote mode only.
+
+           Note
+           +---------------------------------------+
+           |           If you edit the special     |
+           |           network listener named      |
+           |           admin-listener, you must    |
+           |           restart the server for the  |
+           |           changes to take effect. The |
+           |           Administration Console does |
+           |           not tell you that a restart |
+           |           is required in this case.   |
+           +---------------------------------------+
+
+           Note
+           +----------------------------------------+
+           |           You can use the              |
+           |           create-http-listener         |
+           |           subcommand to create a       |
+           |           network listener that uses   |
+           |           the HTTP protocol without    |
+           |           having to first create a     |
+           |           protocol, transport, or HTTP |
+           |           configuration. This          |
+           |           subcommand is a convenient   |
+           |           shortcut, but it gives       |
+           |           access to only a limited     |
+           |           number of options.           |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --address
+           The IP address or the hostname (resolvable by DNS).
+
+       --listenerport
+           The port number to create the listen socket on. Legal values are
+           1-65535. On UNIX, creating sockets that listen on ports 1-1024
+           requires superuser privileges. Configuring an SSL listen socket to
+           listen on port 443 is standard.
+
+       --threadpool
+           The name of the thread pool for this listener. Specifying a thread
+           pool is optional. The default is http-thread-pool.
+
+       --protocol
+           The name of the protocol for this listener.
+
+       --transport
+           The name of the transport for this listener. Specifying a transport
+           is optional. The default is tcp.
+
+       --enabled
+           If set to true, the default, the listener is enabled at runtime.
+
+       --jkenabled
+           If set to true, mod_jk is enabled for this listener. The default is
+           false.
+
+       --target
+           Creates the network listener only on the specified target. Valid
+           values are as follows:
+
+           server
+               Creates the network listener on the default server instance.
+               This is the default value.
+
+           configuration-name
+               Creates the network listener in the specified configuration.
+
+           cluster-name
+               Creates the network listener on all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Creates the network listener on the specified standalone server
+               instance.
+
+OPERANDS
+       listener-name
+           The name of the network listener.
+
+EXAMPLES
+       Example 1, Creating a Network Listener
+           The following command creates a network listener named
+           sampleListener that is not enabled at runtime:
+
+               asadmin> create-network-listener --listenerport 7272 protocol http-1
+               --enabled=false sampleListener
+               Command create-network-listener executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-network-listener(1), list-network-listeners(1),
+       create-transport(1), create-protocol(1), create-threadpool(1),
+       create-http-listener(1)
+
+       asadmin(1M)
+
+Java EE 8                 09 Aug 2017          create-network-listener(1)
