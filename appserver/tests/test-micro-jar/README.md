@@ -17,9 +17,11 @@ generates the jar. Should the jar not exist run:
 Depending on the status of the build artifacts a full build might be required.
 
 Except from being dependent on a generated jar file the tests in this module
-are plain old JUnit tests that can be run using `mvn test` or in the IDE
-as every other JUnit tests. While this takes full advantage of the simplicity 
-Payara Micro has to offer for the user it comes with the downside of not having
-further APIs and internals available at compile time. 
+are plain old JUnit tests that can be run using `mvn integration-test`
+(or `mvn verify`) or in the IDE as every other JUnit tests.
+
+While this takes full advantage of the simplicity Payara Micro has to offer for 
+the user it comes with the downside of not having further APIs and internals 
+available at compile time.
 Instead reflection has to be used if internal should be verified. 
 This module offers the `BeanProxy` utility class to ease reflection usage.
