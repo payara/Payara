@@ -52,11 +52,14 @@ import java.io.StringWriter;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.ClusterCommandResult.ExitStatus;
+import fish.payara.test.util.IntegrationTest;
 import fish.payara.test.util.PayaraMicroServer;
 
+@Category(IntegrationTest.class)
 public abstract class AsAdminIntegrationTest {
 
     private static final String UNSATISFIED_DEPENDENCY_EXCEPTION_CLASS_NAME = 
