@@ -37,27 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.test.domain;
+package fish.payara.test.domain.notification;
 
+import java.util.List;
+
+import fish.payara.test.domain.healthcheck.HealthCheckService;
 import fish.payara.test.util.BeanProxy;
 
-public final class Notifier extends BeanProxy {
+public final class NotifierExecutionOptions extends BeanProxy {
 
-    public static final String LOG_NOTIFIER_CLASS_NAME = "fish.payara.nucleus.notification.log.LogNotifier";
-
-    public static Notifier from(HealthCheckServiceConfiguration config, Class<?> notifierType) {
-        return new Notifier(config.callMethod("getNotifierByType", "Failed to resolve Notifier", Class.class, notifierType));
+    public static NotifierExecutionOptions from(HealthCheckService service, String notifierName) {
+        List<?> options = (List<?>) service.callMethod("getNotifierExecutionOptionsList", "Failed to resolve notifier options");
+        for (Object option : options) {
+            NotifierExecutionOptions res = new NotifierExecutionOptions(option);
+            if (res.getNotifierType().name().equals(notifierName)) {
+                return res;
+            }
+        }
+        return null;
     }
 
-    private Notifier(Object bean) {
+    private NotifierExecutionOptions(Object bean) {
         super(bean);
     }
 
-    public boolean getEnabled() {
-        return booleanValue("getEnabled");
+    public Enum<?> getNotifierType() {
+        return enumValue("getNotifierType");
     }
 
-    public boolean getNoisy() {
-        return booleanValue("getNoisy");
+    public boolean isEnabled() {
+        return booleanValue("isEnabled");
     }
+
+    public boolean isNoisy() {
+        return booleanValue("isNoisy");
+    }
+
 }

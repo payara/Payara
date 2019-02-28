@@ -37,30 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.admin.cli;
+package fish.payara.test.domain.healthcheck;
 
-import org.junit.Test;
+import fish.payara.test.domain.notification.Notifier;
+import fish.payara.test.util.BeanProxy;
+import fish.payara.test.util.PayaraMicroServer;
 
-import fish.payara.micro.ClusterCommandResult;
+public final class HealthCheckServiceConfiguration extends BeanProxy {
 
-/**
- * Verifies the correctness of the {@code ListHealthCheckServices} command.
- */
-public class ListHealthCheckServicesTest extends AsAdminIntegrationTest {
+    private static final String CONFIG_CLASS_NAME =
+            "fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration";
 
-    @Test
-    public void listHealthCheckServices() {
-        ClusterCommandResult result = asadmin("list-healthcheck-services");
-        assertSuccess(result);
-        String description = result.getOutput();
-        assertContains("Available Health Check Services:", description);
-        assertContains("healthcheck-mp", description);
-        assertContains("healthcheck-cpu", description);
-        assertContains("healthcheck-gc", description);
-        assertContains("healthcheck-heap", description);
-        assertContains("healthcheck-threads", description);
-        assertContains("healthcheck-machinemem", description);
-        assertContains("healthcheck-cpool", description);
-        assertContains("healthcheck-stuck", description);
+    public static HealthCheckServiceConfiguration from(PayaraMicroServer server) {
+        return from(server, "server-config");
+    }
+
+    private static HealthCheckServiceConfiguration from(PayaraMicroServer server, String target) {
+        return new HealthCheckServiceConfiguration(
+                server.getExtensionByType(target, server.getClass(CONFIG_CLASS_NAME)));
+    }
+
+    private HealthCheckServiceConfiguration(Object config) {
+        super(config);
+    }
+
+    public boolean getEnabled() {
+        return booleanValue("getEnabled");
+    }
+
+    public boolean getHistoricalTraceEnabled() {
+        return booleanValue("getHistoricalTraceEnabled");
+    }
+
+    public int getHistoricalTraceStoreSize() {
+        return intValue("getHistoricalTraceStoreSize");
+    }
+
+    public int getHistoricalTraceStoreTimeout() {
+        return intValue("getHistoricalTraceStoreTimeout");
+    }
+
+    public Checker getCheckerByType(Class<?> checkerType) {
+        return Checker.from(this, checkerType);
+    }
+
+    public Notifier getNotifierByType(Class<?> notifierType) {
+        return Notifier.from(this, notifierType);
     }
 }

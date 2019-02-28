@@ -37,46 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.test.domain;
+package fish.payara.admin.cli.healthcheck;
 
-import fish.payara.test.util.BeanProxy;
-import fish.payara.test.util.PayaraMicroServer;
+import org.junit.Test;
 
-public final class HealthCheckService extends BeanProxy {
+import fish.payara.admin.cli.AsAdminIntegrationTest;
+import fish.payara.micro.ClusterCommandResult;
 
-    private static final String SERVICE_CLASS_NAME =
-            "fish.payara.nucleus.healthcheck.HealthCheckService";
+/**
+ * Verifies the correctness of the {@code ListHealthCheckServices} command.
+ */
+public class ListHealthCheckServicesTest extends AsAdminIntegrationTest {
 
-    public static HealthCheckService from(PayaraMicroServer server) {
-        return new HealthCheckService(server.getService(server.getClass(SERVICE_CLASS_NAME)));
-    }
-
-    private HealthCheckService(Object bean) {
-        super(bean);
-    }
-
-    public boolean isEnabled() {
-        return booleanValue("isEnabled");
-    }
-
-    public boolean isHistoricalTraceEnabled() {
-        return booleanValue("isHistoricalTraceEnabled");
-    }
-
-    public Integer getHistoricalTraceStoreSize() {
-        return integerValue("getHistoricalTraceStoreSize");
-    }
-
-    public Long getHistoricalTraceStoreTimeout() {
-        return longValue("historicalTraceStoreTimeout");
-    }
-
-    public BaseHealthCheck getCheck(String name) {
-        Object res = callMethod("getCheck", "Failed to getCheck", String.class, name);
-        return res == null ? null : new BaseHealthCheck(res);
-    }
-
-    public NotifierExecutionOptions getNotifierExecutionOptions(String notifierName) {
-        return NotifierExecutionOptions.from(this, notifierName);
+    @Test
+    public void listHealthCheckServices() {
+        ClusterCommandResult result = asadmin("list-healthcheck-services");
+        assertSuccess(result);
+        String description = result.getOutput();
+        assertContains("Available Health Check Services:", description);
+        assertContains("healthcheck-mp", description);
+        assertContains("healthcheck-cpu", description);
+        assertContains("healthcheck-gc", description);
+        assertContains("healthcheck-heap", description);
+        assertContains("healthcheck-threads", description);
+        assertContains("healthcheck-machinemem", description);
+        assertContains("healthcheck-cpool", description);
+        assertContains("healthcheck-stuck", description);
     }
 }

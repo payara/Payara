@@ -37,39 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.test.domain;
+package fish.payara.test.domain.healthcheck;
 
-import java.util.List;
-
+import fish.payara.test.domain.notification.NotifierExecutionOptions;
 import fish.payara.test.util.BeanProxy;
+import fish.payara.test.util.PayaraMicroServer;
 
-public final class NotifierExecutionOptions extends BeanProxy {
+public final class HealthCheckService extends BeanProxy {
 
-    public static NotifierExecutionOptions from(HealthCheckService service, String notifierName) {
-        List<?> options = (List<?>) service.callMethod("getNotifierExecutionOptionsList", "Failed to resolve notifier options");
-        for (Object option : options) {
-            NotifierExecutionOptions res = new NotifierExecutionOptions(option);
-            if (res.getNotifierType().name().equals(notifierName)) {
-                return res;
-            }
-        }
-        return null;
+    private static final String SERVICE_CLASS_NAME =
+            "fish.payara.nucleus.healthcheck.HealthCheckService";
+
+    public static HealthCheckService from(PayaraMicroServer server) {
+        return new HealthCheckService(server.getService(server.getClass(SERVICE_CLASS_NAME)));
     }
 
-    private NotifierExecutionOptions(Object bean) {
+    private HealthCheckService(Object bean) {
         super(bean);
-    }
-
-    public Enum<?> getNotifierType() {
-        return enumValue("getNotifierType");
     }
 
     public boolean isEnabled() {
         return booleanValue("isEnabled");
     }
 
-    public boolean isNoisy() {
-        return booleanValue("isNoisy");
+    public boolean isHistoricalTraceEnabled() {
+        return booleanValue("isHistoricalTraceEnabled");
     }
 
+    public Integer getHistoricalTraceStoreSize() {
+        return integerValue("getHistoricalTraceStoreSize");
+    }
+
+    public Long getHistoricalTraceStoreTimeout() {
+        return longValue("historicalTraceStoreTimeout");
+    }
+
+    public BaseHealthCheck getCheck(String name) {
+        Object res = callMethod("getCheck", "Failed to getCheck", String.class, name);
+        return res == null ? null : new BaseHealthCheck(res);
+    }
+
+    public NotifierExecutionOptions getNotifierExecutionOptions(String notifierName) {
+        return NotifierExecutionOptions.from(this, notifierName);
+    }
 }

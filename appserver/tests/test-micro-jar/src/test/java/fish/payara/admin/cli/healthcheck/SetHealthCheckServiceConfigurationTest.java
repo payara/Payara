@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.admin.cli;
+package fish.payara.admin.cli.healthcheck;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -50,11 +50,12 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import fish.payara.admin.cli.AsAdminIntegrationTest;
 import fish.payara.micro.ClusterCommandResult;
-import fish.payara.test.domain.BaseHealthCheck;
-import fish.payara.test.domain.Checker;
-import fish.payara.test.domain.HealthCheckService;
-import fish.payara.test.domain.HealthCheckServiceConfiguration;
+import fish.payara.test.domain.healthcheck.BaseHealthCheck;
+import fish.payara.test.domain.healthcheck.Checker;
+import fish.payara.test.domain.healthcheck.HealthCheckService;
+import fish.payara.test.domain.healthcheck.HealthCheckServiceConfiguration;
 
 /**
  * Verifies the correctness of the {@code SetHealthCheckServiceConfiguration} command.

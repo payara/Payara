@@ -37,50 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.test.domain;
+package fish.payara.test.domain.notification;
 
+import fish.payara.test.domain.healthcheck.HealthCheckServiceConfiguration;
 import fish.payara.test.util.BeanProxy;
-import fish.payara.test.util.PayaraMicroServer;
 
-public final class HealthCheckServiceConfiguration extends BeanProxy {
+public final class Notifier extends BeanProxy {
 
-    private static final String CONFIG_CLASS_NAME =
-            "fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration";
+    public static final String LOG_NOTIFIER_CLASS_NAME = "fish.payara.nucleus.notification.log.LogNotifier";
 
-    public static HealthCheckServiceConfiguration from(PayaraMicroServer server) {
-        return from(server, "server-config");
+    public static Notifier from(HealthCheckServiceConfiguration config, Class<?> notifierType) {
+        return new Notifier(config.callMethod("getNotifierByType", "Failed to resolve Notifier", Class.class, notifierType));
     }
 
-    private static HealthCheckServiceConfiguration from(PayaraMicroServer server, String target) {
-        return new HealthCheckServiceConfiguration(
-                server.getExtensionByType(target, server.getClass(CONFIG_CLASS_NAME)));
-    }
-
-    private HealthCheckServiceConfiguration(Object config) {
-        super(config);
+    private Notifier(Object bean) {
+        super(bean);
     }
 
     public boolean getEnabled() {
         return booleanValue("getEnabled");
     }
 
-    public boolean getHistoricalTraceEnabled() {
-        return booleanValue("getHistoricalTraceEnabled");
-    }
-
-    public int getHistoricalTraceStoreSize() {
-        return intValue("getHistoricalTraceStoreSize");
-    }
-
-    public int getHistoricalTraceStoreTimeout() {
-        return intValue("getHistoricalTraceStoreTimeout");
-    }
-
-    public Checker getCheckerByType(Class<?> checkerType) {
-        return Checker.from(this, checkerType);
-    }
-
-    public Notifier getNotifierByType(Class<?> notifierType) {
-        return Notifier.from(this, notifierType);
+    public boolean getNoisy() {
+        return booleanValue("getNoisy");
     }
 }

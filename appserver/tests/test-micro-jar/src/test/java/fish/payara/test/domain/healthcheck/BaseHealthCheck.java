@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.test.domain;
+package fish.payara.test.domain.healthcheck;
 
 import java.lang.annotation.Annotation;
 import java.util.concurrent.TimeUnit;
