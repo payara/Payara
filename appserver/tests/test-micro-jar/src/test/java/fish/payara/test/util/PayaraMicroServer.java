@@ -86,6 +86,7 @@ public final class PayaraMicroServer {
     private static final String GALSSFISH_CLASS_NAME = "org.glassfish.embeddable.GlassFish";
     private static final String SERVICE_LOCATOR_CLASS_NAME = "org.glassfish.hk2.api.ServiceLocator";
     private static final String TARGET_CLASS_NAME = "org.glassfish.internal.api.Target";
+    private static final String DOMAIN_CLASS_NAME = "com.sun.enterprise.config.serverbeans.Domain";
 
     private final static String DEPLOYMENT_DIR = System.getProperty("user.dir") + File.separator + "target/deployments";
 
@@ -105,7 +106,7 @@ public final class PayaraMicroServer {
     private Object glassfish;
     private Object serviceLocator;
     private Object targetUtil;
-
+    private BeanProxy domain;
 
     private PayaraMicroServer(boolean defaultInstance) {
         this.defaultInstance = defaultInstance;
@@ -140,6 +141,7 @@ public final class PayaraMicroServer {
             glassfish = getField(getClass(GALSSFISH_CLASS_NAME), runtime);
             serviceLocator = getField(getClass(SERVICE_LOCATOR_CLASS_NAME), glassfish);
             targetUtil = getService(getClass(TARGET_CLASS_NAME));
+            domain = new BeanProxy(getService(getClass(DOMAIN_CLASS_NAME)));
             if (defaultInstance) {
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> doStop()));
             }
@@ -169,6 +171,11 @@ public final class PayaraMicroServer {
 
     private boolean isStarted() {
         return started.get() && startedSuccessfully.get();
+    }
+
+    public <T> T getDomainExtensionByType(Class<T> type) {
+        return type.cast(domain.callMethod("getExtensionByType",
+                "Failed to get Domain extension of type " + type.getName(), Class.class, type));
     }
 
     public <T> T getExtensionByType(String target, Class<T> type) {
