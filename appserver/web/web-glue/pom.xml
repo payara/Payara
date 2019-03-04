@@ -40,16 +40,15 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.web</groupId>
         <artifactId>web</artifactId>
-        <version>5.191-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.192-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>web-glue</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -86,7 +85,7 @@
     </developers>
 
     <properties>
-	<findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+	   <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
 
     <build>
@@ -168,18 +167,6 @@
             <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-            <!--
-        <dependency>
-              since our minimum requirement is still JDK5,
-              we need this dependency. When we we switch
-              to minimum JDK6 (which we do at some point toward EE6),
-              we can remove this.
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>ant</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-            -->
-
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>

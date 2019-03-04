@@ -41,26 +41,29 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
+
     <groupId>org.glassfish.main.ejb</groupId>
     <artifactId>ejb</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish EJB container related modules</name>  
+    
+    <name>GlassFish EJB container related modules</name>
+    
     <modules>
         <module>ejb-all</module>
         <module>ejb-connector</module>
         <module>ejb-internal-api</module>
         <module>ejb-container</module>
-	<module>ejb-client</module>
+        <module>ejb-client</module>
         <module>ejb-full-container</module>
         <module>ejb-timer-databases</module>
         <module>ejb-timer-service-app</module>
+        <module>ejb-rest-remoting</module>
         <module>ejb-connector-l10n</module>
         <module>ejb-container-l10n</module>
     </modules>
