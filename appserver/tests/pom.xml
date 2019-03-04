@@ -54,6 +54,10 @@
     <packaging>pom</packaging>
     <name>GlassFish Tests related modules</name>
 
+    <modules>
+        <module>test-micro-jar</module>
+    </modules>
+
     <profiles>
         <profile>
             <id>ci</id>
