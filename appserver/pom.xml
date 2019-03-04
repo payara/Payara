@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -63,7 +63,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.191-SNAPSHOT</tag>
+        <tag>payara-server-5.192-SNAPSHOT</tag>
     </scm>
 
 
@@ -149,7 +149,7 @@
         <!-- JAX-WS -->
         <jaxws-api.version>2.3.1</jaxws-api.version>
         <!-- Metro Webservices is the JAX-WS impl -->
-        <webservices.version>2.4.3</webservices.version>
+        <webservices.version>2.4.3.payara-p1</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
         <woodstox.version>5.1.0</woodstox.version>
         <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
@@ -184,7 +184,7 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>191-SNAPSHOT</minor_version>
+        <minor_version>192-SNAPSHOT</minor_version>
         <update_version></update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
