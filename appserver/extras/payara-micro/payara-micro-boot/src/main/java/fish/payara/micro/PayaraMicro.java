@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  *
  * @author steve
  */
-public class PayaraMicro {
+public class PayaraMicro implements PayaraMicroBoot {
     
     
     private PayaraMicroBoot wrappee;

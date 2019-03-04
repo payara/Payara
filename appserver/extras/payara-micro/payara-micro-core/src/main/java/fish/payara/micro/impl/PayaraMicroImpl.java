@@ -197,7 +197,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * @throws BootstrapException If there is a problem booting the server
      */
     public static void main(String args[]) throws Exception {
+        create(args);
+    }
 
+    public static PayaraMicroBoot create(String[] args) throws Exception {
         // configure boot system properties
         setBootProperties();
         PayaraMicroImpl main = getInstance();
@@ -207,6 +210,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } else {
             main.bootStrap();
         }
+        return main;
     }
 
     /**
@@ -337,22 +341,26 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * Set user defined file directory for the access log
      *
      * @param filePath
+     * @return 
      */
     @Override
-    public void setAccessLogDir(String filePath) {
+    public PayaraMicroBoot setAccessLogDir(String filePath) {
         this.userAccessLogDirectory = filePath;
         enableAccessLog = true;
+        return this;
     }
 
     /**
      * Set user defined formatting for the access log
      *
      * @param format
+     * @return 
      */
     @Override
-    public void setAccessLogFormat(String format) {
+    public PayaraMicroBoot setAccessLogFormat(String format) {
         this.accessLogFormat = format;
         this.enableAccessLogFormat = true;
+        return this;
     }
 
     /**
