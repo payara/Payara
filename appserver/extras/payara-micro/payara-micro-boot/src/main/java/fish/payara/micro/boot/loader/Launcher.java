@@ -43,7 +43,7 @@ public abstract class Launcher {
 	 * @param args the incoming arguments
 	 * @throws Exception if the application fails to launch
 	 */
-	protected void launch(String[] args) throws Exception {
+	protected Object launch(String method, String[] args) throws Exception {
             boolean explode = true;
             String unpackDir = null;
             for (int i = 0; i < args.length; i++) {
@@ -67,7 +67,7 @@ public abstract class Launcher {
                         classLoader = new ExplodedURLClassloader();
                     }
             }
-            launch(args, getMainClass(), classLoader);
+            return launch(method, args, getMainClass(), classLoader);
 	}
 
 	/**
@@ -101,10 +101,10 @@ public abstract class Launcher {
 	 * @param classLoader the classloader
 	 * @throws Exception if the launch fails
 	 */
-	protected void launch(String[] args, String mainClass, ClassLoader classLoader)
+	protected Object launch(String method, String[] args, String mainClass, ClassLoader classLoader)
 			throws Exception {
 		Thread.currentThread().setContextClassLoader(classLoader);
-		createMainMethodRunner(mainClass, args, classLoader).run();
+		return createMainMethodRunner(mainClass, method, args, classLoader).run();
 	}
 
 	/**
@@ -114,9 +114,9 @@ public abstract class Launcher {
 	 * @param classLoader the classloader
 	 * @return the main method runner
 	 */
-	protected MainMethodRunner createMainMethodRunner(String mainClass, String[] args,
+	protected MainMethodRunner createMainMethodRunner(String mainClass, String method, String[] args,
 			ClassLoader classLoader) {
-		return new MainMethodRunner(mainClass, args);
+		return new MainMethodRunner(mainClass, args, method);
 	}
 
 	/**

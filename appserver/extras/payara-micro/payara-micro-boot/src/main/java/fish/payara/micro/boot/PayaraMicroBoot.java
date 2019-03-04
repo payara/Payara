@@ -260,14 +260,14 @@ public interface PayaraMicroBoot {
      *
      * @param filePath
      */
-    void setAccessLogDir(String filePath);
+    PayaraMicroBoot setAccessLogDir(String filePath);
 
     /**
      * Set user defined formatting for the access log
      *
      * @param format
      */
-    void setAccessLogFormat(String format);
+    PayaraMicroBoot setAccessLogFormat(String format);
 
     /**
      * Sets the path to a domain.xml file PayaraMicro should use to boot. If
