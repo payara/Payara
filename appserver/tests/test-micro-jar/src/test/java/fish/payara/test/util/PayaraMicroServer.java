@@ -40,19 +40,20 @@
 package fish.payara.test.util;
 
 import static fish.payara.test.util.BeanProxy.asAssertionError;
+import static fish.payara.test.util.BeanProxy.failAsAssertionError;
+import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fish.payara.micro.PayaraInstance;
-import fish.payara.micro.PayaraMicro;
 import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.PayaraMicroBoot;
+import fish.payara.micro.boot.PayaraMicroLauncher;
 
 /**
  * A wrapper on the {@link PayaraMicroRuntime} and {@link PayaraInstance} to ease test setup and verification.
@@ -62,8 +63,7 @@ import fish.payara.micro.PayaraMicroRuntime;
  * time as the server itself is packaged within micro and only accessible at runtime using the right
  * {@link ClassLoader}.
  * 
- * Tests using the {@link PayaraMicroServer} should call {@link #start()} before the test(s) and {@link #stop()} after
- * even when using the {@link #DEFAULT} instance.
+ * Tests using the {@link PayaraMicroServer} should call {@link #start()} before the test(s) and {@link #stop()} after.
  */
 public final class PayaraMicroServer {
 
@@ -71,16 +71,10 @@ public final class PayaraMicroServer {
         System.setProperty("java.util.logging.config.file", "src/test/resources/logging.properties");
     }
 
-    /**
-     * A instance to reuse during tests running in the same VM that do not have a problem with unknown start condition.
-     * 
-     * Tests using this instance may change it but should not perform operations that make further usage hard or
-     * impossible, like for instance shutting down the server would.
-     */
-    public final static PayaraMicroServer DEFAULT = new PayaraMicroServer(true);
+    private static final PayaraMicroServer INSTANCE = new PayaraMicroServer();
 
     public static PayaraMicroServer newInstance() {
-        return new PayaraMicroServer(false);
+        return INSTANCE;
     }
 
     private static final String GALSSFISH_CLASS_NAME = "org.glassfish.embeddable.GlassFish";
@@ -88,17 +82,15 @@ public final class PayaraMicroServer {
     private static final String TARGET_CLASS_NAME = "org.glassfish.internal.api.Target";
     private static final String DOMAIN_CLASS_NAME = "com.sun.enterprise.config.serverbeans.Domain";
 
-    private final static String DEPLOYMENT_DIR = System.getProperty("user.dir") + File.separator + "target/deployments";
+    private static final int defaultHttpPort = 28989;
 
-    /**
-     * The port number to use next if a {@link PayaraMicroServer} instance is started.
-     */
-    private static AtomicInteger nextPort = new AtomicInteger(28989);
+    private final AtomicBoolean starting = new AtomicBoolean(false);
+    private final AtomicBoolean stopping = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private final boolean defaultInstance;
-    private final AtomicBoolean started = new AtomicBoolean(false);
-    private final AtomicBoolean startedSuccessfully = new AtomicBoolean(false);
-    private PayaraMicro boot;
+    private int httpPort;
+    private String[] options;
+    private PayaraMicroBoot boot;
     private PayaraMicroRuntime runtime;
     private PayaraInstance instance;
 
@@ -108,8 +100,7 @@ public final class PayaraMicroServer {
     private Object targetUtil;
     private BeanProxy domain;
 
-    private PayaraMicroServer(boolean defaultInstance) {
-        this.defaultInstance = defaultInstance;
+    private PayaraMicroServer() {
     }
 
     public PayaraInstance getInstance() {
@@ -120,122 +111,137 @@ public final class PayaraMicroServer {
         return runtime;
     }
 
+    /**
+     * Only start if not already started. This means the caller is satisfied with whatever setup of the server.
+     */
     public void start() {
-        if (!started.compareAndSet(false, true)) {
-            return; // only start it once
+        if (!isStarted()) {
+            start("--port", "" + defaultHttpPort, "--autobindhttp");
         }
+    }
+
+    public void start(String... args) {
         try {
-            boot = PayaraMicro.getInstance();
-            File dir = new File(DEPLOYMENT_DIR);
-            createDummyFile(dir);
-            int port = nextPort.getAndIncrement();
-            runtime = boot.setInstanceName("micro-test")
-                    .setDeploymentDir(dir)
-                    .setHttpPort(port)
-                    .setHttpAutoBind(true)
-                    .bootStrap();
-            startedSuccessfully.compareAndSet(false, true);
-            instance = getField(PayaraInstance.class, runtime);
-            // classes are on the CP of the server but not of the test
-            serverClassLoader = instance.getClass().getClassLoader();
-            glassfish = getField(getClass(GALSSFISH_CLASS_NAME), runtime);
-            serviceLocator = getField(getClass(SERVICE_LOCATOR_CLASS_NAME), glassfish);
-            targetUtil = getService(getClass(TARGET_CLASS_NAME));
-            domain = new BeanProxy(getService(getClass(DOMAIN_CLASS_NAME)));
-            if (defaultInstance) {
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> doStop()));
+            int port = port(args);
+            if (port < 0) {
+                port = defaultHttpPort;
+                args = Arrays.copyOf(args, args.length + 2);
+                args[args.length - 2] = "--port";
+                args[args.length - 1] = "" + port;
             }
+            if (!starting.compareAndSet(false, true)) {
+                if (running.get()) {
+                    if (Arrays.equals(options, args)) {
+                        return; // started with same options already
+                    }
+                    stop();
+                } else {
+                    fail("Previous start was not successful.");
+                }
+            }
+            start(args, PayaraMicroLauncher.create(args), port);
         } catch (Exception e) {
-            e.printStackTrace();
             asAssertionError("Failed to start micro server", e);
+        } finally {
+            starting.set(false);
         }
+    }
+
+    private static int port(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if ("--port".equals(args[i]) || "--sslport".equals(args[i])) {
+                return Integer.parseInt(args[i+1]);
+            }
+        }
+        return -1;
+    }
+
+    private void start(String[] args, PayaraMicroBoot boot, int port) throws Exception {
+        this.options = args;
+        this.httpPort = port;
+        this.boot = boot;
+        runtime = boot.getRuntime();
+        if (running.compareAndSet(false, true)) {
+            starting.set(false);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
+        }
+        instance = getField(PayaraInstance.class, runtime);
+        // classes are on the CP of the server but not of the test
+        serverClassLoader = instance.getClass().getClassLoader();
+        glassfish = getField(getClass(GALSSFISH_CLASS_NAME), runtime);
+        serviceLocator = getField(getClass(SERVICE_LOCATOR_CLASS_NAME), glassfish);
+        targetUtil = getService(getClass(TARGET_CLASS_NAME));
+        domain = new BeanProxy(getService(getClass(DOMAIN_CLASS_NAME)));
+
     }
 
     public void stop() {
-        if (defaultInstance) {
-            return; // is stopped by JVM shutdown hook as it is shared amoung many tests
-        }
-        doStop();
-    }
-
-    private void doStop() {
         if (!isStarted()) {
             return; // don't try to stop if not started successfully
         }
+        if (!stopping.compareAndSet(false, true)) {
+            return; // already stopping...
+        }
         try {
             boot.shutdown();
+            running.set(false);
         } catch (Exception e) {
             // ignore...
+        } finally {
+            stopping.set(false);
         }
     }
 
     private boolean isStarted() {
-        return started.get() && startedSuccessfully.get();
+        return running.get();
+    }
+
+    public int getHttpPort() {
+        return httpPort;
     }
 
     public <T> T getDomainExtensionByType(Class<T> type) {
-        return type.cast(domain.callMethod("getExtensionByType",
-                "Failed to get Domain extension of type " + type.getName(), Class.class, type));
+        return failAsAssertionError(() -> type.cast(domain.callMethod("getExtensionByType",
+                "Failed to get Domain extension of type " + type.getName(), Class.class, type)));
     }
 
     public <T> T getExtensionByType(String target, Class<T> type) {
-        try {
+        return failAsAssertionError(() -> {
             Method getConfig = targetUtil.getClass().getMethod("getConfig", String.class);
             Object config = getConfig.invoke(targetUtil, target);
             Method getExtensionByType = config.getClass().getMethod("getExtensionByType", Class.class);
             return type.cast(getExtensionByType.invoke(config, type));
-        } catch (Throwable e) {
-            throw asAssertionError("Failed to get extension", e);
-        }
+        });
     }
 
     public Class<?> getClass(String name) {
-        try {
-            return serverClassLoader.loadClass(name);
-        } catch (Throwable e) {
-            throw asAssertionError("Failed to load class for name: " + name, e);
-        }
+        return failAsAssertionError(() -> serverClassLoader.loadClass(name));
     }
 
     public <T> T getService(Class<T> type) {
-        try {
-            Method getService = serviceLocator.getClass().getMethod("getService", Class.class, Annotation[].class);
-            return type.cast(getService.invoke(serviceLocator, type, new Annotation[0]));
-        } catch (Throwable e) {
-            throw asAssertionError("Failed to resolve service", e);
-        }
+        return failAsAssertionError(() -> type.cast(serviceLocator.getClass()
+                        .getMethod("getService", Class.class, Annotation[].class)
+                        .invoke(serviceLocator, type, new Annotation[0])));
     }
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getAllServices(Class<T> type) {
-        try {
-            Method getAllServices = serviceLocator.getClass().getMethod("getAllServices", Class.class, Annotation[].class);
-            return (List<T>) getAllServices.invoke(serviceLocator, type, new Annotation[0]);
-        } catch (Throwable e) {
-            throw asAssertionError("Failed to resolve services", e);
-        }
+        return failAsAssertionError(() -> (List<T>) serviceLocator.getClass()
+                    .getMethod("getAllServices", Class.class, Annotation[].class)
+                    .invoke(serviceLocator, type, new Annotation[0]));
     }
 
     private static <T> T getField(Class<T> fieldType, Object obj) {
         for (Field f : obj.getClass().getDeclaredFields()) {
             if (fieldType.isAssignableFrom(f.getType())) {
-                try {
+                return failAsAssertionError(() -> {
                     f.setAccessible(true);
                     return fieldType.cast(f.get(obj));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                });
             }
         }
-        throw new IllegalStateException("Could not find instance field in runtime");
+        fail("Could not find instance field in runtime");
+        return null;
     }
 
-    /**
-     * Currently the deployment dir is not allowed to be empty 
-     */
-    private static void createDummyFile(File dir) throws IOException {
-        File dummy = new File(dir, "dummy.txt");
-        dummy.getParentFile().mkdirs(); 
-        dummy.createNewFile();
-    }
 }

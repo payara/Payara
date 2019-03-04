@@ -43,7 +43,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 
 /**
  * Base class for test wrappers on beans of classes only available at runtime.
@@ -124,34 +124,35 @@ public class BeanProxy {
     }
 
     public final Object callMethod(String name, String errorText) {
-        try {
-            Method getter = bean.getClass().getMethod(name, new Class[0]);
-            return getter.invoke(bean);
-        } catch (Throwable e) {
-            throw asAssertionError(errorText + " for method " + name, e);
-        }
+        return failAsAssertionError(errorText, () ->  bean.getClass().getMethod(name, new Class[0]).invoke(bean));
     }
 
     public final <P> Object callMethod(String name, String errorText, Class<P> parameter, P argument) {
-        try {
-            Method getter = bean.getClass().getMethod(name, new Class[] { parameter });
-            return getter.invoke(bean, argument);
-        } catch (Throwable e) {
-            throw asAssertionError(errorText + " for method " + name, e);
-        }
+        return failAsAssertionError(errorText + " for method " + name,
+                () -> bean.getClass().getMethod(name, new Class[] { parameter }).invoke(bean, argument));
     }
 
     public final Object accessField(String name, String errorText) {
-        try {
+        return failAsAssertionError(errorText + " for field " + name, () -> {
             Field field = bean.getClass().getDeclaredField(name);
             field.setAccessible(true);
             return field.get(bean);
-        } catch (Throwable e) {
-            throw asAssertionError(errorText + " for field " + name, e);
-        }
+        });
     }
 
     public static AssertionError asAssertionError(String msg, Throwable e) {
         return e.getClass() == AssertionError.class ? (AssertionError)e : new AssertionError(msg, e);
+    }
+
+    public final static <T> T failAsAssertionError(Callable<T> operation) {
+        return failAsAssertionError("Failed to run operation: ", operation);
+    }
+
+    public final static <T> T failAsAssertionError(String msg, Callable<T> operation) {
+        try {
+            return operation.call();
+        } catch (Throwable e) {
+            throw asAssertionError(msg, e);
+        }
     }
 }

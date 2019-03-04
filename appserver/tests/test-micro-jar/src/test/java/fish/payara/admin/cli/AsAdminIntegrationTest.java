@@ -50,7 +50,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
@@ -67,16 +66,25 @@ public abstract class AsAdminIntegrationTest {
     private static final String UNACCEPTABLE_VALUE_EXCEPTION_CLASS_NAME = 
             "org.glassfish.common.util.admin.UnacceptableValueException";
 
-    protected final PayaraMicroServer server = PayaraMicroServer.DEFAULT;
+    protected final PayaraMicroServer server;
+    private final String[] args;
+
+    protected AsAdminIntegrationTest() {
+        this(new String[0]);
+    }
+
+    protected AsAdminIntegrationTest(String... args) {
+        this.args = args;
+        this.server = PayaraMicroServer.newInstance();
+    }
 
     @Before
     public void serverSetUp() throws Exception {
-        server.start();
-    }
-
-    @After
-    public void serverTearDown() {
-        server.stop();
+        if (args.length == 0) {
+            server.start();
+        } else {
+            server.start(args);
+        }
     }
 
     protected static void assertUnchanged(boolean expected, boolean actual) {
