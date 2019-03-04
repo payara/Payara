@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -160,16 +161,6 @@ public class Util {
             }
         }
         return null;
-    }
-
-    static File getJDKToolsJar() {
-        File javaHome = new File(System.getProperty("java.home"));
-        File jdktools = null;
-        if (javaHome.getParent() != null) {
-            jdktools = new File(javaHome.getParent(),
-                    "lib" + File.separator + "tools.jar");
-        }
-        return jdktools;
     }
 
     private static final String DELIM_START = "${";

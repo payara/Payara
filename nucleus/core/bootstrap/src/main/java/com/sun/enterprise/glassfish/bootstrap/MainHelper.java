@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
@@ -544,12 +544,10 @@ public class MainHelper {
      * the following classes/jars in its search path:
      *  - OSGi framework classes,
      *  - GlassFish bootstrap apis (simple-glassfish-api.jar)
-     *  - jdk tools.jar classpath.
      * OSGi framework classes are there because we want to launch the framework.
      * simple-glassfish-api.jar is needed, because we need those classes higher up in the class loader chain otherwise
      * {@link com.sun.enterprise.glassfish.bootstrap.GlassFishMain.Launcher} won't be able to see the same copy that's
      * used by rest of the system.
-     * tools.jar is needed because its packages, which are exported via system bundle, are consumed by EJBC.
      * This class loader is configured to be the delegate for all bundle class loaders by setting
      * org.osgi.framework.bundle.parent=framework in OSGi configuration. Since this is the delegate for all bundle
      * class loaders, one should be very careful about adding stuff here, as it not only affects performance, it also
@@ -562,7 +560,6 @@ public class MainHelper {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, delegate);
             clb.addFrameworkJars();
             clb.addBootstrapApiJar(); // simple-glassfish-api.jar
-            clb.addJDKToolsJar();
             return clb.build();
         } catch (IOException e) {
             throw new Error(e);
@@ -625,21 +622,6 @@ public class MainHelper {
 
         void addFrameworkJars() throws IOException {
             PlatformHelper.getPlatformHelper(ctx).addFrameworkJars(cpb);
-        }
-
-        /**
-         * Adds JDK tools.jar to classpath.
-         */
-        void addJDKToolsJar() {
-            File jdkToolsJar = Util.getJDKToolsJar();
-            try {
-                cpb.addJar(jdkToolsJar);
-            } catch (IOException ioe) {
-                // on the mac, it happens all the time
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("JDK tools.jar does not exist at " + jdkToolsJar);
-                }
-            }
         }
 
         public ClassLoader build() {
