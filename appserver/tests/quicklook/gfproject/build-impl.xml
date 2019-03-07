@@ -398,7 +398,7 @@
 
 <!-- the following targets are for running the wsit tests -->
     <path id="wsit.classpath">
-        <pathelement location="${java.home}/../lib/tools.jar"/>
+        <pathelement location="${glassfish.home}/modules/jakarta.jws-api.jar"/>
     </path>
 
     <condition property="wsjar.available">
