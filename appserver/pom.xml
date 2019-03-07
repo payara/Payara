@@ -148,6 +148,9 @@
 
         <!-- JAX-WS -->
         <jaxws-api.version>2.3.1</jaxws-api.version>
+
+        <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
+
         <!-- Metro Webservices is the JAX-WS impl -->
         <webservices.version>2.4.3.payara-p1</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
@@ -1155,6 +1158,11 @@
                 <groupId>com.sun.activation</groupId>
                 <artifactId>jakarta.activation</artifactId>
                 <version>${jakarta.activation-impl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>${jakarta.jws-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
