@@ -432,7 +432,6 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>${javase.version}</source>
                         <target>${javase.version}</target>
                         <excludes>
