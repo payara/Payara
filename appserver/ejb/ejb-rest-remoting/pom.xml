@@ -46,16 +46,16 @@
         <version>5.192-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.ejb.rest</groupId>
-    <artifactId>ejb-rest-remoting</artifactId>
+    <groupId>fish.payara.ejb.http</groupId>
+    <artifactId>ejb-http-remoting</artifactId>
     <packaging>pom</packaging>
     
-    <name>EJB - REST</name>
+    <name>EJB - HTTP</name>
 
     <description>
-        This module is the parent module for the lightweight REST-based EJB remote system. It contains an admin
+        This module is the parent module for the lightweight HTTP-based EJB remote system. It contains an admin
         module that has CLI (AsAdmin) commands for configuring the server side. An endpoint module that implements
-        the endpoint which receives the REST calls from the client and invoked an EJB, and finally a client module
+        the endpoint which receives the HTTP calls from the client and invoked an EJB, and finally a client module
         which is used by the client to lookup and invoke EJB methods on a proxy.
     </description>
 
