@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.admin;
+package fish.payara.ejb.http.admin;
 
 import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
@@ -45,9 +45,6 @@ import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
-import static org.glassfish.deployment.autodeploy.AutoDeployer.getNameFromFilePath;
-
-import java.nio.file.Path;
 
 import javax.inject.Inject;
 
@@ -61,31 +58,33 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;
-import org.glassfish.deployment.autodeploy.AutoUndeploymentOperation;
+import org.glassfish.deployment.autodeploy.AutoDeploymentOperation;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * This command disables the EJB invoker endpoint.
+ * This command enables the EJB invoker endpoint and optionally allows it to set an
+ * alternative context root.
  * 
  * <p>
- * This happens by undeploying the small application in <code>/domains/[domain]/endpoints/ejb-invoker</code>.
- * Note that by default this application is not deployed. The default context root of this application is 
- * <code>/ejb-invoker</code>, but it may have been set to a different root by the {@link EnableEjbInvokerCommand}
- * command.
+ * This happens by the deploying a small application in <code>/domains/[domain]/endpoints/ejb-invoker</code>
+ * which by default is not deployed. The default context root of this application is 
+ * <code>/ejb-invoker</code>.
  * 
  * @author Arjan Tijms
  *
  */
-@Service(name = "disable-ejb-invoker")
+@Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG, DEPLOYMENT_GROUP })
-public class DisableEjbInvokerCommand implements AdminCommand {
+public class EnableEjbInvokerCommand implements AdminCommand {
 
-    private final String ENDPOINTS = "endpoints";
-    private final String EJB_INVOKER = "ejb-invoker";
+    private final String ENDPOINT = "endpoints/ejb-invoker";
+    
+    @Param(name = "contextRoot", primary = true, optional = true)
+    private String contextRoot;
     
     @Param(optional = true)
     public String target;
@@ -95,34 +94,36 @@ public class DisableEjbInvokerCommand implements AdminCommand {
     
     @Inject
     private ServiceLocator serviceLocator;
-    
+
     @Inject
     private Domain domain;
-
+    
     @Override
     public void execute(AdminCommandContext context) {
+        AutoDeploymentOperation autoDeploymentOperation = AutoDeploymentOperation.newInstance(
+                serviceLocator,
+                serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINT).toFile(), 
+                getDefaultVirtualServer(),
+                target,
+                contextRoot
+                );
         
-        Path endPointsPath = serverEnvironment.getInstanceRoot().toPath().resolve(ENDPOINTS);
-        Path ejbInvokerPath = endPointsPath.resolve(EJB_INVOKER);
-        
-        AutoUndeploymentOperation autoUndeploymentOperation = AutoUndeploymentOperation.newInstance(
-                serviceLocator, 
-                ejbInvokerPath.toFile(), 
-                getNameFromFilePath(endPointsPath.toFile(), ejbInvokerPath.toFile()), 
-                target);
-        
-        AutodeploymentStatus deploymentStatus = autoUndeploymentOperation.run();
-        
-        ActionReport report = context.getActionReport();
-        report.setActionExitCode(deploymentStatus.getExitCode());
-        
-        if (deploymentStatus.getExitCode().equals(ActionReport.ExitCode.FAILURE)) {
-            if (domain.getApplications().getApplication("ejb-invoker") == null) {
-                report.appendMessage("\nEJB Invoker is not enabled on any target");
-            } else {
-                report.appendMessage("\nFailed to disable Ejb Invoker - was it enabled on the specified target?");
-            }
+        if (domain.getApplications().getApplication("ejb-invoker") == null) {
+            AutodeploymentStatus deploymentStatus = autoDeploymentOperation.run();
+            ActionReport report = context.getActionReport();
+            report.setActionExitCode(deploymentStatus.getExitCode());
+        } else {
+            ActionReport report = context.getActionReport();
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setMessage("EJB Invoker is already deployed on at least one target, please edit it as you would a " +
+                    "normal application using the create-application-ref, delete-application-ref, " +
+                    "or update-application-ref commands");
         }
+    }
+    
+    private String getDefaultVirtualServer() {
+        // XXX write this?
+        return null;
     }
 
 }

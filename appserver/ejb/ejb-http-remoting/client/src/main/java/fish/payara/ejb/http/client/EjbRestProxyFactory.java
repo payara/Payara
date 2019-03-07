@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.client;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.security.AccessController.doPrivileged;

@@ -1,4 +1,4 @@
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.client;
 
 import static javax.naming.Context.SECURITY_CREDENTIALS;
 import static javax.naming.Context.SECURITY_PRINCIPAL;
