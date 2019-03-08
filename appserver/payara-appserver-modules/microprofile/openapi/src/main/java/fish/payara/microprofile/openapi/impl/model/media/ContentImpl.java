@@ -56,10 +56,34 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     private static final long serialVersionUID = 1575356277308242221L;
 
+    public ContentImpl() {
+        super();
+    }
+
+    public ContentImpl(Map<? extends String, ? extends MediaType> items) {
+        super(items);
+    }
+
     @Override
     public Content addMediaType(String name, MediaType item) {
         this.put(name, item);
         return this;
+    }
+
+    @Override
+    public void removeMediaType(String name) {
+        remove(name);
+    }
+
+    @Override
+    public Map<String, MediaType> getMediaTypes() {
+        return new ContentImpl(this);
+    }
+
+    @Override
+    public void setMediaTypes(Map<String, MediaType> mediaTypes) {
+        clear();
+        putAll(mediaTypes);
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.media.Content from, Content to,
@@ -76,16 +100,16 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
         // Get or create the corresponding media type
         MediaType mediaType = to.getOrDefault(typeName, new MediaTypeImpl());
-        to.put(typeName, mediaType);
+        to.addMediaType(typeName, mediaType);
 
         // Merge encoding
         for (Encoding encoding : from.encoding()) {
-            EncodingImpl.merge(encoding, to.get(typeName).getEncoding(), override, currentSchemas);
+            EncodingImpl.merge(encoding, to.getMediaType(typeName).getEncoding(), override, currentSchemas);
         }
 
         // Merge examples
         for (ExampleObject example : from.examples()) {
-            ExampleImpl.merge(example, to.get(typeName).getExamples(), override);
+            ExampleImpl.merge(example, to.getMediaType(typeName).getExamples(), override);
         }
 
         // Merge schema

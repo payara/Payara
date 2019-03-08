@@ -39,17 +39,23 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.security.Scopes;
 
-public class ScopesImpl extends LinkedHashMap<String, String> implements Scopes {
+import fish.payara.microprofile.openapi.impl.model.ExtensibleLinkedHashMap;
+
+public class ScopesImpl extends ExtensibleLinkedHashMap<String, String, Scopes> implements Scopes {
 
     private static final long serialVersionUID = -615440059031779085L;
 
-    protected Map<String, Object> extensions = new HashMap<>();
+    public ScopesImpl() {
+        super();
+    }
+
+    public ScopesImpl(Map<? extends String, ? extends String> scopes) {
+        super(scopes);
+    }
 
     @Override
     public Scopes addScope(String name, String item) {
@@ -58,18 +64,19 @@ public class ScopesImpl extends LinkedHashMap<String, String> implements Scopes 
     }
 
     @Override
-    public Map<String, Object> getExtensions() {
-        return extensions;
+    public void removeScope(String scope) {
+        this.remove(scope);
     }
 
     @Override
-    public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+    public Map<String, String> getScopes() {
+        return new ScopesImpl(this);
     }
 
     @Override
-    public void addExtension(String name, Object value) {
-        this.extensions.put(name, value);
+    public void setScopes(Map<String, String> items) {
+        clear();
+        putAll(items);
     }
 
 }

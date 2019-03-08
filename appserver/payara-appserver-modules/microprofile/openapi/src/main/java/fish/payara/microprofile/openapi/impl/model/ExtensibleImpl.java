@@ -49,7 +49,7 @@ import java.util.Map;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-public abstract class ExtensibleImpl implements Extensible {
+public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
     protected Map<String, Object> extensions = new HashMap<>();
 
@@ -58,9 +58,16 @@ public abstract class ExtensibleImpl implements Extensible {
         return extensions;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void addExtension(String name, Object value) {
+    public T addExtension(String name, Object value) {
         extensions.put(name, value);
+        return (T) this;
+    }
+
+    @Override
+    public void removeExtension(String name) {
+        extensions.remove(name);
     }
 
     @Override
@@ -68,7 +75,7 @@ public abstract class ExtensibleImpl implements Extensible {
         this.extensions = extensions;
     }
 
-    public static void merge(Extension from, Extensible to, boolean override) {
+    public static void merge(Extension from, Extensible<?> to, boolean override) {
         if (isAnnotationNull(from)) {
             return;
         }

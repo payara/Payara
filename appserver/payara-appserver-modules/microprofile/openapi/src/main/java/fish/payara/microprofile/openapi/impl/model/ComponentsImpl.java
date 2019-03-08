@@ -64,7 +64,7 @@ import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 
-public class ComponentsImpl extends ExtensibleImpl implements Components {
+public class ComponentsImpl extends ExtensibleImpl<Components> implements Components {
 
     protected Map<String, Schema> schemas = new TreeMap<>();
     protected Map<String, APIResponse> responses = new TreeMap<>();
@@ -87,15 +87,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components schemas(Map<String, Schema> schemas) {
-        setSchemas(schemas);
+    public Components addSchema(String key, Schema schema) {
+        schemas.put(key, schema);
         return this;
     }
 
     @Override
-    public Components addSchema(String key, Schema schema) {
-        schemas.put(key, schema);
-        return this;
+    public void removeSchema(String key) {
+        schemas.remove(key);
     }
 
     @Override
@@ -109,15 +108,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components responses(Map<String, APIResponse> responses) {
-        setResponses(responses);
+    public Components addResponse(String key, APIResponse response) {
+        responses.put(key, response);
         return this;
     }
 
     @Override
-    public Components addResponse(String key, APIResponse response) {
-        responses.put(key, response);
-        return this;
+    public void removeResponse(String key) {
+        responses.remove(key);
     }
 
     @Override
@@ -131,15 +129,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components parameters(Map<String, Parameter> parameters) {
-        setParameters(parameters);
+    public Components addParameter(String key, Parameter parameter) {
+        parameters.put(key, parameter);
         return this;
     }
 
     @Override
-    public Components addParameter(String key, Parameter parameter) {
-        parameters.put(key, parameter);
-        return this;
+    public void removeParameter(String key) {
+        parameters.remove(key);
     }
 
     @Override
@@ -153,15 +150,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components examples(Map<String, Example> examples) {
-        setExamples(examples);
+    public Components addExample(String key, Example example) {
+        examples.put(key, example);
         return this;
     }
 
     @Override
-    public Components addExample(String key, Example example) {
-        examples.put(key, example);
-        return this;
+    public void removeExample(String key) {
+        examples.remove(key);
     }
 
     @Override
@@ -175,15 +171,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components requestBodies(Map<String, RequestBody> requestBodies) {
-        setRequestBodies(requestBodies);
+    public Components addRequestBody(String key, RequestBody requestBody) {
+        requestBodies.put(key, requestBody);
         return this;
     }
 
     @Override
-    public Components addRequestBody(String key, RequestBody requestBody) {
-        requestBodies.put(key, requestBody);
-        return this;
+    public void removeRequestBody(String key) {
+        requestBodies.remove(key);
     }
 
     @Override
@@ -197,15 +192,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components headers(Map<String, Header> headers) {
-        setHeaders(headers);
+    public Components addHeader(String key, Header header) {
+        headers.put(key, header);
         return this;
     }
 
     @Override
-    public Components addHeader(String key, Header header) {
-        headers.put(key, header);
-        return this;
+    public void removeHeader(String key) {
+        headers.remove(key);
     }
 
     @Override
@@ -219,15 +213,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components securitySchemes(Map<String, SecurityScheme> securitySchemes) {
-        setSecuritySchemes(securitySchemes);
+    public Components addSecurityScheme(String key, SecurityScheme securityScheme) {
+        securitySchemes.put(key, securityScheme);
         return this;
     }
 
     @Override
-    public Components addSecurityScheme(String key, SecurityScheme securityScheme) {
-        securitySchemes.put(key, securityScheme);
-        return this;
+    public void removeSecurityScheme(String key) {
+        securitySchemes.remove(key);
     }
 
     @Override
@@ -241,15 +234,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components links(Map<String, Link> links) {
-        setLinks(links);
+    public Components addLink(String key, Link link) {
+        links.put(key, link);
         return this;
     }
 
     @Override
-    public Components addLink(String key, Link link) {
-        links.put(key, link);
-        return this;
+    public void removeLink(String key) {
+        links.remove(key);
     }
 
     @Override
@@ -263,15 +255,14 @@ public class ComponentsImpl extends ExtensibleImpl implements Components {
     }
 
     @Override
-    public Components callbacks(Map<String, Callback> callbacks) {
-        setCallbacks(callbacks);
+    public Components addCallback(String key, Callback callback) {
+        callbacks.put(key, callback);
         return this;
     }
 
     @Override
-    public Components addCallback(String key, Callback callback) {
-        callbacks.put(key, callback);
-        return this;
+    public void removeCallback(String key) {
+        callbacks.remove(key);
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.Components from, Components to,

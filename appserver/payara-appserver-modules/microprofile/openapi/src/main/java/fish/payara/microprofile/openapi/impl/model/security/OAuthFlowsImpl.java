@@ -47,7 +47,7 @@ import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class OAuthFlowsImpl extends ExtensibleImpl implements OAuthFlows {
+public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthFlows {
 
     protected OAuthFlow implicit;
     protected OAuthFlow password;
@@ -65,12 +65,6 @@ public class OAuthFlowsImpl extends ExtensibleImpl implements OAuthFlows {
     }
 
     @Override
-    public OAuthFlows implicit(OAuthFlow implicit) {
-        setImplicit(implicit);
-        return this;
-    }
-
-    @Override
     public OAuthFlow getPassword() {
         return password;
     }
@@ -78,12 +72,6 @@ public class OAuthFlowsImpl extends ExtensibleImpl implements OAuthFlows {
     @Override
     public void setPassword(OAuthFlow password) {
         this.password = password;
-    }
-
-    @Override
-    public OAuthFlows password(OAuthFlow password) {
-        setPassword(password);
-        return this;
     }
 
     @Override
@@ -97,12 +85,6 @@ public class OAuthFlowsImpl extends ExtensibleImpl implements OAuthFlows {
     }
 
     @Override
-    public OAuthFlows clientCredentials(OAuthFlow clientCredentials) {
-        setClientCredentials(clientCredentials);
-        return this;
-    }
-
-    @Override
     public OAuthFlow getAuthorizationCode() {
         return authorizationCode;
     }
@@ -110,12 +92,6 @@ public class OAuthFlowsImpl extends ExtensibleImpl implements OAuthFlows {
     @Override
     public void setAuthorizationCode(OAuthFlow authorizationCode) {
         this.authorizationCode = authorizationCode;
-    }
-
-    @Override
-    public OAuthFlows authorizationCode(OAuthFlow authorizationCode) {
-        setAuthorizationCode(authorizationCode);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.OAuthFlows from, OAuthFlows to,

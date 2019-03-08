@@ -64,7 +64,7 @@ import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 
-public class OperationImpl extends ExtensibleImpl implements Operation {
+public class OperationImpl extends ExtensibleImpl<Operation> implements Operation {
 
     protected List<String> tags = new ArrayList<>();
     protected String summary;
@@ -90,15 +90,14 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation tags(List<String> tags) {
-        setTags(tags);
+    public Operation addTag(String tag) {
+        tags.add(tag);
         return this;
     }
 
     @Override
-    public Operation addTag(String tag) {
-        tags.add(tag);
-        return this;
+    public void removeTag(String tag) {
+        tags.remove(tag);
     }
 
     @Override
@@ -112,12 +111,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation summary(String summary) {
-        setSummary(summary);
-        return this;
-    }
-
-    @Override
     public String getDescription() {
         return description;
     }
@@ -125,12 +118,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     @Override
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public Operation description(String description) {
-        setDescription(description);
-        return this;
     }
 
     @Override
@@ -144,12 +131,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation externalDocs(ExternalDocumentation externalDocs) {
-        setExternalDocs(externalDocs);
-        return this;
-    }
-
-    @Override
     public String getOperationId() {
         return operationId;
     }
@@ -157,12 +138,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     @Override
     public void setOperationId(String operationId) {
         this.operationId = operationId;
-    }
-
-    @Override
-    public Operation operationId(String operationId) {
-        setOperationId(operationId);
-        return this;
     }
 
     @Override
@@ -176,15 +151,14 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation parameters(List<Parameter> parameters) {
-        setParameters(parameters);
+    public Operation addParameter(Parameter parameter) {
+        parameters.add(parameter);
         return this;
     }
 
     @Override
-    public Operation addParameter(Parameter parameter) {
-        parameters.add(parameter);
-        return this;
+    public void removeParameter(Parameter parameter) {
+        parameters.remove(parameter);
     }
 
     @Override
@@ -198,12 +172,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation requestBody(RequestBody requestBody) {
-        setRequestBody(requestBody);
-        return this;
-    }
-
-    @Override
     public APIResponses getResponses() {
         return responses;
     }
@@ -211,12 +179,6 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     @Override
     public void setResponses(APIResponses responses) {
         this.responses = responses;
-    }
-
-    @Override
-    public Operation responses(APIResponses responses) {
-        setResponses(responses);
-        return this;
     }
 
     @Override
@@ -230,9 +192,14 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation callbacks(Map<String, Callback> callbacks) {
-        setCallbacks(callbacks);
+    public Operation addCallback(String key, Callback callback) {
+        this.callbacks.put(key, callback);
         return this;
+    }
+
+    @Override
+    public void removeCallback(String key) {
+        this.callbacks.remove(key);
     }
 
     @Override
@@ -262,15 +229,14 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation security(List<SecurityRequirement> security) {
-        setSecurity(security);
+    public Operation addSecurityRequirement(SecurityRequirement securityReq) {
+        security.add(securityReq);
         return this;
     }
 
     @Override
-    public Operation addSecurityRequirement(SecurityRequirement securityReq) {
-        security.add(securityReq);
-        return this;
+    public void removeSecurityRequirement(SecurityRequirement securityRequirement) {
+        security.remove(securityRequirement);
     }
 
     @Override
@@ -284,15 +250,14 @@ public class OperationImpl extends ExtensibleImpl implements Operation {
     }
 
     @Override
-    public Operation servers(List<Server> servers) {
-        setServers(servers);
+    public Operation addServer(Server server) {
+        servers.add(server);
         return this;
     }
 
     @Override
-    public Operation addServer(Server server) {
-        servers.add(server);
-        return this;
+    public void removeServer(Server server) {
+        servers.remove(server);
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.Operation from, Operation to,

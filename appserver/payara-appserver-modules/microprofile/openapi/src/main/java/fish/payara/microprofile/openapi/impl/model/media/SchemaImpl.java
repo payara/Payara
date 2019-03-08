@@ -62,7 +62,7 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
-public class SchemaImpl extends ExtensibleImpl implements Schema {
+public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
@@ -117,12 +117,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema discriminator(Discriminator discriminator) {
-        setDiscriminator(discriminator);
-        return this;
-    }
-
-    @Override
     public String getTitle() {
         return title;
     }
@@ -133,12 +127,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema title(String title) {
-        setTitle(title);
-        return this;
-    }
-
-    @Override
     public Object getDefaultValue() {
         return defaultValue;
     }
@@ -146,12 +134,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
-    }
-
-    @Override
-    public Schema defaultValue(Object defaultValue) {
-        setDefaultValue(defaultValue);
-        return this;
     }
 
     @Override
@@ -171,6 +153,11 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
+    public void removeEnumeration(Object enumeration) {
+        this.enumeration.remove(enumeration);
+    }
+
+    @Override
     public BigDecimal getMultipleOf() {
         return multipleOf;
     }
@@ -178,12 +165,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setMultipleOf(BigDecimal multipleOf) {
         this.multipleOf = multipleOf;
-    }
-
-    @Override
-    public Schema multipleOf(BigDecimal multipleOf) {
-        setMultipleOf(multipleOf);
-        return this;
     }
 
     @Override
@@ -197,12 +178,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema maximum(BigDecimal maximum) {
-        setMaximum(maximum);
-        return this;
-    }
-
-    @Override
     public Boolean getExclusiveMaximum() {
         return exclusiveMaximum;
     }
@@ -210,12 +185,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setExclusiveMaximum(Boolean exclusiveMaximum) {
         this.exclusiveMaximum = exclusiveMaximum;
-    }
-
-    @Override
-    public Schema exclusiveMaximum(Boolean exclusiveMaximum) {
-        setExclusiveMaximum(exclusiveMaximum);
-        return this;
     }
 
     @Override
@@ -229,12 +198,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema minimum(BigDecimal minimum) {
-        setMinimum(minimum);
-        return this;
-    }
-
-    @Override
     public Boolean getExclusiveMinimum() {
         return exclusiveMinimum;
     }
@@ -242,12 +205,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setExclusiveMinimum(Boolean exclusiveMinimum) {
         this.exclusiveMinimum = exclusiveMinimum;
-    }
-
-    @Override
-    public Schema exclusiveMinimum(Boolean exclusiveMinimum) {
-        setExclusiveMinimum(exclusiveMinimum);
-        return this;
     }
 
     @Override
@@ -261,12 +218,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema maxLength(Integer maxLength) {
-        setMaxLength(maxLength);
-        return this;
-    }
-
-    @Override
     public Integer getMinLength() {
         return minLength;
     }
@@ -274,12 +225,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setMinLength(Integer minLength) {
         this.minLength = minLength;
-    }
-
-    @Override
-    public Schema minLength(Integer minLength) {
-        setMinLength(minLength);
-        return this;
     }
 
     @Override
@@ -293,12 +238,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema pattern(String pattern) {
-        setPattern(pattern);
-        return this;
-    }
-
-    @Override
     public Integer getMaxItems() {
         return maxItems;
     }
@@ -306,12 +245,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setMaxItems(Integer maxItems) {
         this.maxItems = maxItems;
-    }
-
-    @Override
-    public Schema maxItems(Integer maxItems) {
-        setMaxItems(maxItems);
-        return this;
     }
 
     @Override
@@ -325,12 +258,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema minItems(Integer minItems) {
-        setMinItems(minItems);
-        return this;
-    }
-
-    @Override
     public Boolean getUniqueItems() {
         return uniqueItems;
     }
@@ -338,12 +265,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setUniqueItems(Boolean uniqueItems) {
         this.uniqueItems = uniqueItems;
-    }
-
-    @Override
-    public Schema uniqueItems(Boolean uniqueItems) {
-        setUniqueItems(uniqueItems);
-        return this;
     }
 
     @Override
@@ -357,12 +278,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema maxProperties(Integer maxProperties) {
-        setMaxProperties(maxProperties);
-        return this;
-    }
-
-    @Override
     public Integer getMinProperties() {
         return minProperties;
     }
@@ -370,12 +285,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setMinProperties(Integer minProperties) {
         this.minProperties = minProperties;
-    }
-
-    @Override
-    public Schema minProperties(Integer minProperties) {
-        setMinProperties(minProperties);
-        return this;
     }
 
     @Override
@@ -389,16 +298,15 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema required(List<String> required) {
-        setRequired(required);
-        return this;
-    }
-
-    @Override
     public Schema addRequired(String requiredItem) {
         this.required.add(requiredItem);
         Collections.sort(required);
         return this;
+    }
+
+    @Override
+    public void removeRequired(String required) {
+        this.required.remove(required);
     }
 
     @Override
@@ -412,12 +320,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema type(SchemaType type) {
-        setType(type);
-        return this;
-    }
-
-    @Override
     public Schema getNot() {
         return not;
     }
@@ -425,12 +327,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setNot(Schema not) {
         this.not = not;
-    }
-
-    @Override
-    public Schema not(Schema not) {
-        setNot(not);
-        return this;
     }
 
     @Override
@@ -444,15 +340,14 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema properties(Map<String, Schema> properties) {
-        setProperties(properties);
+    public Schema addProperty(String key, Schema propertiesItem) {
+        this.properties.put(key, propertiesItem);
         return this;
     }
 
     @Override
-    public Schema addProperty(String key, Schema propertiesItem) {
-        this.properties.put(key, propertiesItem);
-        return this;
+    public void removeProperty(String key) {
+        this.properties.remove(key);
     }
 
     @Override
@@ -466,9 +361,23 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema additionalProperties(Schema additionalProperties) {
-        setAdditionalProperties(additionalProperties);
-        return this;
+    public Schema getAdditionalPropertiesSchema() {
+        return (Schema) additionalProperties;
+    }
+
+    @Override
+    public Boolean getAdditionalPropertiesBoolean() {
+        return (Boolean) additionalProperties;
+    }
+
+    @Override
+    public void setAdditionalPropertiesSchema(Schema additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+    @Override
+    public void setAdditionalPropertiesBoolean(Boolean additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     @Override
@@ -482,12 +391,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public String getFormat() {
         return format;
     }
@@ -495,12 +398,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setFormat(String format) {
         this.format = format;
-    }
-
-    @Override
-    public Schema format(String format) {
-        setFormat(format);
-        return this;
     }
 
     @Override
@@ -517,12 +414,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema ref(String ref) {
-        setRef(ref);
-        return this;
-    }
-
-    @Override
     public Boolean getNullable() {
         return nullable;
     }
@@ -530,12 +421,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setNullable(Boolean nullable) {
         this.nullable = nullable;
-    }
-
-    @Override
-    public Schema nullable(Boolean nullable) {
-        setNullable(nullable);
-        return this;
     }
 
     @Override
@@ -549,12 +434,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema readOnly(Boolean readOnly) {
-        setReadOnly(readOnly);
-        return this;
-    }
-
-    @Override
     public Boolean getWriteOnly() {
         return writeOnly;
     }
@@ -562,12 +441,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setWriteOnly(Boolean writeOnly) {
         this.writeOnly = writeOnly;
-    }
-
-    @Override
-    public Schema writeOnly(Boolean writeOnly) {
-        setWriteOnly(writeOnly);
-        return this;
     }
 
     @Override
@@ -581,12 +454,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema example(Object example) {
-        setExample(example);
-        return this;
-    }
-
-    @Override
     public ExternalDocumentation getExternalDocs() {
         return externalDocs;
     }
@@ -594,12 +461,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setExternalDocs(ExternalDocumentation externalDocs) {
         this.externalDocs = externalDocs;
-    }
-
-    @Override
-    public Schema externalDocs(ExternalDocumentation externalDocs) {
-        setExternalDocs(externalDocs);
-        return this;
     }
 
     @Override
@@ -613,12 +474,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema deprecated(Boolean deprecated) {
-        setDeprecated(deprecated);
-        return this;
-    }
-
-    @Override
     public XML getXml() {
         return xml;
     }
@@ -626,12 +481,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     @Override
     public void setXml(XML xml) {
         this.xml = xml;
-    }
-
-    @Override
-    public Schema xml(XML xml) {
-        setXml(xml);
-        return this;
     }
 
     @Override
@@ -651,12 +500,6 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema items(Schema items) {
-        setItems(items);
-        return this;
-    }
-
-    @Override
     public List<Schema> getAllOf() {
         return allOf;
     }
@@ -667,15 +510,14 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema allOf(List<Schema> allOf) {
-        setAllOf(allOf);
+    public Schema addAllOf(Schema allOf) {
+        this.allOf.add(allOf);
         return this;
     }
 
     @Override
-    public Schema addAllOf(Schema allOf) {
-        this.allOf.add(allOf);
-        return this;
+    public void removeAllOf(Schema allOf) {
+        this.allOf.remove(allOf);
     }
 
     @Override
@@ -689,15 +531,14 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema anyOf(List<Schema> anyOf) {
-        setAnyOf(anyOf);
+    public Schema addAnyOf(Schema anyOf) {
+        this.anyOf.add(anyOf);
         return this;
     }
 
     @Override
-    public Schema addAnyOf(Schema anyOf) {
-        this.anyOf.add(anyOf);
-        return this;
+    public void removeAnyOf(Schema anyOf) {
+        this.anyOf.remove(anyOf);
     }
 
     @Override
@@ -711,26 +552,19 @@ public class SchemaImpl extends ExtensibleImpl implements Schema {
     }
 
     @Override
-    public Schema oneOf(List<Schema> oneOf) {
-        setOneOf(oneOf);
-        return this;
-    }
-
-    @Override
     public Schema addOneOf(Schema oneOf) {
         this.oneOf.add(oneOf);
         return this;
     }
 
     @Override
-    public void setAdditionalProperties(Boolean additionalProperties) {
-        this.additionalProperties = additionalProperties;
+    public void removeOneOf(Schema oneOf) {
+        this.oneOf.remove(oneOf);
     }
 
     @Override
-    public Schema additionalProperties(Boolean additionalProperties) {
-        setAdditionalProperties(additionalProperties);
-        return this;
+    public void setAdditionalProperties(Boolean additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.media.Schema from, Schema to,

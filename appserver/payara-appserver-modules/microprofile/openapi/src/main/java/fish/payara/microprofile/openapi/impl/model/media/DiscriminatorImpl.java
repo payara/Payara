@@ -60,12 +60,6 @@ public class DiscriminatorImpl implements Discriminator {
     }
 
     @Override
-    public Discriminator propertyName(String propertyName) {
-        setPropertyName(propertyName);
-        return this;
-    }
-
-    @Override
     public Map<String, String> getMapping() {
         return mapping;
     }
@@ -76,15 +70,13 @@ public class DiscriminatorImpl implements Discriminator {
     }
 
     @Override
-    public Discriminator mapping(Map<String, String> mapping) {
-        setMapping(mapping);
-        return this;
-    }
-
-    @Override
     public Discriminator addMapping(String name, String value) {
         mapping.put(name, value);
         return this;
     }
 
+    @Override
+    public void removeMapping(String name) {
+        mapping.remove(name);
+    }
 }

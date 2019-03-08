@@ -321,15 +321,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 if (response != null) {
                     // Find the wildcard return type
                     if (response.getContent() != null
-                            && response.getContent().get(javax.ws.rs.core.MediaType.WILDCARD) != null) {
-                        MediaType wildcardMedia = response.getContent().get(javax.ws.rs.core.MediaType.WILDCARD);
+                            && response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD) != null) {
+                        MediaType wildcardMedia = response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
                         // Copy the wildcard return type to the valid response types
                         for (String mediaType : produces.value()) {
-                            response.getContent().put(getContentType(mediaType), wildcardMedia);
+                            response.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                         }
                         // If there is an @Produces, remove the wildcard
-                        response.getContent().remove(javax.ws.rs.core.MediaType.WILDCARD);
+                        response.getContent().removeMediaType(javax.ws.rs.core.MediaType.WILDCARD);
                     }
                 }
             }
@@ -340,20 +340,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitConsumes(Consumes consumes, AnnotatedElement element, ApiContext context) {
         if (element instanceof Method && context.getWorkingOperation() != null) {
             org.eclipse.microprofile.openapi.models.parameters.RequestBody requestBody = context.getWorkingOperation()
-                        .getRequestBody();
+                    .getRequestBody();
 
             if (requestBody != null) {
                 // Find the wildcard return type
                 if (requestBody.getContent() != null
-                        && requestBody.getContent().get(javax.ws.rs.core.MediaType.WILDCARD) != null) {
-                    MediaType wildcardMedia = requestBody.getContent().get(javax.ws.rs.core.MediaType.WILDCARD);
+                        && requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD) != null) {
+                    MediaType wildcardMedia = requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
                     // Copy the wildcard return type to the valid request body types
                     for (String mediaType : consumes.value()) {
-                        requestBody.getContent().put(getContentType(mediaType), wildcardMedia);
+                        requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                     }
                     // If there is an @Consumes, remove the wildcard
-                    requestBody.getContent().remove(javax.ws.rs.core.MediaType.WILDCARD);
+                    requestBody.getContent().removeMediaType(javax.ws.rs.core.MediaType.WILDCARD);
                 }
             }
         }
@@ -367,7 +367,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
-        
+
     @Override
     public void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter = new ParameterImpl();
@@ -377,7 +377,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
-    
+
     @Override
     public void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context) {
         // Find the aggregate schema type of all the parameters
@@ -404,8 +404,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
             // Set the request body type accordingly.
             context.getWorkingOperation().getRequestBody().getContent()
-                    .get(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                    .setType(formSchemaType);
+            .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+            .setType(formSchemaType);
         }
     }
 
@@ -426,7 +426,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         newParameter.setStyle(Style.SIMPLE);
         addParameter(element, context, newParameter);
     }
-    
+
     private void addParameter(AnnotatedElement element, ApiContext context,
             org.eclipse.microprofile.openapi.models.parameters.Parameter newParameter) {
         SchemaImpl schema = new SchemaImpl();
@@ -469,13 +469,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 }
             } else {
                 LOGGER.log(SEVERE, "Couldn't add " + newParameter.getIn() + " parameter, \"" + newParameter.getName()
-                        + "\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with "
-                        + "an unsupported annotation.");
+                + "\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with "
+                + "an unsupported annotation.");
             }
         }
     }
-    
-    private SchemaImpl getArraySchema(AnnotatedElement element) {
+
+    private static SchemaImpl getArraySchema(AnnotatedElement element) {
         SchemaImpl arraySchema = new SchemaImpl();
         ParameterizedType parameterizedType;
 
@@ -490,8 +490,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
         return arraySchema;
     }
-    
-    private String getDefaultValueIfPresent(AnnotatedElement element) {
+
+    private static String getDefaultValueIfPresent(AnnotatedElement element) {
         Annotation[] annotations = element.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
             if ("javax.ws.rs.DefaultValue".equals(annotation.annotationType().getName())) {
@@ -504,7 +504,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
         return null;
     }
-    
+
     @Override
     public void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context) {
         OpenAPIImpl.merge(definition, context.getApi(), true);
@@ -604,7 +604,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 }
                 // Insert the schema to the request body media type
                 MediaType mediaType = context.getWorkingOperation().getRequestBody().getContent()
-                        .get(javax.ws.rs.core.MediaType.WILDCARD);
+                        .getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
                 SchemaImpl.merge(schema, mediaType.getSchema(), true, context.getApi().getComponents().getSchemas());
                 if (schema.ref() != null && !schema.ref().isEmpty()) {
                     mediaType.setSchema(new SchemaImpl().ref(schema.ref()));
@@ -641,7 +641,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         OperationImpl.merge(operation, context.getWorkingOperation(), true);
         // If the operation should be hidden, remove it
         if (operation.hidden()) {
-            ModelUtils.removeOperation(context.getApi().getPaths().get(context.getPath()),
+            ModelUtils.removeOperation(context.getApi().getPaths().getPathItem(context.getPath()),
                     context.getWorkingOperation());
         }
     }
@@ -690,10 +690,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // If the element doesn't also contain a response mapping to the default
             if (Arrays.asList(element.getDeclaredAnnotationsByType(APIResponse.class)).stream()
                     .noneMatch(a -> a.responseCode() == null || a.responseCode().isEmpty() || a.responseCode()
-                            .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
+                    .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
                 // Then remove the default response
                 context.getWorkingOperation().getResponses()
-                        .remove(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT);
+                .removeAPIResponse(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT);
             }
         }
     }
@@ -732,7 +732,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         && parameter.in() != ParameterIn.DEFAULT) {
                     // Remove all parameters of the wrong input type
                     matchingMethodParameters
-                            .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(parameter.in().name()));
+                    .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(parameter.in().name()));
                 }
                 // If there's only one matching parameter, handle it immediately
                 String matchingMethodParamName = ModelUtils.getParameterName(matchingMethodParameters.get(0));
@@ -760,7 +760,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         mediaType.setSchema(new SchemaImpl());
                     }
                     mediaType.getSchema()
-                            .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
+                    .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
                 }
             }
         }
@@ -863,7 +863,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * Generates a map listing the location each resource class is mapped to.
      */
-    private Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
+    private static Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
         Map<String, Set<Class<?>>> resourceMapping = new HashMap<>();
         for (Class<?> clazz : classList) {
             if (clazz.isAnnotationPresent(ApplicationPath.class) && Application.class.isAssignableFrom(clazz)) {
@@ -952,7 +952,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * @return the {@link javax.ws.rs.core.MediaType} with the given name. Defaults
      *         to <code>WILDCARD</code>.
      */
-    private String getContentType(String name) {
+    private static String getContentType(String name) {
         String contentType = javax.ws.rs.core.MediaType.WILDCARD;
         try {
             javax.ws.rs.core.MediaType mediaType = javax.ws.rs.core.MediaType.valueOf(name);
@@ -1002,11 +1002,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             schema.setType(null);
             schema.setItems(null);
             return schema;
-        } else {
-            return createSchema(context, type);
-        }  
+        }
+        return createSchema(context, type);  
     }
-    
+
     /**
      * Replace the object in the referee with a reference, and create the reference
      * in the API.

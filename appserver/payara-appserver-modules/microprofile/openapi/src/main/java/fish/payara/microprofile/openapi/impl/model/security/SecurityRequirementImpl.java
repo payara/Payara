@@ -45,12 +45,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 
 public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>> implements SecurityRequirement {
 
     private static final long serialVersionUID = -677783376083861245L;
+
+    public SecurityRequirementImpl() {
+        super();
+    }
+
+    public SecurityRequirementImpl(Map<? extends String, ? extends List<String>> items) {
+        super(items);
+    }
 
     @Override
     public SecurityRequirement addScheme(String name, String item) {
@@ -68,6 +77,22 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
     public SecurityRequirement addScheme(String name) {
         this.put(name, new ArrayList<>());
         return this;
+    }
+
+    @Override
+    public void removeScheme(String securitySchemeName) {
+        this.remove(securitySchemeName);
+    }
+
+    @Override
+    public Map<String, List<String>> getSchemes() {
+        return new SecurityRequirementImpl(this);
+    }
+
+    @Override
+    public void setSchemes(Map<String, List<String>> items) {
+        clear();
+        putAll(items);
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement from,

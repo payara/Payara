@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.api.visitor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.ws.rs.Consumes;
