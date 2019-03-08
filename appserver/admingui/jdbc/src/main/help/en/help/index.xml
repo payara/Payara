@@ -1,0 +1,54 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="databases">
+    <indexitem text="setting up access" target="task-setdbaccess"></indexitem>
+  </indexitem>
+  <indexitem text="JDBC connection pools">
+    <indexitem text="creating (task)" target="task-jdbcconnectionpoolnew"></indexitem>
+    <indexitem text="creating step 1 (reference)" target="ref-jdbcconnectionpoolnew1"></indexitem>
+    <indexitem text="creating step 2 (reference)" target="ref-jdbcconnectionpoolnew2"></indexitem>
+    <indexitem text="deleting" target="task-jdbcconnectionpooldelete"></indexitem>
+    <indexitem text="editing advanced attributes (reference)" target="ref-jdbcconnpooladvanceattrtab"></indexitem>
+    <indexitem text="editing advanced attributes (task)" target="task-jdbcconnectionpooladvance"></indexitem>
+    <indexitem text="editing general settings (reference)" target="ref-jdbcconnectionpooledittab"></indexitem>
+    <indexitem text="editing general settings (task)" target="task-jdbcconnectionpooledit"></indexitem>
+    <indexitem text="editing properties (reference)" target="ref-jdbcconnpoolproptab"></indexitem>
+    <indexitem text="editing properties (task)" target="task-jdbcconnectionpoolproperty"></indexitem>
+    <indexitem text="pinging" target="task-verifyconnpoolsettings"></indexitem>
+    <indexitem text="properties" target="ref-jdbc-properties"></indexitem>
+    <indexitem text="verifying settings" target="task-verifyconnpoolsettings"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jdbcconnectionpools"></indexitem>
+  </indexitem>
+  <indexitem text="JDBC drivers">
+    <indexitem text="integrating" target="task-integratejdbcdriver"></indexitem>
+  </indexitem>
+  <indexitem text="JDBC resources">
+    <indexitem text="creating (reference)" target="ref-jdbcresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jdbcresourcenew"></indexitem>
+    <indexitem text="deleting" target="task-jdbcresourcesdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jdbcresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jdbcresourcesedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jdbcresources"></indexitem>
+  </indexitem>
+  <indexitem text="JDBC technology" target="ref-jdbc"></indexitem>
+  <indexitem text="properties">
+    <indexitem text="JDBC connection pools" target="ref-jdbc-properties"></indexitem>
+  </indexitem>
+</index>

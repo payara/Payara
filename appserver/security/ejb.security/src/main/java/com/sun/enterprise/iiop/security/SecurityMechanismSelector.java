@@ -37,51 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
-
-import static com.sun.enterprise.security.common.SecurityConstants.USERNAME_PASSWORD;
-import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.FINE;
-
-import java.net.Socket;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-// GSS Related Functionality
-import javax.security.auth.Subject;
-
-import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
-import org.omg.CORBA.ORB;
 
 import com.sun.corba.ee.org.omg.CSI.ITTAnonymous;
 import com.sun.corba.ee.org.omg.CSI.ITTDistinguishedName;
 import com.sun.corba.ee.org.omg.CSI.ITTPrincipalName;
 import com.sun.corba.ee.org.omg.CSI.ITTX509CertChain;
-import com.sun.corba.ee.org.omg.CSIIOP.AS_ContextSec;
-import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
-import com.sun.corba.ee.org.omg.CSIIOP.Confidentiality;
-import com.sun.corba.ee.org.omg.CSIIOP.DelegationByClient;
-import com.sun.corba.ee.org.omg.CSIIOP.EstablishTrustInClient;
-import com.sun.corba.ee.org.omg.CSIIOP.EstablishTrustInTarget;
-import com.sun.corba.ee.org.omg.CSIIOP.IdentityAssertion;
-import com.sun.corba.ee.org.omg.CSIIOP.Integrity;
-import com.sun.corba.ee.org.omg.CSIIOP.SAS_ContextSec;
-import com.sun.corba.ee.org.omg.CSIIOP.TLS_SEC_TRANS;
-import com.sun.corba.ee.org.omg.CSIIOP.TransportAddress;
+import com.sun.corba.ee.org.omg.CSIIOP.*;
 import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.ior.iiop.IIOPAddress;
 import com.sun.corba.ee.spi.ior.iiop.IIOPProfileTemplate;
@@ -102,31 +65,46 @@ import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
-
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.api.ProtocolManager;
-
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ORBLocator;
-
-import javax.inject.Singleton;
+import org.ietf.jgss.Oid;
+import org.jvnet.hk2.annotations.Service;
+import org.omg.CORBA.ORB;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
-import org.ietf.jgss.Oid;
+import java.net.Socket;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.cert.X509Certificate;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.security.common.SecurityConstants.USERNAME_PASSWORD;
+import static com.sun.logging.LogDomains.SECURITY_LOGGER;
+import static java.util.logging.Level.FINE;
+
+// GSS Related Functionality
 
 /**
  * This class is responsible for making various decisions for selecting security information to be
  * sent in the IIOP message based on target configuration and client policies. Note: This class can
  * be called concurrently by multiple client threads. However, none of its methods need to be
  * synchronized because the methods either do not modify state or are idempotent.
- * 
+ *
  * @author Nithya Subramanian
- * 
+ *
  */
 
 @Service
@@ -459,20 +437,20 @@ public final class SecurityMechanismSelector implements PostConstruct {
             _logger.log(Level.FINE, "SSL used:" + sslUsed + " SSL Mutual auth:" + clientAuthOccurred);
         }
         ComponentInvocation ci = null;
-       
+
         if (isACC()) {
             context = getSecurityContextForAppClient(ci, sslUsed, clientAuthOccurred, mechanism);
         } else {
             context = getSecurityContextForWebOrEJB(ci, sslUsed, clientAuthOccurred, mechanism);
         }
-        
+
         return context;
     }
 
     /**
      * Create the security context to be used by the CSIV2 layer to marshal in the service context of
      * the IIOP message from an appclient or standalone client.
-     * 
+     *
      * @return the security context.
      */
     public SecurityContext getSecurityContextForAppClient(ComponentInvocation ci, boolean sslUsed, boolean clientAuthOccurred,
@@ -485,7 +463,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
     /**
      * Create the security context to be used by the CSIV2 layer to marshal in the service context of
      * the IIOP message from an web component or EJB invoking another EJB.
-     * 
+     *
      * @return the security context.
      */
     public SecurityContext getSecurityContextForWebOrEJB(ComponentInvocation ci, boolean sslUsed, boolean clientAuthOccurred,
@@ -535,7 +513,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
 
     /**
      * Get the security context to send username and password in the service context.
-     * 
+     *
      * @param whether username/password will be sent over plain IIOP or over IIOP/SSL.
      * @return the security context.
      * @exception SecurityMechanismException if there was an error.
@@ -563,7 +541,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
 
     /**
      * Get the security context to propagate principal/distinguished name in the service context.
-     * 
+     *
      * @param clientAuth whether SSL client authentication has happened.
      * @return the security context.
      * @exception SecurityMechanismException if there was an error.
@@ -631,7 +609,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
      * Get the username and password either from the JAAS subject or from thread local storage. For
      * appclients if login has'nt happened this method would trigger login and popup a user interface to
      * gather authentication information.
-     * 
+     *
      * @return the security context.
      */
     private SecurityContext getUsernameAndPassword(ComponentInvocation ci, CompoundSecMech mechanism)
@@ -722,7 +700,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
 
     /**
      * Get the principal/distinguished name from thread local storage.
-     * 
+     *
      * @return the security context.
      */
     private SecurityContext getIdentity() throws SecurityMechanismException {
@@ -964,11 +942,11 @@ public final class SecurityMechanismSelector implements PostConstruct {
              * is irrelevant).
              */
             if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "SecurityMechanismSelector.evaluate_client_conformance_ssl:" + " " + 
-                        isSet(ssl_target_requires, Integrity.value) + " " + 
-                        isSet(ssl_target_requires, Confidentiality.value) + " " + 
-                        isSet(ssl_target_requires, EstablishTrustInClient.value) + " " + 
-                        sslRequired + " " + sslSupported + " " + 
+                _logger.log(FINE, "SecurityMechanismSelector.evaluate_client_conformance_ssl:" + " " +
+                        isSet(ssl_target_requires, Integrity.value) + " " +
+                        isSet(ssl_target_requires, Confidentiality.value) + " " +
+                        isSet(ssl_target_requires, EstablishTrustInClient.value) + " " +
+                        sslRequired + " " + sslSupported + " " +
                         sslUsed);
             }
 
@@ -1049,7 +1027,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
          * |------------|---------------------|---------------------|------------|
          *
          * Abbreviations: ETIC - EstablishTrusInClient
-         * 
+         *
          *************************************************************************/
 
         if ((ctx != null) && (ctx.authcls != null) && (ctx.subject != null))
@@ -1128,7 +1106,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
      * CompoundSecMechanism of the CSIv2 spec. A client is considered to be conformant if a
      * CompoundSecMechanism consistent with the client's actions is found i.e. transport_mech,
      * as_context_mech and sas_context_mech must all be consistent.
-     * 
+     *
      */
     private boolean evaluateClientConformance(SecurityContext ctx, byte[] objectId, boolean sslUsed, X509Certificate[] certchain) {
         // Obtain the IOR configuration descriptors for the Ejb using the objectId within the SecurityContext field.
@@ -1190,40 +1168,40 @@ public final class SecurityMechanismSelector implements PostConstruct {
                     continue;
                 }
             }
-            
+
             String realmName = "default";
-            
+
             if (ejbDesc != null && ejbDesc.getApplication() != null) {
                 realmName = ejbDesc.getApplication().getRealm();
             }
-            
+
             if (realmName == null) {
                 realmName = iorDesc.getRealmName();
             }
-            
+
             if (realmName == null) {
                 realmName = "default";
             }
-            
+
             if (!evaluate_client_conformance_ascontext(ctx, iorDesc, realmName)) {
                 _logger.log(FINE, "SecurityMechanismSelector.evaluate_client_conformance: evaluate_client_conformance_ascontext");
                 checkSkipped = false;
                 continue;
             }
-            
+
             if (!evaluate_client_conformance_sascontext(ctx, iorDesc)) {
                 _logger.log(FINE, "SecurityMechanismSelector.evaluate_client_conformance: evaluate_client_conformance_sascontext");
                 checkSkipped = false;
                 continue;
             }
-            
+
             return true; // security policy matched.
         }
-        
+
         if (checkSkipped) {
             return true;
         }
-        
+
         return false; // No matching security policy found
     }
 
@@ -1272,7 +1250,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
         // If the test for client conformance passes, then set the security context.
         if (socket instanceof SSLSocket) {
             sslUsed = true; // SSL was used
-            
+
             // Check if there is a transport principal
             SSLSocket sslSock = (SSLSocket) socket;
             SSLSession sslSession = sslSock.getSession();
@@ -1333,7 +1311,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
         } else {
             securityContext.identcls = AnonCredential.class;
         }
-        
+
         return securityContext;
     }
 
@@ -1400,7 +1378,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
     }
 
     public static String getSecurityMechanismString(CSIV2TaggedComponentInfo tCI, CompoundSecMech[] list, String name) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append("\ntypeId: " + name);
         try {
             for (int i = 0; list != null && i < list.length; i++) {

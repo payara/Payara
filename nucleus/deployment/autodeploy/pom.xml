@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-autodeploy</artifactId>
@@ -117,6 +117,12 @@
           <groupId>org.glassfish.annotations</groupId>
           <artifactId>logging-annotation-processor</artifactId>
           <optional>true</optional>
-        </dependency>        
-   </dependencies>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>payara-executor-service</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 </project>

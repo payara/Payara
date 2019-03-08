@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi;
 
@@ -160,13 +160,11 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *                      as a result of the invocation <code>getConnection(user, password)</code>
      *                      on the <code>DataSource</code> object
      * @return <code>ManagedConnection</code> object created
-     * @throws ResourceException if there is an error in instantiating the
-     *                           <code>DataSource</code> object used for the
-     *                           creation of the <code>ManagedConnection</code> object
-     * @throws SecurityException if there ino <code>PasswordCredential</code> object
-     *                           satisfying this request
-     * @throws ResourceException if there is an error in allocating the
-     *                           physical connection
+     * @throws ResourceException if there is an error in instantiating the <code>DataSource</code> 
+     *      object used for the creation of the <code>ManagedConnection</code> object; or if there is an
+     *      error in allocating the physical connection
+     * @throws SecurityException if there no <code>PasswordCredential</code> object
+     *      satisfying this request
      */
     @Override
     public abstract javax.resource.spi.ManagedConnection createManagedConnection
@@ -328,16 +326,21 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
          */
         java.sql.Connection con = mc.getActualConnection();
 
-        if(validationMethod.equals("custom-validation")) {
-            isValidByCustomValidation(con, spec.getDetail(DataSourceSpec.VALIDATIONCLASSNAME));
-        } else if (validationMethod.equals("auto-commit")) {
-            isValidByAutoCommit(con);
-        } else if (validationMethod.equals("meta-data")) {
-            isValidByMetaData(con);
-        } else if (validationMethod.equals("table")) {
-            isValidByTableQuery(con, spec.getDetail(DataSourceSpec.VALIDATIONTABLENAME));
-        } else {
-            throw new ResourceException("The validation method is not proper");
+        switch (validationMethod) {
+            case "custom-validation":
+                isValidByCustomValidation(con, spec.getDetail(DataSourceSpec.VALIDATIONCLASSNAME));
+                break;
+            case "auto-commit":
+                isValidByAutoCommit(con);
+                break;
+            case "meta-data":
+                isValidByMetaData(con);
+                break;
+            case "table":
+                isValidByTableQuery(con, spec.getDetail(DataSourceSpec.VALIDATIONTABLENAME));
+                break;
+            default:
+                throw new ResourceException("The validation method is not proper");
         }
     }
     

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.server;
 
@@ -230,17 +230,6 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     public File getInstanceRoot() {
         return root;
     }
-
-    /**
-     * @return the instance root
-     * @deprecated  As of GlassFish 3.1 replaced with {@link #getInstanceRoot() }
-     */
-    @Deprecated
-    @Override
-    public File getDomainRoot() {
-        return getInstanceRoot();
-    }
-
 
     @Override
     public StartupContext getStartupContext() {

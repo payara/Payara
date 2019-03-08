@@ -1,0 +1,65 @@
+delete-managed-executor-service(1)  asadmin Utility Subcommands  delete-managed-executor-service(1)
+
+NAME
+       delete-managed-executor-service - removes a managed executor service
+       resource with the specified JNDI name
+
+SYNOPSIS
+           delete-managed-executor-service [--help]
+           [--target target]
+           managed_executor_service_name
+
+DESCRIPTION
+       The delete-managed-executor-service subcommand removes a managed
+       executor service resource with the specified JNDI name.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the resource.
+           Valid targets are:
+
+           server
+               Deletes the resource from the default server instance. This is
+               the default value.
+
+           domain
+               Deletes the resource from the domain.
+
+           cluster_name
+               Deletes the resource from every server instance in the
+               specified cluster.
+
+           instance_name
+               Deletes the resource from the specified server instance.
+
+OPERANDS
+       managed_executor_service_name
+           The JNDI name of the resource to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Managed Executor Service Resource
+           This example deletes the managed executor service resource named
+           concurrent/myExecutor.
+
+               asadmin> delete-managed-executor-service concurrent/myExecutor
+               Managed executor service concurrent/myExecutor deleted successfully.
+               Command delete-managed-executor-service executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-managed-executor-service(1), list-managed-executor-services(1)
+
+       asadmin(1M)
+
+Java EE 8              09 Aug 2017        delete-managed-executor-service(1)

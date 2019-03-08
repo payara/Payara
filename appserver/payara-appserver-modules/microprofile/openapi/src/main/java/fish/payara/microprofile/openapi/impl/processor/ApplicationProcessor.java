@@ -338,9 +338,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitConsumes(Consumes consumes, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
+        if (element instanceof Method && context.getWorkingOperation() != null) {
             org.eclipse.microprofile.openapi.models.parameters.RequestBody requestBody = context.getWorkingOperation()
-                    .getRequestBody();
+                        .getRequestBody();
 
             if (requestBody != null) {
                 // Find the wildcard return type

@@ -1,0 +1,63 @@
+list-domains(1)           asadmin Utility Subcommands          list-domains(1)
+
+NAME
+       list-domains - lists the domains in the specified directory
+
+SYNOPSIS
+           list-domains [--help]
+           [--domaindir domaindir]
+           [--long={false|true}]
+           [--header={false|true}]
+
+DESCRIPTION
+       The list-domains subcommand lists the domains in the specified domains
+       directory. If the domains directory is not specified, the domains in
+       the default directory are listed. If there is more that one domains
+       directory, the --domaindir option must be specified. The status of each
+       domain is included.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --domaindir
+           The directory where the domains are to be listed. If specified, the
+           path must be accessible in the files stem. If not specified, the
+           domains in the domain root directory are listed. The default
+           location of the domain root directory is as-install/domains.
+
+       --long, -l
+           Displays detailed information about the administration servers in
+           the listed domains, including host names and port numbers. The
+           default value is false.
+
+       --header, -h
+           Specifies whether a header is displayed when the --long option is
+           used. The default value is true. To suppress the header, set the
+           --header option to false.
+
+EXAMPLES
+       Example 1, Listing Domains
+           This example lists the domains in the default directory.
+
+               asadmin> list-domains
+               Name: domain1 Status: Running
+               Name: domain2 Status: Not running
+               Name: domain4 Status: Running, restart required to apply configuration changes
+               Command list-domains executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-domain(1), delete-domain(1), start-domain(1), stop-domain(1),
+
+       asadmin(1M)
+
+Java EE 8                         12 Feb 2013                  list-domains(1)

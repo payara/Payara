@@ -40,13 +40,15 @@
     holder.
 
 -->
+<!--"Portions Copyright [2019] [Payara Foundation and/or its affiliates]" -->
+
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
 
     <artifactId>websecurity</artifactId>
@@ -99,6 +101,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-core</artifactId>
         </dependency>
@@ -138,11 +148,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <!-- Don't set scope as provided. See issue #5992-->
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-core</artifactId>
             <version>${project.version}</version>
@@ -151,10 +156,6 @@
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.external</groupId>

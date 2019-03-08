@@ -1,0 +1,79 @@
+create-module-config(1)   asadmin Utility Subcommands  create-module-config(1)
+
+NAME
+       create-module-config - adds the default configuration of a module to
+       domain.xml
+
+SYNOPSIS
+           create-module-config [--help]
+           [--dryrun={false|true}]
+           [--all={false|true}]
+           [--target target]
+           [service_name]
+
+DESCRIPTION
+       The create-module-config subcommand adds the default configuration of a
+       module to domain.xml.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --dryrun
+           Displays the default configuration of a module but does not add it
+           to domain.xml. The default value is false.
+
+       --all
+           Adds all default configurations of modules to domain.xml if they
+           are not already in it. The default value is false.
+
+       --target
+           Specifies the target to which the default configuration is being
+           added.
+
+           Possible values are as follows:
+
+           server
+               Adds the default configuration to the default server instance.
+               This is the default value.
+
+           domain
+               Adds the default configuration to the default domain.
+
+           cluster-name
+               Adds the default configuration to every server instance in the
+               specified cluster.
+
+           instance-name
+               Adds the default configuration to the specified instance.
+
+OPERANDS
+       service_name
+           The name of the module for which the default configuration is to be
+           added.
+
+EXAMPLES
+       Example 1, Adding a Default Configuration to domain.xml
+           This example adds the default configuration of the web container
+           module to domain1 in server-config (the default configuration). Use
+           the --dryrun option to preview the configuration before it is
+           added.
+
+               asadmin> create-module-config web-container
+               Command create-module-config executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-module-config(1), get-active-module-config(1)
+
+       asadmin(1M)
+
+Java EE 8                         06 Feb 2013          create-module-config(1)

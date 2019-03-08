@@ -37,60 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.*;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.web.*;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import com.sun.enterprise.deployment.web.ContextParameter;
-import com.sun.enterprise.deployment.web.EnvironmentEntry;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.deployment.web.MimeMapping;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.SecurityRole;
-import com.sun.enterprise.deployment.web.SecurityRoleReference;
-import com.sun.enterprise.deployment.web.ServletFilter;
-import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import com.sun.enterprise.deployment.web.SessionConfig;
+import java.util.*;
 
 /**
- * I am an object that represents all the deployment information about
- * a web application.
+ * This class represents all the deployment information about a web application.
  *
  * @author Danny Coward
  */
-
-public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment,
-    ResourceReferenceContainer,
-    ResourceEnvReferenceContainer,
-    EjbReferenceContainer,
-    MessageDestinationReferenceContainer,
-    ServiceReferenceContainer {
+public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor implements WritableJndiNameEnvironment, ResourceReferenceContainer, ResourceEnvReferenceContainer, EjbReferenceContainer, MessageDestinationReferenceContainer, ServiceReferenceContainer {
 
     public static final EventTypes<WebBundleDescriptor> AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT =
-        EventTypes.create("After_Servlet_Context_Initialized",
-                          WebBundleDescriptor.class);
+            EventTypes.create("After_Servlet_Context_Initialized", WebBundleDescriptor.class);
 
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
@@ -128,20 +99,19 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void setContextRoot(String contextRoot);
 
-	public abstract String getRequestCharacterEncoding();
+    public abstract String getRequestCharacterEncoding();
 
-	public abstract void setRequestCharacterEncoding(String requestCharacterEncoding);
+    public abstract void setRequestCharacterEncoding(String requestCharacterEncoding);
 
-	public abstract String getResponseCharacterEncoding();
+    public abstract String getResponseCharacterEncoding();
 
-	public abstract void setResponseCharacterEncoding(String responseCharacterEncoding);
+    public abstract void setResponseCharacterEncoding(String responseCharacterEncoding);
 
     public abstract Set<WebComponentDescriptor> getWebComponentDescriptors();
 
     public abstract void addWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor);
 
-    protected abstract WebComponentDescriptor combineWebComponentDescriptor(
-        WebComponentDescriptor webComponentDescriptor);
+    protected abstract WebComponentDescriptor combineWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor);
 
     public abstract void removeWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor);
 
@@ -155,12 +125,10 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors();
 
     @Override
-    public abstract void addServiceReferenceDescriptor(ServiceReferenceDescriptor
-                                                           serviceRef);
+    public abstract void addServiceReferenceDescriptor(ServiceReferenceDescriptor serviceRef);
 
     @Override
-    public abstract void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
-                                                              serviceRef);
+    public abstract void removeServiceReferenceDescriptor(ServiceReferenceDescriptor serviceRef);
 
     @Override
     public abstract ServiceReferenceDescriptor getServiceReferenceByName(String name);
@@ -470,7 +438,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract void combineInjectionTargets(EnvironmentProperty env1, EnvironmentProperty env2);
 
-    public abstract void printCommon(StringBuffer toStringBuffer);
+    public abstract void printCommon(StringBuilder toStringBuilder);
 
     @Override
     public abstract ArchiveType getModuleType();
@@ -493,12 +461,15 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract boolean hasExtensionProperty(String key);
 
     public abstract boolean getServletInitializersEnabled();
+
     public abstract void setServletInitializersEnabled(boolean tf);
 
     public abstract boolean isJaxrsRolesAllowedEnabled();
+
     public abstract void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled);
-    
+
     public abstract String getAppContextId();
+
     public abstract void setAppContextId(String appContextId);
 
     public boolean isConflictLoginConfig() {
@@ -563,4 +534,3 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Set<String> getConflictedMimeMappingExtensions();
 }
-

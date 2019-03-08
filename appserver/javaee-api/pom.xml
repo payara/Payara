@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     
     <groupId>org.glassfish.main</groupId>
@@ -148,7 +148,7 @@
                             <phase>process-resources</phase>
                             <configuration>
                                 <attachSources>true</attachSources>
-                                <excludeArtifactIds>tools-jar,servlet-api,javax.faces</excludeArtifactIds>
+                                <excludeArtifactIds>tools-jar,servlet-api,jakarta.faces</excludeArtifactIds>
                                 <excludes>javax/help/**,${extra.excludes}</excludes>
                                 <includes>javax/**, resources/**</includes>
                                 <excludeTransitive>true</excludeTransitive>
@@ -182,7 +182,9 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <failOnError>false</failOnError>
-                        <additionalparam>${javadoc.options}</additionalparam>
+                        <additionalOptions>
+                            <additionalOption>${javadoc.options}</additionalOption>
+                        </additionalOptions>
                         <attach>false</attach>
                         <doctitle>${project.name}</doctitle>
                         <windowtitle>${project.name}</windowtitle>

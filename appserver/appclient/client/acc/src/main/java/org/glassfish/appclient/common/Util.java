@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.common;
 
@@ -44,18 +45,7 @@ import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
@@ -69,20 +59,20 @@ import java.util.regex.Pattern;
  */
 public class Util {
 
-    /** Pattern to match placeholders in dynamic document templates. 
+    /** Pattern to match placeholders in dynamic document templates.
      *The pattern specifies a non-aggressive match for ${token-name} strings.
      *(Non-aggressive means the pattern consumes as little of the input string
-     *as possible in searching for a match.)  The pattern also stores the token 
+     *as possible in searching for a match.)  The pattern also stores the token
      *name in group 1 of the pattern matcher.
      */
     private static Pattern placeholderPattern = Pattern.compile("\\$\\{(.*?)\\}");
 
     /** used in finding the name of the first class in a jar file */
     private static final String CLASS_SUFFIX = ".class";
-    
+
     /** size of buffer used to load resources */
     private static final int BUFFER_SIZE = 1024;
-    
+
     /** Creates a new instance of Util */
     public Util() {
     }
@@ -145,12 +135,12 @@ public class Util {
      public static String getMainClassNameForAppClient(ModuleDescriptor moduleDescr) throws IOException, FileNotFoundException, org.xml.sax.SAXParseException {
          RootDeploymentDescriptor bd = moduleDescr.getDescriptor();
          ApplicationClientDescriptor acDescr = (ApplicationClientDescriptor) bd;
-         
+
          String mainClassName = acDescr.getMainClassName();
-         
+
          return mainClassName;
      }
-     
+
      /**
       *Writes the provided text to a temporary file marked for deletion on exit.
       *@param content the content to be written
@@ -179,10 +169,10 @@ public class Util {
             }
         }
     }
-    
+
     /**
      *Writes the provided text to a temporary file marked for deletion on exit.
-     *@param the content to be written
+     *@param content the content to be written
      *@param prefix for the temp file, conforming to the File.createTempFile requirements
      *@param suffix for the temp file
      *@return File object for the newly-created temp file
@@ -195,7 +185,7 @@ public class Util {
 
      /**
       *Finds the jar file or directory that contains the current class and returns its URI.
-      *@param the class, the containing jar file or directory of which is of interest
+      *@param target the class, the containing jar file or directory of which is of interest
       *@return URL to the containing jar file or directory
       */
      public static URL locateClass(Class target) {
@@ -208,8 +198,8 @@ public class Util {
      *This method does not save the template in a cache.  Use the instance method
      *getTemplate for that purpose.
      *
-     *@param a class, the class loader of which should be used for searching for the template
-     *@param the path of the resource to load, relative to the contextClass
+     *@param contextClass a class, the class loader of which should be used for searching for the template
+     *@param resourcePath the path of the resource to load, relative to the contextClass
      *@return the resource's contents
      *@throws IOException if the resource is not found or in case of error while loading it
      */
@@ -241,10 +231,10 @@ public class Util {
             }
         }
     }
-    
+
     /**
      *Copy an existing file into a temporary file.
-     *@param existing file
+     *@param inputFile existing file
      *@return File object for the temporary file
      */
     public static File copyToTempFile(File inputFile, String prefix, String suffix, boolean retainFile) throws IOException, FileNotFoundException {
@@ -263,7 +253,7 @@ public class Util {
             while ( (bytesRead = is.read(buffer) ) != -1) {
                 os.write(buffer, 0, bytesRead);
             }
-            
+
             return result;
         } finally {
             try {
@@ -277,7 +267,7 @@ public class Util {
             }
         }
     }
-    
+
     /**
      *Returns a codeBase expression, usable in a policy file, for the specified
      *URL.
@@ -293,13 +283,13 @@ public class Util {
             /*
              *If we cannot locate the file, it may be a jar listed in the
              *manifest's Class-Path of a top-level archive.  The spec does
-             *not require containers to handle such jars, so just 
+             *not require containers to handle such jars, so just
              *return null.
              */
             //throw new FileNotFoundException(classPathElement.toURI().toASCIIString());
             return null;
         }
-        
+
         /*
          *The format of the codebase is different for a directory vs. a jar
          *file.  Also note that the codebase must use the platform-neutral

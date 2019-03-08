@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-aggregator</artifactId>
-    <version>5.184-SNAPSHOT</version>
+    <version>5.192-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>Payara Project</name>
@@ -55,7 +55,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.184-SNAPSHOT</tag>
+        <tag>payara-server-5.192-SNAPSHOT</tag>
     </scm>
     
     <distributionManagement>
@@ -68,7 +68,7 @@
     <properties>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
         <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>2.10.4</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
     </properties>
@@ -148,7 +148,7 @@
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-5.184-SNAPSHOT</finalName>    
+                                    <finalName>payara-5.192-SNAPSHOT</finalName>    
                                     <includePom>false</includePom>                            
                                 </configuration>
                             </execution>
@@ -186,7 +186,9 @@
                             <docencoding>UTF-8</docencoding>
                             <includeDependencySources>false</includeDependencySources>
                             <!-- This parameter is to be added when using JDK8 -->
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalOptions>
+                                <additionalOption>-Xdoclint:none</additionalOption>
+                            </additionalOptions>
                         </configuration>
                         <executions>
                             <execution>
@@ -198,7 +200,7 @@
                                 <phase>pre-site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
-                                    <finalName>payara-5.184-SNAPSHOT</finalName>
+                                    <finalName>payara-5.192-SNAPSHOT</finalName>
                                 </configuration>
                             </execution>
                         </executions>

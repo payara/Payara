@@ -37,22 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package com.sun.enterprise.iiop.security;
 
-import java.io.IOException;
-import sun.security.util.ObjectIdentifier;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerOutputStream;
-
-import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
-import com.sun.logging.LogDomains;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Export_Name_OID;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Scoped_Username_OID;
+import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
+import com.sun.logging.LogDomains;
+import sun.security.util.DerInputStream;
+import sun.security.util.DerOutputStream;
+import sun.security.util.ObjectIdentifier;
 
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.logging.Level;;
+import java.util.logging.Level;
+
+;
 
 /**
  * @author Sekhar Vajjhala (Almost complete rewrite of an old version)
@@ -126,7 +127,7 @@ public class GSSUtils {
 
     // Dumps the hex values in the given byte array
     public static String dumpHex(byte[] octets) {
-        StringBuffer result = new StringBuffer("");
+        StringBuilder result = new StringBuilder("");
         for (int i = 0; i < octets.length; i++) {
             if ((i != 0) && ((i % 16) == 0))
                 result.append("\n    ");

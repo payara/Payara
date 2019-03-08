@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.glassfish.bootstrap;
@@ -56,6 +56,8 @@ import java.util.Properties;
  */
 
 public class GlassFishImpl implements GlassFish {
+
+    public static final String PAYARA_SHUTDOWNGRACE_PROPERTY = "fish.payara.shutdowngrace";
 
     private ModuleStartup gfKernel;
     private ServiceLocator habitat;
@@ -87,8 +89,22 @@ public class GlassFishImpl implements GlassFish {
             throw new IllegalStateException("Already in " + status + " state.");
         }
         status = Status.STOPPING;
+        sleepShutdownGracePeriod();
         gfKernel.stop();
         status = Status.STOPPED;
+    }
+
+    public static void sleepShutdownGracePeriod() {
+        String shutdowngrace = System.getProperty(PAYARA_SHUTDOWNGRACE_PROPERTY);
+        if (shutdowngrace != null) {
+            try {
+                Thread.sleep(Integer.parseInt(shutdowngrace));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (NumberFormatException e) {
+                // no sleep, continue shutdown
+            }
+        }
     }
 
     public synchronized void dispose() throws GlassFishException {

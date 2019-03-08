@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -1113,7 +1113,7 @@ public class Application extends CommonResourceBundleDescriptor
         int numTokens = tokenizer.countTokens();
         int numSeparators = (numTokens > 0) ? (numTokens - 1) : 0;
 
-        StringBuffer relativeUri = new StringBuffer();
+        StringBuilder relativeUri = new StringBuilder();
 
         // The simplest way to compute a relative uri is to add one "../"
         // for each sub-path in the origin URI, then add the target URI.
@@ -1624,25 +1624,25 @@ public class Application extends CommonResourceBundleDescriptor
      * A formatted String representing my state.
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("Application");
-        toStringBuffer.append("\n");
-        super.print(toStringBuffer);
-        toStringBuffer.append("\n smallIcon ").append(super.getSmallIconUri());
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("Application");
+        toStringBuilder.append("\n");
+        super.print(toStringBuilder);
+        toStringBuilder.append("\n smallIcon ").append(super.getSmallIconUri());
         for (ModuleDescriptor<BundleDescriptor> aModule : getModules()) {
-            toStringBuffer.append("\n  Module : ");
-            aModule.print(toStringBuffer);
+            toStringBuilder.append("\n  Module : ");
+            aModule.print(toStringBuilder);
         }
-        toStringBuffer.append("\n Bundles: \n");
+        toStringBuilder.append("\n Bundles: \n");
         if (this.getBundleDescriptors() != null) {
-            printDescriptorSet(this.getBundleDescriptors(), toStringBuffer);
+            printDescriptorSet(this.getBundleDescriptors(), toStringBuilder);
         }
-        toStringBuffer.append("\n roles ").append(getRoles());
-        toStringBuffer.append("\n RoleMapper ").append(this.getRoleMapper());
-        toStringBuffer.append("\n Realm ").append(realm);
+        toStringBuilder.append("\n roles ").append(getRoles());
+        toStringBuilder.append("\n RoleMapper ").append(this.getRoleMapper());
+        toStringBuilder.append("\n Realm ").append(realm);
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
         for (Iterator itr = descSet.iterator(); itr.hasNext();) {
             Object obj = itr.next();
             if (obj instanceof Descriptor)

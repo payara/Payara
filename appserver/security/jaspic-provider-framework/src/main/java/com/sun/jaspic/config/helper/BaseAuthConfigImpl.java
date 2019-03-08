@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.jaspic.config.helper;
 
 import static java.util.logging.Level.FINE;
@@ -204,7 +204,7 @@ public abstract class BaseAuthConfigImpl {
         Logger logger = Logger.getLogger(loggerName);
 
         if (logger.isLoggable(level)) {
-            StringBuffer messageBuffer = new StringBuffer("");
+            StringBuilder messageBuffer = new StringBuilder("");
 
             for (String m : msgParts) {
                 messageBuffer.append(m);

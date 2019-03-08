@@ -1,0 +1,63 @@
+list-file-users(1)        asadmin Utility Subcommands       list-file-users(1)
+
+NAME
+       list-file-users - lists the file users
+
+SYNOPSIS
+           list-file-users [--help] [--authrealmname auth_realm_name] [target]
+
+DESCRIPTION
+       The list-file-users subcommand displays a list of file users supported
+       by file realm authentication.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --authrealmname
+           Lists only the users in the specified authentication realm.
+
+OPERANDS
+       target
+           Specifies the target for which you want to list file users. The
+           following values are valid:
+
+           server
+               Lists the file users on the default server instance. This is
+               the default value.
+
+           configuration_name
+               Lists the file users in the specified configuration.
+
+           cluster_name
+               Lists the file users on all server instances in the specified
+               cluster.
+
+           instance_name
+               Lists the file users on a specified server instance.
+
+EXAMPLES
+       Example 1, Listing Users in a Specific File Realm
+           The following example lists the users in the file realm named
+           sample_file_realm.
+
+               asadmin> list-file-users --authrealmname sample_file_realm
+               sample_user05
+               sample_user08
+               sample_user12
+               Command list-file-users executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-file-user(1), delete-file-user(1), update-file-user(1),
+       list-file-groups(1)
+
+       asadmin(1M)
+
+Java EE 8                         21 Jun 2011               list-file-users(1)

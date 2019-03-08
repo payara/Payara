@@ -1,0 +1,61 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-pingnode" name="task-pingnode"></a></p>
+<!-- infolevel="all" infotype="General" -->
+<h4><a id="sthref233" name="sthref233"></a>To Test if a Node Is Reachable</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>To create or start GlassFish Server instances on a node that represents a remote host, the DAS must be able to contact the node. Before attempting to create or start instances on such a node, test that the DAS can contact the node.</p>
+<p>The type of the node that you are testing must be SSH. You cannot test a node of type CONFIG because a node of type CONFIG is not enabled for remote communication.</p>
+<a id="sthref234" name="sthref234"></a>
+<h5>Before You Begin</h5>
+<p>Ensure that the appropriate protocol for the type of the node is configured on the host that the node represents. The node is enabled for remote communication over this protocol.</p>
+<ul>
+<li>
+<p>If the type of the node is SSH, the secure shell (SSH) protocol must be configured.</p>
+<ol>
+<li>
+<p>In the navigation tree, select the Nodes node.</p>
+<p>The <a href="ref-nodes.html">Nodes</a> page opens. This page lists all nodes in the current domain.</p>
+</li>
+<li>
+<p>In the table of nodes, follow the Ping link for the node that you are testing.</p>
+<p>A message that indicates whether the DAS could contact the node is added to the Nodes page.</p>
+</li>
+</ol>
+</li>
+</ul>
+<a id="sthref235" name="sthref235"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-createnode.html">To Create a Node</a></p>
+</li>
+<li>
+<p><a href="task-deletenode.html">To Delete Nodes</a></p>
+</li>
+<li>
+<p><a href="task-listnodes.html">To List All Nodes in the Current Domain</a></p>
+</li>
+<li>
+<p><a href="task-editnode.html">To Edit a Node</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

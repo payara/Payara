@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 //----------------------------------------------------------------------------
 //
@@ -104,7 +105,7 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
     private int internalSeq = 0;
 	/*
 		Logger to log transaction messages
-	*/  
+	*/
     static Logger _logger = LogDomains.getLogger(RecoveryCoordinatorImpl.class, LogDomains.TRANSACTION_LOGGER);
     GlobalTID globalTID = null;
 
@@ -163,7 +164,7 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
      * @see
      */
     public Status replay_completion(Resource res) throws NotPrepared {
-	
+
 		if(_logger.isLoggable(Level.FINE))
         {
 			 _logger.logp(Level.FINE,"RecoveryCoordinatorImpl",
@@ -192,10 +193,11 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
 
         case Status._StatusActive :
         case Status._StatusMarkedRollback :
-            try {
-                coord.rollback_only();
-            } catch (Throwable exc) {}
-
+            if( coord != null) {
+                try {
+                    coord.rollback_only();
+                } catch (Throwable exc) {}
+            }
             throw new NotPrepared();
 
         /*
@@ -277,7 +279,7 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
 
     // same as replay_completion(res) : added for delegated recovery support
     public Status replay_completion(Resource res, String logPath) throws NotPrepared {
-	
+
         if(_logger.isLoggable(Level.FINE))
         {
 	     _logger.logp(Level.FINE,"RecoveryCoordinatorImpl",
@@ -304,9 +306,11 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
 
         case Status._StatusActive :
         case Status._StatusMarkedRollback :
-            try {
-                coord.rollback_only();
-            } catch (Throwable exc) {}
+            if ( coord != null ) {
+                try {
+                    coord.rollback_only();
+                } catch (Throwable exc) {}
+            }
 
             throw new NotPrepared();
 
@@ -454,7 +458,7 @@ class RecoveryCoordinatorImpl extends RecoveryCoordinatorPOA {
         // previously, an source and destination array was wrong.
         //System.arraycopy(tidBytes, 0, key, 4, tidBytes.length);
         System.arraycopy(key, 4, tidBytes, 0, tidBytes.length);
-        
+
         globalTID = new GlobalTID(tidBytes);
 
         // Ensure that recovery has completed so that

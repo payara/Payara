@@ -37,30 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.security.ssl.J2EEKeyManager;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.logging.LogDomains;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
+import org.glassfish.security.common.SharedSecureRandomImpl;
+import org.jvnet.hk2.annotations.Service;
+import org.omg.IOP.TaggedComponent;
+import org.omg.PortableInterceptor.IORInfo;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509KeyManager;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
-import org.glassfish.internal.api.SharedSecureRandom;
-import org.glassfish.security.common.SharedSecureRandomImpl;
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import org.omg.IOP.TaggedComponent;
-import org.omg.PortableInterceptor.IORInfo;
 
 /**
  *
@@ -103,7 +103,7 @@ public class IIOPSSLUtilImpl implements IIOPSSLUtil {
                 KeyManager[] newMgrs = new KeyManager[mgrs.length];
                 for (int i = 0; i < mgrs.length; i++) {
                     if (_logger.isLoggable(Level.FINE)) {
-                        StringBuffer msg = new StringBuffer("Setting J2EEKeyManager for ");
+                        StringBuilder msg = new StringBuilder("Setting J2EEKeyManager for ");
                         msg.append(" alias : " + alias);
                         _logger.log(Level.FINE, msg.toString());
                     }
@@ -130,7 +130,7 @@ public class IIOPSSLUtilImpl implements IIOPSSLUtil {
 
     /**
      * This API get the format string from resource bundle of _logger.
-     * 
+     *
      * @param key the key of the message
      * @param params the parameter array of Object
      * @return the format String for _logger

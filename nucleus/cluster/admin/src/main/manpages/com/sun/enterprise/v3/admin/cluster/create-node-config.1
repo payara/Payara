@@ -1,0 +1,131 @@
+create-node-config(1)     asadmin Utility Subcommands    create-node-config(1)
+
+NAME
+       create-node-config - creates a node that is not enabled for remote
+       communication
+
+SYNOPSIS
+           create-node-config [--help]
+           [--nodehost node-host]
+           [--installdir as-install-parent] [--nodedir node-dir] node-name
+
+DESCRIPTION
+       The create-node-config subcommand creates a node that is not enabled
+       for remote communication. The create-node-config subcommand does not
+       require the secure shell (SSH) to be configured to create the node.
+
+       A node represents a host on which the GlassFish Server software is
+       installed. A node must exist for every host on which GlassFish Server
+       instances reside.
+
+           Note
+           +---------------------------------------+
+           |           To represent the host where |
+           |           the DAS is running,         |
+           |           GlassFish Server provides   |
+           |           the predefined node         |
+           |           localhost-domain. The       |
+           |           predefined node             |
+           |           localhost-domain is not     |
+           |           enabled for remote          |
+           |           communication.              |
+           +---------------------------------------+
+
+       All administration of instances on a node that is not enabled for
+       remote communication must be performed on the host that the node
+       represents. The domain administration server (DAS) on a remote host
+       cannot contact the node. To administer instances on a node that
+       represents a host that is remote from the DAS, you must use the
+       following subcommands:
+
+       *   create-local-instance(1)
+
+       *   delete-local-instance(1)
+
+       *   start-local-instance(1)
+
+       However, you may use stop-local-instance(1) or stop-instance(1) to stop
+       the instances.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --nodehost
+           The name of the host that the node represents. If this option is
+           omitted, no host is specified for the node.
+
+       --installdir
+           The full path to the parent of the base installation directory of
+           the GlassFish Server software on the host, for example,
+           /export/glassfish3/. If this option is omitted, no parent of the
+           base installation directory of the GlassFish Server software is
+           specified for the node.
+
+       --nodedir
+           The path to the directory that is to contain GlassFish Server
+           instances that are created on the node. If a relative path is
+           specified, the path is relative to the as-install directory. If
+           this option is omitted, no directory for instances is specified for
+           the node.
+
+OPERANDS
+       node-name
+           The name of the node.
+
+           The name must meet the following requirements:
+
+           *   The name may contain only ASCII characters.
+
+           *   The name must start with a letter, a number, or an underscore.
+
+           *   The name may contain only the following characters:
+
+               *   Lowercase letters
+
+               *   Uppercase letters
+
+               *   Numbers
+
+               *   Hyphen
+
+               *   Period
+
+               *   Underscore
+
+           *   The name must be unique in the domain and must not be the name
+               of another node, a cluster, a named configuration, or a
+               GlassFish Server instance.
+
+           *   The name must not be domain, server, or any other keyword that
+               is reserved by GlassFish Server.
+
+EXAMPLES
+       Example 1, Creating a Node That Is Not Enabled for Remote Communication
+           This example creates the node sj03 for host sj03.example.com. The
+           node is not enabled for remote communication.
+
+               asadmin> create-node-config --nodehost sj03.example.com sj03
+
+               Command create-node-config executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-local-instance(1), create-node-ssh(1),
+       delete-local-instance(1), delete-node-config(1), install-node(1),
+       install-node-ssh(1), list-nodes(1),
+       start-local-instance(1), stop-instance(1), stop-local-instance(1),
+       uninstall-node(1), uninstall-node-ssh(1),
+       update-node-config(1), update-node-ssh(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Dec 2011            create-node-config(1)

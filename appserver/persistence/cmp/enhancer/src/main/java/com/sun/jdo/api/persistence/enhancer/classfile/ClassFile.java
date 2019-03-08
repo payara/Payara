@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.classfile;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
-import java.util.Enumeration;
-import java.io.*;
-import java.io.DataOutputStream;
 
 
 /**
@@ -65,10 +65,16 @@ final public class ClassFile implements VMConstants {
     new short[]{47, 0}, // jdk 1.3
     new short[]{48, 0}, // jdk 1.4
     new short[]{49, 0}, // jdk 1.5
-    new short[]{50, 0}  // jdk 1.6      
+    new short[]{50, 0}, // jdk 1.6
+    new short[]{51, 0}, // jdk 1.7
+    new short[]{52, 0}, // jdk 1.8
+    new short[]{53, 0}, // jdk 9
+    new short[]{54, 0}, // jdk 10
+    new short[]{55, 0}, // jdk 11
+    new short[]{56, 0}, // jdk 12
+    new short[]{57, 0}  // jdk 13
   };
-  public static final List jdkVersions =
-    convertMajorMinorVersions(jdkMajorMinorVersions);
+  public static final List jdkVersions = convertMajorMinorVersions(jdkMajorMinorVersions);
   public static final String supportedVersions = printSupportedVersions();
 
   private int majorVersion = 0;
@@ -493,7 +499,7 @@ final public class ClassFile implements VMConstants {
     }
 
     public static final String printSupportedVersions() {
-      StringBuffer buf = new StringBuffer("{"); //NOI18N
+      StringBuilder buf = new StringBuilder("{"); //NOI18N
       int length = jdkMajorMinorVersions.length;
       for (int i = 0; i < length; i++) {
         int major = jdkMajorMinorVersions[i][0];

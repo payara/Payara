@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import java.util.*;
@@ -114,7 +114,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked post authentication request for a user in a given realm
-     * 
+     *
      * @param user username for whom the authentication request was made
      * @param realm the realm name under which the user is authenticated.
      * @param success the status of the authentication
@@ -122,7 +122,7 @@ public class Audit extends AuditModule {
     @Override
     public void authentication(String user, String realm, boolean success) {
         if (auditFlag) {
-            StringBuffer sbuf = new StringBuffer("Audit: Authentication for user = (");
+            StringBuilder sbuf = new StringBuilder("Audit: Authentication for user = (");
             sbuf.append(user);
             sbuf.append(") under realm = (");
             sbuf.append(realm).append(") returned = ").append(success);
@@ -132,7 +132,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked post web authorization request.
-     * 
+     *
      * @param user the username for whom the authorization was performed
      * @param req the HttpRequest object for the web request
      * @param type either hasResourcePermission, hasUserDataPermission or hasRoleRefPermission
@@ -151,7 +151,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked post ejb authorization request.
-     * 
+     *
      * @param user the username for whom the authorization was performed
      * @param ejb the ejb name for which this authorization was performed
      * @param method the method name for which this authorization was performed
@@ -160,7 +160,7 @@ public class Audit extends AuditModule {
     @Override
     public void ejbInvocation(String user, String ejb, String method, boolean success) {
         if (auditFlag) {
-            // Modified from StringBuffer to StringBuilder
+            // Modified from StringBuilder to StringBuilder
             StringBuilder sbuf = new StringBuilder("Audit: [EJB] Authorization for user =");
             sbuf.append(user).append(" for ejb = (");
             sbuf.append(ejb).append(") method = (").append(method).append(") returned =").append(success);
@@ -170,7 +170,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked post ejb authorization request.
-     * 
+     *
      * @param user the username for whom the authorization was performed
      * @param ejb the ejb name for which this authorization was performed
      * @param method the method name for which this authorization was performed
@@ -179,7 +179,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked during validation of the web service request
-     * 
+     *
      * @param uri The URL representation of the web service endpoint
      * @param endpoint The name of the endpoint representation
      * @param success the status of the web service request validation
@@ -198,7 +198,7 @@ public class Audit extends AuditModule {
 
     /**
      * Invoked during validation of the web service request
-     * 
+     *
      * @param endpoint The URL representation of the web service endpoint
      * @param success the status of the web service request validation
      */
@@ -260,8 +260,8 @@ public class Audit extends AuditModule {
      * public static void ejbMethodInvocation(SecurityContext secCtx, EJBLocalRemoteObject ejbObj, Method method, boolean
      * success) { if (!logger.isLoggable(Level.INFO)) { return; } String user = "(null)"; if (secCtx != null) { Principal p
      * = secCtx.getCallerPrincipal(); if (p!=null) { user = p.getName(); } } String ejb = "(N/A)"; if (ejbObj != null) { ejb
-     * = ejbObj.toString(); } String meth = "(N/A)"; if (method != null) { meth = method.toString(); } StringBuffer sb = new
-     * StringBuffer(); sb.append(strPrivateAudit); // "Audit: principal=" if(user != null) { sb.append(user); } else {
+     * = ejbObj.toString(); } String meth = "(N/A)"; if (method != null) { meth = method.toString(); } StringBuilder sb = new
+     * StringBuilder(); sb.append(strPrivateAudit); // "Audit: principal=" if(user != null) { sb.append(user); } else {
      * sb.append("(null)"); } sb.append(" ejb="); sb.append(ejb); sb.append(strMethodName); // " method=" sb.append(method);
      * if (success) { sb.append(strOK); // " OK" } else { sb.append(strDenied); // " DENIED" } logger.info(sb.toString()); }
      */
@@ -278,7 +278,7 @@ public class Audit extends AuditModule {
      * (!logger.isLoggable(Level.INFO) || !auditFlag) { // return; //} //if (req == null) { //
      * logger.fine("Audit: No HttpRequest available."); // return; //} //if (!(req instanceof HttpRequestBase)) { //
      * logger.fine("Audit internal error, class: " + req.getClass()); // return; //} //HttpRequestBase reqs =
-     * (HttpRequestBase)req; //StringBuffer sb = new StringBuffer(); //sb.append(strPrivateAudit); // "Audit: principal="
+     * (HttpRequestBase)req; //StringBuilder sb = new StringBuilder(); //sb.append(strPrivateAudit); // "Audit: principal="
      * //String user = reqs.getRemoteUser(); //if (user != null) { // sb.append(user); //} else { // sb.append("(null)");
      * //} //sb.append(" "); //sb.append(reqs.getMethod()); //sb.append(" "); //sb.append(reqs.getRequestURI());
      * //sb.append(strSession); // " session=" //sb.append(reqs.getRequestedSessionId()); //if (success) { //
@@ -328,7 +328,7 @@ public class Audit extends AuditModule {
                 getWebComponentCount(app));
 
         Iterator i;
-        StringBuffer sb;
+        StringBuilder sb;
 
         // show all roles with associated group & user mappings
         Set allRoles = app.getRoles();
@@ -351,7 +351,7 @@ public class Audit extends AuditModule {
             logger.finest(" [" + r.getName() + "]");
             allRoleMap.put(r.getName(), new HashSet());
 
-            sb = new StringBuffer();
+            sb = new StringBuilder();
             sb.append("  is mapped to groups: ");
             Enumeration grps = rmap.getGroupsAssignedTo(r);
             while (grps.hasMoreElements()) {
@@ -360,7 +360,7 @@ public class Audit extends AuditModule {
             }
             logger.finest(sb.toString());
 
-            sb = new StringBuffer();
+            sb = new StringBuilder();
             sb.append("  is mapped to principals: ");
             Enumeration users = rmap.getUsersAssignedTo(r);
             while (users.hasMoreElements()) {
@@ -418,7 +418,7 @@ public class Audit extends AuditModule {
                     logger.finest("   " + md.getFormattedString());
 
                     Set perms = ejb.getMethodPermissionsFor(md);
-                    StringBuffer rbuf = new StringBuffer();
+                    StringBuilder rbuf = new StringBuilder();
                     rbuf.append("     can only be invoked by: ");
                     Iterator sip = perms.iterator();
                     boolean unchecked = false, excluded = false, roleBased = false;
@@ -475,7 +475,7 @@ public class Audit extends AuditModule {
                     Iterator iorsi = iors.iterator();
                     while (iorsi.hasNext()) {
                         EjbIORConfigurationDescriptor ior = (EjbIORConfigurationDescriptor) iorsi.next();
-                        StringBuffer iorsb = new StringBuffer();
+                        StringBuilder iorsb = new StringBuilder();
                         iorsb.append("realm=");
                         iorsb.append(ior.getRealmName());
                         iorsb.append(", integrity=");
@@ -535,7 +535,7 @@ public class Audit extends AuditModule {
             Iterator webCompsIt = webComps.iterator();
             while (webCompsIt.hasNext()) {
                 WebComponentDescriptor wcd = (WebComponentDescriptor) webCompsIt.next();
-                StringBuffer name = new StringBuffer();
+                StringBuilder name = new StringBuilder();
                 name.append("   - " + wcd.getCanonicalName());
                 name.append(" [ ");
                 Enumeration urlPs = wcd.getUrlPatterns();
@@ -569,7 +569,7 @@ public class Audit extends AuditModule {
 
                 for (WebResourceCollection wrc : sc.getWebResourceCollections()) {
                     // show list of methods for this collection
-                    StringBuffer sbm = new StringBuffer();
+                    StringBuilder sbm = new StringBuilder();
                     for (String httpMethod : wrc.getHttpMethods()) {
                         sbm.append(httpMethod);
                         sbm.append(" ");
@@ -585,7 +585,7 @@ public class Audit extends AuditModule {
                 // show roles which apply to above set of collections
                 AuthorizationConstraint authCons = sc.getAuthorizationConstraint();
                 Enumeration rolesEnum = authCons.getSecurityRoles();
-                StringBuffer rsb = new StringBuffer();
+                StringBuilder rsb = new StringBuilder();
                 rsb.append("     Accessible by roles: ");
                 while (rolesEnum.hasMoreElements()) {
                     SecurityRole sr = (SecurityRole) rolesEnum.nextElement();

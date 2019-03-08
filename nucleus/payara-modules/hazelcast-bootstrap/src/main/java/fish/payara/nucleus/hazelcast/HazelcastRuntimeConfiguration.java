@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2014-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2014-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,10 @@ public interface HazelcastRuntimeConfiguration
     String getHazelcastConfigurationFile();
     public void setHazelcastConfigurationFile(String value);
     
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getAutoIncrementPort();
+    public void setAutoIncrementPort(String value);
+    
     @Attribute(defaultValue = "5900")
     String getStartPort();
     public void setStartPort(String value);
@@ -93,6 +97,7 @@ public interface HazelcastRuntimeConfiguration
     // multicast
     // tcpip
     // dns
+    // kubernetes
     @Attribute(defaultValue = "domain")
     String getDiscoveryMode();
     public void setDiscoveryMode(String value);
@@ -121,5 +126,13 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "")
     String getLicenseKey();
     public void setLicenseKey(String value);
+
+    @Attribute(defaultValue = "default")
+    String getKubernetesNamespace();
+    public void setKubernetesNamespace(String value);
+
+    @Attribute(defaultValue = "")
+    String getKubernetesServiceName();
+    public void setKubernetesServiceName(String value);
 
 }

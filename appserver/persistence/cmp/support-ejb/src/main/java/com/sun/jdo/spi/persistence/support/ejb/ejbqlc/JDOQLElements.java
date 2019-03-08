@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JDOQLElements.java
@@ -45,17 +46,6 @@
  */
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbqlc;
-
-import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.io.BufferedOutputStream;
 
 /**
  * An JDOQLElements instance represents the result of the EJBQLC compile step.
@@ -91,7 +81,7 @@ public class JDOQLElements
 
     /**
      *  Flag indicating whether the result element is associated to an
-     *  aggregate function. 
+     *  aggregate function.
      */
     private boolean isAggregate;
 
@@ -197,17 +187,17 @@ public class JDOQLElements
         this.result = (result == null) ? "" : result; //NOI18N
     }
 
-    /** 
-     * Returns the result type. The result type is the name of the element type 
-     * of the JDO query result set. 
+    /**
+     * Returns the result type. The result type is the name of the element type
+     * of the JDO query result set.
      */
     public String getResultType()
     {
         return resultType;
     }
 
-    /** 
-     * Sets the result type. The result type is the name of the element type 
+    /**
+     * Sets the result type. The result type is the name of the element type
      * of the JDO query result set.
      */
     public void setResultType(String resultType)
@@ -244,7 +234,7 @@ public class JDOQLElements
 
     /**
      * Sets whether the result of the JDOQL query is a associated to
-     * an aggregate function. 
+     * an aggregate function.
      */
     public void setAggregate(boolean isAggregate)
     {
@@ -270,32 +260,32 @@ public class JDOQLElements
     /** Returns a string representation of this JDOQLElements instance. */
     public String toString()
     {
-        StringBuffer repr = new StringBuffer();
+        StringBuilder repr = new StringBuilder();
         repr.append("JDOQLElements("); //NOI18N
         repr.append("candidateClass: "); //NOI18N
         repr.append(candidateClassName);
         if (parameters != null && parameters.length() > 0) {
-            repr.append(", parameters: "); //NOI18N 
+            repr.append(", parameters: "); //NOI18N
             repr.append(parameters);
         }
         if (variables != null && variables.length() > 0) {
-            repr.append(", variables: "); //NOI18N 
+            repr.append(", variables: "); //NOI18N
             repr.append(variables);
         }
         if (filter != null && filter.length() > 0) {
-            repr.append(", filter: "); //NOI18N 
+            repr.append(", filter: "); //NOI18N
             repr.append(filter);
         }
         if (ordering != null && ordering.length() > 0) {
-            repr.append(", ordering: "); //NOI18N 
+            repr.append(", ordering: "); //NOI18N
             repr.append(ordering);
         }
         if (result != null && result.length() > 0) {
-            repr.append(", result: "); //NOI18N 
+            repr.append(", result: "); //NOI18N
             repr.append(result);
-            repr.append(", resultType: "); //NOI18N 
+            repr.append(", resultType: "); //NOI18N
             repr.append(resultType);
-            repr.append(", isPCResult: "); //NOI18N 
+            repr.append(", isPCResult: "); //NOI18N
             repr.append(isPCResult);
         }
         repr.append(", isAggregate: ");

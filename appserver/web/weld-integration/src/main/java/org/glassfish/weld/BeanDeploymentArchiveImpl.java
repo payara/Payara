@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -326,8 +326,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public Collection<Class<?>> getLoadedBeanClasses() {
         return beanClasses;
     }
-    
-    
+
+
 
     //A graphical representation of the BDA hierarchy to aid in debugging
     //and to provide a better representation of how Weld treats the deployed
@@ -340,7 +340,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 + ", " + formatAccessibleBDAs(this)
                 + ", Bean Classes #: " + getBeanClasses().size() + ","
                 + beanClassesString + ", ejbs=" + getEjbs() + "\n";
-        StringBuffer valBuff = new StringBuffer(initVal);
+        StringBuilder valBuff = new StringBuilder(initVal);
 
         Collection<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         Iterator<BeanDeploymentArchive> iter = bdas.iterator();
@@ -362,7 +362,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     private String formatAccessibleBDAs(BeanDeploymentArchive bda) {
-        StringBuffer sb = new StringBuffer("[");
+        StringBuilder sb = new StringBuilder("[");
         for (BeanDeploymentArchive accessibleBDA : bda.getBeanDeploymentArchives()) {
             if (accessibleBDA instanceof BeanDeploymentArchiveImpl) {
                 sb.append(((BeanDeploymentArchiveImpl) accessibleBDA).getFriendlyId()).append(",");

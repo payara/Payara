@@ -41,7 +41,10 @@
 package fish.payara.enterprise.server.logging;
 
 import com.sun.enterprise.server.logging.LogRotationTimerTask;
-import java.util.Timer;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -49,53 +52,61 @@ import java.util.Timer;
  */
 public class PayaraNotificationLogRotationTimer {
 
-    private Timer rotationTimer;
-
     private LogRotationTimerTask rotationTimerTask;
+    private ScheduledFuture<?> logRotationFuture;
 
     private static PayaraNotificationLogRotationTimer instance = new PayaraNotificationLogRotationTimer();
 
     private PayaraNotificationLogRotationTimer() {
-        rotationTimer = new Timer("payara-log-rotation-timer");
     }
 
     public static PayaraNotificationLogRotationTimer getInstance() {
         return instance;
     }
 
-    public void startTimer(LogRotationTimerTask timerTask) {
+    public void startTimer(ScheduledExecutorService scheduledExecutorService, LogRotationTimerTask timerTask) {
         rotationTimerTask = timerTask;
-        rotationTimer.schedule(rotationTimerTask,
-                timerTask.getRotationTimerValue());
+        logRotationFuture = scheduledExecutorService.schedule(
+            rotationTimerTask,
+            timerTask.getRotationTimerValue(),
+            TimeUnit.MILLISECONDS
+        );
     }
 
     public void stopTimer() {
-        rotationTimer.cancel();
-    }
-
-    public void restartTimer() {
-        // We will restart the timer only if the timerTask is set which
-        // means user has set a value for LogRotation based on Time
-        if (rotationTimerTask != null) {
-            rotationTimerTask.cancel();
-            rotationTimerTask = new LogRotationTimerTask(
-                    rotationTimerTask.task,
-                    rotationTimerTask.getRotationTimerValueInMinutes());
-            rotationTimer.schedule(rotationTimerTask,
-                    rotationTimerTask.getRotationTimerValue());
+        if (logRotationFuture != null) {
+            logRotationFuture.cancel(false);
         }
     }
 
-    public void restartTimerForDayBasedRotation() {
+    public void restartTimer(ScheduledExecutorService scheduledExecutorService) {
         // We will restart the timer only if the timerTask is set which
         // means user has set a value for LogRotation based on Time
-        if (rotationTimerTask != null) {
-            rotationTimerTask.cancel();
+        if (logRotationFuture != null) {
+            logRotationFuture.cancel(false);
+            rotationTimerTask = new LogRotationTimerTask(
+                rotationTimerTask.task,
+                rotationTimerTask.getRotationTimerValueInMinutes());
+            logRotationFuture = scheduledExecutorService.schedule(
+                rotationTimerTask,
+                rotationTimerTask.getRotationTimerValue(),
+                TimeUnit.MILLISECONDS
+            );
+        }
+    }
+
+    public void restartTimerForDayBasedRotation(ScheduledExecutorService scheduledExecutorService) {
+        // We will restart the timer only if the timerTask is set which
+        // means user has set a value for LogRotation based on Time
+        if (logRotationFuture != null) {
+            logRotationFuture.cancel(false);
             rotationTimerTask = new  LogRotationTimerTask(
-                    rotationTimerTask.task,
-                    60 * 24);
-            rotationTimer.schedule(rotationTimerTask,
-                    1000 * 60 * 60 * 24);
+                rotationTimerTask.task,
+                60 * 24);
+            logRotationFuture = scheduledExecutorService.schedule(
+                rotationTimerTask,
+                1000 * 60 * 60 * 24, TimeUnit.MILLISECONDS
+            );
         }
     }
 }

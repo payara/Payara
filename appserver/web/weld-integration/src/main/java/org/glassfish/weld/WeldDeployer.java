@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -110,7 +110,6 @@ import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.weld.connector.WeldUtils;
-import org.glassfish.weld.services.BootstrapConfigurationImpl;
 import org.glassfish.weld.services.EjbServicesImpl;
 import org.glassfish.weld.services.ExternalConfigurationImpl;
 import org.glassfish.weld.services.InjectionServicesImpl;
@@ -120,7 +119,6 @@ import org.glassfish.weld.services.SecurityServicesImpl;
 import org.glassfish.weld.services.TransactionServicesImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
@@ -147,7 +145,9 @@ import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import java.util.logging.Level;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import org.glassfish.weld.services.ExecutorServicesImpl;
+import org.jboss.weld.manager.api.ExecutorServices;
 
 @Service
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer> implements PostConstruct, EventListener {
@@ -207,6 +207,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
+    
+    @Inject
+    private PayaraExecutorService executorService;
 
     private Map<Application, WeldBootstrap> appToBootstrap = new HashMap<>();
 
@@ -301,9 +304,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
-
-            BootstrapConfigurationImpl bootstrapConfiguration = new BootstrapConfigurationImpl();
-            deploymentImpl.getServices().add(BootstrapConfiguration.class, bootstrapConfiguration);
+            
+            ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
+            deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
 
             addWeldListenerToAllWars(context);
         } else {
@@ -320,6 +323,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
         externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
         externalConfiguration.setBeanIndexOptimization(dc != null ? !dc.isAvailabilityEnabled() : true);
+        externalConfiguration.setNonPortableMode(false);
+        configureConcurrentDeployment(context, externalConfiguration);
+        
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
@@ -588,7 +594,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         ComponentInvocation componentInvocation = new ComponentInvocation(
                 getComponentEnvId((JndiNameEnvironment) bundleDescriptor),
                 SERVLET_INVOCATION,
-                applicationInfo, applicationInfo.getName(), applicationInfo.getName());
+                applicationInfo,
+                applicationInfo.getName(),
+                applicationInfo.getName(),
+                applicationInfo.getName()
+        );
 
         componentInvocation.setJNDIEnvironment(bundleDescriptor);
 
@@ -861,6 +871,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
         deploymentImpl.addDynamicExtension(createProbeExtension());
+    }
+    
+    private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
+        configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
+        configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
     }
 
     private Metadata<Extension> createProbeExtension() {

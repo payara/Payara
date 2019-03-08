@@ -39,14 +39,16 @@
     holder.
 
 -->
+<!--"Portions Copyright [2019] [Payara Foundation and/or its affiliates]" -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.connectors</groupId>
         <artifactId>connectors</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    
     <artifactId>work-management</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -64,6 +66,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <resources>
             <resource>
@@ -73,6 +76,7 @@
                 </includes>
             </resource>
         </resources>
+        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -86,13 +90,17 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
+    
     <dependencies>
-
         <dependency>
             <groupId>javax.resource</groupId>
             <artifactId>javax.resource-api</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
 
         <dependency>
@@ -113,24 +121,19 @@
         </dependency>
 
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-	</dependency>
+	        <groupId>org.glassfish.external</groupId>
+	        <artifactId>management-api</artifactId>
+	    </dependency>
 	
-	<dependency>
-	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+	    <dependency>
+	        <groupId>org.glassfish.gmbal</groupId>
+	        <artifactId>gmbal</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
         </dependency>
 
         <dependency>
@@ -150,6 +153,5 @@
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
-
     </dependencies>
 </project>

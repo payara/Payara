@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -147,6 +148,11 @@ public final class PEAccessLogValve
      * Should we rotate our log file?
      */
     private boolean rotatable;
+
+    /**
+     * Should we rotate our log file on date change?
+     */
+    private boolean rotationOnDateChange;
 
     /**
      * The suffix that is added to log file filenames.
@@ -443,6 +449,14 @@ public final class PEAccessLogValve
 
     }
 
+    public boolean isRotationOnDateChange() {
+        return rotationOnDateChange;
+    }
+
+    public void setRotationOnDateChange(boolean rotationOnDateChange) {
+        this.rotationOnDateChange = rotationOnDateChange;
+    }
+
     /**
      * Return the log file suffix.
      * @return
@@ -603,7 +617,7 @@ public final class PEAccessLogValve
 
         if (rotatable) {
             synchronized (lock) {
-                rotateOnDateChange();
+                rotateLog();
             }
         }
 
@@ -706,7 +720,7 @@ public final class PEAccessLogValve
                 dir = new File(logRoot, accessLog);
             } else {
                 ServerEnvironment env = services.getService(ServerEnvironment.class);
-                dir = new File(env.getDomainRoot(), accessLog);
+                dir = new File(env.getInstanceRoot(), accessLog);
             }
         }
 
@@ -791,6 +805,14 @@ public final class PEAccessLogValve
             setRotatable(Boolean.valueOf(
                     ConfigBeansUtilities.getDefaultRotationEnabled()));
         }
+
+        // rotation-on-date-change
+        if (accessLogConfig != null) {
+            setRotationOnDateChange(Boolean.valueOf(accessLogConfig.getRotationOnDateChange()));
+        } else {
+            setRotationOnDateChange(Boolean.valueOf(
+                    ConfigBeansUtilities.getDefaultRotationOnDateChange()));
+        }
         // rotation-interval
         interval = 0;
         if (accessLogConfig != null) {
@@ -822,8 +844,8 @@ public final class PEAccessLogValve
         // rotation-suffix
         setSuffix(fac.getDefaultAccessLogSuffix());
 
-        setAddDateStampToFirstAccessLogFile(
-                fac.getAddDateStampToFirstAccessLogFile());
+        setAddDateStampToFirstAccessLogFile(Boolean.valueOf(
+                accessLogConfig.getDateStampToFirstAccessLogFileEnabled()));
 
         // max-history-files
         deleteAllHistoryFiles = false;
@@ -1036,33 +1058,28 @@ public final class PEAccessLogValve
     }
 
     /**
-     * Rotates the old log file and creates a new log file on date change.
+     * Rotates the old log file and creates a new log file on date change regardless of the interval.
+     * If the interval is exceeded and if it's a new day it also rotates the file.
      */
-    private void rotateOnDateChange(){
+    private void rotateLog(){
         long systime = System.currentTimeMillis();
-        long rotationIntervalLong = rotationInterval * 1000L;
-        if (systime - lastAccessLogCreationTime > rotationIntervalLong) {
-            synchronized (this) {
-                systime = System.currentTimeMillis();
-                if (systime - lastAccessLogCreationTime
-                        > rotationIntervalLong) {
+        synchronized (this) {
+            if (rotationOnDateChange || (systime - lastAccessLogCreationTime > rotationInterval * 1000L)) {
+                // Rotate only if the formatted datestamps are
+                // different
+                String lastDateStamp = dateFormatter.get().format(
+                        new Date(lastAccessLogCreationTime));
+                String newDateStamp = dateFormatter.get().format(
+                        new Date(systime));
 
-                    // Rotate only if the formatted datestamps are
-                    // different
-                    String lastDateStamp = dateFormatter.get().format(
-                            new Date(lastAccessLogCreationTime));
-                    String newDateStamp = dateFormatter.get().format(
-                            new Date(systime));
+                lastAccessLogCreationTime = systime;
 
-                    lastAccessLogCreationTime = systime;
-
-                    if (!lastDateStamp.equals(newDateStamp)) {
-                        try {
-                            close();
-                            open(newDateStamp, false);
-                        } catch (IOException ex) {
-                            _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
-                        }
+                if (!lastDateStamp.equals(newDateStamp)) {
+                    try {
+                        close();
+                        open(newDateStamp, false);
+                    } catch (IOException ex) {
+                        _logger.log(Level.SEVERE, "Could not rotate the Access log file on date chnage", ex);
                     }
                 }
             }

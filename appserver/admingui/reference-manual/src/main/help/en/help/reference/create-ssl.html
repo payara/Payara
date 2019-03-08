@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-ssl</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-ssl</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-service.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-system-properties.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-ssl-1"></a><a id="GSRFM00058"></a><a id="create-ssl"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_ssl">create-ssl</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates and configures the SSL element in the selected HTTP listener,
+IIOP listener, or IIOP service</p>
+</div>
+<div id="sthref537" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-ssl [--help]
+[--target target]
+--type listener_or_service_type
+--certname cert_name
+[--ssl2enabled={false|true}] [--ssl2ciphers ss12ciphers]
+[--ssl3enabled={true|false}] [--tlsenabled={true|false}]
+[--ssl3tlsciphers ssl3tlsciphers]
+[--tlsrollbackenabled={true|false}]
+[--clientauthenabled={false|true}]
+[listener_id]</code></pre>
+</div>
+</div>
+<div id="sthref538" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-ssl</code> subcommand creates and configures the SSL element in
+the selected HTTP listener, IIOP listener, or IIOP service to enable
+secure communication on that listener/service.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref539" class="paragraph">
+<p>Options</p>
+</div>
+<div class="paragraph">
+<p>If an option has a short option name, then the short option precedes the
+long option name. Short options have one dash whereas long options have
+two dashes.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target on which you are configuring the ssl element. The
+following values are valid:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Specifies the server in which the iiop-service or HTTP/IIOP listener
+is to be configured for SSL.</p>
+</dd>
+<dt class="hdlist1">config</dt>
+<dd>
+<p>Specifies the configuration that contains the HTTP/IIOP listener or
+iiop-service for which SSL is to be configured.</p>
+</dd>
+<dt class="hdlist1">cluster</dt>
+<dd>
+<p>Specifies the cluster in which the HTTP/IIOP listener or
+iiop-service is to be configured for SSL. All the server instances
+in the cluster will get the SSL configuration for the respective
+listener or iiop-service.</p>
+</dd>
+<dt class="hdlist1">instance</dt>
+<dd>
+<p>Specifies the instance in which the HTTP/IIOP listener or
+iiop-service is to be configured for SSL.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--type</code></dt>
+<dd>
+<p>The type of service or listener for which the SSL is created. The type
+can be:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>network-listener</code></p>
+</li>
+<li>
+<p><code>http-listener</code></p>
+</li>
+<li>
+<p><code>iiop-listener</code></p>
+</li>
+<li>
+<p><code>iiop-service</code></p>
+</li>
+<li>
+<p><code>jmx-connector</code><br>
+When the type is <code>iiop-service</code>, the <code>ssl-client-config</code> along with
+the embedded <code>ssl</code> element is created in <code>domain.xml</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--certname</code></dt>
+<dd>
+<p>The nickname of the server certificate in the certificate database or
+the PKCS#11 token. The format of the name in the certificate is
+tokenname:nickname. For this property, the tokenname: is optional.</p>
+</dd>
+<dt class="hdlist1"><code>--ssl2enabled</code></dt>
+<dd>
+<p>Set this property to <code>true</code> to enable SSL2. The default value is
+<code>false</code>. If both SSL2 and SSL3 are enabled for a virtual server, the
+server tries SSL3 encryption first. In the event SSL3 encryption
+fails, the server then tries SSL2 encryption.</p>
+</dd>
+<dt class="hdlist1"><code>--ssl2ciphers</code></dt>
+<dd>
+<p>A comma-separated list of the SSL2 ciphers to be used. Ciphers not
+explicitly listed will be disabled for the target, even if those
+ciphers are available in the particular cipher suite you are using. If
+this option is not used, all supported ciphers are assumed to be
+enabled. Allowed values are:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>rc4</code></p>
+</li>
+<li>
+<p><code>rc4export</code></p>
+</li>
+<li>
+<p><code>rc2</code></p>
+</li>
+<li>
+<p><code>rc2export</code></p>
+</li>
+<li>
+<p><code>idea</code></p>
+</li>
+<li>
+<p><code>des</code></p>
+</li>
+<li>
+<p><code>desede3</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--ssl3enabled</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to disable SSL3. The default value is
+<code>true</code>. If both SSL2 and SSL3 are enabled for a virtual server, the
+server tries SSL3 encryption first. In the event SSL3 encryption
+fails, the server then tries SSL2 encryption.</p>
+</dd>
+<dt class="hdlist1"><code>--tlsenabled</code></dt>
+<dd>
+<p>Set this property to <code>false</code> to disable TLS. The default value is
+<code>true</code> It is good practice to enable TLS, which is a more secure
+version of SSL.</p>
+</dd>
+<dt class="hdlist1"><code>--ssl3tlsciphers</code></dt>
+<dd>
+<p>A comma-separated list of the SSL3 and/or TLS ciphers to be used.
+Ciphers not explicitly listed will be disabled for the target, even if
+those ciphers are available in the particular cipher suite you are
+using. If this option is not used, all supported ciphers are assumed
+to be enabled. Allowed values are:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>SSL_RSA_WITH_RC4_128_MD5</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_WITH_3DES_EDE_CBC_SHA</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_WITH_DES_CBC_SHA</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_EXPORT_WITH_RC4_40_MD5</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_WITH_NULL_MD5</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_WITH_RC4_128_SHA</code></p>
+</li>
+<li>
+<p><code>SSL_RSA_WITH_NULL_SHA</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--tlsrollbackenabled</code></dt>
+<dd>
+<p>Set to <code>true</code> (default) to enable TLS rollback. TLS rollback should be
+enabled for Microsoft Internet Explorer 5.0 and 5.5. This option is
+only valid when <code>-tlsenabled</code>=<code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--clientauthenabled</code></dt>
+<dd>
+<p>Set to <code>true</code> if you want SSL3 client authentication performed on
+every request independent of ACL-based access control. Default value
+is <code>false</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref540" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">listener_id</dt>
+<dd>
+<p>The ID of the HTTP or IIOP listener for which the SSL element is to be
+created. The listener_id is not required if the <code>--type</code> is
+<code>iiop-service</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref541" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM525"></a><a id="sthref542"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating an SSL element for an HTTP listener</p>
+</div>
+<div class="paragraph">
+<p>The following example shows how to create an SSL element for an HTTP
+listener named <code>http-listener-1</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-ssl
+--type http-listener
+--certname sampleCert http-listener-1
+Command create-ssl executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref543" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref544" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-ssl.html#delete-ssl-1"><code>delete-ssl</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-service.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-system-properties.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

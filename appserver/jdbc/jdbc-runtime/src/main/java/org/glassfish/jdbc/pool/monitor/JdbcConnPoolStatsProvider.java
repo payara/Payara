@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation]
+//Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.jdbc.pool.monitor;
 
@@ -590,7 +590,7 @@ public class JdbcConnPoolStatsProvider {
     //TODO V3 need this?
     /*@ProbeListener("glassfish:connector:jdbc-connection-pool:toString")
     public void toString(@ProbeParam("poolName") String poolName,
-            @ProbeParam("stackTrace") StringBuffer stackTrace) {
+            @ProbeParam("stackTrace") StringBuilder stackTrace) {
         logger.finest("toString(poolName) event received. " +
                 "poolName = " + poolName);
         if((poolName != null) && (poolName.equals(this.jdbcPoolName))) {
@@ -605,14 +605,14 @@ public class JdbcConnPoolStatsProvider {
         }
     }*/
 
-/*    private void lowLevelLog(StringBuffer stackTrace) {
+/*    private void lowLevelLog(StringBuilder stackTrace) {
         stackTrace.append("\n curNumConnUsed = " + numConnUsed.getCurrent());
         stackTrace.append("\n curNumConnFree = " + numConnFree.getCurrent());
         stackTrace.append("\n numConnCreated = " + numConnCreated.getCount());
         stackTrace.append("\n numConnDestroyed = " + numConnDestroyed.getCount());
     }
 
-    private void highLevelLog(StringBuffer stackTrace) {
+    private void highLevelLog(StringBuilder stackTrace) {
         lowLevelLog(stackTrace);
         stackTrace.append("\n numConnFailedValidation = " + numConnFailedValidation.getCount());
         stackTrace.append("\n numConnTimedOut = " + numConnTimedOut.getCount());

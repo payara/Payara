@@ -37,30 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
-import java.util.ArrayList;
-
 public class MessageSecurityDescriptor extends RuntimeDescriptor {
+    
+    private static final long serialVersionUID = -2753641653920939984L;
+    
     public static final String MESSAGE = "Message";
     public static final String REQUEST_PROTECTION = "RequestProtection";
     public static final String RESPONSE_PROTECTION = "ResponseProtection";
 
-    private ArrayList messageDescs = new ArrayList();
-    private ProtectionDescriptor requestProtectionDesc = null;
-    private ProtectionDescriptor responseProtectionDesc = null;
-
-    public MessageSecurityDescriptor() {}
+    private final List<MessageDescriptor> messageDescriptors = new ArrayList<>();
+    
+    private ProtectionDescriptor requestProtectionDesc;
+    private ProtectionDescriptor responseProtectionDesc;
 
     public void addMessageDescriptor(MessageDescriptor messageDesc) {
-       messageDescs.add(messageDesc);
+        messageDescriptors.add(messageDesc);
     }
-    
-    public ArrayList getMessageDescriptors() {
-        return messageDescs;
+
+    public List<MessageDescriptor> getMessageDescriptors() {
+        return messageDescriptors;
     }
 
     public ProtectionDescriptor getRequestProtectionDescriptor() {
@@ -77,15 +80,6 @@ public class MessageSecurityDescriptor extends RuntimeDescriptor {
 
     public void setResponseProtectionDescriptor(ProtectionDescriptor proDesc) {
         responseProtectionDesc = proDesc;
-    }
-
-    // return all the methods defined in the message elements inside this 
-    // message-security element
-    public ArrayList getAllMessageMethods() {
-        //FIXME
-        // need to convert operation to message
-        // need to union all the methods
-        return new ArrayList();
     }
 
 }

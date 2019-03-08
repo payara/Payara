@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,14 @@ package fish.payara.nucleus.hazelcast.contextproxy;
 
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.cache.Cache;
+import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
+import javax.cache.configuration.Configuration;
 import javax.cache.configuration.Factory;
 import javax.cache.event.CacheEntryCreatedListener;
 import javax.cache.event.CacheEntryEvent;
@@ -58,9 +62,6 @@ import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
-import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 
 /**
  * proxy the cache so we can set up invocation context for
@@ -70,28 +71,29 @@ import lombok.experimental.Delegate;
  * @param <K> key
  * @param <V> value
  */
-@RequiredArgsConstructor
 public class CacheProxy<K, V> implements Cache<K, V> {
-    @RequiredArgsConstructor
+
     private static class CPLProxy implements CompletionListener {
         @Override
         public void onCompletion() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            delegate.onCompletion();
+            try (Context ctx = ctxUtil.pushContext()) {
+                delegate.onCompletion();
+            }
         }
 
         @Override
         public void onException(Exception excptn) {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            delegate.onException(excptn);
+            try (Context ctx = ctxUtil.pushContext()) {
+                delegate.onException(excptn);
+            }
         }
 
-        private interface Exclusions {
-            void onCompletion();
-            void onException(Exception excptn);
+        public CPLProxy(CompletionListener delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
         }
 
-        private final @Delegate(excludes = Exclusions.class) CompletionListener delegate;
+        private final CompletionListener delegate;
         private final JavaEEContextUtil ctxUtil;
     }
 
@@ -119,47 +121,60 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         return delegate.invokeAll(set, ep, os);
     }
 
-    @RequiredArgsConstructor
     private static class CELProxy<K, V> implements CacheEntryCreatedListener<K, V>, CacheEntryExpiredListener<K, V>,
             CacheEntryRemovedListener<K, V>, CacheEntryUpdatedListener<K, V> {
         @Override
         public void onCreated(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
             CacheEntryCreatedListener<K, V> listener = (CacheEntryCreatedListener<K, V>)delegate;
-            @Cleanup Context ctx = ctxUtil.pushRequestContext();
-            listener.onCreated(itrbl);
+            try (Context ctx = ctxUtil.pushRequestContext()) {
+                listener.onCreated(itrbl);
+            }
         }
 
         @Override
         public void onExpired(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
             CacheEntryExpiredListener<K, V> listener = (CacheEntryExpiredListener<K, V>)delegate;
-            @Cleanup Context ctx = ctxUtil.pushRequestContext();
-            listener.onExpired(itrbl);
+            try (Context ctx = ctxUtil.pushRequestContext()) {
+                listener.onExpired(itrbl);
+            }
         }
 
         @Override
         public void onRemoved(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
             CacheEntryRemovedListener<K, V> listener = (CacheEntryRemovedListener<K, V>)delegate;
-            @Cleanup Context ctx = ctxUtil.pushRequestContext();
-            listener.onRemoved(itrbl);
+            try (Context ctx = ctxUtil.pushRequestContext()) {
+                listener.onRemoved(itrbl);
+            }
         }
 
         @Override
         public void onUpdated(Iterable<CacheEntryEvent<? extends K, ? extends V>> itrbl) throws CacheEntryListenerException {
             CacheEntryUpdatedListener<K, V> listener = (CacheEntryUpdatedListener<K, V>)delegate;
-            @Cleanup Context ctx = ctxUtil.pushRequestContext();
-            listener.onUpdated(itrbl);
+            try (Context ctx = ctxUtil.pushRequestContext()) {
+                listener.onUpdated(itrbl);
+            }
+        }
+
+        public CELProxy(CacheEntryListener<K, V> delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
         }
 
         private final CacheEntryListener<K, V> delegate;
         private final JavaEEContextUtil ctxUtil;
     }
 
-    @RequiredArgsConstructor
     private static class CELFProxy<K, V> implements Factory<CacheEntryListener<? super K, ? super V>> {
         @Override
         public CacheEntryListener<? super K, ? super V> create() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            return new CELProxy<>(delegate.create(), ctxUtil);
+            try (Context ctx = ctxUtil.pushContext()) {
+                return new CELProxy<>(delegate.create(), ctxUtil);
+            }
+        }
+
+        public CELFProxy(Factory<CacheEntryListener<? super K, ? super V>> delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
         }
 
         private final Factory<CacheEntryListener<? super K, ? super V>> delegate;
@@ -167,24 +182,34 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         private static final long serialVersionUID = 1L;
     }
 
-    @RequiredArgsConstructor
     private static class CEEVProxy<K, V> implements CacheEntryEventFilter<K, V> {
         @Override
         public boolean evaluate(CacheEntryEvent<? extends K, ? extends V> cee) throws CacheEntryListenerException {
-            @Cleanup Context ctx = ctxUtil.pushRequestContext();
-            return delegate.evaluate(cee);
+            try (Context ctx = ctxUtil.pushRequestContext()) {
+                return delegate.evaluate(cee);
+            }
+        }
+
+        public CEEVProxy(CacheEntryEventFilter<K, V> delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
         }
 
         private final CacheEntryEventFilter<K, V> delegate;
         private final JavaEEContextUtil ctxUtil;
     }
 
-    @RequiredArgsConstructor
     private static class CEEVFProxy<K, V> implements Factory<CacheEntryEventFilter<? super K, ? super V>> {
         @Override
         public CacheEntryEventFilter<? super K, ? super V> create() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            return new CEEVProxy<>(delegate.create(), ctxUtil);
+            try (Context ctx = ctxUtil.pushContext()) {
+                return new CEEVProxy<>(delegate.create(), ctxUtil);
+            }
+        }
+
+        public CEEVFProxy(Factory<CacheEntryEventFilter<? super K, ? super V>> delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
         }
 
         private final Factory<CacheEntryEventFilter<? super K, ? super V>> delegate;
@@ -192,32 +217,39 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         private static final long serialVersionUID = 1L;
     }
 
-    @RequiredArgsConstructor
     private static class CELCProxy<K, V> implements CacheEntryListenerConfiguration<K, V> {
         @Override
         public Factory<CacheEntryListener<? super K, ? super V>> getCacheEntryListenerFactory() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            return new CELFProxy<>(delegate.getCacheEntryListenerFactory(), ctxUtil);
+            try (Context ctx = ctxUtil.pushContext()) {
+                return new CELFProxy<>(delegate.getCacheEntryListenerFactory(), ctxUtil);
+            }
         }
 
         @Override
         public boolean isOldValueRequired() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            return delegate.isOldValueRequired();
+            try (Context ctx = ctxUtil.pushContext()) {
+                return delegate.isOldValueRequired();
+            }
         }
 
         @Override
         public Factory<CacheEntryEventFilter<? super K, ? super V>> getCacheEntryEventFilterFactory() {
-            @Cleanup Context ctx = ctxUtil.pushContext();
-            return new CEEVFProxy<>(delegate.getCacheEntryEventFilterFactory(), ctxUtil);
+            try (Context ctx = ctxUtil.pushContext()) {
+                return new CEEVFProxy<>(delegate.getCacheEntryEventFilterFactory(), ctxUtil);
+            }
         }
 
         @Override
         public boolean isSynchronous() {
-            @Cleanup Context ctx = ctxUtil.pushContext();;
-            return delegate.isSynchronous();
+            try (Context ctx = ctxUtil.pushContext()) {
+                return delegate.isSynchronous();
+            }
         }
 
+        public CELCProxy(CacheEntryListenerConfiguration<K, V> delegate, JavaEEContextUtil ctxUtil) {
+            this.delegate = delegate;
+            this.ctxUtil = ctxUtil;
+        }
 
         private final CacheEntryListenerConfiguration<K, V> delegate;
         private final JavaEEContextUtil ctxUtil;
@@ -233,14 +265,131 @@ public class CacheProxy<K, V> implements Cache<K, V> {
         delegate.registerCacheEntryListener(celc);
     }
 
-    private interface Exclusions<K, V> {
-        void loadAll(Set<? extends K> set, boolean bln, CompletionListener cl);
-        <T> T invoke(K k, EntryProcessor<K, V, T> ep, Object... os) throws EntryProcessorException;
-        <T> Map<K, EntryProcessorResult<T>> invokeAll(Set<? extends K> set, EntryProcessor<K, V, T> ep, Object... os);
-        void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> celc);
+    private final Cache<K, V> delegate;
+    private final JavaEEContextUtil ctxUtil;
+
+    @Override
+    public V get(K key) {
+        return delegate.get(key);
     }
 
-    
-    private final @Delegate(excludes = Exclusions.class) Cache<K, V> delegate;
-    private final JavaEEContextUtil ctxUtil;
+    @Override
+    public Map<K, V> getAll(Set<? extends K> keys) {
+        return delegate.getAll(keys);
+    }
+
+    public CacheProxy(Cache<K, V> delegate, JavaEEContextUtil ctxUtil) {
+        this.delegate = delegate;
+        this.ctxUtil = ctxUtil;
+    }
+
+    @Override
+    public boolean containsKey(K key) {
+        return delegate.containsKey(key);
+    }
+
+    @Override
+    public void put(K key, V value) {
+        delegate.put(key, value);
+    }
+
+    @Override
+    public V getAndPut(K key, V value) {
+        return delegate.getAndPut(key, value);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> map) {
+        delegate.putAll(map);
+    }
+
+    @Override
+    public boolean putIfAbsent(K key, V value) {
+        return delegate.putIfAbsent(key, value);
+    }
+
+    @Override
+    public boolean remove(K key) {
+        return delegate.remove(key);
+    }
+
+    @Override
+    public boolean remove(K key, V oldValue) {
+        return delegate.remove(key, oldValue);
+    }
+
+    @Override
+    public V getAndRemove(K key) {
+        return delegate.getAndRemove(key);
+    }
+
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        return delegate.replace(key, oldValue, newValue);
+    }
+
+    @Override
+    public boolean replace(K key, V value) {
+        return delegate.replace(key, value);
+    }
+
+    @Override
+    public V getAndReplace(K key, V value) {
+        return delegate.getAndReplace(key, value);
+    }
+
+    @Override
+    public void removeAll(Set<? extends K> keys) {
+        delegate.removeAll(keys);
+    }
+
+    @Override
+    public void removeAll() {
+        delegate.removeAll();
+    }
+
+    @Override
+    public void clear() {
+        delegate.clear();
+    }
+
+    @Override
+    public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
+        return delegate.getConfiguration(clazz);
+    }
+
+    @Override
+    public String getName() {
+        return delegate.getName();
+    }
+
+    @Override
+    public CacheManager getCacheManager() {
+        return delegate.getCacheManager();
+    }
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> clazz) {
+        return delegate.unwrap(clazz);
+    }
+
+    @Override
+    public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
+        delegate.deregisterCacheEntryListener(cacheEntryListenerConfiguration);
+    }
+
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        return delegate.iterator();
+    }
 }

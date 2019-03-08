@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.client.jws.boot;
 
 import java.io.File;
@@ -207,7 +207,7 @@ public abstract class ClassPathManager {
                 "com.sun.enterprise.admin.servermgmt.DomainConfig," /* appserv-admin */ +
                 "com.sun.enterprise.deployment.client.DeploymentClientUtils," /* appserv-deployment-client */ +
                 "javax.ejb.EJB," /* javaee */ +
-                "javax.security.auth.message.module.ServerAuthModule," /* jmac-api */ +
+                "javax.security.auth.message.module.ServerAuthModule," /* jaspic-api */ +
                 "com.sun.appserv.management.ext.logging.LogAnalyzer," /* appserv-ext */ + 
                 "com.sun.mail.iap.Argument," /* mail */ +
                 "com.sun.activation.viewers.ImageViewer," /* activation */ +

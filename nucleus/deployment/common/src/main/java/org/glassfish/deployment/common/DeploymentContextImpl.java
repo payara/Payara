@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -72,7 +73,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
@@ -678,6 +678,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
                 for (String className : classNamesToClean) {
                     transientAppMetaData.remove(className);
                 }
+                com.sun.enterprise.deploy.shared.FileArchive.clearCache();
             }
         }
         actionReport = null;

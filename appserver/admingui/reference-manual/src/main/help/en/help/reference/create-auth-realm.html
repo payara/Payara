@@ -1,0 +1,507 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-auth-realm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-auth-realm</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-audit-module.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-cluster.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-auth-realm-1"></a><a id="GSRFM00015"></a><a id="create-auth-realm"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_auth_realm">create-auth-realm</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds the named authentication realm</p>
+</div>
+<div id="sthref139" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-auth-realm [--help]
+--classname realm_class [--property(name=value)[:name=value]*]
+[--target target_name] auth_realm_name</code></pre>
+</div>
+</div>
+<div id="sthref140" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-auth-realm</code> subcommand adds the named authentication realm.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref141" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target on which you are creating the realm. Valid values
+are<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the realm on the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Creates the realm in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the realm on all server instances in the specified cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the realm on a specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--classname</code></dt>
+<dd>
+<p>Java class which implements this realm. These include
+<code>com.sun.enterprise.security.auth.realm.file.FileRealm</code>,
+<code>com.sun.enterprise.security.auth.realm.certificate.CertificateRealm</code>,
+<code>com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm</code>,
+<code>com.sun.enterprise.security.auth.realm.ldap.LDAPRealm</code>,
+<code>com.sun.enterprise.security.auth.realm.ldap.PamRealm</code>, and
+<code>com.sun.enterprise.security.auth.realm.solaris.SolarisRealm</code>, or a
+custom realm.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name-value pairs for configuring the authentication
+realm. Authentication realms require provider-specific properties,
+which vary based on implementation.<br>
+The following properties are common to all of the supported realms,
+which include <code>FileRealm</code>, <code>CertificateRealm</code>, <code>JDBCRealm</code>,
+<code>LDAPRealm</code>, PamRealm, and <code>SolarisRealm</code>.<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>jaas-context</code></dt>
+<dd>
+<p>Specifies the Java Authentication and Authorization Service (JAAS)
+context.</p>
+</dd>
+<dt class="hdlist1"><code>assign-groups</code></dt>
+<dd>
+<p>  (Optional) If this property is set, its value is taken to be a
+  comma-separated list of group names. All clients who present valid
+  certificates are assigned membership to these groups for the
+  purposes of authorization decisions in the web and EJB containers.<br>
+Specific to each realm, you can specify the following properties.<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>You can specify the following properties for <code>FileRealm</code>:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>file</code></dt>
+<dd>
+<p>Specifies the file that stores user names, passwords, and group
+names. The default is domain-dir`/config/keyfile`.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>You can specify the following properties for <code>CertificateRealm</code>:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>LoginModule</code></dt>
+<dd>
+<p>Specifies the name of a JAAS <code>LoginModule</code> to use for performing
+authentication. To use a JAAS <code>LoginModule</code>, you must first create
+an implementation of the javax.security.auth.spi.LoginModule
+interface, and then plug the module into a <code>jaas-context</code>. For more
+information, see "<a href="../security-guide/system-security.html#GSSCG00196">Custom Authentication of Client
+Certificate in SSL Mutual Authentication</a>" in GlassFish Server Open
+Source Edition Security Guide.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>You can specify the following properties for <code>JDBCRealm</code>:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>datasource-jndi</code></dt>
+<dd>
+<p>Specifies the <code>jndi-name</code> of the <code>jdbc-resource</code> for the database.</p>
+</dd>
+<dt class="hdlist1"><code>user-table</code></dt>
+<dd>
+<p>Specifies the name of the user table in the database.</p>
+</dd>
+<dt class="hdlist1"><code>user-name-column</code></dt>
+<dd>
+<p>Specifies the name of the user name column in the database&#8217;s user
+table.</p>
+</dd>
+<dt class="hdlist1"><code>password-column</code></dt>
+<dd>
+<p>Specifies the name of the password column in the database&#8217;s user
+table.</p>
+</dd>
+<dt class="hdlist1"><code>group-table</code></dt>
+<dd>
+<p>Specifies the name of the group table in the database.</p>
+</dd>
+<dt class="hdlist1"><code>group-table</code></dt>
+<dd>
+<p>Specify the group table for an authentication realm of class
+<code>JDBCRealm</code>.</p>
+</dd>
+<dt class="hdlist1"><code>group-name-column</code></dt>
+<dd>
+<p>Specifies the name of the group name column in the database&#8217;s group
+table.</p>
+</dd>
+<dt class="hdlist1"><code>db-user</code></dt>
+<dd>
+<p>(Optional) Allows you to specify the database user name in the realm
+instead of the <code>jdbc-connection-pool</code>. This prevents other
+applications from looking up the database, getting a connection, and
+browsing the user table. By default, the <code>jdbc-connection-pool</code>
+configuration is used.</p>
+</dd>
+<dt class="hdlist1"><code>db-password</code></dt>
+<dd>
+<p>(Optional) Allows you to specify the database password in the realm
+instead of the <code>jdbc-connection-pool</code>. This prevents other
+applications from looking up the database, getting a connection, and
+browsing the user table. By default, the <code>jdbc-connection-pool</code>
+configuration is used.</p>
+</dd>
+<dt class="hdlist1"><code>group-table</code></dt>
+<dd>
+<p>Specifies the name of the group table in the database.</p>
+</dd>
+<dt class="hdlist1"><code>digest-algorithm</code></dt>
+<dd>
+<p>(Optional) Specifies the digest algorithm. The default is <code>SHA-256</code>.
+You can use any algorithm supported in the JDK, or none.<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>In versions of \{product---name} prior to 5.0, the default algorithm
+was <code>MD5</code>. If you have applications that depend on the <code>MD5</code>
+algorithm, you can override the default <code>SHA-25</code> algorithm by using
+the <code>asadmin set</code> subcommand:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set server.security-service.property.default-digest-algorithm=MD5</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use the <code>asadmin get</code> subcommand to determine what algorithm
+is currently being used:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; get server.security-service.property.default-digest-algorithm</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Also note that, to maintain backward compatibility, if an upgrade is
+performed from \{product---name} v2.x or v3.0.x to \{product---name}
+5.0, the default algorithm is automatically set to <code>MD5</code> in cases
+where the digest algorithm had not been explicitly set in the older
+\{product---name} version.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>digestrealm-password-enc-algorithm</code></dt>
+<dd>
+<p>(Optional) Specifies the algorithm for encrypting passwords stored
+in the database.<br></p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>It is a security risk not to specify a password encryption
+algorithm.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>encoding</code></dt>
+<dd>
+<p>(Optional) Specifies the encoding. Allowed values are <code>Hex</code> and
+<code>Base64</code>. If digest-algorithm is specified, the default is <code>Hex</code>. If
+<code>digest-algorithm</code> is not specified, by default no encoding is
+specified.</p>
+</dd>
+<dt class="hdlist1"><code>charset</code></dt>
+<dd>
+<p>(Optional) Specifies the <code>charset</code> for the digest algorithm.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>You can specify the following properties for <code>LDAPRealm</code>:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>directory</code></dt>
+<dd>
+<p>Specifies the LDAP URL to your server.</p>
+</dd>
+<dt class="hdlist1"><code>base-dn</code></dt>
+<dd>
+<p>Specifies the LDAP base DN for the location of user data. This base
+DN can be at any level above the user data, since a tree scope
+search is performed. The smaller the search tree, the better the
+performance.</p>
+</dd>
+<dt class="hdlist1"><code>search-filter</code></dt>
+<dd>
+<p>(Optional) Specifies the search filter to use to find the user. The
+default is <code>uid=%s</code> (<code>%s</code> expands to the subject name).</p>
+</dd>
+<dt class="hdlist1"><code>group-base-dn</code></dt>
+<dd>
+<p>(Optional) Specifies the base DN for the location of groups data. By
+default, it is same as the <code>base-dn</code>, but it can be tuned, if
+necessary.</p>
+</dd>
+<dt class="hdlist1"><code>group-search-filter</code></dt>
+<dd>
+<p>(Optional) Specifies the search filter to find group memberships for
+the user. The default is <code>uniquemember=%d</code> (<code>%d</code> expands to the user
+<code>elementDN</code>).</p>
+</dd>
+<dt class="hdlist1"><code>group-target</code></dt>
+<dd>
+<p>(Optional) Specifies the LDAP attribute name that contains group
+name entries. The default is <code>CN</code>.</p>
+</dd>
+<dt class="hdlist1"><code>search-bind-dn</code></dt>
+<dd>
+<p>(Optional) Specifies an optional DN used to authenticate to the
+directory for performing the search-filter lookup. Only required for
+directories that do not allow anonymous search.</p>
+</dd>
+<dt class="hdlist1"><code>search-bind-password</code></dt>
+<dd>
+<p>(Optional) Specifies the LDAP password for the DN given in
+<code>search-bind-dn</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref142" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">auth_realm_name</dt>
+<dd>
+<p>A short name for the realm. This name is used to refer to the realm
+from, for example, <code>web.xml</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref143" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM460"></a><a id="sthref144"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a New Authentication Realm</p>
+</div>
+<div class="paragraph">
+<p>This example creates a new file realm.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-auth-realm
+--classname com.sun.enterprise.security.auth.realm.file.FileRealm
+--property file=${com.sun.aas.instanceRoot}/config/
+admin-keyfile:jaas-context=fileRealm file
+Command create-auth-realm executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where <code>file</code> is the authentication realm created.</p>
+</div>
+<div id="sthref145" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref146" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-auth-realm.html#delete-auth-realm-1"><code>delete-auth-realm</code>(1)</a>,
+<a href="list-auth-realms.html#list-auth-realms-1"><code>list-auth-realms</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-audit-module.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-cluster.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

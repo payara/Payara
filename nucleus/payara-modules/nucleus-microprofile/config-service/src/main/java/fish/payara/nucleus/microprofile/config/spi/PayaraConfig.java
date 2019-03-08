@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
@@ -70,7 +72,7 @@ public class PayaraConfig implements Config {
 
     public PayaraConfig(List<ConfigSource> configSources, Map<Type,Converter> convertersMap) {
         this.configSources = configSources;
-        this.converters = new HashMap<>();
+        this.converters = new ConcurrentHashMap<>();
         this.converters.putAll(convertersMap);
         Collections.sort(configSources, new ConfigSourceComparator());
     }

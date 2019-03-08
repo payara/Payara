@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -50,9 +50,9 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 
 import java.util.Map;
-import java.util.Hashtable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Singleton provider that uses Application ClassLoader to differentiate
@@ -86,8 +86,8 @@ public class ACLSingletonProvider extends SingletonProvider
 
     private static class ACLSingleton<T> implements Singleton<T> {
 
-      // use Hashtable for concurrent access
-      private final Map<ClassLoader, T> store = new Hashtable<ClassLoader, T>();
+      private final Map<ClassLoader, T> store = new ConcurrentHashMap<>();
+      private final Map<String, T> storeById = new ConcurrentHashMap<>();
       private ClassLoader ccl = Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
 
       // Can't assume bootstrap loader as null. That's more of a convention.
@@ -113,7 +113,10 @@ public class ACLSingletonProvider extends SingletonProvider
         T instance = store.get(acl);
         if (instance == null)
         {
-          throw new IllegalStateException("Singleton not set for " + acl);
+            instance = storeById.get(id);
+            if (instance == null) {
+                throw new IllegalStateException("Singleton not set for " + acl);
+            }
         }
         return instance;
       }
@@ -191,17 +194,19 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader());
+        return store.containsKey(getClassLoader()) || storeById.containsKey(id);
       }
 
       @Override
       public void set(String id, T object) {
         store.put(getClassLoader(), object);
+        storeById.put(id, object);
       }
 
       @Override
       public void clear(String id) {
         store.remove(getClassLoader());
+        storeById.remove(id);
       }
     }
 }

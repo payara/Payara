@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 -->
 
@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common-web</artifactId>
     <name>Glassfish Commons for Web Profile Distribution </name>
@@ -267,7 +267,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
-            <artifactId>inmemory.jacc.provider</artifactId>
+            <artifactId>jacc.provider.inmemory</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>jacc.provider.file</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -299,8 +304,8 @@
             <artifactId>javax.management.j2ee-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.security.jacc</groupId>

@@ -1,0 +1,93 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-connectorresources" text="Managing Connector Resources" expand="false">
+      <tocitem target="task-connectorresourcenew" text="To Create a Connector Resource" expand="false"></tocitem>
+      <tocitem target="task-connectorresourceedit" text="To Edit a Connector Resource" expand="false"></tocitem>
+      <tocitem target="task-connectorresourcesdelete" text="To Delete a Connector Resource" expand="false"></tocitem>
+      <tocitem target="task-connectorconnectionpoolnew" text="To Create a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-connectorconnectionpooledit" text="To Edit a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-connectorconnectionpooladvance" text="To Edit Connector Connection Pool Advanced Attributes" expand="false"></tocitem>
+      <tocitem target="task-connectorconnectionpoolproperty" text="To Edit Connector Connection Pool Properties" expand="false"></tocitem>
+      <tocitem target="task-connectorsecuritymapnew" text="To Create a Security Map for a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-connectorsecuritymapedit" text="To Edit a Security Map for a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-connectorsecuritymapdel" text="To Delete a Security Map for a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-connectorconnectionpooldel" text="To Delete a Connector Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-setupeisaccess" text="To Set Up EIS Access" expand="false"></tocitem>
+      <tocitem target="task-adminobjectnew" text="To Create an Administered Object Resource" expand="false"></tocitem>
+      <tocitem target="task-adminobjectedit" text="To Edit an Administered Object Resource" expand="false"></tocitem>
+      <tocitem target="task-administeredobjectresourcedelete" text="To Delete an Administered Object Resource" expand="false"></tocitem>
+      <tocitem target="task-worksecuritymapnew" text="To Create a Work Security Map" expand="false"></tocitem>
+      <tocitem target="task-worksecuritymapedit" text="To Edit a Work Security Map" expand="false"></tocitem>
+      <tocitem target="task-worksecuritymapdelete" text="To Delete a Work Security Map" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-resourceadapterconfig" text="Configuring Resource Adapters" expand="false">
+      <tocitem target="task-resourceadapterconfignew" text="To Create a Resource Adapter Config" expand="false"></tocitem>
+      <tocitem target="task-resourceadapterconfigedit" text="To Edit a Resource Adapter Config" expand="false"></tocitem>
+      <tocitem target="task-resourceadapterconfigdelete" text="To Delete a Resource Adapter Config" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-connectionservice" text="Configuring the Connector Service" expand="false">
+      <tocitem target="task-connectionservice" text="To Configure the Connector Service" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-resources" text="Resources" expand="false">
+      <tocitem target="ref-group-connectorresources" text="Connectors" expand="false">
+        <tocitem target="ref-connectors" text="Connectors" expand="false"></tocitem>
+        <tocitem target="ref-group-connectorresourcessub" text="Connector Resources" expand="false">
+          <tocitem target="ref-connectorresources" text="Connector Resources" expand="false"></tocitem>
+          <tocitem target="ref-connectorresourcenew" text="New Connector Resource" expand="false"></tocitem>
+          <tocitem target="ref-connectorresourceedit" text="Edit Connector Resource" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-connectorconnectionpools" text="Connector Connection Pools" expand="false">
+          <tocitem target="ref-connectorconnectionpools" text="Connector Connection Pools" expand="false"></tocitem>
+          <tocitem target="ref-connectorconnectionpoolnew1" text="New Connector Connection Pool (Step 1 of 2)" expand="false"></tocitem>
+          <tocitem target="ref-connectorconnectionpoolnew2" text="New Connector Connection Pool (Step 2 of 2)" expand="false"></tocitem>
+          <tocitem target="ref-connectorconnectionpooledit" text="Edit Connector Connection Pool" expand="false"></tocitem>
+          <tocitem target="ref-connectorconnectionpooladvance" text="Edit Connector Connection Pool Advanced Attributes" expand="false"></tocitem>
+          <tocitem target="ref-connectorconnectionpoolproperty" text="Edit Connector Connection Pool Properties" expand="false"></tocitem>
+          <tocitem target="ref-connectorsecuritymaps" text="Connector Connection Pool Security Maps" expand="false"></tocitem>
+          <tocitem target="ref-connectorsecuritymapnew" text="New Connector Connection Pool Security Map" expand="false"></tocitem>
+          <tocitem target="ref-connectorsecuritymapedit" text="Edit Connector Connection Pool Security Map" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-adminobjectresources" text="Admin Object Resources" expand="false">
+          <tocitem target="ref-adminobjectresources" text="Admin Object Resources" expand="false"></tocitem>
+          <tocitem target="ref-adminobjectnew" text="New Admin Object Resource" expand="false"></tocitem>
+          <tocitem target="ref-adminobjectedit" text="Edit Admin Object Resource" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-worksecuritymaps" text="Work Security Maps" expand="false">
+          <tocitem target="ref-worksecuritymaps" text="Work Security Maps" expand="false"></tocitem>
+          <tocitem target="ref-worksecuritymapnew" text="New Work Security Map" expand="false"></tocitem>
+          <tocitem target="ref-worksecuritymapedit" text="Edit Work Security Map" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+      <tocitem target="ref-group-resourceadapterconfig" text="Resource Adapter Configs" expand="false">
+        <tocitem target="ref-resourceadapterconfig" text="Resource Adapter Configs" expand="false"></tocitem>
+        <tocitem target="ref-resourceadapterconfignew" text="New Resource Adapter Config" expand="false"></tocitem>
+        <tocitem target="ref-resourceadapterconfigedit" text="Edit Resource Adapter Config" expand="false"></tocitem>
+      </tocitem>
+    </tocitem>
+    <tocitem target="ref-group-configuration" text="Configurations" expand="false">
+      <tocitem target="ref-group-connectionservice" text="Connector Service" expand="false">
+        <tocitem target="ref-connectionservice" text="Connector Service" expand="false"></tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

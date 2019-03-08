@@ -1,0 +1,56 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="context services">
+    <indexitem text="creating (reference)" target="ref-contextservicenew"></indexitem>
+    <indexitem text="creating (task)" target="task-contextservicecreate"></indexitem>
+    <indexitem text="deleting (reference)" target="ref-contextservices"></indexitem>
+    <indexitem text="deleting (task)" target="task-contextservicedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-contextserviceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-contextserviceedit"></indexitem>
+    <indexitem text="viewing (reference)" target="ref-contextservices"></indexitem>
+  </indexitem>
+  <indexitem text="managed executor services">
+    <indexitem text="creating (reference)" target="ref-executorservicenew"></indexitem>
+    <indexitem text="creating (task)" target="task-managedexecutorservicecreate"></indexitem>
+    <indexitem text="deleting (task)" target="task-managedexecutorservicedelete"></indexitem>
+    <indexitem text="deletinging (reference)" target="ref-executorservices"></indexitem>
+    <indexitem text="editing (reference)" target="ref-executorserviceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-managedexecutorserviceedit"></indexitem>
+    <indexitem text="viewing (reference)" target="ref-executorservices"></indexitem>
+  </indexitem>
+  <indexitem text="managed scheduled executor services">
+    <indexitem text="creating (reference)" target="ref-scheduledexecutorservicenew"></indexitem>
+    <indexitem text="creating (task)" target="task-managedscheduledexecutorservicecreate"></indexitem>
+    <indexitem text="deleting (reference)" target="ref-scheduledexecutorservices"></indexitem>
+    <indexitem text="deleting (task)" target="task-managedscheduledexecutorservicedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-scheduledexecutorserviceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-managedscheduledexecutorserviceedit"></indexitem>
+    <indexitem text="viewing (reference)" target="ref-scheduledexecutorservices"></indexitem>
+  </indexitem>
+  <indexitem text="managed thread factories">
+    <indexitem text="creating (reference)" target="ref-threadfactorynew"></indexitem>
+    <indexitem text="creating (task)" target="task-managedthreadfactorynew"></indexitem>
+    <indexitem text="deleting (reference)" target="ref-threadfactories"></indexitem>
+    <indexitem text="deleting (task)" target="task-managedthreadfactorydelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-threadfactoryedit"></indexitem>
+    <indexitem text="editing (task)" target="task-managedthreadfactoryedit"></indexitem>
+    <indexitem text="viewing (reference)" target="ref-threadfactories"></indexitem>
+  </indexitem>
+</index>

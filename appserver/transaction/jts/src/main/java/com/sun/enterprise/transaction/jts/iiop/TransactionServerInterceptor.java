@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package com.sun.enterprise.transaction.jts.iiop;
 
 import org.omg.CORBA.LocalObject;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 import org.omg.PortableInterceptor.ServerRequestInfo;
-import com.sun.corba.ee.spi.legacy.interceptor.RequestInfoExt;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -57,31 +57,30 @@ public class TransactionServerInterceptor extends LocalObject
     private int order;
 
     private JavaEETransactionManager tm;
-    private GlassFishORBHelper gfORBHelper = null;
+    private GlassFishORBHelper gfORBHelper;
 
     /**
      * Construct the interceptor.
-     * @param the order in which the interceptor should run.
+     * @param order in which the interceptor should run.
      */
     public TransactionServerInterceptor(int order, ServiceLocator habitat) {
-	this.order = order;
-
-        gfORBHelper = habitat.getService(GlassFishORBHelper.class);
-        tm = habitat.getService(JavaEETransactionManager.class);
+	    this.order = order;
+        this.gfORBHelper = habitat.getService(GlassFishORBHelper.class);
+        this.tm = habitat.getService(JavaEETransactionManager.class);
     }
 
-    public String name() { 
-        return name; 
+    public String name() {
+        return name;
     }
 
     public void receive_request_service_contexts(ServerRequestInfo sri) { }
 
     public int compareTo(Object o)
     {
-	int otherOrder = -1;
-	if( o instanceof TransactionServerInterceptor) {
-            otherOrder = ((TransactionServerInterceptor)o).order;
-	}
+        int otherOrder = -1;
+        if( o instanceof TransactionServerInterceptor) {
+                otherOrder = ((TransactionServerInterceptor)o).order;
+        }
         if (order < otherOrder) {
             return -1;
         } else if (order == otherOrder) {
@@ -93,7 +92,7 @@ public class TransactionServerInterceptor extends LocalObject
     public void destroy() {
     }
 
-    public void receive_request(ServerRequestInfo sri) { 
+    public void receive_request(ServerRequestInfo sri) {
     }
 
     public void send_reply(ServerRequestInfo sri) {
@@ -110,12 +109,12 @@ public class TransactionServerInterceptor extends LocalObject
 
     private void checkTransaction(ServerRequestInfo sri) {
         try {
-	    if ( tm != null )
-	        tm.checkTransactionImport();
+            if ( tm != null )
+                tm.checkTransactionImport();
         } finally {
-            if (gfORBHelper.isEjbCall(sri)) {
+            if (gfORBHelper.isEjbCall(sri) && tm != null) {
                 tm.cleanTxnTimeout();
             }
-	}
+    	}
     }
 }

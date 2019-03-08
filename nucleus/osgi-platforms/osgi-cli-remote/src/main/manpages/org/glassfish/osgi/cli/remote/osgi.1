@@ -1,0 +1,150 @@
+osgi(1)                   asadmin Utility Subcommands                  osgi(1)
+
+NAME
+       osgi - delegates the command line to the Apache Felix Gogo remote shell
+       for the execution of OSGi shell commands
+
+SYNOPSIS
+           osgi [--help]
+           [--session session]
+           [--session-id session-id]
+           [--instance instance]
+           [command_line]
+
+DESCRIPTION
+       The osgi subcommand delegates the command line to the Apache Felix Gogo
+       remote shell for the execution of OSGi shell commands. Commands are
+       executed by the remote shell and results are returned by the asadmin
+       utility. The remote shell is provided with GlassFish Server and used to
+       administer and inspect the OSGi runtime.
+
+       Multiple command-line sessions can be created. Use the --session and
+       --session-id options to run commands in a specific command-line
+       session. If no session is specified, a new session is created to run
+       commands and closed when execution completes.
+
+       A related subcommand is the osgi-shell subcommand, which enables you to
+       run multiple commands from a file or run commands interactively. For
+       more information about the osgi-shell subcommand, see the osgi-shell(1)
+       help page.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the osgi subcommand.
+
+       --session
+           Performs command-line session operations. Valid values are:
+
+           new
+               Creates a new session and returns a session ID.
+
+           stop
+               Stops the session with the specified session ID.
+
+           list
+               Lists all active sessions.
+
+           execute
+               Runs a command in the session with the specified session ID.
+
+       --session-id
+           Specifies the session ID for command-line session operations.
+
+       --instance
+           Specifies the server instance to which the command is being
+           delegated.
+
+           The default is the domain administration server (DAS). The DAS must
+           be running to run a command on another instance.
+
+OPERANDS
+       command_line
+           The complete command-line syntax as provided for commands in the
+           Apache Felix Gogo remote shell.
+
+EXAMPLES
+       Example 1, Listing Apache Felix Gogo Remote Shell Commands
+           This example lists the Apache Felix Gogo remote shell commands that
+           can be used with the osgi subcommand.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> osgi help
+               felix:bundlelevel
+               felix:cd
+               felix:frameworklevel
+               felix:headers
+               felix:help
+               felix:inspect
+               felix:install
+               felix:lb
+               felix:log
+               felix:ls
+               felix:refresh
+               felix:resolve
+               ...
+               gogo:cat
+               gogo:each
+               gogo:echo
+               gogo:format
+               gogo:getopt
+               gogo:gosh
+               gogo:grep
+               ...
+               Command osgi executed successfully.
+
+       Example 2, Running a Remote Shell Command
+           This example runs the Felix Remote Shell Command lb without any
+           arguments to list all installed OSGi bundles.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> osgi lb
+               START LEVEL 2
+               ID|State      |Level|Name
+                0|Active     |    0|System Bundle
+                1|Active     |    1|Metro Web Services API OSGi Bundle
+                2|Active     |    1|javax.annotation API
+                3|Active     |    1|jaxb-api
+               ...
+               Command osgi executed successfully.
+
+       Example 3, Running Commands That Create and Target a Specific
+       Command-Line Session
+           This example runs commands that create and target a specific
+           command-line session.
+
+           Some lines of output are omitted from this example for readability.
+
+               asadmin> osgi --session new
+               9537e570-0def-4f2e-9c19-bc8f51a8082f
+               ...
+               asadmin> osgi --session list
+               9537e570-0def-4f2e-9c19-bc8f51a8082f
+               ...
+               asadmin> osgi --session execute --session-id 9537e570-0def-4f2e-9c19-bc8f51a8082f lb
+               START LEVEL 2
+               ID|State      |Level|Name
+                0|Active     |    0|System Bundle
+                1|Active     |    1|Metro Web Services API OSGi Bundle
+                2|Active     |    1|javax.annotation API
+                3|Active     |    1|jaxb-api
+               ...
+               asadmin> osgi --session stop --session-id 9537e570-0def-4f2e-9c19-bc8f51a8082f
+               Command osgi executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       osgi-shell(1)
+
+       asadmin(1M)
+
+Java EE 8                         06 Feb 2013                          osgi(1)

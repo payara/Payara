@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.acc;
 
@@ -44,12 +45,8 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
@@ -127,7 +124,7 @@ public class Util {
     }
     /**
      * Writes the provided text to a temporary file marked for deletion on exit.
-     * @param the content to be written
+     * @param content the content to be written
      * @param prefix for the temp file, conforming to the File.createTempFile requirements
      * @param suffix for the temp file
      * @return File object for the newly-created temp file
@@ -190,7 +187,7 @@ public class Util {
                 /*
                  * The next line quotes any $ signs and backslashes in the replacement string
                  * so they are not interpreted as meta-characters by the regular expression
-                 * processor's appendReplacement.  
+                 * processor's appendReplacement.
                  */
                 String adjustedPropertyValue =
                         propertyValue.replaceAll("\\\\",SLASH_REPLACEMENT).

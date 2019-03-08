@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool;
 
@@ -48,18 +49,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implementation of PoolLifeCycleListener to listen to events related to a 
+ * Implementation of PoolLifeCycleListener to listen to events related to a
  * connection pool. The registry allows multiple listeners (ex: pool monitoring)
  * to listen to the pool's lifecyle. Maintains a list of listeners for this pool
  * identified by poolName.
- * 
+ *
  * @author Shalini M
  */
 public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
 
-    //List of listeners 
+    //List of listeners
     protected List<PoolLifeCycleListener> poolListenersList;
-    
+
     //name of the pool for which the registry is maintained
     private PoolInfo poolInfo;
 
@@ -69,13 +70,13 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
     }
 
     /**
-     * Add a listener to the list of pool life cycle listeners maintained by 
+     * Add a listener to the list of pool life cycle listeners maintained by
      * this registry.
      * @param listener
      */
     public void registerPoolLifeCycleListener(PoolLifeCycleListener listener) {
         poolListenersList.add(listener);
-        
+
         //Check if poolLifeCycleListener has already been set to this. There
         //could be multiple listeners.
         if(!(poolListenersList.size() > 1)) {
@@ -88,7 +89,7 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
 
     /**
      * Clear the list of pool lifecycle listeners maintained by the registry.
-     * This happens when a pool is destroyed so the information about its 
+     * This happens when a pool is destroyed so the information about its
      * listeners need not be stored.
      * @param poolName
      */
@@ -104,7 +105,7 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
         //the pool will already be destroyed.
     }
 
-    public void toString(StringBuffer stackTrace) {
+    public void toString(StringBuilder stackTrace) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.toString(stackTrace);
         }
@@ -193,7 +194,7 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
             listener.decrementNumConnFree();
         }
     }
-    
+
     public void incrementNumConnFree(boolean beingDestroyed, int steadyPoolSize) {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.incrementNumConnFree(beingDestroyed, steadyPoolSize);
@@ -203,7 +204,7 @@ public class PoolLifeCycleListenerRegistry implements PoolLifeCycleListener {
     public void connectionRequestQueued() {
         for (PoolLifeCycleListener listener : poolListenersList) {
             listener.connectionRequestQueued();
-        }        
+        }
     }
 
     public void connectionRequestDequeued() {

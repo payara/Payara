@@ -37,16 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.classfile;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * Class representing a unicode string value in the constant pool
  */
 
-/* 
+/*
  * Note: evidence suggests that this is no longer part of the java VM
  * spec.
  */
@@ -54,7 +57,7 @@ import java.io.*;
 public class ConstUnicode extends ConstBasic {
   /* The tag associated with ConstClass entries */
   public static final int MyTag = CONSTANTUnicode;
- 
+
   /* The unicode string of interest */
   private String stringValue;
 
@@ -91,8 +94,8 @@ public class ConstUnicode extends ConstBasic {
 
   static ConstUnicode read (DataInputStream input) throws IOException {
     int count = input.readShort(); // Is this chars or bytes?
-    StringBuffer b = new StringBuffer();
-    for (int i=0; i < count; i++) { 
+    StringBuilder b = new StringBuilder();
+    for (int i=0; i < count; i++) {
       b.append(input.readChar());
     }
     return new ConstUnicode (b.toString());

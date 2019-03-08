@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login.common;
 
 import java.io.IOException;
@@ -52,14 +52,16 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 
 /**
- * This is the default callback handler provided by the application client container. The container tries to use the
- * application specified callback handler (if provided). If there is no callback handler or if the handler cannot be
- * instantiated then this default handler is used.
+ * This is the default callback handler provided by the application client container.
+ * 
+ * <p>
+ * The container tries to use the application specified callback handler (if provided). If there is no callback handler
+ * or if the handler cannot be instantiated then this default handler is used.
  */
 public class ServerLoginCallbackHandler implements CallbackHandler {
     
     private static final String GP_CB = "javax.security.auth.message.callback.GroupPrincipalCallback";
-    private static final String GPCBH_UTIL = "com.sun.enterprise.security.jmac.callback.ServerLoginCBHUtil";
+    private static final String GPCBH_UTIL = "com.sun.enterprise.security.jaspic.callback.ServerLoginCBHUtil";
     private static final String GPCBH_UTIL_METHOD = "processGroupPrincipal";
     
     private String username;
@@ -99,19 +101,19 @@ public class ServerLoginCallbackHandler implements CallbackHandler {
      * @param the callback object instances supported by the login module.
      */
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        for (int i = 0; i < callbacks.length; i++) {
-            if (callbacks[i] instanceof NameCallback) {
-                NameCallback nme = (NameCallback) callbacks[i];
+        for (Callback callback : callbacks) {
+            if (callback instanceof NameCallback) {
+                NameCallback nme = (NameCallback) callback;
                 nme.setName(username);
-            } else if (callbacks[i] instanceof PasswordCallback) {
-                PasswordCallback pswd = (PasswordCallback) callbacks[i];
+            } else if (callback instanceof PasswordCallback) {
+                PasswordCallback pswd = (PasswordCallback) callback;
                 pswd.setPassword(password);
-            } else if (callbacks[i] instanceof CertificateRealm.AppContextCallback) {
-                ((CertificateRealm.AppContextCallback) callbacks[i]).setModuleID(moduleID);
-            } else if (GP_CB.equals(callbacks[i].getClass().getName())) {
-                processGroupPrincipal(callbacks[i]);
+            } else if (callback instanceof CertificateRealm.AppContextCallback) {
+                ((CertificateRealm.AppContextCallback) callback).setModuleID(moduleID);
+            } else if (GP_CB.equals(callback.getClass().getName())) {
+                processGroupPrincipal(callback);
             } else {
-                throw new UnsupportedCallbackException(callbacks[i]);
+                throw new UnsupportedCallbackException(callback);
             }
         }
     }

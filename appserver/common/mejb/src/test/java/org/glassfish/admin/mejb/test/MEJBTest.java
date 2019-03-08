@@ -68,21 +68,21 @@ import org.junit.Ignore;
 
 /**
     Standalone MEJB test -- requires running server and disabling security on MEJB.
-    
+
 export V3M=/v3/glassfish/modules
 export MAIN=org.glassfish.admin.mejb.test.MEJBTest
 java -cp $V3M/gf-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar $MAIN
 
  */
 @Ignore
-public class MEJBTest {    
+public class MEJBTest {
     private final Management mMEJB;
-    
+
     public MEJBTest( final Management mejb )
     {
         mMEJB = mejb;
     }
-    
+
     private void test() {
         try
         {
@@ -94,22 +94,22 @@ public class MEJBTest {
         }
         println( "DONE with MEJB test." );
     }
-    
-    
+
+
     private void testMBean( final ObjectName objectName)
         throws Exception
     {
         println( "" );
         println( "" + objectName );
-        
+
         final Management mejb = mMEJB;
         final MBeanInfo info = mejb.getMBeanInfo(objectName);
         final String[] attrNames = getAttributeNames( info.getAttributes() );
-        
+
         println( "attributes: " + toString( newListFromArray(attrNames), ", " ) );
-        
+
         final AttributeList list = mejb.getAttributes( objectName, attrNames );
-        
+
         for( final String attrName : attrNames)
         {
             try
@@ -122,15 +122,15 @@ public class MEJBTest {
             }
         }
     }
-    
+
     private void _test()
         throws Exception
     {
         final Management mejb = mMEJB;
-        
+
         final String defaultDomain = mejb.getDefaultDomain();
         println("MEJB default domain = " + defaultDomain + ", MBeanCount = " + mejb.getMBeanCount() );
-        
+
         final String domain = AMXGlassfish.DEFAULT.amxJMXDomain();
         final ObjectName pattern = newObjectName( domain + ":*" );
         final Set<ObjectName> items = mejb.queryNames( pattern, null);
@@ -142,12 +142,12 @@ public class MEJBTest {
                 testMBean(objectName);
             }
         }
-        
+
         // add listeners to all
         println( "Listener are not supported, skipping." );
         /*
         println( "Adding listeners to every MBean..." );
-        
+
         final ListenerRegistration reg = mejb.getListenerRegistry();
         println( "Got ListenerRegistration: " + reg );
         final NotificationListener listener = new NotifListener();
@@ -168,14 +168,14 @@ public class MEJBTest {
         }
         */
     }
-    
-    
+
+
     private static final class NotifListener implements NotificationListener
     {
         public NotifListener()
         {
         }
-        
+
         public void handleNotification( final Notification notif, final Object handback )
         {
             System.out.println( "NotifListener: " + notif);
@@ -187,8 +187,8 @@ public class MEJBTest {
 		final Collection<?> c,
 		final String	 delim )
 	{
-        final StringBuffer buf = new StringBuffer();
-        
+        final StringBuilder buf = new StringBuilder();
+
         for( final Object item : c )
         {
             buf.append( "" + item );
@@ -198,15 +198,15 @@ public class MEJBTest {
         {
             buf.setLength( buf.length() - delim.length() );
         }
-        
+
         return buf.toString();
     }
-            
+
 		public static <T> List<T>
 	newListFromArray( final T []  items )
 	{
 		final List<T>	list	= new ArrayList<T>();
-		
+
 		for( int i = 0; i < items.length; ++i )
 		{
 			list.add( items[ i ] );
@@ -220,12 +220,12 @@ public class MEJBTest {
 	getAttributeNames( final MBeanAttributeInfo[]	infos  )
 	{
 		final String[]	names	= new String[ infos.length ];
-		
+
 		for( int i = 0; i < infos.length; ++i )
 		{
 			names[ i ]	= infos[ i ].getName();
 		}
-		
+
 		return( names );
 	}
 
@@ -234,7 +234,7 @@ public class MEJBTest {
 	{
 		try
 		{
-			return( new ObjectName( name ) ); 
+			return( new ObjectName( name ) );
 		}
 		catch( Exception e )
 		{
@@ -251,7 +251,7 @@ public static void main(String[] args) {
         final String password = "";
         final String realm = "admin-realm";
         System.out.println( "Authenticating with \"" + username + "\", \"" + password + "\"");
-        
+
         final ProgrammaticLogin pm = new ProgrammaticLogin();
         pm.login( username, password, realm, true);
 
@@ -268,7 +268,7 @@ public static void main(String[] args) {
         {
             println("WARNING: (ManagementHome)PortableRemoteObject.narrow(objref, ManagementHome.class) works, but (ManagementHome)objref does not!" );
         }
-        
+
         //println("ManagementHome: " + home + " for " + mejbName);
         final Management mejb = (Management)home.create();
         println("Got the MEJB");

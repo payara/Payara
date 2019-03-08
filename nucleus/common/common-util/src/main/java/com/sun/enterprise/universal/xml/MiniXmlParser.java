@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
-import java.io.ByteArrayInputStream;
-import javax.xml.stream.XMLResolver;
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
@@ -52,16 +50,11 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.StringUtils;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -177,16 +170,15 @@ public class MiniXmlParser {
     }
 
     public void setupConfigDir(File configDir, File installDir) {
-        loggingConfig.setupConfigDir(configDir, installDir);
+        loggingConfig = new LoggingConfigImpl(configDir, configDir);
     }
-
     public boolean getSecureAdminEnabled() {
         return secureAdminEnabled;
     }
 
     /**
      * Gets the log file name for the DAS
-     * 
+     *
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -207,10 +199,10 @@ public class MiniXmlParser {
         }
         return logFilename;
     }
-    
+
     /**
      * Gets the log file name for instances and clusters
-     * 
+     *
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -218,9 +210,10 @@ public class MiniXmlParser {
      */
     public String getInstanceLogFilename() {
         String logFilename = null;
-        
+
         try {
-            Map<String, String> map = loggingConfig.getLoggingProperties(configRef);
+            loggingConfig.initialize(configRef);
+            Map<String, String> map = loggingConfig.getLoggingProperties();
             String logFileContains = "${com.sun.aas.instanceName}";
             logFilename = map.get(LoggingPropertyNames.file);
             if (logFilename != null && logFilename.contains(logFileContains)) {
@@ -311,7 +304,7 @@ public class MiniXmlParser {
             final String aOldPattern,
             final String aNewPattern
     ) {
-        final StringBuffer result = new StringBuffer();
+        final StringBuilder result = new StringBuilder();
         //startIdx and idxOld delimit various chunks of aInput; these
         //chunks always end where aOldPattern begins
         int startIdx = 0;
@@ -399,15 +392,9 @@ public class MiniXmlParser {
     //
 
     private XMLInputFactory getXmlInputFactory() {
-        Class clazz = XMLInputFactory.class;
-        ClassLoader cl = clazz.getClassLoader();
 
-        // jdk6+
-        if (cl == null)
-            return XMLInputFactory.newInstance();
+        return XMLInputFactory.newInstance();
 
-        // jdk5
-        return XMLInputFactory.newInstance(clazz.getName(), cl);
     }
 
     private void getConfigRefName() throws XMLStreamException, EndDocumentException {
@@ -1089,7 +1076,7 @@ public class MiniXmlParser {
 
     private static final String DEFAULT_ADMIN_VS_ID = "__asadmin";
     private static final String DEFAULT_VS_ID = "server";
-    private LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
+    private LoggingConfigImpl loggingConfig;
     private File domainXml;
     private XMLStreamReader parser;
     private InputStreamReader reader;

@@ -1,0 +1,80 @@
+stop-instance(1)          asadmin Utility Subcommands         stop-instance(1)
+
+NAME
+       stop-instance - stops a running GlassFish Server instance
+
+SYNOPSIS
+           stop-instance [--help]
+           [--force={false|true}] [--kill={false|true}]
+           instance-name
+
+DESCRIPTION
+       The stop-instance subcommand stops a running GlassFish Server instance.
+
+       The subcommand can stop any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can stop an
+       instance that was created by using the create-local-instance(1)
+       subcommand.
+
+       This command is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --force
+           Specifies whether the instance is forcibly stopped immediately.
+
+           Possible values are as follows:
+
+           true
+               The instance is forcibly stopped immediately (default).
+
+           false
+               The subcommand waits until all threads that are associated with
+               the instance are exited before stopping the instance.
+
+       --kill
+           Specifies whether the instance is killed by using functionality of
+           the operating system to terminate the instance process.
+
+           Possible values are as follows:
+
+           false
+               The instance is not killed. The subcommand uses functionality
+               of the Java platform to terminate the instance process
+               (default).
+
+           true
+               The instance is killed. The subcommand uses functionality of
+               the operating system to terminate the instance process.
+
+OPERANDS
+       instance-name
+           This is the name of the GlassFish Server instance to stop.
+
+EXAMPLES
+       This example stops the GlassFish Server instance yml-i-sj01.
+
+       Example 1, Stopping a GlassFish Server Instance
+
+               asadmin> stop-instance yml-i-sj01
+               The instance, yml-i-sj01, was stopped.
+
+               Command stop-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-instance(1),
+       delete-local-instance(1), start-domain(1), start-instance(1),
+       start-local-instance(1), stop-domain(1), stop-local-instance(1)
+
+       asadmin(1M)
+
+Java EE 8                         16 Dec 2010                 stop-instance(1)

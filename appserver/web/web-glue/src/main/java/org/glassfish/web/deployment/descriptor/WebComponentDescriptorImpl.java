@@ -37,85 +37,88 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.descriptor;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.MultipartConfig;
 import com.sun.enterprise.deployment.web.SecurityRoleReference;
-
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
+import static java.util.Collections.enumeration;
 
 /**
- * Common data and behavior of the deployment
- * information about a JSP or JavaServlet in J2EE.
+ * Common data and behavior of the deployment information about a JSP or JavaServlet in J2EE.
  *
  * @author Jerome Dochez
  */
 public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(WebComponentDescriptor.class);
+    private static final long serialVersionUID = -426082855000062548L;
+
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WebComponentDescriptor.class);
 
     /**
      * Constant for Basic authentication.
      */
     public static final String BASIC_AUTHENTICATION = "basic";
+
     /**
      * Constant for Form authentication.
      */
     public static final String FORM_AUTHENTICATION = "form";
+
     /**
      * Constant for Secure authentication.
      */
     public static final String SSL_AUTHENTICATION = "ssl";
+
     /**
      * Constant for the htpp GET method.
      */
     public static final String GET = "GET";
+
     /**
      * Constant for the http PUT method.
      */
     public static final String PUT = "PUT";
+
     /**
      * Constant for the http POST method.
      */
     public static final String POST = "POST";
+
     /**
-     * Constant for the http DELET method.
+     * Constant for the http DELETE method.
      */
     public static final String DELETE = "DELETE";
 
     private Set<InitializationParameter> initializationParameters;
     private Set<String> urlPatterns;
     private String canonicalName;
-    private Integer loadOnStartUp = null;
+    private Integer loadOnStartUp;
     private Set<SecurityRoleReference> securityRoleReferences;
 
     private RunAsIdentityDescriptor runAs;
-    private WebBundleDescriptor webBundleDescriptor = null;
+    private WebBundleDescriptor webBundleDescriptor;
     private boolean enabled = true;
-    private Boolean asyncSupported = null;
-    private MultipartConfig multipartConfig = null;
-    private transient List<Method> httpMethods = null;
-    private boolean conflict = false;
+    private Boolean asyncSupported;
+    private MultipartConfig multipartConfig;
+    private transient List<Method> httpMethods;
 
-    private Set<String> conflictedInitParameterNames = null;
+    private boolean conflict;
+    private Set<String> conflictedInitParameterNames;
+
+    private String implFile = "";
+    private boolean isServlet;
+
 
     /**
      * The default constructor.
@@ -131,14 +134,11 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     public WebComponentDescriptorImpl(WebComponentDescriptor other) {
         setCanonicalName(other.getCanonicalName());
         setServlet(other.isServlet());
-        setWebComponentImplementation(
-                other.getWebComponentImplementation());
-        getInitializationParameterSet().addAll(
-                other.getInitializationParameterSet());
+        setWebComponentImplementation(other.getWebComponentImplementation());
+        getInitializationParameterSet().addAll(other.getInitializationParameterSet());
         getUrlPatternsSet().addAll(other.getUrlPatternsSet());
         setLoadOnStartUp(other.getLoadOnStartUp());
-        getSecurityRoleReferenceSet().addAll(
-                other.getSecurityRoleReferenceSet());
+        getSecurityRoleReferenceSet().addAll(other.getSecurityRoleReferenceSet());
         setRunAsIdentity(other.getRunAsIdentity());
         setAsyncSupported(other.isAsyncSupported());
         setMultipartConfig(other.getMultipartConfig());
@@ -149,9 +149,10 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     @Override
     public Set<InitializationParameter> getInitializationParameterSet() {
-        if (this.initializationParameters == null) {
-            this.initializationParameters = new OrderedSet<InitializationParameter>();
+        if (initializationParameters == null) {
+            initializationParameters = new OrderedSet<>();
         }
+
         return initializationParameters;
     }
 
@@ -160,7 +161,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     @Override
     public Enumeration<InitializationParameter> getInitializationParameters() {
-        return (new Vector<InitializationParameter>(getInitializationParameterSet())).elements();
+        return  enumeration(new ArrayList<>(getInitializationParameterSet()));
     }
 
     /**
@@ -179,6 +180,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Adds a servlet initialization parameter to this component.
+     *
      * @param initializationParameter
      */
     @Override
@@ -188,6 +190,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes the given servlet initialization parameter from this component.
+     *
      * @param initializationParameter
      */
     @Override
@@ -200,6 +203,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (conflictedInitParameterNames == null) {
             conflictedInitParameterNames = new HashSet<>();
         }
+
         return conflictedInitParameterNames;
     }
 
@@ -210,6 +214,11 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     public Set<String> getUrlPatternsSet() {
         if (urlPatterns == null) {
             urlPatterns = new OrderedSet<String>() {
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = -43840281980324986L;
+
                 @Override
                 public boolean add(String s) {
                     Map<String, String> up2sname = getUrlPatternToServletNameMap();
@@ -217,10 +226,8 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                         String name = getCanonicalName();
                         String oldName = up2sname.put(s, getCanonicalName());
                         if (oldName != null && (!oldName.equals(name))) {
-                            throw new IllegalArgumentException(localStrings.getLocalString(
-                                "web.deployment.exceptionsameurlpattern",
-                                "Servlet [{0}] and Servlet [{1}] have the same url pattern: [{2}]",
-                                new Object[] { oldName, name, s }));
+                            throw new IllegalArgumentException(localStrings.getLocalString("web.deployment.exceptionsameurlpattern",
+                                    "Servlet [{0}] and Servlet [{1}] have the same url pattern: [{2}]", new Object[] { oldName, name, s }));
                         }
                     }
                     return super.add(s);
@@ -236,9 +243,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                 }
 
                 private Map<String, String> getUrlPatternToServletNameMap() {
-                    return ((getWebBundleDescriptor() != null) ?
-                            getWebBundleDescriptor().getUrlPatternToServletNameMap() :
-                            null);
+                    return ((getWebBundleDescriptor() != null) ? getWebBundleDescriptor().getUrlPatternToServletNameMap() : null);
                 }
             };
         }
@@ -250,11 +255,12 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     @Override
     public Enumeration<String> getUrlPatterns() {
-        return (new Vector<String>(getUrlPatternsSet())).elements();
+        return enumeration(new ArrayList<>(getUrlPatternsSet()));
     }
 
     /**
      * Adds an alias to this web component.
+     *
      * @param urlPattern
      */
     @Override
@@ -264,6 +270,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes a URL pattern from this web component.
+     *
      * @param urlPattern
      */
     @Override
@@ -277,7 +284,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     }
 
     /**
-     * @return the web app object to which I belong or null
+     * @return the web app object to which this object belongs
      */
     @Override
     public WebBundleDescriptor getWebBundleDescriptor() {
@@ -286,18 +293,21 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * The canonical name for the web component.
-     * @return 
+     *
+     * @return
      */
     @Override
     public String getCanonicalName() {
         if (canonicalName == null) {
             canonicalName = getName();
         }
+
         return canonicalName;
     }
 
     /**
      * Sets the canonical name of this web component.
+     *
      * @param canonicalName
      */
     @Override
@@ -315,6 +325,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Sets the order on which this component will be loaded by the web server.
+     *
      * @param loadOnStartUp
      */
     @Override
@@ -324,6 +335,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Sets the order on which this component will be loaded by the web server.
+     *
      * @param loadOnStartUp
      */
     @Override
@@ -331,12 +343,12 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         this.loadOnStartUp = Integer.decode(loadOnStartUp);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Set<SecurityRoleReference> getSecurityRoleReferenceSet() {
-        if (this.securityRoleReferences == null) {
-            this.securityRoleReferences = new OrderedSet();
+        if (securityRoleReferences == null) {
+            securityRoleReferences = new OrderedSet<>();
         }
+
         return securityRoleReferences;
     }
 
@@ -345,7 +357,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     @Override
     public Enumeration<SecurityRoleReference> getSecurityRoleReferences() {
-        return (new Vector<SecurityRoleReference>(this.getSecurityRoleReferenceSet())).elements();
+        return enumeration(new ArrayList<>(getSecurityRoleReferenceSet()));
     }
 
     /**
@@ -354,16 +366,18 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     @Override
     public SecurityRoleReference getSecurityRoleReferenceByName(String roleReferenceName) {
-        for (SecurityRoleReference nextRR : getSecurityRoleReferenceSet()) {
-            if (nextRR.getRoleName().equals(roleReferenceName)) {
-                return nextRR;
+        for (SecurityRoleReference scurityRoleReference : getSecurityRoleReferenceSet()) {
+            if (scurityRoleReference.getRoleName().equals(roleReferenceName)) {
+                return scurityRoleReference;
             }
         }
+
         return null;
     }
 
     /**
      * Adds a security role reference to this web component.
+     *
      * @param securityRoleReference
      */
     @Override
@@ -373,6 +387,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * Removes the given security role reference from this web component.
+     *
      * @param securityRoleReference
      */
     @Override
@@ -428,6 +443,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
     /**
      * DeploymentDescriptorNode.addNodeDescriptor(node) need this.
+     *
      * @param multipartConfigDesc
      */
     public void setMultipartConfig(MultipartConfigDescriptor multipartConfigDesc) {
@@ -439,12 +455,12 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (getWebBundleDescriptor() != null) {
             return getWebBundleDescriptor().getApplication();
         }
+
         return null;
     }
 
     /**
-     * sets the implementation file for this web component, the
-     * implementation file is either a servlet class name of a jsp
+     * sets the implementation file for this web component, the implementation file is either a servlet class name of a jsp
      * file name.
      *
      * @param implFile the servlet class name or the jsp file
@@ -454,11 +470,9 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         if (!isServlet && !implFile.startsWith("/")) {
             implFile = "/" + implFile;
         }
+
         this.implFile = implFile;
     }
-
-    private String implFile = "";
-    private boolean isServlet = false;
 
     @Override
     public String getWebComponentImplementation() {
@@ -506,9 +520,9 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     }
 
     /**
-     * This method return an array of user defined http doDelete, doGet,
-     * doHead, doOptions, doPost, doPut, doTrace methods.
+     * This method return an array of user defined http doDelete, doGet, doHead, doOptions, doPost, doPut, doTrace methods.
      * It is used for processing web security annotations.
+     *
      * @return an array of methods.
      */
     @Override
@@ -518,16 +532,14 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
             if (isServlet) {
                 List<String> searchingMethods = new ArrayList<String>();
-                String[] httpMString = new String[] { "doDelete", "doGet",
-                        "doHead", "doOptions", "doPost", "doPut", "doTrace" };
+                String[] httpMString = new String[] { "doDelete", "doGet", "doHead", "doOptions", "doPost", "doPut", "doTrace" };
                 for (String s : httpMString) {
                     searchingMethods.add(s);
                 }
 
                 try {
-                    Class implClass = Class.forName(implFile, true,
-                        Thread.currentThread().getContextClassLoader()); 
-                    Class clazz = implClass;
+                    Class<?> implClass = Class.forName(implFile, true, Thread.currentThread().getContextClassLoader());
+                    Class<?> clazz = implClass;
                     String packageName = null;
                     Package clazzPackage = implClass.getPackage();
                     if (clazzPackage != null) {
@@ -537,26 +549,21 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                     // the processing is stopped at javax.servlet package as
                     // a) there is no user defined class there
                     // b) there is no security annotations used there
-                    while (clazz != null && (!clazz.getName().startsWith("javax.servlet."))
-                            && searchingMethods.size() > 0) {
+                    while (clazz != null && (!clazz.getName().startsWith("javax.servlet.")) && searchingMethods.size() > 0) {
                         Package p = clazz.getPackage();
-                        Method[] methods = clazz.getDeclaredMethods(); 
+                        Method[] methods = clazz.getDeclaredMethods();
                         for (Method m : methods) {
                             String methodName = m.getName();
                             if (searchingMethods.contains(methodName)) {
                                 Class<?> returnType = m.getReturnType();
                                 Class<?>[] parameterTypes = m.getParameterTypes();
                                 int modifiers = m.getModifiers();
-                                boolean isSamePackage = (p == null && clazzPackage == null) ||
-                                    (p != null && clazzPackage != null &&
-                                        packageName.equals(p.getName()));
-                                boolean valid = (Modifier.isPublic(modifiers) ||
-                                        Modifier.isProtected(modifiers) ||
-                                        ((!Modifier.isPrivate(modifiers)) && isSamePackage));
-                                valid = valid && (void.class.equals(returnType)) &&
-                                    (parameterTypes.length == 2) &&
-                                    (parameterTypes[0].equals(HttpServletRequest.class) &&
-                                         parameterTypes[1].equals(HttpServletResponse.class));
+                                boolean isSamePackage = (p == null && clazzPackage == null)
+                                        || (p != null && clazzPackage != null && packageName.equals(p.getName()));
+                                boolean valid = (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)
+                                        || ((!Modifier.isPrivate(modifiers)) && isSamePackage));
+                                valid = valid && (void.class.equals(returnType)) && (parameterTypes.length == 2)
+                                        && (parameterTypes[0].equals(HttpServletRequest.class) && parameterTypes[1].equals(HttpServletResponse.class));
                                 if (valid) {
                                     httpMethods.add(m);
                                     searchingMethods.remove(methodName);
@@ -569,7 +576,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                         }
                         clazz = clazz.getSuperclass();
                     }
-                } catch(Throwable t) {
+                } catch (Throwable t) {
                     throw new IllegalStateException(t);
                 }
             }
@@ -578,38 +585,37 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         return httpMethods.toArray(new Method[httpMethods.size()]);
     }
 
-    /* -----------
-    */
+    /*
+     * -----------
+     */
 
     /**
      * A formatted string representing my state.
-     * @param toStringBuffer
+     *
+     * @param toStringBuilder
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append("WebComponentDescriptor\n");
-        toStringBuffer.append("\n initializationParameters ").append(initializationParameters);
-        toStringBuffer.append("\n urlPatterns ").append(urlPatterns);
-        toStringBuffer.append("\n canonicalName ").append(canonicalName);
-        toStringBuffer.append("\n loadOnStartUp ").append(loadOnStartUp);
-        toStringBuffer.append("\n enabled ").append(enabled);
-        toStringBuffer.append("\n asyncSupported ").append(asyncSupported);
-        toStringBuffer.append("\n securityRoleReferences ").append(securityRoleReferences);
-        toStringBuffer.append("\n multipartConfig ").append(multipartConfig);
+    public void print(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append("WebComponentDescriptor\n");
+        toStringBuilder.append("\n initializationParameters ").append(initializationParameters);
+        toStringBuilder.append("\n urlPatterns ").append(urlPatterns);
+        toStringBuilder.append("\n canonicalName ").append(canonicalName);
+        toStringBuilder.append("\n loadOnStartUp ").append(loadOnStartUp);
+        toStringBuilder.append("\n enabled ").append(enabled);
+        toStringBuilder.append("\n asyncSupported ").append(asyncSupported);
+        toStringBuilder.append("\n securityRoleReferences ").append(securityRoleReferences);
+        toStringBuilder.append("\n multipartConfig ").append(multipartConfig);
         if (isServlet()) {
-            toStringBuffer.append("\n servlet className ").append(getWebComponentImplementation());
+            toStringBuilder.append("\n servlet className ").append(getWebComponentImplementation());
         } else {
-            toStringBuffer.append("\n jspFileName ").append(getWebComponentImplementation());
+            toStringBuilder.append("\n jspFileName ").append(getWebComponentImplementation());
         }
     }
 
-
     @Override
     public boolean equals(Object other) {
-        if (other instanceof WebComponentDescriptor &&
-                this.getCanonicalName().equals(((
-                        WebComponentDescriptor) other).getCanonicalName())) {
+        if (other instanceof WebComponentDescriptor && this.getCanonicalName().equals(((WebComponentDescriptor) other).getCanonicalName())) {
             return true;
         }
         return false;
@@ -622,45 +628,33 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         return result;
     }
 
-
     @Override
     public void add(WebComponentDescriptor other) {
         add(other, true, false);
     }
 
-    /** this method will combine the information from this "other" 
-    // WebComponentDescriptor with current WebComponentDescriptor
-    //
-    // when there are conflicts between the contents of the two,
-    // the value from current WebComponentDescriptor will override
-    // the value in "other"
-    //
-    // Note: in the Set API, we only add value when such value 
-    // is not existed in the Set already
-    //
-    // If combineUrlPatterns is false, then the first one take priority,
-    // otherwise take the second one.
-    //
-    // If combineConflict is true, it will combine the init parameter
-    // conflict information in #getConflictedInitParameterSet.
-    //
-    // And the conflict boolean will not be set.
+    /**
+     * this method will combine the information from this "other" // WebComponentDescriptor with current
+     * WebComponentDescriptor // // when there are conflicts between the contents of the two, // the value from current
+     * WebComponentDescriptor will override // the value in "other" // // Note: in the Set API, we only add value when such
+     * value // is not existed in the Set already // // If combineUrlPatterns is false, then the first one take priority, //
+     * otherwise take the second one. // // If combineConflict is true, it will combine the init parameter // conflict
+     * information in #getConflictedInitParameterSet. // // And the conflict boolean will not be set.
+     *
      * @param other
      * @param combineUrlPatterns
-     * @param combineConflict 
+     * @param combineConflict
      */
     @Override
-    public void add(WebComponentDescriptor other, boolean combineUrlPatterns,
-            boolean combineConflict) {
-        // do not do anything if the canonical name of the two web 
+    public void add(WebComponentDescriptor other, boolean combineUrlPatterns, boolean combineConflict) {
+        // do not do anything if the canonical name of the two web
         // components are different
         if (!getCanonicalName().equals(other.getCanonicalName())) {
             return;
         }
-        // do not do anything if the type of the two web 
+        // do not do anything if the type of the two web
         // components are different
-        if ((isServlet() && !other.isServlet()) ||
-                (!isServlet() && other.isServlet())) {
+        if ((isServlet() && !other.isServlet()) || (!isServlet() && other.isServlet())) {
             return;
         }
 
@@ -669,8 +663,8 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
             getUrlPatternsSet().addAll(other.getUrlPatternsSet());
         }
 
-        // for complex types, only added it if the complex type with same 
-        // name is not in the set yet 
+        // for complex types, only added it if the complex type with same
+        // name is not in the set yet
         if (conflictedInitParameterNames == null) {
             conflictedInitParameterNames = other.getConflictedInitParameterNames();
         } else {
@@ -682,23 +676,17 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
             }
         }
 
-        for (Iterator<InitializationParameter> initParamIter =
-                other.getInitializationParameterSet().iterator();
-             initParamIter.hasNext();) {
-            InitializationParameter initParam =
-                    initParamIter.next();
-            InitializationParameter origInitParam =
-                    getInitializationParameterByName(initParam.getName());
+        for (Iterator<InitializationParameter> initParamIter = other.getInitializationParameterSet().iterator(); initParamIter.hasNext();) {
+            InitializationParameter initParam = initParamIter.next();
+            InitializationParameter origInitParam = getInitializationParameterByName(initParam.getName());
             if (origInitParam == null) {
                 getInitializationParameterSet().add(initParam);
-            } else if (combineConflict &&
-                    !origInitParam.getValue().equals(initParam.getValue())) {
+            } else if (combineConflict && !origInitParam.getValue().equals(initParam.getValue())) {
                 getConflictedInitParameterNames().add(initParam.getName());
             }
         }
         for (SecurityRoleReference secRoleRef : other.getSecurityRoleReferenceSet()) {
-            if (getSecurityRoleReferenceByName(secRoleRef.getRoleName())
-                    == null) {
+            if (getSecurityRoleReferenceByName(secRoleRef.getRoleName()) == null) {
                 getSecurityRoleReferenceSet().add(secRoleRef);
             }
         }
@@ -719,8 +707,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
             setMultipartConfig(other.getMultipartConfig());
         }
         if (getWebComponentImplementation() == null) {
-            setWebComponentImplementation(
-                    other.getWebComponentImplementation());
+            setWebComponentImplementation(other.getWebComponentImplementation());
         }
     }
 
@@ -736,13 +723,10 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
         String otherImplFile = other.getWebComponentImplementation();
         boolean matchImplName = (allowNullImplNameOverride) ?
-            // note that "" and null are regarded as the same here
-            (implFile == null || implFile.length() == 0 ||
-                otherImplFile == null || otherImplFile.length() == 0 ||
-                implFile.equals(otherImplFile)) :
-            (((implFile == null || implFile.length() == 0) &&
-                (otherImplFile == null || otherImplFile.length() == 0)) ||
-                (implFile != null && implFile.equals(otherImplFile)) );
+        // note that "" and null are regarded as the same here
+                (implFile == null || implFile.length() == 0 || otherImplFile == null || otherImplFile.length() == 0 || implFile.equals(otherImplFile))
+                : (((implFile == null || implFile.length() == 0) && (otherImplFile == null || otherImplFile.length() == 0))
+                        || (implFile != null && implFile.equals(otherImplFile)));
 
         boolean otherAsyncSupported = (other.isAsyncSupported() != null) ? other.isAsyncSupported() : false;
         boolean thisAsyncSupported = (asyncSupported != null) ? asyncSupported : false;

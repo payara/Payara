@@ -102,6 +102,8 @@ In order to debug Payara, first build the server with your changes. Run it in de
 
 From within your IDE you can then attach a debugger to the default port of 9009.
 
+If you are working on changes to a single Payara module in Payara Server you can usually just build the modified module and then copy the updated jar file into the glassfish/modules directory in your Payara installation then restart the server to see your changes. There is no need to rerun the whole build to work on a single module. 
+
 ## Pushing issues to Github
 
 When you are finished working on your issue, add the files to your git with a comment describing the addressed issue via JIRA and/or the Github issue number:

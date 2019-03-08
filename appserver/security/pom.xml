@@ -41,29 +41,35 @@
 
 -->
 
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>        
+        <version>5.192-SNAPSHOT</version>
     </parent>
+    
     <groupId>org.glassfish.main.security</groupId>
     <artifactId>securitymodule</artifactId>
     <packaging>pom</packaging>
+    
     <name>GlassFish Security Parent</name>
     <description>Security Infrastructure and Technology Integration Modules</description>
+    
     <modules>
         <module>webintegration</module>
         <module>core-ee</module>
         <module>security-all</module>
-        <module>inmemory.jacc.provider</module>
-        <module>webservices.security</module>
-	<module>ejb.security</module>
-        <module>appclient.security</module>
         <module>jaspic-provider-framework</module>
+        <module>jacc.provider.inmemory</module>
+        <module>jacc.provider.file</module>
+        <module>webservices.security</module>
+	    <module>ejb.security</module>
+        <module>appclient.security</module>
         <module>core-ee-l10n</module>
         <module>webservices.security-l10n</module>
-  </modules>
+    </modules>
 </project>

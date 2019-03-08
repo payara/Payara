@@ -37,23 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.base.stats;
 
+import com.sun.ejb.spi.stats.MonitorableSFSBStoreManager;
+import com.sun.enterprise.admin.monitor.stats.*;
 import org.glassfish.j2ee.statistics.CountStatistic;
 import org.glassfish.j2ee.statistics.RangeStatistic;
-import org.glassfish.j2ee.statistics.TimeStatistic;
-
-import com.sun.ejb.spi.stats.MonitorableSFSBStoreManager;
-
-import com.sun.enterprise.admin.monitor.stats.AverageRangeStatistic;
-import com.sun.enterprise.admin.monitor.stats.BoundedRangeStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.CountStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableAverageRangeStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableBoundedRangeStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableCountStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableTimeStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.TimeStatisticImpl;
 
 /**
  * Implementation of StatefulSessionStoreStats
@@ -288,7 +279,7 @@ public class StatefulSessionStoreStatsImpl
 	    return (AverageRangeStatistic) activationTime.unmodifiableView();
 	}
     }
-    
+
     /**
      * Returns the total number of bytes passivated by this store including total, min, maximum
      */
@@ -306,7 +297,7 @@ public class StatefulSessionStoreStatsImpl
 	    return (AverageRangeStatistic) passivationTime.unmodifiableView();
 	}
     }
-    
+
     //The following methods are called from StatefulSessionStoreMonitor
     //
     void incrementActivationCount(boolean success) {
@@ -317,7 +308,7 @@ public class StatefulSessionStoreStatsImpl
 	    } else {
 		activationErrorCountVal++;
 	    }
-	}     
+	}
     }
 
     void incrementPassivationCount(boolean success) {
@@ -361,7 +352,7 @@ public class StatefulSessionStoreStatsImpl
 	}
     }
 
-    protected void appendStats(StringBuffer sbuf) {
+    protected void appendStats(StringBuilder sbuf) {
 	sbuf.append("currentSize=").append(provider.getCurrentStoreSize())
 	    .append("; ")
 	    .append("ActivationCount=").append(activationCountVal)
@@ -386,7 +377,7 @@ public class StatefulSessionStoreStatsImpl
 
     }
 
-    protected static void appendTimeStatistic(StringBuffer sbuf, String name,
+    protected static void appendTimeStatistic(StringBuilder sbuf, String name,
 	    MutableAverageRangeStatisticImpl stat)
     {
 	sbuf.append(name).append("(")

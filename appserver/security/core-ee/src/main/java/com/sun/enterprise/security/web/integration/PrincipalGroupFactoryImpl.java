@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 /*
  * PrincipalGroupFactory.java
  *
@@ -48,11 +48,12 @@ package com.sun.enterprise.security.web.integration;
 
 import java.lang.ref.WeakReference;
 
-import com.sun.enterprise.security.PrincipalGroupFactory;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
+import org.glassfish.security.common.PrincipalImpl;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.security.PrincipalGroupFactory;
 
 /**
  *
@@ -61,41 +62,44 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class PrincipalGroupFactoryImpl implements PrincipalGroupFactory {
 
-    /** Creates a new instance of PrincipalGroupFactory */
-
     private static WeakReference<WebSecurityManagerFactory> webSecurityManagerFactory = new WeakReference<WebSecurityManagerFactory>(null);
-
-    private static synchronized WebSecurityManagerFactory _getWebSecurityManagerFactory() {
-        if (webSecurityManagerFactory.get() == null) {
-            webSecurityManagerFactory = new WeakReference<WebSecurityManagerFactory>(Globals.get(WebSecurityManagerFactory.class));
-        }
-        return webSecurityManagerFactory.get();
-    }
-
-    private static WebSecurityManagerFactory getWebSecurityManagerFactory() {
-        if (webSecurityManagerFactory.get() != null) {
-            return webSecurityManagerFactory.get();
-        }
-        return _getWebSecurityManagerFactory();
-    }
 
     @Override
     public PrincipalImpl getPrincipalInstance(String name, String realm) {
-        WebSecurityManagerFactory fact = getWebSecurityManagerFactory();
-        PrincipalImpl p = (PrincipalImpl) fact.getAdminPrincipal(name, realm);
-        if (p == null) {
-            p = new PrincipalImpl(name);
+        PrincipalImpl principal = (PrincipalImpl) getWebSecurityManagerFactory().getAdminPrincipal(name, realm);
+        if (principal == null) {
+            principal = new PrincipalImpl(name);
         }
-        return p;
+        
+        return principal;
     }
 
     @Override
     public Group getGroupInstance(String name, String realm) {
-        WebSecurityManagerFactory fact = getWebSecurityManagerFactory();
-        Group g = (Group) fact.getAdminGroup(name, realm);
-        if (g == null) {
-            g = new Group(name);
+        Group group = (Group) getWebSecurityManagerFactory().getAdminGroup(name, realm);
+        if (group == null) {
+            group = new Group(name);
         }
-        return g;
+        
+        return group;
+    }
+    
+    
+    // ### Private methods
+    
+    private static WebSecurityManagerFactory getWebSecurityManagerFactory() {
+        if (webSecurityManagerFactory.get() != null) {
+            return webSecurityManagerFactory.get();
+        }
+        
+        return _getWebSecurityManagerFactory();
+    }
+    
+    private static synchronized WebSecurityManagerFactory _getWebSecurityManagerFactory() {
+        if (webSecurityManagerFactory.get() == null) {
+            webSecurityManagerFactory = new WeakReference<WebSecurityManagerFactory>(Globals.get(WebSecurityManagerFactory.class));
+        }
+
+        return webSecurityManagerFactory.get();
     }
 }

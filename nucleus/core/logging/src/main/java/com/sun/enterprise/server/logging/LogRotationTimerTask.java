@@ -37,17 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
-
 import org.glassfish.api.logging.Task;
-import java.util.TimerTask;
 
-public class LogRotationTimerTask extends TimerTask {
+public class LogRotationTimerTask implements Runnable {
+
     private long timerValue;
     public Task task;
-
 
     public LogRotationTimerTask(Task task, long timeInMinutes ) {
         timerValue = timeInMinutes * 60 * 1000;
@@ -59,7 +58,7 @@ public class LogRotationTimerTask extends TimerTask {
     }
 
     public long getRotationTimerValueInMinutes( ) {
-        // We are just converting the value from milliseconds back to 
+        // We are just converting the value from milliseconds back to
         // minutes
         return timerValue/60000;
     }
@@ -67,5 +66,5 @@ public class LogRotationTimerTask extends TimerTask {
     public void run( ) {
         task.run();
     }
-}    
+}
 

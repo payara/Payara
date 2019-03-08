@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -175,12 +176,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberGroup = nodeConfig.getMemberGroup();
         } else {
             memberName = context.getInstanceName();
-            Cluster cluster = context.getConfigBean().getCluster();
-            if (cluster == null) {
-                memberGroup = context.getConfigBean().getConfigRef();
-            } else {
-                memberGroup = cluster.getName();
-            }
+            memberGroup = nodeConfig.getMemberGroup();
         }
     }
     
@@ -403,13 +399,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
         if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
-        
 
         MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
         memberAddressProviderConfig.setEnabled(enabled);
         memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
 
-        
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
@@ -432,11 +426,16 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-            config.getNetworkConfig().setPortAutoIncrement(true);
             mcConfig.setEnabled(true);                       
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
-        } else {   
+        } else if (discoveryMode.startsWith("kubernetes")) {
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+            config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
+                    .setProperty(KubernetesProperties.NAMESPACE.key(), configuration.getKubernetesNamespace())
+                    .setProperty(KubernetesProperties.SERVICE_NAME.key(), configuration.getKubernetesServiceName())
+                    .setProperty(KubernetesProperties.SERVICE_PORT.key(), configuration.getStartPort());
+        } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
@@ -447,6 +446,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
+        config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getAutoIncrementPort()));
     }
 
     private void shutdownHazelcast() {

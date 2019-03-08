@@ -40,13 +40,14 @@
     holder.
 
 -->
+<!--"Portions Copyright [2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>javaee-api-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     
     <artifactId>javaee-web-api</artifactId>
@@ -143,12 +144,12 @@
         <!-- work around for GLASSFISH-19861  -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.faces</artifactId>
+            <artifactId>jakarta.faces</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.faces</groupId>
-            <artifactId>javax.faces-api</artifactId>
+            <groupId>jakarta.faces</groupId>
+            <artifactId>jakarta.faces-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -207,8 +208,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>javax.security.auth.message-api</artifactId>
+            <groupId>jakarta.security.auth.message</groupId>
+            <artifactId>jakarta.security.auth.message-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

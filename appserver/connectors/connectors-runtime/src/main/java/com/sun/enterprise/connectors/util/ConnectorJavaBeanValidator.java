@@ -37,21 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
+import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.validation.*;
 import javax.validation.metadata.BeanDescriptor;
-import java.util.Set;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import java.util.Set;
 import java.util.logging.Level;
-
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.connectors.ConnectorRegistry;
+import java.util.logging.Logger;
 
 @Service
 public class ConnectorJavaBeanValidator {
@@ -73,7 +73,7 @@ public class ConnectorJavaBeanValidator {
 
                 if (constraintViolations != null && constraintViolations.size() > 0) {
                     ConstraintViolationException cve = new ConstraintViolationException(constraintViolations);
-                    StringBuffer msg = new StringBuffer();    
+                    StringBuilder msg = new StringBuilder();
 
                     Iterator it = constraintViolations.iterator();
                     while (it.hasNext()) {

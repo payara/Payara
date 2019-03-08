@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016] [Payara Foundation]" -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-core</artifactId>
@@ -182,24 +182,6 @@
         <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>dataprovider</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>registration-api</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>registration-impl</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>glassfish-registration</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

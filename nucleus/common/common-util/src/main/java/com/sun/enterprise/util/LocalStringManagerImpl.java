@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util;
 
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 //END OF IASRI 4660742
 
 
@@ -81,7 +83,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
      *
      * <p>This simplifies access to resources, at the cost of checking for
      * the resource bundle of several classes upon each call. However, due
-     * to the caching performed by <tt>ResourceBundle</tt> this seems 
+     * to the caching performed by <tt>ResourceBundle</tt> this seems
      * reasonable.
      *
      * <p>Due to that, sub-classes <strong>must</strong> make sure they don't
@@ -92,44 +94,36 @@ public class LocalStringManagerImpl implements LocalStringManager {
      * @param defaultValue The default return value if not found
      * @return The localized value for the resource
      */
-    public String getLocalString(
-	Class callerClass,
-	String key,
-	String defaultValue
-    ) {
-	Class stopClass  = defaultClass.getSuperclass();
-	Class startClass = ((callerClass != null) ? callerClass : 
-			    defaultClass);
-	ResourceBundle resources  = null;
-	boolean globalDone = false;
-	for (Class c = startClass; 
-	     c != stopClass && c != null;
-	     c = c.getSuperclass()) {
-	    globalDone = (c == defaultClass);
-	    try {
-		// Construct the bundle name as LocalStrings in the
-		// caller class's package.
-		StringBuffer resFileName = new StringBuffer(
-		    c.getName().substring(0, c.getName().lastIndexOf(".")));
-		resFileName.append(".LocalStrings");
-
-		resources = ResourceBundle.getBundle(resFileName.toString(), Locale.getDefault(), c.getClassLoader());
-		if ( resources != null ) {
-		    String value = resources.getString(key);
-		    if ( value != null )
-			return value;
+    public String getLocalString(Class callerClass, String key, String defaultValue) {
+		Class stopClass  = defaultClass.getSuperclass();
+		Class startClass = callerClass != null
+				? callerClass
+				: defaultClass;
+		ResourceBundle resources  = null;
+		boolean globalDone = false;
+		for (Class c = startClass;
+			 c != stopClass && c != null;
+			 c = c.getSuperclass()) {
+			globalDone = (c == defaultClass);
+			try {
+				// Construct the bundle name as LocalStrings in the
+				// caller class's package.
+				String baseName = c.getName().substring(0, c.getName().lastIndexOf(".")) + ".LocalStrings";
+				resources = ResourceBundle.getBundle(baseName, Locale.getDefault(), c.getClassLoader());
+				if ( resources != null ) {
+					return resources.getString(key);
+				}
+			} catch (Exception ex) {
+			}
 		}
-	    } catch (Exception ex) {
-	    }
-	} 
 
-	// Look for a global resource (defined by defaultClass)
-	if ( ! globalDone ) {
-	    return getLocalString(null, key, defaultValue);
-	} else {
-            CULoggerInfo.getLogger().log(Level.FINE, "No local string for", key);
-	    return defaultValue;
-	}
+		// Look for a global resource (defined by defaultClass)
+		if ( ! globalDone ) {
+			return getLocalString(null, key, defaultValue);
+		} else {
+				CULoggerInfo.getLogger().log(Level.FINE, "No local string for", key);
+			return defaultValue;
+		}
     }
 
     /**
@@ -146,45 +140,36 @@ public class LocalStringManagerImpl implements LocalStringManager {
      * Get a local string for the caller and format the arguments accordingly.
      * @param callerClass The caller (to walk through its class hierarchy)
      * @param key The key to the local format string
-     * @param fmt The default format if not found in the resources
+     * @param defaultFormat The default format if not found in the resources
      * @param arguments The set of arguments to provide to the formatter
      * @return A formatted localized string
      */
 
-    public String getLocalString(
-	Class callerClass,
-	String key,
-	String defaultFormat,
-	Object... arguments
-    ) {
-	MessageFormat f = new MessageFormat(
-	    getLocalString(callerClass, key, defaultFormat));
-	for (int i = 0; i < arguments.length; i++) {
-	    if ( arguments[i] == null ) {
-		arguments[i] = "null";
-	    } else if  ( !(arguments[i] instanceof String) &&
-		 !(arguments[i] instanceof Number) &&
-		 !(arguments[i] instanceof java.util.Date)) {
-		arguments[i] = arguments[i].toString();
-	    }
-	}
-	return f.format(arguments);
+    public String getLocalString(Class callerClass, String key, String defaultFormat, Object... arguments) {
+		MessageFormat f = new MessageFormat(
+			getLocalString(callerClass, key, defaultFormat));
+		for (int i = 0; i < arguments.length; i++) {
+			if ( arguments[i] == null ) {
+			arguments[i] = "null";
+			} else if  ( !(arguments[i] instanceof String) &&
+			 !(arguments[i] instanceof Number) &&
+			 !(arguments[i] instanceof java.util.Date)) {
+			arguments[i] = arguments[i].toString();
+			}
+		}
+		return f.format(arguments);
     }
 
     /**
      * Get a local string from the package of the default class and
      * format the arguments accordingly.
      * @param key The key to the local format string
-     * @param fmt The default format if not found in the resources
+     * @param defaultFormat The default format if not found in the resources
      * @param arguments The set of arguments to provide to the formatter
      * @return A formatted localized string
      */
-    public String getLocalString(
-	String key,
-	String defaultFormat,
-	Object... arguments
-    ) {
-	return getLocalString(null, key, defaultFormat, arguments);
+    public String getLocalString(String key, String defaultFormat, Object... arguments) {
+		return getLocalString(null, key, defaultFormat, arguments);
     }
 }
 

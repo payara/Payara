@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -135,7 +135,7 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "dasPort", optional = true)
     private String dasPort;
 
-    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip,dns")
+    @Param(name = "clusterMode", optional = true, acceptableValues = "domain,multicast,tcpip,dns,kubernetes")
     private String clusterMode;
 
     @Param(name = "tcpIpMembers", optional = true)
@@ -194,7 +194,16 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
     @Param(name = "memberGroup", optional = true)
     private String memberGroup;
+    
+    @Param(name = "kubernetesNamespace", optional = true, alias = "kubernetesnamespace")
+    private String kubernetesNamespace;
+    
+    @Param(name = "kubernetesServiceName", optional = true, alias = "kubernetesservicename")
+    private String kubernetesServiceName;
 
+    @Param(name = "autoIncrementPort", optional = true)
+    private Boolean autoIncrementPort;
+    
     @Inject
     ServiceLocator serviceLocator;
 
@@ -269,6 +278,15 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (interfaces != null) {
                             hazelcastRuntimeConfigurationProxy.setInterface(interfaces);
+                        }
+                        if (kubernetesNamespace != null) {
+                            hazelcastRuntimeConfigurationProxy.setKubernetesNamespace(kubernetesNamespace);
+                        }
+                        if (kubernetesServiceName != null) {
+                            hazelcastRuntimeConfigurationProxy.setKubernetesServiceName(kubernetesServiceName);
+                        }
+                        if (autoIncrementPort != null) {
+                            hazelcastRuntimeConfigurationProxy.setAutoIncrementPort(autoIncrementPort.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

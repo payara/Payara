@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
@@ -71,14 +71,14 @@ public class EjbIORConfigurationDescriptor implements Serializable {
     private String realmName = DEFAULT_REALM;
     private String callerPropagation = SUPPORTED;
     private boolean required = false;
-       
+
     static Logger _logger = DOLUtils.getDefaultLogger();
-    
-    /** 
-    * Default constructor. 
+
+    /**
+    * Default constructor.
     */
     public EjbIORConfigurationDescriptor() {
-	try {	
+	try {
 	    if (Boolean.getBoolean("interop.ssl.required")) {
 		integrity = REQUIRED;
 		confidentiality = REQUIRED;
@@ -92,14 +92,14 @@ public class EjbIORConfigurationDescriptor implements Serializable {
 	    }
 	} catch(Throwable ioe) {
          _logger.log(Level.WARNING,"enterprise.deployment_ioexcp",ioe);
-            
+
 	    // ignore
 	}
     }
 
     /**
      * Constuctor
-     * @param enableUsernamePassword 
+     * @param enableUsernamePassword
      */
     public EjbIORConfigurationDescriptor(boolean enableUsernamePassword) {
 	if(enableUsernamePassword) {
@@ -121,7 +121,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the value (one of supported, required, none).
      */
     public void setIntegrity(String val) {
-	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
+	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) &&
 	    !val.equalsIgnoreCase(REQUIRED)) {
 	    throw new RuntimeException("Incorrect value for integrity:" + val);
 	}
@@ -130,7 +130,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
     }
 
     /**
-     * Get the value of the confidentiality element. 
+     * Get the value of the confidentiality element.
      * Default value is "supported".
      * @return the value (one of supported, required, none).
      */
@@ -143,14 +143,14 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the value (one of supported, required, none).
      */
     public void setConfidentiality(String val) {
-	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
+	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) &&
 	    !val.equalsIgnoreCase(REQUIRED)) {
 	    throw new RuntimeException("Incorrect value for confidentiality:" +
 					val);
 	}
 	confidentiality = val;
     }
-    
+
     /**
      * Get the value of establishTrustInTarget in the transport layer.
      * The default value is "supported".
@@ -166,7 +166,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      */
     public void setEstablishTrustInTarget(String val) {
 	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED)) {
-	    throw new RuntimeException("Incorrect value for " + 
+	    throw new RuntimeException("Incorrect value for " +
 	        "establishTrustInTarget:" + val);
 	}
 
@@ -187,9 +187,9 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the value (required, supported, or none)
      */
     public void setEstablishTrustInClient(String val) {
-	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
+	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) &&
 	    !val.equalsIgnoreCase(REQUIRED)) {
-	    throw new RuntimeException("Incorrect value for " + 
+	    throw new RuntimeException("Incorrect value for " +
 	    	"establishTrustInClient:" + val);
 	}
 
@@ -211,7 +211,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      */
     public void setAuthenticationMethod(String val) {
 	if(!val.equalsIgnoreCase(USERNAME_PASSWORD) && !val.equalsIgnoreCase(NONE)) {
-	    throw new RuntimeException("Incorrect value for " + 
+	    throw new RuntimeException("Incorrect value for " +
 	    	"authentication method:" + val);
 	}
 	authenticationMethod = val;
@@ -231,7 +231,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the realm name.
      */
     public void setRealmName(String val) {
-	realmName = val; 
+	realmName = val;
     }
 
     /**
@@ -247,7 +247,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the value (one of none, required or supported).
      */
     public void setCallerPropagation(String val) {
-	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) && 
+	if(!val.equalsIgnoreCase(NONE) && !val.equalsIgnoreCase(SUPPORTED) &&
 	    !val.equalsIgnoreCase(REQUIRED)) {
 	    throw new RuntimeException("Incorrect value for callerPropagation:" + val);
 	}
@@ -271,7 +271,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
     public void setAuthMethodRequired(boolean val) {
 	required = val;
     }
-    
+
 
     /**
      * Set whether the establishTrustInClient element should be required
@@ -280,20 +280,20 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      */
     public void setAuthMethodRequired(String val) {
 	required = Boolean.valueOf(val).booleanValue();
-    }    
+    }
 
     /**
     * Returns a formatted String of the attributes of this object.
-     * @param toStringBuffer
+     * @param toStringBuilder
     */
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("\n integrity ").append(integrity);
-	toStringBuffer.append( "\n confidentiality " ).append( confidentiality);
-	toStringBuffer.append( "\n establishTrustInTarget ").append(establishTrustInTarget);
-	toStringBuffer.append( "\n establishTrustInClient ").append(establishTrustInClient);
-	toStringBuffer.append( "\n callerPropagation ").append(callerPropagation);
-	toStringBuffer.append( "\n realm ").append(realmName);
-	toStringBuffer.append( "\n authenticationMethod ").append(authenticationMethod).append("\n");
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("\n integrity ").append(integrity);
+	toStringBuilder.append( "\n confidentiality " ).append( confidentiality);
+	toStringBuilder.append( "\n establishTrustInTarget ").append(establishTrustInTarget);
+	toStringBuilder.append( "\n establishTrustInClient ").append(establishTrustInClient);
+	toStringBuilder.append( "\n callerPropagation ").append(callerPropagation);
+	toStringBuilder.append( "\n realm ").append(realmName);
+	toStringBuilder.append( "\n authenticationMethod ").append(authenticationMethod).append("\n");
     }
 }
-    
+

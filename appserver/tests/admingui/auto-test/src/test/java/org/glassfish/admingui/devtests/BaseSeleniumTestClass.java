@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -63,7 +64,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.thoughtworks.selenium.Selenium;
 /**
- * 
+ *
  * @author Jeremy Lv
  *
  */
@@ -76,10 +77,10 @@ public class BaseSeleniumTestClass {
     protected static Selenium selenium;
     protected static final int TIMEOUT = 90;
     public static final int TIMEOUT_CALLBACK_LOOP = 1000;
-    
+
     protected static final Logger logger = Logger.getLogger(BaseSeleniumTestClass.class.getName());
     public static final String TRIGGER_COMMON_TASKS = "Other Tasks";
-    
+
     @Before
     public void setUp() throws Exception {
         driver = new FirefoxDriver();
@@ -94,7 +95,7 @@ public class BaseSeleniumTestClass {
             fail(verificationErrorString);
         }
     }
-    
+
     // *************************************************************************
     // Wrappers for Selenium API
     // *************************************************************************
@@ -105,12 +106,12 @@ public class BaseSeleniumTestClass {
         // prepend a letter to insure valid JSF ID, which is causing failures in some areas
         return "a" + new BigInteger(130, random).toString(16);
     }
-    
+
     protected int generateRandomNumber() {
         Random r = new Random();
         return Math.abs(r.nextInt()) + 1;
     }
-    
+
     protected String getTableRowByValue(String tableId, String value, String valueColId) {
         try {
             int row = 0;
@@ -127,7 +128,7 @@ public class BaseSeleniumTestClass {
             return "";
         }
     }
-    
+
     protected String getTableRowByVal(String tableId, String value, String valueColId) {
         try {
             int row = 0;
@@ -144,7 +145,7 @@ public class BaseSeleniumTestClass {
             return "";
         }
     }
-    
+
     /**
      * Gets the text of an element.
      * @param elem
@@ -153,7 +154,7 @@ public class BaseSeleniumTestClass {
     public String getText(String elem) {
         return driver.findElement(By.id(elem)).getText();
     }
-    
+
     /**
      * Gets the value of an element.
      * @param elem
@@ -162,14 +163,14 @@ public class BaseSeleniumTestClass {
     public String getValue(String elem, String attribute) {
         return driver.findElement(By.id(elem)).getAttribute(attribute);
     }
-    
+
     public void sleep(int milli){
     	try {
 			Thread.sleep(milli);
 		} catch (InterruptedException e) {
 		}
     }
-    
+
     /**
      * Types the specified text into the requested element
      * @param elem
@@ -179,19 +180,19 @@ public class BaseSeleniumTestClass {
         driver.findElement(By.id(elem)).clear();
         driver.findElement(By.id(elem)).sendKeys(text);
     }
-    
+
     public void clickByIdAction(String idName){
         driver.findElement(By.id(idName)).click();
     }
-    
+
     public void clearByIdAction(String idName){
         driver.findElement(By.id(idName)).clear();
     }
-    
+
     public void sendKeysByIdAction(String idName, String name){
         driver.findElement(By.id(idName)).sendKeys(name);
     }
-    
+
     protected int addTableRow(String tableId, String buttonId) {
         return addTableRow(tableId, buttonId, "Additional Properties");
     }
@@ -201,18 +202,18 @@ public class BaseSeleniumTestClass {
         clickAndWait(buttonId);
         return ++count;
     }
-    
+
     protected int getTableRowCount(String id) {
         String text = getText(id);
         int count = Integer.parseInt(text.substring(text.indexOf("(") + 1, text.indexOf(")")));
         return count;
     }
-    
+
     protected void clickAndWait(String id) {
         insureElementIsVisible(id);
         clickByIdAction(id);
     }
-    
+
     private void insureElementIsVisible (final String id) {
         if (!id.contains("treeForm:tree")) {
             return;
@@ -237,11 +238,11 @@ public class BaseSeleniumTestClass {
             clickByIdAction(grandParentId + ":" + nodeId + "_turner");
         }
     }
-    
+
     protected void assertTableRowCount(String tableId, int count) {
         Assert.assertEquals(count, getTableRowCount(tableId));
     }
-    
+
     public void waitForAlertProcess(String className){
         try {
             while(true){
@@ -255,7 +256,7 @@ public class BaseSeleniumTestClass {
         } catch (StaleElementReferenceException sere) {
         }
     }
-    
+
     public String closeAlertAndGetItsText() {
         try {
             Alert alert = driver.switchTo().alert();
@@ -270,25 +271,25 @@ public class BaseSeleniumTestClass {
             acceptNextAlert = true;
         }
     }
-    
+
     public void isElementPresent(String idName){
         while(!driver.findElement(By.id(idName)).isDisplayed()){
             sleep(500);
         }
     }
-    
+
     public void isCheckboxSelected(String checkbox){
         while(driver.findElement(By.id(checkbox)).isSelected()){
             sleep(500);
         }
     }
-    
+
     public void isClassPresent(String className){
         while(!driver.findElement(By.className(className)).isDisplayed()){
             sleep(500);
         }
     }
-    
+
     public void deleteRow(String delBtn,String tableId, String Name) {
         String clickId = getTableRowByValue(tableId, Name, "col1")+"col0:select";
         clickByIdAction(clickId);
@@ -296,19 +297,19 @@ public class BaseSeleniumTestClass {
         closeAlertAndGetItsText();
         waitForAlertProcess("modalBody");
     }
-    
+
     public void waitforBtnDisable(String btnId){
         while (driver.findElement(By.id(btnId)).isEnabled()){
             sleep(500);
         }
     }
-    
+
     public void waitForButtonEnabled(String btnId){
         while (!driver.findElement(By.id(btnId)).isEnabled()){
             sleep(500);
         }
     }
-    
+
     public boolean isTextPresent(String prefix, String name, String tableId){
         if (getTableRowCount(tableId) == 0) {
             return false;
@@ -322,11 +323,11 @@ public class BaseSeleniumTestClass {
             return false;
         }
     }
-    
+
     protected int getTableRowCountByValue(String tableId, String value, String valueColId) {
         return getTableRowCountByValue(tableId, value, valueColId, true);
     }
-    
+
     protected int getTableRowCountByValue(String tableId, String value, String valueColId, Boolean isLabel) {
         int tableCount = getTableRowCount(tableId);
         int selectedCount = 0;
@@ -348,22 +349,22 @@ public class BaseSeleniumTestClass {
         }
         return selectedCount;
     }
-    
+
     protected int generateRandomNumber(int max) {
         Random r = new Random();
         return Math.abs(r.nextInt(max - 1)) + 1;
     }
-    
+
     public void gotoDasPage() {
         driver.get(baseUrl + "common/index.jsf");
     }
-    
+
     public void waitForElementPresent(String className, String value) {
         while(!driver.findElement(By.className(className)).getText().equals(value)){
             sleep(500);
         }
     }
-    
+
     protected List<String> getTableRowsByValue(String tableId, String value, String valueColId) {
         List<String> rows = new ArrayList<String>();
         try {
@@ -381,7 +382,7 @@ public class BaseSeleniumTestClass {
 
         return rows;
     }
-    
+
     protected void selectTableRowByValue(String tableId, String value, String selectColId, String valueColId) {
         List<String> rows = getTableRowsByValue(tableId, value, valueColId);
         for (String row : rows) {
@@ -392,7 +393,7 @@ public class BaseSeleniumTestClass {
             }
         }
     }
-    
+
     protected boolean isElementSaveSuccessful(String className, String msg){
         isClassPresent(className);
         if (driver.findElement(By.className(className)).getText().equals(msg))

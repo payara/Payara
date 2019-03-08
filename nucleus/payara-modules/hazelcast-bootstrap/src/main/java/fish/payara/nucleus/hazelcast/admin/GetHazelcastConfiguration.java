@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -109,6 +109,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
         columnFormatter.addRow(new Object[]{"Configuration File",runtimeConfiguration.getHazelcastConfigurationFile(),"Domain"});
         columnFormatter.addRow(new Object[]{"Interfaces",runtimeConfiguration.getInterface(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Auto Increment Port", runtimeConfiguration.getAutoIncrementPort(), "Domain"});
         columnFormatter.addRow(new Object[]{"Start Port",runtimeConfiguration.getStartPort(),"Domain"});
         columnFormatter.addRow(new Object[]{"Cluster Name",runtimeConfiguration.getClusterGroupName(),"Domain"});
         columnFormatter.addRow(new Object[]{"Cluster Password",runtimeConfiguration.getClusterGroupPassword(),"Domain"});
@@ -122,6 +123,8 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"DNS Members",runtimeConfiguration.getDnsMembers(),"Domain"});
         columnFormatter.addRow(new Object[]{"MulticastGroup",runtimeConfiguration.getMulticastGroup(),"Domain"});
         columnFormatter.addRow(new Object[]{"MulticastPort",runtimeConfiguration.getMulticastPort(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Kubernetes Namespace",runtimeConfiguration.getKubernetesNamespace(),"Domain"});
+        columnFormatter.addRow(new Object[]{"Kubernetes Service Name",runtimeConfiguration.getKubernetesServiceName(),"Domain"});
         columnFormatter.addRow(new Object[]{"Enabled",nodeConfiguration.getEnabled(),"Config"});
         columnFormatter.addRow(new Object[]{"JNDIName",nodeConfiguration.getJNDIName(),"Config"});
         columnFormatter.addRow(new Object[]{"Cache Manager JNDI Name",nodeConfiguration.getCacheManagerJNDIName(),"Config"});
@@ -139,6 +142,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", runtimeConfiguration.getHazelcastConfigurationFile());
         map.put("enabled", nodeConfiguration.getEnabled());
+        map.put("autoIncrementPort", runtimeConfiguration.getAutoIncrementPort());
         map.put("startPort", runtimeConfiguration.getStartPort());
         map.put("multicastGroup", runtimeConfiguration.getMulticastGroup());
         map.put("multicastPort", runtimeConfiguration.getMulticastPort());
@@ -164,7 +168,9 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("scheduledExecutorPoolSize", nodeConfiguration.getScheduledExecutorPoolSize());
         map.put("scheduledExecutorQueueCapacity", nodeConfiguration.getScheduledExecutorQueueCapacity());
         map.put("publicAddress", nodeConfiguration.getPublicAddress());
-
+        map.put("kubernetesNamespace", runtimeConfiguration.getKubernetesNamespace());
+        map.put("kubernetesServiceName", runtimeConfiguration.getKubernetesServiceName());
+        
         extraProps.put("getHazelcastConfiguration",map);
                 
         actionReport.setExtraProperties(extraProps);

@@ -65,7 +65,7 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
                     ejbDescriptor.getClusteredLockType() : DistributedLockType.LOCK_NONE;
         return super.isDistributedLockEnabled() && distLockType != DistributedLockType.LOCK_NONE;
     }
-    
+
     @Override
     public String getClusteredSessionKey() {
         return ejbDescriptor.getClusteredKeyValue().isEmpty()? ejbDescriptor.getName() : ejbDescriptor.getClusteredKeyValue();

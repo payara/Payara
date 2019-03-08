@@ -39,6 +39,7 @@
 package fish.payara.nucleus.healthcheck;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.notification.TimeUtil;
@@ -67,11 +68,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -114,24 +115,22 @@ public class HealthCheckService implements EventListener, ConfigListener {
     @Inject
     private HistoricHealthCheckEventStore healthCheckEventStore;
 
+    @Inject 
+    private PayaraExecutorService executor;
+
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
-
     private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-    private ScheduledExecutorService executor;
-    private ScheduledExecutorService historicCleanerExecutor;
     private Map<String, HealthCheckTask> registeredTasks = new HashMap<>();
     private boolean enabled;
     private boolean historicalTraceEnabled;
     private Integer historicalTraceStoreSize;
     private Long historicalTraceStoreTimeout;
+    private ScheduledFuture<?> historicalTraceTask;
+    private Set<ScheduledFuture<?>> scheduledCheckers;
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
-            executor.shutdownNow();
-        }
-        else if (event.is(EventTypes.SERVER_READY)) {
+        if (event.is(EventTypes.SERVER_READY)) {
             bootstrapHealthCheck();
         }
 
@@ -184,30 +183,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
      */
     public void bootstrapHealthCheck() {
         if (configuration != null) {
-            final Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread th, Throwable ex) {
-                    logger.log(Level.SEVERE, "Uncaught exception in Health Check thread " + ex);
-                }
-            };
-
-            executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread thread = new Thread(r, PREFIX + threadNumber.getAndIncrement());
-                    thread.setUncaughtExceptionHandler(exceptionHandler);
-                    return thread;
-                }
-            });
-
-            historicCleanerExecutor = Executors.newScheduledThreadPool(1,  new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, "health-check-historic-trace-store-cleanup-task");
-                }
-            });
-
             if (enabled) {
+                scheduledCheckers = new HashSet<>();
                 executeTasks();
                 if (historicalTraceEnabled) {
                     healthCheckEventStore.initialize(historicalTraceStoreSize);
@@ -217,7 +194,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
                         // if not use timeout value as period
                         long period = historicalTraceStoreTimeout > TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD
                                 ? TimeUtil.CLEANUP_TASK_FIVE_MIN_PERIOD : historicalTraceStoreTimeout;
-                        historicCleanerExecutor.scheduleAtFixedRate(
+                        historicalTraceTask = executor.scheduleAtFixedRate(
                                 new HistoricHealthCheckCleanupTask(historicalTraceStoreTimeout), 0, period, TimeUnit.SECONDS);
                     }
                 }
@@ -254,9 +231,12 @@ public class HealthCheckService implements EventListener, ConfigListener {
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
 
             if (registeredTask.getCheck().getOptions().isEnabled()) {
-                executor.scheduleAtFixedRate(registeredTask, 0,
+                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
                         registeredTask.getCheck().getOptions().getTime(),
                         registeredTask.getCheck().getOptions().getUnit());
+                if (scheduledCheckers != null) {
+                    scheduledCheckers.add(checker);
+                }
             }
         }
     }
@@ -304,14 +284,19 @@ public class HealthCheckService implements EventListener, ConfigListener {
      * Gracefully shuts down the healthcheck service
      */
     public void shutdownHealthCheck() {
-        if (executor != null) {
-            executor.shutdownNow();
-        }
-        if (historicCleanerExecutor != null) {
-            historicCleanerExecutor.shutdownNow();
-        }
-
         Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
+        
+        if (historicalTraceTask != null) {
+            historicalTraceTask.cancel(false);
+            historicalTraceTask = null;
+        }
+        
+        if (scheduledCheckers != null) {
+            for (ScheduledFuture<?> scheduledChecker : scheduledCheckers) {
+                scheduledChecker.cancel(false);
+            }
+            scheduledCheckers.clear();
+        }
     }
 
     public BaseHealthCheck getCheck(String serviceName) {

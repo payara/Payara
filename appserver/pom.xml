@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -63,7 +63,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.184-SNAPSHOT</tag>
+        <tag>payara-server-5.192-SNAPSHOT</tag>
     </scm>
 
 
@@ -74,40 +74,33 @@
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
+        <!-- EJB -->
+        <javax.ejb-api.version>3.2</javax.ejb-api.version>
 
         <!-- JSP -->
-        <jsp-api.version>2.3.2-b01</jsp-api.version>
-        <jsp-impl.version>2.3.3-b02</jsp-impl.version>
+        <jsp-api.version>2.3.3</jsp-api.version>
+        <jsp-impl.version>2.3.4</jsp-impl.version>
 
         <!-- JSTL -->
-        <jstl-api.version>1.2.1</jstl-api.version>
-        <jstl-impl.version>1.2.5-b03</jstl-impl.version>
+        <jstl-api.version>1.2.2</jstl-api.version>
+        <jstl-impl.version>1.2.5</jstl-impl.version>
 
         <!-- JSF -->
-        <javax.faces-spec.version>2.3</javax.faces-spec.version>
-        <javax.faces-api.version>2.3</javax.faces-api.version>
-        <mojarra.version>2.3.3.99.payara-p8</mojarra.version>
+        <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
+        <jakarta.faces-api.version>2.3.1</jakarta.faces-api.version>
+        <mojarra.version>2.3.9.payara-p2</mojarra.version>
 
         <!-- WebSocket -->
         <websocket-api.version>1.1</websocket-api.version>
-        <tyrus.version>1.13.1</tyrus.version>
-
-        <!-- JAX-B -->
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0</jaxb.version>
+        <tyrus.version>1.14</tyrus.version>
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0.2</yasson.version>
 
-        <!-- JSON-P -->
-        <jsonp-api.version>1.1</jsonp-api.version>
-        <jsonp-ri.version>1.1</jsonp-ri.version>
-        <jsonp-jaxrs.version>1.1.1</jsonp-jaxrs.version>
-
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
-        <eclipselink.version>2.7.3</eclipselink.version>
+        <eclipselink.version>2.7.4.payara-p1</eclipselink.version>
 
         <!-- JTA -->
         <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
@@ -122,7 +115,8 @@
         <!-- CDI -->
         <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0.SP1</cdi-api.version>
-        <weld.version>3.0.5.Final.payara-p1</weld.version>
+        <weld.version>3.1.0.Final</weld.version>
+        <weld-bundle.version>3.1.0.Final</weld-bundle.version>
         <weld-api.version>3.0.SP4</weld-api.version>
         <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
         <apache.bcel.version>6.2</apache.bcel.version>
@@ -136,7 +130,7 @@
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
 
         <!-- JASPIC -->
-        <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
+        <jakarta.security.auth.message-api.version>1.1.2</jakarta.security.auth.message-api.version>
 
         <!-- JMS -->
         <jms-api.version>2.0.1</jms-api.version>
@@ -149,17 +143,14 @@
         <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
-        <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
-
         <!-- JAX-WS -->
 
         <!-- Metro Webservices is the JAX-WS impl -->
-        <webservices.version>2.4.0</webservices.version>
+        <webservices.version>2.4.3.payara-p1</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
-        <woodstox.version>4.4.1</woodstox.version>
+        <woodstox.version>5.1.0</woodstox.version>
         <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
-        <stax2-api.version>3.1.4</stax2-api.version>
+        <stax2-api.version>4.1</stax2-api.version>
 
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
@@ -184,12 +175,12 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>184-SNAPSHOT</minor_version>
+        <minor_version>192-SNAPSHOT</minor_version>
         <update_version></update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 
         <jsf-ext.version>0.2</jsf-ext.version>
-        <jsftemplating.version>2.1.2</jsftemplating.version>
+        <jsftemplating.version>2.1.3</jsftemplating.version>
         <woodstock.version>4.0.2.10.payara-p15</woodstock.version>
 
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
@@ -205,7 +196,7 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <wsdl4j.version>1.6.2</wsdl4j.version>
+        <wsdl4j.version>1.6.3</wsdl4j.version>
 
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
@@ -218,7 +209,7 @@
          <microprofile-openapi.version>1.0</microprofile-openapi.version>
 
          <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
-         <accessors-smart.version>1.2.payara-p1</accessors-smart.version>
+         <accessors-smart.version>1.2.payara-p2</accessors-smart.version>
          <json-smart.version>2.3</json-smart.version>
          <jcip-annotations.version>1.0-1</jcip-annotations.version>
          <!-- Yubico client validation version property -->
@@ -251,7 +242,6 @@
         <module>featuresets</module>
         <module>distributions</module>
         <module>security</module>
-        <module>registration</module>
         <module>tests</module>
         <module>osgi-platforms</module>
         <module>flashlight</module>
@@ -318,12 +308,12 @@
                             <artifact>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>javax.json</artifactId>
-                                <version>${jsonp-ri.version}</version>
+                                <version>${jsonp.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>1.0</specVersion>
-                            <implVersion>${jsonp-ri.version}</implVersion>
+                            <specVersion>${jsonp.version}</specVersion>
+                            <implVersion>${jsonp.version}</implVersion>
                             <apiPackage>javax.json</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -332,14 +322,14 @@
                         <spec>
                             <artifact>
                                 <groupId>org.glassfish</groupId>
-                                <artifactId>javax.faces</artifactId>
+                                <artifactId>jakarta.faces</artifactId>
                                 <version>${mojarra.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>${javax.faces-spec.version}</specVersion>
+                            <specVersion>${jakarta.faces-spec.version}</specVersion>
                             <implVersion>${mojarra.version}</implVersion>
-                            <apiPackage>javax.faces</apiPackage>
+                            <apiPackage>jakarta.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
 
@@ -375,14 +365,14 @@
                         <!-- JASPIC -->
                         <spec>
                             <artifact>
-                                <groupId>javax.security.auth.message</groupId>
-                                <artifactId>javax.security.auth.message-api</artifactId>
-                                <version>${javax.security.auth.message-api.version}</version>
+                                <groupId>jakarta.security.auth.message</groupId>
+                                <artifactId>jakarta.security.auth.message-api</artifactId>
+                                <version>1.1.2</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.security.auth.message-api.version}</specVersion>
-                            <specImplVersion>${javax.security.auth.message-api.version}</specImplVersion>
+                            <specVersion>${jakarta.security.auth.message-api.version}</specVersion>
+                            <specImplVersion>${jakarta.security.auth.message-api.version}</specImplVersion>
                             <apiPackage>javax.security.auth.message</apiPackage>
                         </spec>
 
@@ -396,7 +386,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>1.2</specVersion>
-                            <specImplVersion>1.2.1</specImplVersion>
+                            <specImplVersion>${jstl-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp.jstl</apiPackage>
                         </spec>
 
@@ -608,7 +598,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.3</specVersion>
-                            <specImplVersion>2.3.1</specImplVersion>
+                            <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>javax.servlet.jsp</apiPackage>
                         </spec>
                         <spec>
@@ -619,7 +609,7 @@
                             </artifact>
                             <jarType>impl</jarType>
                             <specVersion>3.0</specVersion>
-                            <implVersion>3.0.0</implVersion>
+                            <implVersion>${javax.el.version}</implVersion>
                             <apiPackage>javax.el</apiPackage>
                             <implNamespace>com.sun.el</implNamespace>
                         </spec>
@@ -657,11 +647,6 @@
                 <version>${javax.xml.rpc-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.faces</groupId>
-                <artifactId>javax.faces-api</artifactId>
-                <version>${javax.faces-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
                 <version>${cdi-api.version}</version>
@@ -671,7 +656,7 @@
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
             </dependency>
-    	        <dependency>
+    	    <dependency>
                 <groupId>javax.resource</groupId>
     		        <artifactId>javax.resource-api</artifactId>
     		        <version>${javax.resource-api.version}</version>
@@ -680,6 +665,23 @@
                 <groupId>javax.enterprise.deploy</groupId>
                 <artifactId>javax.enterprise.deploy-api</artifactId>
                 <version>${javax.enterprise.deploy-api.version}</version>
+            </dependency>
+            
+            <!-- JSF - JavaServer Faces -->
+            <dependency>
+                <groupId>jakarta.faces</groupId>
+                <artifactId>jakarta.faces-api</artifactId>
+                <version>${jakarta.faces-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.faces</artifactId>
+                <version>${mojarra.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox.version}</version>
             </dependency>
 
             <!-- Java EE Security API -->
@@ -703,14 +705,9 @@
 
             <!-- JASPIC -->
             <dependency>
-                <groupId>javax.security.auth.message</groupId>
-                <artifactId>javax.security.auth.message-api</artifactId>
-                <version>${javax.security.auth.message-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.faces</artifactId>
-                <version>${mojarra.version}</version>
+                <groupId>jakarta.security.auth.message</groupId>
+                <artifactId>jakarta.security.auth.message-api</artifactId>
+                <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
 
             <!-- JPA -->
@@ -765,11 +762,6 @@
                 <version>${eclipselink.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-                <version>${woodstox.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.glassfish.metro</groupId>
                 <artifactId>webservices-osgi</artifactId>
                 <version>${webservices.version}</version>
@@ -790,13 +782,8 @@
                 <version>${jaxb.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-extra-osgi</artifactId>
-                <version>${jaxb.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
 	        <dependency>
@@ -919,7 +906,7 @@
             <dependency>
                 <groupId>com.sun.woodstock.dependlibs</groupId>
                 <artifactId>prototype</artifactId>
-                <version>1.5.0</version>
+                <version>1.7.3</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.woodstock.dependlibs</groupId>
@@ -978,17 +965,17 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
-                <version>${jsonp-ri.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.json</groupId>
                 <artifactId>javax.json-api</artifactId>
-                <version>${jsonp-api.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jsonp-jaxrs</artifactId>
-                <version>${jsonp-jaxrs.version}</version>
+                <version>${jsonp.version}</version>
             </dependency>
 
             <dependency>
@@ -1103,126 +1090,6 @@
                 <version>2.0.4</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-common-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-cluster-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-corba-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-ejb-lite-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-ejb-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-jca-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-jdbc-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-common-full-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-jms-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-jruby-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-jts-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.help</groupId>
-                <artifactId>console-web-plugin-help</artifactId>
-                <version>${v3-docs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-common-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-cluster-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-corba-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-ejb-lite-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-ejb-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-jca-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-jdbc-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-common-full-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-jms-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-jruby-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-jts-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
-                <artifactId>console-web-plugin-help-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.batch</groupId>
                 <artifactId>javax.batch-api</artifactId>
                 <version>${javax.batch-api.version}</version>
@@ -1271,18 +1138,6 @@
                     <value>true</value>
                 </property>
             </activation>
-        </profile>
-        <profile>
-            <id>installer</id>
-            <activation>
-                <property>
-                    <name>ips.build.installer</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>installer</module>
-            </modules>
         </profile>
         <profile>
             <id>javaee-api</id>

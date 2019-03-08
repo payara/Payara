@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- appServer/domainTabs.jsf -->
@@ -50,35 +50,56 @@
             gf.redirect(page="#{request.contextPath}/common/appServer/serverInstDomainAttrs.jsf");
         />
     </sun:tab>
-    <sun:tab id="domainProps" immediate="true" text="$resource{i18nc.headings.DomainProperties}" toolTip="$resource{i18nc.headings.DomainPropertiesTab}">
-        <!command
+    
+    <sun:tab id="domainProps" immediate="true" text="$resource{i18nc.properties.TabTittle}" toolTip="$resource{i18nc.properties.TabTittleHelp}">
+         <!command
             setSessionAttribute(key="domainTabs" value="domainProps");
-            gf.redirect(page="#{request.contextPath}/common/appServer/serverInstDomainProps.jsf");
-        />
+            gf.redirect(page="#{request.contextPath}/common/appServer/serverInstConfigurationProps.jsf?tabSetName=domainTabs");
+         />
+
+        <sun:tab id="domainConfigurationProps" immediate="$boolean{true}" text="$resource{i18nc.properties.configurationPropertiesTabTittle}" 
+                 toolTip="$resource{i18nc.properties.configurationPropertiesTabTittleHelp}" >
+            <!command
+                setSessionAttribute(key="domainTabs" value="domainConfigurationProps");
+                gf.redirect(page="#{request.contextPath}/common/appServer/serverInstConfigurationProps.jsf?tabSetName=domainTabs");
+            />
+        </sun:tab>
+
+        <sun:tab id="domainMicroProfileProps" immediate="$boolean{true}" text="$resource{i18nc.properties.microProfilePropertiesTabTittle}" 
+                 toolTip="$resource{i18nc.properties.microProfilePropertiesTabTittleHelp}" >
+            <!command
+                setSessionAttribute(key="domainTabs" value="domainMicroProfileProps");
+                gf.redirect(page="#{request.contextPath}/common/appServer/serverInstMicroProfileProps.jsf?tabSetName=domainTabs");
+            />
+        </sun:tab>
     </sun:tab>
+    
     <sun:tab id="appConfig" immediate="true" text="$resource{i18n.headings.AppConfig}" toolTip="$resource{i18n.headings.AppConfigTab}" >
         <!command
             setSessionAttribute(key="domainTabs" value="appConfig");
             gf.redirect(page="#{request.contextPath}/common/appServer/serverInstAppsConfig.jsf");
         />
     </sun:tab>
+    
     <sun:tab id="adminPassword" immediate="true" text="$resource{i18n.headings.AdminPassword}" toolTip="$resource{i18n.headings.AdminPasswordTab}" >
         <!command
             setSessionAttribute(key="domainTabs" value="adminPassword");
             gf.redirect(page="#{request.contextPath}/common/appServer/serverInstAdminPassword.jsf");
         />
     </sun:tab>
+    
     <sun:tab id="pswdAliases" immediate="true" text="$resource{i18nc.pswdAlias.tab}" toolTip="$resource{i18nc.pswdAlias.tabTip}" >
-    <!command
-        setSessionAttribute(key="domainTabs" value="pswdAliases");
-        gf.redirect(page="#{request.contextPath}/common/appServer/pswdAliases.jsf");
-    />
+        <!command
+            setSessionAttribute(key="domainTabs" value="pswdAliases");
+            gf.redirect(page="#{request.contextPath}/common/appServer/pswdAliases.jsf");
+        />
     </sun:tab>
+    
     <sun:tab id="domainLogs" immediate="true" text="$resource{i18nc.domainLogs.tab}" toolTip="$resource{i18nc.domainLogs.tabTip}" >
-    <!command
-        setSessionAttribute(key="domainTabs" value="domainLogs");
-        gf.redirect(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
-    />
+        <!command
+            setSessionAttribute(key="domainTabs" value="domainLogs");
+            gf.redirect(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
+        />
     </sun:tab>
 </sun:tabSet>
 <event>
