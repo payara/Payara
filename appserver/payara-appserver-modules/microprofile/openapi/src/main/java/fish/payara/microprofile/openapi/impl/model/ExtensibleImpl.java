@@ -42,12 +42,19 @@ package fish.payara.microprofile.openapi.impl.model;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.json.Json;
+
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
@@ -83,15 +90,32 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
             to.setExtensions(new LinkedHashMap<>());
         }
         if (from.name() != null && !from.name().isEmpty()) {
-            Object value = mergeProperty(to.getExtensions().get(from.name()), convertExtensionValue(from.value()),
-                    override);
+            Object value = mergeProperty(to.getExtensions().get(from.name()), 
+                    convertExtensionValue(from.value(), from.parseValue()), override);
             to.getExtensions().put(from.name(), value);
         }
     }
 
-    public static Object convertExtensionValue(String value) {
+    public static Object convertExtensionValue(String value, boolean parseValue) {
         if (value == null) {
             return null;
+        }
+        if (parseValue) {
+            if (value.startsWith("{") || value.startsWith("[")) { // JSON object + array
+                try {
+                    return new ObjectMapper().readTree(value);
+                } catch (Exception e) {
+                    return value;
+                }
+            }
+            if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+                return Boolean.valueOf(value);
+            }
+            // must be number
+            if (value.indexOf('.') >= 0) {
+                return Double.valueOf(value);
+            }
+            return Long.valueOf(value);
         }
         // Could be an array
         if (value.contains(",")) {

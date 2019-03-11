@@ -111,6 +111,9 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         for (ExampleObject example : from.examples()) {
             ExampleImpl.merge(example, to.getMediaType(typeName).getExamples(), override);
         }
+        if (!from.example().isEmpty()) {
+            to.getMediaType(typeName).setExample(from.example());
+        }
 
         // Merge schema
         if (!isAnnotationNull(from.schema())) {

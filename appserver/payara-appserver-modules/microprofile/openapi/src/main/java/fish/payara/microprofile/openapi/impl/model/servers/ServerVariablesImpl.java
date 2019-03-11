@@ -48,9 +48,9 @@ import java.util.Map;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleLinkedHashMap;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 
-public class ServerVariablesImpl extends ExtensibleLinkedHashMap<String, ServerVariable, ServerVariables> implements ServerVariables {
+public class ServerVariablesImpl extends ExtensibleTreeMap<ServerVariable, ServerVariables> implements ServerVariables {
 
     private static final long serialVersionUID = 8869393484826870024L;
 

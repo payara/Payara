@@ -48,9 +48,9 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleLinkedHashMap;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 
-public class APIResponsesImpl extends ExtensibleLinkedHashMap<String, APIResponse, APIResponses>
+public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponses>
         implements APIResponses {
 
     private static final long serialVersionUID = 2811935761440110541L;

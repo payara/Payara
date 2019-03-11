@@ -1,21 +1,21 @@
 package fish.payara.microprofile.openapi.impl.model;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-public abstract class ExtensibleLinkedHashMap<K, V, T extends Extensible<T>> extends LinkedHashMap<K, V>
-implements Extensible<T> {
+public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>
+        implements Extensible<T> {
 
     protected Map<String, Object> extensions = new HashMap<>();
 
-    protected ExtensibleLinkedHashMap() {
+    protected ExtensibleTreeMap() {
         super();
     }
 
-    protected ExtensibleLinkedHashMap(Map<? extends K, ? extends V> items) {
+    protected ExtensibleTreeMap(Map<String, ? extends V> items) {
         super(items);
     }
 

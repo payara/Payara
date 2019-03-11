@@ -53,11 +53,11 @@ import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleLinkedHashMap;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 
-public class CallbackImpl extends ExtensibleLinkedHashMap<String, PathItem, Callback> implements Callback {
+public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implements Callback {
 
     private static final long serialVersionUID = 5549098533131353142L;
 
@@ -67,7 +67,7 @@ public class CallbackImpl extends ExtensibleLinkedHashMap<String, PathItem, Call
         super();
     }
 
-    public CallbackImpl(Map<? extends String, ? extends PathItem> items) {
+    public CallbackImpl(Map<String, ? extends PathItem> items) {
         super(items);
     }
 

@@ -178,16 +178,7 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public Map<HttpMethod, Operation> getOperations() {
-        EnumMap<HttpMethod, Operation> operations = new EnumMap<>(HttpMethod.class);
-        operations.put(HttpMethod.DELETE, delete);
-        operations.put(HttpMethod.GET, get);
-        operations.put(HttpMethod.HEAD, head);
-        operations.put(HttpMethod.OPTIONS, options);
-        operations.put(HttpMethod.PATCH, patch);
-        operations.put(HttpMethod.POST, post);
-        operations.put(HttpMethod.PUT, put);
-        operations.put(HttpMethod.TRACE, trace);
-        return operations;
+        return readOperationsMap();
     }
 
     @Override

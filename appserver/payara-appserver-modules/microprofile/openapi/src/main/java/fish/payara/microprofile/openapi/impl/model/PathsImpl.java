@@ -46,7 +46,7 @@ import org.eclipse.microprofile.openapi.models.Paths;
 
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
-public class PathsImpl extends ExtensibleLinkedHashMap<String, PathItem, Paths> implements Paths {
+public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Paths {
 
     private static final long serialVersionUID = -3876996963579977405L;
 
@@ -54,7 +54,7 @@ public class PathsImpl extends ExtensibleLinkedHashMap<String, PathItem, Paths> 
         super();
     }
 
-    public PathsImpl(Map<? extends String, ? extends PathItem> items) {
+    public PathsImpl(Map<String, ? extends PathItem> items) {
         super(items);
     }
 

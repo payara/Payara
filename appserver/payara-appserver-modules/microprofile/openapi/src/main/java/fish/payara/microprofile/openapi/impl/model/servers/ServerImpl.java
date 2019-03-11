@@ -44,9 +44,15 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 
 import java.util.Map;
 
+import javax.json.bind.annotation.JsonbProperty;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
@@ -78,14 +84,18 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     @Override
     public ServerVariables getVariables() {
-        return variables instanceof ServerVariables ? (ServerVariables) variables : new ServerVariablesImpl(variables);
+        return variables instanceof ServerVariables || variables == null 
+                ? (ServerVariables) variables
+                : new ServerVariablesImpl(variables);
     }
 
+    @JsonIgnore
     @Override
     public void setVariables(ServerVariables variables) {
         this.variables = variables;
     }
 
+    @JsonProperty("variables")
     @Override
     public void setVariables(Map<String, ServerVariable> variables) {
         this.variables = variables;

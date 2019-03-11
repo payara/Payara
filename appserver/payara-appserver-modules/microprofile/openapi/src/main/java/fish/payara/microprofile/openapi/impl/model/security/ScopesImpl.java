@@ -43,9 +43,9 @@ import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.security.Scopes;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleLinkedHashMap;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 
-public class ScopesImpl extends ExtensibleLinkedHashMap<String, String, Scopes> implements Scopes {
+public class ScopesImpl extends ExtensibleTreeMap<String, Scopes> implements Scopes {
 
     private static final long serialVersionUID = -615440059031779085L;
 
@@ -53,7 +53,7 @@ public class ScopesImpl extends ExtensibleLinkedHashMap<String, String, Scopes> 
         super();
     }
 
-    public ScopesImpl(Map<? extends String, ? extends String> scopes) {
+    public ScopesImpl(Map<String, ? extends String> scopes) {
         super(scopes);
     }
 
