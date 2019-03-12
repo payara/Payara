@@ -42,6 +42,8 @@ package fish.payara.microprofile.openapi.impl.model;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -127,4 +129,34 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
         return value;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str, "\t");
+        return str.toString();
+    }
+
+    void toString(StringBuilder str, String indent) {
+        str.append(getClass().getSimpleName());
+        Class<?> type = getClass();
+        while (type != Object.class) {
+            for (Field field : type.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
+                    str.append("\n").append(indent).append(field.getName()).append(": ");
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(this);
+                        if (value instanceof ExtensibleImpl) {
+                            ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
+                        } else {
+                            str.append(value);
+                        }
+                    } catch (IllegalArgumentException | IllegalAccessException e) {
+                        str.append("<failure:").append(e.getMessage()).append(">");
+                    }
+                }
+            }
+            type = type.getSuperclass();
+        }
+    }
 }
