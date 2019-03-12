@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -49,20 +49,21 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.config.LegacyConfigurationUpgrade;
-import org.glassfish.internal.api.Target;
-
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -88,9 +89,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
+import java.util.stream.Collectors;
 
 /**
  * User: Jerome Dochez Date: Jul 11, 2008 Time: 4:39:05 AM
@@ -274,18 +273,19 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         // reset the pattern.
         String prefix;
         boolean lookAtSubNodes = true;
-        if (parentNodes[0].relativeName.length() == 0
-                || parentNodes[0].relativeName.equals("domain")) {
+        TreeNode primaryNode = parentNodes[0];
+        if (primaryNode.relativeName.length() == 0
+                || primaryNode.relativeName.equals("domain")) {
             // handle the case where the pattern references an attribute of the top-level node
             prefix = "";
             // pattern is already set properly
             lookAtSubNodes = false;
-        } else if (!pattern.startsWith(parentNodes[0].relativeName)) {
-            prefix = pattern.substring(0, pattern.indexOf(parentNodes[0].relativeName));
-            pattern = parentNodes[0].relativeName;
+        } else if (!pattern.startsWith(primaryNode.relativeName)) {
+            prefix = pattern.substring(0, pattern.indexOf(primaryNode.relativeName));
+            pattern = primaryNode.relativeName;
         } else {
             prefix = "";
-            pattern = parentNodes[0].relativeName;
+            pattern = primaryNode.relativeName;
         }
         String targetName = prefix + pattern;
 
@@ -301,9 +301,12 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;
         Map<Dom, String> dottedNames = new HashMap<Dom, String>();
+        Map<Dom, TreeNode> sourceNodes = new HashMap<>();
         if (lookAtSubNodes) {
             for (TreeNode parentNode : parentNodes) {
-                dottedNames.putAll(getAllDottedNodes(parentNode.node));
+                Map<Dom, String> allDottedNodes = getAllDottedNodes(parentNode.node);
+                dottedNames.putAll(allDottedNodes);
+                allDottedNodes.keySet().forEach(dom -> sourceNodes.put(dom, parentNode));
             }
             matchingNodes = getMatchingNodes(dottedNames, pattern);
             applyOverrideRules = true;
@@ -330,10 +333,31 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             }
         }
 
-
         List<Map.Entry> mNodes = new ArrayList(matchingNodes.entrySet());
         if (applyOverrideRules) {
             mNodes = applyOverrideRules(mNodes);
+        }
+
+
+        if (primaryNode.node.getProxyType().equals(Server.class)) {
+            // if the user thinks server configuration is being changed, warn him if matching nodes are different
+
+            // from matching nodes, find the roots that are in parentNodes
+            String targets = mNodes.stream()
+                    .map(Map.Entry::getKey)
+                    .map(sourceNodes::get)
+                    // should definitely be in the map, but just to be sure
+                    .filter(n -> n != null && n != primaryNode)
+                    // if not the primary node, make description like "Config shared-config, ..."
+                    .map(treeNode -> treeNode.node)
+                    .map(treeNode -> treeNode.getProxyType().getSimpleName() +" "+ treeNode.getKey())
+                    .collect(Collectors.joining(", "));
+
+            if (!targets.isEmpty()) {
+                warning(context, localStrings.getLocalString("admin.set.sharedconfig",
+                        "Warning: command appears to address server {0}, but addresses following shared configuration(s): {1}",
+                        primaryNode.name, targets));
+            }
         }
 
 
