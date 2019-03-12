@@ -336,8 +336,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
 
-        boolean setElementSuccess = false;
-        boolean delPropertySuccess = false;
         boolean delProperty = false;
         Map<String, String> attrChanges = new HashMap<String, String>();
         if (isProperty) {
@@ -383,20 +381,9 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             if (trueLastIndexOf(str, '.') != -1) {
                                 str = str.substring(trueLastIndexOf(str, '.') + 1);
                             }
-                            try {
                                 if (str != null) {
-                                    ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
-                                    delPropertySuccess = true;
+                                    return deleteProperty(context, op, targetName, targetNode);
                                 }
-                            } catch (IllegalArgumentException ie) {
-                                fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
-                                        ie.getMessage()), ie);
-                                return false;
-                            } catch (TransactionFailure transactionFailure) {
-                                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                                        transactionFailure.getMessage()), transactionFailure);
-                                return false;
-                            }
                         } else {
                             changes.put((ConfigBean) node.getKey(), attrChanges);
                         }
@@ -414,15 +401,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             warning(context, localStrings.getLocalString("admin.set.elementdeprecated",
                                     "Warning: The element {0} is deprecated.", finalDottedName));
                         }
-                        try {
-                            setLeafElement((ConfigBean) targetNode, name, value);
-                        } catch (TransactionFailure ex) {
-                            fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
-                                    ex.getMessage()), ex);
-                            return false;
-                        }
-                        setElementSuccess = true;
-                        break;
+                        return setAttribute(context, op, targetName, (ConfigBean) targetNode, name);
                     }
                 }
             }
@@ -441,8 +420,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 return false;
             }
 
-        } else if (delPropertySuccess || setElementSuccess) {
-            success(context, targetName, value);
         } else {
             fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
             return false;
@@ -533,8 +510,38 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     }
 
     private boolean replicatePropertyChange(AdminCommandContext context, SetOperation op, String targetName) {
-        success(context, targetName, op.value);
         runLegacyChecks(context);
+        return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+    }
+
+    private boolean deleteProperty(AdminCommandContext context, SetOperation op, String targetName, Dom targetNode) {
+        try {
+            ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
+            return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+        } catch (IllegalArgumentException ie) {
+            fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
+                    ie.getMessage()), ie);
+            return false;
+        } catch (TransactionFailure transactionFailure) {
+            fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                    transactionFailure.getMessage()), transactionFailure);
+            return false;
+        }
+    }
+
+    private boolean setAttribute(AdminCommandContext context, SetOperation op, String targetName, ConfigBean targetNode, String name) {
+        try {
+            setLeafElement(targetNode, name, op.value);
+        } catch (TransactionFailure ex) {
+            fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
+                    ex.getMessage()), ex);
+            return false;
+        }
+        return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+    }
+
+    private boolean replicatePropertyChangeWithoutLegacyChecks(AdminCommandContext context, SetOperation op, String targetName) {
+        success(context, targetName, op.value);
         if (targetService.isThisDAS() && !replicateSetCommand(context, op.target, op.value)) {
             return false;
         }
