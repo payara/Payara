@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.GetSetModularityHelper;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -88,6 +89,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -340,28 +342,43 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
 
         if (primaryNode.node.getProxyType().equals(Server.class)) {
-            // if the user thinks server configuration is being changed, warn him if matching nodes are different
-
-            // from matching nodes, find the roots that are in parentNodes
-            String targets = mNodes.stream()
-                    .map(Map.Entry::getKey)
-                    .map(sourceNodes::get)
-                    // should definitely be in the map, but just to be sure
-                    .filter(n -> n != null && n != primaryNode)
-                    // if not the primary node, make description like "Config shared-config, ..."
-                    .map(treeNode -> treeNode.node)
-                    .map(treeNode -> treeNode.getProxyType().getSimpleName() +" "+ treeNode.getKey())
-                    .collect(Collectors.joining(", "));
-
-            if (!targets.isEmpty()) {
-                warning(context, localStrings.getLocalString("admin.set.sharedconfig",
-                        "Warning: command appears to address server {0}, but addresses following shared configuration(s): {1}",
-                        primaryNode.name, targets));
-            }
+            checkSharedConfigChange(context, primaryNode, sourceNodes, mNodes);
         }
 
 
         return applyToNodes(context, op, targetName, prefix, pattern, mNodes);
+    }
+
+    private void checkSharedConfigChange(AdminCommandContext context, TreeNode primaryNode, Map<Dom, TreeNode> sourceNodes, List<Map.Entry> mNodes) {
+        // if the user thinks server configuration is being changed, warn him if matching nodes are different
+        Set<Dom> sharedConfigs = findSharedConfigs();
+        // from matching nodes, find the roots that are in parentNodes
+        String targetedSharedConfigs = mNodes.stream()
+                .map(Map.Entry::getKey)
+                .map(sourceNodes::get)
+                // should definitely be in the map, but just to be sure
+                .filter(n -> n != null)
+                .map(n -> n.node)
+                .filter(sharedConfigs::contains)
+                // if not the primary node, make description like "Config shared-config, ..."
+                .map(Dom::getKey)
+                .collect(Collectors.joining(", "));
+
+        if (!targetedSharedConfigs.isEmpty()) {
+            warning(context, localStrings.getLocalString("admin.set.sharedconfig",
+                    "Warning: command appears to address server {0}, but addresses following shared configuration(s): {1}",
+                    primaryNode.name, targetedSharedConfigs));
+        }
+    }
+
+    private Set<Dom> findSharedConfigs() {
+        List<Server> servers = domain.getServers().getServer();
+        List<Config> configs = domain.getConfigs().getConfig();
+        return configs.stream().filter(config -> countConfigUses(servers, config) > 1).map(Dom::unwrap).collect(Collectors.toSet());
+    }
+
+    private long countConfigUses(List<Server> servers, Config config) {
+        return servers.stream().map(Server::getReference).filter(config.getName()::equals).count();
     }
 
     private boolean applyToNodes(AdminCommandContext context, SetOperation op, String targetName, String prefix, String pattern, List<Map.Entry> mNodes) {
