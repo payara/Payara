@@ -44,9 +44,6 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 
 import java.util.Map;
 
-import javax.json.bind.annotation.JsonbProperty;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;

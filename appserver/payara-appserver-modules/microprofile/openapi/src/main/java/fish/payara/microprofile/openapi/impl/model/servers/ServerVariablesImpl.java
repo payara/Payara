@@ -64,7 +64,9 @@ public class ServerVariablesImpl extends ExtensibleTreeMap<ServerVariable, Serve
 
     @Override
     public ServerVariables addServerVariable(String name, ServerVariable item) {
-        this.put(name, item);
+        if (item != null) {
+            this.put(name, item);
+        }
         return this;
     }
 

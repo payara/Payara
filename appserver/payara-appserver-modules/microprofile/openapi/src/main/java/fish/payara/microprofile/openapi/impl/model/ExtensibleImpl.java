@@ -42,24 +42,20 @@ package fish.payara.microprofile.openapi.impl.model;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.json.Json;
 
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
-    protected Map<String, Object> extensions = new HashMap<>();
+    protected Map<String, Object> extensions = new LinkedHashMap<>();
 
+    @JsonAnyGetter
     @Override
     public Map<String, Object> getExtensions() {
         return extensions;
@@ -68,7 +64,9 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     @SuppressWarnings("unchecked")
     @Override
     public T addExtension(String name, Object value) {
-        extensions.put(name, value);
+        if (value != null) {
+            extensions.put(name, value);
+        }
         return (T) this;
     }
 

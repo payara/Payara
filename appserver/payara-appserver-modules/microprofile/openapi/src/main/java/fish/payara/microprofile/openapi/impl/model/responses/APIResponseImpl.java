@@ -87,7 +87,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public APIResponse addHeader(String name, Header header) {
-        headers.put(name, header);
+        if (header != null) {
+            headers.put(name, header);
+        }
         return this;
     }
 
@@ -118,7 +120,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public APIResponse addLink(String name, Link link) {
-        links.put(name, link);
+        if (link != null) {
+            links.put(name, link);
+        }
         return this;
     }
 

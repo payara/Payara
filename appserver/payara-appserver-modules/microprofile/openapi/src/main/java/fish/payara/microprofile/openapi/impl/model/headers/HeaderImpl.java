@@ -164,7 +164,9 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public Header addExample(String key, Example examplesItem) {
-        this.examples.put(key, examplesItem);
+        if (examplesItem != null) {
+            this.examples.put(key, examplesItem);
+        }
         return this;
     }
 

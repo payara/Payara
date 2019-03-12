@@ -63,13 +63,13 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     @Override
     public SecurityRequirement addScheme(String name, String item) {
-        this.put(name, Arrays.asList(item));
+        this.put(name, item == null ? new ArrayList<>() : Arrays.asList(item));
         return this;
     }
 
     @Override
     public SecurityRequirement addScheme(String name, List<String> item) {
-        this.put(name, item);
+        this.put(name, item == null ? new ArrayList<>() : item);
         return this;
     }
 

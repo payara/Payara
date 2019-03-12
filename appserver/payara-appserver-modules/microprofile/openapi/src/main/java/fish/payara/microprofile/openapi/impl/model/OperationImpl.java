@@ -152,7 +152,9 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public Operation addParameter(Parameter parameter) {
-        parameters.add(parameter);
+        if (parameter != null) {
+            parameters.add(parameter);
+        }
         return this;
     }
 
@@ -193,7 +195,9 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public Operation addCallback(String key, Callback callback) {
-        this.callbacks.put(key, callback);
+        if (callback != null) {
+            this.callbacks.put(key, callback);
+        }
         return this;
     }
 

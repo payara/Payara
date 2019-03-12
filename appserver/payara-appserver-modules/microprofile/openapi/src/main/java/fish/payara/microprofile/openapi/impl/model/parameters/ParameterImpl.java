@@ -190,7 +190,9 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     @Override
     public Parameter addExample(String key, Example example) {
-        this.examples.put(key, example);
+        if (example != null) {
+            this.examples.put(key, example);
+        }
         return this;
     }
 

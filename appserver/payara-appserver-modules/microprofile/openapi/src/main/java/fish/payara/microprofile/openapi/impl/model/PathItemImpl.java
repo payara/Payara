@@ -256,7 +256,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public PathItem addServer(Server server) {
-        servers.add(server);
+        if (server != null) {
+            servers.add(server);
+        }
         return this;
     }
 
@@ -277,7 +279,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public PathItem addParameter(Parameter parameter) {
-        parameters.add(parameter);
+        if (parameter != null) {
+            parameters.add(parameter);
+        }
         return this;
     }
 

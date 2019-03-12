@@ -73,7 +73,9 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     @Override
     public Callback addPathItem(String name, PathItem item) {
-        this.put(name, item);
+        if (item != null) {
+            this.put(name, item);
+        }
         return this;
     }
 

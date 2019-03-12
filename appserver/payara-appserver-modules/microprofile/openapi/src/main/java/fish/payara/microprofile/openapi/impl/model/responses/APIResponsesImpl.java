@@ -67,7 +67,9 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
 
     @Override
     public APIResponses addAPIResponse(String name, APIResponse apiResponse) {
-        put(name, apiResponse);
+        if (apiResponse != null) {
+            put(name, apiResponse);
+        }
         return this;
     }
 
@@ -94,7 +96,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
 
     @Override
     public void setDefaultValue(APIResponse defaultValue) {
-        addAPIResponse(DEFAULT, defaultValue);
+        put(DEFAULT, defaultValue); // this is not the same as addAPIResponse as null is set but not added
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.responses.APIResponse from, APIResponses to,

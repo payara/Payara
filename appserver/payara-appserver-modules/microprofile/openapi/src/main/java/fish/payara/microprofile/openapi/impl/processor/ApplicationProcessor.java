@@ -81,8 +81,10 @@ import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -106,6 +108,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
@@ -633,13 +636,23 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitExtension(Extension extension, AnnotatedElement element, ApiContext context) {
-        if (extension.name() != null && !extension.name().isEmpty() && extension.value() != null
-                && !extension.value().isEmpty()) {
+        String value = extension.value();
+        String name = extension.name();
+        if (name != null && !name.isEmpty() && value != null
+                && !value.isEmpty()) {
+            Object parsedValue = ExtensibleImpl.convertExtensionValue(value, extension.parseValue());
             if (element instanceof Method) {
-                context.getWorkingOperation().addExtension(extension.name(), extension.value());
+                context.getWorkingOperation().addExtension(name, parsedValue);
             } else {
-                context.getApi().addExtension(extension.name(), extension.value());
+                context.getApi().addExtension(name, parsedValue);
             }
+        }
+    }
+
+    @Override
+    public void visitExtensions(Extensions extensions, AnnotatedElement element, ApiContext context) {
+        for (Extension extension : extensions.value()) {
+            visitExtension(extension, element, context);
         }
     }
 
@@ -713,46 +726,22 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
+    public void visitParameters(Parameters parameters, AnnotatedElement element, ApiContext context) {
+        for (Parameter parameter : parameters.value()) {
+            visitParameter(parameter, element, context);
+        }
+    }
+
+    @Override
     public void visitParameter(Parameter parameter, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter matchedParam = null;
 
         if (element instanceof java.lang.reflect.Parameter) {
-            // Find the matching parameter, and match it
-            for (org.eclipse.microprofile.openapi.models.parameters.Parameter param : context.getWorkingOperation()
-                    .getParameters()) {
-                if (param.getName() != null
-                        && param.getName().equals(ModelUtils.getParameterName((java.lang.reflect.Parameter) element))) {
-                    matchedParam = param;
-                }
-            }
+            matchedParam = findOperationParameterFor((java.lang.reflect.Parameter) element, context);
         }
         if (element instanceof Method) {
-            // If the parameter reference is valid
-            if (parameter.name() != null && !parameter.name().isEmpty()) {
-                // Get all parameters with the same name
-                List<java.lang.reflect.Parameter> matchingMethodParameters = Arrays
-                        .asList(Method.class.cast(element).getParameters()).stream()
-                        .filter(x -> ModelUtils.getParameterName(x).equals(parameter.name()))
-                        .collect(Collectors.toList());
-                // If there is more than one match, filter it further
-                if (matchingMethodParameters.size() > 1 && parameter.in() != null
-                        && parameter.in() != ParameterIn.DEFAULT) {
-                    // Remove all parameters of the wrong input type
-                    matchingMethodParameters
-                    .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(parameter.in().name()));
-                }
-                // If there's only one matching parameter, handle it immediately
-                String matchingMethodParamName = ModelUtils.getParameterName(matchingMethodParameters.get(0));
-                // Find the matching operation parameter
-                for (org.eclipse.microprofile.openapi.models.parameters.Parameter operationParam : context
-                        .getWorkingOperation().getParameters()) {
-                    if (operationParam.getName().equals(matchingMethodParamName)) {
-                        matchedParam = operationParam;
-                    }
-                }
-            }
+            matchedParam = findOperationParameterFor(parameter, (Method) element, context);
         }
-
         if (matchedParam != null) {
             ParameterImpl.merge(parameter, matchedParam, true, context.getApi().getComponents().getSchemas());
 
@@ -771,6 +760,57 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 }
             }
         }
+    }
+
+    private static org.eclipse.microprofile.openapi.models.parameters.Parameter findOperationParameterFor(Parameter parameter,
+            Method annotated, ApiContext context) {
+        String name = parameter.name();
+        // If the parameter reference is valid
+        if (name != null && !name.isEmpty()) {
+            // Get all parameters with the same name
+            List<java.lang.reflect.Parameter> matchingMethodParameters = Arrays
+                    .asList(annotated.getParameters()).stream()
+                    .filter(x -> name.equals(ModelUtils.getParameterName(x)))
+                    .collect(Collectors.toList());
+            // If there is more than one match, filter it further
+            ParameterIn in = parameter.in();
+            if (matchingMethodParameters.size() > 1 && in != null && in != ParameterIn.DEFAULT) {
+                // Remove all parameters of the wrong input type
+                matchingMethodParameters
+                .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(in.name()));
+            }
+            if (matchingMethodParameters.isEmpty()) {
+                return null;
+            }
+            // If there's only one matching parameter, handle it immediately
+            String matchingMethodParamName = ModelUtils.getParameterName(matchingMethodParameters.get(0));
+            // Find the matching operation parameter
+            for (org.eclipse.microprofile.openapi.models.parameters.Parameter operationParam : context
+                    .getWorkingOperation().getParameters()) {
+                if (operationParam.getName().equals(matchingMethodParamName)) {
+                    return operationParam;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the matching parameter, and match it
+     */
+    private static org.eclipse.microprofile.openapi.models.parameters.Parameter findOperationParameterFor(
+            java.lang.reflect.Parameter annotated, ApiContext context) {
+        String actualName = ModelUtils.getParameterName(annotated);
+        if (actualName == null) {
+            return null;
+        }
+        for (org.eclipse.microprofile.openapi.models.parameters.Parameter param : context.getWorkingOperation()
+                .getParameters()) {
+            if (actualName.equals(param.getName())) {
+                return param;
+            }
+        }
+        return null;
     }
 
     @Override

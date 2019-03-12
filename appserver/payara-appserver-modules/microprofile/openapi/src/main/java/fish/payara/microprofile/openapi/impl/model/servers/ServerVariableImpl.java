@@ -85,7 +85,7 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     @Override
     public ServerVariable addEnumeration(String enumeration) {
-        if (!this.enumeration.contains(enumeration)) {
+        if (enumeration != null && !this.enumeration.contains(enumeration)) {
             this.enumeration.add(enumeration);
         }
         return this;

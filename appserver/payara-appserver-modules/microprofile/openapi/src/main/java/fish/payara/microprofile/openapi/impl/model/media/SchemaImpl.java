@@ -148,7 +148,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Schema addEnumeration(Object enumerationItem) {
-        this.enumeration.add(enumerationItem);
+        if (enumerationItem != null) {
+            this.enumeration.add(enumerationItem);
+        }
         return this;
     }
 
@@ -341,7 +343,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Schema addProperty(String key, Schema propertiesItem) {
-        this.properties.put(key, propertiesItem);
+        if (propertiesItem != null) {
+            this.properties.put(key, propertiesItem);
+        }
         return this;
     }
 
@@ -362,12 +366,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Schema getAdditionalPropertiesSchema() {
-        return (Schema) additionalProperties;
+        return additionalProperties instanceof Schema ? (Schema) additionalProperties : null;
     }
 
     @Override
     public Boolean getAdditionalPropertiesBoolean() {
-        return (Boolean) additionalProperties;
+        return additionalProperties instanceof Boolean ? (Boolean)additionalProperties : null;
     }
 
     @Override

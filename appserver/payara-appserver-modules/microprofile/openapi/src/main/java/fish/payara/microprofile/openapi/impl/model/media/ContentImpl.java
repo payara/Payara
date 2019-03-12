@@ -66,7 +66,9 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     @Override
     public Content addMediaType(String name, MediaType item) {
-        this.put(name, item);
+        if (item != null) {
+            this.put(name, item);
+        }
         return this;
     }
 

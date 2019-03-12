@@ -115,7 +115,9 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     @Override
     public Link addParameter(String name, Object parameter) {
-        this.parameters.put(name, parameter);
+        if (parameter != null) {
+            this.parameters.put(name, parameter);
+        }
         return this;
     }
 

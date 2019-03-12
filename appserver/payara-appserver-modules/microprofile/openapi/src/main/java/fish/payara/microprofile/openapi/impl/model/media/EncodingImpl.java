@@ -82,7 +82,9 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     @Override
     public Encoding addHeader(String key, Header header) {
-        headers.put(key, header);
+        if (header != null) {
+            headers.put(key, header);
+        }
         return this;
     }
 

@@ -88,7 +88,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addSchema(String key, Schema schema) {
-        schemas.put(key, schema);
+        if (schema != null) {
+            schemas.put(key, schema);
+        }
         return this;
     }
 
@@ -109,7 +111,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addResponse(String key, APIResponse response) {
-        responses.put(key, response);
+        if (response != null) {
+            responses.put(key, response);
+        }
         return this;
     }
 
@@ -130,7 +134,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addParameter(String key, Parameter parameter) {
-        parameters.put(key, parameter);
+        if (parameter != null) {
+            parameters.put(key, parameter);
+        }
         return this;
     }
 
@@ -151,7 +157,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addExample(String key, Example example) {
-        examples.put(key, example);
+        if (example != null) {
+            examples.put(key, example);
+        }
         return this;
     }
 
@@ -172,7 +180,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addRequestBody(String key, RequestBody requestBody) {
-        requestBodies.put(key, requestBody);
+        if (requestBody != null) {
+            requestBodies.put(key, requestBody);
+        }
         return this;
     }
 
@@ -193,7 +203,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addHeader(String key, Header header) {
-        headers.put(key, header);
+        if (header != null) {
+            headers.put(key, header);
+        }
         return this;
     }
 
@@ -214,7 +226,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addSecurityScheme(String key, SecurityScheme securityScheme) {
-        securitySchemes.put(key, securityScheme);
+        if (securityScheme != null) {
+            securitySchemes.put(key, securityScheme);
+        }
         return this;
     }
 
@@ -235,7 +249,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addLink(String key, Link link) {
-        links.put(key, link);
+        if (link != null) {
+            links.put(key, link);
+        }
         return this;
     }
 
@@ -256,7 +272,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Components addCallback(String key, Callback callback) {
-        callbacks.put(key, callback);
+        if (callback != null) {
+            callbacks.put(key, callback);
+        }
         return this;
     }
 

@@ -1,15 +1,17 @@
 package fish.payara.microprofile.openapi.impl.model;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.Extensible;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+
 public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>
         implements Extensible<T> {
 
-    protected Map<String, Object> extensions = new HashMap<>();
+    protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     protected ExtensibleTreeMap() {
         super();
@@ -19,6 +21,7 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
         super(items);
     }
 
+    @JsonAnyGetter
     @Override
     public final Map<String, Object> getExtensions() {
         return extensions;
@@ -32,7 +35,9 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
     @SuppressWarnings("unchecked")
     @Override
     public final T addExtension(String name, Object value) {
-        this.extensions.put(name, value);
+        if (value != null) {
+            this.extensions.put(name, value);
+        }
         return (T) this;
     }
 

@@ -59,7 +59,7 @@ public class ScopesImpl extends ExtensibleTreeMap<String, Scopes> implements Sco
 
     @Override
     public Scopes addScope(String name, String item) {
-        this.put(name, item);
+        this.put(name, item); // this DOES accept null!
         return this;
     }
 

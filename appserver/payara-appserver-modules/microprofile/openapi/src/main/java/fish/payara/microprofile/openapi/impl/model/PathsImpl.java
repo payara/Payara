@@ -60,7 +60,9 @@ public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Pat
 
     @Override
     public Paths addPathItem(String name, PathItem item) {
-        put(name, item);
+        if (item != null) {
+            put(name, item);
+        }
         return this;
     }
 
