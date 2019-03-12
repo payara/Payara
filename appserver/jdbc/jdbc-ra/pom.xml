@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
@@ -95,11 +95,36 @@
     </developer>
   </developers>
 
-  <modules>
-    <module>jdbc-core</module>
-    <module>jdbc30</module>
-    <module>jdbc40</module>
-    <module>jdbc-ra-distribution</module>
-    <module>jdbc-core-l10n</module>
-  </modules>
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>jdbc-core</module>
+                <module>jdbc30</module>
+                <module>jdbc40</module>
+                <module>jdbc-ra-distribution</module>
+                <module>jdbc-core-l10n</module>
+            </modules>
+        </profile>
+         <profile>
+            <id>javadoc</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>jdbc-core</module>
+                <module>jdbc30</module>
+                <module>jdbc40</module>
+            </modules>
+         </profile>
+    </profiles>
+
+  
 </project>

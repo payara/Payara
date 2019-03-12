@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -54,8 +55,28 @@
     <artifactId>javaee-pom</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish JavaEE Manifest pom</name>  
-    <modules>
-        <module>manifest-jar</module>
-        <module>dist-frag</module>
-    </modules>
+    
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>manifest-jar</module>
+                <module>dist-frag</module>
+            </modules>
+        </profile>
+         <profile>
+            <id>javadoc</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+         </profile>
+    </profiles>
+    
 </project>

@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -74,7 +75,27 @@
     -->
     <packaging>distribution-fragment</packaging>
 
-    <build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>mejb</artifactId>
+            <version>${project.version}</version>
+            <type>ejb</type>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
         <!--
          In this module, all the files are statically stored as-is in the Subversion repository,
          so the simple copying from src/main/resources to target/classes that Maven does by default
@@ -83,8 +104,8 @@
          But in more complex scenario, one can use maven-antrun-extended-plugin and use a series of Ant tasks
          to perform processing on resources, such as token replacement, file generation, pre-processing, etc.
 
-         The following section shows how you can do this.
-       -->
+          The following section shows how you can do this.
+        -->
         <plugins>
             <plugin>
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
@@ -106,14 +127,25 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>mejb</artifactId>
-	    <version>${project.version}</version>
-	    <type>ejb</type>
-	    <optional>true</optional>
-        </dependency>
-    </dependencies>
+        </profile>
+        
+        <profile>
+            <id>javadoc</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
 </project>

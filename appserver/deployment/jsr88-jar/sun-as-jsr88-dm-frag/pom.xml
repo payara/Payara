@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -74,6 +75,16 @@
     -->
     <packaging>distribution-fragment</packaging>
 
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
     <build>
         <!--
          In this module, all the files are statically stored as-is in the Subversion repository,
@@ -106,6 +117,33 @@
             </plugin>
         </plugins>
     </build>
+    </profile>
+    <profile>
+            <id>javadoc</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>

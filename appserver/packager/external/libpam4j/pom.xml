@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
@@ -130,12 +130,27 @@
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->
-            <id>release-phase2</id>
+            <id>javadoc</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>auto-clean</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                </goals>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
@@ -145,9 +160,11 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <phase>pre-site</phase>
                                 <configuration>
                                     <classesDirectory>${project.build.directory}/javadoc</classesDirectory>
                                     <classifier>javadoc</classifier>
+                                    <skip>false</skip>
                                 </configuration>
                             </execution>
                         </executions>
