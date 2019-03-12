@@ -38,6 +38,7 @@
 -->
 
 <!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nhx" bundle="fish.payara.admingui.healthcheck.Strings");
     setResourceBundle(key="help_full" bundle="org.glassfish.full.admingui.Helplinks");
 />
