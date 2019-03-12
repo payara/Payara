@@ -266,10 +266,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     private boolean set(AdminCommandContext context, SetOperation op) {
 
         String pattern = op.pattern;
-        String value = op.value;
-        String target = op.target;
-        String attrName = op.attrName;
-        boolean isProperty = op.isProperty;
 
         // now
         // first let's get the parent for this pattern.
@@ -321,7 +317,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         if (matchingNodes.isEmpty()) {
             // it's possible they are trying to create a property object.. lets check this.
             // strip out the property name
-            pattern = target.substring(0, trueLastIndexOf(target, '.'));
+            pattern = op.target.substring(0, trueLastIndexOf(op.target, '.'));
             if (pattern.endsWith("property")) {
                 // need to find the right parent.
                 if ("property".equals(pattern)) {
@@ -334,21 +330,28 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             }
         }
 
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-
-        boolean delProperty = false;
-        Map<String, String> attrChanges = new HashMap<String, String>();
-        if (isProperty) {
-            attrName = "value";
-            if ((value == null) || (value.length() == 0)) {
-                delProperty = true;
-            }
-            attrChanges.put(attrName, value);
-        }
 
         List<Map.Entry> mNodes = new ArrayList(matchingNodes.entrySet());
         if (applyOverrideRules) {
             mNodes = applyOverrideRules(mNodes);
+        }
+
+
+        return applyToNodes(context, op, targetName, prefix, pattern, mNodes);
+    }
+
+    private boolean applyToNodes(AdminCommandContext context, SetOperation op, String targetName, String prefix, String pattern, List<Map.Entry> mNodes) {
+        final String value = op.value;
+        final boolean isProperty = op.isProperty;
+        final String attrName = op.isProperty ? "value": op.attrName;
+        final boolean delProperty = isProperty && (value == null || value.isEmpty());
+        final String target = op.target;
+
+
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+        Map<String, String> attrChanges = new HashMap<String, String>();
+        if (!delProperty) {
+            attrChanges.put(attrName, value);
         }
         for (Map.Entry<Dom, String> node : mNodes) {
             final Dom targetNode = node.getKey();
