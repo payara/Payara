@@ -313,6 +313,12 @@ public final class ModelUtils {
         if (type2 == null) {
             return type1;
         }
+        if (type1 == SchemaType.OBJECT || type2 == SchemaType.OBJECT) {
+            return SchemaType.OBJECT;
+        }
+        if (type1 == SchemaType.STRING || type2 == SchemaType.STRING) {
+            return SchemaType.STRING;
+        }
         if (type1 != type2) {
             return SchemaType.STRING;
         }
