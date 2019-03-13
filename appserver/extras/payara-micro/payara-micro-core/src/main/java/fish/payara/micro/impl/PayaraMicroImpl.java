@@ -1477,6 +1477,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
+        boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
 
         // load context roots from uber jar
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(CONTEXT_PROPS_FILE)) {
@@ -1546,24 +1547,24 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         // Deploy command line provided files
         if (deployments != null) {
-            for (File war : deployments) {
-                String deployContext = war.getName().substring(0, war.getName().length() - 4);
-                if (contextRoots != null && contextRoots.containsKey(war.getName())) {
-                    deployContext = contextRoots.getProperty(war.getName());
-                } else if (contextRoot != null) {
-                    deployContext = contextRoot;
-                    // unset so only used once
-                    contextRoot = null;
-                }
-                if (war.exists() && war.canRead()) {
-
+            for (File war : deployments) {      
+                if (war.exists() && war.canRead()) {   
+                    String deployContext = war.getName().substring(0, war.getName().length() - 4);
+                    if (contextRoots != null && contextRoots.containsKey(war.getName())) {
+                        deployContext = contextRoots.getProperty(war.getName());
+                    } else if (contextRoot != null) {
+                        deployContext = contextRoot;
+                        //unset so only used once
+                        contextRoot = null;
+                    }
+                    
                     if (war.getName().startsWith("ROOT.")) {
                         deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        if(deployContext == null) {
-                            deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
-                        } else {
+                        if (hasDefinedContextRoot) {
                             deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                        } else {
+                            deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");  
                         }
                     }
                     
@@ -1585,20 +1586,20 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 String entryPath = entry.getAbsolutePath();
                 if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
                     String deployContext = entry.getName().substring(0, entry.getName().length() - 4);
-                    if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
-                        deployContext = contextRoots.getProperty(entry.getName());
-                    } else if (contextRoot != null) {
-                        deployContext = contextRoot;
-                        // unset so only used once
-                        contextRoot = null;
+                        if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
+                            deployContext = contextRoots.getProperty(entry.getName());
+                        } else if (contextRoot != null) {
+                            deployContext = contextRoot;
+                            // unset so only used once
+                            contextRoot = null;
                     }
                     if (entry.getName().startsWith("ROOT.")) {
                         deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
                     } else {
-                        if(deployContext == null) {
-                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
-                        } else {
+                        if (hasDefinedContextRoot) {
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                        } else {
+                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
                         }
                     }
                     deploymentCount++;
