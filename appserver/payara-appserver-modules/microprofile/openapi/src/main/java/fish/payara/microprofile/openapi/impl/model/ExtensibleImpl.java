@@ -46,15 +46,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
+    private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
+    
     protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     @JsonAnyGetter
@@ -101,21 +105,19 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
             return null;
         }
         if (parseValue) {
-            if (value.startsWith("{") || value.startsWith("[")) { // JSON object + array
-                try {
-                    return new ObjectMapper().readTree(value);
-                } catch (Exception e) {
-                    return value;
+            try {
+                JsonNode node = new ObjectMapper().readTree(value);
+                if (node.isBoolean()) {
+                    return node.booleanValue();
                 }
+                if (node.isNumber()) {
+                    return node.numberValue();
+                }
+                return node;
+            } catch (Exception e) {
+                LOGGER.warning("Failed to parse extension value: " + value);
+                return value;
             }
-            if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-                return Boolean.valueOf(value);
-            }
-            // must be number
-            if (value.indexOf('.') >= 0) {
-                return Double.valueOf(value);
-            }
-            return Long.valueOf(value);
         }
         // Could be an array
         if (value.contains(",")) {
