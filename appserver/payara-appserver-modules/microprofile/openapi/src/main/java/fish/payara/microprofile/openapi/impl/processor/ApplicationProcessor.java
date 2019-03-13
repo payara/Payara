@@ -407,8 +407,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
             // Set the request body type accordingly.
             context.getWorkingOperation().getRequestBody().getContent()
-            .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-            .setType(formSchemaType);
+                .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                .setType(formSchemaType);
         }
     }
 
