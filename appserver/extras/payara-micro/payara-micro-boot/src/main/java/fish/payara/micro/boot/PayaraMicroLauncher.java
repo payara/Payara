@@ -69,11 +69,6 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
      * @throws Exception 
      */
     public static void main(String args[]) throws Exception {
-        System.out.println("########################################################################################");
-        for(String arg : args) {
-            System.out.println(arg);
-        }
-        System.out.println("########################################################################################");
         create("main", args);
     }
 

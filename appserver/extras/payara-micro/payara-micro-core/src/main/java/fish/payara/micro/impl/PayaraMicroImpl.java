@@ -1378,7 +1378,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         if (contextRoot.equals("ROOT")) {
                             contextRoot = "/";
                         }
-                        LOGGER.log(Level.INFO, "Context Root: " + contextRoot);
                         break;
                     default:
                         break;
@@ -2005,7 +2004,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         defaultContext = "/";
                     }
                 } else {
-                    LOGGER.log(Level.SEVERE, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ CONTEXT ROOT SET TO NULL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                     defaultContext = this.contextRoot;
                     contextRoot = null; // use only once
                 }
