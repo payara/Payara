@@ -91,7 +91,6 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Formatter;
@@ -1548,7 +1547,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (deployments != null) {
             for (File war : deployments) {      
                 
-                boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
+                boolean hasDefinedContextRoot = (contextRoot != null && !contextRoot.isEmpty());
                 
                 if (war.exists() && war.canRead()) {   
                     String deployContext = war.getName().substring(0, war.getName().length() - 4);
@@ -1586,7 +1585,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
             for (File entry : deploymentDirEntries) {
                 
-                boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
+                boolean hasDefinedContextRoot = (contextRoot != null && !contextRoot.isEmpty());
                 
                 String entryPath = entry.getAbsolutePath();
                 if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
