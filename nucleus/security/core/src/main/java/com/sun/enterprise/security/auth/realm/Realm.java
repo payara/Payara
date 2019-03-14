@@ -40,7 +40,6 @@
 // Portions Copyright [2018] Payara Foundation and/or affiliates
 package com.sun.enterprise.security.auth.realm;
 
-import static com.sun.enterprise.security.BaseRealm.JAAS_CONTEXT_PARAM;
 import static java.util.logging.Level.FINER;
 import static org.glassfish.external.probe.provider.PluginPoint.SERVER;
 
@@ -74,6 +73,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 @Contract
 public abstract class Realm implements Comparable<Realm> {
+    /**
+     * Recommended property for keeping JAAS Context of a realm.
+     *
+     * @see #getJAASContext()
+     */
+    public static final String JAAS_CONTEXT_PARAM = "jaas-context";
 
     protected static final Logger _logger = SecurityLoggerInfo.getLogger();
 
@@ -431,7 +436,10 @@ public abstract class Realm implements Comparable<Realm> {
      * Returns name of JAAS context used by this realm.
      *
      * <P>
-     * The JAAS context is defined in server.xml auth-realm element associated with this realm.
+     * JAAS context determines the login module(s) to be invoked by means of JAAS configuration file ({@code login.conf}
+     * in domain config directory).
+     * <P>
+     * Default implementation uses value of realm's property {@code jaas-context}.
      *
      * @return String containing JAAS context name.
      *
