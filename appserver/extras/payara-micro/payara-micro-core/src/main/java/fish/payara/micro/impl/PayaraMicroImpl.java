@@ -1477,7 +1477,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
-        boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
 
         // load context roots from uber jar
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(CONTEXT_PROPS_FILE)) {
@@ -1548,6 +1547,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // Deploy command line provided files
         if (deployments != null) {
             for (File war : deployments) {      
+                
+                boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
+                
                 if (war.exists() && war.canRead()) {   
                     String deployContext = war.getName().substring(0, war.getName().length() - 4);
                     if (contextRoots != null && contextRoots.containsKey(war.getName())) {
@@ -1583,6 +1585,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             deploymentDirEntries.sort(new DeploymentComparator());
 
             for (File entry : deploymentDirEntries) {
+                
+                boolean hasDefinedContextRoot = (contextRoot != null && contextRoot.isEmpty() == false);
+                
                 String entryPath = entry.getAbsolutePath();
                 if (entry.isFile() && entry.canRead() && (entryPath.endsWith(".war") || entryPath.endsWith(".ear") || entryPath.endsWith(".jar") || entryPath.endsWith(".rar"))) {
                     String deployContext = entry.getName().substring(0, entry.getName().length() - 4);
