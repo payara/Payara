@@ -34,7 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
  * @since Payara 5.191
  *
  */
-class EjbRestProxyHandler implements InvocationHandler {
+class EjbHttpProxyHandler implements InvocationHandler {
     
     private final WebTarget target;
     private final MultivaluedMap<String, Object> headers;
@@ -42,7 +42,7 @@ class EjbRestProxyHandler implements InvocationHandler {
     private final String lookup;
     private final Map<String, Object> jndiOptions;
     
-    EjbRestProxyHandler(WebTarget target, MultivaluedMap<String, Object> headers, List<Cookie> cookies, String lookup, Map<String, Object> jndiOptions) {
+    EjbHttpProxyHandler(WebTarget target, MultivaluedMap<String, Object> headers, List<Cookie> cookies, String lookup, Map<String, Object> jndiOptions) {
         this.target = target;
         this.headers = headers;
         this.cookies = cookies;

@@ -56,14 +56,14 @@ import javax.ws.rs.core.MultivaluedMap;
  * This class generates a type-safe proxy for a given remote EJB interface.
  * 
  * <p>
- * Calls on this proxy are handled by {@link EjbRestProxyHandler}.
+ * Calls on this proxy are handled by {@link EjbHttpProxyHandler}.
  * 
  * 
  * @author Arjan Tijms
  * @since Payara 5.191
  *
  */
-final class EjbRestProxyFactory {
+final class EjbHttpProxyFactory {
 
     private static final MultivaluedMap<String, Object> EMPTY_MULTI_MAP = new MultivaluedHashMap<>();
 
@@ -76,7 +76,7 @@ final class EjbRestProxyFactory {
         return (C) 
             newProxyInstance(doPrivileged(getClassLoaderPA(remoteBusinessInterface)),
                 new Class[] { remoteBusinessInterface },
-                new EjbRestProxyHandler(addPathFromClass(remoteBusinessInterface, target), headers, cookies, lookup, jndiOptions));
+                new EjbHttpProxyHandler(addPathFromClass(remoteBusinessInterface, target), headers, cookies, lookup, jndiOptions));
     }
     
     private static WebTarget addPathFromClass(Class<?> clazz, WebTarget target) {

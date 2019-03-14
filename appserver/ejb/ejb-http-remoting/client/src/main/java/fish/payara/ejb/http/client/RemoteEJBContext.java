@@ -149,7 +149,7 @@ class RemoteEJBContext implements Context {
             // After we have obtained the class name of the remote interface, generate
             // a proxy based on it.
             
-            return EjbRestProxyFactory.newProxy(
+            return EjbHttpProxyFactory.newProxy(
                     Class.forName(className), 
                     clientBuilder.build()
                                  .target(remotePayaraURI)
