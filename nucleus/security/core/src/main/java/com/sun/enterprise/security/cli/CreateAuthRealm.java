@@ -45,17 +45,21 @@ import static com.sun.enterprise.security.cli.CLIUtil.isRealmNew;
 import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
 import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 
 import java.beans.PropertyVetoException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -67,7 +71,6 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -128,6 +131,9 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
     @Param(name = "target", optional = true, defaultValue = DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
 
+    @Param(name = "login-module", optional = true)
+    private String loginModule;
+
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
@@ -179,6 +185,13 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
                     return newAuthRealm;
                 }
             }, securityService);
+            if (loginModule != null) {
+                appendLoginModule(report);
+                if (report.hasFailures()) {
+                    report.setActionExitCode(WARNING);
+                    return;
+                }
+            }
         } catch (TransactionFailure e) {
             report.setMessage(
                     localStrings.getLocalString(
@@ -191,6 +204,50 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
         }
 
         report.setActionExitCode(SUCCESS);
+    }
+
+    private void appendLoginModule(ActionReport mainReport) {
+        ActionReport report = mainReport.addSubActionsReport();
+        report.setActionDescription("Updating login config");
+
+        String loginConfLocation = System.getProperty("java.security.auth.login.config");
+        if (loginConfLocation == null) {
+            report.appendMessage(localStrings.getLocalString("create.auth.realm.loginconf.undefined",
+                    "JDK default login config is set. Cannot update"));
+            report.setActionExitCode(FAILURE);
+            return;
+        }
+
+        String jaasContext = properties.getProperty("jaas-context");
+        if (jaasContext == null || jaasContext.isEmpty()) {
+            report.appendMessage(localStrings.getLocalString("create.auth.realm.loginconf.nojaasctx",
+                    "No JAAS context is defined for login module"));
+            report.setActionExitCode(FAILURE);
+            return;
+        }
+
+        try {
+            new LoginContext(jaasContext);
+            report.appendMessage(localStrings.getLocalString("create.auth.realm.loginconf.jaasctx.already.defined",
+                    "JAAS context {0} is already configured", jaasContext));
+            report.setActionExitCode(FAILURE);
+            return;
+        } catch (LoginException e) {
+            // Login Context will throw when initialized with unknown jaas context, which is exactly what we need.
+        }
+
+        try (FileWriter fw = new FileWriter(loginConfLocation, true)) {
+            fw.append("\n")
+                .append(jaasContext).append(" {\n")
+                .append("\t").append(loginModule).append(" required;\n")
+                .append("};");
+
+        } catch (IOException e) {
+            report.appendMessage(localStrings.getLocalString("create.auth.realm.loginconf.write_failed",
+                    "Failed to update login conf at {0}: {1}", loginConfLocation, e.getLocalizedMessage()));
+            report.setFailureCause(e);
+            report.setActionExitCode(FAILURE);
+        }
     }
 
     private void populateAuthRealmElement(AuthRealm newAuthRealm) throws PropertyVetoException, TransactionFailure {
