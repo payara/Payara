@@ -39,15 +39,15 @@
  */
 package fish.payara.ejb.rest.client;
 
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_CONNECT_TIMEOUT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_EXECUTOR_SERVICE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_HOSTNAME_VERIFIER;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_KEY_STORE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_READ_TIMEOUT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_TRUST_STORE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_WITH_CONFIG;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_CONNECT_TIMEOUT;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_EXECUTOR_SERVICE;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_HOSTNAME_VERIFIER;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_KEY_STORE;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_READ_TIMEOUT;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_TRUST_STORE;
+import static fish.payara.ejb.rest.client.RemoteEJBContextFactory.FISH_PAYARA_WITH_CONFIG;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
