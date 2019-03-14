@@ -1,0 +1,243 @@
+setup-ssh(1)              asadmin Utility Subcommands             setup-ssh(1)
+
+NAME
+       setup-ssh - sets up an SSH key on specified hosts
+
+SYNOPSIS
+           setup-ssh [--help]
+           [--sshport ssh-port] [--sshuser ssh-user]
+           [--sshkeyfile ssh-keyfile] [--sshpublickeyfile ssh-public-keyfile]
+           [--generatekey={false|true}]
+           host-list
+
+DESCRIPTION
+       The setup-ssh subcommand sets up a secure shell (SSH) key on the hosts
+       that are specified as the operand of the subcommand. This key enables
+       GlassFish Server to use public-key authentication for authentication of
+       the user's SSH login on remote hosts.
+
+       SSH ensures that GlassFish Server clusters that span multiple hosts can
+       be administered centrally. When a user runs a subcommand for cluster
+       administration that acts on multiple hosts, the subcommand is
+       propagated from the domain administration server (DAS) host to remote
+       hosts. To propagate subcommands that act on a GlassFish Server instance
+       that is not running, or on a node where no instances are running,
+       GlassFish Server uses SSH. SSH provides confidentiality and security
+       for data that is exchanged between the DAS and remote hosts.
+
+       Public-key authentication uses an SSH key pair that comprises the
+       following keys:
+
+       *   A private key, which is stored in a secure location on the DAS host
+           and which may be protected with a passphrase
+
+       *   The public key, which is stored on all the remote hosts with which
+           the DAS communicates
+
+       The subcommand does not require any configuration information from the
+       DAS and does not modify the configuration of the DAS.
+
+       This subcommand is supported in local mode only.
+
+   Prerequisites for Using the setup-ssh Subcommand
+       To use the setup-ssh subcommand, the SSH user must be able to use SSH
+       to log in to remote hosts where SSH is to be set up. Specifically, the
+       following prerequisites must be met:
+
+       *   The ssh(1) client is installed on the DAS host and is accessible
+           through the DAS user's path.
+
+       *   The sshd(1M) daemon is installed and running on all hosts where an
+           SSH key is to be set up.
+
+       *   The user that the --sshuser option specifies has an SSH login on
+           all hosts where an SSH key is to be set up.
+
+       *   The ssh-keygen(1) utility is installed on the DAS host either at
+           the default location or in a location that is defined in the DAS
+           user's path.
+
+       *   On Windows systems, the SSH package for Cygwin
+
+           (http://www.cygwin.com/)
+
+           or an MKS Software
+
+           (http://www.mkssoftware.com/)
+
+           toolkit that provides SSH is installed.
+
+   Behavior of the setup-ssh Subcommand
+       The subcommand sets up SSH connectivity between the DAS host and remote
+       hosts by automating the following tasks:
+
+       *   Generating an SSH key pair.  If no SSH key pair exists, the default
+           behavior of the subcommand is to prompt the user to generate an SSH
+           key pair. The SSH key pair is generated without an encryption
+           passphrase. If a passphrase-protected key pair is required, the key
+           pair must be generated manually by using the SSH
+           commandssh-keygen(1).
+
+       *   Distributing the public key.  The subcommand appends the content of
+           the public key file to the user-home/.ssh/authorized_keys file on
+           each remote host. By default, the subcommand locates the public key
+           file in the user-home/.ssh directory on the host where the
+           subcommand is run. If the user-home/.ssh/authorized_keys file does
+           not exist on a host, the subcommand creates the file.  user-home is
+           the user's home directory on a host.
+
+           To distribute the public key, authentication of the user's SSH
+           login is required. If the private key is protected by a passphrase,
+           the passphrase is also required. By default, the subcommand prompts
+           the user for the password and, if necessary, the passphrase. To
+           distribute the public key without being prompted, run the
+           subcommand as follows:
+
+           *   Set the --interactive option of the asadmin(1M) utility to
+               false.
+
+           *   Set the --passwordfile option of the asadmin utility to a file
+               in which the AS_ADMIN_SSHPASSWORD entry specifies the SSH
+               user's password for logging in to the specified hosts.
+
+           *   If a passphrase is required, ensure that the file that
+               --passwordfile option of the asadmin utility specifies also
+               contains an entry for AS_ADMIN_SSHKEYPASSPHRASE.
+
+           If public key authentication is already set up on a host, the
+           subcommand informs the user that public key authentication is
+           already set up and does not distribute the key to the host.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --sshport
+           The port to use for SSH connections to the host where SSH is being
+           set up. The default is 22.
+
+       --sshuser
+           The SSH user on the remote host that is to run the process for
+           setting up SSH on that host. The default is the user that is
+           running this subcommand. To ensure that the DAS can read this
+           user's SSH private key file, specify the user that is running the
+           DAS process.
+
+       --sshkeyfile
+           The absolute path to the SSH private key file for user that the
+           --sshuser option specifies. This file is used for authentication to
+           the sshd daemon on the host.
+
+           The user that is running this subcommand must be able to reach the
+           path to the key file and read the key file.
+
+           The default is a key file in the user's .ssh directory on the host
+           where the subcommand is run. If multiple key files are found, the
+           subcommand uses the following order of preference:
+
+            1. id_rsa
+
+            2. id_dsa
+
+            3. identity
+
+       --sshpublickeyfile
+           The absolute path to the SSH public key file for user that the
+           --sshuser option specifies. The content of the public key file is
+           appended to the user's .ssh/authorized_keys file on each host where
+           SSH is being set up. If the .ssh/authorized_keys file does not
+           exist on a host, the subcommand creates the file.
+
+           The user that is running this subcommand must be able to reach the
+           path to the key file and read the key file.
+
+           The default is a key file in the user's .ssh directory on the host
+           where the subcommand is run. If multiple key files are found, the
+           subcommand uses the following order of preference:
+
+            1. id_rsa.pub
+
+            2. id_dsa.pub
+
+            3. identity.pub
+
+       --generatekey
+           Specifies whether the subcommand generates the SSH key files
+           without prompting the user.
+
+           Possible values are as follows:
+
+           true
+               The subcommand generates the SSH key files without prompting
+               the user.
+
+           false
+               The behavior of the subcommand depends on whether the SSH key
+               files exist:
+
+               *   If the SSH key files exist, the subcommand does not
+                   generate the files.
+
+               *   If the SSH key files do not exist, the behavior of the
+                   subcommand depends on the value of the --interactive option
+                   of the asadmin utility:
+
+                   *   If the --interactive option is true, the subcommand
+                       prompts the user to create the files.
+
+                   *   If the --interactive option is false, the subcommand
+                       fails.
+
+               This value is the default.
+
+OPERANDS
+       host-list
+           A space-separated list of the names of the hosts where an SSH key
+           is to be set up.
+
+EXAMPLES
+       Example 1, Setting Up an SSH Key
+           This example sets up an SSH key for the user gfuser on the hosts
+           sj03 and sj04. The key file is not generated but is copied from the
+           user's .ssh directory on the host where the subcommand is running.
+
+               asadmin> setup-ssh sj03 sj04
+               Enter SSH password for gfuser@sj03>
+               Copied keyfile /home/gfuser/.ssh/id_rsa.pub to gfuser@sj03
+               Successfully connected to gfuser@sj03 using keyfile /home/gfuser/.ssh/id_rsa
+               Copied keyfile /home/gfuser/.ssh/id_rsa.pub to gfuser@sj04
+               Successfully connected to gfuser@sj04 using keyfile /home/gfuser/.ssh/id_rsa
+               Command setup-ssh executed successfully.
+
+       Example 2, Generating and Setting Up an SSH Key
+           This example generates and sets up an SSH key for the user gfuser
+           on the hosts sua01 and sua02.
+
+               asadmin> setup-ssh --generatekey=true sua01 sua02
+               Enter SSH password for gfuser@sua01>
+               Created directory /home/gfuser/.ssh
+               /usr/bin/ssh-keygen successfully generated the identification /home/gfuser/.ssh/id_rsa
+               Copied keyfile /home/gfuser/.ssh/id_rsa.pub to gfuser@sua01
+               Successfully connected to gfuser@sua01 using keyfile /home/gfuser/.ssh/id_rsa
+               Copied keyfile /home/gfuser/.ssh/id_rsa.pub to gfuser@sua02
+               Successfully connected to gfuser@sua02 using keyfile /home/gfuser/.ssh/id_rsa
+               Command setup-ssh executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       ssh(1), ssh-keygen(1)
+
+       asadmin(1M)
+
+       sshd(1M)
+
+       Cygwin Information and Installation (http://www.cygwin.com/), MKS
+       Software (http://www.mkssoftware.com/)
+
+Java EE 8                         14 Dec 2010                     setup-ssh(1)

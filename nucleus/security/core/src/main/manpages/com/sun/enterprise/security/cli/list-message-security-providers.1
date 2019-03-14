@@ -1,0 +1,72 @@
+list-message-security-providers(1)  asadmin Utility Subcommands  list-message-security-providers(1)
+
+NAME
+       list-message-security-providers - lists all security message providers
+       for the given message layer
+
+SYNOPSIS
+           list-message-security-providers [--help]
+           --layer message_layer
+           [target]
+
+DESCRIPTION
+       The list-message-security-providers subcommand enables administrators
+       to list all security message providers (provider-config sub-elements)
+       for the given message layer (message-security-config element of
+       domain.xml).
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --layer
+           The message-layer for which the provider has to be listed. The
+           default value is HttpServlet.
+
+OPERANDS
+       target
+           Restricts the listing to message security providers for a specific
+           target. Valid values include:
+
+           server
+               Lists providers for the default server instance server and is
+               the default value.
+
+           domain
+               Lists providers for the domain.
+
+           cluster
+               Lists providers for the server instances in the cluster.
+
+           instance
+               Lists providers for a particular server instance.
+
+EXAMPLES
+       Example 1, Listing message security providers
+           The following example shows how to list message security providers
+           for a message layer.
+
+               asadmin> list-message-security-providers
+               --layer SOAP
+               XWS_ClientProvider
+               ClientProvider
+               XWS_ServerProvider
+               ServerProvider
+               Command list-message-security-providers executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-message-security-provider(1),
+       delete-message-security-provider(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        list-message-security-providers(1)

@@ -1,0 +1,72 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-batchjobexecutions" text="Viewing Batch Job Executions" expand="false">
+      <tocitem target="task-viewbatchjobexecutions" text="To View Batch Job Executions" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-batchruntime" text="Configuring the Batch Runtime" expand="false">
+      <tocitem target="task-configurebatchruntime" text="To Configure the Batch Runtime" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-javamailresources" text="Configuring JavaMail Sessions" expand="false">
+      <tocitem target="task-javamailsessioncreate" text="To Create a JavaMail Session" expand="false"></tocitem>
+      <tocitem target="task-javamailsessionsedit" text="To Edit a JavaMail Session" expand="false"></tocitem>
+      <tocitem target="task-javamailtargets" text="To Manage JavaMail Session Targets" expand="false"></tocitem>
+      <tocitem target="task-javamailsessionsdelete" text="To Delete a JavaMail Session" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-jndiresources" text="Configuring JNDI Resources" expand="false">
+      <tocitem target="task-jndicustomresourcenew" text="To Create a Custom JNDI Resource" expand="false"></tocitem>
+      <tocitem target="task-jndicustomresourceedit" text="To Edit a Custom JNDI Resource" expand="false"></tocitem>
+      <tocitem target="task-jndicustomresourcedelete" text="To Delete a Custom JNDI Resource" expand="false"></tocitem>
+      <tocitem target="task-jndiexternalresourcecreate" text="To Create an External JNDI Resource" expand="false"></tocitem>
+      <tocitem target="task-jndiexternalresourceedit" text="To Edit an External JNDI Resource" expand="false"></tocitem>
+      <tocitem target="task-jndiexternalresourcedelete" text="To Delete an External JNDI Resource" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-appservsettings" text="server (Admin Server)" expand="false">
+      <tocitem target="ref-group-batchjobs" text="Batch" expand="false">
+        <tocitem target="ref-batchjobslisting" text="Batch Job Executions" expand="false"></tocitem>
+        <tocitem target="ref-batchjobsexecution" text="Batch Job Execution Details" expand="false"></tocitem>
+        <tocitem target="ref-batchjobssteps" text="Batch Job Execution Steps" expand="false"></tocitem>
+        <tocitem target="ref-batchjobsconfiguration" text="Batch Runtime Configuration" expand="false"></tocitem>
+      </tocitem>
+    </tocitem>
+    <tocitem target="ref-group-resources" text="Resources" expand="false">
+      <tocitem target="ref-group-javamailresources" text="JavaMail Sessions" expand="false">
+        <tocitem target="ref-javamailsessions" text="JavaMail Sessions" expand="false"></tocitem>
+        <tocitem target="ref-javamailsessioncreate" text="New JavaMail Session" expand="false"></tocitem>
+        <tocitem target="ref-javamailsessionsedit" text="Edit JavaMail Session" expand="false"></tocitem>
+      </tocitem>
+      <tocitem target="ref-group-jndi" text="JNDI" expand="false">
+        <tocitem target="ref-jndi" text="JNDI" expand="false"></tocitem>
+        <tocitem target="ref-group-jndicustomresources" text="Custom Resources" expand="false">
+          <tocitem target="ref-jndicustomresources" text="Custom Resources" expand="false"></tocitem>
+          <tocitem target="ref-jndicustomresourcenew" text="New Custom Resource" expand="false"></tocitem>
+          <tocitem target="ref-jndicustomresourceedit" text="Edit Custom Resource" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-jndiexternalresources" text="External Resources" expand="false">
+          <tocitem target="ref-jndiexternalresources" text="External Resources" expand="false"></tocitem>
+          <tocitem target="ref-jndiexternalresourcenew" text="New External Resource" expand="false"></tocitem>
+          <tocitem target="ref-jndiexternalresourceedit" text="Edit External Resource" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

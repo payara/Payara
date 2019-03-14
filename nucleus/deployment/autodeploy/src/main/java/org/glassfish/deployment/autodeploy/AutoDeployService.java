@@ -201,7 +201,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
 
     private String getTarget() {
         // XXX should this also be configurable ?
-        return DAS_TARGET;
+        return null; // Not used before, so make it null now
     }
 
     private String getDefaultVirtualServer() {

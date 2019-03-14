@@ -1,0 +1,100 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jndiexternalresourcecreate" name="task-jndiexternalresourcecreate"></a><a id="GHJML00018" name="GHJML00018"></a></p>
+
+<h4><a id="sthref16" name="sthref16"></a><a id="sthref17" name="sthref17"></a>To Create an External JNDI Resource</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>An external JNDI resource accesses an external JNDI repository, such as an LDAP server.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Under the Resources node, expand the JNDI node.</p>
+</li>
+<li>
+<p>Under the JNDI node, select External Resources.</p>
+<p>The External Resources page opens.</p>
+</li>
+<li>
+<p>On the External Resources page, click New.</p>
+<p>The New External Resource page opens.</p>
+</li>
+<li>
+<p>In the JNDI Name field, type a unique name.</p>
+<p>This name will be registered in the JNDI naming service. The JNDI name organizes and locates components within a distributed computing environment similarly to the way that card catalogs organize and represent locations of books in a library. Consequently, the JNDI name becomes an important method of accessing the resource.</p>
+</li>
+<li>
+<p>In the Resource Type field, do one of the following.</p>
+<ul>
+<li>
+<p>From the drop-down list, select a type definition.</p>
+</li>
+<li>
+<p>Select the second radio button and type a fully qualified type definition that follows the format <i>xxx</i><code>.</code><i>xxx</i>.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Factory Class field, type a JNDI factory class external repository for the external resource to be created.</p>
+<p>The Factory Class is the user-specified name for the factory class, such as <code>com.sun.jndi.ldap</code>. This class implements the <code>javax.naming.spi.InitialContextFactory</code> interface.</p>
+</li>
+<li>
+<p>In the JNDI Lookup field, type the JNDI value to look up in the external repository.</p>
+<p>For example, when creating an external resource to connect to an external repository, to test a bean class, the JNDI Lookup can look like this: <code>cn=</code><i>testmybean</i>.</p>
+</li>
+<li>
+<p>In the Description field, Type a short description of the resource.</p>
+<p>This description is a string value and can include a maximum of 250 characters.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the resource.</p>
+<p>By default, the resource is enabled, meaning that it is available as soon as it is created.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties for the external resource.</p>
+<p>GlassFish Server does not define any additional properties for external resources.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHJML111" name="GHJML111"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jndicustomresourcenew.html">To Create a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndicustomresourceedit.html">To Edit a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndicustomresourcedelete.html">To Delete a Custom JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourceedit.html">To Edit an External JNDI Resource</a></p>
+</li>
+<li>
+<p><a href="task-jndiexternalresourcedelete.html">To Delete an External JNDI Resource</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

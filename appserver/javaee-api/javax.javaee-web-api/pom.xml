@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>javaee-api-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     
     <artifactId>javaee-web-api</artifactId>
@@ -144,12 +144,12 @@
         <!-- work around for GLASSFISH-19861  -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.faces</artifactId>
+            <artifactId>jakarta.faces</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.faces</groupId>
-            <artifactId>javax.faces-api</artifactId>
+            <groupId>jakarta.faces</groupId>
+            <artifactId>jakarta.faces-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

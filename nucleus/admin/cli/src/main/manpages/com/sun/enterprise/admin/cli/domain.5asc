@@ -1,0 +1,16 @@
+domain(5ASC)               GlassFish Server Concepts              domain(5ASC)
+
+NAME
+       domain - Domains have their own configurations.
+
+DESCRIPTION
+       A domain provides a common authentication and administration point for
+       a collection of zero or more server instances. The administration
+       domain encompasses several manageable resources, including instances,
+       clusters, and their individual resources. A manageable resource, such
+       as a server instance, may belong to only one domain.
+
+SEE ALSO
+       asadmin(1M)
+
+Java EE 8                         22 Dec 2004                     domain(5ASC)

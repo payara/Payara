@@ -1,0 +1,177 @@
+list(1)                   asadmin Utility Subcommands                  list(1)
+
+NAME
+       list - lists configurable or monitorable elements
+
+SYNOPSIS
+           list [--help] [--monitor={false|true}]
+           [dotted-parent-attribute-name]
+
+DESCRIPTION
+       The list subcommand lists configurable and monitorable attributes of
+       GlassFish Server.
+
+       The output of the list subcommand is a list of the dotted names that
+       represent individual server components and subsystems. For example,
+       server.applications.web-module. After you know the particular component
+       or subsystem, you can then use the get subcommand to access any
+       attributes, and the set subcommand to modify configurable attributes.
+
+       The following rules apply to dotted names in a list subcommand:
+
+           Note
+           +----------------------------------------+
+           |           Characters that have special |
+           |           meaning to the shell or      |
+           |           command interpreter, such as |
+           |           * (asterisk), should be      |
+           |           quoted or escaped as         |
+           |           appropriate to the shell,    |
+           |           for example, by enclosing    |
+           |           the argument in quotes. In   |
+           |           multimode, quotes are needed |
+           |           only for arguments that      |
+           |           include spaces, quotes, or   |
+           |           backslash.                   |
+           +----------------------------------------+
+
+       *   Any list subcommand that has a dotted name that is not followed by
+           a wildcard (*) lists the current node's immediate children. For
+           example, the following command lists all immediate children
+           belonging to the server node:
+
+               asadmin> list server
+
+       *   Any list subcommand that has a dotted name followed by a
+           wildcard(*) lists a hierarchical tree of child nodes from the
+           current node. For example, the following command lists all child
+           nodes of applications and their subsequent child nodes, and so on:
+
+               asadmin> list server.applications.*
+
+       *   Any list subcommand that has a dotted name preceded or followed by
+           a wildcard (*) of the form *dotted name or dottedname* lists all
+           nodes and their child nodes that match the regular expression
+           created by the provided matching pattern.
+
+       For detailed information about dotted names, see the dotted-names(5ASC)
+       help page.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --monitor, -m
+           Defaults to false. If set to false, the configurable attribute
+           values are returned. If set to true, the monitorable attribute
+           values are returned.
+
+OPERANDS
+       dotted-parent-element-name
+           Configurable or monitorable element name
+
+EXAMPLES
+       Example 1, Listing Dotted Names of Configurable Elements
+           This example lists the elements that can be configured.
+
+               asadmin> list *
+               applications
+               configs
+               configs.config.server-config
+               configs.config.server-config.admin-service
+               configs.config.server-config.admin-service.das-config
+               configs.config.server-config.admin-service.jmx-connector.system
+               configs.config.server-config.admin-service.property.adminConsoleContextRoot
+               configs.config.server-config.admin-service.property.adminConsoleDownloadLocation
+               configs.config.server-config.admin-service.property.ipsRoot
+               configs.config.server-config.ejb-container
+               configs.config.server-config.ejb-container.ejb-timer-service
+               configs.config.server-config.http-service
+               configs.config.server-config.http-service.access-log
+               configs.config.server-config.http-service.virtual-server.__asadmin
+               configs.config.server-config.http-service.virtual-server.server
+               configs.config.server-config.iiop-service
+               configs.config.server-config.iiop-service.iiop-listener.SSL
+               configs.config.server-config.iiop-service.iiop-listener.SSL.ssl
+               configs.config.server-config.iiop-service.iiop-listener.SSL_MUTUALAUTH
+               configs.config.server-config.iiop-service.iiop-listener.SSL_MUTUALAUTH.ssl
+               configs.config.server-config.iiop-service.iiop-listener.orb-listener-1
+               configs.config.server-config.iiop-service.orb
+               configs.config.server-config.java-config
+               configs.config.server-config.jms-service
+               configs.config.server-config.jms-service.jms-host.default_JMS_host
+               ...
+               property.administrative.domain.name
+               resources
+               resources.jdbc-connection-pool.DerbyPool
+               resources.jdbc-connection-pool.DerbyPool.property.DatabaseName
+               resources.jdbc-connection-pool.DerbyPool.property.Password
+               resources.jdbc-connection-pool.DerbyPool.property.PortNumber
+               resources.jdbc-connection-pool.DerbyPool.property.User
+               resources.jdbc-connection-pool.DerbyPool.property.connectionAttributes
+               resources.jdbc-connection-pool.DerbyPool.property.serverName
+               resources.jdbc-connection-pool.__TimerPool
+               resources.jdbc-connection-pool.__TimerPool.property.connectionAttributes
+               resources.jdbc-connection-pool.__TimerPool.property.databaseName
+               resources.jdbc-resource.jdbc/__TimerPool
+               resources.jdbc-resource.jdbc/__default
+               servers
+               servers.server.server
+               servers.server.server.resource-ref.jdbc/__TimerPool
+               servers.server.server.resource-ref.jdbc/__default
+               system-applications
+               Command list executed successfully.
+
+       Example 2, Listing Attributes of a Configurable Element
+           This example lists the attributes of the web container.
+
+               asadmin> list configs.config.server-config.web-container
+               configs.config.server-config.web-container
+               configs.config.server-config.web-container.session-config
+               Command list executed successfully.
+
+       Example 3, Listing Dotted Names of Monitorable Objects
+           This example lists the names of the monitorable objects that are
+           enabled for monitoring.
+
+               asadmin> list --monitor *
+               server.jvm
+               server.jvm.class-loading-system
+               server.jvm.compilation-system
+               server.jvm.garbage-collectors
+               server.jvm.garbage-collectors.Copy
+               server.jvm.garbage-collectors.MarkSweepCompact
+               server.jvm.memory
+               server.jvm.operating-system
+               server.jvm.runtime
+               server.network
+               server.network.admin-listener
+               server.network.admin-listener.connections
+               server.network.admin-listener.file-cache
+               server.network.admin-listener.keep-alive
+               server.network.admin-listener.thread-pool
+               server.network.http-listener-1
+               server.network.http-listener-1.connections
+               server.network.http-listener-1.file-cache
+               server.network.http-listener-1.keep-alive
+               server.network.http-listener-1.thread-pool
+               server.transaction-service
+               Command list executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       get(1), set(1)
+
+       dotted-names(5ASC)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Administration Guide
+
+Java EE 8                         14 Sep 2009                          list(1)

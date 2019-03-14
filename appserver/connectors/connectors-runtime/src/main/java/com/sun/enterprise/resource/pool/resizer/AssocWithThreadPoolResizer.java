@@ -78,12 +78,12 @@ public class AssocWithThreadPoolResizer extends Resizer {
         if (pool.getResizeQuantity() > 0 && forced) {
 
             scaleDownQuantity = (scaleDownQuantity <=
-                    (ds.getResourcesSize() - pool.getSteadyPoolSize())) ? scaleDownQuantity : 0;
+                    (dataStructure.getResourcesSize() - pool.getSteadyPoolSize())) ? scaleDownQuantity : 0;
 
             debug("Scaling down pool by quantity : " + scaleDownQuantity);
             Set<ResourceHandle> resourcesToRemove = new HashSet<ResourceHandle>();
             try {
-                for (ResourceHandle h : ds.getAllResources()) {
+                for (ResourceHandle h : dataStructure.getAllResources()) {
                     if (scaleDownQuantity > 0) {
                         synchronized (h.lock) {
                             if (!h.isBusy()) {
@@ -96,8 +96,8 @@ public class AssocWithThreadPoolResizer extends Resizer {
                 }
             } finally {
                 for (ResourceHandle resourceToRemove : resourcesToRemove) {
-                    if (ds.getAllResources().contains(resourceToRemove)) {
-                        ds.removeResource(resourceToRemove);
+                    if (dataStructure.getAllResources().contains(resourceToRemove)) {
+                        dataStructure.removeResource(resourceToRemove);
                     }
                 }
             }
@@ -113,7 +113,7 @@ public class AssocWithThreadPoolResizer extends Resizer {
     @Override
     protected int removeIdleAndInvalidResources() {
 
-        int poolSizeBeforeRemoval = ds.getResourcesSize();
+        int poolSizeBeforeRemoval = dataStructure.getResourcesSize();
         int noOfResourcesRemoved = 0;
         // let's cache the current time since precision is not required here.
         long currentTime = System.currentTimeMillis();
@@ -125,7 +125,7 @@ public class AssocWithThreadPoolResizer extends Resizer {
         Set<ResourceHandle> resourcesToRemove = new HashSet<ResourceHandle>();
         try {
             //iterate through all the resources to find idle-time lapsed ones.
-            for (ResourceHandle h : ds.getAllResources()) {
+            for (ResourceHandle h : dataStructure.getAllResources()) {
                 synchronized (h.lock) {
                     state = h.getResourceState();
                     if (!state.isBusy()) {
@@ -160,8 +160,8 @@ public class AssocWithThreadPoolResizer extends Resizer {
             }
         } finally {
             for (ResourceHandle resourceToRemove : resourcesToRemove) {
-                if (ds.getAllResources().contains(resourceToRemove)) {
-                    ds.removeResource(resourceToRemove);
+                if (dataStructure.getAllResources().contains(resourceToRemove)) {
+                    dataStructure.removeResource(resourceToRemove);
                 }
             }
         }
@@ -186,7 +186,7 @@ public class AssocWithThreadPoolResizer extends Resizer {
             debug("Number of Invalid resources removed for pool [ " + poolInfo + " ] - "
                     + noOfInvalidResources);
         }
-        noOfResourcesRemoved = poolSizeBeforeRemoval - ds.getResourcesSize();
+        noOfResourcesRemoved = poolSizeBeforeRemoval - dataStructure.getResourcesSize();
         return noOfResourcesRemoved;
     }
 

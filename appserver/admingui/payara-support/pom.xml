@@ -2,7 +2,7 @@
 <!--
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>payara-support</artifactId>
@@ -106,14 +106,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.jar</exclude>
-                </excludes>
-            </resource>
-        </resources>
     </build>
 
     <dependencies>
@@ -128,17 +120,6 @@
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.messaging.mq</groupId>
-            <artifactId>imqjmx</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-           <artifactId>console-jms-plugin-help</artifactId>
-           <version>${v3-docs.version}</version>
-           <type>zip</type>
         </dependency>
     </dependencies>
 </project>

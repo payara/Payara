@@ -1,0 +1,74 @@
+export(1)                 asadmin Utility Subcommands                export(1)
+
+NAME
+       export - marks a variable name for automatic export to the environment
+       of subsequent commands in multimode
+
+SYNOPSIS
+           export [--help] [variable-name=value [variable-name=value]*]
+
+DESCRIPTION
+       In multimode, the export subcommand marks an environment variable for
+       automatic export to the environment of subsequent commands. All
+       subsequent commands use the variable name value as specified unless you
+       exit multimode, or use the unset subcommand to unset the variable. If
+       only the variable name is specified, the current value of that variable
+       name is displayed.
+
+       If the export subcommand is used without any arguments, a list of all
+       the exported variables and their values is displayed. Exported shell
+       environment variables set prior to invoking the asadmin utility are
+       imported automatically and set as exported variables within asadmin.
+       Environment variables that are not exported cannot be read by the
+       asadmin utility.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       variable-name=value
+           Variable name and value for automatic export to the environment to
+           be used by subsequent commands.
+
+EXAMPLES
+       Example 1, Listing the Environment Variables That Are Set
+           This example lists the environment variables that have been set.
+
+               asadmin> export
+               AS_ADMIN_USER = admin
+               AS_ADMIN_HOST = bluestar
+               AS_ADMIN_PREFIX = server1.jms-service
+               AS_ADMIN_PORT = 8000
+               Command export executed successfully
+
+       Example 2, Setting an Environment Variable
+           This example sets the AS_ADMIN_HOST environment variable to
+           bluestar.
+
+               asadmin> export AS_ADMIN_HOST=bluestar
+               Command export executed successfully
+
+       Example 3, Setting Multiple Environment Variables
+           This example sets a number of environment variables for the
+           multimode environment.
+
+               asadmin> export AS_ADMIN_HOST=bluestar AS_ADMIN_PORT=8000
+               AS_ADMIN_USER=admin AS_ADMIN_PREFIX=server1.jms-service
+               Command export executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       unset(1), multimode(1)
+
+       asadmin(1M)
+
+Java EE 8                         5 Oct 2009                         export(1)

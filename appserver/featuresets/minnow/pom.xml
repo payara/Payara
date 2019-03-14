@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     <artifactId>minnow</artifactId>
     <name>Glassfish Minnow Featureset</name>
@@ -157,13 +157,6 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jmx</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <!-- additional servicetag registry dependency -->
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>servicetag-registry</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

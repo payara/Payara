@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -54,7 +54,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  *
  * @author steve
+ * @deprecated Replaced by {@link SetHealthCheckServiceConfiguration}
  */
+@Deprecated
 @Service(name = "healthcheck-hoggingthreads-configure")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

@@ -1,0 +1,138 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jmsphysicaldestnew" name="task-jmsphysicaldestnew"></a><a id="GHJMS00030" name="GHJMS00030"></a></p>
+
+<h4><a id="sthref30" name="sthref30"></a><a id="sthref31" name="sthref31"></a>To Create a JMS Physical Destination</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>You do not ordinarily need to create physical destinations, because you specify a physical destination name when you create a JMS destination resource, and GlassFish Server creates the physical destination automatically when it is needed.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the instance to configure:</p>
+<ul>
+<li>
+<p>To configure a particular instance, select the instance's config node. For example, for the default instance, <code>server</code>, select the <code>server-config</code> node.</p>
+</li>
+<li>
+<p>To configure the default settings for future instances that use a copy of <code>default-config</code>, select the <code>default-config</code> node.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Under the Configuration node, expand the Java Message Service node.</p>
+</li>
+<li>
+<p>Under the Java Message Service node, select the Physical Destinations node.</p>
+<p>The Physical Destinations page opens.</p>
+</li>
+<li>
+<p>On the Physical Destinations page, click New.</p>
+<p>The New Physical Destination page opens.</p>
+</li>
+<li>
+<p>In the Name field, type the name of the physical destination.</p>
+</li>
+<li>
+<p>From the Type drop-down list, select either <code>javax.jms.Topic</code> or <code>javax.jms.Queue</code>.</p>
+</li>
+<li>
+<p>In the Maximum Number of Unconsumed Messages field, type the maximum number of unconsumed messages permitted for the destination.</p>
+<p>A value of -1 indicates that there is no limit to the number of unconsumed messages. The default value is -1.</p>
+</li>
+<li>
+<p>In the Maximum Message Size field, type the maximum size, in bytes, of any single message.</p>
+<p>A value of -1 denotes an unlimited message size. The default value is -1.</p>
+</li>
+<li>
+<p>In the Maximum Total Memory field, type the maximum total memory, in bytes, for unconsumed messages.</p>
+<p>A value of -1 indicates that there is no limit to the memory size for unconsumed messages. The default value is -1.</p>
+</li>
+<li>
+<p>From the Threshold Limit Behavior drop-down list, select the behavior the broker is to follow when the memory-limit threshold is reached.</p>
+<ul>
+<li>
+<p><code>Reject newest messages</code> tells the broker to reject the newest messages and to notify the producing client with an exception only if the message is persistent.</p>
+<p><code>Reject newest messages</code> is the default value.</p>
+</li>
+<li>
+<p><code>Slow down producers</code> tells the broker to slow the rate at which message producers send messages.</p>
+</li>
+<li>
+<p><code>Throw out oldest</code> tells the broker to discard the oldest messages.</p>
+</li>
+<li>
+<p><code>Throw out lowest-priority messages</code> tells the broker to discard the messages with the lowest priority.</p>
+</li>
+</ul>
+<p>If the value is <code>Throw out oldest</code> or <code>Throw out lowest-priority messages</code> and Use Dead Message Queue is set to True, excess messages are moved to the dead message queue.</p>
+</li>
+<li>
+<p>In the Maximum Number of Producers field, type the maximum number of message producers that can be associated with this physical destination.</p>
+<p>When this limit is reached, no new producers can be created. A value of -1 denotes an unlimited number of producers. The default value is 100.</p>
+</li>
+<li>
+<p>In the Batch Delivery Max Message Count field, type the maximum number of messages that can be delivered to consumers in a single batch.</p>
+<p>A value of -1 denotes an unlimited number of messages. The default value is 1000.</p>
+</li>
+<li>
+<p>From the Use Dead Message Queue drop-down list, select True to place dead messages in the dead message queue.</p>
+<p>If the value is set to False, dead messages are discarded. This option is set to True by default.</p>
+</li>
+<li>
+<p>From the Validate XML Schema Enabled drop-down list, select True to enable XML schema validation for the destination.</p>
+<p>If the value is set to True, the Message Queue client runtime will attempt to validate an XML message against the specified XML Schema Definitions (or against the DTD, if no XSD is specified) before sending it to the broker. If the specified schema cannot be located or the message cannot be validated, the message is not sent, and an exception is thrown. This option is set to False by default.</p>
+</li>
+<li>
+<p>In the XML Schema URI List field, type a space-separated list of XML Schema Definition (XSD) URI strings.</p>
+<p>If XML schema validation is enabled, the URIs point to the location of one or more XSDs to use for XML schema validation.</p>
+</li>
+</ol>
+<a id="sthref32" name="sthref32"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jmsservice.html">To Configure the JMS Service</a></p>
+</li>
+<li>
+<p><a href="task-jmshostnew.html">To Create a JMS Host</a></p>
+</li>
+<li>
+<p><a href="task-jmshostedit.html">To Edit a JMS Host</a></p>
+</li>
+<li>
+<p><a href="task-jmshostdelete.html">To Delete a JMS Host</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldestedit.html">To Edit a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldestdelete.html">To Delete a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsflushmessages.html">To Remove Messages from a JMS Physical Destination</a></p>
+</li>
+<li>
+<p><a href="task-jmsphysicaldeststats.html">To View Statistics for a JMS Physical Destination</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

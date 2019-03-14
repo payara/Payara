@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-managed-thread-factory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-managed-thread-factory</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-managed-scheduled-executor-service.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-message-security-provider.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-managed-thread-factory-1"></a><a id="GSRFM842"></a><a id="create-managed-thread-factory"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_managed_thread_factory">create-managed-thread-factory</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates a managed thread factory resource</p>
+</div>
+<div id="sthref413" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-managed-thread-factory [--help]
+[--enabled={false|true}]
+[--contextinfoenabled={false|true}]
+[--contextinfo={Classloader|JNDI|Security|WorkArea}]
+[--threadpriority threadpriority]
+[--description description]
+[--property property]
+[--target target]
+jndi_name</code></pre>
+</div>
+</div>
+<div id="sthref414" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-managed-thread-factory</code> subcommand creates a managed thread
+factory resource.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref415" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>Determines whether the managed thread factory is enabled at runtime.
+The default value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--contextinfoenabled</code></dt>
+<dd>
+<p>Determines whether container contexts are propagated to threads. If
+set to <code>true</code>, the contexts specified in the <code>--contextinfo</code> option
+are propagated. If set to <code>false</code>, no contexts are propagated and the
+<code>--contextinfo</code> option is ignored. The default value is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--contextinfo</code></dt>
+<dd>
+<p>Specifies individual container contexts to propagate to threads. Valid
+values are Classloader, JNDI, Security, and WorkArea. Values are
+specified in a comma-separated list and are case-insensitive. All
+contexts are propagated by default.</p>
+</dd>
+<dt class="hdlist1"><code>--threadpriority</code></dt>
+<dd>
+<p>Specifies the priority to assign to created threads. The default value
+is 5.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Descriptive details about the resource.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the resource.<br>
+\{product---name} does not define any additional properties for this
+resource. Moreover, this resource does not currently use any
+additional properties.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the resource. Valid
+targets are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the resource for the default server instance. This is the
+default value.</p>
+</dd>
+<dt class="hdlist1"><code>domain</code></dt>
+<dd>
+<p>Creates the resource for the domain.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the resource for every server instance in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the resource for the specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref416" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jndi_name</dt>
+<dd>
+<p>The JNDI name of this resource.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref417" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM843"></a><a id="sthref418"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Managed Thread Factory Resource</p>
+</div>
+<div class="paragraph">
+<p>This example creates a managed thread factory resource named
+<code>concurrent/myThreadFactory</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-managed-thread-factory concurrent/myThreadFactory
+Managed thread factory concurrent/myThreadFactory created successfully.
+Command create-managed-thread-factory executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref419" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref420" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-managed-thread-factory.html#delete-managed-thread-factory-1"><code>delete-managed-thread-factory</code>(1)</a>,
+<a href="list-managed-thread-factories.html#list-managed-thread-factories-1"><code>list-managed-thread-factories</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-managed-scheduled-executor-service.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-message-security-provider.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

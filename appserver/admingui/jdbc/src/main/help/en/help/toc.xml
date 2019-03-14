@@ -1,0 +1,57 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-jdbc" text="Connecting Applications to Databases Through JDBC Technology" expand="false">
+      <tocitem target="task-setdbaccess" text="To Set Up Database Access" expand="false"></tocitem>
+      <tocitem target="task-integratejdbcdriver" text="To Integrate a JDBC Driver" expand="false"></tocitem>
+      <tocitem target="task-jdbcresourcenew" text="To Create a JDBC Resource" expand="false"></tocitem>
+      <tocitem target="task-jdbcresourcesedit" text="To Edit a JDBC Resource" expand="false"></tocitem>
+      <tocitem target="task-jdbcresourcetargets" text="To Edit JDBC Resource Targets" expand="false"></tocitem>
+      <tocitem target="task-jdbcresourcesdelete" text="To Delete a JDBC Resource" expand="false"></tocitem>
+      <tocitem target="task-jdbcconnectionpoolnew" text="To Create a JDBC Connection Pool" expand="false"></tocitem>
+      <tocitem target="task-jdbcconnectionpooledit" text="To Edit JDBC Connection Pool General Settings" expand="false"></tocitem>
+      <tocitem target="task-jdbcconnectionpooladvance" text="To Edit JDBC Connection Pool Advanced Attributes" expand="false"></tocitem>
+      <tocitem target="task-verifyconnpoolsettings" text="To Verify Connection Pool Settings" expand="false"></tocitem>
+      <tocitem target="task-jdbcconnectionpoolproperty" text="To Edit JDBC Connection Pool Properties" expand="false"></tocitem>
+      <tocitem target="task-jdbcconnectionpooldelete" text="To Delete a JDBC Connection Pool" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-resources" text="Resources" expand="false">
+      <tocitem target="ref-group-jdbc" text="JDBC" expand="false">
+        <tocitem target="ref-jdbc" text="JDBC" expand="false"></tocitem>
+        <tocitem target="ref-group-jdbcresources" text="JDBC Resources" expand="false">
+          <tocitem target="ref-jdbcresources" text="JDBC Resources" expand="false"></tocitem>
+          <tocitem target="ref-jdbcresourcenew" text="New JDBC Resource" expand="false"></tocitem>
+          <tocitem target="ref-jdbcresourceedit" text="Edit JDBC Resource" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-jdbcconnectionpools" text="Connection Pools" expand="false">
+          <tocitem target="ref-jdbcconnectionpools" text="Connection Pools" expand="false"></tocitem>
+          <tocitem target="ref-jdbcconnectionpoolnew1" text="New JDBC Connection Pool (Step 1 of 2)" expand="false"></tocitem>
+          <tocitem target="ref-jdbcconnectionpoolnew2" text="New JDBC Connection Pool (Step 2 of 2)" expand="false"></tocitem>
+          <tocitem target="ref-jdbcconnectionpooledittab" text="Edit Connection Pool" expand="false"></tocitem>
+          <tocitem target="ref-jdbcconnpooladvanceattrtab" text="Edit Connection Pool Advanced Attributes" expand="false"></tocitem>
+          <tocitem target="ref-jdbcconnpoolproptab" text="Edit Connection Pool Properties" expand="false"></tocitem>
+          <tocitem target="ref-jdbc-properties" text="Properties Specific to JDBC Connection Pools" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

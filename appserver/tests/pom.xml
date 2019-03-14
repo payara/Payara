@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.main.tests</groupId>
@@ -54,9 +54,14 @@
     <packaging>pom</packaging>
     <name>GlassFish Tests related modules</name>
 
-    <modules>
-        <!-- module>quicklook</module -->
-    </modules>
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <modules>
+                <module>quicklook</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

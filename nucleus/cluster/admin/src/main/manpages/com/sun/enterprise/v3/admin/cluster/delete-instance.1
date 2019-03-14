@@ -1,0 +1,83 @@
+delete-instance(1)        asadmin Utility Subcommands       delete-instance(1)
+
+NAME
+       delete-instance - deletes a GlassFish Server instance
+
+SYNOPSIS
+           delete-instance [--help] instance-name
+
+DESCRIPTION
+       The delete-instance subcommand deletes a GlassFish Server instance.
+       This subcommand requires the secure shell (SSH) to be configured on the host
+       where the domain administration server (DAS) is running and on the host
+       that is represented by the node where the instance resides.
+
+           Note
+           +----------------------------------------+
+           |           SSH is not required          |
+           |           if the instance resides on a |
+           |           node of type CONFIG that     |
+           |           represents the local host. A |
+           |           node of type CONFIG is not   |
+           |           enabled for remote           |
+           |           communication over SSH.      |
+           +----------------------------------------+
+
+       You may run this subcommand from any host that can contact the DAS.
+
+       The subcommand can delete any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can delete
+       an instance that was created by using the create-local-instance(1)
+       subcommand.
+
+       The instance that is being deleted must not be running. Otherwise, an
+       error occurs.
+
+       The subcommand deletes an instance by performing the following actions:
+
+       *   Removing the instance from the configuration of the domain
+           administration server (DAS)
+
+       *   Deleting the instance's files from file system
+
+       If the instance that is being deleted is the only instance that is
+       using the node directory, that directory is also removed.
+
+       If a standalone instance is deleted, the instance's standalone
+       configuration is also deleted. A standalone instance refers to a
+       configuration that is named instance-name-config to which no other
+       clusters or unclustered instances refer.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       instance-name
+           The name of the instance to delete.
+
+EXAMPLES
+       Example 1, Deleting a GlassFish Server Instance
+           This example deletes the GlassFish Server instance pmdsainst.
+
+               asadmin> delete-instance pmdsainst
+
+               Command delete-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-local-instance(1),
+       setup-ssh(1), start-instance(1), start-local-instance(1),
+       stop-instance(1), stop-local-instance(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Dec 2011               delete-instance(1)

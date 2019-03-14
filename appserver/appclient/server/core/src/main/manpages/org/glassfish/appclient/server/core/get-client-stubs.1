@@ -1,0 +1,61 @@
+get-client-stubs(1)       asadmin Utility Subcommands      get-client-stubs(1)
+
+NAME
+       get-client-stubs - retrieves the application JAR files needed to launch
+       the application client.
+
+SYNOPSIS
+           get-client-stubs [--help] --appname application_name local_directory_path
+
+DESCRIPTION
+       The get-client-stubs subcommand copies the required JAR files for an
+       AppClient standalone module or each AppClient module in an application
+       from the server machine to the local directory. Each client's generated
+       JAR file is retrieved, along with any required supporting JAR files .
+       The client JAR file name is of the form app-nameClient.jar. Before
+       executing the get-client-stubs subcommand, you must deploy the
+       application or module. The generated client JAR file is useful for
+       running the application using the appclient utility. This subcommand is
+       supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --appname
+           The name of the application or stand-alone client module.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. For more information about module and application
+           versions, see "Module and Application Versions" in Oracle GlassFish
+           Server Application Deployment Guide.
+
+OPERANDS
+       local_directory_path
+           The path to the local directory where the client stub JAR file
+           should be stored.
+
+EXAMPLES
+       Example 1, Using get-client-stubs
+
+               asadmin> get-client-stubs --appname myapplication /sample/example
+               Command get-client-stubs executed successfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       deploy(1), redeploy(1), undeploy(1)
+
+       appclient(1M), asadmin(1M), package-appclient(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                         16 Nov 2010              get-client-stubs(1)

@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-web-env-entry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-web-env-entry</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-web-context-param.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="login.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-web-env-entry-1"></a><a id="GSRFM00209"></a><a id="list-web-env-entry"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_web_env_entry">list-web-env-entry</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists environment entries for a deployed web application or module</p>
+</div>
+<div id="sthref1866" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-web-env-entry [--help]
+[--name=env-entry-name] application-name[/module]</code></pre>
+</div>
+</div>
+<div id="sthref1867" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-web-env-entry</code> subcommand lists the environment entries for
+one of the following items:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A deployed web application</p>
+</li>
+<li>
+<p>A web module in a deployed Java Platform, Enterprise Edition (Java EE)
+application</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The application must already be deployed. Otherwise, an error occurs.</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-web-env-entry</code> subcommand lists only entries that have
+previously been set by using the
+<a href="set-web-env-entry.html#set-web-env-entry-1"><code>set-web-env-entry</code>(1)</a>
+subcommand. The subcommand does not list environment entries that are
+set only in the application&#8217;s deployment descriptor.</p>
+</div>
+<div class="paragraph">
+<p>For each entry, the following information is displayed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The name of the entry</p>
+</li>
+<li>
+<p>The Java type of the entry</p>
+</li>
+<li>
+<p>The value to which the entry is set</p>
+</li>
+<li>
+<p>The value of the <code>--ignoreDescriptorItem</code> option of the
+<code>set-web-env-entry</code> subcommand that was specified when the entry was set</p>
+</li>
+<li>
+<p>The description of the entry or <code>null</code> if no description was specified
+when the entry was set</p>
+</li>
+</ul>
+</div>
+<div id="sthref1868" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--name</code></dt>
+<dd>
+<p>The name of the environment entry that is to be listed. The name is a
+JNDI name relative to the <code>java:comp/env</code> context. The name must be
+unique within a deployment component. If this option is omitted, all
+environment entries that have previously been set for the application
+are listed.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1869" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">application-name</dt>
+<dd>
+<p>The name of the application. This name can be obtained from the
+Administration Console or by using the
+<a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>
+subcommand.<br>
+The application must already be deployed. Otherwise, an error occurs.</p>
+</dd>
+<dt class="hdlist1">module</dt>
+<dd>
+<p>The relative path to the module within the application&#8217;s enterprise
+archive (EAR) file. The path to the module is specified in the
+<code>module</code> element of the application&#8217;s <code>application.xml</code> file.<br>
+module is required only if the environment entry applies to a web
+module of a Java EE application. If specified, module must follow
+application-name, separated by a slash (/).<br>
+For example, the <code>application.xml</code> file for the <code>myApp</code> application
+might specify the following web module:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;module&gt;
+    &lt;web&gt;
+        &lt;web-uri&gt;myWebModule.war&lt;/web-uri&gt;
+    &lt;/web&gt;
+&lt;/module&gt;</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>The module would be specified as the operand of this command as
+<code>myApp/myWebModule.war</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1870" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM719"></a><a id="sthref1871"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Environment Entries for a Web Application</p>
+</div>
+<div class="paragraph">
+<p>This example lists all environment entries that have been set for the
+web application <code>hello</code> by using the <code>set-web-env-entry</code> subcommand.
+Because no description was specified when the <code>Hello Port</code> environment
+entry was set, <code>null</code> is displayed instead of a description for this
+entry.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-web-env-entry hello
+Hello User (java.lang.String) = techscribe ignoreDescriptorItem=false
+ //User authentication for Hello appplication
+Hello Port (java.lang.Integer) = null ignoreDescriptorItem=true //null
+
+Command list-web-env-entry executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1872" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1873" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>,
+<a href="set-web-env-entry.html#set-web-env-entry-1"><code>set-web-env-entry</code>(1)</a>,
+<a href="unset-web-env-entry.html#unset-web-env-entry-1"><code>unset-web-env-entry</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-web-context-param.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="login.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

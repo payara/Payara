@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -176,12 +176,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberGroup = nodeConfig.getMemberGroup();
         } else {
             memberName = context.getInstanceName();
-            Cluster cluster = context.getConfigBean().getCluster();
-            if (cluster == null) {
-                memberGroup = context.getConfigBean().getConfigRef();
-            } else {
-                memberGroup = cluster.getName();
-            }
+            memberGroup = nodeConfig.getMemberGroup();
         }
     }
     
@@ -404,13 +399,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
         if (nodeConfig.getPublicAddress() != null && !nodeConfig.getPublicAddress().isEmpty()) {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
-        
 
         MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
         memberAddressProviderConfig.setEnabled(enabled);
         memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
 
-        
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
@@ -433,7 +426,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-            config.getNetworkConfig().setPortAutoIncrement(true);
             mcConfig.setEnabled(true);                       
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
@@ -454,6 +446,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             port = Integer.valueOf(configuration.getDasPort());
         }
         config.getNetworkConfig().setPort(port);
+        config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getAutoIncrementPort()));
     }
 
     private void shutdownHazelcast() {

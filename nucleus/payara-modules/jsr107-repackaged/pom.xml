@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     <artifactId>jsr107-repackaged</artifactId>
     <name>Repackaged JSR 107</name>
@@ -122,7 +122,6 @@
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
-            <version>${javax.cache-api.version}</version>
         </dependency>
     </dependencies>
     <profiles>

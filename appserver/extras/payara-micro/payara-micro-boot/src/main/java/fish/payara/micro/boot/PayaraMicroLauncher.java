@@ -69,6 +69,14 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
      * @throws Exception 
      */
     public static void main(String args[]) throws Exception {
+        create("main", args);
+    }
+
+    public static PayaraMicroBoot create(String args[]) throws Exception {
+        return create("create", args);
+    }
+
+    private static PayaraMicroBoot create(String method, String args[]) throws Exception {
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
         // set system property for our jar file
         ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
@@ -76,9 +84,9 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
         URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
         System.setProperty(MICRO_JAR_PROPERTY, location.toString());
         mainBoot = true;
-        launcher.launch(args);
+        return (PayaraMicroBoot) launcher.launch(method, args);
     }
-    
+
     /**
      * Boot method via Micro.getInstance()
      * @return

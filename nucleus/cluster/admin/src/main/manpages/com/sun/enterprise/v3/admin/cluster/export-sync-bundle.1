@@ -1,0 +1,134 @@
+export-sync-bundle(1)     asadmin Utility Subcommands    export-sync-bundle(1)
+
+NAME
+       export-sync-bundle - exports the configuration data of a cluster or
+       standalone instance to an archive file
+
+SYNOPSIS
+           export-sync-bundle [--help]
+           --target target
+           [--retrieve={false|true}]
+           [file-name]
+
+DESCRIPTION
+       The export-sync-bundle subcommand exports the configuration data of a
+       cluster or standalone instance to an archive file. The archive file can
+       then be used with the import-sync-bundle(1) subcommand to restore the
+       configuration data.
+
+       Importing an instance's configuration data transfers the data to a host
+       for an instance without the need for the instance to be able to
+       communicate with the domain administration server (DAS). Importing an
+       instance's configuration data is typically required for the following
+       reasons:
+
+       *   To reestablish the instance after an upgrade
+
+       *   To synchronize the instance manually with the DAS when the instance
+           cannot contact the DAS
+
+       The subcommand creates an archive that contains the following files and
+       directories in the current domain directory:
+
+       *   All the files in the following directories:
+
+           *   config
+
+           *   docroot
+
+       *   The entire contents of the following directories and their
+           subdirectories:
+
+           *   applications
+
+           *   config/target, where target is the cluster or standalone
+               instance for which configuration data is being exported
+
+           *   generated
+
+           *   lib
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The cluster or standalone instance for which to export
+           configuration data. The --target option is required.
+
+           This option must not specify a clustered GlassFish Server instance.
+           If this option specifies a clustered instance, an error occurs. To
+           export configuration data for a clustered instance, specify the
+           name of the cluster of which the instance is a member, not the
+           instance.
+
+       --retrieve
+           Specifies whether the archive file is downloaded from the DAS host
+           to the host where the subcommand is run.
+
+           Possible values are as follows:
+
+           true
+               The archive file is downloaded to the host where the subcommand
+               is run.
+
+           false
+               The archive file is not downloaded and remains on the DAS host
+               (default).
+
+OPERANDS
+       file-name
+           The file name and location of the archive file to which to export
+           the data.
+
+           The default depends on the setting of the --retrieve option:
+
+           *   If --retrieve is false, the default is
+               sync/target-sync-bundle.zip in the current domain directory.
+
+           *   If --retrieve is true, the default is target-sync-bundle.zip in
+               the current working directory.
+
+           target is the cluster or standalone instance that the --target
+           option specifies.
+
+           If a relative path is specified, the directory to which the path is
+           appended depends on the setting of the --retrieve option:
+
+           *   If --retrieve is false, the path is appended to the config
+               subdirectory of the current domain directory.
+
+           *   If --retrieve is true, the path is appended to the current
+               working directory.
+
+           If an existing directory is specified without a filename, the file
+           name of the archive file is target-sync-bundle.zip, where target is
+           the cluster or standalone instance that the --target option
+           specifies.
+
+EXAMPLES
+       Example 1, Exporting the Configuration Data of a Cluster
+           This example exports the configuration data of the cluster
+           pmdcluster.
+
+               asadmin> export-sync-bundle --target=pmdcluster
+               Sync bundle: /export/glassfish3/glassfish/domains/domain1/sync/
+               pmdcluster-sync-bundle.zip
+
+               Command export-sync-bundle executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       import-sync-bundle(1)
+
+       asadmin(1M)
+
+Java EE 8                         7 Dec 2010             export-sync-bundle(1)

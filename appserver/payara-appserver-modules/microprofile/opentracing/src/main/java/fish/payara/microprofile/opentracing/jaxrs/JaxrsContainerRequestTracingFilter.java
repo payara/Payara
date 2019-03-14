@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,19 +50,18 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.opentracing.Traced;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
+import javax.ws.rs.Path;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -71,10 +70,16 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import org.eclipse.microprofile.opentracing.Traced;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * ContainerFilter used for instrumenting JaxRs methods with tracing.
@@ -125,11 +130,11 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                 tracedAnnotation = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
             }
             
-            // If there is no annotation, or if there is an annotation and a config override indicating that we should
-            // trace the method...
-            if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
-                    Traced.class, "value", resourceInfo, boolean.class)
-                    .orElse(tracedAnnotation.value())) {
+            // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
+            // pattern and a traced annotation set to true (via annotation or config override)
+            if (shouldTrace(requestContext)
+                    && ((tracedAnnotation == null) || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
+                    Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value()))) {
                 // Get the application's tracer instance
                 Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(
                         InvocationManager.class)));
@@ -188,10 +193,11 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     tracedAnnotation = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
                 }
 
-                // If there is no annotation, or if there is an annotation and a config override indicating that we 
-                // should trace the method...
-                if (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
-                        Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value())) {
+                // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
+                // pattern and a traced annotation set to true (via annotation or config override)
+                if (shouldTrace(requestContext)
+                        && (tracedAnnotation == null || (boolean) OpenTracingCdiUtils.getConfigOverrideValue(
+                        Traced.class, "value", resourceInfo, boolean.class).orElse(tracedAnnotation.value()))) {
                     // Get the active scope and span from the application's tracer - this *should* never be null
                     try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
@@ -235,24 +241,111 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
      * @return The name to use as the Span's operation name
      */
     private String determineOperationName(ContainerRequestContext requestContext, Traced tracedAnnotation) {
-        // If there is no annotation, or if there is an annotation and a config override providing an empty name
-        if (tracedAnnotation == null || ((String) OpenTracingCdiUtils.getConfigOverrideValue(
-                Traced.class, "operationName", resourceInfo, String.class)
-                .orElse(tracedAnnotation.operationName()))
-                .equals("")) {
-            // Set the name equal to the HTTP Method, followed by the method signature
-            return requestContext.getMethod()
-                    + ":"
-                    + resourceInfo.getResourceClass().getCanonicalName()
-                    + "."
+        // If there is no @Traced annotation
+        if (tracedAnnotation == null) {
+            Config config = null;
+            try {
+                config = ConfigProvider.getConfig();
+            } catch (IllegalArgumentException ex) {
+                logger.log(Level.INFO, "No config could be found", ex);
+            }
+
+            // Determine if an operation name provider has been given
+            Optional<String> operationNameProviderOptional = config.getOptionalValue(
+                    "mp.opentracing.server.operation-name-provider", String.class);
+            if (operationNameProviderOptional.isPresent()) {
+                String operationNameProvider = operationNameProviderOptional.get();
+
+                Path classLevelAnnotation = resourceInfo.getResourceClass().getAnnotation(Path.class);
+                Path methodLevelAnnotation = resourceInfo.getResourceMethod().getAnnotation(Path.class);
+
+                // If the provider is set to "http-path" and the class-level @Path annotation is actually present
+                if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
+                    String operationName = requestContext.getMethod() + ":";
+
+                    if (classLevelAnnotation.value().startsWith("/")) {
+                        operationName += classLevelAnnotation.value();
+                    } else {
+                        operationName += "/" + classLevelAnnotation.value();
+                    }
+
+                    // If the method-level @Path annotation is present, use its value
+                    if (methodLevelAnnotation != null) {
+                        if (methodLevelAnnotation.value().startsWith("/")) {
+                            operationName += methodLevelAnnotation.value();
+                        } else {
+                            operationName += "/" + methodLevelAnnotation.value();
+                        }
+                    }
+
+                    return operationName;
+                }
+            }
+
+            // If we haven't returned by now, just go with the default ("class-method")
+            return requestContext.getMethod() + ":"
+                    + resourceInfo.getResourceClass().getCanonicalName() + "."
                     + resourceInfo.getResourceMethod().getName();
         } else {
-            // If there is no annotation, or if there is an annotation and a config override that provides
-            // a non-empty name, use it as the operation name
-            return (String) OpenTracingCdiUtils.getConfigOverrideValue(
+            String operationName = (String) OpenTracingCdiUtils.getConfigOverrideValue(
                     Traced.class, "operationName", resourceInfo, String.class)
                     .orElse(tracedAnnotation.operationName());
+
+            // If the annotation or config override providing an empty name, just set it equal to the HTTP Method,
+            // followed by the method signature
+            if (operationName.equals("")) {
+                operationName = requestContext.getMethod() + ":"
+                        + resourceInfo.getResourceClass().getCanonicalName() + "."
+                        + resourceInfo.getResourceMethod().getName();
+            }
+
+            return operationName;
         }
+    }
+
+    /**
+     * Helper method that checks if any specified skip patterns match this method name
+     * @param requestContext The context of the request to check if we should skip
+     * @return
+     */
+    private boolean shouldTrace(ContainerRequestContext requestContext) {
+        // Prepend a slash for safety (so that a pattern of "/blah" or just "blah" will both match)
+        String uriPath = "/" + requestContext.getUriInfo().getPath();
+
+        // First, check for the mandatory skips
+        if (uriPath.equals("/health")
+                || uriPath.equals("/metrics")
+                || uriPath.contains("/metrics/base")
+                || uriPath.contains("/metrics/vendor")
+                || uriPath.contains("/metrics/application")) {
+            return false;
+        }
+
+        Config config = null;
+        try {
+            config = ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
+        }
+
+        if (config != null) {
+            // If a skip pattern property has been given, check if any of them match the method
+            Optional<String> skipPatternOptional = config.getOptionalValue("mp.opentracing.server.skip-pattern",
+                    String.class);
+            if (skipPatternOptional.isPresent()) {
+                String skipPatterns = skipPatternOptional.get();
+
+                String[] splitSkipPatterns = skipPatterns.split("\\|");
+
+                for (String skipPattern : splitSkipPatterns) {
+                    if (uriPath.matches(skipPattern)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

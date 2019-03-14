@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.191-SNAPSHOT</version>
+    <version>5.192-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.191-SNAPSHOT</tag>
+        <tag>payara-server-5.192-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -251,34 +251,31 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.0</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p6</grizzly.version>
+        <grizzly.version>2.4.3.payara-p7</grizzly.version>
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
         <!-- Microprofile -->
         <microprofile-config.version>1.3</microprofile-config.version>
-        <microprofile-opentracing.version>1.1</microprofile-opentracing.version>
+        <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
 
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p14</jersey.version>
+        <jersey.version>2.27.payara-p15</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
-        <hibernate.validator.version>6.0.13.Final</hibernate.validator.version>
-        <hibernate.validator-cdi.version>6.0.13.Final</hibernate.validator-cdi.version>
+        <hibernate.validator.version>6.0.15.Final</hibernate.validator.version>
+        <hibernate.validator-cdi.version>6.0.15.Final</hibernate.validator-cdi.version>
 
         <!-- Expression language -->
         <javax.el.version>3.0.1-b11</javax.el.version>
         <javax.el-api.version>3.0.1-b06</javax.el-api.version>
 
         <!-- JAX-B -->
-        <jaxb-api.version>2.3.0</jaxb-api.version>
-        <jaxb.version>2.3.0</jaxb.version>
-
-        <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
+        <jaxb.version>2.3.2</jaxb.version>
 
         <!-- Cache -->
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
@@ -348,8 +345,6 @@
         <glassfish-management-api.version>3.2.1-b002.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <v3-docs.version>4.1</v3-docs.version>
-        <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>7.0</asm.version>
         <ha-api.version>3.1.11</ha-api.version>
@@ -726,6 +721,27 @@
                 </executions>
             </plugin>
 	    -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/manpages</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.glassfish.build</groupId>
@@ -974,7 +990,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.jersey.inject</groupId>
                 <artifactId>jersey-hk2</artifactId>
-                <version>2.26-b06</version>
+                <version>${jersey.version}</version>
             </dependency>
 
 
@@ -1330,30 +1346,6 @@ Parent is ${project.parent}</echo>
                 <artifactId>logging-annotation-processor</artifactId>
                 <version>${logging-annotation-processor.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.man</groupId>
-                <artifactId>osgi-cli-remote-manpage</artifactId>
-                <version>${v3-docs.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs.man</groupId>
-                <artifactId>osgi-cli-interactive-manpage</artifactId>
-                <version>${v3-docs.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
-                <artifactId>osgi-cli-remote-manpage-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
-                <artifactId>osgi-cli-interactive-manpage-l10n</artifactId>
-                <version>${v3-docs-l10n.version}</version>
-                <type>zip</type>
-            </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
             <dependency>
                 <groupId>jline</groupId>
@@ -1380,10 +1372,33 @@ Parent is ${project.parent}</echo>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${javax.cache-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-kubernetes</artifactId>
+                <version>${hazelcast.kubernetes.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <profiles>
+        <profile>
+            <id>ci</id>
+            <modules>
+                <module>tests</module>
+            </modules>
+        </profile>
+    
+        
         <profile>
             <id>default</id>
             <activation>

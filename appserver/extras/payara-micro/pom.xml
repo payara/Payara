@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.192-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
@@ -14,6 +14,5 @@
         <module>payara-micro-core</module>
         <module>payara-micro-boot</module>
         <module>payara-micro-distribution</module>
-	<!--<module>payara-micro-microprofile-distribution</module>-->
     </modules>
 </project>

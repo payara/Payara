@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <project name="glassfish v3, app client library fix-up" default="fixup.library" basedir=".">
     <property name="mq.dir.path" value="../../mq"/>
@@ -80,7 +80,7 @@
                  endorsed subdirectory with ../modules/endorsed/x.jar                -->
 
             <replacefilter token="../modules/javax.annotation-api.jar" value="../modules/endorsed/javax.annotation-api.jar"/>
-            <replacefilter token="../modules/jaxb-api.jar" value="../modules/endorsed/jaxb-api.jar"/>
+            <replacefilter token="../modules/jakarta.xml.bind-api.jar" value="../modules/endorsed/jakarta.xml.bind-api.jar"/>
             <replacefilter token="../modules/webservices-api-osgi.jar" value="../modules/endorsed/webservices-api-osgi.jar"/>
             <replacefilter token="../modules/weld-se-shaded.jar" value="../lib/appclient/weld-se-shaded.jar"/>
             <replacefilter token="../modules/weld-environment-common.jar" value="../lib/appclient/weld-environment-common.jar"/>

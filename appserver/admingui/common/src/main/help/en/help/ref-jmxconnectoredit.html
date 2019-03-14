@@ -1,0 +1,78 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-jmxconnectoredit" name="ref-jmxconnectoredit"></a><a id="GHCOM00127" name="GHCOM00127"></a></p>
+
+<h4><a id="sthref236" name="sthref236"></a>Edit JMX Connector</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Edit JMX Connector page to edit the JSR 360-compliant JMX connector.</p>
+<p>The Edit JMX Connector page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Name</dt>
+<dd>
+<p>The name of the JMX connector. This is a read-only field.</p>
+</dd>
+<dt>JMX Protocol</dt>
+<dd>
+<p>The name of the protocol that this JMX connector supports. This is a read-only field.</p>
+</dd>
+<dt>JMXServiceURL</dt>
+<dd>
+<p>The JMX Service URL. This is a read-only field.</p>
+</dd>
+<dt>Security</dt>
+<dd>
+<p>If the Enabled checkbox is selected, JMX communication is encrypted. This option is disabled by default.</p>
+</dd>
+<dt>Address</dt>
+<dd>
+<p>The IP address of the naming service where the JMX connector server stub is registered. This is not the port of the server socket that does the actual JMX communication. This is the address of the network interface where the RMI registry is started. If your system has multiple network interfaces, modify this value so that only a particular interface is selected. The default value is <code>0.0.0.0</code>.</p>
+</dd>
+<dt>Port</dt>
+<dd>
+<p>The port number on which the naming service (RMI registry) listens for RMI client connections. The only use of this naming service is to download the RMI stubs. If the default port is occupied, a free port is used. Legal values are 1 - 65535. On UNIX systems, creating sockets that listen on ports 1 - 1024 requires superuser privileges. The default value is 8686.</p>
+</dd>
+<dt>Realm Name</dt>
+<dd>
+<p>The name that represents the special administrative realm. All authentication is handled by this realm. The default value is <code>admin-realm</code>.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the JMX Connector. Several properties are specified by default.</p>
+</dd>
+</dl>
+<a id="GHCOM471" name="GHCOM471"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-jmxconnectoredit.html">To Edit the JMX Connector</a></p>
+</li>
+<li>
+<p><a href="task-jmxconnectorssledit.html">To Edit SSL Settings for the JMX Connector</a></p>
+</li>
+</ul>
+<a id="GHCOM472" name="GHCOM472"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

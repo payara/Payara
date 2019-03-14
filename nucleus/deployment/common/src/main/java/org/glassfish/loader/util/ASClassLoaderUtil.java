@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.loader.util;
 
@@ -51,6 +52,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.deployment.deploy.shared.Util;
+import com.sun.enterprise.util.OS;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -59,11 +61,10 @@ import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.*;
@@ -145,8 +146,8 @@ public class ASClassLoaderUtil {
 
     private static void addDeployParamLibrariesForModule(StringBuilder sb, 
         String moduleId, String deploymentLibs, ServiceLocator habitat) {
-        if (moduleId.indexOf("#") != -1) {
-            moduleId = moduleId.substring(0, moduleId.indexOf("#"));
+        if (moduleId.indexOf('#') != -1) {
+            moduleId = moduleId.substring(0, moduleId.indexOf('#'));
         }
   
         if (deploymentLibs == null) {
@@ -311,15 +312,13 @@ public class ASClassLoaderUtil {
 
         // adds all directories
         if (dirs != null) {
-            for (int i=0; i<dirs.length; i++) {
-                File dir = dirs[i];
+            for (File dir : dirs) {
                 if (dir.isDirectory() || dir.canRead()) {
                     URL url = dir.toURI().toURL();
                     list.add(url);
 
                     if (deplLogger.isLoggable(Level.FINE)) {
-                       deplLogger.log(Level.FINE,
-                                      "Adding directory to class path:" + url.toString());
+                        deplLogger.log(Level.FINE, "Adding directory to class path:" + url.toString());
                     }
                 }
             }
@@ -337,8 +336,7 @@ public class ASClassLoaderUtil {
                             list.add(jar.toURI().toURL());
 
                             if (deplLogger.isLoggable(Level.FINE)) {
-                                deplLogger.log(Level.FINE,
-                                        "Adding jar to class path:" + jar.toURL());
+                                deplLogger.log(Level.FINE, "Adding jar to class path:" + jar.toURL());
                             }
                         }
                     }
@@ -400,8 +398,11 @@ public class ASClassLoaderUtil {
                 if (rootPath != null && rootPath.length() != 0) {
                     path = rootPath + File.separator + path;
                 }
-                File f = new File(path);
-                urls.add(f.toURI().toURL());
+                if (OS.isWindows() && path.startsWith("/")) {
+                    urls.add(Paths.get(path.substring(1)).toUri().toURL());
+                } else {
+                    urls.add(Paths.get(path).toUri().toURL());
+                }
             } catch(Exception e) {
                   deplLogger.log(Level.WARNING,
                                  UNEXPECTED_EXCEPTION,

@@ -1,0 +1,77 @@
+list-persistence-types(1)  asadmin Utility Subcommands  list-persistence-types(1)
+
+NAME
+       list-persistence-types - lists registered persistence types for HTTP
+       sessions and SFSB instances
+
+SYNOPSIS
+           list-persistence-types [--help] --type={web|ejb}
+
+DESCRIPTION
+       The list-persistence-types subcommand lists registered persistence
+       types for HTTP sessions and stateful session bean (SFSB) instances. The
+       built-in persistence types are memory, file, and replicated. The memory
+       type does not apply to SFSB instances.
+
+       Other persistence types can be added using the StrategyBuilder class.
+       For more information, see the Oracle GlassFish Server Add-On Component
+       Development Guide.
+
+       To set the persistence type for HTTP sessions, use the set subcommand
+       to set the persistence-type attribute. For example:
+
+           asadmin> set c1-config.availability-service.web-container-availability.persistence-type=file
+
+       To set the persistence type for SFSB instances without availability
+       enabled, use the set subcommand to set the sfsb-persistence-type
+       attribute. For example:
+
+           asadmin> set c1-config.availability-service.ejb-container-availability.sfsb-persistence-type=file
+
+       To set the persistence type for SFSB instances with availability
+       enabled, use the set subcommand to set the sfsb-ha-persistence-type
+       attribute. For example:
+
+           asadmin> set
+           c1-config.availability-service.ejb-container-availability.sfsb-ha-persistence-type=replicated
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --type
+           Specifies the type of sessions for which persistence types are
+           listed. Allowed values are as follows:
+
+           *   web — Lists persistence types for HTTP sessions.
+
+           *   ejb — Lists persistence types for SFSB instances.
+
+EXAMPLES
+       Example 1, Listing Persistence Types for HTTP Sessions
+           This example lists persistence types for HTTP sessions.
+
+               asadmin> list-persistence-types --type=web
+               memory
+               file
+               replicated
+
+               Command list-persistence-types executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       get(1), set(1), list(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Add-On Component Development Guide
+
+Java EE 8                   09 Aug 2017             list-persistence-types(1)

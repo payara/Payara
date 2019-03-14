@@ -1,0 +1,74 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="batch job executions">
+    <indexitem text="viewing (task)" target="task-viewbatchjobexecutions"></indexitem>
+  </indexitem>
+  <indexitem text="batch runtime">
+    <indexitem text="configuring (task)" target="task-configurebatchruntime"></indexitem>
+  </indexitem>
+  <indexitem text="custom resources">
+    <indexitem text="creating (reference)" target="ref-jndicustomresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jndicustomresourcenew"></indexitem>
+    <indexitem text="deleting" target="task-jndicustomresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jndicustomresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jndicustomresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jndicustomresources"></indexitem>
+  </indexitem>
+  <indexitem text="external JNDI resources">
+    <indexitem text="creating (reference)" target="ref-jndiexternalresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jndiexternalresourcecreate"></indexitem>
+    <indexitem text="deleting" target="task-jndiexternalresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jndiexternalresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jndiexternalresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jndiexternalresources"></indexitem>
+  </indexitem>
+  <indexitem text="JavaMail sessions">
+    <indexitem text="creating (reference)" target="ref-javamailsessioncreate"></indexitem>
+    <indexitem text="creating (task)" target="task-javamailsessioncreate"></indexitem>
+    <indexitem text="deleting" target="task-javamailsessionsdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-javamailsessionsedit"></indexitem>
+    <indexitem text="editing (task)" target="task-javamailsessionsedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-javamailsessions"></indexitem>
+  </indexitem>
+  <indexitem text="JNDI custom resources">
+    <indexitem text="creating (reference)" target="ref-jndicustomresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jndicustomresourcenew"></indexitem>
+    <indexitem text="deleting" target="task-jndicustomresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jndicustomresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jndicustomresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jndicustomresources"></indexitem>
+  </indexitem>
+  <indexitem text="JNDI external resources">
+    <indexitem text="creating (reference)" target="ref-jndiexternalresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jndiexternalresourcecreate"></indexitem>
+    <indexitem text="deleting" target="task-jndiexternalresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jndiexternalresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jndiexternalresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jndiexternalresources"></indexitem>
+  </indexitem>
+  <indexitem text="resource object factories">
+    <indexitem text="creating (reference)" target="ref-jndicustomresourcenew"></indexitem>
+    <indexitem text="creating (task)" target="task-jndicustomresourcenew"></indexitem>
+    <indexitem text="deleting" target="task-jndicustomresourcedelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-jndicustomresourceedit"></indexitem>
+    <indexitem text="editing (task)" target="task-jndicustomresourceedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-jndicustomresources"></indexitem>
+  </indexitem>
+</index>

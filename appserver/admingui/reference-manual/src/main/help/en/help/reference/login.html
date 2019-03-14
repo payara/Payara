@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>login</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-web-env-entry.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="migrate-timers.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="login-1"></a><a id="GSRFM00210"></a><a id="login"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_login">login</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>logs you into a domain</p>
+</div>
+<div id="sthref1874" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] login [--help]</code></pre>
+</div>
+</div>
+<div id="sthref1875" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The purpose of the <code>login</code> subcommand is to ease domain administration
+by letting you log into a particular domain. If \{product---name}
+domains are created on various machines (locally), you can run the
+<code>asadmin</code> utility from any of these machines and manage domains located
+elsewhere (remotely). This is especially useful when a particular
+machine is chosen as an administration client that manages multiple
+domains and servers.</p>
+</div>
+<div class="paragraph">
+<p>The <code>login</code> subcommand prompts you for the administrator user name and
+password. After successful login, the <code>.asadminpass</code> file is created in
+your home directory. (This is the same file that is modified when you
+run the <code>create-domain</code> subcommand with the <code>--savelogin</code> option.) The
+literal host name is stored, and no resolution with the DNS is
+attempted. If a domain is being administered from other machines, it is
+sufficient to run the <code>login</code> subcommand once. You do not need to
+specify the <code>asadmin</code> utility options <code>--user</code> and <code>--passwordfile</code> when
+you run additional remote subcommands on that domain. After you have
+logged into a domain, you still need to provide the host and port for
+any subsequent remote subcommands unless you chose the default values
+for <code>--host</code> (localhost) and <code>--port</code> (4848) options.</p>
+</div>
+<div class="paragraph">
+<p>Subsequent use of same subcommand with the same parameters will result
+in overwriting the contents of the <code>.asadminpass</code> file for the given
+administration host and port. You can decide to overwrite the file or to
+reject such a login.</p>
+</div>
+<div class="paragraph">
+<p>Login information is saved permanently and can be used across multiple
+domain restarts.</p>
+</div>
+<div class="paragraph">
+<p>There is no <code>logout</code> subcommand. If you want to log in to another
+domain, run the <code>login</code> subcommand and specify new values for the
+<code>asadmin</code> utility options <code>--host</code> and <code>--port</code>.</p>
+</div>
+<div id="sthref1876" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1877" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM720"></a><a id="sthref1878"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Logging Into a Domain on a Remote Machine</p>
+</div>
+<div class="paragraph">
+<p>This example logs into a domain located on another machine. Options are
+specified before the <code>login</code> subcommand.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --host foo --port 8282 login
+Please enter the admin user name&gt;admin
+Please enter the admin password&gt;
+
+Trying to authenticate for administration of server at host [foo]
+and port [8282] ...
+Login information relevant to admin user name [admin] for host [foo]
+and admin port [8282] stored at [/.asadminpass] successfully.
+Make sure that this file remains protected. Information stored in this
+file will be used by asadmin commands to manage associated domain.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM721"></a><a id="sthref1879"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Logging Into a Domain on the Default Port of Localhost</p>
+</div>
+<div class="paragraph">
+<p>This example logs into a domain on <code>mylhost</code> on the default port.
+Options are specified before the <code>login</code> subcommand.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --host myhost login
+Please enter the admin user name&gt;admin
+Please enter the admin password&gt;
+Trying to authenticate for administration of server
+at host [myhost] and port [4848] ...
+An entry for login exists for host [myhost] and port [4848], probably
+from an earlier login operation.
+Do you want to overwrite this entry (y/n)?y
+Login information relevant to admin user name [admin] for host [myhost]
+and admin port [4848] stored at [/home/joe/.asadminpass] successfully.
+Make sure that this file remains protected. Information stored in this
+file will be used by asadmin commands to manage associated domain.</code></pre>
+</div>
+</div>
+<div id="sthref1880" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1881" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-domain.html#create-domain-1"><code>create-domain</code>(1)</a>,
+<a href="delete-domain.html#delete-domain-1"><code>delete-domain</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-web-env-entry.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="migrate-timers.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

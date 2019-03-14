@@ -1,0 +1,53 @@
+list-protocol-finders(1)  asadmin Utility Subcommands list-protocol-finders(1)
+
+NAME
+       list-protocol-finders - lists the existing protocol finders
+
+SYNOPSIS
+           list-protocol-finders [--help]
+           [--target server]
+           protocol-name
+
+DESCRIPTION
+       The list-protocol-finders subcommand lists the existing protocol
+       finders. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       target
+           Restricts the listing to protocol finders for a specified target.
+           Valid values are as follows:
+
+           server
+               Lists the protocol finders for the default server instance.
+               This is the default value.
+
+           configuration-name
+               Lists the protocol finders for the specified configuration.
+
+           cluster-name
+               Lists the protocol finders for all server instances in the
+               specified cluster.
+
+           instance-name
+               Lists the protocol finders for the specified server instance.
+
+OPERANDS
+       protocol-name
+           The name of the protocol for which to list protocol finders.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-protocol-finder(1), delete-protocol-finder(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Oct 2010         list-protocol-finders(1)

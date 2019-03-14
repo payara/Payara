@@ -1,0 +1,93 @@
+list-backups(1)           asadmin Utility Subcommands          list-backups(1)
+
+NAME
+       list-backups - lists all backups
+
+SYNOPSIS
+           list-backups [--help]
+           [--long[={false|true}]]
+           [--domaindir domain-root-dir]
+           [--backupdir backup-directory]
+           [--backupconfig backup-config-name]
+           [domain-name]
+
+DESCRIPTION
+       The list-backups subcommand displays information about domain backups.
+
+       This subcommand is supported in local mode only in GlassFish Server
+       Open Source Edition, and is support in local mode and remote mode in
+       Oracle GlassFish Server.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about each backup.
+
+           The default value is false.
+
+       --domaindir
+           Specifies the domain root directory, the parent directory of the
+           domain upon which the command will operate.
+
+           The default value is as-install/domains.
+
+       --backupdir
+           Specifies the directory under which backup files are stored.
+
+           The default value is as-install/domains/domain-dir/backups. If the
+           domain is not in the default location, the location is
+           domain-dir/backups.
+
+       --backupconfig
+           (Supported only in Oracle GlassFish Server.) Restricts the listing
+           of backup files in the backup directory to those for the specified
+           domain backup configuration.
+
+OPERANDS
+       domain-name
+           Specifies the domain for which backups are listed.
+
+           This operand is optional if only one domain exists in the GlassFish
+           Server installation.
+
+EXAMPLES
+       Example 1, Listing Domain Backups
+           This example provides detailed information about backups in the
+           default domain.
+
+               asadmin> list-backups --long
+               Description               : domain1 backup created on 2010_12_01 by user adminuser
+               GlassFish Version         : Oracle GlassFish Server 3.1
+               Backup User               : adminuser
+               Backup Date               : Wed Dec 01 09:22:45 PST 2010
+               Domain Name               : domain1
+               Backup Type               : full
+               Backup Config Name        :
+               Backup Filename (origin)  : /glassfish3/glassfish/domains/domain1/backups/domain1_2010_12_01_v00001.zip
+               Domain Directory          : /glassfish3/glassfish/domains/domain1
+
+               Description               : domain1 backup created on 2010_12_16 by user adminuser
+               GlassFish Version         : Oracle GlassFish Server 3.1
+               Backup User               : adminuser
+               Backup Date               : Thu Dec 16 09:23:48 PST 2010
+               Domain Name               : domain1
+               Backup Type               : full
+               Backup Config Name        :
+               Backup Filename (origin)  : /glassfish3/glassfish/domains/domain1/backups/domain1_2010_12_16_v00001.zip
+               Domain Directory          : /glassfish3/glassfish/domains/domain1
+
+               Command list-backups executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       backup-domain(1), restore-domain(1)
+
+Java EE 8                         22 Dec 2010                  list-backups(1)
