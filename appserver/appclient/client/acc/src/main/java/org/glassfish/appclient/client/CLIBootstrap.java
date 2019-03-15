@@ -138,7 +138,7 @@ public class CLIBootstrap {
     
     /** arguments passed to the ACC Java agent */
     private final AgentArgs agentArgs = new AgentArgs();
-    
+
     /** records how the user specifies the main class: -jar xxx.jar, -client xxx.jar, or a.b.MainClass */
     private final JVMMainOption jvmMainSetting = new JVMMainOption();
 
@@ -258,7 +258,7 @@ public class CLIBootstrap {
          */
 
         accValuedOptions = new ACCValuedOption(ACC_VALUED_OPTIONS_PATTERN);
-        
+
         accUnvaluedOptions = new ACCUnvaluedOption(ACC_UNVALUED_OPTIONS_PATTERN);
 
         jvmPropertySettings = new JVMOption("-D.*", userVMArgs.evJVMPropertySettings);
@@ -757,7 +757,7 @@ public class CLIBootstrap {
              * We only care about the most recent setting.
              */
             values.clear();
-            
+
             /*
              * If arg[slot] is -jar or -client we expect the
              * next value to be the file.  Make sure there is
@@ -823,7 +823,7 @@ public class CLIBootstrap {
             }
             return super.format(commandLine, false /* useQuotes */);
         }
-        
+
         private boolean nextLooksOK(final String[] args, final int slot) {
             return (isNextArg(args, slot) && (args[slot+1].charAt(0) != '-'));
         }
