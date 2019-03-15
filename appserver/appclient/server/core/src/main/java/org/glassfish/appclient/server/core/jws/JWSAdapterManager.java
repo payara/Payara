@@ -280,21 +280,6 @@ public class JWSAdapterManager implements PostConstruct {
             }
         }
 
-        /*
-         * Add the endorsed JARs to the system content.
-         */
-        final File endorsedDir = new File(modulesDir(), "endorsed");
-        for (File endorsedJar : endorsedDir.listFiles(new FileFilter(){
-
-                    @Override
-                    public boolean accept(File pathname) {
-                        return (pathname.isFile() && pathname.getName().endsWith(".jar"));
-                    }
-            })) {
-            result.put(systemPath(endorsedJar.toURI()),
-                    systemJarSignedContent(endorsedJar, signingAlias));
-            systemJARRelativeURIs.add(relativeSystemPath(endorsedJar.toURI()));
-        }
         return result;
     }
 
