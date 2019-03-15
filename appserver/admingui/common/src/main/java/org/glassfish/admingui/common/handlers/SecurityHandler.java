@@ -87,6 +87,7 @@ public class SecurityHandler {
         attrMap.put("solarisJaax", "solarisRealm");
         attrMap.put("jdbcJaax", "jdbcRealm");
         attrMap.put("predefinedClassname", Boolean.TRUE);
+        attrMap.put("createNew", true);
         handlerCtx.setOutputValue("attrMap", attrMap);
         handlerCtx.setOutputValue("properties", new ArrayList());
     }

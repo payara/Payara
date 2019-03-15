@@ -118,8 +118,12 @@ function showDisplay(testtype) {
     document.getElementById('#{certSectionId}').style.display = 'none'; 
     document.getElementById('#{solarisSectionId}').style.display = 'none';
     document.getElementById('#{pamSectionId}').style.display = 'none';
-    
-    if (testtype.match('none')){  
+    var loginModuleJaax = document.getElementById('#{loginModuleJaax}');
+
+    loginModuleJaax.style.display = 'none';
+
+    if (testtype.match('none')){
+        loginModuleJaax.style.display = 'table-row';
         return;  
     }  
     type = getSelectElement('#{classnameDropdownId}').value;
@@ -145,7 +149,9 @@ function showDisplay(testtype) {
     }  
     rtype = type.match('CertificateRealm');  
     if (rtype != null){  
-        document.getElementById('#{certSectionId}').style.display = 'block';   
+        document.getElementById('#{certSectionId}').style.display = 'block';
+        // strangely enough, certificate realm does not have JAAS context property
+        loginModuleJaax.style.display = 'table-row'
         return;  
     }
     rtype = type.match('PamRealm');
