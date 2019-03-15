@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login.common;
 
 import java.util.Arrays;
@@ -46,13 +46,12 @@ import java.util.Arrays;
  * This class holds the user password for the shared password realm and the realm name. This credential is added as a
  * private credential to the JAAS subject.
  */
-
 public class PasswordCredential {
     private String username;
     private char[] password;
     private String realm;
     private boolean readOnly = false;
-    
+
     // target_name is filled in by the SecSecurityServer interceptor
     // only when a CSIv2 GSSUP authenticator is received.
     private byte[] target_name = {};
@@ -74,11 +73,11 @@ public class PasswordCredential {
         if (this.username == null) {
             this.username = "";
         }
-        
+
         if (this.password == null) {
             this.password = new char[] {};
         }
-        
+
         if (this.realm == null) {
             this.realm = "";
         }

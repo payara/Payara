@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,24 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 package com.sun.enterprise.security.auth.realm;
 
+import java.lang.ref.WeakReference;
+
+import org.glassfish.internal.api.Globals;
+
 /**
- * Exception thrown when an operation is requested to remove a group that has a list of users.
+ * This class stores a static, but weak, reference to the realms manager.
+ * 
+ * @see RealmsManager
+ * 
+ * @author Arjan Tijms (factored out from Realm)
  *
- * @author Harpreet Singh
  */
-public class GroupNotEmptyException extends Exception {
+public class RealmsManagerStore {
 
-    private static final long serialVersionUID = 873043596300984484L;
+    private static WeakReference<RealmsManager> realmsManager = new WeakReference<RealmsManager>(null);
 
-    /**
-     * Constructs the exception, with descriptive information.
-     *
-     * @param info describes the user which does not exist
-     */
-    public GroupNotEmptyException(String info) {
-        super(info);
+    static RealmsManager tryGetRealmsManager() {
+        RealmsManager manager = getRealmsManager();
+        if (manager == null) {
+            throw new RuntimeException("Unable to locate RealmsManager Service");
+        }
+
+        return manager;
     }
+
+    static RealmsManager getRealmsManager() {
+        if (realmsManager.get() != null) {
+            return realmsManager.get();
+        }
+
+        return _getRealmsManager();
+    }
+
+    static synchronized RealmsManager _getRealmsManager() {
+        if (realmsManager.get() == null) {
+            if (Globals.getDefaultHabitat() != null) {
+                realmsManager = new WeakReference<RealmsManager>(Globals.get(RealmsManager.class));
+            } else {
+                return null;
+            }
+        }
+
+        return realmsManager.get();
+    }
+
 }
