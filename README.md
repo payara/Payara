@@ -8,7 +8,7 @@ Payara Server 5 development is coordinated by the Payara Foundation, a UK not-fo
 
 Visit [www.payara.fish](http://www.payara.fish) for full 24/7 support and lots of free resources.
 
-Information about the open source project is on the [GitHub project page](https://payara.github.io/Payara/).
+Information about the open source project is on the [GitHub project page] (https://payara.github.io/Payara/).
 
 **Full Payara Server 5 and Payara Micro documentation:** https://payara.gitbooks.io/payara-server/content/
 
