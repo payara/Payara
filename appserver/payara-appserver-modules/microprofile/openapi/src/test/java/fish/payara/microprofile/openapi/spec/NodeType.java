@@ -1,0 +1,374 @@
+package fish.payara.microprofile.openapi.spec;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+/**
+ * Node types and their structure as described by Open API Specification
+ * {@link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md}.
+ */
+public enum NodeType implements Iterable<Field> {
+
+    // primitive elements
+    string,
+    bool,
+    number,
+    // non primitive elements
+    OpenAPI,
+    Info,
+    Contact,
+    License,
+    Server,
+    ServerVariable,
+    Components,
+    Paths,
+    PathItem,
+    Operation,
+    ExternalDocumentation,
+    Parameter,
+    RequestBody,
+    MediaType,
+    Encoding,
+    Responses,
+    Response,
+    Callback,
+    Example,
+    Link,
+    Header,
+    Tag,
+    Reference,
+    Schema,
+    Discriminator,
+    XML,
+    SecurityScheme,
+    OAuthFlows,
+    OAuthFlow,
+    SecurityRequirement
+    ;
+
+    private boolean isExtensible = false;
+    private final Map<String, Field> fields = new LinkedHashMap<>();
+    private Field lastField;
+
+    @Override
+    public Iterator<Field> iterator() {
+        return fields.values().iterator();
+    }
+
+    public boolean isExtensible() {
+        return isExtensible;
+    }
+
+    public Field getField(String name) {
+        Field field = fields.get(name);
+        return field == null && fields.containsKey("*") ? fields.get("*") : field;
+    }
+
+    public Stream<Field> fields() {
+        return fields.values().stream();
+    }
+
+    NodeType addField(String name, NodeType... oneOfTypes) {
+        lastField = fields.computeIfAbsent(name, Field::new);
+        if (oneOfTypes != null && oneOfTypes.length > 0) {
+            lastField.oneOfTypes.addAll(Arrays.asList(oneOfTypes));
+        }
+        return this;
+    }
+
+    NodeType array() {
+        lastField.isArray = true;
+        return this;
+    }
+
+    NodeType map() {
+        lastField.isMap = true;
+        return this;
+    }
+
+    NodeType required() {
+        lastField.isRequired = true;
+        return this;
+    }
+
+    NodeType addPatterndFields(NodeType... oneOfTypes) {
+        return addField("*", oneOfTypes);
+    }
+
+    NodeType extensible() {
+        isExtensible = true;
+        return this;
+    }
+
+    static {
+        OpenAPI
+            .addField("openapi", string).required()
+            .addField("info", Info).required()
+            .addField("servers", Server).array()
+            .addField("paths", Paths).required()
+            .addField("components", Components)
+            .addField("security", SecurityRequirement).array()
+            .addField("tags", Tag).array()
+            .addField("externalDocs", ExternalDocumentation)
+            .extensible();
+
+        Info
+            .addField("title", string).required()
+            .addField("description", string)
+            .addField("termsOfService", string)
+            .addField("contact", Contact)
+            .addField("license", License)
+            .addField("version", string).required()
+            .extensible();
+
+        Contact
+            .addField("name", string)
+            .addField("url", string)
+            .addField("email", string)
+            .extensible();
+
+        License
+            .addField("name", string).required()
+            .addField("url", string)
+            .extensible();
+
+        Server
+            .addField("url", string).required()
+            .addField("description", string)
+            .addField("variables", ServerVariable).map()
+            .extensible();
+
+        ServerVariable
+            .addField("enum", string).array()
+            .addField("default", string).required()
+            .addField("description", string)
+            .extensible();
+
+        Components
+            .addField("schemas", Schema).map()
+            .addField("responses", Response).map()
+            .addField("parameters", Parameter).map()
+            .addField("examples", Example).map()
+            .addField("requestBodies", RequestBody).map()
+            .addField("headers", Header).map()
+            .addField("securitySchemes", SecurityScheme).map()
+            .addField("links", Link).map()
+            .addField("callbacks", Callback).map()
+            .extensible();
+
+        Paths
+            .addPatterndFields(PathItem)
+            .extensible();
+
+        PathItem
+            .addField("$ref", string)
+            .addField("summary", string)
+            .addField("description", string)
+            .addField("get", Operation)
+            .addField("put", Operation)
+            .addField("post", Operation)
+            .addField("delete", Operation)
+            .addField("options", Operation)
+            .addField("head", Operation)
+            .addField("patch", Operation)
+            .addField("trace", Operation)
+            .addField("servers", Server).array()
+            .addField("parameters", Parameter, Reference).array()
+            .extensible();
+
+        Operation
+            .addField("tags", string).array()
+            .addField("summary", string)
+            .addField("description", string)
+            .addField("externalDocs", ExternalDocumentation)
+            .addField("operationId", string)
+            .addField("parameters", Parameter, Reference).array()
+            .addField("requestBody", RequestBody, Reference)
+            .addField("responses", Responses).required()
+            .addField("callbacks", Callback, Reference).map()
+            .addField("deprecated", bool)
+            .addField("security", SecurityRequirement).array()
+            .addField("servers", Server).array()
+            .extensible();
+
+        ExternalDocumentation
+            .addField("description", string)
+            .addField("url", string).required()
+            .extensible();
+
+        Parameter
+            .addField("name", string).required()
+            .addField("in", string).required()
+            .addField("description", string)
+            .addField("required", bool)
+            .addField("deprecated", bool)
+            .addField("allowEmptyValue", bool)
+            .addField("style", string)
+            .addField("explode", bool)
+            .addField("allowReserved", bool)
+            .addField("schema", Schema, Reference)
+            .addField("example")
+            .addField("examples", Example, Reference).map()
+            .addField("content", MediaType).map()
+            .extensible();
+
+        RequestBody
+            .addField("description", string)
+            .addField("content", MediaType).map().required()
+            .addField("required", bool)
+            .extensible();
+
+        MediaType
+            .addField("schema", Schema)
+            .addField("schema", Reference)
+            .addField("example")
+            .addField("examples", Example, Reference).map()
+            .addField("encoding", Encoding).map()
+            .extensible();
+
+        Encoding
+            .addField("contentType", string)
+            .addField("headers", Header, Reference).map()
+            .addField("style", string)
+            .addField("explode", bool)
+            .addField("allowReserved", bool)
+            .extensible();
+
+        Responses
+            .addField("default", Response, Reference)
+            .addPatterndFields(Response, Reference)
+            .extensible();
+
+        Response
+            .addField("description", string).required()
+            .addField("headers", Header, Reference).map()
+            .addField("content", MediaType).map()
+            .addField("links", Link, Reference).map()
+            .extensible();
+
+        Callback
+            .addPatterndFields(PathItem)
+            .extensible();
+
+        Example
+            .addField("summary", string)
+            .addField("description", string)
+            .addField("value")
+            .addField("externalValue", string)
+            .extensible();
+
+        Link
+            .addField("operationRef", string)
+            .addField("operationId", string)
+            .addField("parameters").map()
+            .addField("requestBody")
+            .addField("description", string)
+            .addField("server", Server)
+            .extensible();
+
+        Header
+            .addField("description", string)
+            .addField("required", bool)
+            .addField("deprecated", bool)
+            .addField("allowEmptyValue", bool)
+            .addField("style", string)
+            .addField("explode", bool)
+            .addField("allowReserved", bool)
+            .addField("schema", Schema)
+            .addField("schema", Reference)
+            .addField("example")
+            .addField("examples", Example, Reference).map()
+            .addField("content", MediaType).map()
+            .extensible();
+
+        Tag
+            .addField("name", string).required()
+            .addField("description", string)
+            .addField("externalDocs", ExternalDocumentation)
+            .extensible();
+
+        Reference
+            .addField("$ref", string).required();
+
+        Schema
+            .addField("title", string)
+            .addField("multipleOf", number)
+            .addField("maximum", number)
+            .addField("exclusiveMaximum", bool)
+            .addField("minimum", number)
+            .addField("exclusiveMinimum", bool)
+            .addField("maxLength", number)
+            .addField("minLength", number)
+            .addField("pattern", string)
+            .addField("maxItems", number)
+            .addField("minItems", number)
+            .addField("uniqueItems", bool)
+            .addField("maxProperties", number)
+            .addField("minProperties", number)
+            .addField("required", string).array()
+            .addField("enum").array()
+            .addField("type", string)
+            .addField("allOf", Schema, Reference).array()
+            .addField("oneOf", Schema, Reference).array()
+            .addField("anyOf", Schema, Reference).array()
+            .addField("not", Schema, Reference)
+            .addField("items", Schema, Reference)
+            .addField("properties", Schema, Reference).map()
+            .addField("additionalProperties", bool, Schema, Reference)
+            .addField("description", string)
+            .addField("format", string)
+            .addField("default")
+            .addField("nullable",bool)
+            .addField("discriminator", Discriminator)
+            .addField("readOnly", bool)
+            .addField("writeOnly", bool)
+            .addField("xml", XML)
+            .addField("externalDocs", ExternalDocumentation)
+            .addField("example")
+            .addField("deprecated", bool)
+            .extensible();
+
+        Discriminator
+            .addField("propertyName", string).required()
+            .addField("mapping", string).map();
+
+        XML
+            .addField("name", string)
+            .addField("namespace", string)
+            .addField("prefix", string)
+            .addField("attribute", bool)
+            .addField("wrapped", bool)
+            .extensible();
+
+        SecurityScheme
+            .addField("type", string).required()
+            .addField("description", string)
+            .addField("name", string)
+            .addField("in", string)
+            .addField("scheme", string)
+            .addField("bearerFormat", string)
+            .addField("flows", OAuthFlows)
+            .addField("openIdConnectUrl", string)
+            .extensible();
+
+        OAuthFlows
+            .addField("implicit", OAuthFlow)
+            .addField("password", OAuthFlow)
+            .addField("clientCredentials", OAuthFlow)
+            .addField("authorizationCode", OAuthFlow)
+            .extensible();
+
+        OAuthFlow
+            .addField("authorizationUrl", string)
+            .addField("tokenUrl", string)
+            .addField("refreshUrl", string)
+            .addField("scopes", string).map()
+            .extensible();
+
+        SecurityRequirement
+            .addPatterndFields(string).array();
+    }
+}
