@@ -27,11 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -PQuickBuild \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                -Dsurefire.rerunFailingTestsCount=2"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
             }
             post{
                 success{
@@ -48,13 +44,22 @@ pipeline {
         stage('Run Quicklook Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean test \
-                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all \
-                -Dsurefire.rerunFailingTestsCount=2 \
-                -f appserver/tests/quicklook/pom.xml"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                withCredentials([string(credentialsId: 'jenkins-held-sonarcloud-token-secret', variable: 'sonarToken')]) {
+                    sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
+                    -Dsurefire.rerunFailingTestsCount=2 \
+                    -Dsonar.pullrequest.base=${env.ghprbTargetBranch} \
+                    -Dsonar.pullrequest.branch=payara/${env.ghprbSourceBranch} \
+                    -Dsonar.pullrequest.key=${env.ghprbPullId} \
+                    -Dsonar.pullrequest.provider=GitHub \
+                    -Dsonar.pullrequest.github.repository=payara/payara \
+                    -Dsonar.organization=payara \
+                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.login=${sonarToken} \
+                    sonar:sonar"""
+                }
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#   Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
