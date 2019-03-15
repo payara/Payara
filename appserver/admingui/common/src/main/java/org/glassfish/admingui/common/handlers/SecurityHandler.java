@@ -82,6 +82,10 @@ public class SecurityHandler {
         handlerCtx.setOutputValue("realmClasses", realmClassList);
         handlerCtx.setOutputValue("classnameOption", "predefine");
         Map attrMap = new HashMap();
+        attrMap.put("fileJaax", "fileRealm");
+        attrMap.put("ldapJaax", "ldapRealm" );
+        attrMap.put("solarisJaax", "solarisRealm");
+        attrMap.put("jdbcJaax", "jdbcRealm");
         attrMap.put("predefinedClassname", Boolean.TRUE);
         handlerCtx.setOutputValue("attrMap", attrMap);
         handlerCtx.setOutputValue("properties", new ArrayList());
