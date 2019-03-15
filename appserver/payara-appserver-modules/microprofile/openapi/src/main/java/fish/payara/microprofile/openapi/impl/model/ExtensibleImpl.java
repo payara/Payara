@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,6 +59,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
 
     private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
 
+    @JsonIgnore
     protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     @Override

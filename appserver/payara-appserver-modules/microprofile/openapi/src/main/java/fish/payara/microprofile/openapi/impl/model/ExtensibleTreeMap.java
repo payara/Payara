@@ -6,9 +6,12 @@ import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.Extensible;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>
         implements Extensible<T> {
 
+    @JsonIgnore
     protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     protected ExtensibleTreeMap() {
@@ -32,7 +35,7 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
     @SuppressWarnings("unchecked")
     @Override
     public final T addExtension(String name, Object value) {
-        if (value != null) {
+        if (value != null && name.startsWith("x-")) {
             this.extensions.put(name, value);
         }
         return (T) this;
