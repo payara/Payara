@@ -6,8 +6,6 @@ import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-
 public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>
         implements Extensible<T> {
 
@@ -21,7 +19,6 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
         super(items);
     }
 
-    @JsonAnyGetter
     @Override
     public final Map<String, Object> getExtensions() {
         return extensions;

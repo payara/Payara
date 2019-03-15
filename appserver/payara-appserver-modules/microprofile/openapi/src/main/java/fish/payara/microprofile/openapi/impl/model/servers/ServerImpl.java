@@ -48,9 +48,6 @@ import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class ServerImpl extends ExtensibleImpl<Server> implements Server {
@@ -86,13 +83,11 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
                 : new ServerVariablesImpl(variables);
     }
 
-    @JsonIgnore
     @Override
     public void setVariables(ServerVariables variables) {
         this.variables = variables;
     }
 
-    @JsonProperty("variables")
     @Override
     public void setVariables(Map<String, ServerVariable> variables) {
         this.variables = variables;

@@ -50,8 +50,6 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     protected String ref;
@@ -178,7 +176,6 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
         this.trace = trace;
     }
 
-    @JsonIgnore
     @Override
     public Map<HttpMethod, Operation> getOperations() {
         return readOperationsMap();
