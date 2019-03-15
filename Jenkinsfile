@@ -27,23 +27,6 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-            }
-            post{
-                success{
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                }
-            }
-        }
-        stage('Setup for Quicklook Tests') {
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run Quicklook Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([string(credentialsId: 'jenkins-held-sonarcloud-token-secret', variable: 'sonarToken')]) {
                     sh """mvn -B -V -ff -e clean install -PQuickBuild \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
@@ -60,6 +43,29 @@ pipeline {
                     sonar:sonar"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#   Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                }
+            }
+        }
+        stage('Setup for Quicklook Tests') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run Quicklook Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean test \
+                -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all \
+                -Dsurefire.rerunFailingTestsCount=2 \
+                -f appserver/tests/quicklook/pom.xml"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
