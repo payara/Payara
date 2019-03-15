@@ -37,28 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
+
+import java.beans.PropertyVetoException;
+import java.util.logging.Logger;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommandContext;
-
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
-import java.util.logging.Logger;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoint.OpType;
-import org.glassfish.api.admin.RestEndpoints;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
+import com.sun.enterprise.config.serverbeans.CopyConfig;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  *  This is a remote command that copies a config to a destination config.
@@ -70,9 +75,8 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "copy-config")
 @I18n("copy.config.command")
 @PerLookup
-//        {"Configs", "copy-config", "POST", "copy-config", "Copy Config"},
 @RestEndpoints({
-    @RestEndpoint(configBean=Configs.class, opType=OpType.POST, path="copy-config", description="Copy Config")
+        @RestEndpoint(configBean = Configs.class, opType = POST, path = "copy-config", description = "Copy Config")
 })
 public final class CopyConfigCommand extends CopyConfig {
 
@@ -81,55 +85,48 @@ public final class CopyConfigCommand extends CopyConfig {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setActionExitCode(SUCCESS);
 
         if (configs.size() != 2) {
-            report.setMessage(localStrings.getLocalString("Config.badConfigNames",
-                    "You must specify a source and destination config."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(localStrings.getLocalString("Config.badConfigNames", "You must specify a source and destination config."));
+            report.setActionExitCode(FAILURE);
             return;
         }
 
-        final String srcConfig = configs.get(0);
-        final String destConfig = configs.get(1);
-        //Get the config from the domain
-        //does the src config exist
-        final Config config = domain.getConfigNamed(srcConfig);
-        if (config == null ){
-            report.setMessage(localStrings.getLocalString(
-                    "Config.noSuchConfig", "Config {0} does not exist.", srcConfig));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        String srcConfig = configs.get(0);
+        String destConfig = configs.get(1);
+        
+        // Get the config from the domain
+        // Does the src config exist
+        Config config = domain.getConfigNamed(srcConfig);
+        if (config == null) {
+            report.setMessage(localStrings.getLocalString("Config.noSuchConfig", "Config {0} does not exist.", srcConfig));
+            report.setActionExitCode(FAILURE);
             return;
         }
 
-        //does dest config exist
-        final Config destinationConfig = domain.getConfigNamed(destConfig);
-        if (destinationConfig != null ){
-            report.setMessage(localStrings.getLocalString(
-                    "Config.configExists", "Config {0} already exists.", destConfig));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        // Does dest config exist
+        Config destinationConfig = domain.getConfigNamed(destConfig);
+        if (destinationConfig != null) {
+            report.setMessage(localStrings.getLocalString("Config.configExists", "Config {0} already exists.", destConfig));
+            report.setActionExitCode(FAILURE);
             return;
         }
 
-        //Copy the config
-        final String configName = destConfig ;
-        final Logger logger = context.getLogger();
+        // Copy the config
+        String configName = destConfig;
+        Logger logger = context.getLogger();
         try {
-            ConfigSupport.apply(new SingleConfigCode<Configs>(){
+            ConfigSupport.apply(new SingleConfigCode<Configs>() {
                 @Override
-                public Object run(Configs configs ) throws PropertyVetoException, TransactionFailure {
-                    return copyConfig(configs,config,configName,logger);
+                public Object run(Configs configs) throws PropertyVetoException, TransactionFailure {
+                    return copyConfig(configs, config, configName, logger);
                 }
-            }   ,domain.getConfigs());
-
+            }, domain.getConfigs());
 
         } catch (TransactionFailure e) {
-            report.setMessage(
-                localStrings.getLocalString(
-                    "Config.copyConfigError",
-                    "CopyConfig error caused by " ,
-                 e.getLocalizedMessage()));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(localStrings.getLocalString("Config.copyConfigError", "CopyConfig error caused by ", e.getLocalizedMessage()));
+            report.setActionExitCode(FAILURE);
             report.setFailureCause(e);
         }
     }
