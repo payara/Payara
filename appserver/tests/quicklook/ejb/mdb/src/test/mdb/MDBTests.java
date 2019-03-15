@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package test.mdb;
 
@@ -49,12 +50,15 @@ import test.admincli.util.*;
 @Test(sequential = true)
 public class MDBTests {
     
+    private static final String GLASSFISH_APPCLIENT_MAIN_CLASS_NAME =
+            "org.glassfish.appclient.client.AppClientGroupFacade";
     private boolean execReturn;
-    private String APPCLIENT = System.getProperty("APPCLIENT");
-    private String ASADMIN = System.getProperty("ASADMIN");
-    private String cwd = System.getProperty("BASEDIR") == null ? System.getProperty("user.dir") : System.getProperty("BASEDIR");
+    private final String GLASSFISH_HOME = System.getProperty("glassfish.home");
+    private final String APPCLIENT = System.getProperty("APPCLIENT");
+    private final String ASADMIN = System.getProperty("ASADMIN");
+    private final String cwd = System.getProperty("BASEDIR") == null ? System.getProperty("user.dir") : System.getProperty("BASEDIR");
     private String cmd;
-    private String mdbApp = "ejb-ejb30-hello-mdbApp";
+    private final String mdbApp = "ejb-ejb30-hello-mdbApp";
 
     @Parameters({ "BATCH_FILE1" })
     @Test
@@ -80,8 +84,13 @@ public class MDBTests {
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "deployJMSAppTest" })
     public void runJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = APPCLIENT + " -targetserver" + " localhost:3700" + " -client " + cwd + File.separator + mdbAppDir + mdbApp + "Client.jar "
-                + "-name ejb-ejb30-hello-mdb-client ";
+        String clientJar = cwd + File.separator + mdbAppDir + mdbApp + "Client.jar";
+        String gfClientJar = GLASSFISH_HOME + File.separator + "lib" + File.separator + "gf-client.jar";
+        cmd = APPCLIENT + " " + GLASSFISH_APPCLIENT_MAIN_CLASS_NAME 
+                + " -client " + clientJar
+                + " -targetserver" + " localhost:3700" 
+                + " -name ejb-ejb30-hello-mdb-client"
+                + " -cp " + gfClientJar + ";" + clientJar;
         execReturn = RtExec.execute("MDBTests.runJMSAppTest", cmd);
         
         Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");

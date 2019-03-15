@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
@@ -50,8 +50,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import static java.util.Objects.nonNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static java.util.stream.Collectors.joining;
+import java.util.stream.Stream;
 import org.glassfish.appclient.client.acc.UserError;
 
 /**
@@ -135,7 +138,7 @@ public class CLIBootstrap {
     
     /** arguments passed to the ACC Java agent */
     private final AgentArgs agentArgs = new AgentArgs();
-
+    
     /** records how the user specifies the main class: -jar xxx.jar, -client xxx.jar, or a.b.MainClass */
     private final JVMMainOption jvmMainSetting = new JVMMainOption();
 
@@ -255,7 +258,7 @@ public class CLIBootstrap {
          */
 
         accValuedOptions = new ACCValuedOption(ACC_VALUED_OPTIONS_PATTERN);
-
+        
         accUnvaluedOptions = new ACCUnvaluedOption(ACC_UNVALUED_OPTIONS_PATTERN);
 
         jvmPropertySettings = new JVMOption("-D.*", userVMArgs.evJVMPropertySettings);
@@ -664,6 +667,21 @@ public class CLIBootstrap {
         boolean matches(final String element) {
             return ( ! jvmMainSetting.isJarSetting()) && super.matches(element);
         }
+        
+        @Override
+        int processValue(String[] args, int slot) throws UserError {
+            ensureNonOptionNextArg(args, slot);
+            String key = args[slot++];
+            String value = args[slot++];
+            if(key.equals("-cp")) {
+               value = Stream.of(value.split(";"))
+                       .map(cp -> quote(cp))
+                       .collect(joining(";"));
+            }
+            optValues.add(new OptionValue(key, value));
+
+            return slot;
+        }
     }
 
     /**
@@ -710,7 +728,9 @@ public class CLIBootstrap {
                 "-jar|-client|[^-][^\\s]*";
 
         private String introducer = null;
-
+        
+        private String mainClass = null;
+        
         JVMMainOption() {
             super(JVM_MAIN_PATTERN);
         }
@@ -724,23 +744,11 @@ public class CLIBootstrap {
         }
 
         boolean isClassSetting() {
-            return ( ! isJarSetting() && ! isClientSetting() && isSet());
+            return mainClass != null;
         }
 
         boolean isSet() {
             return ! values.isEmpty();
-        }
-
-        @Override
-        boolean matches(String element) {
-            /*
-             * For backward compatibility, the -client element can appear
-             * multiple times with the last appearance overriding earlier ones.
-             */
-            return  (( ! isSet()) ||
-                     ( (isClientSetting() && element.equals("-client")))
-                    )
-                    && super.matches(element);
         }
 
         @Override
@@ -749,7 +757,7 @@ public class CLIBootstrap {
              * We only care about the most recent setting.
              */
             values.clear();
-
+            
             /*
              * If arg[slot] is -jar or -client we expect the
              * next value to be the file.  Make sure there is
@@ -793,6 +801,7 @@ public class CLIBootstrap {
                  */
                 final int result = super.processValue(args, slot);
                 agentArgs.add("client=class=" + values.get(values.size() - 1));
+                mainClass = values.get(values.size() - 1);
                 return result;
                 
             }
@@ -800,7 +809,10 @@ public class CLIBootstrap {
         
         @Override
         boolean format(final StringBuilder commandLine) {
-            if (introducer != null) {
+            if(nonNull(mainClass)) {
+                super.format(commandLine, false /* useQuotes */, mainClass);
+                return true;
+            } else if (introducer != null) {
                 /*
                  * In the generated command we always use "-jar" to indicate
                  * the JAR to be launched, even if the user specified "-client"
@@ -811,7 +823,7 @@ public class CLIBootstrap {
             }
             return super.format(commandLine, false /* useQuotes */);
         }
-
+        
         private boolean nextLooksOK(final String[] args, final int slot) {
             return (isNextArg(args, slot) && (args[slot+1].charAt(0) != '-'));
         }
@@ -1087,12 +1099,6 @@ public class CLIBootstrap {
             return configXMLFile;
         }
 
-        String[] endorsedPaths() {
-            return new String[] {
-                    new File(lib, "endorsed").getAbsolutePath(),
-                    new File(modules, "endorsed").getAbsolutePath()};
-        }
-
         String extPaths() {
             return new File(lib, "ext").getAbsolutePath();
         }
@@ -1163,10 +1169,6 @@ public class CLIBootstrap {
 
         String javaExe() {
             return System.getenv(ACCJava_ENV_VAR_NAME);
-        }
-
-        File endorsed() {
-            return new File(lib(), "endorsed");
         }
 
         File ext() {
