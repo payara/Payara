@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
 /**
  * Type representing properties as List of Maps.
  */
-class PropertyList implements Iterable<Map.Entry<String,String>> {
-    private Map<String,String> properties = new LinkedHashMap<>();
+class PropertyList implements Iterable<Map.Entry<String, String>> {
+    private Map<String, String> properties = new LinkedHashMap<>();
 
     private PropertyList() {
 
@@ -68,7 +68,7 @@ class PropertyList implements Iterable<Map.Entry<String,String>> {
         }
     }
 
-    void put(String key, Map<String,String> sourceMap, String sourceKey) {
+    void put(String key, Map<String, String> sourceMap, String sourceKey) {
         if (sourceMap != null) {
             put(key, sourceMap.get(sourceKey));
         }
@@ -95,31 +95,31 @@ class PropertyList implements Iterable<Map.Entry<String,String>> {
         return properties.entrySet().iterator();
     }
 
-    public List<Map<String,String>> toList() {
+    public List<Map<String, String>> toList() {
         return properties.entrySet().stream()
                 .map(e -> toPropertyEntry(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
     }
 
     public String toParamValue() {
-        StringBuilder sb = new StringBuilder();
-        for(Map.Entry<String, String> oneProp: this) {
-            sb.append(oneProp.getKey()).append("=");
+        StringBuilder paramValue = new StringBuilder();
+        for (Map.Entry<String, String> oneProp : this) {
+            paramValue.append(oneProp.getKey()).append("=");
             String value = oneProp.getValue().replaceAll("\\\\", "\\\\\\\\");
             value = UtilHandlers.escapePropertyValue(value);
-            sb.append(value).append(":");
+            paramValue.append(value).append(":");
         }
-        return sb.toString();
+        return paramValue.toString();
     }
 
-    static Map<String,String> toPropertyEntry(String name, String value) {
+    static Map<String, String> toPropertyEntry(String name, String value) {
         Map<String, String> result = new HashMap<>();
         result.put("name", name);
         result.put("value", value);
         return result;
     }
 
-    static PropertyList fromList(List<Map<String,String>> propertyList) {
+    static PropertyList fromList(List<Map<String, String>> propertyList) {
         PropertyList result = new PropertyList();
         for (Map<String, String> entry : propertyList) {
             result.put(entry.get("name"), entry.get("value"));
@@ -127,7 +127,7 @@ class PropertyList implements Iterable<Map.Entry<String,String>> {
         return result;
     }
 
-    static PropertyList fromMap(Map<String,String> map) {
+    static PropertyList fromMap(Map<String, String> map) {
         PropertyList result = new PropertyList();
         result.properties.putAll(map);
         return result;
