@@ -73,7 +73,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * @see java.security.Principal
  */
 @Contract
-public abstract class Realm extends BaseRealm implements Comparable<Realm> {
+public abstract class Realm extends BaseStateRealm implements Comparable<Realm> {
 
     protected static final Logger _logger = SecurityLoggerInfo.getLogger();
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Realm.class);
