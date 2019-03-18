@@ -29,7 +29,7 @@ public class ModelSerialisationTest {
 
     @Test
     public void callbackWithRef() {
-        assertValid(NodeType.Callback, newCallbackRef("#/components/schemas/SomePayload"));
+        assertValid(NodeType.Reference, newCallbackRef("#/components/schemas/SomePayload"));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class ModelSerialisationTest {
 
     @Test
     public void callbackWithExtension() {
-        assertValid(NodeType.Callback, newCallbackRef("#/components/schemas/SomePayload")
+        assertValid(NodeType.Callback, newCallback("foo", newPathItemRef("#bar"))
                 .addExtension("hello", "world"));
     }
 

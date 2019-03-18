@@ -44,22 +44,33 @@ import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
 import fish.payara.microprofile.openapi.test.app.TestApplication;
-import fish.payara.microprofile.openapi.test.app.data.TestComponent;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
+import static org.junit.Assert.fail;
 
-public class ApplicationProcessedDocument extends OpenAPIImpl {
+public class ApplicationProcessedDocument {
 
-    public ApplicationProcessedDocument() throws MalformedURLException {
-        // Apply base processor
-        new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(this, null);
+    public static OpenAPI createDocument(Class<?>... extraClasses) {
+        try {
+            OpenAPIImpl document = new OpenAPIImpl();
+            // Apply base processor
+            new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(document, null);
 
-        ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), singleton(TestComponent.class));
+            ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), 
+                    new HashSet<>(asList(extraClasses)));
 
-        // Apply application processor
-        new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(this, null);
+            // Apply application processor
+            new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(document, null);
+            return document;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Failed to build document.");
+            return null;
+        }
     }
 
 }

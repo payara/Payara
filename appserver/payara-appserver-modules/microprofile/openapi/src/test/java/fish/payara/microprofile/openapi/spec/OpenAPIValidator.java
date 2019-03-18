@@ -52,14 +52,14 @@ public class OpenAPIValidator {
                 String fieldName = actualField.getKey();
                 if (fieldName.startsWith("x-")) {
                     if (!expected.isExtensible()) {
-                        fail("Disallowed extension field `" + fieldName + "` for " + expected + " node in "
+                        fail("Disallowed extension  " + describeField(fieldName) + " for " + expected + " node in "
                                 + describe(actual));
                     }
                 } else {
                     requiredFields.remove(fieldName);
                     Field expectedField = expected.getField(fieldName);
                     if (expectedField == null) {
-                        fail("Disallowed field `" + fieldName + "` for " + expected + " node in "
+                        fail("Disallowed " + describeField(fieldName) + " for " + expected + " node in "
                                 + describe(actual));
                     }
                     validate(expectedField, actualField.getValue());
@@ -119,7 +119,7 @@ public class OpenAPIValidator {
             throw errors.values().iterator().next();
         }
         StringBuilder message = new StringBuilder();
-        message.append("Disallowed value for field `"+expected+"`: "+describe(actual));
+        message.append("Disallowed value for " + describeField(expected.getName()) + ": " + describe(actual));
         for (Entry<NodeType, AssertionError> error : errors.entrySet()) {
             message.append("\n\nTrying ").append(error.getKey()).append(" gave:\n").append(error.getValue().getMessage());
         }
@@ -144,5 +144,9 @@ public class OpenAPIValidator {
         } catch (Exception e) {
             return node.toString();
         }
+    }
+    
+    private static String describeField(String fieldName) {
+        return "*".equals(fieldName) ? "patterned field" : "field `"+fieldName + "`";
     }
 }

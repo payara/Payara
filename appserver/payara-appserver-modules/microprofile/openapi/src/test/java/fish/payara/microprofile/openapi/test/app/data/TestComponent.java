@@ -40,31 +40,16 @@
 package fish.payara.microprofile.openapi.test.app.data;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
+import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
 
 /**
  * A test to check that schema objects without a @Schema annotation at the top are created.
  */
-public class TestComponent {
-
-    public transient static OpenAPI document;
-
-    @BeforeClass
-    public static void createDocument() {
-        try {
-            document = new ApplicationProcessedDocument();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail("Failed to build document.");
-        }
-    }
+public class TestComponent extends OpenAPIApplicationTest {
 
     @Schema(description = "Test property")
     private int property;
@@ -73,6 +58,5 @@ public class TestComponent {
     public void pojoCreationTest() {
         assertNotNull(document.getComponents().getSchemas().get("TestComponent"));
     }
-
 
 }
