@@ -37,20 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
+
 import java.io.File;
 import java.io.IOException;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
+
 import javax.inject.Inject;
 
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
  * Bootstraps secure admin on a new instance by downloading the minimum files
@@ -60,10 +73,10 @@ import org.glassfish.hk2.api.PostConstruct;
  */
 @Service(name="_bootstrap-secure-admin")
 @PerLookup
-@ExecuteOn(value={RuntimeType.DAS})
+@ExecuteOn(value=RuntimeType.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=POST, 
         path="_bootstrap-secure-admin", 
         description="_bootstrap-secure-admin")
 })
@@ -75,34 +88,29 @@ public class BootstrapSecureAdminCommand implements AdminCommand, PostConstruct 
     private File[] bootstrappedFiles = null;
 
     @Inject
-    private ServerEnvironment env;
-    
-    
+    private ServerEnvironment serverEnvironment;
+
     @Override
     public void postConstruct() {
-        bootstrappedFiles = new File[] {
-            env.getJKS(),
-            env.getTrustStore()
-                };
+        bootstrappedFiles = new File[] { serverEnvironment.getJKS(), serverEnvironment.getTrustStore() };
     }
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
-        final Payload.Outbound outboundPayload = context.getOutboundPayload();
-        final File instanceRoot = env.getInstanceRoot();
+        ActionReport report = context.getActionReport();
+        Payload.Outbound outboundPayload = context.getOutboundPayload();
+        File instanceRoot = serverEnvironment.getInstanceRoot();
 
         try {
-            for (File f : bootstrappedFiles) {
+            for (File bootstrappedFile : bootstrappedFiles) {
                 outboundPayload.attachFile(
-                        DOWNLOADED_FILE_MIME_TYPE,
-                        instanceRoot.toURI().relativize(f.toURI()),
-                        DOWNLOAD_DATA_REQUEST_NAME,
-                        f);
+                    DOWNLOADED_FILE_MIME_TYPE, 
+                    instanceRoot.toURI().relativize(bootstrappedFile.toURI()), 
+                    DOWNLOAD_DATA_REQUEST_NAME, bootstrappedFile);
             }
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setActionExitCode(SUCCESS);
         } catch (IOException ex) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setFailureCause(ex);
         }
     }

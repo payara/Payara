@@ -37,58 +37,86 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.io.File;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_WINDOWS_DOMAIN;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.INFO;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.ServiceLocator;
 
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
- * Remote AdminCommand to delete a config node.  This command is run only on DAS.
+ * Remote AdminCommand to delete a config node. This command is run only on DAS.
  *
  * @author Carla Mott
  */
 public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
-    @Inject
-    protected ServiceLocator habitat;
-    @Inject
-    IterableProvider<Node> nodeList;
-    @Inject
-    Nodes nodes;
-    @Inject
-    private CommandRunner cr;
+    private static final String NL = System.getProperty("line.separator");
+    
     @Param(name = "name", primary = true)
     String name;
+    
     @Param(optional = true, defaultValue = "false")
     boolean uninstall;
+    
     @Param(optional = true, defaultValue = "false")
     boolean force;
-    protected String remotepassword = null;
-    protected String sshkeypassphrase = null;
-    private static final String NL = System.getProperty("line.separator");
-    protected Logger logger = null;
+    
+    @Inject
+    protected ServiceLocator serviceLocator;
+    
+    @Inject
+    private CommandRunner commandRunner;
+    
+    @Inject
+    IterableProvider<Node> nodeList;
+    
+    @Inject
+    Nodes nodes;
+    
+    protected String remotepassword;
+    protected String sshkeypassphrase;
+    protected Logger logger;
 
     protected abstract List<String> getPasswords();
 
     protected abstract String getUninstallCommandName();
+
     protected abstract void setTypeSpecificOperands(List<String> command, ParameterMap map);
 
     protected final void executeInternal(AdminCommandContext context) {
@@ -97,19 +125,20 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         Node node = nodes.getNode(name);
 
         if (node == null) {
-            //no node to delete  nothing to do here
+            // No node to delete nothing to do here
             String msg = Strings.get("noSuchNode", name);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
+        
         String type = node.getType();
-        if ((type == null) || (type.equals("CONFIG"))) {
-            //no node to delete  nothing to do here
+        if (type == null || type.equals("CONFIG")) {
+            // No node to delete nothing to do here
             String msg = Strings.get("notRemoteNodeType", name);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
@@ -117,37 +146,37 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         ParameterMap info = new ParameterMap();
 
         if (uninstall) {
-            //store needed info for uninstall
+            // Store needed info for uninstall
             SshConnector sshC = node.getSshConnector();
             SshAuth sshAuth = sshC.getSshAuth();
 
             if (sshAuth.getPassword() != null)
-                info.add(NodeUtils.PARAM_REMOTEPASSWORD, sshAuth.getPassword());
+                info.add(PARAM_REMOTEPASSWORD, sshAuth.getPassword());
 
             if (sshAuth.getKeyPassphrase() != null)
-                info.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshAuth.getKeyPassphrase());
+                info.add(PARAM_SSHKEYPASSPHRASE, sshAuth.getKeyPassphrase());
 
             if (sshAuth.getKeyfile() != null)
-                info.add(NodeUtils.PARAM_SSHKEYFILE, sshAuth.getKeyfile());
+                info.add(PARAM_SSHKEYFILE, sshAuth.getKeyfile());
 
-            info.add(NodeUtils.PARAM_INSTALLDIR, node.getInstallDir());
-            info.add(NodeUtils.PARAM_REMOTEPORT, sshC.getSshPort());
-            info.add(NodeUtils.PARAM_REMOTEUSER, sshAuth.getUserName());
-            info.add(NodeUtils.PARAM_NODEHOST, node.getNodeHost());
-            info.add(NodeUtils.PARAM_WINDOWS_DOMAIN, node.getWindowsDomain());
+            info.add(PARAM_INSTALLDIR, node.getInstallDir());
+            info.add(PARAM_REMOTEPORT, sshC.getSshPort());
+            info.add(PARAM_REMOTEUSER, sshAuth.getUserName());
+            info.add(PARAM_NODEHOST, node.getNodeHost());
+            info.add(PARAM_WINDOWS_DOMAIN, node.getWindowsDomain());
         }
 
-        CommandInvocation ci = cr.getCommandInvocation("_delete-node", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        ci.parameters(map);
-        ci.execute();
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-node", report, context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", name);
+        commandInvocation.parameters(commandParameters);
+        
+        commandInvocation.execute();
 
-        //uninstall GlassFish after deleting the node
+        // Uninstall Payara after deleting the node
         if (uninstall) {
-            boolean s = uninstallNode(context, info, node);
-            if (!s && !force) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            if (!uninstallNode(context, info, node) && !force) {
+                report.setActionExitCode(FAILURE);
                 return;
             }
         }
@@ -155,51 +184,52 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
     /**
      * Prepares for invoking uninstall-node on DAS
+     * 
      * @param ctx command context
      * @return true if uninstall-node succeeds, false otherwise
      */
     private boolean uninstallNode(AdminCommandContext ctx, ParameterMap map, Node node) {
         boolean res = false;
 
-        remotepassword = map.getOne(NodeUtils.PARAM_REMOTEPASSWORD);
-        sshkeypassphrase = map.getOne(NodeUtils.PARAM_SSHKEYPASSPHRASE);
+        remotepassword = map.getOne(PARAM_REMOTEPASSWORD);
+        sshkeypassphrase = map.getOne(PARAM_SSHKEYPASSPHRASE);
 
         ArrayList<String> command = new ArrayList<String>();
 
         command.add(getUninstallCommandName());
         command.add("--installdir");
-        command.add(map.getOne(NodeUtils.PARAM_INSTALLDIR));
+        command.add(map.getOne(PARAM_INSTALLDIR));
 
         if (force) {
             command.add("--force");
         }
 
         setTypeSpecificOperands(command, map);
-        String host = map.getOne(NodeUtils.PARAM_NODEHOST);
+        String host = map.getOne(PARAM_NODEHOST);
         command.add(host);
 
         String firstErrorMessage = Strings.get("delete.node.ssh.uninstall.failed", node.getName(), host);
         StringBuilder out = new StringBuilder();
         int exitCode = execCommand(command, out);
 
-        //capture the output in server.log
+        // capture the output in server.log
         logger.info(out.toString().trim());
 
         ActionReport report = ctx.getActionReport();
         if (exitCode == 0) {
             // If it was successful say so and display the command output
-            String msg = Strings.get("delete.node.ssh.uninstall.success", host);
-            report.setMessage(msg);
+            report.setMessage(Strings.get("delete.node.ssh.uninstall.success", host));
             res = true;
-        }
-        else {
+        } else {
             report.setMessage(firstErrorMessage);
         }
+        
         return res;
     }
 
     /**
      * Invokes install-node using ProcessManager and returns the exit message/status.
+     * 
      * @param cmdLine list of args
      * @param output contains output message
      * @return exit status of uninstall-node
@@ -216,44 +246,44 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
 
-        //if password auth is used for deleting the node, use the same auth mechanism for
-        //uinstall-node as well. The passwords are passed directly through input stream
-        List<String> pass = new ArrayList<String>();
+        // if password auth is used for deleting the node, use the same auth mechanism for
+        // uinstall-node as well. The passwords are passed directly through input stream
+        List<String> passwords = new ArrayList<String>();
         if (remotepassword != null) {
             fullcommand.add("--passwordfile");
             fullcommand.add("-");
-            pass = getPasswords();
+            passwords = getPasswords();
         }
 
         fullcommand.add("--interactive=false");
         fullcommand.addAll(cmdLine);
 
-        ProcessManager pm = new ProcessManager(fullcommand);
-        if (!pass.isEmpty())
-            pm.setStdinLines(pass);
+        ProcessManager processManager = new ProcessManager(fullcommand);
+        if (!passwords.isEmpty())
+            processManager.setStdinLines(passwords);
 
-        if (logger.isLoggable(Level.INFO)) {
+        if (logger.isLoggable(INFO)) {
             logger.info("Running command on DAS: " + commandListToString(fullcommand));
         }
-        pm.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
+        
+        processManager.setTimeoutMsec(DEFAULT_TIMEOUT_MSEC);
 
-        if (logger.isLoggable(Level.FINER))
-            pm.setEcho(true);
+        if (logger.isLoggable(FINER))
+            processManager.setEcho(true);
         else
-            pm.setEcho(false);
+            processManager.setEcho(false);
 
         try {
-            exit = pm.execute();
-        }
-        catch (ProcessManagerException ex) {
+            exit = processManager.execute();
+        } catch (ProcessManagerException ex) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Error while executing command: " + ex.getMessage());
             }
             exit = 1;
         }
 
-        String stdout = pm.getStdout();
-        String stderr = pm.getStderr();
+        String stdout = processManager.getStdout();
+        String stderr = processManager.getStderr();
 
         if (output != null) {
             if (StringUtils.ok(stdout)) {
@@ -273,9 +303,9 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private String commandListToString(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
 
-        for (String s : command) {
+        for (String commandPart : command) {
             fullCommand.append(" ");
-            fullCommand.append(s);
+            fullCommand.append(commandPart);
         }
 
         return fullCommand.toString();
