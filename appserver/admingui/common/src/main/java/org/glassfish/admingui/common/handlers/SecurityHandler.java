@@ -308,6 +308,12 @@ public class SecurityHandler {
         cMap.put("name", attrMap.get("Name"));
         cMap.put("classname", classname);
         cMap.put(TARGET, attrMap.get(TARGET));
+
+        if (Boolean.parseBoolean(attrMap.get("registerLoginModule"))) {
+            propList.put("jaas-context", attrMap, "loginModuleJaax");
+            cMap.put("login-module", attrMap.get("loginModuleClass"));
+        }
+
         cMap.put("property", propList.toParamValue());
 
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
