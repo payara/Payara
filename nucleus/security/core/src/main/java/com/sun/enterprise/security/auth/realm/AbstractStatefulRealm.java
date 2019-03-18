@@ -54,7 +54,7 @@ import java.util.Properties;
  * @author Arjan Tijms
  *
  */
-public abstract class BaseStateRealm extends AbstractRealm implements Comparable<Realm> {
+public abstract class AbstractStatefulRealm extends AbstractRealm implements Comparable<Realm> {
     
     public static final String PARAM_GROUP_MAPPING = "group-mapping";
     
@@ -79,7 +79,7 @@ public abstract class BaseStateRealm extends AbstractRealm implements Comparable
      * The default the constructor creates a realm which will later be initialized, 
      * either from properties or by deserializing.
      */
-    protected BaseStateRealm() {
+    protected AbstractStatefulRealm() {
         contextProperties = new Properties();
     }
 
