@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
 /**
@@ -46,7 +46,7 @@ package com.sun.enterprise.security.auth.realm;
  * @author Harish Prabandham
  */
 public class NoSuchUserException extends Exception {
-
+   
     private static final long serialVersionUID = -4061500111336089813L;
 
     /**

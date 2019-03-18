@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth.realm;
 
 /**
@@ -46,7 +46,7 @@ package com.sun.enterprise.security.auth.realm;
  * @author Harpreet Singh
  */
 public class GroupNotEmptyException extends Exception {
-
+    
     private static final long serialVersionUID = 873043596300984484L;
 
     /**
