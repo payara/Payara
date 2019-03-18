@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
@@ -71,19 +72,26 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     @Override
     public T addExtension(String name, Object value) {
         if (value != null) {
-            extensions.put(name, value);
+            extensions.put(extensionName(name), value);
         }
         return (T) this;
     }
 
     @Override
     public void removeExtension(String name) {
-        extensions.remove(name);
+        extensions.remove(extensionName(name));
     }
 
     @Override
     public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+        this.extensions.clear();
+        for (Entry<String, Object> entry : extensions.entrySet()) {
+            this.extensions.put(extensionName(entry.getKey()), entry.getValue());
+        }
+    }
+
+    public static String extensionName(String name) {
+        return name.startsWith("x-") ? name : "x-" + name;
     }
 
     public static void merge(Extension from, Extensible<?> to, boolean override) {

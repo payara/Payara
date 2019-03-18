@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.responses;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -54,8 +53,6 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         implements APIResponses {
 
     private static final long serialVersionUID = 2811935761440110541L;
-
-    protected Map<String, Object> extensions = new HashMap<>();
 
     public APIResponsesImpl() {
         super();
