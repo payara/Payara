@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.codegen;
 
@@ -59,6 +58,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.OS;
 import org.glassfish.api.admin.ServerEnvironment;
 
 /**
@@ -75,12 +75,62 @@ public class StaticRmiStubGenerator {
 
      private static final String ORG_OMG_STUB_PREFIX  = "org.omg.stub.";
 
+     private final String toolsJarPath;
+
      private List<String> rmicOptionsList;
 
     /**
      * This class is only instantiated internally.
      */
     public StaticRmiStubGenerator(ServiceLocator services) {
+        // Find java path and tools.jar
+
+        //Try this jre's parent
+        String jreHome = System.getProperty("java.home");
+        File jdkDir = null;
+        if(jreHome != null) {
+            // on the mac the java.home does not point to the jre
+            // subdirectory.
+            if (OS.isDarwin()) {
+                jdkDir = new File(jreHome);
+            } else {
+                jdkDir = (new File(jreHome)).getParentFile();       //jdk_dir/jre/..
+            }
+
+            jdkDir = getValidDirectory(jdkDir);
+        }
+
+        if(jdkDir == null) {
+            // Check for "JAVA_HOME" -- which is set via Server.xml during initialization
+            // of the Server that is calling us.
+
+            String jh = System.getProperty("JAVA_HOME");
+            if(jh != null) {
+                jdkDir = getValidDirectory(new File(jh));  // e.g. c:/ias7/jdk
+            }
+        }
+
+/** XXX ???
+        if(jdkDir == null) {
+            //Somehow, JAVA_HOME is not set. Try the "well-known" location...
+            if(installRoot != null) {
+                jdkDir = getValidDirectory(new File(installRoot + "/jdk"));
+
+            }
+        }
+** XXX **/
+
+        if(jdkDir == null) {
+            _logger.warning("Cannot identify JDK location.");
+            toolsJarPath = null;
+        } else {
+            File toolsJar = new File(jdkDir + "/lib/tools.jar" );
+            if (toolsJar != null && toolsJar.exists()) {
+                toolsJarPath = toolsJar.getPath();
+            } else {
+                toolsJarPath = null;
+            }
+        }
 
         JavaConfig jc = services.getService(JavaConfig.class,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME);
@@ -216,6 +266,11 @@ public class StaticRmiStubGenerator {
             return;
         }
 
+        if( toolsJarPath == null && !OS.isDarwin()) {
+            _logger.log(Level.INFO,  "[RMIC] tools.jar location was not found");
+            return;
+        }
+
         progress(localStrings.getStringWithDefault(
                                          "generator.compiling_rmi_iiop",
                                          "Compiling RMI-IIOP code."));
@@ -225,6 +280,9 @@ public class StaticRmiStubGenerator {
         cmds.add("-classpath");
 
         StringBuilder sb = new StringBuilder().append(System.getProperty("java.class.path"));
+        if (toolsJarPath != null) {
+             sb.append(File.pathSeparator).append(toolsJarPath);
+        }
         sb.append(File.pathSeparator).append(explodedDir)
           .append(File.pathSeparator).append(repository)
           .append(File.pathSeparator).append(classPath);
