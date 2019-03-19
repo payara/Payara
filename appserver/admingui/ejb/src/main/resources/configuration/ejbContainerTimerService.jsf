@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <!-- configuration/ejbContainerTimerSettings.jsf -->
 
@@ -98,7 +99,7 @@
                 <sun:staticText id="msecs" style="padding: 8pt" text="$resource{i18n.common.Milliseconds}"/>
             </sun:property>
             <sun:property id="persistenceServiceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.persistenceServiceLabel}"  helpText="$resource{i18n_ejb.ejbTimerSettings.persistenceServiceHelp}" visible="#{true}" >
-                <sun:dropDown id="EjbTimerService" selected="#{pageSession.valueMap['ejbTimerService']}" required="#{false}" value="#{pageSession.valueMap['ejbTimerService']}" labels={"Database","DataGrid"} values={"Database","DataGrid"} >
+                <sun:dropDown id="EjbTimerService" selected="#{pageSession.valueMap['ejbTimerService']}" required="#{false}" value="#{pageSession.valueMap['ejbTimerService']}" labels={"Database","DataGrid","None"} values={"Database","DataGrid","None"} >
                 </sun:dropDown>
             </sun:property>            
             <sun:property id="clusterFiringModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbTimerSettings.clusterFiringModeLabel}"  helpText="$resource{i18n_ejb.ejbTimerSettings.clusterFiringModeHelp}" visible="#{true}" >
