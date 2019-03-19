@@ -63,6 +63,8 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -250,6 +252,11 @@ public class StartInstanceCommand implements AdminCommand {
     }
 
     private void startInstance(AdminCommandContext ctx) {
+        if (node.getType().equals("DOCKER")) {
+            startDockerContainer(ctx);
+            return;
+        }
+
         NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
@@ -302,6 +309,19 @@ public class StartInstanceCommand implements AdminCommand {
             report.setMessage(msg);
         }
 
+    }
+
+    private void startDockerContainer(AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", node.getName());
+        parameterMap.add("instanceName", instanceName);
+
+        CommandRunner commandRunner = serviceLocator.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "_start-docker-container", adminCommandContext.getActionReport(), adminCommandContext.getSubject())
+                .parameters(parameterMap)
+                .execute();
     }
 
     /**

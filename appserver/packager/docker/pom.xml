@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>packages</artifactId>
+        <groupId>org.glassfish.main.packager</groupId>
+        <version>5.192-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>docker</artifactId>
+    <packaging>distribution-fragment</packaging>
+
+    <name>Docker Package</name>
+    <description>This module describes how to assemble the Docker package</description>
+
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara</groupId>
+            <artifactId>docker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step1</id>
+                    </execution>
+                    <execution>
+                        <id>process-step2</id>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step3</id>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

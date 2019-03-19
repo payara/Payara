@@ -126,10 +126,19 @@ public class UpdateNodeCommand implements AdminCommand {
      String sshkeypassphrase;
 
     @Param(name = "windowsdomain", optional = true)
-     String windowsdomain;
+    String windowsdomain;
+
+    @Param(name = "dockerImage", optional = true)
+    String dockerImage;
+
+    @Param(name = "dockerPort", optional = true)
+    Integer dockerPort;
+
+    @Param(name = "useTls", optional = true)
+    String useTls;
 
     @Param(name = "type", optional=true)
-     String type;
+    String type;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -220,7 +229,7 @@ public class UpdateNodeCommand implements AdminCommand {
                         writeableNode.setInstallDir(installdir);
                     if (type != null)
                         writeableNode.setType(type);
-                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null){
+                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null) {
                         SshConnector sshC = writeableNode.getSshConnector();
                         if (sshC == null)  {
                             sshC =writeableNode.createChild(SshConnector.class);
@@ -253,6 +262,17 @@ public class UpdateNodeCommand implements AdminCommand {
 
                     }
 
+                    if (dockerImage != null) {
+                        writeableNode.setDockerImage(dockerImage);
+                    }
+
+                    if (dockerPort != null) {
+                        writeableNode.setDockerPort(Integer.toString(dockerPort));
+                    }
+
+                    if (useTls != null) {
+                        writeableNode.setUseTls(useTls);
+                    }
                 }
                 return Boolean.TRUE;
             }

@@ -263,6 +263,7 @@
         <module>appclient</module>
         <module>ant-tasks</module>
         <module>payara-appserver-modules</module>
+        <module>docker</module>
     </modules>
 
 
