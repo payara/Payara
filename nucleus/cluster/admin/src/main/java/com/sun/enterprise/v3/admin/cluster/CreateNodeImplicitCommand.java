@@ -37,23 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.hk2.api.PerLookup;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEDIR;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 import javax.inject.Inject;
 
-
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Nodes;
 
 /**
  * Remote AdminCommand to create a config node.  This command is run only on DAS.
@@ -64,56 +76,56 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "_create-node-implicit")
 @I18n("create.node.implicit")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_create-node-implicit", 
-        description="_create-node-implicit")
+    @RestEndpoint(configBean = Domain.class,
+        opType = POST, 
+        path = "_create-node-implicit", 
+        description = "_create-node-implicit")
 })
 public class CreateNodeImplicitCommand implements AdminCommand {
 
-    @Inject
-    Nodes nodes;
-
-    @Inject
-    private CommandRunner cr;
-
-    @Param(name="name", optional= true)
+    @Param(name = "name", optional = true)
     String name;
 
-    @Param(name="nodedir", optional = true)
+    @Param(name = "nodedir", optional = true)
     String nodedir;
 
-    @Param(name="nodehost",  primary = true)
+    @Param(name = "nodehost", primary = true)
     String nodehost;
 
     @Param(name = "installdir")
     String installdir;
+    
+    @Inject
+    private Nodes nodes;
+
+    @Inject
+    private CommandRunner commandRunner;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
 
-        if (name == null)
+        if (name == null) {
             name = nodehost;
+        }
 
         if (nodes.getNode(name) != null) {
-            //already created nothing to do here
+            // Already created nothing to do here
             return;
         }
-        CommandInvocation ci = cr.getCommandInvocation("_create-node", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        map.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        map.add(NodeUtils.PARAM_TYPE,"CONFIG");
-
-        ci.parameters(map);
-        ci.execute();
-
         
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_create-node", report, context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", name);
+        commandParameters.add(PARAM_NODEDIR, nodedir);
+        commandParameters.add(PARAM_INSTALLDIR, installdir);
+        commandParameters.add(PARAM_NODEHOST, nodehost);
+        commandParameters.add(PARAM_TYPE, "CONFIG");
+
+        commandInvocation.parameters(commandParameters);
+        commandInvocation.execute();
     }
 
 }

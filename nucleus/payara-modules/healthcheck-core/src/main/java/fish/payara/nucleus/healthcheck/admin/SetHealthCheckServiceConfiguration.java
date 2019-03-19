@@ -143,7 +143,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     // general properties params:
 
     @Param(name = "enabled", optional = false)
-    private boolean enabled;
+    private Boolean enabled;
 
     @Param(name = "time", optional = true)
     @Min(value = 1, message = "Time period must be 1 or more")
@@ -293,9 +293,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     private <C extends Checker, O extends HealthCheckExecutionOptions> void configureDynamically(
             BaseHealthCheck<O, C> service, C config) {
-        if (service.getOptions() == null) {
-            service.setOptions(service.constructOptions(config));
-        }
+        service.setOptions(service.constructOptions(config));
         healthCheckService.registerCheck(config.getName(), service);
         healthCheckService.reboot();
         if (service instanceof BaseThresholdHealthCheck) {
@@ -326,7 +324,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     }
 
     private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
-        updateProperty(config, "enabled", config.getEnabled(), String.valueOf(enabled), Checker::setEnabled);
+        updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
         if (HoggingThreadsChecker.class.isAssignableFrom(type)) {
