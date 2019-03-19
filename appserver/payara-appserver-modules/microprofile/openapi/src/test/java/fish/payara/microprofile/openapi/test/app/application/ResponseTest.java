@@ -74,7 +74,7 @@ public class ResponseTest extends OpenAPIApplicationTest {
 
     @Test
     public void inheritedMediaTypeTest() {
-        APIResponses responses = document.getPaths().getPathItem("/test/response").getGET().getResponses();
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response").getGET().getResponses();
         // Test the default response doesn't exist
         assertNull("The default response should be removed when not used.", responses.getDefaultValue());
 

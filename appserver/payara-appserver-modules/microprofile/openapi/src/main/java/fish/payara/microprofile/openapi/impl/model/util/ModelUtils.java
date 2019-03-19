@@ -395,7 +395,6 @@ public final class ModelUtils {
         if (annotation == null) {
             return true;
         }
-        boolean allNull = true;
         for (Method m : annotation.annotationType().getDeclaredMethods()) {
             if (m.getParameterCount() == 0) {
                 try {
@@ -416,7 +415,9 @@ public final class ModelUtils {
                         } else if (String.class.isAssignableFrom(value.getClass()) && !value.toString().isEmpty()) {
                             return false;
                         } else if (value instanceof Annotation) {
-                            allNull = isAnnotationNull((Annotation) value);
+                            if (!isAnnotationNull((Annotation) value)) {
+                                return false;
+                            }
                         }
                     }
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -424,7 +425,7 @@ public final class ModelUtils {
                 }
             }
         }
-        return allNull;
+        return true;
     }
 
     public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {

@@ -148,15 +148,15 @@ public enum NodeType implements Iterable<Field> {
             .extensible();
 
         Components
-            .addField("schemas", Schema).map()
-            .addField("responses", Response).map()
-            .addField("parameters", Parameter).map()
-            .addField("examples", Example).map()
-            .addField("requestBodies", RequestBody).map()
-            .addField("headers", Header).map()
-            .addField("securitySchemes", SecurityScheme).map()
-            .addField("links", Link).map()
-            .addField("callbacks", Callback).map()
+            .addField("schemas", Schema, Reference).map()
+            .addField("responses", Response, Reference).map()
+            .addField("parameters", Parameter, Reference).map()
+            .addField("examples", Example, Reference).map()
+            .addField("requestBodies", RequestBody, Reference).map()
+            .addField("headers", Header, Reference).map()
+            .addField("securitySchemes", SecurityScheme, Reference).map()
+            .addField("links", Link, Reference).map()
+            .addField("callbacks", Callback, Reference).map()
             .extensible();
 
         Paths

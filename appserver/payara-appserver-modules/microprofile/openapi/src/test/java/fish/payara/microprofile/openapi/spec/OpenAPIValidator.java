@@ -138,14 +138,12 @@ public class OpenAPIValidator {
 
     private static String describe(JsonNode node) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            Object json = mapper.readValue(node.toString(), Object.class);
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(node);
         } catch (Exception e) {
             return node.toString();
         }
     }
-    
+
     private static String describeField(String fieldName) {
         return "*".equals(fieldName) ? "patterned field" : "field `"+fieldName + "`";
     }

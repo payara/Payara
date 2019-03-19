@@ -56,7 +56,7 @@ public class TestComponent extends OpenAPIApplicationTest {
 
     @Test
     public void pojoCreationTest() {
-        assertNotNull(document.getComponents().getSchemas().get("TestComponent"));
+        assertNotNull(getDocument().getComponents().getSchemas().get("TestComponent"));
     }
 
 }

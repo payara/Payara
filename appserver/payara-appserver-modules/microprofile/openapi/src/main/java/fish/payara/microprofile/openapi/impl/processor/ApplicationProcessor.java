@@ -74,6 +74,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
 
+import org.eclipse.microprofile.openapi.annotations.Components;
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -108,6 +109,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
+import fish.payara.microprofile.openapi.impl.model.ComponentsImpl;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
@@ -686,14 +688,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitRequestBody(RequestBody requestBody, AnnotatedElement element, ApiContext context) {
         if (element instanceof Method) {
-            if (context.getWorkingOperation().getRequestBody() != null) {
-                RequestBodyImpl.merge(requestBody, context.getWorkingOperation().getRequestBody(), true,
-                        context.getApi().getComponents().getSchemas());
-            }
-        }
-        if (element instanceof java.lang.reflect.Parameter) {
-            if (context.getWorkingOperation().getRequestBody() != null) {
-                RequestBodyImpl.merge(requestBody, context.getWorkingOperation().getRequestBody(), true,
+            org.eclipse.microprofile.openapi.models.parameters.RequestBody currentRequestBody = context
+                    .getWorkingOperation().getRequestBody();
+            if (currentRequestBody != null || element instanceof java.lang.reflect.Parameter) {
+                RequestBodyImpl.merge(requestBody, currentRequestBody, true,
                         context.getApi().getComponents().getSchemas());
             }
         }

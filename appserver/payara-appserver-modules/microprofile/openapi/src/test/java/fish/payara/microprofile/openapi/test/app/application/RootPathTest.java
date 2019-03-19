@@ -62,8 +62,8 @@ public class RootPathTest extends OpenAPIApplicationTest {
 
     @Test
     public void testRoot() {
-        assertNotNull("The root resource wasn't found.", document.getPaths().getPathItem("/test"));
+        assertNotNull("The root resource wasn't found.", getDocument().getPaths().getPathItem("/test"));
         assertEquals("The root resource had the wrong origin.", "getRoot",
-                document.getPaths().getPathItem("/test").getGET().getOperationId());
+                getDocument().getPaths().getPathItem("/test").getGET().getOperationId());
     }
 }
