@@ -353,7 +353,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         // if the user thinks server configuration is being changed, warn him if matching nodes are different
         Set<Dom> sharedConfigs = findSharedConfigs();
         // from matching nodes, find the roots that are in parentNodes
-        String targetedSharedConfigs = mNodes.stream()
+        String targettedSharedConfigs = mNodes.stream()
                 .map(Map.Entry::getKey)
                 .map(sourceNodes::get)
                 // should definitely be in the map, but just to be sure
@@ -364,10 +364,10 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 .map(Dom::getKey)
                 .collect(Collectors.joining(", "));
 
-        if (!targetedSharedConfigs.isEmpty()) {
+        if (!targettedSharedConfigs.isEmpty()) {
             warning(context, localStrings.getLocalString("admin.set.sharedconfig",
                     "Warning: command appears to address server {0}, but addresses following shared configuration(s): {1}",
-                    primaryNode.name, targetedSharedConfigs));
+                    primaryNode.name, targettedSharedConfigs));
         }
     }
 
@@ -494,8 +494,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             },domain);
             return replicatePropertyChange(context, op, targetName);
         } catch (TransactionFailure transactionFailure) {
-            //fail(context, "Could not change the attributes: " +
-            //    transactionFailure.getMessage(), transactionFailure);
             fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
                     transactionFailure.getMessage()), transactionFailure);
             return false;
@@ -510,7 +508,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         pattern = parentNodes_[0].relativeName;
         Map<Dom, String> matchingNodes_ = getMatchingNodes(dottedNames, pattern);
         if (matchingNodes_.isEmpty()) {
-            //fail(context, "No configuration found for " + targetName);
             fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
             return false;
         }
@@ -520,7 +517,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             }
         }
         if (parentNode == null) {
-            //fail(context, "No configuration found for " + targetName);
             fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
             return false;
         }
@@ -545,8 +541,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
             return replicatePropertyChange(context, op, targetName);
         } catch (TransactionFailure transactionFailure) {
-            //fail(context, "Could not change the attributes: " +
-            //    transactionFailure.getMessage(), transactionFailure);
             fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
                     transactionFailure.getMessage()), transactionFailure);
             return false;
