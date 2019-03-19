@@ -63,7 +63,7 @@
         <module>ejb-full-container</module>
         <module>ejb-timer-databases</module>
         <module>ejb-timer-service-app</module>
-        <module>ejb-rest-remoting</module>
+        <module>ejb-http-remoting</module>
         <module>ejb-connector-l10n</module>
         <module>ejb-container-l10n</module>
     </modules>
