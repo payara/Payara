@@ -42,14 +42,13 @@ package fish.payara.microprofile.openapi.impl.admin;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
  * Configuration for the OpenAPI Service.
  */
 @Configured(name = "microprofile-openapi-configuration")
-public interface OpenApiServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface OpenApiServiceConfiguration extends ConfigExtension {
 
     /**
      * @return whether the service is enabled or not.

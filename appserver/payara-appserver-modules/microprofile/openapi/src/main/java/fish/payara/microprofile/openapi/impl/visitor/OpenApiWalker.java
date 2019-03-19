@@ -74,8 +74,10 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -153,11 +155,13 @@ public class OpenApiWalker implements ApiWalker {
         // All other OpenAPI annotations
         processAnnotations(Schema.class, visitor::visitSchema, true);
         processAnnotations(Server.class, visitor::visitServer, Servers.class, visitor::visitServers, true);
+        processAnnotations(Extensions.class, visitor::visitExtensions, true);
         processAnnotations(Extension.class, visitor::visitExtension, true);
         processAnnotations(Operation.class, visitor::visitOperation);
         processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class, visitor::visitCallbacks);
         processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class,
                 visitor::visitAPIResponses, true);
+        processAnnotations(Parameters.class, visitor::visitParameters, true);
         processAnnotations(Parameter.class, visitor::visitParameter, true);
         processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation, true);
         processAnnotations(Tag.class, visitor::visitTag, Tags.class, visitor::visitTags, true);

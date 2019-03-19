@@ -44,8 +44,6 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHtt
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.annotations.callbacks.CallbackOperation;
@@ -55,20 +53,46 @@ import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 
-public class CallbackImpl extends LinkedHashMap<String, PathItem> implements Callback {
+public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implements Callback {
 
     private static final long serialVersionUID = 5549098533131353142L;
 
     protected String ref;
-    protected Map<String, Object> extensions = new HashMap<>();
+
+    public CallbackImpl() {
+        super();
+    }
+
+    public CallbackImpl(Map<String, ? extends PathItem> items) {
+        super(items);
+    }
 
     @Override
     public Callback addPathItem(String name, PathItem item) {
-        this.put(name, item);
+        if (item != null) {
+            this.put(name, item);
+        }
         return this;
+    }
+
+    @Override
+    public void removePathItem(String name) {
+        remove(name);
+    }
+
+    @Override
+    public Map<String, PathItem> getPathItems() {
+        return new CallbackImpl(this);
+    }
+
+    @Override
+    public void setPathItems(Map<String, PathItem> items) {
+        clear();
+        putAll(items);
     }
 
     @Override
@@ -84,27 +108,6 @@ public class CallbackImpl extends LinkedHashMap<String, PathItem> implements Cal
         this.ref = ref;
     }
 
-    @Override
-    public Callback ref(String ref) {
-        setRef(ref);
-        return this;
-    }
-
-    @Override
-    public Map<String, Object> getExtensions() {
-        return extensions;
-    }
-
-    @Override
-    public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
-    }
-
-    @Override
-    public void addExtension(String name, Object value) {
-        this.extensions.put(name, value);
-    }
-
     public static void merge(org.eclipse.microprofile.openapi.annotations.callbacks.Callback from, Callback to,
             boolean override, Map<String, Schema> currentSchemas) {
         if (isAnnotationNull(from)) {
@@ -116,7 +119,7 @@ public class CallbackImpl extends LinkedHashMap<String, PathItem> implements Cal
         }
         if (!from.callbackUrlExpression().isEmpty()) {
             PathItem pathItem = to.getOrDefault(from.callbackUrlExpression(), new PathItemImpl());
-            to.put(from.callbackUrlExpression(), pathItem);
+            to.addPathItem(from.callbackUrlExpression(), pathItem);
             if (from.operations() != null) {
                 for (CallbackOperation callbackOperation : from.operations()) {
                     applyCallbackOperationAnnotation(pathItem, callbackOperation, override, currentSchemas);

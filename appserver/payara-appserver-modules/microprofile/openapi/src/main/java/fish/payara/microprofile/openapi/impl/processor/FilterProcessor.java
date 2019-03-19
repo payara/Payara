@@ -91,9 +91,8 @@ public class FilterProcessor implements OASProcessor {
         }
         if (filter != null) {
             return (OpenAPI) filterObject(api);
-        } else {
-            LOGGER.fine("No OASFilter provided.");
         }
+        LOGGER.fine("No OASFilter provided.");
         return api;
     }
 
@@ -134,7 +133,7 @@ public class FilterProcessor implements OASProcessor {
                 }
 
                 for (Object removeTarget : resultsToRemove) {
-                    Iterator<Object> iterator = (Iterator<Object>) Iterable.class.cast(object).iterator();
+                    Iterator<Object> iterator = Iterable.class.cast(object).iterator();
                     while (iterator.hasNext()) {
                         if (iterator.next().equals(removeTarget)) {
                             iterator.remove();

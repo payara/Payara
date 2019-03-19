@@ -52,7 +52,7 @@ import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 
-public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
+public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements RequestBody {
 
     protected String description;
     protected Content content = new ContentImpl();
@@ -70,12 +70,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     }
 
     @Override
-    public RequestBody description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Content getContent() {
         return content;
     }
@@ -83,12 +77,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     @Override
     public void setContent(Content content) {
         this.content = content;
-    }
-
-    @Override
-    public RequestBody content(Content content) {
-        setContent(content);
-        return this;
     }
 
     @Override
@@ -102,12 +90,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     }
 
     @Override
-    public RequestBody required(Boolean required) {
-        setRequired(required);
-        return this;
-    }
-
-    @Override
     public String getRef() {
         return ref;
     }
@@ -118,12 +100,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
             ref = "#/components/requestBodies/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public RequestBody ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.RequestBody from, RequestBody to,

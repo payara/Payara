@@ -50,7 +50,7 @@ import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme {
+public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implements SecurityScheme {
 
     protected SecurityScheme.Type type;
     protected String description;
@@ -74,12 +74,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme type(SecurityScheme.Type type) {
-        setType(type);
-        return this;
-    }
-
-    @Override
     public String getDescription() {
         return description;
     }
@@ -87,12 +81,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public SecurityScheme description(String description) {
-        setDescription(description);
-        return this;
     }
 
     @Override
@@ -106,12 +94,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme name(String name) {
-        setName(name);
-        return this;
-    }
-
-    @Override
     public SecurityScheme.In getIn() {
         return in;
     }
@@ -119,12 +101,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setIn(SecurityScheme.In in) {
         this.in = in;
-    }
-
-    @Override
-    public SecurityScheme in(SecurityScheme.In in) {
-        setIn(in);
-        return this;
     }
 
     @Override
@@ -138,12 +114,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme scheme(String scheme) {
-        setScheme(scheme);
-        return this;
-    }
-
-    @Override
     public String getBearerFormat() {
         return bearerFormat;
     }
@@ -151,12 +121,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setBearerFormat(String bearerFormat) {
         this.bearerFormat = bearerFormat;
-    }
-
-    @Override
-    public SecurityScheme bearerFormat(String bearerFormat) {
-        setBearerFormat(bearerFormat);
-        return this;
     }
 
     @Override
@@ -170,12 +134,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme flows(OAuthFlows flows) {
-        setFlows(flows);
-        return this;
-    }
-
-    @Override
     public String getOpenIdConnectUrl() {
         return openIdConnectUrl;
     }
@@ -183,12 +141,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setOpenIdConnectUrl(String openIdConnectUrl) {
         this.openIdConnectUrl = openIdConnectUrl;
-    }
-
-    @Override
-    public SecurityScheme openIdConnectUrl(String openIdConnectUrl) {
-        setOpenIdConnectUrl(openIdConnectUrl);
-        return this;
     }
 
     @Override
@@ -202,12 +154,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
             ref = "#/components/securitySchemes/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public SecurityScheme ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityScheme from,

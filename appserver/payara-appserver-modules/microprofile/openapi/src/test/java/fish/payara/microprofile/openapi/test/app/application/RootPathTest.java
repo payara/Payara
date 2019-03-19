@@ -77,8 +77,8 @@ public class RootPathTest {
 
     @Test
     public void testRoot() {
-        assertNotNull("The root resource wasn't found.", document.getPaths().get("/test"));
+        assertNotNull("The root resource wasn't found.", document.getPaths().getPathItem("/test"));
         assertEquals("The root resource had the wrong origin.", "getRoot",
-                document.getPaths().get("/test").getGET().getOperationId());
+                document.getPaths().getPathItem("/test").getGET().getOperationId());
     }
 }

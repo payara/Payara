@@ -42,33 +42,59 @@ package fish.payara.microprofile.openapi.impl.model;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
-import java.util.HashMap;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-public abstract class ExtensibleImpl implements Extensible {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-    protected Map<String, Object> extensions = new HashMap<>();
+public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
+
+    private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
+
+    @JsonIgnore
+    protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     @Override
     public Map<String, Object> getExtensions() {
         return extensions;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void addExtension(String name, Object value) {
-        extensions.put(name, value);
+    public T addExtension(String name, Object value) {
+        if (value != null) {
+            extensions.put(extensionName(name), value);
+        }
+        return (T) this;
+    }
+
+    @Override
+    public void removeExtension(String name) {
+        extensions.remove(extensionName(name));
     }
 
     @Override
     public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+        this.extensions.clear();
+        for (Entry<String, Object> entry : extensions.entrySet()) {
+            this.extensions.put(extensionName(entry.getKey()), entry.getValue());
+        }
     }
 
-    public static void merge(Extension from, Extensible to, boolean override) {
+    public static String extensionName(String name) {
+        return name.startsWith("x-") ? name : "x-" + name;
+    }
+
+    public static void merge(Extension from, Extensible<?> to, boolean override) {
         if (isAnnotationNull(from)) {
             return;
         }
@@ -76,15 +102,30 @@ public abstract class ExtensibleImpl implements Extensible {
             to.setExtensions(new LinkedHashMap<>());
         }
         if (from.name() != null && !from.name().isEmpty()) {
-            Object value = mergeProperty(to.getExtensions().get(from.name()), convertExtensionValue(from.value()),
-                    override);
+            Object value = mergeProperty(to.getExtensions().get(from.name()), 
+                    convertExtensionValue(from.value(), from.parseValue()), override);
             to.getExtensions().put(from.name(), value);
         }
     }
 
-    public static Object convertExtensionValue(String value) {
+    public static Object convertExtensionValue(String value, boolean parseValue) {
         if (value == null) {
             return null;
+        }
+        if (parseValue) {
+            try {
+                JsonNode node = new ObjectMapper().readTree(value);
+                if (node.isBoolean()) {
+                    return node.booleanValue();
+                }
+                if (node.isNumber()) {
+                    return node.numberValue();
+                }
+                return node;
+            } catch (Exception e) {
+                LOGGER.warning("Failed to parse extension value: " + value);
+                return value;
+            }
         }
         // Could be an array
         if (value.contains(",")) {
@@ -98,4 +139,34 @@ public abstract class ExtensibleImpl implements Extensible {
         return value;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str, "\t");
+        return str.toString();
+    }
+
+    void toString(StringBuilder str, String indent) {
+        str.append(getClass().getSimpleName());
+        Class<?> type = getClass();
+        while (type != Object.class) {
+            for (Field field : type.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
+                    str.append("\n").append(indent).append(field.getName()).append(": ");
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(this);
+                        if (value instanceof ExtensibleImpl) {
+                            ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
+                        } else {
+                            str.append(value);
+                        }
+                    } catch (IllegalArgumentException | IllegalAccessException e) {
+                        str.append("<failure:").append(e.getMessage()).append(">");
+                    }
+                }
+            }
+            type = type.getSuperclass();
+        }
+    }
 }
