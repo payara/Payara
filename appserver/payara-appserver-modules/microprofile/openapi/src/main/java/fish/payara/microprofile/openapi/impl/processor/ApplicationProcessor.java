@@ -132,6 +132,8 @@ import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 
 /**
@@ -547,7 +549,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             Map<String, org.eclipse.microprofile.openapi.models.media.Schema> fields = new LinkedHashMap<>();
             for (Field field : clazz.getDeclaredFields()) {
                 if (!Modifier.isTransient(field.getModifiers())) {
-                    fields.put(field.getName(), createSchema(context, clazz, field.getType()));
+                    fields.put(field.getName(), createSchema(context, clazz, field.getType(), field.getGenericType()));
                 }
             }
             newSchema.setProperties(fields);
@@ -951,9 +953,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Get the request body type of the method
         Class<?> bodyType = null;
+        Type genericBodyType = null;
         for (java.lang.reflect.Parameter methodParam : method.getParameters()) {
             if (ModelUtils.isRequestBody(methodParam)) {
                 bodyType = methodParam.getType();
+                genericBodyType = methodParam.getParameterizedType();
                 break;
             }
         }
@@ -962,7 +966,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
+        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType, genericBodyType));
         requestBody.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         operation.setRequestBody(requestBody);
@@ -984,7 +988,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         defaultResponse.setDescription("Default Response.");
 
         // Create the default response with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, method.getReturnType()));
+        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, method.getReturnType(), method.getGenericReturnType()));
         defaultResponse.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         // Add the default response
@@ -1010,19 +1014,22 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return contentType;
     }
 
-    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, Class<?> type) {
+    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, Class<?> type, Type genericType) {
         org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
         SchemaType schemaType = ModelUtils.getSchemaType(type);
         schema.setType(schemaType);
 
         // Set the subtype if it's an array (for example an array of ints)
         if (schemaType == SchemaType.ARRAY) {
-            Class<?> subType = type.getComponentType();
-            org.eclipse.microprofile.openapi.models.media.Schema subSchema = schema;
-            while (subType != null) {
-                subSchema.setItems(new SchemaImpl().type(ModelUtils.getSchemaType(subType)));
-                subSchema = schema.getItems();
-                subType = subType.getComponentType();
+            if (type.isArray()) {
+                schema.setItems(createSchema(context, type.getComponentType(), type.getComponentType()));
+            } else { // should be something Iterable
+                ParameterizedType fullType = (ParameterizedType) genericType;
+                Type genericElementType = fullType.getActualTypeArguments()[0];
+                Class<?> rawElementType = (Class<?>) (genericElementType.getClass() == Class.class 
+                        ? genericElementType 
+                        : ((ParameterizedType)genericElementType).getRawType());
+                schema.setItems(createSchema(context, rawElementType, genericElementType));
             }
         }
 
@@ -1038,7 +1045,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, 
-            AnnotatedElement annotatedElement, Class<?> type) {
+            AnnotatedElement annotatedElement, Class<?> type, Type genericType) {
         SchemaType schemaType = ModelUtils.getSchemaType(type);
 
         // If the annotated element is the same type as the reference class, return a null schema
@@ -1048,7 +1055,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             schema.setItems(null);
             return schema;
         }
-        return createSchema(context, type);  
+        return createSchema(context, type, genericType);
     }
 
     /**
