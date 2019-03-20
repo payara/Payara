@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,73 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.auth.realm.file;
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+package com.sun.enterprise.security.auth.realm;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.lang.ref.WeakReference;
 
-import org.glassfish.security.common.FileRealmStorageManager;
-
-import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
-import com.sun.enterprise.security.auth.realm.Realm;
-import com.sun.enterprise.security.auth.realm.User;
+import org.glassfish.internal.api.Globals;
 
 /**
- * Represents a FileRealm user.
+ * This class stores a static, but weak, reference to the realms manager.
+ * 
+ * @see RealmsManager
+ * 
+ * @author Arjan Tijms (factored out from Realm)
  *
  */
-public class FileRealmUser implements User {
+public class RealmsManagerStore {
 
-    private FileRealmStorageManager.User user;
-    private Hashtable<String, Object> attributes = new Hashtable<>();
-    private String realm;
+    private static WeakReference<RealmsManager> realmsManager = new WeakReference<RealmsManager>(null);
 
-    public FileRealmUser(FileRealmStorageManager.User user, String realm) {
-        this.user = user;
-        this.realm = realm;
+    static RealmsManager tryGetRealmsManager() {
+        RealmsManager manager = getRealmsManager();
+        if (manager == null) {
+            throw new RuntimeException("Unable to locate RealmsManager Service");
+        }
+
+        return manager;
     }
 
-    public String[] getGroups() {
-        return user.getGroups();
+    static RealmsManager getRealmsManager() {
+        if (realmsManager.get() != null) {
+            return realmsManager.get();
+        }
+
+        return _getRealmsManager();
     }
 
-    /**
-     * Returns the realm with which this user is associated
-     *
-     * @return Realm name.
-     * @exception NoSuchRealmException if the realm associated this user no longer exist
-     *
-     */
-    @Override
-    public Realm getRealm() throws NoSuchRealmException {
-        return Realm.getInstance(realm);
+    static synchronized RealmsManager _getRealmsManager() {
+        if (realmsManager.get() == null) {
+            if (Globals.getDefaultHabitat() != null) {
+                realmsManager = new WeakReference<RealmsManager>(Globals.get(RealmsManager.class));
+            } else {
+                return null;
+            }
+        }
+
+        return realmsManager.get();
     }
 
-    /**
-     * Return the requested attribute for the user.
-     * <P>
-     * Not really needed.
-     *
-     * @param key string identifies the attribute.
-     */
-    @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
-
-    /**
-     * Return the names of the supported attributes for this user.
-     * <P>
-     * Not really needed.
-     */
-    @Override
-    public Enumeration<String> getAttributeNames() {
-        return attributes.keys();
-    }
-
-    @Override
-    public String getName() {
-        return user.getName();
-    }
 }
