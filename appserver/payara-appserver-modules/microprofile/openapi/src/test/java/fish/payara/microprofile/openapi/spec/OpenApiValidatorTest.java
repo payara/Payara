@@ -9,12 +9,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test that should verify the validity of the {@link OpenAPIValidator} model by using it against some of the examples
+ * Test that should verify the validity of the {@link OpenApiValidator} model by using it against some of the examples
  * given in the specification.
  */
-public class OpenAPIValidatorTest {
+public class OpenApiValidatorTest {
 
-    private static final Logger LOGGER = Logger.getLogger(OpenAPIValidatorTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OpenApiValidatorTest.class.getName());
 
     @Test
     public void verifyExamplesPassVerification() throws Exception {
@@ -26,10 +26,10 @@ public class OpenAPIValidatorTest {
                 JsonNode examples = mapper.readTree(exampleFile);
                 if (examples.isArray()) {
                     for (JsonNode example : examples) {
-                        OpenAPIValidator.validate(type, example);
+                        OpenApiValidator.validate(type, example);
                     }
                 } else {
-                    OpenAPIValidator.validate(type, examples);
+                    OpenApiValidator.validate(type, examples);
                 }
             }
         }

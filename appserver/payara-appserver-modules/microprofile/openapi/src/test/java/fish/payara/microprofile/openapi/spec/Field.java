@@ -5,8 +5,6 @@ import java.util.Iterator;
 
 public final class Field implements Iterable<NodeType> {
 
-    private static final NodeType[] ALL_NODE_TYPES = NodeType.values();
-
     final String name;
     final EnumSet<NodeType> oneOfTypes = EnumSet.noneOf(NodeType.class);
     boolean isRequired = false;
@@ -33,16 +31,8 @@ public final class Field implements Iterable<NodeType> {
         return isArray;
     }
 
-    public boolean isOneOfManyTypes() {
-        return oneOfTypes.size() > 0;
-    }
-
     public boolean isAnyType() {
         return oneOfTypes.isEmpty();
-    }
-
-    public NodeType type() {
-        return oneOfTypes.iterator().next();
     }
 
     @Override

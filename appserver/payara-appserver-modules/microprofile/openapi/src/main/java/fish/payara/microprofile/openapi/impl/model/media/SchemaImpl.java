@@ -58,6 +58,9 @@ import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.XML;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
@@ -354,6 +357,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.properties.remove(key);
     }
 
+    @JsonProperty("additionalProperties")
     @Override
     public Object getAdditionalProperties() {
         return additionalProperties;
@@ -364,11 +368,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.additionalProperties = additionalProperties;
     }
 
+    @JsonIgnore
     @Override
     public Schema getAdditionalPropertiesSchema() {
         return additionalProperties instanceof Schema ? (Schema) additionalProperties : null;
     }
 
+    @JsonIgnore
     @Override
     public Boolean getAdditionalPropertiesBoolean() {
         return additionalProperties instanceof Boolean ? (Boolean)additionalProperties : null;

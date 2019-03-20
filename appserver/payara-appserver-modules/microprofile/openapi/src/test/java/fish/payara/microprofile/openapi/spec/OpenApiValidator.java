@@ -13,12 +13,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class OpenAPIValidator {
+import fish.payara.microprofile.openapi.test.util.JsonUtils;
+
+/**
+ * Uses the structural model described by {@link NodeType} to check a {@link JsonNode} document against the expected
+ * structure of a particular {@link NodeType}.
+ * 
+ * This check is rough as most fields are optional (or optional under certain conditions which is just treated as fully
+ * optional) but this does detect malformed structures and illegal fields being used.
+ */
+public class OpenApiValidator {
 
     private static final EnumMap<NodeType, Set<String>> REQUIRED_FIELDS = new EnumMap<>(NodeType.class);
 
@@ -137,11 +145,7 @@ public class OpenAPIValidator {
     }
 
     private static String describe(JsonNode node) {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(node);
-        } catch (Exception e) {
-            return node.toString();
-        }
+        return JsonUtils.prettyPrint(node);
     }
 
     private static String describeField(String fieldName) {

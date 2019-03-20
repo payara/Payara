@@ -47,13 +47,13 @@ import javax.ws.rs.Path;
 
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A resource to test that a resource at the context root is mapped correctly.
  */
 @Path("")
-public class RootPathTest extends OpenAPIApplicationTest {
+public class RootPathTest extends OpenApiApplicationTest {
 
     @GET
     public String getRoot() {

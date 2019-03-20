@@ -1,5 +1,6 @@
 package fish.payara.microprofile.openapi.test.app.application;
 
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -21,7 +22,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import fish.payara.microprofile.openapi.test.util.JsonUtils;
 
 @OpenAPIDefinition(
         info = @Info(title = "title", version = "version"),
@@ -47,7 +49,7 @@ import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
                 ))
 @Path("/callbacks")
 @Produces(MediaType.APPLICATION_JSON)
-public class CallbacksTest extends OpenAPIApplicationTest {
+public class CallbacksTest extends OpenApiApplicationTest {
 
     @Test
     public void callbackReference() {

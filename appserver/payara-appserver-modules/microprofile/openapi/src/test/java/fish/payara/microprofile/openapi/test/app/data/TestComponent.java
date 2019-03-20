@@ -44,12 +44,12 @@ import static org.junit.Assert.assertNotNull;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A test to check that schema objects without a @Schema annotation at the top are created.
  */
-public class TestComponent extends OpenAPIApplicationTest {
+public class TestComponent extends OpenApiApplicationTest {
 
     @Schema(description = "Test property")
     private int property;

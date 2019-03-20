@@ -80,10 +80,18 @@ public class FilterProcessor implements OASProcessor {
      */
     private OASFilter filter;
 
+    public FilterProcessor() {
+        this(null);
+    }
+
+    public FilterProcessor(OASFilter filter) {
+        this.filter = filter;
+    }
+
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         try {
-            if (config.getFilter() != null) {
+            if (filter == null && config.getFilter() != null) {
                 filter = config.getFilter().newInstance();
             }
         } catch (InstantiationException | IllegalAccessException ex) {

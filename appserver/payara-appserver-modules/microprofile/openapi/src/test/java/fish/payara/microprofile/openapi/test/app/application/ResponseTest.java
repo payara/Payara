@@ -55,14 +55,14 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.test.app.OpenAPIApplicationTest;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A resource to test that various response types are mapped properly.
  */
 @Path("/response")
 @Produces({ APPLICATION_JSON, APPLICATION_XML })
-public class ResponseTest extends OpenAPIApplicationTest {
+public class ResponseTest extends OpenApiApplicationTest {
 
     @GET
     @APIResponse(responseCode = "200", description = "success", 
