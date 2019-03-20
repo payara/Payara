@@ -44,6 +44,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -147,20 +148,15 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     }
 
     void toString(StringBuilder str, String indent) {
-        str.append(getClass().getSimpleName());
+        str.append('[').append(getClass().getSimpleName()).append("] {");
         Class<?> type = getClass();
         while (type != Object.class) {
             for (Field field : type.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
-                    str.append("\n").append(indent).append(field.getName()).append(": ");
                     try {
                         field.setAccessible(true);
                         Object value = field.get(this);
-                        if (value instanceof ExtensibleImpl) {
-                            ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
-                        } else {
-                            str.append(value);
-                        }
+                        toString(str, indent, field.getName(), value);
                     } catch (IllegalArgumentException | IllegalAccessException e) {
                         str.append("<failure:").append(e.getMessage()).append(">");
                     }
@@ -168,5 +164,41 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
             }
             type = type.getSuperclass();
         }
+        str.append('\n').append(indent.length() > 0 ? indent.substring(1) : indent).append('}');
+    }
+
+    private static void toString(StringBuilder str, String indent, Object key, Object value) {
+        if (isNonEmpty(value)) {
+            str.append("\n").append(indent).append('"').append(key).append('"').append(": ");
+            if (value instanceof ExtensibleImpl) {
+                ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
+            } else if (value instanceof Map) {
+                str.append('{');
+                for (Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+                    toString(str, indent + '\t', entry.getKey(), entry.getValue());
+                }
+                str.append('\n').append(indent).append('}');
+            } else if (value instanceof String) {
+                str.append('"').append(value).append('"');
+            } else {
+                str.append(value);
+            }
+        }
+    }
+
+    private static boolean isNonEmpty(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof Object[]) {
+            return ((Object[])value).length > 0;
+        }
+        if (value instanceof Collection) {
+            return ((Collection<?>) value).size() > 0;
+        }
+        if (value instanceof Map) {
+            return ((Map<?, ?>) value).size() > 0;
+        }
+        return true;
     }
 }
