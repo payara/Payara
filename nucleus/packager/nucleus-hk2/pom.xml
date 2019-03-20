@@ -139,7 +139,12 @@
             <artifactId>javassist</artifactId>
             <version>${javassist.version}</version>
         </dependency>
-       
+
+        <dependency>
+            <groupId>org.jvnet</groupId>
+            <artifactId>tiger-types</artifactId>
+            <version>${tiger.types.version}</version>
+        </dependency>
    </dependencies>
 </project>
 
