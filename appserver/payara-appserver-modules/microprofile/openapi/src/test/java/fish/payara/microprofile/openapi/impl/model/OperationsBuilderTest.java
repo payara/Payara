@@ -21,8 +21,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.OperationImpl} and
- * {@link fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl}.
+ * Checks the JSON rendering of {@link OperationImpl} and {@link ExternalDocumentationImpl}.
  */
 public class OperationsBuilderTest extends OpenApiBuilderTest {
 

@@ -14,8 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.ServerImpl} and 
- * {@link fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.*}.
  */
 public class ServersBuilderTest extends OpenApiBuilderTest {
 
