@@ -18,8 +18,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
-
 
 /**
  * In response to {@link https://github.com/payara/Payara/issues/3832} this test should make sure the
@@ -56,7 +54,6 @@ public class SchemaReferenceTest extends OpenApiApplicationTest {
 
     @Test
     public void test() {
-        System.out.println(JsonUtils.prettyPrint(getOpenAPIJson()));
         JsonNode items = path(getOpenAPIJson(), 
                 "paths./test/servers.get.responses.default.content.application/json.schema.items");
         assertNotNull(items);

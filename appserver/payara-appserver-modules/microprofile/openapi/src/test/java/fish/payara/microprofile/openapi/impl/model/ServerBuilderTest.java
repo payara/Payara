@@ -1,5 +1,6 @@
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.microprofile.openapi.OASFactory.createServer;
 import static org.eclipse.microprofile.openapi.OASFactory.createServerVariable;
@@ -11,8 +12,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.ServerImpl} and 
@@ -36,7 +35,7 @@ public class ServerBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void serverHasExpectedFields() {
-        JsonNode server = JsonUtils.path(getOpenAPIJson(), "servers.0");
+        JsonNode server = path(getOpenAPIJson(), "servers.0");
         assertNotNull(server);
         assertEquals("url", server.get("url").textValue());
         assertEquals("description", server.get("description").textValue());
@@ -45,7 +44,7 @@ public class ServerBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void serverVariablesHasExpectedFields() {
-        JsonNode var1 = JsonUtils.path(getOpenAPIJson(), "servers.0.variables.var1");
+        JsonNode var1 = path(getOpenAPIJson(), "servers.0.variables.var1");
         assertNotNull(var1);
         assertEquals("defaultValue", var1.get("default").textValue());
         assertEquals("description", var1.get("description").textValue());

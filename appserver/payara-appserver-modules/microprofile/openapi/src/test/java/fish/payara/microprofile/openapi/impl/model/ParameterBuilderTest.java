@@ -1,5 +1,6 @@
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.microprofile.openapi.OASFactory.createContent;
 import static org.eclipse.microprofile.openapi.OASFactory.createExample;
@@ -18,8 +19,6 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl}.
@@ -51,18 +50,19 @@ public class ParameterBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void parameterHasExpectedFields() {
-        JsonNode parameter = JsonUtils.path(getOpenAPIJson(), "paths.path1.parameters.0");
+        JsonNode parameter = path(getOpenAPIJson(), "paths.path1.parameters.0");
         assertNotNull(parameter);
         assertEquals("name", parameter.get("name").textValue());
         assertEquals("description", parameter.get("description").textValue());
         assertEquals("query", parameter.get("in").textValue());
+        assertEquals("example", parameter.get("example").textValue());
         assertTrue(parameter.get("required").booleanValue());
         assertTrue(parameter.get("deprecated").booleanValue());
         assertTrue(parameter.get("allowEmptyValue").booleanValue());
         assertTrue(parameter.get("explode").booleanValue());
         assertTrue(parameter.get("allowReserved").booleanValue());
         assertTrue(parameter.get("schema").isObject());
-        assertEquals("description", parameter.get("description").textValue());
+        assertTrue(parameter.get("examples").isObject());
         assertEquals("description", parameter.get("description").textValue());
         assertEquals("description", parameter.get("description").textValue());
         assertEquals("ext-value", parameter.get("x-ext").textValue());
