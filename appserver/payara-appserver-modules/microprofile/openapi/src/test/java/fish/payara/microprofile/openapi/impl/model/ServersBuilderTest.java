@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.ServerImpl} and 
  * {@link fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl}.
  */
-public class ServerBuilderTest extends OpenApiBuilderTest {
+public class ServersBuilderTest extends OpenApiBuilderTest {
 
     @Override
     protected void setupBaseDocument(OpenAPI document) {

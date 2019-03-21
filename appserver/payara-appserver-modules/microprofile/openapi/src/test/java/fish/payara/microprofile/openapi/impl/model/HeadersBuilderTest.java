@@ -16,7 +16,10 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class HeaderBuilderTest extends OpenApiBuilderTest {
+/**
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl}.
+ */
+public class HeadersBuilderTest extends OpenApiBuilderTest {
 
     @Override
     protected void setupBaseDocument(OpenAPI document) {

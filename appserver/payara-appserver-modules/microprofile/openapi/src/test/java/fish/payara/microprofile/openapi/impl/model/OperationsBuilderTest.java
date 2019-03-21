@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * {@link fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl} and
  * {@link fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl}.
  */
-public class OperationBuilderTest extends OpenApiBuilderTest {
+public class OperationsBuilderTest extends OpenApiBuilderTest {
 
     @Override
     protected void setupBaseDocument(OpenAPI document) {
