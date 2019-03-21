@@ -47,6 +47,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -154,6 +155,21 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      */
     public ApplicationProcessor(Set<Class<?>> appClasses) {
         this.classes = appClasses;
+        addInnerClasses();
+    }
+
+    private void addInnerClasses() {
+        List<Class<?>> topLevelClasses = new ArrayList<>(classes);
+        for (Class<?> topLevelClass : topLevelClasses) {
+            addInnerClasses(topLevelClass);
+        }
+    }
+
+    private void addInnerClasses(Class<?> topLevelClass) {
+        classes.addAll(Arrays.asList(topLevelClass.getDeclaredClasses()));
+        if (topLevelClass.getSuperclass() != Object.class) {
+            addInnerClasses(topLevelClass.getSuperclass());
+        }
     }
 
     @Override

@@ -21,12 +21,15 @@ public class JsonUtils {
 
     public static JsonNode path(JsonNode root, String... pathElements) {
         JsonNode current = root;
+        if (pathElements == null || pathElements.length == 0) {
+            return root;
+        }
         for (int i = 0; i < pathElements.length; i++) {
             String nameOrIndex = pathElements[i];
             if (current != null) {
                 if (nameOrIndex.startsWith("[") && nameOrIndex.endsWith("]")) {
                     current = current.get(Integer.parseInt(nameOrIndex.substring(1, nameOrIndex.length() - 1)));
-                } else if (Character.isDigit(nameOrIndex.charAt(0))) {
+                } else if (!nameOrIndex.isEmpty() && Character.isDigit(nameOrIndex.charAt(0))) {
                     current = current.get(Integer.parseInt(nameOrIndex));
                 } else {
                     current = current.get(nameOrIndex);

@@ -1,5 +1,6 @@
 package fish.payara.microprofile.openapi.test.app.application;
 
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,7 +27,7 @@ import fish.payara.microprofile.openapi.test.util.JsonUtils;
  * given.
  */
 @Path("/servers")
-public class ReferenceTest extends OpenApiApplicationTest {
+public class SchemaReferenceTest extends OpenApiApplicationTest {
 
     @Schema(name = "Server")
     public class Server {
@@ -55,9 +56,10 @@ public class ReferenceTest extends OpenApiApplicationTest {
 
     @Test
     public void test() {
-        JsonNode items = JsonUtils.path(getOpenAPIJson(), 
+        System.out.println(JsonUtils.prettyPrint(getOpenAPIJson()));
+        JsonNode items = path(getOpenAPIJson(), 
                 "paths./test/servers.get.responses.default.content.application/json.schema.items");
         assertNotNull(items);
-        assertEquals("'#/components/schemas/Server'", items.get("$ref").textValue());
+        assertEquals("#/components/schemas/Server", items.get("$ref").textValue());
     }
 }
