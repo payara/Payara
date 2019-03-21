@@ -8,6 +8,7 @@ import static org.eclipse.microprofile.openapi.OASFactory.createMediaType;
 import static org.eclipse.microprofile.openapi.OASFactory.createParameter;
 import static org.eclipse.microprofile.openapi.OASFactory.createPathItem;
 import static org.eclipse.microprofile.openapi.OASFactory.createPaths;
+import static org.eclipse.microprofile.openapi.OASFactory.createRequestBody;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,7 +22,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl} and
+ * {@link fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl}.
  */
 public class ParameterBuilderTest extends OpenApiBuilderTest {
 
@@ -46,6 +48,11 @@ public class ParameterBuilderTest extends OpenApiBuilderTest {
                                 .content(createContent().addMediaType("mediaType1", 
                                         createMediaType().schema(createSchema().ref("ref"))))
                                 )));
+
+        document.getComponents().addRequestBody("body1", createRequestBody()
+                .description("description")
+                .required(true)
+                .content(createContent().addMediaType("type1", createMediaType())));
     }
 
     @Test
@@ -66,5 +73,14 @@ public class ParameterBuilderTest extends OpenApiBuilderTest {
         assertEquals("description", parameter.get("description").textValue());
         assertEquals("description", parameter.get("description").textValue());
         assertEquals("ext-value", parameter.get("x-ext").textValue());
+    }
+
+    @Test
+    public void requestBodyHasExpectedFields() {
+        JsonNode requestBody = path(getOpenAPIJson(), "components.requestBodies.body1");
+        assertNotNull(requestBody);
+        assertEquals("description", requestBody.get("description").textValue());
+        assertTrue(requestBody.get("required").booleanValue());
+        assertTrue(requestBody.get("content").isObject());
     }
 }
