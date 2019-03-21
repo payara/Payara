@@ -308,7 +308,7 @@
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.0.1</pfl.version>
+        <pfl.version>4.0.1.payara-p1</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
@@ -432,7 +432,6 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>${javase.version}</source>
                         <target>${javase.version}</target>
                         <excludes>

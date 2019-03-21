@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
@@ -68,7 +68,7 @@ public final class HttpConnectorAddress {
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
-    private static final String DEFAULT_PROTOCOL = TLS13;
+    private static final String DEFAULT_PROTOCOL = TLS12;
 
     private String host;
     private int    port;

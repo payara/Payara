@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.collections;
 
 import java.util.*;
 import java.util.jar.*;
-import java.net.URLDecoder;
-import java.io.UnsupportedEncodingException;
+import static java.util.Objects.nonNull;
 
 /**
  * all-static methods for handling operations with Manifests
@@ -115,11 +115,14 @@ public class ManifestUtils {
         return pristine;
     }
 
-    public final static String encode(String s) {
-        // do DOS linefeed first!
-        s = s.replaceAll("\r\n", EOL_TOKEN);
-
-        return s.replaceAll("\n", EOL_TOKEN);
+    public final static String encode(String input) {
+        if (nonNull(input)) {
+            // do DOS linefeed first!
+            input = input.replaceAll("\r\n", EOL_TOKEN);
+            input = input.replaceAll("\r", EOL_TOKEN);
+            input = input.replaceAll("\n", EOL_TOKEN);
+        }
+        return input;
     }
 
     public static Map<String,String> getMain(Map<String, Map<String,String>> exManifest) {
@@ -134,14 +137,15 @@ public class ManifestUtils {
         return map;
     }
 
-    public static String decode(String s) {
+    public static String decode(String input) {
         // replace "null" with null
-        if(s == null || s.equals("null"))
+        if(input == null || input.equals("null"))
             return null;
 
         // replace special tokens with eol
-        return s.replaceAll(EOL_TOKEN, EOL);
+        return input.replaceAll(EOL_TOKEN, EOL);
     }
+
     private ManifestUtils() {
     }
 
