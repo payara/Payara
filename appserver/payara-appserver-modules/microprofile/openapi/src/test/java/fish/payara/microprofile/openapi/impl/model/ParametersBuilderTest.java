@@ -22,8 +22,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl} and
- * {@link fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.*}.
  */
 public class ParametersBuilderTest extends OpenApiBuilderTest {
 

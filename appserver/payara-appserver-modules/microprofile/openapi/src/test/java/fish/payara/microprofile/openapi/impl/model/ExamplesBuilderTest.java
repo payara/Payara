@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.examples.*}.
  */
 public class ExamplesBuilderTest extends OpenApiBuilderTest {
 

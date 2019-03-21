@@ -12,9 +12,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.info.InfoImpl},
- * {@link fish.payara.microprofile.openapi.impl.model.info.ContactImpl} and
- * {@link fish.payara.microprofile.openapi.impl.model.info.LicenseImpl}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.info.*}.
  */
 public class InfoBuilderTest extends OpenApiBuilderTest {
 

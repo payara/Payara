@@ -21,8 +21,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.OperationImpl},
- * {@link fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl} and
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.OperationImpl} and
  * {@link fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl}.
  */
 public class OperationsBuilderTest extends OpenApiBuilderTest {
@@ -72,17 +71,6 @@ public class OperationsBuilderTest extends OpenApiBuilderTest {
         assertEquals(2, tags.size());
         assertEquals("tag1", tags.get(0).textValue());
         assertEquals("tag2", tags.get(1).textValue());
-    }
-
-    @Test
-    public void securityRequirementHasExpectedFields() {
-        JsonNode security = path(getOpenAPIJson(), "paths.path1.get.security.0");
-        assertNotNull(security);
-        assertTrue(security.get("scheme1").isArray());
-        assertTrue(security.get("scheme2").isArray());
-        JsonNode securityScheme = security.get("scheme1");
-        assertEquals(1, securityScheme.size());
-        assertEquals("scope1", securityScheme.get(0).textValue());
     }
 
     @Test

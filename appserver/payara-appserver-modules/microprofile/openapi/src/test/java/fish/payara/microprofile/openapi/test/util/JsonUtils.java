@@ -36,7 +36,7 @@ public class JsonUtils {
                 }
             }
             if (current == null) {
-                String subPath = String.join(".", Arrays.copyOf(pathElements, i + 1));
+                String subPath = String.join(".", Arrays.copyOf(pathElements, i)) + ".??? " + pathElements[i] + " ???";
                 fail("Missing path `" + String.join(".", pathElements) + "` at `" + subPath + "` in :\n"
                         + prettyPrint(root));
             }
