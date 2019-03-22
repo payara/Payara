@@ -194,8 +194,8 @@ public final class ModelUtils {
      */
     public static Operation getOrCreateOperation(PathItem pathItem, HttpMethod httpMethod) {
         Operation operation = new OperationImpl();
-        if (pathItem.readOperationsMap().get(httpMethod) != null) {
-            return pathItem.readOperationsMap().get(httpMethod);
+        if (pathItem.getOperations().get(httpMethod) != null) {
+            return pathItem.getOperations().get(httpMethod);
         }
         switch (httpMethod) {
         case GET:
@@ -231,7 +231,7 @@ public final class ModelUtils {
     public static Operation findOperation(OpenAPI api, Method method, String path) {
         Operation foundOperation = null;
         try {
-            return api.getPaths().get(path).readOperationsMap().get(getHttpMethod(method));
+            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(method));
         } catch (NullPointerException ex) {
             // Operation not found
         }
@@ -405,7 +405,7 @@ public final class ModelUtils {
                             return false;
                         } else if (value instanceof Collection && !Collection.class.cast(value).isEmpty()) {
                             return false;
-                        } else if (value instanceof Boolean && Boolean.class.cast(value)) {
+                        } else if (value instanceof Boolean && ((Boolean)value).booleanValue()) {
                             return false;
                         } else if (value.getClass().equals(Class.class)
                                 && !Class.class.cast(value).getTypeName().equals("java.lang.Void")) {
@@ -425,6 +425,18 @@ public final class ModelUtils {
             }
         }
         return allNull;
+    }
+
+    public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {
+        return mergeProperty(current, Boolean.valueOf(offer), override);
+    }
+
+    public static Boolean mergeProperty(boolean current, Boolean offer, boolean override) {
+        return mergeProperty(Boolean.valueOf(current), offer, override);
+    }
+
+    public static Boolean mergeProperty(boolean current, boolean offer, boolean override) {
+        return mergeProperty(Boolean.valueOf(current), Boolean.valueOf(offer), override);
     }
 
     public static <E> E mergeProperty(E current, E offer, boolean override) {
@@ -547,10 +559,10 @@ public final class ModelUtils {
             OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
         String path = getResourcePath(method, resourceMapping);
         if (path != null) {
-            PathItem pathItem = api.getPaths().get(path);
+            PathItem pathItem = api.getPaths().getPathItem(path);
             if (pathItem != null) {
                 PathItem.HttpMethod httpMethod = getHttpMethod(method);
-                return pathItem.readOperationsMap().get(httpMethod);
+                return pathItem.getOperations().get(httpMethod);
             }
         }
         return null;

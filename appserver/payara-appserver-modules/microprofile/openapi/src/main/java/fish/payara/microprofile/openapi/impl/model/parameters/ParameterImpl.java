@@ -60,7 +60,7 @@ import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
-public class ParameterImpl extends ExtensibleImpl implements Parameter {
+public class ParameterImpl extends ExtensibleImpl<Parameter> implements Parameter {
 
     protected String name;
     protected In in;
@@ -89,12 +89,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter name(String name) {
-        setName(name);
-        return this;
-    }
-
-    @Override
     public In getIn() {
         return in;
     }
@@ -102,12 +96,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setIn(In in) {
         this.in = in;
-    }
-
-    @Override
-    public Parameter in(In in) {
-        setIn(in);
-        return this;
     }
 
     @Override
@@ -121,12 +109,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Boolean getRequired() {
         return required;
     }
@@ -134,12 +116,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setRequired(Boolean required) {
         this.required = required;
-    }
-
-    @Override
-    public Parameter required(Boolean required) {
-        setRequired(required);
-        return this;
     }
 
     @Override
@@ -153,12 +129,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter deprecated(Boolean deprecated) {
-        setDeprecated(deprecated);
-        return this;
-    }
-
-    @Override
     public Boolean getAllowEmptyValue() {
         return allowEmptyValue;
     }
@@ -166,12 +136,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setAllowEmptyValue(Boolean allowEmptyValue) {
         this.allowEmptyValue = allowEmptyValue;
-    }
-
-    @Override
-    public Parameter allowEmptyValue(Boolean allowEmptyValue) {
-        setAllowEmptyValue(allowEmptyValue);
-        return this;
     }
 
     @Override
@@ -185,12 +149,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter style(Style style) {
-        setStyle(style);
-        return this;
-    }
-
-    @Override
     public Boolean getExplode() {
         return explode;
     }
@@ -198,12 +156,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setExplode(Boolean explode) {
         this.explode = explode;
-    }
-
-    @Override
-    public Parameter explode(Boolean explode) {
-        setExplode(explode);
-        return this;
     }
 
     @Override
@@ -217,12 +169,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter allowReserved(Boolean allowReserved) {
-        setAllowReserved(allowReserved);
-        return this;
-    }
-
-    @Override
     public Schema getSchema() {
         return schema;
     }
@@ -230,12 +176,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setSchema(Schema schema) {
         this.schema = schema;
-    }
-
-    @Override
-    public Parameter schema(Schema schema) {
-        setSchema(schema);
-        return this;
     }
 
     @Override
@@ -249,15 +189,16 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter examples(Map<String, Example> examples) {
-        setExamples(examples);
+    public Parameter addExample(String key, Example example) {
+        if (example != null) {
+            this.examples.put(key, example);
+        }
         return this;
     }
 
     @Override
-    public Parameter addExample(String key, Example example) {
-        this.examples.put(key, example);
-        return this;
+    public void removeExample(String key) {
+        this.examples.remove(key);
     }
 
     @Override
@@ -271,12 +212,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     }
 
     @Override
-    public Parameter example(Object example) {
-        setExample(example);
-        return this;
-    }
-
-    @Override
     public Content getContent() {
         return content;
     }
@@ -284,12 +219,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
     @Override
     public void setContent(Content content) {
         this.content = content;
-    }
-
-    @Override
-    public Parameter content(Content content) {
-        setContent(content);
-        return this;
     }
 
     @Override
@@ -303,12 +232,6 @@ public class ParameterImpl extends ExtensibleImpl implements Parameter {
             ref = "#/components/parameters/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public Parameter ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.Parameter from, Parameter to,

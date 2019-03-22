@@ -60,8 +60,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.ejb.rest</groupId>
-            <artifactId>ejb-rest-endpoint</artifactId>
+            <groupId>fish.payara.ejb.http</groupId>
+            <artifactId>ejb-http-endpoint</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
@@ -99,8 +99,8 @@
                                 </artifactItem>
 
                                 <artifactItem>
-                                    <groupId>fish.payara.ejb.rest</groupId>
-                                    <artifactId>ejb-rest-endpoint</artifactId>
+                                    <groupId>fish.payara.ejb.http</groupId>
+                                    <artifactId>ejb-http-endpoint</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>false</overWrite>

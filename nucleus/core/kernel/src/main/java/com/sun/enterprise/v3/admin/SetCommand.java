@@ -37,32 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.GetSetModularityHelper;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.config.LegacyConfigurationUpgrade;
-import org.glassfish.internal.api.Target;
-
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -87,10 +89,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
-
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
+import java.util.stream.Collectors;
 
 /**
  * User: Jerome Dochez Date: Jul 11, 2008 Time: 4:39:05 AM
@@ -266,10 +267,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     private boolean set(AdminCommandContext context, SetOperation op) {
 
         String pattern = op.pattern;
-        String value = op.value;
-        String target = op.target;
-        String attrName = op.attrName;
-        boolean isProperty = op.isProperty;
 
         // now
         // first let's get the parent for this pattern.
@@ -278,18 +275,19 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         // reset the pattern.
         String prefix;
         boolean lookAtSubNodes = true;
-        if (parentNodes[0].relativeName.length() == 0
-                || parentNodes[0].relativeName.equals("domain")) {
+        TreeNode primaryNode = parentNodes[0];
+        if (primaryNode.relativeName.length() == 0
+                || primaryNode.relativeName.equals("domain")) {
             // handle the case where the pattern references an attribute of the top-level node
             prefix = "";
             // pattern is already set properly
             lookAtSubNodes = false;
-        } else if (!pattern.startsWith(parentNodes[0].relativeName)) {
-            prefix = pattern.substring(0, pattern.indexOf(parentNodes[0].relativeName));
-            pattern = parentNodes[0].relativeName;
+        } else if (!pattern.startsWith(primaryNode.relativeName)) {
+            prefix = pattern.substring(0, pattern.indexOf(primaryNode.relativeName));
+            pattern = primaryNode.relativeName;
         } else {
             prefix = "";
-            pattern = parentNodes[0].relativeName;
+            pattern = primaryNode.relativeName;
         }
         String targetName = prefix + pattern;
 
@@ -305,9 +303,12 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;
         Map<Dom, String> dottedNames = new HashMap<Dom, String>();
+        Map<Dom, TreeNode> sourceNodes = new HashMap<>();
         if (lookAtSubNodes) {
             for (TreeNode parentNode : parentNodes) {
-                dottedNames.putAll(getAllDottedNodes(parentNode.node));
+                Map<Dom, String> allDottedNodes = getAllDottedNodes(parentNode.node);
+                dottedNames.putAll(allDottedNodes);
+                allDottedNodes.keySet().forEach(dom -> sourceNodes.put(dom, parentNode));
             }
             matchingNodes = getMatchingNodes(dottedNames, pattern);
             applyOverrideRules = true;
@@ -321,113 +322,77 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         if (matchingNodes.isEmpty()) {
             // it's possible they are trying to create a property object.. lets check this.
             // strip out the property name
-            pattern = target.substring(0, trueLastIndexOf(target, '.'));
+            pattern = op.target.substring(0, trueLastIndexOf(op.target, '.'));
             if (pattern.endsWith("property")) {
                 // need to find the right parent.
-                Dom parentNode = null;
                 if ("property".equals(pattern)) {
                     // we are setting domain properties as there is no previous pattern
                     // create and set the property
-                    try {
-                        final String fname = attrName;
-                        final String fvalue = value;
-                        ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                        @Override
-                        public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
-                            Property p = domain.createChild(Property.class);
-                            p.setName(fname);
-                            p.setValue(fvalue);
-                            domain.getProperty().add(p);
-                            return p;
-                        }
-                        },domain);
-                        success(context, targetName, value);
-                        runLegacyChecks(context);
-                        if (targetService.isThisDAS() && !replicateSetCommand(context, target, value)) {
-                            return false;
-                        }
-                        return true;
-                    } catch (TransactionFailure transactionFailure) {
-                        //fail(context, "Could not change the attributes: " +
-                        //    transactionFailure.getMessage(), transactionFailure);
-                        fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                                transactionFailure.getMessage()), transactionFailure);
-                        return false;
-                    }
-
+                    return setDomainProperty(context, op, targetName);
                 } else {
-                    pattern = pattern.substring(0, trueLastIndexOf(pattern, '.'));
-                    parentNodes = getAliasedParent(domain, pattern);
-                }
-                pattern = parentNodes[0].relativeName;
-                matchingNodes = getMatchingNodes(dottedNames, pattern);
-                if (matchingNodes.isEmpty()) {
-                    //fail(context, "No configuration found for " + targetName);
-                    fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
-                    return false;
-                }
-                for (Map.Entry<Dom, String> node : matchingNodes.entrySet()) {
-                    if (node.getValue().equals(pattern)) {
-                        parentNode = node.getKey();
-                    }
-                }
-                if (parentNode == null) {
-                    //fail(context, "No configuration found for " + targetName);
-                    fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
-                    return false;
-                }
-
-                if (value == null || value.length() == 0) {
-                    // setting to the empty string means to remove the property, so don't create it
-                    success(context, targetName, value);
-                    return true;
-                }
-                // create and set the property
-                Map<String, String> attributes = new HashMap<String, String>();
-                attributes.put("value", value);
-                attributes.put("name", attrName);
-                try {
-                    if (!(parentNode instanceof ConfigBean)) {
-                        final ClassCastException cce = new ClassCastException(parentNode.getClass().getName());
-                        fail(context, localStrings.getLocalString("admin.set.attribute.change.failure",
-                                "Could not change the attributes: {0}",
-                                cce.getMessage(), cce));
-                        return false;
-                    }
-                    ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
-                    success(context, targetName, value);
-                    runLegacyChecks(context);
-                    if (targetService.isThisDAS() && !replicateSetCommand(context, target, value)) {
-                        return false;
-                    }
-                    return true;
-                } catch (TransactionFailure transactionFailure) {
-                    //fail(context, "Could not change the attributes: " +
-                    //    transactionFailure.getMessage(), transactionFailure);
-                    fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                            transactionFailure.getMessage()), transactionFailure);
-                    return false;
+                    return setProperty(context, pattern, op, targetName, dottedNames);
                 }
             }
-        }
-
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-
-        boolean setElementSuccess = false;
-        boolean delPropertySuccess = false;
-        boolean delProperty = false;
-        Map<String, String> attrChanges = new HashMap<String, String>();
-        if (isProperty) {
-            attrName = "value";
-            if ((value == null) || (value.length() == 0)) {
-                delProperty = true;
-            }
-            attrChanges.put(attrName, value);
         }
 
         List<Map.Entry> mNodes = new ArrayList(matchingNodes.entrySet());
         if (applyOverrideRules) {
             mNodes = applyOverrideRules(mNodes);
+        }
+
+
+        if (primaryNode.node.getProxyType().equals(Server.class)) {
+            checkSharedConfigChange(context, primaryNode, sourceNodes, mNodes);
+        }
+
+
+        return applyToNodes(context, op, targetName, prefix, pattern, mNodes);
+    }
+
+    private void checkSharedConfigChange(AdminCommandContext context, TreeNode primaryNode, Map<Dom, TreeNode> sourceNodes, List<Map.Entry> mNodes) {
+        // if the user thinks server configuration is being changed, warn him if matching nodes are different
+        Set<Dom> sharedConfigs = findSharedConfigs();
+        // from matching nodes, find the roots that are in parentNodes
+        String targettedSharedConfigs = mNodes.stream()
+                .map(Map.Entry::getKey)
+                .map(sourceNodes::get)
+                // should definitely be in the map, but just to be sure
+                .filter(n -> n != null)
+                .map(n -> n.node)
+                .filter(sharedConfigs::contains)
+                // if not the primary node, make description like "Config shared-config, ..."
+                .map(Dom::getKey)
+                .collect(Collectors.joining(", "));
+
+        if (!targettedSharedConfigs.isEmpty()) {
+            warning(context, localStrings.getLocalString("admin.set.sharedconfig",
+                    "Warning: command appears to address server {0}, but addresses following shared configuration(s): {1}",
+                    primaryNode.name, targettedSharedConfigs));
+        }
+    }
+
+    private Set<Dom> findSharedConfigs() {
+        List<Server> servers = domain.getServers().getServer();
+        List<Config> configs = domain.getConfigs().getConfig();
+        return configs.stream().filter(config -> countConfigUses(servers, config) > 1).map(Dom::unwrap).collect(Collectors.toSet());
+    }
+
+    private long countConfigUses(List<Server> servers, Config config) {
+        return servers.stream().map(Server::getReference).filter(config.getName()::equals).count();
+    }
+
+    private boolean applyToNodes(AdminCommandContext context, SetOperation op, String targetName, String prefix, String pattern, List<Map.Entry> mNodes) {
+        final String value = op.value;
+        final boolean isProperty = op.isProperty;
+        final String attrName = op.isProperty ? "value": op.attrName;
+        final boolean delProperty = isProperty && (value == null || value.isEmpty());
+        final String target = op.target;
+
+
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+        Map<String, String> attrChanges = new HashMap<String, String>();
+        if (!delProperty) {
+            attrChanges.put(attrName, value);
         }
         for (Map.Entry<Dom, String> node : mNodes) {
             final Dom targetNode = node.getKey();
@@ -460,20 +425,9 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             if (trueLastIndexOf(str, '.') != -1) {
                                 str = str.substring(trueLastIndexOf(str, '.') + 1);
                             }
-                            try {
                                 if (str != null) {
-                                    ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
-                                    delPropertySuccess = true;
+                                    return deleteProperty(context, op, targetName, targetNode);
                                 }
-                            } catch (IllegalArgumentException ie) {
-                                fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
-                                        ie.getMessage()), ie);
-                                return false;
-                            } catch (TransactionFailure transactionFailure) {
-                                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                                        transactionFailure.getMessage()), transactionFailure);
-                                return false;
-                            }
                         } else {
                             changes.put((ConfigBean) node.getKey(), attrChanges);
                         }
@@ -491,15 +445,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             warning(context, localStrings.getLocalString("admin.set.elementdeprecated",
                                     "Warning: The element {0} is deprecated.", finalDottedName));
                         }
-                        try {
-                            setLeafElement((ConfigBean) targetNode, name, value);
-                        } catch (TransactionFailure ex) {
-                            fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
-                                    ex.getMessage()), ex);
-                            return false;
-                        }
-                        setElementSuccess = true;
-                        break;
+                        return setAttribute(context, op, targetName, (ConfigBean) targetNode, name);
                     }
                 }
             }
@@ -518,8 +464,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 return false;
             }
 
-        } else if (delPropertySuccess || setElementSuccess) {
-            success(context, targetName, value);
         } else {
             fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
             return false;
@@ -530,6 +474,115 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             return false;
         }
 
+        return true;
+    }
+
+
+    private boolean setDomainProperty(AdminCommandContext context, SetOperation op, String targetName) {
+        try {
+            final String fname = op.attrName;
+            final String fvalue = op.value;
+            ConfigSupport.apply(new SingleConfigCode<Domain>() {
+            @Override
+            public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
+                Property p = domain.createChild(Property.class);
+                p.setName(fname);
+                p.setValue(fvalue);
+                domain.getProperty().add(p);
+                return p;
+            }
+            },domain);
+            return replicatePropertyChange(context, op, targetName);
+        } catch (TransactionFailure transactionFailure) {
+            fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                    transactionFailure.getMessage()), transactionFailure);
+            return false;
+        }
+    }
+
+    private boolean setProperty(AdminCommandContext context, String pattern, SetOperation op, String targetName, Map<Dom, String> dottedNames) {
+        Dom parentNode = null;
+        pattern = pattern.substring(0, trueLastIndexOf(pattern, '.'));
+        TreeNode[] parentNodes_ = getAliasedParent(domain, pattern);
+
+        pattern = parentNodes_[0].relativeName;
+        Map<Dom, String> matchingNodes_ = getMatchingNodes(dottedNames, pattern);
+        if (matchingNodes_.isEmpty()) {
+            fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
+            return false;
+        }
+        for (Map.Entry<Dom, String> node : matchingNodes_.entrySet()) {
+            if (node.getValue().equals(pattern)) {
+                parentNode = node.getKey();
+            }
+        }
+        if (parentNode == null) {
+            fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
+            return false;
+        }
+
+        if (op.value == null || op.value.length() == 0) {
+            // setting to the empty string means to remove the property, so don't create it
+            success(context, targetName, op.value);
+            return true;
+        }
+        // create and set the property
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("value", op.value);
+        attributes.put("name", op.attrName);
+        try {
+            if (!(parentNode instanceof ConfigBean)) {
+                final ClassCastException cce = new ClassCastException(parentNode.getClass().getName());
+                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure",
+                        "Could not change the attributes: {0}",
+                        cce.getMessage(), cce));
+                return false;
+            }
+            ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
+            return replicatePropertyChange(context, op, targetName);
+        } catch (TransactionFailure transactionFailure) {
+            fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                    transactionFailure.getMessage()), transactionFailure);
+            return false;
+        }
+    }
+
+    private boolean replicatePropertyChange(AdminCommandContext context, SetOperation op, String targetName) {
+        runLegacyChecks(context);
+        return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+    }
+
+    private boolean deleteProperty(AdminCommandContext context, SetOperation op, String targetName, Dom targetNode) {
+        try {
+            ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
+            return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+        } catch (IllegalArgumentException ie) {
+            fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
+                    ie.getMessage()), ie);
+            return false;
+        } catch (TransactionFailure transactionFailure) {
+            fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                    transactionFailure.getMessage()), transactionFailure);
+            return false;
+        }
+    }
+
+    private boolean setAttribute(AdminCommandContext context, SetOperation op, String targetName, ConfigBean targetNode, String name) {
+        try {
+            setLeafElement(targetNode, name, op.value);
+        } catch (TransactionFailure ex) {
+            fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
+                    ex.getMessage()), ex);
+            return false;
+        }
+        return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
+    }
+
+    private boolean replicatePropertyChangeWithoutLegacyChecks(AdminCommandContext context, SetOperation op, String targetName) {
+        success(context, targetName, op.value);
+        if (targetService.isThisDAS() && !replicateSetCommand(context, op.target, op.value)) {
+            return false;
+        }
         return true;
     }
 

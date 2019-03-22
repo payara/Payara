@@ -48,7 +48,7 @@ import org.eclipse.microprofile.openapi.models.info.License;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class InfoImpl extends ExtensibleImpl implements Info {
+public class InfoImpl extends ExtensibleImpl<Info> implements Info {
 
     protected String title;
     protected String description;
@@ -68,12 +68,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     }
 
     @Override
-    public Info title(String title) {
-        setTitle(title);
-        return this;
-    }
-
-    @Override
     public String getDescription() {
         return description;
     }
@@ -81,12 +75,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     @Override
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public Info description(String description) {
-        setDescription(description);
-        return this;
     }
 
     @Override
@@ -100,12 +88,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     }
 
     @Override
-    public Info termsOfService(String termsOfService) {
-        setTermsOfService(termsOfService);
-        return this;
-    }
-
-    @Override
     public Contact getContact() {
         return contact;
     }
@@ -113,12 +95,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     @Override
     public void setContact(Contact contact) {
         this.contact = contact;
-    }
-
-    @Override
-    public Info contact(Contact contact) {
-        setContact(contact);
-        return this;
     }
 
     @Override
@@ -132,12 +108,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     }
 
     @Override
-    public Info license(License license) {
-        setLicense(license);
-        return this;
-    }
-
-    @Override
     public String getVersion() {
         return version;
     }
@@ -145,12 +115,6 @@ public class InfoImpl extends ExtensibleImpl implements Info {
     @Override
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    @Override
-    public Info version(String version) {
-        setVersion(version);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.info.Info from, Info to, boolean override) {
