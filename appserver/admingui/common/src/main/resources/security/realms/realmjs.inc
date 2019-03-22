@@ -51,7 +51,8 @@
         #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{rbPropId}:optB', true);  
     }else{  
         #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{rbPropId}:optA', true);  
-    }  
+    }
+    toggleLoginModule(#{attrMap.registerLoginModule});
   }
 
  function enableClassnameFields(opt, createFlag){
@@ -72,6 +73,17 @@
         document.getElementById('form1:option').value='predefine'; 
     }
  }
+
+function checkForm() {
+    return checkLoginModule() && checkClassname();
+}
+
+function checkLoginModule() {
+    if (isChecked('form1:loginModuleSection:registerLoginModule:registerLoginModule')) {
+        return checkRequired('form1:loginModuleSection:loginModule:loginModule', '#{reqMsg}');
+    }
+    return true;
+}
 
 function checkClassname() {
     var opt = getSelectedValueFromForm(document.forms['form1'], 'classnameOption');
@@ -111,6 +123,18 @@ function checkClassname() {
     }
 }
 
+function toggleLoginModule(value) {
+    var section = document.getElementById('#{loginModuleSection}');
+    var enabled = "login-module-enabled";
+    var disabled = "login-module-disabled";
+    var className = section.className;
+    if (value) {
+        section.className = className.replace(disabled, enabled);
+    } else {
+        section.className = className.replace(enabled, disabled);
+    }
+}
+
 function showDisplay(testtype) {
     document.getElementById('#{fileSectionId}').style.display = 'none'; 
     document.getElementById('#{ldapSectionId}').style.display = 'none'; 
@@ -120,10 +144,10 @@ function showDisplay(testtype) {
     document.getElementById('#{pamSectionId}').style.display = 'none';
     var loginModuleJaax = document.getElementById('#{loginModuleJaax}');
 
-    loginModuleJaax.style.display = 'none';
+    loginModuleJaax.className = 'not-required';
 
     if (testtype.match('none')){
-        loginModuleJaax.style.display = 'table-row';
+        loginModuleJaax.className = 'required';
         return;  
     }  
     type = getSelectElement('#{classnameDropdownId}').value;
@@ -151,7 +175,7 @@ function showDisplay(testtype) {
     if (rtype != null){  
         document.getElementById('#{certSectionId}').style.display = 'block';
         // strangely enough, certificate realm does not have JAAS context property
-        loginModuleJaax.style.display = 'table-row'
+        loginModuleJaax.className = 'required';
         return;  
     }
     rtype = type.match('PamRealm');
