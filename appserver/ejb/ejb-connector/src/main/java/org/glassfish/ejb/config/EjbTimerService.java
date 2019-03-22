@@ -68,8 +68,8 @@ import javax.validation.constraints.Min;
 
 @Configured
 public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
-    static String TYPE_NONE = "None";
-    static String TYPE_DATABASE = "Database";
+    String TYPE_NONE = "None";
+    String TYPE_DATABASE = "Database";
 
     /**
      * Gets the value of the minimumDeliveryIntervalInMillis property.
