@@ -43,7 +43,6 @@ package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -78,14 +77,12 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.util.Parameters;
 import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -106,7 +103,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
     protected static final String HEADER_AUTHENTICATE = "WWW-Authenticate";
 
-    protected final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
+    protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
 
     private RestResourceProvider restResourceProvider;
 
