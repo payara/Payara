@@ -74,6 +74,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 @Contract
 public abstract class Realm extends AbstractStatefulRealm implements Comparable<Realm> {
+    /**
+     * Recommended property for keeping JAAS Context of a realm.
+     *
+     * @see #getJAASContext()
+     */
+    public static final String JAAS_CONTEXT_PARAM = "jaas-context";
 
     protected static final Logger _logger = SecurityLoggerInfo.getLogger();
     private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Realm.class);

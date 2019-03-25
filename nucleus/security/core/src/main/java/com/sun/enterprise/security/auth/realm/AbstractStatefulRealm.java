@@ -40,7 +40,7 @@
 // Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 package com.sun.enterprise.security.auth.realm;
 
-import static com.sun.enterprise.security.BaseRealm.JAAS_CONTEXT_PARAM;
+import static com.sun.enterprise.security.auth.realm.Realm.JAAS_CONTEXT_PARAM;
 import static com.sun.enterprise.security.auth.realm.RealmsManagerStore._getRealmsManager;
 
 import java.util.ArrayList;
@@ -232,7 +232,10 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
      * Returns name of JAAS context used by this realm.
      *
      * <P>
-     * The JAAS context is defined in server.xml auth-realm element associated with this realm.
+     * JAAS context determines the login module(s) to be invoked by means of JAAS configuration file ({@code login.conf}
+     * in domain config directory).
+     * <P>
+     * Default implementation uses value of realm's property {@code jaas-context}.
      *
      * @return String containing JAAS context name.
      *
