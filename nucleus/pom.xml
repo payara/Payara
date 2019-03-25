@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.192-SNAPSHOT</version>
+    <version>5.192-RC99</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
