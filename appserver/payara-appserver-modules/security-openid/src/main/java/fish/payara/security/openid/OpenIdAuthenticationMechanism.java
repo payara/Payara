@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -63,6 +63,7 @@ import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
@@ -209,9 +210,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * Authorization Code Flow must be validated and exchanged for an ID Token,
      * an Access Token and optionally a Refresh Token directly.
      *
-     * @param request
-     * @param context
-     * @return
+     * @param httpContext the {@link HttpMessageContext} to validate authorization code from
+     * @return the authentication status.
      */
     private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
         HttpServletRequest request = httpContext.getRequest();
@@ -227,9 +227,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         LOGGER.finer("Authorization Code received, now fetching Access token & Id token");
 
         Response response = tokenController.getTokens(configuration, request);
-        String tokensBody = response.readEntity(String.class);
-        JsonObject tokensObject = Json.createReader(new StringReader(tokensBody)).readObject();
-
+        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
         if (response.getStatus() == Status.OK.getStatusCode()) {
             // Successful Token Response
             updateContext(tokensObject, httpContext);
@@ -242,6 +240,12 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             errorDescription = tokensObject.getString(ERROR_DESCRIPTION_PARAM, "Unknown");
             LOGGER.log(WARNING, "Error occurred in validating Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
+        }
+    }
+
+    private JsonObject readJsonObject(String tokensBody) {
+        try(JsonReader reader = Json.createReader(new StringReader(tokensBody))) {
+            return reader.readObject();
         }
     }
 
