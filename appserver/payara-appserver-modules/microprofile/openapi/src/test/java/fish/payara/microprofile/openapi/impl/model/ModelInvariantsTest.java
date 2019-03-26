@@ -1,9 +1,12 @@
 package fish.payara.microprofile.openapi.impl.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.function.BiPredicate;
 
 import org.eclipse.microprofile.openapi.models.Components;
@@ -33,6 +36,7 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
 import org.eclipse.microprofile.openapi.models.security.Scopes;
+import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
@@ -60,6 +64,7 @@ import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
 import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
@@ -137,6 +142,23 @@ public class ModelInvariantsTest {
     public void ScopesAddScopeDoesAcceptNull() {
         Scopes scopes = new ScopesImpl().addScope("foo", null);
         assertTrue(scopes.hasScope("foo"));
+    }
+
+    @Test
+    public void SecurityRequirementAddSchemePutsEmptyListForNullItem() {
+        SecurityRequirement requirement = new SecurityRequirementImpl();
+        requirement.addScheme("keyOnly");
+        requirement.addScheme("nullItem", (String) null);
+        requirement.addScheme("nullList", (List<String>) null);
+        List<String> keyOnly = requirement.getScheme("keyOnly");
+        assertNotNull(keyOnly);
+        assertEquals(0, keyOnly.size());
+        List<String> nullItem = requirement.getScheme("nullItem");
+        assertNotNull(nullItem);
+        assertEquals(0, nullItem.size());
+        List<String> nullList = requirement.getScheme("nullList");
+        assertNotNull(nullList);
+        assertEquals(0, nullList.size());
     }
 
     private static <T, V> void assertAddIgnoresNull(T modelObject, HasAdd<T, V> addMethod, BiPredicate<? super T, String> containsMethod) {

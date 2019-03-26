@@ -75,9 +75,7 @@ public class ApplicationProcessedDocument {
             }
             return document;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            fail("Failed to build document.");
-            return null;
+            throw new AssertionError("Failed to build document.", ex);
         }
     }
 

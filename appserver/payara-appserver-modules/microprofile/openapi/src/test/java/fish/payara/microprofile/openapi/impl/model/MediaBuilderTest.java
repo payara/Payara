@@ -6,6 +6,7 @@ import static org.eclipse.microprofile.openapi.OASFactory.createContent;
 import static org.eclipse.microprofile.openapi.OASFactory.createDiscriminator;
 import static org.eclipse.microprofile.openapi.OASFactory.createEncoding;
 import static org.eclipse.microprofile.openapi.OASFactory.createExample;
+import static org.eclipse.microprofile.openapi.OASFactory.createExternalDocumentation;
 import static org.eclipse.microprofile.openapi.OASFactory.createHeader;
 import static org.eclipse.microprofile.openapi.OASFactory.createMediaType;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
@@ -13,6 +14,8 @@ import static org.eclipse.microprofile.openapi.OASFactory.createXML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
@@ -76,6 +79,49 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
 
         document.getComponents().addSchema("Discriminator", createSchema()
                 .discriminator(discriminator));
+
+        document.getComponents().addSchema("Schema", createSchema()
+                .title("title")
+                .multipleOf(BigDecimal.ONE)
+                .maximum(BigDecimal.ONE)
+                .exclusiveMaximum(true)
+                .minimum(BigDecimal.ONE)
+                .exclusiveMinimum(true)
+                .maxLength(10)
+                .minLength(1)
+                .pattern("pattern")
+                .maxItems(11)
+                .minItems(2)
+                .uniqueItems(true)
+                .maxProperties(12)
+                .minProperties(3)
+                .addRequired("required1")
+                .addRequired("required2")
+                .type(SchemaType.NUMBER)
+                .not(createSchema().ref("not"))
+                .addProperty("property1", createSchema().ref("property1"))
+                .description("description")
+                .format("format")
+                .nullable(true)
+                .readOnly(true)
+                .writeOnly(true)
+                .example("example")
+                .externalDocs(createExternalDocumentation().url("url"))
+                .deprecated(true)
+                .xml(xml)
+                .addEnumeration("enumeration1")
+                .addEnumeration("enumeration2")
+                .discriminator(discriminator)
+                .addAnyOf(createSchema().ref("anyOf1"))
+                .addAnyOf(createSchema().ref("anyOf2"))
+                .addAllOf(createSchema().ref("allOf1"))
+                .addAllOf(createSchema().ref("allOf2"))
+                .addOneOf(createSchema().ref("oneOf1"))
+                .addOneOf(createSchema().ref("oneOf2"))
+                .additionalPropertiesBoolean(true)
+                .items(createSchema().ref("items"))
+                .addExtension("x-ext", "ext-value")
+                );
     }
 
     @Test
@@ -144,5 +190,61 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
         assertEquals(2, mapping.size());
         assertEquals("value1", mapping.get("key1").textValue());
         assertEquals("value2", mapping.get("key2").textValue());
+    }
+
+    @Test
+    public void schemaHasExpectedFields() {
+        JsonNode schema = path(getOpenAPIJson(), "components.schemas.Schema");
+        assertNotNull(schema);
+        assertEquals("ext-value", schema.get("x-ext").textValue());
+        assertEquals("title", schema.get("title").textValue());
+        assertEquals(BigDecimal.ONE, schema.get("multipleOf").decimalValue());
+        assertEquals(BigDecimal.ONE, schema.get("maximum").decimalValue());
+        assertTrue(schema.get("exclusiveMaximum").booleanValue());
+        assertEquals(BigDecimal.ONE, schema.get("minimum").decimalValue());
+        assertTrue(schema.get("exclusiveMinimum").booleanValue());
+        assertEquals(10, schema.get("maxLength").intValue());
+        assertEquals(1, schema.get("minLength").intValue());
+        assertEquals("pattern", schema.get("pattern").textValue());
+        assertEquals(11, schema.get("maxItems").intValue());
+        assertEquals(2, schema.get("minItems").intValue());
+        assertTrue(schema.get("uniqueItems").booleanValue());
+        assertEquals(12, schema.get("maxProperties").intValue());
+        assertEquals(3, schema.get("minProperties").intValue());
+        JsonNode required = schema.get("required");
+        assertTrue(required.isArray());
+        assertEquals(2, required.size());
+        assertEquals("required1", required.get(0).textValue());
+        assertEquals("required2", required.get(1).textValue());
+        assertEquals("number", schema.get("type").textValue());
+        assertTrue(schema.get("not").isObject());
+        assertTrue(schema.get("properties").isObject());
+        assertTrue(schema.get("properties").get("property1").isObject());
+        assertEquals("description", schema.get("description").textValue());
+        assertEquals("format", schema.get("format").textValue());
+        assertTrue(schema.get("nullable").booleanValue());
+        assertTrue(schema.get("readOnly").booleanValue());
+        assertTrue(schema.get("writeOnly").booleanValue());
+        assertEquals("example", schema.get("example").textValue());
+        assertTrue(schema.get("externalDocs").isObject());
+        assertTrue(schema.get("deprecated").booleanValue());
+        assertTrue(schema.get("xml").isObject());
+        JsonNode enumeration = schema.get("enum");
+        assertTrue(enumeration.isArray());
+        assertEquals(2, enumeration.size());
+        assertEquals("enumeration1", enumeration.get(0).textValue());
+        assertEquals("enumeration2", enumeration.get(1).textValue());
+        assertTrue(schema.get("discriminator").isObject());
+        JsonNode anyOf = schema.get("anyOf");
+        assertTrue(anyOf.isArray());
+        assertEquals(2, anyOf.size());
+        JsonNode allOf = schema.get("allOf");
+        assertTrue(allOf.isArray());
+        assertEquals(2, allOf.size());
+        JsonNode oneOf = schema.get("oneOf");
+        assertTrue(oneOf.isArray());
+        assertEquals(2, oneOf.size());
+        assertTrue(schema.get("additionalProperties").booleanValue());
+        assertTrue(schema.get("items").isObject());
     }
 }

@@ -151,7 +151,8 @@ public class FilterProcessor implements OASProcessor {
             }
 
             // If the object is a model item
-            if (object.getClass().getPackage().getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
+            Package pkg = object.getClass().getPackage();
+            if (pkg != null && pkg.getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
 
                 // Visit each field
                 for (Field field : object.getClass().getDeclaredFields()) {
