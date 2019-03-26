@@ -49,10 +49,10 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthFlows {
 
-    protected OAuthFlow implicit;
-    protected OAuthFlow password;
-    protected OAuthFlow clientCredentials;
-    protected OAuthFlow authorizationCode;
+    private OAuthFlow implicit;
+    private OAuthFlow password;
+    private OAuthFlow clientCredentials;
+    private OAuthFlow authorizationCode;
 
     @Override
     public OAuthFlow getImplicit() {

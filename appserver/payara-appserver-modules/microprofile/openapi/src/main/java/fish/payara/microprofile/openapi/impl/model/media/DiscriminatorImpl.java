@@ -46,8 +46,8 @@ import org.eclipse.microprofile.openapi.models.media.Discriminator;
 
 public class DiscriminatorImpl implements Discriminator {
 
-    protected String propertyName;
-    protected Map<String, String> mapping = new HashMap<>();
+    private String propertyName;
+    private Map<String, String> mapping = new HashMap<>();
 
     @Override
     public String getPropertyName() {

@@ -61,7 +61,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     private static final long serialVersionUID = 5549098533131353142L;
 
-    protected String ref;
+    private String ref;
 
     public CallbackImpl() {
         super();

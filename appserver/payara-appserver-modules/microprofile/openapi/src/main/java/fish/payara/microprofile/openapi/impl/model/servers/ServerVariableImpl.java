@@ -48,8 +48,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implements ServerVariable {
 
-    protected String description;
-    protected String defaultValue;
+    private String description;
+    private String defaultValue;
 
     protected List<String> enumeration = new ArrayList<>();
 

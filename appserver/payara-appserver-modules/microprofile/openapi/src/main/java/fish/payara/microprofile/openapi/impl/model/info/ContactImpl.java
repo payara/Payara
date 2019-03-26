@@ -48,9 +48,9 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class ContactImpl extends ExtensibleImpl<Contact> implements Contact {
 
-    protected String name;
-    protected String url;
-    protected String email;
+    private String name;
+    private String url;
+    private String email;
 
     @Override
     public String getName() {

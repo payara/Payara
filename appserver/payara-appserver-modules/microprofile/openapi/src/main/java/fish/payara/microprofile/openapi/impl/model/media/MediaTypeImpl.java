@@ -51,10 +51,10 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaType {
 
-    protected Schema schema;
-    protected Map<String, Example> examples = new HashMap<>();
-    protected Object example;
-    protected Map<String, Encoding> encoding = new HashMap<>();
+    private Schema schema;
+    private Map<String, Example> examples = new HashMap<>();
+    private Object example;
+    private Map<String, Encoding> encoding = new HashMap<>();
 
     @Override
     public Schema getSchema() {

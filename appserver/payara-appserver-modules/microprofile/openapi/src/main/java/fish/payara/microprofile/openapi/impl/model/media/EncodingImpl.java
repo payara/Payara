@@ -54,11 +54,11 @@ import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 
 public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
-    protected String contentType;
-    protected Map<String, Header> headers = new HashMap<>();
-    protected Style style;
-    protected Boolean explode;
-    protected Boolean allowReserved;
+    private String contentType;
+    private Map<String, Header> headers = new HashMap<>();
+    private Style style;
+    private Boolean explode;
+    private Boolean allowReserved;
 
     @Override
     public String getContentType() {
