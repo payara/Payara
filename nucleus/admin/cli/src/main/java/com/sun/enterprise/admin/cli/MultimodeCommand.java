@@ -137,8 +137,7 @@ public class MultimodeCommand extends CLICommand {
     protected int executeCommand() throws CommandException, CommandValidationException {
         ConsoleReader reader = null;
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
-        try {
-            checkToDisableJLineLogging();
+        try {            
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
                 reader = new ConsoleReader(ASADMIN, System.in, System.out, null, encoding);
@@ -183,19 +182,6 @@ public class MultimodeCommand extends CLICommand {
             catch (Exception e) {
                 // ignore it
             }
-        }
-    }
-    
-    private static void checkToDisableJLineLogging(){
-        if (Boolean.getBoolean("fish.payara.admin.command.jline.log.disable")) {
-            System.setProperty("jline.log.jul", "false");
-            final OutputStream noOpOutputStream = new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    //NO-OP
-                }
-            };
-            jline.internal.Log.setOutput(new PrintStream(noOpOutputStream));
         }
     }
 
