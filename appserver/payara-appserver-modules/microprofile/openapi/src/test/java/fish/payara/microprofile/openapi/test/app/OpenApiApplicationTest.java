@@ -42,10 +42,6 @@ package fish.payara.microprofile.openapi.test.app;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Optional;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.junit.Before;

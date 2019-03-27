@@ -46,7 +46,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,6 +94,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
@@ -133,8 +133,8 @@ public class OpenApiWalker implements ApiWalker {
     @Override
     public void accept(ApiVisitor visitor) {
         // OpenAPI necessary annotations
-        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI, true);
-        processAnnotations(Schema.class, visitor::visitSchema, true);
+        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI);
+        processAnnotations(Schema.class, visitor::visitSchema);
 
         // JAX-RS methods
         processAnnotations(GET.class, visitor::visitGET);
@@ -153,112 +153,82 @@ public class OpenApiWalker implements ApiWalker {
         processAnnotations(FormParam.class, visitor::visitFormParam);
 
         // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema, true);
-        processAnnotations(Server.class, visitor::visitServer, Servers.class, visitor::visitServers, true);
-        processAnnotations(Extensions.class, visitor::visitExtensions, true);
-        processAnnotations(Extension.class, visitor::visitExtension, true);
+        processAnnotations(Schema.class, visitor::visitSchema);
+        processAnnotations(Server.class, visitor::visitServer, Servers.class);
+        processAnnotations(Servers.class, visitor::visitServers, Server.class);
+        processAnnotations(Extensions.class, visitor::visitExtensions, Extension.class);
+        processAnnotations(Extension.class, visitor::visitExtension, Extensions.class);
         processAnnotations(Operation.class, visitor::visitOperation);
-        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class, visitor::visitCallbacks);
-        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class,
-                visitor::visitAPIResponses, true);
-        processAnnotations(Parameters.class, visitor::visitParameters, true);
-        processAnnotations(Parameter.class, visitor::visitParameter, true);
-        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation, true);
-        processAnnotations(Tag.class, visitor::visitTag, Tags.class, visitor::visitTags, true);
-        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class,
-                visitor::visitSecuritySchemes, true);
-        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class,
-                visitor::visitSecurityRequirements, true);
+        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class);
+        processAnnotations(Callbacks.class, visitor::visitCallbacks, Callback.class);
+        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class);
+        processAnnotations(APIResponses.class, visitor::visitAPIResponses, APIResponse.class);
+        processAnnotations(Parameters.class, visitor::visitParameters, Parameter.class);
+        processAnnotations(Parameter.class, visitor::visitParameter, Parameters.class);
+        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation);
+        processAnnotations(Tag.class, visitor::visitTag, Tags.class);
+        processAnnotations(Tags.class, visitor::visitTags, Tag.class);
+        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class);
+        processAnnotations(SecuritySchemes.class, visitor::visitSecuritySchemes, SecurityScheme.class);
+        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class);
+        processAnnotations(SecurityRequirements.class, visitor::visitSecurityRequirements, SecurityRequirement.class);
 
         // JAX-RS response types
         processAnnotations(Produces.class, visitor::visitProduces);
         processAnnotations(Consumes.class, visitor::visitConsumes);
+
+        // OpenAPI response types
         processAnnotations(RequestBody.class, visitor::visitRequestBody);
     }
 
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction, boolean allowInterfaces) {
+    @SafeVarargs
+    private final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
+            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
+            Class<? extends Annotation>... alternatives) {
         for (Class<?> clazz : classes) {
+            processAnnotation(clazz, annotationClass, annotationFunction, alternatives);
+        }
+    }
 
-            // Don't read interfaces if the annotation should only be read from concrete classes
-            if (!allowInterfaces && (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface())) {
-                continue;
-            }
+    @SafeVarargs
+    private final <T, A extends Annotation, E extends AnnotatedElement> void processAnnotation(
+            Class<T> annotatedClass, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
+            Class<? extends Annotation>... alternatives) {
+        AnnotationInfo<T> annotations = AnnotationInfo.valueOf(annotatedClass);
+        processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
+                new OpenApiContext(api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
 
-            processAnnotation(clazz, annotationClass, annotationFunction, altClass, altFunction,
-                    new OpenApiContext(api, getResourcePath(clazz, resourceMapping)));
+        for (Field field : annotatedClass.getDeclaredFields()) {
+            processAnnotation(field, annotationClass, annotationFunction, annotations,
+                    new OpenApiContext(api, null), alternatives);
+        }
 
-            for (Field field : clazz.getDeclaredFields()) {
-                processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, null));
-            }
+        for (final Method method : annotatedClass.getDeclaredMethods()) {
+            OpenApiContext context = new OpenApiContext(api, 
+                    getResourcePath(method, resourceMapping), 
+                    getOperation(method, api, resourceMapping));
+            processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);
 
-            for (Method method : clazz.getDeclaredMethods()) {
-
-                processAnnotation(method, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
-
-                for (java.lang.reflect.Parameter parameter : method.getParameters()) {
-                    processAnnotation(parameter, annotationClass, annotationFunction, altClass, altFunction,
-                            new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
-                }
+            for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+                processAnnotation(parameter, annotationClass, annotationFunction, annotations, context, alternatives);
             }
         }
     }
 
-    private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
-            VisitorFunction<A, E> function) {
-        processAnnotations(annotationClass, function, false);
-    }
-
-    private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
-            VisitorFunction<A, E> function, boolean allowInterfaces) {
-        processAnnotations(annotationClass, function, null, null, allowInterfaces);
-    }
-
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction) {
-        processAnnotations(annotationClass, annotationFunction, altClass, altFunction, false);
-    }
-
     @SuppressWarnings("unchecked")
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
-            Class<A2> altClass, VisitorFunction<A2, E> altFunction, ApiContext context) {
+    @SafeVarargs
+    private static <A extends Annotation, E extends AnnotatedElement> void processAnnotation(
+            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
+            AnnotationInfo<?> annotations, ApiContext context, Class<? extends Annotation>... alternatives) {
         // If it's just the one annotation class
-        if (altClass == null) {
-            // Check the element
-            if (element.isAnnotationPresent(annotationClass)) {
-                annotationFunction.apply(element.getDeclaredAnnotation(annotationClass), (E) element, context);
-            } else if (element instanceof Method
-                    && Method.class.cast(element).getDeclaringClass().isAnnotationPresent(annotationClass)) {
-                // If the method isn't annotated, inherit the class annotation
-                if (context.getPath() != null) {
-                    annotationFunction.apply(
-                            Method.class.cast(element).getDeclaringClass().getDeclaredAnnotation(annotationClass),
-                            (E) element, context);
-                }
-            }
-        } else {
-            // If it's annotated with both
-            if (element.isAnnotationPresent(annotationClass) || element.isAnnotationPresent(altClass)) {
-                if (element.isAnnotationPresent(annotationClass)) {
-                    annotationFunction.apply(element.getDeclaredAnnotation(annotationClass), (E) element, context);
-                }
-                if (element.isAnnotationPresent(altClass)) {
-                    altFunction.apply(element.getDeclaredAnnotation(altClass), (E) element, context);
-                }
-            } else if (element instanceof Method && context.getPath() != null) {
-                Class<?> declaringClass = Method.class.cast(element).getDeclaringClass();
-                if (declaringClass.isAnnotationPresent(annotationClass)) {
-                    annotationFunction.apply(declaringClass.getDeclaredAnnotation(annotationClass), (E) element,
-                            context);
-                }
-                if (declaringClass.isAnnotationPresent(altClass)) {
-                    altFunction.apply(declaringClass.getDeclaredAnnotation(altClass), (E) element, context);
-                }
+        // Check the element
+        if (annotations.isAnnotationPresent(annotationClass, element)) {
+            annotationFunction.apply(annotations.getAnnotation(annotationClass, element), (E) element, context);
+        } else if (element instanceof Method && annotations.isAnnotationPresent(annotationClass)
+                && !annotations.anyAnnotationPresent(element, alternatives)) {
+            // If the method isn't annotated, inherit the class annotation
+            if (context.getPath() != null) {
+                annotationFunction.apply(annotations.getAnnotation(annotationClass), (E) element, context);
             }
         }
     }
