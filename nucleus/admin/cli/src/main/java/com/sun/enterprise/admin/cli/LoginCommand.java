@@ -47,9 +47,10 @@ import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.Console;
 import java.io.IOException;
+import java.util.logging.Level;
 
+import jline.console.ConsoleReader;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.*;
@@ -120,21 +121,32 @@ public class LoginCommand extends CLICommand {
      * Prompt for the admin user name.
      */
     private String getAdminUser() {
-        Console cons = System.console();
         String user = null;
-        String defuser = programOpts.getUser();
-        if (defuser == null) {
-            defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
-        }
-        if (cons != null) {
-            cons.printf("%s", strings.get("AdminUserPrompt", defuser));
-            String val = cons.readLine();
-            if (val != null && val.length() > 0){
-                user = val;
-            } else {
-                user = defuser;
+
+        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
+            String defuser = programOpts.getUser();
+            if (defuser == null) {
+                defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
             }
+            if (cons != null) {
+                cons.setPrompt(strings.get("AdminUserPrompt", defuser));
+
+                String val = null;
+                try {
+                    val = cons.readLine();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error reading input", ioe);
+                }
+                if (val != null && val.length() > 0){
+                    user = val;
+                } else {
+                    user = defuser;
+                }
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading input", ioe);
         }
+
         return user;
     }
 

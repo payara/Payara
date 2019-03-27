@@ -41,10 +41,11 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import java.io.Console;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.logging.Level;
 
+import jline.console.ConsoleReader;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -113,16 +114,26 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         if (programOpts.getUser() == null) {
 
             // prompt for it (if interactive)
-            Console cons = System.console();
-            if (cons != null && programOpts.isInteractive()) {
-                cons.printf("%s", STRINGS.get("AdminUserDefaultPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
-                String val = cons.readLine();
-                if (ok(val))
-                    programOpts.setUser(val);
-                else
-                    programOpts.setUser(SystemPropertyConstants.DEFAULT_ADMIN_USER);
-            } else {
-                throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
+            try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
+                if (cons != null && programOpts.isInteractive()) {
+                    cons.setPrompt(STRINGS.get("AdminUserDefaultPrompt",
+                            SystemPropertyConstants.DEFAULT_ADMIN_USER));
+
+                    try {
+                        String val = cons.readLine();
+                        if (ok(val)) {
+                            programOpts.setUser(val);
+                        } else {
+                            programOpts.setUser(SystemPropertyConstants.DEFAULT_ADMIN_USER);
+                        }
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error reading input", ioe);
+                    }
+                } else {
+                    throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
+                }
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error instantiating console", ioe);
             }
         }
 

@@ -43,14 +43,16 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.security.store.AsadminTruststore;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.Console;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.X509TrustManager;
+import jline.console.ConsoleReader;
 
 /**
  * An implementation of {@link X509TrustManager} that provides basic support
@@ -69,6 +71,7 @@ public class AsadminTrustManager implements X509TrustManager {
     private RuntimeException lastRuntimeException;
     
     private static final LocalStringsImpl STRING_MANAGER = new LocalStringsImpl(AsadminTrustManager.class);
+    private static final Logger logger = Logger.getLogger(AsadminTrustManager.class.getName());
 
     /**
      * Creates an instance of the AsadminTrustManager
@@ -162,14 +165,25 @@ public class AsadminTrustManager implements X509TrustManager {
      * @throws IOException
      * @return true if the user trusts the certificate
      */    
-    private boolean isItOKToAddCertToTrustStore(X509Certificate c) {                     
-        Console cons = System.console();
-        if (!interactive || cons == null) {
-            return true;
+    private boolean isItOKToAddCertToTrustStore(X509Certificate c) {
+        String result = null;
+
+        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
+            if (!interactive || cons == null) {
+                return true;
+            }
+
+            cons.setPrompt(c.toString());
+
+            try {
+                result = cons.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading input", ioe);
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error instantiating console", ioe);
         }
-        
-        cons.printf("%s%n", c.toString());
-        String result = cons.readLine("%s", STRING_MANAGER.get("certificateTrustPrompt"));
+
         return result != null && result.equalsIgnoreCase("y");
     }
  
