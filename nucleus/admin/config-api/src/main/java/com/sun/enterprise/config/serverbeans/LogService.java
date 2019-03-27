@@ -350,14 +350,14 @@ public interface LogService extends ConfigBeanProxy  {
     public void setRetainErrorStatisticsForHours(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the disableStdioRedirect property.
+     * Gets the value of the redirectSystemStreams property.
      *
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     public String getRedirectSystemStreams();
 
     /**
-     * Sets the value of the disableStdioRedirect property.
+     * Sets the value of the redirectSystemStreams property.
      *
      * @param value allowed object is {@link String }
      * @throws PropertyVetoException
