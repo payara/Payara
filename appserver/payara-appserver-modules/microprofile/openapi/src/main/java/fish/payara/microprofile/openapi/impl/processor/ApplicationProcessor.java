@@ -716,8 +716,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 RequestBodyImpl.merge(requestBody, currentRequestBody, true,
                         context.getApi().getComponents().getSchemas());
             }
-        } else {
-            System.out.println("Ignored");
         }
     }
 

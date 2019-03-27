@@ -225,7 +225,7 @@ public class OpenApiWalker implements ApiWalker {
         if (annotations.isAnnotationPresent(annotationClass, element)) {
             annotationFunction.apply(annotations.getAnnotation(annotationClass, element), (E) element, context);
         } else if (element instanceof Method && annotations.isAnnotationPresent(annotationClass)
-                && !annotations.anyAnnotationPresent(element, alternatives)) {
+                && !annotations.isAnyAnnotationPresent(element, alternatives)) {
             // If the method isn't annotated, inherit the class annotation
             if (context.getPath() != null) {
                 annotationFunction.apply(annotations.getAnnotation(annotationClass), (E) element, context);

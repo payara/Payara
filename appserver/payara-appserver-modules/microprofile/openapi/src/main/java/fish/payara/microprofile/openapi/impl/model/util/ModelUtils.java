@@ -331,37 +331,9 @@ public final class ModelUtils {
         if (annotations.getAnnotationCount(parameter) == 0) {
             return true;
         }
-        if (annotations.isAnnotationPresent(FormParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(QueryParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(MatrixParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(BeanParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(HeaderParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(CookieParam.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(Context.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(Inject.class, parameter)) {
-            return false;
-        }
-        if (annotations.isAnnotationPresent(Provider.class, parameter)) {
-            return false;
-        }
-        return true;
+        return !annotations.isAnyAnnotationPresent(parameter, FormParam.class, QueryParam.class, MatrixParam.class, 
+                BeanParam.class, HeaderParam.class, PathParam.class, CookieParam.class, Context.class, Inject.class, 
+                Provider.class);
     }
 
     public static In getParameterType(Parameter parameter) {
@@ -598,13 +570,8 @@ public final class ModelUtils {
 
     private static String getResourcePath(Method method, Map<String, Set<Class<?>>> resourceMapping) {
         AnnotationInfo<?> annotations = AnnotationInfo.valueOf(method.getDeclaringClass());
-        if (annotations.isAnnotationPresent(GET.class, method) 
-                || annotations.isAnnotationPresent(POST.class, method)
-                || annotations.isAnnotationPresent(PUT.class, method) 
-                || annotations.isAnnotationPresent(DELETE.class, method)
-                || annotations.isAnnotationPresent(HEAD.class, method) 
-                || annotations.isAnnotationPresent(OPTIONS.class, method)
-                || annotations.isAnnotationPresent(PATCH.class, method)) {
+        if (annotations.isAnyAnnotationPresent(method,
+                GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class)) {
             if (annotations.isAnnotationPresent(Path.class, method)) {
                 // If the method is a valid resource
                 return normaliseUrl(getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"

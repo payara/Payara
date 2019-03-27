@@ -95,7 +95,7 @@ public final class AnnotationInfo<T> {
     }
 
     @SafeVarargs
-    public final boolean anyAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotationTypes) {
+    public final boolean isAnyAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotationTypes) {
         for (Class<? extends Annotation> annotationType : annotationTypes) {
             if (isAnnotationPresent(annotationType, element)) {
                 return true;
