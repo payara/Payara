@@ -43,7 +43,6 @@
 package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +78,8 @@ public class LoggingXMLNames {
     public static final String logToConsole = "log-to-console";
 
     public static final String alarms = "alarms";
+    
+    public static final String redirectSystemStreams = "redirect-system-streams";
 
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
     // logger names from DTD
@@ -118,7 +119,7 @@ public class LoggingXMLNames {
 //mapping of the names used in domain.xml to the names used in logging.properties
 
     public static final Map<String, String> xmltoPropsMap =
-            new HashMap<String, String>() {{
+            new HashMap<String, String>() {{            
                 put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
                 put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
@@ -127,6 +128,7 @@ public class LoggingXMLNames {
                 put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
                 put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
+                put(redirectSystemStreams, LoggingPropertyNames.redirectSystemStreams);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);

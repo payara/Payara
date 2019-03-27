@@ -40,92 +40,55 @@
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 package com.sun.enterprise.server.logging;
 
-import com.sun.common.util.logging.LoggingConfig;
-import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Domain;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Handler;
-import org.glassfish.api.admin.FileMonitoring;
-import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.config.UnprocessedConfigListener;
-import org.glassfish.server.ServerEnvironmentImpl;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
 import static org.junit.Assert.*;
 
 /**
  *
  * @author patrik
  */
-public class LogManagerServiceTest {
+public class GFFilehandlerTest {
 
     private static PrintStream origOut;
     private static PrintStream origErr;
-    
+    private static GFFileHandler gfFileHandler;
+
     @BeforeClass
-    public static void saveStreams() {
+    public static void initialize() {
+        gfFileHandler = new GFFileHandler();
         origOut = System.out;
         origErr = System.err;
     }
-    
+
     @Before
     public void resetStreams() {
         System.setOut(origOut);
         System.setErr(origErr);
     }
-    
+
     @Test
-    public void by_default_std_streams_redirected() throws IOException {
-        LogManagerService service = prepareService(prepareProperties());
-        service.postConstruct();
-        
+    public void enableRedirectionOfSystemStreams() throws IOException {
+        gfFileHandler.setRedirectSystemStreams(true);
+        assertSame("System.out should be redirected", System.out, origOut);
+        assertSame("System.err should be redirected", System.err, origErr);
+    }
+
+    @Test
+    public void disabledRedirectionOfSystemStreams() throws IOException {
+        gfFileHandler.setRedirectSystemStreams(false);
         assertNotSame("System.out should be redirected", System.out, origOut);
         assertNotSame("System.err should be redirected", System.err, origErr);
     }
-    
-    @Test
-    public void with_logging_prop_std_streams_not_redirected() throws IOException {
-        final Map<String, String> props = prepareProperties();
-        props.put("fish.payara.enterprise.server.logging.stdio.disable", "true");
-        LogManagerService service = prepareService(props);
-        service.postConstruct();
-        
-        assertSame("System.out should not be redirected", System.out, origOut);
-        assertSame("System.err should not be redirected", System.err, origErr);
-    }    
-    
-    private LogManagerService prepareService(Map<String, String> stringProps) throws IOException, MultiException {
-        LogManagerService manager = new LogManagerService();
-        manager.env = new ServerEnvironmentImpl(new File("src/test/domain"));
-        manager.habitat = mock(ServiceLocator.class);
-        manager.fileMonitoring = mock(FileMonitoring.class);
-        manager.loggingConfigFactory = mock(LoggingConfigFactory.class);
-        manager.ucl = new UnprocessedConfigListener();
-        manager.domain = mock(Domain.class);
-        when(manager.habitat.getAllServices(Handler.class)).thenReturn(Collections.emptyList());
-        
-        LoggingConfig conf = mock(LoggingConfig.class);
-        when(conf.getLoggingProperties()).thenReturn(stringProps);
-        when(manager.loggingConfigFactory.provide()).thenReturn(conf);
-        return manager;
-    }
 
-    private Map<String, String> prepareProperties() throws IOException {
-        Properties props = new Properties();
-        Map<String,String> stringProps = new HashMap<>();
-        props.load(new FileReader("src/test/domain/config/logging.properties"));
-        props.forEach((k,v) -> stringProps.put((String)k, (String)v));
-        return stringProps;
+    @AfterClass
+    public static void preDestroy() throws Exception {
+        gfFileHandler.close();
+        gfFileHandler.preDestroy();
     }
 }

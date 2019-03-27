@@ -42,15 +42,13 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-
-import java.beans.PropertyVetoException;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Max;
 
 /**
  * By default, logs would be kept in $INSTANCE-ROOT/logs. The following log 
@@ -351,6 +349,21 @@ public interface LogService extends ConfigBeanProxy  {
      */
     public void setRetainErrorStatisticsForHours(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of the disableStdioRedirect property.
+     *
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String getRedirectSystemStreams();
+
+    /**
+     * Sets the value of the disableStdioRedirect property.
+     *
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
+     */
+    public void setRedirectSystemStreams(String value) throws PropertyVetoException;
+    
     /**
      * Gets the value of the moduleLogLevels property.
      *
