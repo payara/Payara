@@ -241,21 +241,21 @@ public class RetryInterceptor {
                 .orElse(retry.delay());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit delayUnit = FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "delayUnit", invocationContext, String.class).map(ChronoUnit::valueOf)
+                config, Retry.class, "delayUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.delayUnit());
             long maxDuration = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", invocationContext, Long.class)
                 .orElse(retry.maxDuration());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit durationUnit = FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "durationUnit", invocationContext, String.class).map(ChronoUnit::valueOf)
+                config, Retry.class, "durationUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.durationUnit());
             long jitter = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitter", invocationContext, Long.class)
                 .orElse(retry.jitter());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
             ChronoUnit jitterDelayUnit = FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "jitterDelayUnit", invocationContext, String.class).map(ChronoUnit::valueOf)
+                config, Retry.class, "jitterDelayUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.jitterDelayUnit());
 
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
