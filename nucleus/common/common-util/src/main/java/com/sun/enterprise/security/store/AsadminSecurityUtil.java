@@ -174,13 +174,13 @@ public class AsadminSecurityUtil {
      * @return the password to the client side truststore
      */
     private char[] promptForPassword() throws IOException {
-        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-            if (cons != null) {
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+            if (console != null) {
                 // Don't echo anything when reading
                 char echoCharacter = 0;
-                cons.setEchoCharacter(echoCharacter);
+                console.setEchoCharacter(echoCharacter);
 
-                String line = cons.readLine(strmgr.get("certificateDbPrompt"));
+                String line = console.readLine(strmgr.get("certificateDbPrompt"));
                 return line.toCharArray();
             }
         } catch (IOException ioe) {

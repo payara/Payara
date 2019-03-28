@@ -228,24 +228,20 @@ public final class CreateDomainCommand extends CLICommand {
                 if (console != null && programOpts.isInteractive()) {
                     console.setPrompt(STRINGS.get("AdminUserRequiredPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
 
-                    try {
-                        String val = console.readLine();
+                    String val = console.readLine();
 
-                        if (ok(val)) {
-                            programOpts.setUser(val);
-                            if (adminPassword == null) {
-                                char[] pwdArr = getAdminPassword();
-                                adminPassword = pwdArr != null ? new String(pwdArr) : null;
-                            }
+                    if (ok(val)) {
+                        programOpts.setUser(val);
+                        if (adminPassword == null) {
+                            char[] pwdArr = getAdminPassword();
+                            adminPassword = pwdArr != null ? new String(pwdArr) : null;
                         }
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error reading input", ioe);
                     }
                 } else {
                     throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
                 }
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error instantiating console", ioe);
+                logger.log(Level.WARNING, "Error reading input", ioe);
             }
         }
         

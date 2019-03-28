@@ -123,20 +123,16 @@ public class LoginCommand extends CLICommand {
     private String getAdminUser() {
         String user = null;
 
-        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
             String defuser = programOpts.getUser();
             if (defuser == null) {
                 defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
             }
-            if (cons != null) {
-                cons.setPrompt(strings.get("AdminUserPrompt", defuser));
+            if (console != null) {
+                console.setPrompt(strings.get("AdminUserPrompt", defuser));
 
                 String val = null;
-                try {
-                    val = cons.readLine();
-                } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error reading input", ioe);
-                }
+                val = console.readLine();
                 if (val != null && val.length() > 0){
                     user = val;
                 } else {

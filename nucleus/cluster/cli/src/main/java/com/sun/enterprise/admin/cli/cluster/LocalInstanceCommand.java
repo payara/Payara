@@ -500,9 +500,9 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                     Integer.toString(programOpts.getPort())));
             port = programOpts.getPort();
         } else {
-            try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-                if (cons != null) {
-                    String line = cons.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
+            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+                if (console != null) {
+                    String line = console.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
                             propfile.toString(), Integer.toString(port),
                             Integer.toString(programOpts.getPort())));
                     while (line != null && line.length() > 0) {
@@ -513,7 +513,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                         } catch (NumberFormatException nfex) {
                             //try again
                         }
-                        line = cons.readLine(Strings.get("Instance.reenterPort", Integer.toString(programOpts.getPort())));
+                        line = console.readLine(Strings.get("Instance.reenterPort", Integer.toString(programOpts.getPort())));
                     }
                 } else {
                     logger.info(Strings.get("Instance.oldDasPropertiesWrong",

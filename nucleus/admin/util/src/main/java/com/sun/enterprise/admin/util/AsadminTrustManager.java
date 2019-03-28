@@ -168,18 +168,13 @@ public class AsadminTrustManager implements X509TrustManager {
     private boolean isItOKToAddCertToTrustStore(X509Certificate c) {
         String result = null;
 
-        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-            if (!interactive || cons == null) {
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+            if (!interactive || console == null) {
                 return true;
             }
 
-            cons.setPrompt(c.toString());
-
-            try {
-                result = cons.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading input", ioe);
-            }
+            console.setPrompt(c.toString());
+            result = console.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error instantiating console", ioe);
         }

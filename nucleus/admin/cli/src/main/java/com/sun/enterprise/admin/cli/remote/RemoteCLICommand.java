@@ -173,8 +173,8 @@ public class RemoteCLICommand extends CLICommand {
          */
         @Override
         protected boolean updateAuthentication() {
-            try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-                if (programOpts.isInteractive() && cons != null) {
+            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+                if (programOpts.isInteractive() && console != null) {
                     // if appropriate, tell the user why authentication failed
                     PasswordLocation pwloc = programOpts.getPasswordLocation();
                     if (pwloc == PasswordLocation.PASSWORD_FILE) {
@@ -195,10 +195,10 @@ public class RemoteCLICommand extends CLICommand {
                     // correct username to begin with and all we need is the
                     // password.
                     if (programOpts.getUser() == null) {
-                        cons.setPrompt(strings.get("AdminUserPrompt"));
+                        console.setPrompt(strings.get("AdminUserPrompt"));
 
                         try {
-                            user = cons.readLine();
+                            user = console.readLine();
                         } catch (IOException ioe) {
                             logger.log(Level.WARNING, "Error reading input", ioe);
                         }

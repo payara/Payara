@@ -172,12 +172,12 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-            if (cons != null) {
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+            if (console != null) {
                 String val = null;
                 do {
-                    cons.setPrompt(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
-                    val = cons.readLine();
+                    console.setPrompt(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
+                    val = console.readLine();
                     if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
                         if (logger.isLoggable(Level.FINER)) {
                             logger.finer("Generate key!");
