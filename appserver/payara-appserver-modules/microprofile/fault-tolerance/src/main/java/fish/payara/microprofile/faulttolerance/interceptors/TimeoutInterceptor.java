@@ -110,7 +110,7 @@ public class TimeoutInterceptor {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    && (FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Timeout.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
@@ -136,27 +136,26 @@ public class TimeoutInterceptor {
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
-            } else {
-                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
-                        invocationContext);
+            }
+            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
+                    invocationContext);
 
-                // Only fall back if the annotation hasn't been disabled
-                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                        config, Fallback.class, invocationContext)
-                        .orElse(Boolean.TRUE))) {
-                    logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
-                            + "falling back from Timeout");
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
-                } else {
-                    // Increment the failure counter metric
-                    faultToleranceService.incrementCounterMetric(metricRegistry, 
-                            "ft." + fullMethodSignature + ".invocations.failed.total", 
-                            faultToleranceService.getApplicationName(invocationManager, invocationContext), 
-                            config);
-                    
-                    throw ex;
-                }
+            // Only fall back if the annotation hasn't been disabled
+            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    config, Fallback.class, invocationContext)
+                    .orElse(Boolean.TRUE))) {
+                logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
+                        + "falling back from Timeout");
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
+            } else {
+                // Increment the failure counter metric
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                        "ft." + fullMethodSignature + ".invocations.failed.total", 
+                        faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                        config);
+                
+                throw ex;
             }
         }
         
@@ -190,15 +189,15 @@ public class TimeoutInterceptor {
             logger.log(Level.INFO, "No config could be found", ex);
         }
         
-        long value = (Long) FaultToleranceCdiUtils.getOverrideValue(
+        long value = FaultToleranceCdiUtils.getOverrideValue(
                 config, Timeout.class, "value", invocationContext, Long.class)
                 .orElse(timeout.value());
         // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
-        ChronoUnit unit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class, "unit", invocationContext, String.class)
+        ChronoUnit unit = FaultToleranceCdiUtils.getOverrideValue(
+                config, Timeout.class, "unit", invocationContext, ChronoUnit.class)
                 .orElse(timeout.unit());
 
-        Future timeoutFuture = null;
+        Future<?> timeoutFuture = null;
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
         long executionStartTime = System.nanoTime();
@@ -271,7 +270,7 @@ public class TimeoutInterceptor {
      * @return A future that can be cancelled if the method execution completes before the interrupt happens
      * @throws NamingException If the configured ManagedScheduledExecutorService could not be found
      */
-    private Future startTimeout(long timeoutMillis) throws NamingException {
+    private static Future<?> startTimeout(long timeoutMillis) throws NamingException {
         final Thread thread = Thread.currentThread();
         
         Runnable timeoutTask = () -> {
@@ -290,7 +289,7 @@ public class TimeoutInterceptor {
      * Helper method that stops the scheduled interrupt.
      * @param timeoutFuture The scheduled interrupt to cancel.
      */
-    private void stopTimeout(Future timeoutFuture) {
+    private static void stopTimeout(Future<?> timeoutFuture) {
         if (timeoutFuture != null) {
             timeoutFuture.cancel(true);
         }

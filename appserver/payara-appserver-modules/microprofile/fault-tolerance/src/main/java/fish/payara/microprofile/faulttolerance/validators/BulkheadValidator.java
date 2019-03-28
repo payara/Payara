@@ -58,11 +58,11 @@ public class BulkheadValidator {
      * @param config The config to get any override values from
      */
     public static void validateAnnotation(Bulkhead bulkhead, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int value = FaultToleranceCdiUtils.getOverrideValue( 
                 config, Bulkhead.class, "value", annotatedMethod.getJavaMember().getName(),
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.value());
-        int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int waitingTaskQueue = FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "waitingTaskQueue", annotatedMethod.getJavaMember().getName(),
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());

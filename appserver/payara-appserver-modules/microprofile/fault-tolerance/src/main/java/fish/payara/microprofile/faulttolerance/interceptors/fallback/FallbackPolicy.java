@@ -66,18 +66,19 @@ public class FallbackPolicy {
     
     private static final Logger logger = Logger.getLogger(FallbackPolicy.class.getName());
     
-    private final Class<? extends FallbackHandler> fallbackClass;
+    private final Class<? extends FallbackHandler<?>> fallbackClass;
     private final String fallbackMethod;
     
+    @SuppressWarnings("unchecked")
     public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
             throws ClassNotFoundException {     
-        fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread().getContextClassLoader().loadClass(
-                (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
-                        invocationContext, String.class)
-                .orElse(fallback.value().getName()));
+        fallbackClass = (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader().loadClass(
+                FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
+                        invocationContext, Class.class)
+                .orElse(fallback.value()).getName());
         
-        fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
-                "fallbackMethod", invocationContext, String.class)
+        fallbackMethod = FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
+                "fallbackMethod", invocationContext, String.class) 
                 .orElse(fallback.fallbackMethod());
     }
     

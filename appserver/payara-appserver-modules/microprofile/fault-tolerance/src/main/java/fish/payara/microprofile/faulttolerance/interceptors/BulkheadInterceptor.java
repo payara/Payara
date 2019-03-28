@@ -110,7 +110,7 @@ public class BulkheadInterceptor implements Serializable {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    && (FaultToleranceCdiUtils.getEnabledOverrideValue( 
                             config, Bulkhead.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
@@ -136,31 +136,30 @@ public class BulkheadInterceptor implements Serializable {
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
-            } else {
-                // If an exception was thrown, check if the method is annotated with @Fallback
-                Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
-                        invocationContext);
+            }
+            // If an exception was thrown, check if the method is annotated with @Fallback
+            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
+                    invocationContext);
 
-                // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
-                // propagate the exception upwards
-                if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
-                        config, Fallback.class, invocationContext)
-                        .orElse(Boolean.TRUE))) {
-                    logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
-                            + "falling back from Bulkhead");
-                    FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                    proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
-                } else {
-                    logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
-                    
-                    // Increment the failure counter metric
-                    faultToleranceService.incrementCounterMetric(metricRegistry, 
-                                "ft." + fullMethodSignature + ".invocations.failed.total", 
-                                faultToleranceService.getApplicationName(invocationManager, invocationContext), 
-                                config);
-                    
-                    throw ex;
-                }
+            // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
+            // propagate the exception upwards
+            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    config, Fallback.class, invocationContext)
+                    .orElse(Boolean.TRUE))) {
+                logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
+                        + "falling back from Bulkhead");
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
+                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
+            } else {
+                logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
+                
+                // Increment the failure counter metric
+                faultToleranceService.incrementCounterMetric(metricRegistry, 
+                            "ft." + fullMethodSignature + ".invocations.failed.total", 
+                            faultToleranceService.getApplicationName(invocationManager, invocationContext), 
+                            config);
+                
+                throw ex;
             }
         }
         
@@ -188,10 +187,10 @@ public class BulkheadInterceptor implements Serializable {
             logger.log(Level.INFO, "No config could be found", ex);
         }
         
-        int value = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int value = FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "value", invocationContext, Integer.class)
                 .orElse(bulkhead.value());
-        int waitingTaskQueue = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int waitingTaskQueue = FaultToleranceCdiUtils.getOverrideValue(
                 config, Bulkhead.class, "waitingTaskQueue", invocationContext, Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());
         
@@ -209,7 +208,7 @@ public class BulkheadInterceptor implements Serializable {
                 invocationContext.getTarget(), invocationContext.getMethod(), value);
         
         if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
-            Gauge<Long> concurrentExecutionsGauge = metricRegistry.getGauges()
+            Gauge<?> concurrentExecutionsGauge = metricRegistry.getGauges()
                     .get("ft." + fullMethodSignature + ".bulkhead.concurrentExecutions");
 
             // Register a bulkhead concurrent executions metric if there isn't one
@@ -227,7 +226,7 @@ public class BulkheadInterceptor implements Serializable {
                     invocationContext.getTarget(), invocationContext.getMethod(), waitingTaskQueue);
 
             if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
-                Gauge<Long> waitingQueueGauge = metricRegistry.getGauges()
+                Gauge<?> waitingQueueGauge = metricRegistry.getGauges()
                         .get("ft." + fullMethodSignature + ".bulkhead.waitingQueue.population");
         
                 // Register a bulkhead queue metric if there isn't one
@@ -416,11 +415,11 @@ public class BulkheadInterceptor implements Serializable {
         return proceededInvocationContext;
     }
     
-    private Long getConcurrentExecutionsCount(int bulkheadValue, Semaphore bulkheadExecutionSemaphore) {
+    private static Long getConcurrentExecutionsCount(int bulkheadValue, Semaphore bulkheadExecutionSemaphore) {
         return ((Number) (bulkheadValue - bulkheadExecutionSemaphore.availablePermits())).longValue();
     }
     
-    private Long getWaitingQueueCount(int waitingTaskQueue, Semaphore bulkheadExecutionQueueSemaphore) {
+    private static Long getWaitingQueueCount(int waitingTaskQueue, Semaphore bulkheadExecutionQueueSemaphore) {
         return ((Number) (waitingTaskQueue - bulkheadExecutionQueueSemaphore.availablePermits())).longValue();
     }
 }

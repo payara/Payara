@@ -65,32 +65,32 @@ public class FallbackValidator {
     public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config) 
             throws ClassNotFoundException, NoSuchMethodException {
         // Get the fallbackMethod
-        String fallbackMethod = (String) FaultToleranceCdiUtils.getOverrideValue(
+        String fallbackMethod = FaultToleranceCdiUtils.getOverrideValue( 
                 config, Fallback.class, "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
                 .orElse(fallback.fallbackMethod());
         
         // Get the fallbackClass, and check that it can be found
-        Class<? extends FallbackHandler> fallbackClass = (Class<? extends FallbackHandler>) Thread.currentThread()
-                .getContextClassLoader().loadClass((String) FaultToleranceCdiUtils
+        @SuppressWarnings("unchecked")
+        Class<? extends FallbackHandler<?>> fallbackClass = (Class<? extends FallbackHandler<?>>) Thread.currentThread()
+                .getContextClassLoader().loadClass(FaultToleranceCdiUtils
                 .getOverrideValue(config, Fallback.class, "value", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
-                .orElse(fallback.value().getName()));
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Class.class)
+                .orElse(fallback.value()).getName()); 
         
         // Validate the annotated method
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
                 throw new FaultToleranceDefinitionException("Both a fallback class and method have been set.");
-            } else {
-                try {
-                    if (annotatedMethod.getJavaMember().getDeclaringClass().getDeclaredMethod(fallbackMethod, 
-                            annotatedMethod.getJavaMember().getParameterTypes()).getReturnType() 
-                            != annotatedMethod.getJavaMember().getReturnType()) {
-                        throw new FaultToleranceDefinitionException("Return type of fallback method does not match.");
-                    }
-                } catch (NoSuchMethodException ex) {
-                    throw new FaultToleranceDefinitionException("Could not find fallback method: " + fallbackMethod, ex);
+            }
+            try {
+                if (annotatedMethod.getJavaMember().getDeclaringClass().getDeclaredMethod(fallbackMethod, 
+                        annotatedMethod.getJavaMember().getParameterTypes()).getReturnType() 
+                        != annotatedMethod.getJavaMember().getReturnType()) {
+                    throw new FaultToleranceDefinitionException("Return type of fallback method does not match.");
                 }
+            } catch (NoSuchMethodException ex) {
+                throw new FaultToleranceDefinitionException("Could not find fallback method: " + fallbackMethod, ex);
             }
         } else if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
             if (fallbackClass.getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class).getReturnType() 
