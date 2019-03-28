@@ -40,6 +40,9 @@
 package fish.payara.microprofile.faulttolerance.validators;
 
 import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
+
+import java.util.Optional;
+
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
@@ -71,13 +74,15 @@ public class FallbackValidator {
                 .orElse(fallback.fallbackMethod());
         
         // Get the fallbackClass, and check that it can be found
-        @SuppressWarnings("unchecked")
-        Class<? extends FallbackHandler<?>> fallbackClass = (Class<? extends FallbackHandler<?>>) Thread.currentThread()
-                .getContextClassLoader().loadClass(FaultToleranceCdiUtils
+        Optional<String> fallbackClassName = FaultToleranceCdiUtils
                 .getOverrideValue(config, Fallback.class, "value", annotatedMethod.getJavaMember().getName(), 
-                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Class.class)
-                .orElse(fallback.value()).getName()); 
-        
+                annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class);
+        @SuppressWarnings("unchecked")
+        Class<? extends FallbackHandler<?>> fallbackClass = fallbackClassName.isPresent() 
+            ? (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader()
+                    .loadClass(fallbackClassName.get())
+            : fallback.value(); 
+
         // Validate the annotated method
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {

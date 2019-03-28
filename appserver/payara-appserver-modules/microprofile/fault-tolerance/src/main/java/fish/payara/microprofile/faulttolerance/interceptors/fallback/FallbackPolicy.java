@@ -43,6 +43,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.interceptor.InvocationContext;
@@ -72,11 +73,12 @@ public class FallbackPolicy {
     @SuppressWarnings("unchecked")
     public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
             throws ClassNotFoundException {     
-        fallbackClass = (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader().loadClass(
-                FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
-                        invocationContext, Class.class)
-                .orElse(fallback.value()).getName());
-        
+        Optional<String> className = FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
+                invocationContext, String.class);
+        fallbackClass = className.isPresent()
+                ? (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader()
+                        .loadClass(className.get())
+                : fallback.value();
         fallbackMethod = FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
                 "fallbackMethod", invocationContext, String.class) 
                 .orElse(fallback.fallbackMethod());
