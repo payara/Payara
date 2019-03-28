@@ -52,6 +52,8 @@ holder.
     <packaging>pom</packaging>
     
     <modules>
+        <module>microprofile-service</module>
+        <module>microprofile-war</module>
         <module>config</module>
         <module>fault-tolerance</module>
         <module>healthcheck</module>

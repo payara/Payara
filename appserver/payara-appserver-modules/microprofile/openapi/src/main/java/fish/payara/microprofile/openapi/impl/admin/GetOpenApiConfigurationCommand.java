@@ -76,7 +76,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetOpenApiConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "VirtualServers", "CorsHeaders"};
+    private final String OUTPUT_HEADERS[] = {"Enabled", "EndPoint", "Security Enabled", "VirtualServers", "CorsHeaders", "Application Name"};
 
     @Inject
     private Target targetUtil;
@@ -101,8 +101,11 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             openApiConfig.getEnabled(),
+            openApiConfig.getEndpoint(),
+            openApiConfig.getSecurityEnabled(),
             openApiConfig.getVirtualServers(),
-            openApiConfig.getCorsHeaders()
+            openApiConfig.getCorsHeaders(),
+            openApiConfig.getApplicationName()
         };
         columnFormatter.addRow(outputValues);
 
@@ -110,8 +113,11 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
+        extraPropertiesMap.put("endpoint", openApiConfig.getEndpoint());
+        extraPropertiesMap.put("securityenabled", openApiConfig.getSecurityEnabled());
         extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
         extraPropertiesMap.put("corsHeaders", openApiConfig.getCorsHeaders());
+        extraPropertiesMap.put("securityenabled", openApiConfig.getApplicationName());
 
         Properties extraProperties = new Properties();
         extraProperties.put("openApiConfiguration", extraPropertiesMap);

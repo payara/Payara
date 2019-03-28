@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,21 @@
 
 package fish.payara.microprofile.metrics.rest;
 
+import static fish.payara.appserver.microprofile.service.MicroProfileService.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.metrics.Constants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
+import fish.payara.microprofile.metrics.service.MetricsAuthModule;
 import static java.util.Arrays.asList;
 import java.util.Map;
 import java.util.Set;
+import javax.security.auth.message.module.ServerAuthModule;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
@@ -55,11 +62,21 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
 
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {  
-        
-        if (!"".equals(ctx.getContextPath())) {
+
+        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
+                .getService(MetricsServiceConfiguration.class);
+
+        String contextPath = ctx.getContextPath();
+        contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
+        if (!"microprofile-war".equals(ctx.getInitParameter("application"))
+                || !contextPath.equals(configuration.getEndpoint())) {
             return;
         }
 
+        if (!Boolean.parseBoolean(configuration.getEnabled())) {
+            return; //MP Metrics disabled
+        }
+                
         // Check if there is already a servlet for metrics
         Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
         for (ServletRegistration reg : registrations.values()) {
@@ -67,9 +84,6 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
                 return;
             }
         }
-
-        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
-                .getService(MetricsServiceConfiguration.class);
 
         String virtualServers = configuration.getVirtualServers();
         if (!isEmpty(virtualServers)
@@ -79,6 +93,15 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
 
         // Register a servlet with url patterns of metrics handlers
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
-        reg.addMapping("/" + configuration.getEndpoint() + "/*");
+        reg.addMapping("");
+        for(String mapping : REGISTRY_NAMES) {
+            reg.addMapping("/" + mapping);
+        }
+        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+            ctx.declareRoles(DEFAULT_GROUP_NAME);
+        }
+        ctx.setAttribute(ServerAuthModule.class.getName(), MetricsAuthModule.class);
     }
+
 }

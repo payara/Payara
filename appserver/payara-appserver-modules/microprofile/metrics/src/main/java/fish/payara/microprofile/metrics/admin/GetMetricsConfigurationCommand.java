@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -71,59 +72,63 @@ import org.jvnet.hk2.annotations.Service;
  * @author Gaurav Gupta
  */
 @Service(name = "get-metrics-configuration")
-@PerLookup
-@ExecuteOn({RuntimeType.DAS})
-@TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = MetricsServiceConfiguration.class,
             opType = GET,
             path = "get-metrics-configuration",
             description = "Gets the Metrics Configuration")
 })
+@PerLookup
+@ExecuteOn({RuntimeType.DAS})
+@TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 public class GetMetricsConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers"};
     
+    private final String OUTPUT_HEADERS[] = {"Enabled", "EndPoint", "Security Enabled", "Dynamic", "VirtualServers", "Application Name"};
+
     @Inject
     private Target targetUtil;
-    
-    @Param(optional = true, defaultValue = "server-config")
+
+    @Param(defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, optional = true)
     private String target;
-    
+
     @Override
-    public void execute(AdminCommandContext adminCommandContext) {
-        Config targetConfig = targetUtil.getConfig(target);
-        
-        if (targetConfig == null) {
-            adminCommandContext.getActionReport().setMessage("No such config name: " + targetUtil);
-            adminCommandContext.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+    public void execute(AdminCommandContext context) {
+        Config config = targetUtil.getConfig(target);
+
+        if (config == null) {
+            context.getActionReport().setMessage("No such config name: " + targetUtil);
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
-        MetricsServiceConfiguration metricsConfiguration = targetConfig
+
+        MetricsServiceConfiguration metricsConfiguration = config
                 .getExtensionByType(MetricsServiceConfiguration.class);
-        
+
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             metricsConfiguration.getEnabled(),
-            metricsConfiguration.getSecureMetrics(),
-            metricsConfiguration.getDynamic(),
             metricsConfiguration.getEndpoint(),
-            metricsConfiguration.getVirtualServers()
-        };        
+            metricsConfiguration.getSecurityEnabled(),
+            metricsConfiguration.getDynamic(),
+            metricsConfiguration.getVirtualServers(),
+            metricsConfiguration.getApplicationName()
+        };
         columnFormatter.addRow(outputValues);
-        
-        adminCommandContext.getActionReport().appendMessage(columnFormatter.toString());
-        
+
+        ActionReport actionReport = context.getActionReport();
+        actionReport.appendMessage(columnFormatter.toString());
+
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", metricsConfiguration.getEnabled());
-        extraPropertiesMap.put("secureMetrics", metricsConfiguration.getSecureMetrics());
-        extraPropertiesMap.put("dynamic", metricsConfiguration.getDynamic());
         extraPropertiesMap.put("endpoint", metricsConfiguration.getEndpoint());
-        extraPropertiesMap.put("virtualServers", metricsConfiguration.getVirtualServers());
-        
+        extraPropertiesMap.put("securityenabled", metricsConfiguration.getSecurityEnabled());
+        extraPropertiesMap.put("dynamic", metricsConfiguration.getDynamic());
+        extraPropertiesMap.put("virtualservers", metricsConfiguration.getVirtualServers());
+        extraPropertiesMap.put("applicationname", metricsConfiguration.getApplicationName());
+
         Properties extraProperties = new Properties();
         extraProperties.put("metricsConfiguration", extraPropertiesMap);
-        adminCommandContext.getActionReport().setExtraProperties(extraProperties);
+        actionReport.setExtraProperties(extraProperties);
     }
 }

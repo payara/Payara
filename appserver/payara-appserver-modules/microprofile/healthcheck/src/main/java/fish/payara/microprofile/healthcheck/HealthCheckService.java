@@ -105,7 +105,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
 
         events.register(this);
     }
-
+    
     @Override
     public void event(Event event) {
         // Remove healthchecks when the app is undeployed.

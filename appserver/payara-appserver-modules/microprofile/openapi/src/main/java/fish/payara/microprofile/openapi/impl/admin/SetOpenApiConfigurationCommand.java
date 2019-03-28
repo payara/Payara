@@ -39,11 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
+import fish.payara.appserver.microprofile.service.admin.SetMicroProfileConfigurationCommand;
+import fish.payara.microprofile.openapi.service.OpenApiAuthModule;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -58,7 +59,6 @@ import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,28 +73,18 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "set-openapi-configuration",
             description = "Sets the OpenAPI Configuration")
 })
-public class SetOpenApiConfigurationCommand implements AdminCommand {
+public class SetOpenApiConfigurationCommand extends SetMicroProfileConfigurationCommand {
     
     private static final Logger LOGGER = Logger.getLogger(SetOpenApiConfigurationCommand.class.getName());
-
-    @Inject
-    private Target targetUtil;
-
-    @Param(name = "enabled", optional = true)
-    private Boolean enabled;
-    
-    @Param(name = "virtualServers", optional = true)
-    private String virtualServers;
 
     @Param(name = "corsHeaders", optional = true, defaultValue = "false")
     private Boolean corsHeaders;
     
-    @Param(optional = true, defaultValue = "server-config")
-    private String target;
-
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
+        Subject subject = context.getSubject();
+
         // Check for the existing config
         if (targetUtil.getConfig(target) == null) {
             actionReport.setMessage("No such config name: " + targetUtil);
@@ -105,16 +95,41 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
         OpenApiServiceConfiguration config = targetUtil.getConfig(target)
                 .getExtensionByType(OpenApiServiceConfiguration.class);
 
+        
+        // If the required message security provider is not present, create it
+        if (!messageSecurityProviderExists(actionReport.addSubActionsReport(), 
+                context.getSubject(), OpenApiAuthModule.class)) {
+            createRequiredMessageSecurityProvider(
+                    actionReport.addSubActionsReport(),
+                    subject,
+                    OpenApiAuthModule.class
+            );
+        }
+        
+        // Create the default user if it doesn't exist
+        if (!defaultMicroProfileUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultMicroProfileUser(actionReport.addSubActionsReport(), subject);
+        }
+        
         try {
             ConfigSupport.apply(configProxy -> {
                 if (enabled != null) {
                     configProxy.setEnabled(Boolean.toString(enabled));
+                }
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
+                }
+                if (endpoint != null) {
+                    configProxy.setEndpoint(endpoint);
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
                 }
                 if (corsHeaders != null) {
                     configProxy.setCorsHeaders(Boolean.toString(corsHeaders));
+                }
+                if (applicationName != null) {
+                    configProxy.setApplicationName(applicationName);
                 }
                 return configProxy;
             }, config);

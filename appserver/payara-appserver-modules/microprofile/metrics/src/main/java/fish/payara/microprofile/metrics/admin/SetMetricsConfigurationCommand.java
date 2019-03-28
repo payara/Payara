@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 package fish.payara.microprofile.metrics.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.appserver.microprofile.service.admin.SetMicroProfileConfigurationCommand;
 import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.microprofile.metrics.service.MetricsAuthModule;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -61,7 +61,6 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 @Service(name = "set-metrics-configuration")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = MetricsServiceConfiguration.class,
@@ -81,38 +80,34 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "set-metrics-configuration",
             description = "Sets the Metrics Configuration")
 })
-public class SetMetricsConfigurationCommand implements AdminCommand {
-    
+public class SetMetricsConfigurationCommand extends SetMicroProfileConfigurationCommand {
+
     private static final Logger LOGGER = Logger.getLogger(SetMetricsConfigurationCommand.class.getName());
-    
-    @Inject
-    private Target targetUtil;
-    
-    @Param(name = "enabled", optional = true)
-    private Boolean enabled;
-    
-    @Param(name = "secureMetrics", optional = true)
-    private Boolean secure;
-    
-    @Param(name = "dynamic", optional = true)
-    private Boolean dynamic;
-
-    @Param(name = "endpoint", optional = true)
-    private String endpoint;
-
-    @Param(name = "virtualServers", optional = true)
-    private String virtualServers;
-
-    @Param(optional = true, defaultValue = "server-config")
-    private String target;
     
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
+        Subject subject = context.getSubject();
 
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+
+        // If the required message security provider is not present, create it
+        if (!messageSecurityProviderExists(actionReport.addSubActionsReport(), 
+                context.getSubject(), MetricsAuthModule.class)) {
+            createRequiredMessageSecurityProvider(
+                    actionReport.addSubActionsReport(),
+                    subject,
+                    MetricsAuthModule.class
+            );
+        }
+        
+        // Create the default user if it doesn't exist
+        if (!defaultMicroProfileUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultMicroProfileUser(actionReport.addSubActionsReport(), subject);
+        }
+
         try {
             ConfigSupport.apply(configProxy -> {
                 boolean restart = false;
@@ -123,16 +118,16 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                     configProxy.setEnabled(enabled.toString());
                     if ((dynamic != null && dynamic)
                             || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsEnabledProperty();
+                        metricsService.setSecurityEnabled(enabled);
                     } else {
                         restart = true;
                     }
                 }
-                if (secure != null) {
-                    configProxy.setSecureMetrics(secure.toString());
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
                     if ((dynamic != null && dynamic)
                             || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsSecureProperty();
+                        metricsService.setMetricsSecure(securityEnabled);
                     } else {
                         restart = true;
                     }
@@ -145,6 +140,10 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                     configProxy.setVirtualServers(virtualServers);
                     restart = true;
                 }
+                if (applicationName != null) {
+                    configProxy.setApplicationName(applicationName);
+                    restart = true;
+                }
 
                 if (restart) {
                     actionReport.setMessage("Restart server for change to take effect");
@@ -154,6 +153,11 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             actionReport.failure(LOGGER, "Failed to update Metrics configuration", ex);
         }
+        
+        // If everything has passed, scrap the subaction reports as we don't want to print them out
+        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+            actionReport.getSubActionsReport().clear();
+        }
     }
-    
+
 }

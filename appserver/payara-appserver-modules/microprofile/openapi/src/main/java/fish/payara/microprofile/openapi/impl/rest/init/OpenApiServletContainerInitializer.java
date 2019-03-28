@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,21 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.init;
 
+import static fish.payara.appserver.microprofile.service.MicroProfileService.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication;
-import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
+import fish.payara.microprofile.openapi.service.OpenApiAuthModule;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import javax.security.auth.message.module.ServerAuthModule;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
@@ -63,20 +67,25 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
 
-        // Only deploy to app root
-        if (!"".equals(ctx.getContextPath())) {
+        OpenApiServiceConfiguration configuration = Globals.getDefaultHabitat()
+                .getService(OpenApiServiceConfiguration.class);
+
+        String contextPath = ctx.getContextPath();
+        contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
+        if (!"microprofile-war".equals(ctx.getInitParameter("application"))
+                || !contextPath.equals(configuration.getEndpoint())) {
             return;
+        }
+  
+        if (!Boolean.parseBoolean(configuration.getEnabled())) {
+            return; //MP OpenAPI disabled
         }
 
         // Check if there is already an endpoint for OpenAPI
-        Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
-        for (ServletRegistration reg : registrations.values()) {
-            if (reg.getMappings().contains(OPEN_API_APPLICATION_PATH)) {
-                return;
-            }
+        if(ctx.getServletRegistration(OpenApiApplication.class.getName()) != null) {
+            return;
         }
 
-        OpenApiServiceConfiguration configuration = Globals.getDefaultHabitat().getService(OpenApiServiceConfiguration.class);
         String virtualServers = configuration.getVirtualServers();
         if (!isEmpty(virtualServers)
                 && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
@@ -85,6 +94,14 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
 
         // Start the OpenAPI application
         new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(OpenApiApplication.class)), ctx);
+        ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistrations().get(OpenApiApplication.class.getName());
+        reg.addMapping("");
+
+        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+            ctx.declareRoles(DEFAULT_GROUP_NAME);
+        }
+        ctx.setAttribute(ServerAuthModule.class.getName(), OpenApiAuthModule.class);
     }
 
 }

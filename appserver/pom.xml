@@ -207,6 +207,7 @@
          <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
          <microprofile-rest-client.version>1.1-payara-p1</microprofile-rest-client.version>
          <microprofile-openapi.version>1.1.2</microprofile-openapi.version>
+         <microprofile-war.version>1.0.0-Beta</microprofile-war.version>
 
          <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
          <accessors-smart.version>1.2.payara-p2</accessors-smart.version>

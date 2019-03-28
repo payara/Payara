@@ -39,8 +39,10 @@
  */
 package fish.payara.microprofile.healthcheck.servlet;
 
+import static fish.payara.appserver.microprofile.service.MicroProfileService.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.service.HealthCheckAuthModule;
 import static java.util.Arrays.asList;
 import java.util.Map;
 import java.util.Set;
@@ -50,10 +52,14 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.util.AnnotationLiteral;
+import javax.security.auth.message.module.ServerAuthModule;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
@@ -70,32 +76,44 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
     
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
-        // Check if this context is the root one ("/")
-        if (ctx.getContextPath().isEmpty()) {
-            // Check if there is already a servlet for healthcheck
-            Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
-            MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
-            
-            if (!Boolean.parseBoolean(configuration.getEnabled())){
-                return; //MP Healthcheck disabled
-            }
-            
-            for (ServletRegistration reg : registrations.values()) {
-                if (reg.getClass().equals(HealthCheckServlet.class) || reg.getMappings().contains("/" + configuration.getEndpoint())) {
-                    return;
-                }
-            }
+        MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat()
+                .getService(MetricsHealthCheckConfiguration.class);
+        
+        String contextPath = ctx.getContextPath();
+        contextPath = contextPath.startsWith("/") ? contextPath.substring(1) : contextPath;
+        if (!"microprofile-war".equals(ctx.getInitParameter("application"))
+                || !contextPath.equals(configuration.getEndpoint())) {
+            return;
+        }
 
-            String virtualServers = configuration.getVirtualServers();
-            if (!isEmpty(virtualServers)
-                    && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
+
+        if (!Boolean.parseBoolean(configuration.getEnabled())) {
+            return; //MP Healthcheck disabled
+        }
+
+        // Check if there is already a servlet for healthcheck
+        Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
+        for (ServletRegistration reg : registrations.values()) {
+            if (reg.getClass().equals(HealthCheckServlet.class) 
+                    || reg.getMappings().contains("/" + configuration.getEndpoint())) {
                 return;
             }
-            
-            // Register servlet
-            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
-            reg.addMapping("/" + configuration.getEndpoint());
         }
+
+        String virtualServers = configuration.getVirtualServers();
+        if (!isEmpty(virtualServers)
+                && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
+            return;
+        }
+
+        // Register servlet
+        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
+        reg.addMapping("");
+        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+            ctx.declareRoles(DEFAULT_GROUP_NAME);
+        }
+        ctx.setAttribute(ServerAuthModule.class.getName(), HealthCheckAuthModule.class);
         
         // Get the BeanManager
         BeanManager beanManager = null;

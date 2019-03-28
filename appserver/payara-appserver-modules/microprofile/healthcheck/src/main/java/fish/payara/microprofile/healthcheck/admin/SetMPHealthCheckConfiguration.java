@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,15 @@
 package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import fish.payara.appserver.microprofile.service.admin.SetMicroProfileConfigurationCommand;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.service.HealthCheckAuthModule;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
@@ -82,18 +84,10 @@ import org.jvnet.hk2.config.TransactionFailure;
             opType = RestEndpoint.OpType.POST,
             description = "Configures Microprofile HealthCheck")
 })
-public class SetMPHealthCheckConfiguration implements AdminCommand {
+public class SetMPHealthCheckConfiguration extends SetMicroProfileConfigurationCommand {
 
     private static final Logger LOGGER = Logger.getLogger("MP-HealthCheck");
 
-    @Param(name = "enabled", optional = true)
-    private Boolean enabled;
-
-    @Param(name = "endpoint", optional = true)
-    private String endpoint;
-
-    @Param(name = "virtualServers", optional = true)
-    private String virtualServers;
 
     @Param(name = "target", optional = true, defaultValue = "server")
     private String target;
@@ -110,20 +104,42 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
+        Subject subject = context.getSubject();
 
         Config targetConfig = targetUtil.getConfig(target);
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
+        // If the required message security provider is not present, create it
+        if (!messageSecurityProviderExists(actionReport.addSubActionsReport(),
+                context.getSubject(), HealthCheckAuthModule.class)) {
+            createRequiredMessageSecurityProvider(
+                    actionReport.addSubActionsReport(),
+                    subject,
+                    HealthCheckAuthModule.class
+            );
+        }
+
+        // Create the default user if it doesn't exist
+        if (!defaultMicroProfileUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultMicroProfileUser(actionReport.addSubActionsReport(), subject);
+        }
+        
         try {
             ConfigSupport.apply(configProxy -> {
                 if (enabled != null) {
                     configProxy.setEnabled(enabled.toString());
+                }
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
                 }
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
                 }
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
+                }
+                if (applicationName != null) {
+                    configProxy.setApplicationName(applicationName);
                 }
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;

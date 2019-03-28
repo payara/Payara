@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.microprofile.metrics.service.MetricsApplicationService;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
@@ -70,7 +71,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -85,22 +85,23 @@ public class MetricsService implements EventListener {
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
     @Inject
-    Events events;
+    private Events events;
 
     @Inject
     private ServerEnvironment serverEnv;
     
     @Inject
-    ServiceLocator serviceLocator;
-    
+    private ServiceLocator serviceLocator;
+
     @Inject
     private MBeanMetadataHelper helper;
-    
-    private MetricsServiceConfiguration metricsServiceConfiguration;
-    
+
+    @Inject
+    private MetricsServiceConfiguration metricsConfiguration;
+
     private Boolean metricsEnabled;
     
-    private Boolean metricsSecure;
+    private Boolean securityEnabled;
 
     private List<MBeanMetadata> unresolvedBaseMetadataList;
 
@@ -108,20 +109,14 @@ public class MetricsService implements EventListener {
 
     private final Map<String, MetricRegistry> REGISTRIES = new ConcurrentHashMap<>();//stores registries of base, vendor, app1, app2, ... app(n) etc
 
-    public MetricsService() {
-        
-    }
-
     @PostConstruct
     public void init() {
         events.register(this);
-        metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
+
         // Only start if metrics are enabled
         if (isMetricsEnabled()) {
-            PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class, new Annotation[0]);
-            payaraExecutor.submit(() -> {
-                bootstrap();
-            });
+            PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class);
+            payaraExecutor.submit(() -> bootstrap());
         }
     }
 
@@ -211,24 +206,30 @@ public class MetricsService implements EventListener {
 
     public Boolean isMetricsEnabled() {
         if (metricsEnabled == null) {
-            metricsEnabled = Boolean.valueOf(metricsServiceConfiguration.getEnabled());
+            metricsEnabled = Boolean.valueOf(metricsConfiguration.getEnabled());
         }
         return metricsEnabled;
     }
 
-    public void resetMetricsEnabledProperty() {
-        metricsEnabled = null;
+    public void setSecurityEnabled(Boolean newValue) {
+        metricsEnabled = newValue;
+        MetricsApplicationService applicationService = serviceLocator.getService(MetricsApplicationService.class);
+        if (newValue && !applicationService.isStartAttempted()) {
+            PayaraExecutorService payaraExecutor = serviceLocator.getService(PayaraExecutorService.class);
+            payaraExecutor.submit(this::bootstrap);
+            applicationService.loadApplication();
+        }
     }
 
-    public Boolean isMetricsSecure() {
-        if (metricsSecure == null) {
-            metricsSecure = Boolean.valueOf(metricsServiceConfiguration.getSecureMetrics());
+    public Boolean isSecurityEnabled() {
+        if (securityEnabled == null) {
+            securityEnabled = Boolean.valueOf(metricsConfiguration.getSecurityEnabled());
         }
-        return metricsSecure;
+        return securityEnabled;
     }
     
-    public void resetMetricsSecureProperty() {
-        metricsSecure = null;
+    public void setMetricsSecure(Boolean newValue) {
+        securityEnabled = newValue;
     }
 
     public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {

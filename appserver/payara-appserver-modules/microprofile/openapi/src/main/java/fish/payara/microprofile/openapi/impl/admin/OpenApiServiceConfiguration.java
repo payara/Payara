@@ -39,8 +39,9 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
+import static fish.payara.appserver.microprofile.service.MicroProfileService.DEFAULT_MICROPROFILE_APP_NAME;
+import fish.payara.appserver.microprofile.service.configuration.MicroProfileConfiguration;
 import java.beans.PropertyVetoException;
-import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -48,34 +49,34 @@ import org.jvnet.hk2.config.Configured;
  * Configuration for the OpenAPI Service.
  */
 @Configured(name = "microprofile-openapi-configuration")
-public interface OpenApiServiceConfiguration extends ConfigExtension {
+public interface OpenApiServiceConfiguration extends MicroProfileConfiguration {
 
-    /**
-     * @return whether the service is enabled or not.
-     */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getEnabled();
-
-    void setEnabled(String value) throws PropertyVetoException;
+    String DEFAULT_ENDPOINT = "openapi";
 
     /**
      * Defines if CORS headers are set on the OpenApi response.
-     * 
+     *
      * @return whether to set CORS headers or not
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getCorsHeaders();
 
     void setCorsHeaders(String value) throws PropertyVetoException;
-    
+
     /**
-     * String value defines the attached virtual servers.
+     * String value defines the endpoint of metrics service.
      *
      * @return
      */
-    @Attribute(dataType = String.class)
-    String getVirtualServers();
+    @Attribute(defaultValue = DEFAULT_ENDPOINT)
+    String getEndpoint();
 
-    void setVirtualServers(String value) throws PropertyVetoException;
+    /**
+     * String value defines the application name of microprofile service.
+     *
+     * @return
+     */
+    @Attribute(defaultValue = DEFAULT_MICROPROFILE_APP_NAME + "_" + DEFAULT_ENDPOINT)
+    String getApplicationName();
 
 }

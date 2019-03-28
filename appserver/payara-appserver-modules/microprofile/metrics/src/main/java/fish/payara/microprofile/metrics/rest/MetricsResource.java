@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-
 package fish.payara.microprofile.metrics.rest;
 
 import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
@@ -68,10 +67,10 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
-    
+
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
-     * methods.
+     * Processes requests for both HTTP <code>GET</code> and
+     * <code>OPTIONS</code> methods.
      *
      * @param request servlet request
      * @param response servlet response
@@ -80,13 +79,13 @@ public class MetricsResource extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         if (!metricsService.isMetricsEnabled()) {
             response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
             return;
         }
-        if(!request.isSecure() && metricsService.isMetricsSecure()){
+        if (!request.isSecure() && metricsService.isSecurityEnabled()) {
             response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
             return;
         }
@@ -118,7 +117,7 @@ public class MetricsResource extends HttpServlet {
                     String.format("[%s] metric not found", metricsRequest.getMetricName()));
         }
     }
-    
+
     private void setContentType(MetricsWriter outputWriter, HttpServletResponse response) {
         if (outputWriter instanceof JsonMetricWriter) {
             response.setContentType(APPLICATION_JSON);
@@ -148,7 +147,8 @@ public class MetricsResource extends HttpServlet {
                     outputWriter = new PrometheusWriter(writer);
                 } else {
                     outputWriter = new PrometheusWriter(writer);
-                }   break;
+                }
+                break;
             case OPTIONS:
                 if (accept.contains(APPLICATION_JSON)) {
                     outputWriter = new JsonMetadataWriter(writer);
@@ -156,7 +156,8 @@ public class MetricsResource extends HttpServlet {
                     response.sendError(
                             SC_NOT_ACCEPTABLE,
                             String.format("[%s] not acceptable", accept));
-                }   break;
+                }
+                break;
             default:
                 response.sendError(
                         SC_METHOD_NOT_ALLOWED,
@@ -193,17 +194,19 @@ public class MetricsResource extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-    
+
     private class MetricsRequest {
 
         private final String registryName;
         private final String metricName;
-        
+
         public MetricsRequest(HttpServletRequest request) {
-                String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
-                String[] pathInfos = pathInfo.split("/");
-                registryName = pathInfos.length > 0 ? pathInfos[0] : null;
-                metricName = pathInfos.length > 1 ? pathInfos[1] : null;
+            String pathInfo = request.getServletPath() != null
+                    && request.getServletPath().length() > 1
+                    ? request.getServletPath().substring(1) : EMPTY_STRING;
+            String[] pathInfos = pathInfo.split("/");
+            registryName = pathInfos.length > 0 ? pathInfos[0] : null;
+            metricName = pathInfos.length > 1 ? pathInfos[1] : null;
         }
 
         public String getRegistryName() {
@@ -213,11 +216,11 @@ public class MetricsResource extends HttpServlet {
         public String getMetricName() {
             return metricName;
         }
-        
-        public boolean isRegistryRequested(){
+
+        public boolean isRegistryRequested() {
             return registryName != null && !registryName.isEmpty();
         }
-        
+
         public boolean isMetricRequested() {
             return metricName != null && !metricName.isEmpty();
         }

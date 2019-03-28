@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,9 @@
  */
 package fish.payara.microprofile.metrics.admin;
 
-import java.beans.PropertyVetoException;
-import org.glassfish.api.admin.config.ConfigExtension;
+import static fish.payara.appserver.microprofile.service.MicroProfileService.DEFAULT_MICROPROFILE_APP_NAME;
+import fish.payara.appserver.microprofile.service.configuration.MicroProfileConfiguration;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
@@ -51,51 +50,23 @@ import org.jvnet.hk2.config.Configured;
  * @author Gaurav Gupta
  */
 @Configured(name = "microprofile-metrics-configuration")
-public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface MetricsServiceConfiguration extends MicroProfileConfiguration {
 
-    /**
-     * Boolean value determining if the service is enabled or disabled.
-     *
-     * @return
-     */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getEnabled();
-    void setEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * Boolean value determining if the metrics service is secure or not
-     *
-     * @return
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecureMetrics();
-    void setSecureMetrics(String value) throws PropertyVetoException;
-    
-    /**
-     * Boolean value determining if the service is dynamic or not.
-     *
-     * @return
-     */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getDynamic();
-    void setDynamic(String value) throws PropertyVetoException;
+   String DEFAULT_ENDPOINT = "metrics";
 
     /**
      * String value defines the endpoint of metrics service.
      *
      * @return
      */
-    @Attribute(defaultValue = "metrics")
+    @Attribute(defaultValue = DEFAULT_ENDPOINT)
     String getEndpoint();
-    void setEndpoint(String value) throws PropertyVetoException;
-
+    
     /**
-     * String value defines the attached virtual servers.
+     * String value defines the application name of microprofile service.
      *
      * @return
-     */
-    @Attribute(dataType = String.class)
-    String getVirtualServers();
-    void setVirtualServers(String value) throws PropertyVetoException;
-
+     */    
+    @Attribute(defaultValue = DEFAULT_MICROPROFILE_APP_NAME + "_" + DEFAULT_ENDPOINT)
+    String getApplicationName();
 }
