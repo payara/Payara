@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!-- securityAttrs.inc -->
 
@@ -53,6 +54,9 @@
                 getSecurityManagerValue(endpoint="#{pageSession.jvmOptionsUrl}" value="#{pageSession.securityManagerStatus}")
             />
             </sun:checkbox>
+        </sun:property>
+        <sun:property id="adminauditProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.AdminAudit}" helpText="$resource{i18nc.security.AdminAuditHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.auditProps['Enabled']}" selectedValue="true" />
         </sun:property>
         <sun:property id="auditLoggingProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.AuditLogging}" helpText="$resource{i18nc.security.AuditLoggingHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['auditEnabled']}" selectedValue="true" />

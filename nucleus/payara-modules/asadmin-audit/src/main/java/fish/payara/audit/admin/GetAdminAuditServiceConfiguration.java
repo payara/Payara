@@ -42,18 +42,15 @@
  */
 package fish.payara.audit.admin;
 
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-
-import fish.payara.audit.AuditLevel;
+import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.audit.AdminAuditConfiguration;
-import fish.payara.audit.AdminAuditService;
-import java.beans.PropertyVetoException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -62,72 +59,62 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Sets the Admin Audit Configuration
- *
+ * Gets the current configuration of the admin audit service
  * @author jonathan coustick
  * @since 5.192
  */
-@Service(name = "set-admin-audit-configuration")
+@Service(name = "get-admin-audit-configuration")
 @PerLookup
+@CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = AdminAuditConfiguration.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "set-admin-audit-configuration",
-            description = "Sets the Configuration for the Admin Audit Service")
+    @RestEndpoint(configBean = AdminAuditConfiguration.class, 
+            opType = RestEndpoint.OpType.GET,
+            path = "get-admin-audit-configuration",
+            description = "Gets the current configuration settings of the admin audit Service")
 })
-public class SetAdminAuditConfiguration implements AdminCommand {
-
-    private static final Logger LOGGER = Logger.getLogger(SetAdminAuditConfiguration.class.getPackage().toString());
-
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    private Boolean dynamic;
-
-    @Param(name = "enabled")
-    private Boolean enabled;
-
-    @Param(name = "auditLevel", optional = true, acceptableValues = "MODIFIERS, ACCESSORS, INTERNAL")
-    private String auditLevel;
-
+public class GetAdminAuditServiceConfiguration implements AdminCommand {
+    
+    private final static String[] headers = {"Enabled", "Audit Level"};
+    private final static String[] notifierHeaders= {"Name", "Notifier Enabled"};
+    
     @Inject
-    private AdminAuditService auditService;
-
-    @Inject
-    private AdminAuditConfiguration configuration;
+    private AdminAuditConfiguration config;
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-
-        try {
-            ConfigSupport.apply(new SingleConfigCode<AdminAuditConfiguration>() {
-                @Override
-                public Object run(AdminAuditConfiguration configurationProxy) throws PropertyVetoException, TransactionFailure {
-
-                    configurationProxy.enabled(enabled.toString());
-                    configurationProxy.setAuditLevel(auditLevel);
-                    return null;
-                }
-            }, configuration);
-
-            if (dynamic) {
-                auditService.setEnabled(enabled);
-                auditService.setAuditLevel(AuditLevel.valueOf(auditLevel));
-            }
-        } catch (TransactionFailure ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            report.setMessage(ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        
+        final ActionReport actionReport = context.getActionReport();
+        
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);        
+        
+        Object[] values = {config.getEnabled(), config.getAuditLevel()};
+        columnFormatter.addRow(values);
+        
+        Properties extraProperties = new Properties();
+        extraProperties.put(headers[0], config.getEnabled());
+        extraProperties.put(headers[1], config.getAuditLevel());
+        
+        ActionReport notifiersReport = actionReport.addSubActionsReport();
+        
+        Properties notifierProps = new Properties();
+        for (Notifier notifier: config.getNotifierList()) {
+            Object[] notifierValues = { notifier.toString(), notifier.getEnabled()};
+            notifiersColumnFormatter.addRow(notifierValues);
+            notifierProps.put(notifier.toString(), notifier.getEnabled());
         }
-
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
+        notifiersReport.setMessage(notifiersColumnFormatter.toString());
+        extraProperties.put("notifiers", notifierProps);
+        
+        
+        actionReport.setExtraProperties(extraProperties);
+        
+        actionReport.setMessage(columnFormatter.toString());
+        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
-
+    
 }
