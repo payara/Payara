@@ -58,22 +58,22 @@ public class RetryValidator {
      * @param config The config to get any override values from
      */
     public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int maxRetries = FaultToleranceCdiUtils.getOverrideValue( 
                 config, Retry.class, "maxRetries", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(retry.maxRetries());
         
-        long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
+        long delay = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "delay", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.delay());
         
-        long maxDuration = (Long) FaultToleranceCdiUtils.getOverrideValue(
+        long maxDuration = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.maxDuration());
         
-        long jitter = (Long) FaultToleranceCdiUtils.getOverrideValue(
+        long jitter = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitter", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.jitter());
