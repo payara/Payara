@@ -75,15 +75,15 @@ public class GFFilehandlerTest {
     @Test
     public void enableRedirectionOfSystemStreams() throws IOException {
         gfFileHandler.setRedirectSystemStreams(true);
-        assertSame("System.out should be redirected", System.out, origOut);
-        assertSame("System.err should be redirected", System.err, origErr);
+        assertNotSame("System.out should be redirected", System.out, origOut);
+        assertNotSame("System.err should be redirected", System.err, origErr);
     }
 
     @Test
     public void disabledRedirectionOfSystemStreams() throws IOException {
         gfFileHandler.setRedirectSystemStreams(false);
-        assertNotSame("System.out should be redirected", System.out, origOut);
-        assertNotSame("System.err should be redirected", System.err, origErr);
+        assertSame("System.out should be redirected", System.out, origOut);
+        assertSame("System.err should be redirected", System.err, origErr);
     }
 
     @AfterClass

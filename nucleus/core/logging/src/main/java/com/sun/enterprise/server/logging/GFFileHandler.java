@@ -310,7 +310,7 @@ public class GFFileHandler extends StreamHandler implements
         propertyValue = manager.getProperty(className + ".redirectSystemStreams");
         if (propertyValue != null) {
             redirectSystemStreams = Boolean.parseBoolean(propertyValue);
-            if (!redirectSystemStreams) {
+            if (redirectSystemStreams) {
                 redirectStandardStreams();
             }
         }
@@ -1181,7 +1181,7 @@ public class GFFileHandler extends StreamHandler implements
     public synchronized void setRedirectSystemStreams(boolean redirectSystemStreams) {
         this.redirectSystemStreams = redirectSystemStreams;
 
-        if (!redirectSystemStreams) {
+        if (redirectSystemStreams) {
             redirectStandardStreams();
         } else {
             System.setOut(oStdOutBackup);

@@ -94,7 +94,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".redirectSystemStreams", "false");
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".redirectSystemStreams", "true");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
     }
 

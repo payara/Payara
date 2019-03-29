@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -353,7 +353,7 @@ public interface LogService extends ConfigBeanProxy  {
      * Gets the value of the redirectSystemStreams property.
      *
      */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     public String getRedirectSystemStreams();
 
     /**
