@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portios Copyright [2019] Payara Foundation and/or affiliates
+// Portios Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
