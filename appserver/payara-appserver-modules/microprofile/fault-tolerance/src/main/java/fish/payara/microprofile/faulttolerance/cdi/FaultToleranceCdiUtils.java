@@ -292,7 +292,7 @@ public class FaultToleranceCdiUtils {
                 Boolean.class, config);
         
         if (!value.isPresent()) {
-            checkForGlobalLevelOverride(annotationName,  "enabled", Boolean.class, config);
+            value = checkForGlobalLevelOverride(annotationName,  "enabled", Boolean.class, config);
         }
         
         return value;
