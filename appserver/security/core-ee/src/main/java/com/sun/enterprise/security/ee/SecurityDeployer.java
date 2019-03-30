@@ -221,7 +221,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * are removed form context before translation
      * @throws DeploymentException
      */
-    private void loadPolicy(WebBundleDescriptor webBD, boolean remove)
+    public void loadPolicy(WebBundleDescriptor webBD, boolean remove)
             throws DeploymentException {
         try {
             if (webBD != null) {

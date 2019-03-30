@@ -148,6 +148,8 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.ee.SecurityDeployer;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
@@ -374,6 +376,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected ServletProbeProvider servletProbeProvider = null;
     protected SessionProbeProvider sessionProbeProvider = null;
     protected WebModuleProbeProvider webModuleProbeProvider = null;
+    
+    @Inject
+    private PolicyLoader policyLoader;
+
+    @Inject
+    private SecurityDeployer securityDeployer;
 
     protected WebConfigListener configListener = null;
 
@@ -601,6 +609,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 createHosts(httpService, securityService);
             }
 
+            policyLoader.loadPolicy();
             loadSystemDefaultWebModules();
 
             //_lifecycle.fireLifecycleEvent(START_EVENT, null);
@@ -1633,6 +1642,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                                            WebModuleConfig wmInfo) {
         try {
             loadWebModule(vs, wmInfo, "null", null);
+            securityDeployer.loadPolicy(wmInfo.getDescriptor(), false);
         } catch (Throwable t) {
             String msg = rb.getString(LogFacade.LOAD_WEB_MODULE_ERROR);
             msg = MessageFormat.format(msg, wmInfo.getName());
@@ -2031,26 +2041,24 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             boolean isSystem = resourceType != null &&
                     resourceType.startsWith("system-");
             // security will generate policy for system default web module
-            if (!wmName.startsWith(Constants.DEFAULT_WEB_MODULE_NAME)) {
-                // TODO : v3 : dochez Need to remove dependency on security
-                Realm realm = habitat.getService(Realm.class);
-                if ("null".equals(j2eeApplication)) {
-                    /*
+            // TODO : v3 : dochez Need to remove dependency on security
+            Realm realm = habitat.getService(Realm.class);
+            if ("null".equals(j2eeApplication)) {
+                /*
                      * Standalone webapps inherit the realm referenced by
                      * the virtual server on which they are being deployed,
                      * unless they specify their own
-                     */
-                    if (realm != null && realm instanceof RealmInitializer) {
-                        ((RealmInitializer) realm).initializeRealm(
-                                wbd, isSystem, vs.getAuthRealmName());
-                        ctx.setRealm(realm);
-                    }
-                } else {
-                    if (realm != null && realm instanceof RealmInitializer) {
-                        ((RealmInitializer) realm).initializeRealm(
-                                wbd, isSystem, null);
-                        ctx.setRealm(realm);
-                    }
+                 */
+                if (realm != null && realm instanceof RealmInitializer) {
+                    ((RealmInitializer) realm).initializeRealm(
+                            wbd, isSystem, vs.getAuthRealmName());
+                    ctx.setRealm(realm);
+                }
+            } else {
+                if (realm != null && realm instanceof RealmInitializer) {
+                    ((RealmInitializer) realm).initializeRealm(
+                            wbd, isSystem, null);
+                    ctx.setRealm(realm);
                 }
             }
 
