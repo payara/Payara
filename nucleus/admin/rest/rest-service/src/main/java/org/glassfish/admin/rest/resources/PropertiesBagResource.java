@@ -184,7 +184,7 @@ public class PropertiesBagResource extends AbstractResource {
                 String unescapedValue = value.replaceAll("\\\\", "");
                 
                 String description = null;
-                if (property.get(description) != null) {
+                if (property.get("description") != null) {
                     description = Object.class.cast(property.get("description")).toString();
                 }
 
