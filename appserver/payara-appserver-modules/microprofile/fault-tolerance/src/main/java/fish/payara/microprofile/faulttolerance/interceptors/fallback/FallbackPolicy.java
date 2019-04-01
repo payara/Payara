@@ -60,7 +60,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
 /**
- * Class that executes the fallback policy defined by the @Fallback annotation.
+ * Class that executes the fallback policy defined by the {@link Fallback} annotation.
  * @author Andrew Pielage
  */
 public class FallbackPolicy {

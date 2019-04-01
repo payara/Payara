@@ -68,6 +68,7 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -88,10 +89,9 @@ public class TimeoutInterceptor {
     public Object intercept(InvocationContext invocationContext) throws Exception {
         Object proceededInvocationContext = null;
         
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        FaultToleranceService faultToleranceService = serviceLocator.getService(FaultToleranceService.class);
+        InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
         
         MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
         String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
