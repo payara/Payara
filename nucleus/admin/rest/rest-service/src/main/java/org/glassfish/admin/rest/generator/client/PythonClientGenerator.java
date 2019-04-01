@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
 import org.glassfish.admin.rest.utils.Util;
@@ -62,9 +64,8 @@ import java.util.zip.ZipOutputStream;
 import org.glassfish.admin.rest.RestLogging;
 
 public class PythonClientGenerator extends ClientGenerator {
-    private File baseDirectory;
-    private static String MSG_INSTALL =
-            "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
+    private final File baseDirectory;
+    private static final String MSG_INSTALL = "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
 
     public PythonClientGenerator(ServiceLocator habitat) {
         super(habitat);
