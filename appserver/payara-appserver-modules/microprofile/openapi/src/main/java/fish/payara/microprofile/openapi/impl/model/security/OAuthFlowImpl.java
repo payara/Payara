@@ -48,7 +48,7 @@ import org.eclipse.microprofile.openapi.models.security.Scopes;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class OAuthFlowImpl extends ExtensibleImpl implements OAuthFlow {
+public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlow {
 
     protected String authorizationUrl;
     protected String tokenUrl;
@@ -66,12 +66,6 @@ public class OAuthFlowImpl extends ExtensibleImpl implements OAuthFlow {
     }
 
     @Override
-    public OAuthFlow authorizationUrl(String authorizationUrl) {
-        setAuthorizationUrl(authorizationUrl);
-        return this;
-    }
-
-    @Override
     public String getTokenUrl() {
         return tokenUrl;
     }
@@ -79,12 +73,6 @@ public class OAuthFlowImpl extends ExtensibleImpl implements OAuthFlow {
     @Override
     public void setTokenUrl(String tokenUrl) {
         this.tokenUrl = tokenUrl;
-    }
-
-    @Override
-    public OAuthFlow tokenUrl(String tokenUrl) {
-        setTokenUrl(tokenUrl);
-        return this;
     }
 
     @Override
@@ -98,12 +86,6 @@ public class OAuthFlowImpl extends ExtensibleImpl implements OAuthFlow {
     }
 
     @Override
-    public OAuthFlow refreshUrl(String refreshUrl) {
-        setRefreshUrl(refreshUrl);
-        return this;
-    }
-
-    @Override
     public Scopes getScopes() {
         return scopes;
     }
@@ -111,12 +93,6 @@ public class OAuthFlowImpl extends ExtensibleImpl implements OAuthFlow {
     @Override
     public void setScopes(Scopes scopes) {
         this.scopes = scopes;
-    }
-
-    @Override
-    public OAuthFlow scopes(Scopes scopes) {
-        setScopes(scopes);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.OAuthFlow from, OAuthFlow to,

@@ -75,9 +75,8 @@ public class ModelReaderProcessor implements OASProcessor {
             OpenAPI model = reader.buildModel();
             if (model != null) {
                 return model;
-            } else {
-                LOGGER.log(WARNING, "The OpenAPI model returned by " + reader.getClass().getName() + " was null!");
             }
+            LOGGER.log(WARNING, "The OpenAPI model returned by " + reader.getClass().getName() + " was null!");
         } else {
             LOGGER.fine("No OASModelReader provided.");
         }

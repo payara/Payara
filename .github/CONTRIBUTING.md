@@ -8,7 +8,7 @@ Payara is an open source project, with the code owned by Payara Foundation a Uni
 As we must also comply with the upstream Oracle Common Development and Distribution license the following line should be added to any changed file:
 
 ```
-Portions Copyright [2017] Payara Foundation and/or its affiliates
+Portions Copyright [2019] Payara Foundation and/or its affiliates
 ```
 
 ## Getting Payara
@@ -160,11 +160,14 @@ If you feel there is a security vulnerability in Payara Server or Payara Micro p
 
 If you find a bug within Payara, please post it as a github issue. Github is our main repository for community found issues with Payara and our support team frequently monitor it for new issues. As with submitting issues, a concise title which clearly explains the issue combined with a comment explaining what the found issue is and either how it arose and a stacktrace of the issue, or a test case which is able to reproduce the issue will help us deliver a patch.
 
+### Executable Test Case
+For a bug report to be actioned quickly an executable test case is required. Ideally the test case will be hosted in your GitHub account as a buildable maven project which creates a deployable artifact that demonstrates the issue clearly. I'm afraid we can't get into the details of debugging your specific business application so the test case should be stripped to the minimum required to demonstrate the issue. If additional server resources need creating e.g. Connection Pools or Queues please provide the asadmin commands required to create these in a document or as a script. The reality is the easier it is for an engineer to quickly reproduce your issue the more likely it will be fixed.
+
 ## Responses
 
 We continually check the github posted issues for bugs, feature requests, and assorted issues. If you have posted an issue, chances are it has been read by a member of staff. Requests for further information and labels are often posted in order to make it easier for the dev team to see issues. However if your issue has not received a comment or label, don't take this as it having not been read or acted upon!
 
-If you do post an issue and we request further information from you please respond quickly. We review all issues periodically and if an issue has been waiting for a response since last review we will add the "requestor unresponsive" label. If on the second periodic review there has still been no response to our request we will add a second "requestor unresponsive" label. Finally if on the third review there is still no response we will close the issue. This ensures our GitHub issues stay up to date and relevant and don't get full of old issues. If you still have the same problem you can still comment on the closed issue and we will still see it and if necessary reopen the issue to pick up where we left off. 
+If you do post an issue and we request further information from you please respond quickly. We review all issues periodically and if an issue has been waiting for a response since last review we will add the "requestor unresponsive" label. If on the second periodic review there has still been no response to our request we will add a second "requestor unresponsive" label. Finally if on the third review there is still no response we will close the issue. This ensures our GitHub issues stay up to date and relevant and doesn't get full of old issues. If you still have the same problem you can still comment on the closed issue and we will still see it and if necessary reopen the issue to pick up where we left off. 
 
 ## Questions, advice and guidance
 

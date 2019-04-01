@@ -88,20 +88,20 @@ public class ResponseTest {
 
     @Test
     public void inheritedMediaTypeTest() {
-        APIResponses responses = document.getPaths().get("/test/response").getGET().getResponses();
+        APIResponses responses = document.getPaths().getPathItem("/test/response").getGET().getResponses();
         // Test the default response doesn't exist
-        assertNull("The default response should be removed when not used.", responses.getDefault());
+        assertNull("The default response should be removed when not used.", responses.getDefaultValue());
 
         // Test the 200 response
-        assertNotNull("The 200 response should have been created.", responses.get("200"));
+        assertNotNull("The 200 response should have been created.", responses.getAPIResponse("200"));
         assertNotNull("The 200 response should return application/json.",
-                responses.get("200").getContent().get(APPLICATION_JSON));
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON));
         assertEquals("The 200 response application/json should match the specified schema.", "hello!",
-                responses.get("200").getContent().get(APPLICATION_JSON).getSchema().getDescription());
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON).getSchema().getDescription());
         assertNotNull("The 200 response should return application/xml.",
-                responses.get("200").getContent().get(APPLICATION_XML));
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML));
         assertEquals("The 200 response application/xml should match the specified schema.", "hello!",
-                responses.get("200").getContent().get(APPLICATION_XML).getSchema().getDescription());
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML).getSchema().getDescription());
     }
 
 }

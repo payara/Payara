@@ -37,27 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
+
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
 
 import javax.inject.Inject;
 
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.*;
 
 /**
  *  This is a remote command that deletes a destination config.
@@ -70,87 +80,79 @@ import com.sun.enterprise.config.serverbeans.*;
 @PerLookup
 @I18n("delete.config.command")
 @RestEndpoints({
-    @RestEndpoint(configBean=Config.class,
-        opType=RestEndpoint.OpType.POST, // TODO: Should be DELETE
-        path="delete-config", 
-        description="Delete Config",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+    @RestEndpoint(configBean = Config.class,
+        opType = RestEndpoint.OpType.POST, // TODO: Should be DELETE
+        path = "delete-config", 
+        description = "Delete Config",
+        params = 
+            @RestParam(name = "id", value = "$parent")
+        )
 })
 public final class DeleteConfigCommand implements AdminCommand {
 
-    @Param(primary=true)
-    String destConfig;
-
-    @Inject
-    Configs configs;
-
-    @Inject
-    Domain domain;
-
-
     private final static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(DeleteConfigCommand.class);
+    
+    @Param(primary = true)
+    private String destConfig;
+
+    @Inject
+    private Configs configs;
+
+    @Inject
+    private Domain domain;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setActionExitCode(SUCCESS);
 
-        //do not delete default-config
-        if (destConfig.equals("default-config") ){
-            report.setMessage(LOCAL_STRINGS.getLocalString(
-                    "Config.defaultConfig", "The default configuration template " +
-                            "named default-config cannot be deleted."
-                    ));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        // Do not delete default-config
+        if (destConfig.equals("default-config")) {
+            report.setMessage(
+                LOCAL_STRINGS.getLocalString("Config.defaultConfig", "The default configuration template " + "named default-config cannot be deleted."));
+            report.setActionExitCode(FAILURE);
+            
             return;
         }
 
-        //Get the config from the domain
-        //does the config exist ?
-        //if not return
-        final Config config = domain.getConfigNamed(destConfig);
-        if (config == null ){
-            report.setMessage(LOCAL_STRINGS.getLocalString(
-                    "Config.noSuchConfig", "Config {0} does not exist.", destConfig));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        // Get the config from the domain. Does the config exist?
+        // if not return
+        Config config = domain.getConfigNamed(destConfig);
+        if (config == null) {
+            report.setMessage(LOCAL_STRINGS.getLocalString("Config.noSuchConfig", "Config {0} does not exist.", destConfig));
+            report.setActionExitCode(FAILURE);
+            
             return;
         }
 
-        // check if the config in use by some other
+        // Check if the config in use by some other
         // ReferenceContainer -- if so just return...
-        List<ReferenceContainer> refContainers = domain.getReferenceContainersOf(config);
-        if(!refContainers.isEmpty())  {
+        List<ReferenceContainer> referenceContainers = domain.getReferenceContainersOf(config);
+        if (!referenceContainers.isEmpty()) {
             StringBuilder namesOfContainers = new StringBuilder();
-            for (ReferenceContainer rc: refContainers)  {
-                namesOfContainers.append(rc.getReference()).append(',');
+            for (ReferenceContainer referenceContainer : referenceContainers) {
+                namesOfContainers.append(referenceContainer.getReference()).append(',');
             }
-            report.setMessage(LOCAL_STRINGS.getLocalString(
-                    "Config.inUseConfig", "Config {0} is in use " +
-                            "and must be referenced by no server instances or clusters",
-                    destConfig,namesOfContainers));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(LOCAL_STRINGS.getLocalString("Config.inUseConfig",
+                    "Config {0} is in use " + "and must be referenced by no server instances or clusters", destConfig, namesOfContainers));
+            report.setActionExitCode(FAILURE);
+            
             return;
-
         }
+        
         try {
             ConfigSupport.apply(new SingleConfigCode<Configs>() {
-
                 @Override
-                public Object run(Configs c) throws PropertyVetoException, TransactionFailure {
-                    List<Config> configList = c.getConfig();
-                    configList.remove(config);
+                public Object run(Configs configs) throws PropertyVetoException, TransactionFailure {
+                    configs.getConfig().remove(config);
                     return null;
                 }
             }, configs);
 
         } catch (TransactionFailure ex) {
             report.setMessage(
-                    LOCAL_STRINGS.getLocalString("Config.deleteConfigFailed",
-                            "Unable to remove config {0} ", config) + " "
-                            +ex.getLocalizedMessage());
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    LOCAL_STRINGS.getLocalString("Config.deleteConfigFailed", "Unable to remove config {0} ", config) + " " + ex.getLocalizedMessage());
+            report.setActionExitCode(FAILURE);
             report.setFailureCause(ex);
         }
 

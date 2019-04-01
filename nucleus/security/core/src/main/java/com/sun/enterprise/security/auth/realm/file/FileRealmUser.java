@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.file;
 
 import java.util.Enumeration;
@@ -55,14 +55,10 @@ import com.sun.enterprise.security.auth.realm.User;
  */
 public class FileRealmUser implements User {
 
-    FileRealmStorageManager.User user;
-    Hashtable<String, Object> attributes = new Hashtable<>();
-    String realm;
+    private FileRealmStorageManager.User user;
+    private Hashtable<String, Object> attributes = new Hashtable<>();
+    private String realm;
 
-    /**
-     * Constructor.
-     *
-     */
     public FileRealmUser(FileRealmStorageManager.User user, String realm) {
         this.user = user;
         this.realm = realm;

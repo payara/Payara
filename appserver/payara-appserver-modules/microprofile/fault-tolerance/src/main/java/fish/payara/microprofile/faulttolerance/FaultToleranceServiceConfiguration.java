@@ -41,7 +41,6 @@ package fish.payara.microprofile.faulttolerance;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
@@ -49,7 +48,7 @@ import org.jvnet.hk2.config.Configured;
  * @author Andrew Pielage
  */
 @Configured(name = "microprofile-fault-tolerance-configuration")
-public interface FaultToleranceServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface FaultToleranceServiceConfiguration extends ConfigExtension {
 
     @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService", dataType = String.class)
     public String getManagedExecutorService();

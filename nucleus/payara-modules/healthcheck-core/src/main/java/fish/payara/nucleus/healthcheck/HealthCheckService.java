@@ -46,6 +46,7 @@ import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
@@ -208,13 +209,16 @@ public class HealthCheckService implements EventListener, ConfigListener {
     /**
      * Starts all notifiers that have been enable with the healthcheck service.
      */
-    public void bootstrapNotifierList() {
+    public synchronized void bootstrapNotifierList() {
         notifierExecutionOptionsList = new ArrayList<>();
         if (configuration.getNotifierList() != null) {
             for (Notifier notifier : configuration.getNotifierList()) {
                 ConfigView view = ConfigSupport.getImpl(notifier);
                 NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+                NotifierExecutionOptionsFactory<Notifier> factory = executionOptionsFactoryStore.get(annotation.type());
+                if (factory != null) {
+                    notifierExecutionOptionsList.add(factory.build(notifier));
+                }
             }
         }
         if (notifierExecutionOptionsList.isEmpty()) {
@@ -300,7 +304,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
     }
 
     public BaseHealthCheck getCheck(String serviceName) {
-        return registeredTasks.get(serviceName).getCheck();
+        HealthCheckTask task = registeredTasks.get(serviceName);
+        return task == null ? null : task.getCheck();
     }
     
     /**

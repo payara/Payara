@@ -57,7 +57,7 @@ import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 
-public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
+public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIResponse {
 
     protected String description;
     protected Map<String, Header> headers = new HashMap<>();
@@ -76,12 +76,6 @@ public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
     }
 
     @Override
-    public APIResponse description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Map<String, Header> getHeaders() {
         return headers;
     }
@@ -92,15 +86,16 @@ public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
     }
 
     @Override
-    public APIResponse headers(Map<String, Header> headers) {
-        setHeaders(headers);
+    public APIResponse addHeader(String name, Header header) {
+        if (header != null) {
+            headers.put(name, header);
+        }
         return this;
     }
 
     @Override
-    public APIResponse addHeader(String name, Header header) {
-        headers.put(name, header);
-        return this;
+    public void removeHeader(String name) {
+        headers.remove(name);
     }
 
     @Override
@@ -114,12 +109,6 @@ public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
     }
 
     @Override
-    public APIResponse content(Content content) {
-        setContent(content);
-        return this;
-    }
-
-    @Override
     public Map<String, Link> getLinks() {
         return links;
     }
@@ -130,15 +119,16 @@ public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
     }
 
     @Override
-    public APIResponse links(Map<String, Link> links) {
-        setLinks(links);
+    public APIResponse addLink(String name, Link link) {
+        if (link != null) {
+            links.put(name, link);
+        }
         return this;
     }
 
     @Override
-    public APIResponse addLink(String name, Link link) {
-        links.put(name, link);
-        return this;
+    public void removeLink(String name) {
+        links.remove(name);
     }
 
     @Override
@@ -152,12 +142,6 @@ public class APIResponseImpl extends ExtensibleImpl implements APIResponse {
             ref = "#/components/responses/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public APIResponse ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.responses.APIResponse from, APIResponse to,

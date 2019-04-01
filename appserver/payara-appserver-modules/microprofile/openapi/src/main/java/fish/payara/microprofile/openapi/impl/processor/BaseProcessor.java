@@ -46,9 +46,7 @@ import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -105,16 +103,16 @@ public class BaseProcessor implements OASProcessor {
                 String path = normaliseUrl(entry.getKey());
 
                 // If the path doesn't exist, create it
-                if (!api.getPaths().containsKey(path)) {
+                if (!api.getPaths().hasPathItem(path)) {
                     api.getPaths().addPathItem(path, new PathItemImpl());
                 }
 
                 // Clear the current list of servers
-                api.getPaths().get(path).getServers().clear();
+                api.getPaths().getPathItem(path).getServers().clear();
 
                 // Add each url
                 for (String serverUrl : entry.getValue()) {
-                    api.getPaths().get(path).addServer(new ServerImpl().url(serverUrl));
+                    api.getPaths().getPathItem(path).addServer(new ServerImpl().url(serverUrl));
                 }
             }
         }
@@ -125,7 +123,7 @@ public class BaseProcessor implements OASProcessor {
 
                 // Find the matching operation
                 for (PathItem pathItem : api.getPaths().values()) {
-                    for (Operation operation : pathItem.readOperations()) {
+                    for (Operation operation : pathItem.getOperations().values()) {
                         if (operation.getOperationId().equals(entry.getKey())) {
 
                             // Clear the current list of servers
@@ -141,19 +139,13 @@ public class BaseProcessor implements OASProcessor {
             }
         }
 
-        removeEmptyPaths(api, config);
+        removeEmptyPaths(api);
 
         return api;
     }
 
-    private OpenAPI removeEmptyPaths(OpenAPI api, OpenApiConfiguration config) {
-        Iterator<Map.Entry<String, PathItem>> it = api.getPaths().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, PathItem> entry = it.next();
-            if (new PathItemImpl().equals(entry.getValue())) {
-                it.remove();
-            }
-        }
-        return api;
+    private static void removeEmptyPaths(OpenAPI api) {
+        PathItem emptyItem = new PathItemImpl();
+        api.getPaths().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
     }
 }

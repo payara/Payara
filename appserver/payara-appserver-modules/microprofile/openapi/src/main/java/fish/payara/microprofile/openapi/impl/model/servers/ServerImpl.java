@@ -42,17 +42,19 @@ package fish.payara.microprofile.openapi.impl.model.servers;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
-import org.eclipse.microprofile.openapi.annotations.servers.ServerVariable;
+import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.servers.Server;
+import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class ServerImpl extends ExtensibleImpl implements Server {
+public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     protected String url;
     protected String description;
-    protected ServerVariables variables;
+    protected Map<String, ServerVariable> variables;
 
     @Override
     public String getUrl() {
@@ -62,12 +64,6 @@ public class ServerImpl extends ExtensibleImpl implements Server {
     @Override
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    @Override
-    public Server url(String url) {
-        setUrl(url);
-        return this;
     }
 
     @Override
@@ -81,14 +77,10 @@ public class ServerImpl extends ExtensibleImpl implements Server {
     }
 
     @Override
-    public Server description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public ServerVariables getVariables() {
-        return variables;
+        return variables instanceof ServerVariables || variables == null 
+                ? (ServerVariables) variables
+                : new ServerVariablesImpl(variables);
     }
 
     @Override
@@ -97,9 +89,8 @@ public class ServerImpl extends ExtensibleImpl implements Server {
     }
 
     @Override
-    public Server variables(ServerVariables variables) {
-        setVariables(variables);
-        return this;
+    public void setVariables(Map<String, ServerVariable> variables) {
+        this.variables = variables;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.servers.Server from, Server to,
@@ -113,7 +104,7 @@ public class ServerImpl extends ExtensibleImpl implements Server {
             if (to.getVariables() == null) {
                 to.setVariables(new ServerVariablesImpl());
             }
-            for (ServerVariable variable : from.variables()) {
+            for (org.eclipse.microprofile.openapi.annotations.servers.ServerVariable variable : from.variables()) {
                 ServerVariablesImpl.merge(variable, to.getVariables(), override);
             }
         }
