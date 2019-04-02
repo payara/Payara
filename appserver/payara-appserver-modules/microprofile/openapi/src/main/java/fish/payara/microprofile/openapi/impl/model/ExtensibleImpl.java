@@ -173,7 +173,10 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
 
     private static void toString(StringBuilder str, String indent, Object key, Object value) {
         if (isNonEmpty(value)) {
-            str.append("\n").append(indent).append('"').append(key).append('"').append(": ");
+            str.append("\n").append(indent);
+            if (key != null) {
+                str.append('"').append(key).append('"').append(": ");
+            }
             if (value instanceof ExtensibleImpl) {
                 ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
             } else if (value instanceof Map) {
@@ -182,6 +185,13 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
                     toString(str, indent + '\t', entry.getKey(), entry.getValue());
                 }
                 str.append('\n').append(indent).append('}');
+            } else if (value instanceof Collection) { 
+                str.append('[');
+                for (Object element : (Collection<?>)value) {
+                    toString(str, indent+ '\t', null, element);
+                    str.append(',');
+                }
+                str.append('\n').append(indent).append(']');
             } else if (value instanceof String) {
                 str.append('"').append(value).append('"');
             } else {

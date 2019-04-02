@@ -41,14 +41,21 @@ package fish.payara.microprofile.openapi.impl.visitor;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOperation;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
+import static java.util.logging.Level.WARNING;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
@@ -66,6 +73,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Application;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -101,13 +109,14 @@ import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
  */
 public class OpenApiWalker implements ApiWalker {
 
+    private static final Logger LOGGER = Logger.getLogger(OpenApiWalker.class.getName());
+
     private final OpenAPI api;
     private final Set<Class<?>> classes;
     private final Map<String, Set<Class<?>>> resourceMapping;
 
-    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses, Map<String, Set<Class<?>>> resourceMapping) {
+    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses) {
         this.api = api;
-        this.resourceMapping = resourceMapping;
         this.classes = new TreeSet<>((class1, class2) -> {
             if (class1.equals(class2)) {
                 return 0;
@@ -128,6 +137,24 @@ public class OpenApiWalker implements ApiWalker {
             return 1;
         });
         this.classes.addAll(allowedClasses);
+        addInnerClasses(); // must happen before generating the resource mapping
+        this.resourceMapping = generateResourceMapping(classes);
+    }
+
+    private void addInnerClasses() {
+        List<Class<?>> topLevelClasses = new ArrayList<>(classes);
+        for (Class<?> topLevelClass : topLevelClasses) {
+            addInnerClasses(topLevelClass);
+        }
+    }
+
+    private void addInnerClasses(Class<?> topLevelClass) {
+        if (topLevelClass != null) {
+            classes.addAll(Arrays.asList(topLevelClass.getDeclaredClasses()));
+            if (topLevelClass.getSuperclass() != Object.class) {
+                addInnerClasses(topLevelClass.getSuperclass());
+            }
+        }
     }
 
     @Override
@@ -195,16 +222,34 @@ public class OpenApiWalker implements ApiWalker {
             Class<? extends Annotation>... alternatives) {
         AnnotationInfo<T> annotations = AnnotationInfo.valueOf(annotatedClass);
         processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
-                new OpenApiContext(api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
+                new OpenApiContext(classes, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
 
         for (Field field : annotatedClass.getDeclaredFields()) {
-            processAnnotation(field, annotationClass, annotationFunction, annotations,
-                    new OpenApiContext(api, null), alternatives);
+            if (annotations.isAnnotationPresent(annotationClass, field)) {
+                if (   annotationClass == HeaderParam.class
+                    || annotationClass == CookieParam.class
+                    || annotationClass == PathParam.class
+                    || annotationClass == QueryParam.class) {
+                    // NB. if fields are annotated as Param all methods have it
+                    for (Method method : annotatedClass.getDeclaredMethods()) {
+                        OpenApiContext context = new OpenApiContext(classes, api,
+                                getResourcePath(method, resourceMapping),
+                                getOperation(method, api, resourceMapping));
+                        if (context.getWorkingOperation() != null) {
+                            processAnnotation(field, annotationClass, annotationFunction, annotations, context,
+                                    alternatives);
+                        }
+                    }
+                } else {
+                    processAnnotation(field, annotationClass, annotationFunction, annotations,
+                            new OpenApiContext(classes, api, null), alternatives);
+                }
+            }
         }
 
         for (final Method method : annotatedClass.getDeclaredMethods()) {
-            OpenApiContext context = new OpenApiContext(api, 
-                    getResourcePath(method, resourceMapping), 
+            OpenApiContext context = new OpenApiContext(classes, api,
+                    getResourcePath(method, resourceMapping),
                     getOperation(method, api, resourceMapping));
             processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);
 
@@ -230,5 +275,45 @@ public class OpenApiWalker implements ApiWalker {
                 annotationFunction.apply(annotations.getAnnotation(annotationClass), (E) element, context);
             }
         }
+    }
+
+    /**
+     * Generates a map listing the location each resource class is mapped to.
+     */
+    private static Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
+        Map<String, Set<Class<?>>> resourceMapping = new HashMap<>();
+        for (Class<?> clazz : classList) {
+            if (clazz.isAnnotationPresent(ApplicationPath.class) && Application.class.isAssignableFrom(clazz)) {
+                // Produce the mapping
+                String key = clazz.getDeclaredAnnotation(ApplicationPath.class).value();
+                Set<Class<?>> resourceClasses = new HashSet<>();
+                resourceMapping.put(key, resourceClasses);
+
+                try {
+                    Application app = (Application) clazz.newInstance();
+                    // Add all classes contained in the application
+                    resourceClasses.addAll(app.getClasses());
+                    // Remove all Jersey providers
+                    resourceClasses.removeIf(resource -> resource.getPackage().getName().contains("org.glassfish.jersey"));
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    LOGGER.log(WARNING, "Unable to initialise application class.", ex);
+                }
+            }
+        }
+
+        // If there is one application and it's empty, add all classes
+        if (resourceMapping.keySet().size() == 1) {
+            Set<Class<?>> classes = resourceMapping.values().iterator().next();
+            if (classes.isEmpty()) {
+                classes.addAll(classList);
+            }
+        }
+
+        // If there is no application, add all classes to the context root.
+        if (resourceMapping.isEmpty()) {
+            resourceMapping.put("/", classList);
+        }
+
+        return resourceMapping;
     }
 }

@@ -62,7 +62,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 
 @OpenAPIDefinition(
         info = @Info(title = "title", version = "version"),
