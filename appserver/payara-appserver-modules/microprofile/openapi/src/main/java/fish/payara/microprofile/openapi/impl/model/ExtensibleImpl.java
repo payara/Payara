@@ -92,7 +92,11 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     }
 
     public static String extensionName(String name) {
-        return name.startsWith("x-") ? name : "x-" + name;
+        if (name != null && !name.startsWith("x-")) {
+            //NB. MP group decided that extension names should not be corrected
+            LOGGER.warning("extension name not starting with `x-` cause invalid Open API documents: " + name);
+        }
+        return name;
     }
 
     public static void merge(Extension from, Extensible<?> to, boolean override) {
