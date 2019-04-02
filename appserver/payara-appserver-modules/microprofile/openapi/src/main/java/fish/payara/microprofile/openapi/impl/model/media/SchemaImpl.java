@@ -357,7 +357,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.properties.remove(key);
     }
 
-    @JsonProperty("additionalProperties")
+    @JsonProperty
     @Override
     public Object getAdditionalProperties() {
         return additionalProperties;

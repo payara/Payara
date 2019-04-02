@@ -50,7 +50,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents the aggregated annotations on a type, its fields and methods including annotations "inherited" from
- * super-classes and implemented interfaces.
+ * super-classes and implemented interfaces. Should a field or method from a super-class be overridden the
+ * {@link Annotation} closest to the represented type (the overriding one) is kept.
  */
 public final class AnnotationInfo<T> {
 
@@ -76,26 +77,67 @@ public final class AnnotationInfo<T> {
         return type;
     }
 
+    /**
+     * Version of {@link Class#getAnnotation(Class)} also considering annotations "inherited" from
+     * super-types for this {@link AnnotationInfo#getType()}.
+     * 
+     * @param annotationType annotation type to check
+     * @return the annotation of the given type if present or {@code null} otherwise
+     */
     @SuppressWarnings("unchecked")
     public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
         return (A) typeAnnotations.get(annotationType);
     }
 
+    /**
+     * Version of {@link Field#getAnnotation(Class)} also considering annotations "inherited" from overridden fields
+     * of super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param method         must be a {@link Field} defined or inherited by this {@link AnnotationInfo#getType()}
+     * @return the annotation of the given type if present or {@code null} otherwise
+     */
     @SuppressWarnings("unchecked")
     public <A extends Annotation> A getAnnotation(Class<A> annotationType, Field field) {
         return (A) fieldAnnotations.get(field.getName()).get(annotationType);
     }
 
+    /**
+     * Version of {@link Method#getAnnotation(Class)} also considering annotations "inherited" from overridden methods
+     * of super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param method         must be a {@link Method} defined or inherited by this {@link AnnotationInfo#getType()}
+     * @return the annotation of the given type if present or {@code null} otherwise
+     */
     @SuppressWarnings("unchecked")
     public <A extends Annotation> A getAnnotation(Class<A> annotationType, Method method) {
         return (A) methodAnnotations.get(getSignature(method)).get(annotationType);
     }
 
+    /**
+     * Version of {@link Parameter#getAnnotation(Class)} also considering annotations "inherited" from overridden
+     * methods of super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param parameter      must be this a {@link Parameter} of a {@link Method} defined or inherited by this
+     *                       {@link AnnotationInfo#getType()}
+     * @return the annotation of the given type if present or {@code null} otherwise
+     */
     @SuppressWarnings("unchecked")
     public <A extends Annotation> A getAnnotation(Class<A> annotationType, Parameter parameter) {
         return (A) methodParameterAnnotations.get(getIdentifier(parameter)).get(annotationType);
     }
 
+    /**
+     * Version of {@link AnnotatedElement#getAnnotation(Class)} also considering annotations "inherited" from
+     * super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param element        must be this {@link AnnotationInfo#getType()}'s {@link Class} or a {@link Field} or
+     *                       {@link Method} defined or inherited by it or a {@link Parameter} of such a method.
+     * @return the annotation of the given type if present or {@code null} otherwise
+     */
     public <A extends Annotation> A getAnnotation(Class<A> annotationType, AnnotatedElement element) {
         Class<?> kind = element.getClass();
         if (kind == Class.class) {
@@ -113,26 +155,67 @@ public final class AnnotationInfo<T> {
         return null;
     }
 
+    /**
+     * Version of {@link Class#isAnnotationPresent(Class)} also considering annotations "inherited" from super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @return true in case it is present at this class or any of its super-types
+     */
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
         return getAnnotation(annotationType) != null;
     }
 
+    /**
+     * Version of {@link Field#isAnnotationPresent(Class)} also considering annotations "inherited" from super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @return true in case it is present at the given field. The field must be defined in this
+     *         {@link AnnotationInfo#getType()} or any of its super-types.
+     */
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, Field field) {
         return getAnnotation(annotationType, field) != null;
     }
 
+    /**
+     * Version of {@link Method#isAnnotationPresent(Class)} also considering annotations "inherited" from super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param method         the method checked for annotation. The method must be defined or inherited by this
+     *                       {@link AnnotationInfo#getType()} or any of its super-types.
+     * @return true in case it is present at the given method, else false
+     */
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, Method method) {
         return getAnnotation(annotationType, method) != null;
     }
 
+    /**
+     * Version of {@link Parameter#isAnnotationPresent(Class)} also considering annotations "inherited" from super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param parameter      the parameter checked for annotations. The parameter must belong to a method defined or
+     *                       inherited by this {@link AnnotationInfo#getType()}
+     * @return true in case it is present at the given parameter, else false
+     */
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, Parameter parameter) {
         return getAnnotation(annotationType, parameter) != null;
     }
 
+    /**
+     * Version of {@link AnnotatedElement#isAnnotationPresent(Class)} also considering annotations "inherited" from
+     * super-types.
+     * 
+     * @param annotationType annotation type to check
+     * @param element        must be this {@link AnnotationInfo#getType()}'s {@link Class} or a {@link Field} or
+     *                       {@link Method} defined or inherited by it or a {@link Parameter} of such a method.
+     * @return true in case it is present at the given element, else false
+     */
     public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, AnnotatedElement element) {
         return getAnnotation(annotationType, element) != null;
     }
 
+    /**
+     * @see #isAnnotationPresent(Class, AnnotatedElement)
+     */
     @SafeVarargs
     public final boolean isAnyAnnotationPresent(AnnotatedElement element, Class<? extends Annotation>... annotationTypes) {
         for (Class<? extends Annotation> annotationType : annotationTypes) {
@@ -143,6 +226,14 @@ public final class AnnotationInfo<T> {
         return false;
     }
 
+    /**
+     * Counts the annotation on a {@link Parameter} including those present on same parameter of an overridden method
+     * should the method be overridden.
+     * 
+     * @param parameter the parameter of which to count annotations for
+     * @return the number of annotation present on the given {@link Parameter} including annotations present on the same
+     *         parameter of an potentially overridden method.
+     */
     public int getAnnotationCount(Parameter parameter) {
         return methodParameterAnnotations.get(getIdentifier(parameter)).size();
     }

@@ -92,7 +92,7 @@ public class SchemaReferenceTest extends OpenApiApplicationTest {
     }
 
     @Test
-    public void test() {
+    public void annotatedServerSchemaIsReferenced() {
         JsonNode items = path(getOpenAPIJson(), 
                 "paths./test/servers.get.responses.default.content.application/json.schema.items");
         assertNotNull(items);

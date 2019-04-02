@@ -153,7 +153,6 @@ public class OpenApiWalker implements ApiWalker {
         processAnnotations(FormParam.class, visitor::visitFormParam);
 
         // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema);
         processAnnotations(Server.class, visitor::visitServer, Servers.class);
         processAnnotations(Servers.class, visitor::visitServers, Server.class);
         processAnnotations(Extensions.class, visitor::visitExtensions, Extension.class);

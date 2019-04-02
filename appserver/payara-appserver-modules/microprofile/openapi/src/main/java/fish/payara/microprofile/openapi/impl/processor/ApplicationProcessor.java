@@ -148,16 +148,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * A list of all classes in the given application.
      */
     private final Set<Class<?>> classes;
-
+    
     /**
      * @param appClassLoader the class loader for the application.
      */
     public ApplicationProcessor(Set<Class<?>> appClasses) {
         this.classes = appClasses;
         this.classes.removeIf(cls -> cls.isInterface() || Modifier.isAbstract(cls.getModifiers()));
-        if (classes != null) {
-            addInnerClasses();
-        }
+        addInnerClasses();
     }
 
     private void addInnerClasses() {
@@ -175,7 +173,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
         }
     }
-
+    
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         ApiWalker apiWalker = null;
@@ -460,10 +458,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         String defaultValue = getDefaultValueIfPresent(element);
 
         if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            java.lang.reflect.Parameter parameter = (java.lang.reflect.Parameter) element;
             schema.setType(ModelUtils.getSchemaType(parameter.getType()));
         } else {
-            Field field = Field.class.cast(element);
+            Field field = (Field) element;
             schema.setType(ModelUtils.getSchemaType(field.getType()));
         }
 
@@ -482,7 +480,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             context.getWorkingOperation().addParameter(newParameter);
         } else {
             if (element instanceof Field) {
-                Field field = Field.class.cast(element);
+                Field field = (Field) element;
                 ApiContext apiContext;
                 OpenAPI api = context.getApi();
                 for (Method method : field.getDeclaringClass().getDeclaredMethods()) {
