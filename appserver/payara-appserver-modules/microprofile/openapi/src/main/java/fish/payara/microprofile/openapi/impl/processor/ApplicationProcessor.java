@@ -409,7 +409,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         SchemaType formSchemaType = null;
 
         if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter[] parameters = java.lang.reflect.Parameter.class.cast(element)
+            java.lang.reflect.Parameter[] parameters = ((java.lang.reflect.Parameter) element)
                     .getDeclaringExecutable().getParameters();
             for (java.lang.reflect.Parameter methodParam : parameters) {
                 if (methodParam.isAnnotationPresent(FormParam.class)) {
@@ -505,10 +505,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         ParameterizedType parameterizedType;
 
         if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter parameter = java.lang.reflect.Parameter.class.cast(element);
+            java.lang.reflect.Parameter parameter = (java.lang.reflect.Parameter) element;
             parameterizedType = (ParameterizedType) parameter.getParameterizedType();
         } else {
-            Field field = Field.class.cast(element);
+            Field field = (Field) element;
             parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
         }
 

@@ -39,8 +39,19 @@
  */
 package fish.payara.microprofile.openapi.impl.model.util;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import org.junit.Test;
 
@@ -65,4 +76,102 @@ public class ModelUtilsTest {
         assertEquals(NULL, mergeProperty(NULL, NULL, false));
     }
 
+    enum TestEnum {
+
+        DEFAULT,
+        OTHER
+    }
+
+    @Target(ElementType.ANNOTATION_TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface NestedAnnotation {
+        String value() default "";
+    }
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface TestAnnotation {
+        String[] arrayAttribute() default {};
+        boolean booleanAttribute() default false;
+        Class<?> classAttribute() default Void.class;
+        TestEnum enumAttribute() default TestEnum.DEFAULT;
+        String stringAttribute() default "";
+        NestedAnnotation annotationAttribute() default @NestedAnnotation();
+    }
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface MarkerAnnotation { 
+        // has no attributes
+    }
+
+    @TestAnnotation
+    private Object nullAnnotation;
+    @TestAnnotation(arrayAttribute = { "a" })
+    private Object annotationWithArray;
+    @TestAnnotation(booleanAttribute = true)
+    private Object annotationWithBoolean;
+    @TestAnnotation(classAttribute = String.class)
+    private Object annotationWithClass;
+    @TestAnnotation(enumAttribute = TestEnum.OTHER)
+    private Object annoationWithEnum;
+    @TestAnnotation(annotationAttribute = @NestedAnnotation("value"))
+    private Object annoationWithAnnoation;
+    @MarkerAnnotation
+    private Object markerAnnoation;
+
+    @Test
+    public void nullAnnoationIsNull() {
+        assertTrue(isAnnotationNull(null));
+    }
+
+    @Test
+    public void emptyAnnotationIsNull() {
+        assertTrue(isAnnotationNull(getFieldAnnotation("nullAnnotation")));
+    }
+
+    @Test
+    public void markerAnnoationIsNull() {
+        assertTrue(isAnnotationNull(getFieldAnnotation("markerAnnoation", MarkerAnnotation.class)));
+    }
+
+    @Test
+    public void annotationWithNonEmptyArrayIsNotNull() {
+        assertFalse(isAnnotationNull(getFieldAnnotation("annotationWithArray")));
+    }
+
+    @Test
+    public void annotationWithNonFalseBooleanIsNotNull() {
+        assertFalse(isAnnotationNull(getFieldAnnotation("annotationWithBoolean")));
+    }
+
+    @Test
+    public void annotationWithNonVoidClassIsNotNull() {
+        assertFalse(isAnnotationNull(getFieldAnnotation("annotationWithClass")));
+    }
+
+    @Test
+    public void annotationWithNonDefaultEnumIsNotNull() {
+        assertFalse(isAnnotationNull(getFieldAnnotation("annoationWithEnum")));
+    }
+
+    @Test
+    public void annotationWithNonNullAnnoationIsNotNull() {
+        assertFalse(isAnnotationNull(getFieldAnnotation("annoationWithAnnoation")));
+    }
+
+    private TestAnnotation getFieldAnnotation(String fieldName) {
+        return getFieldAnnotation(fieldName, TestAnnotation.class);
+    }
+
+    private <T extends Annotation> T getFieldAnnotation(String fieldName, Class<T> annoationType) {
+        try {
+            T annotation = getClass().getDeclaredField(fieldName).getAnnotation(annoationType);
+            assertNotNull(annotation);
+            return annotation;
+        } catch (NoSuchFieldException | SecurityException e) {
+            fail("Field expected: "+fieldName);
+            return null;
+        }
+    }
 }

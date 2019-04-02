@@ -375,27 +375,21 @@ public final class ModelUtils {
             if (m.getParameterCount() == 0) {
                 try {
                     Object value = m.invoke(annotation);
-                    if (value != null) {
-                        if (value.getClass().isArray() && Array.getLength(value) > 0) {
-                            return false;
-                        } else if (value instanceof Collection && !Collection.class.cast(value).isEmpty()) {
-                            return false;
-                        } else if (value instanceof Boolean && ((Boolean)value).booleanValue()) {
-                            return false;
-                        } else if (value.getClass().equals(Class.class)
-                                && !Class.class.cast(value).getTypeName().equals("java.lang.Void")) {
-                            return false;
-                        } else if (value.getClass().isEnum() && !Enum.class.cast(value).name().isEmpty()
-                                && !Enum.class.cast(value).name().equalsIgnoreCase("DEFAULT")) {
-                            return false;
-                        } else if (String.class.isAssignableFrom(value.getClass()) && !value.toString().isEmpty()) {
-                            return false;
-                        } else if (value instanceof Annotation) {
-                            if (!isAnnotationNull((Annotation) value)) {
-                                return false;
-                            }
-                        }
+                    // NB. annotation attribute values cannot be null
+                    if (value.getClass().isArray() && Array.getLength(value) > 0) {
+                        return false;
+                    } else if (value instanceof Boolean && ((Boolean) value).booleanValue()) {
+                        return false;
+                    } else if (value instanceof Class && value != Void.class) {
+                        return false;
+                    } else if (value instanceof Enum && !((Enum<?>) value).name().equalsIgnoreCase("DEFAULT")) {
+                        return false;
+                    } else if (value instanceof String && !value.toString().isEmpty()) {
+                        return false;
+                    } else if (value instanceof Annotation && !isAnnotationNull((Annotation) value)) {
+                        return false;
                     }
+                    // else it must be another primitive wrapper but we have no rules on them
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     LOGGER.log(WARNING, "Unable to access annotation element.", ex);
                 }
@@ -456,7 +450,7 @@ public final class ModelUtils {
                 if (currentValue != null && !field.getName().equals("ref")) {
                     // If the field is a collection, clear it
                     if (Collection.class.isAssignableFrom(field.getType())) {
-                        Collection.class.cast(field.get(referee)).clear();
+                        ((Collection<?>) field.get(referee)).clear();
                         continue;
                     }
                     // If the field is an array, clear it
@@ -499,19 +493,22 @@ public final class ModelUtils {
                     Object currentValue = f.get(to);
                     if (newValue != null) {
                         if (newValue instanceof Map) {
-                            for (Entry<Object, Object> entry : (Set<Entry<Object, Object>>) Map.class.cast(newValue)
-                                    .entrySet()) {
-                                if (!Map.class.cast(currentValue).containsKey(entry.getKey())) {
-                                    Map.class.cast(currentValue).put(entry.getKey(), entry.getValue());
+                            Map<Object, Object> newMap = (Map<Object, Object>) newValue;
+                            Map<Object, Object> currentMap = (Map<Object, Object>) currentValue;
+                            for (Entry<Object, Object> entry : newMap.entrySet()) {
+                                if (!currentMap.containsKey(entry.getKey())) {
+                                    currentMap.put(entry.getKey(), entry.getValue());
                                 } else {
-                                    merge(entry.getValue(), Map.class.cast(currentValue).get(entry.getKey()), override);
+                                    merge(entry.getValue(), currentMap.get(entry.getKey()), override);
                                 }
                             }
                         }
                         else if (newValue instanceof Collection) {
-                            for (Object o : Collection.class.cast(newValue)) {
-                                if (!Collection.class.cast(currentValue).contains(o)) {
-                                    Collection.class.cast(currentValue).add(o);
+                            Collection<Object> newCollection = (Collection<Object>) newValue;
+                            Collection<Object> currentCollection = (Collection<Object>) currentValue;
+                            for (Object o : newCollection) {
+                                if (!currentCollection.contains(o)) {
+                                    currentCollection.add(o);
                                 }
                             }
                         }
