@@ -244,7 +244,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private JsonObject readJsonObject(String tokensBody) {
-        try(JsonReader reader = Json.createReader(new StringReader(tokensBody))) {
+        try (JsonReader reader = Json.createReader(new StringReader(tokensBody))) {
             return reader.readObject();
         }
     }

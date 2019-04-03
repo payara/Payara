@@ -44,7 +44,7 @@ import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.client.acc.JWSACCClassLoader;
 import org.glassfish.appclient.common.Util;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -365,7 +365,7 @@ public class JWSACCMain implements Runnable {
 
     /**
       *Writes the provided text to a temporary file marked for deletion on exit.
-      *@param the content to be written
+      *@param content the content to be written
       *@param prefix for the temp file, conforming to the File.createTempFile requirements
       *@param suffix for the temp file
       *@return File object for the newly-created temp file

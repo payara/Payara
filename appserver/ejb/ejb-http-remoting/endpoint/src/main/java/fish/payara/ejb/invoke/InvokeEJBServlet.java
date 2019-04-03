@@ -177,7 +177,7 @@ public class InvokeEJBServlet extends HttpServlet {
     }
 
     private Object toObject(JsonValue objectValue, Class<?> type) {
-        try(Jsonb jsonb = JsonbBuilder.create()) {
+        try (Jsonb jsonb = JsonbBuilder.create()) {
             return jsonb.fromJson(objectValue.toString(), type);
         } catch (Exception e) {
             // cannot really happen. It is just from java.lang.AutoCloseable interface

@@ -57,8 +57,6 @@ import java.util.logging.Level;
 import static com.sun.enterprise.naming.util.LogFacade.logger;
 import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;
 
-;
-
 /**
  * This is a utils class for refactoring the following method.
  */
@@ -129,18 +127,18 @@ public class NamingUtilsImpl implements NamingUtils {
     }
 
     private Object deserialize(byte[] data) throws IOException, java.security.PrivilegedActionException {
-        try(final ObjectInputStream ois =
+        try (final ObjectInputStream ois =
                 getFactory().createObjectInputStream(new ByteArrayInputStream(data))){
             return AccessController.doPrivileged((PrivilegedExceptionAction) () -> ois.readObject());
         }
     }
 
     private byte[] serialize(Object obj) throws IOException {
-        try(ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = getFactory().createObjectOutputStream(bos)) {
-            oos.writeObject(obj);
-            oos.flush();
-            return bos.toByteArray();
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+           try (final ObjectOutputStream oos = getFactory().createObjectOutputStream(bos)) {
+               oos.writeObject(obj);
+           }
+           return bos.toByteArray();
         }
     }
 }
