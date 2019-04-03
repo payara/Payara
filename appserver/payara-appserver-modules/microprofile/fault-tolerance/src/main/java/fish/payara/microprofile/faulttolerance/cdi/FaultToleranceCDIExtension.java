@@ -119,7 +119,7 @@ public class FaultToleranceCDIExtension implements Extension {
      * @param annotatedMethod The annotated method to validate
      * @throws Exception 
      */
-    private <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) 
+    private static <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) 
             throws ClassNotFoundException, NoSuchMethodException {      
         Config config = ConfigProvider.getConfig();
         

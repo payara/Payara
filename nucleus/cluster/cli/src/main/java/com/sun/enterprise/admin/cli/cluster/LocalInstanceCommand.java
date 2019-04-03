@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portios Copyright [2019] Payara Foundation and/or affiliates
+// Portios Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -52,6 +52,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.logging.Level;
 
+import jline.console.ConsoleReader;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 
@@ -70,7 +71,7 @@ import com.sun.enterprise.util.io.ServerDirs;
  * final protected means -- "call me but don't override me".  This convention is
  * to make things less confusing.
  * If you add a method or change whether it is final -- move it to the right section.
- * 
+ *
  * Default instance file structure.
  * <pre>
  * ||---- &lt;GlassFish Install Root&gt;
@@ -366,7 +367,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
             if (files != null) {
                 FileUtils.whack(whackee);
             }
-            
+
             throw new CommandException(Strings.get("DeleteInstance.noWhack", whackee));
         }
 
@@ -493,37 +494,42 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
      * file with the new values.
      */
     private int updateDasPort(Properties dasprops, int port, File propfile) {
-        Console cons;
         if (port == 8686) {     // the old JRMP port
-            logger.info(
-                    Strings.get("Instance.oldDasProperties",
+            logger.info(Strings.get("Instance.oldDasProperties",
                     propfile.toString(), Integer.toString(port),
                     Integer.toString(programOpts.getPort())));
             port = programOpts.getPort();
-        }
-        else if ((cons = System.console()) != null) {
-            String line = cons.readLine("%s",
-                    Strings.get("Instance.oldDasPropertiesPrompt",
-                    propfile.toString(), Integer.toString(port),
-                    Integer.toString(programOpts.getPort())));
-            while (line != null && line.length() > 0) {
-                try {
-                    port = Integer.parseInt(line);
-                    if (port > 0 && port <= 65535)
-                        break;
-                }catch (NumberFormatException nfex) {
-                    //try again
+        } else {
+            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+                if (console != null) {
+                    String line = console.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
+                            propfile.toString(), Integer.toString(port),
+                            Integer.toString(programOpts.getPort())));
+                    while (line != null && line.length() > 0) {
+                        try {
+                            port = Integer.parseInt(line);
+                            if (port > 0 && port <= 65535)
+                                break;
+                        } catch (NumberFormatException nfex) {
+                            //try again
+                        }
+                        line = console.readLine(Strings.get("Instance.reenterPort", Integer.toString(programOpts.getPort())));
+                    }
+                } else {
+                    logger.info(Strings.get("Instance.oldDasPropertiesWrong",
+                            propfile.toString(), Integer.toString(port),
+                            Integer.toString(programOpts.getPort())));
+                    port = programOpts.getPort();
                 }
-                line = cons.readLine(Strings.get("Instance.reenterPort"), Integer.toString(programOpts.getPort()));
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading input", ioe);
+                logger.info(Strings.get("Instance.oldDasPropertiesWrong",
+                        propfile.toString(), Integer.toString(port),
+                        Integer.toString(programOpts.getPort())));
+                port = programOpts.getPort();
             }
         }
-        else {
-            logger.info(
-                    Strings.get("Instance.oldDasPropertiesWrong",
-                    propfile.toString(), Integer.toString(port),
-                    Integer.toString(programOpts.getPort())));
-            port = programOpts.getPort();
-        }
+
         dasprops.setProperty("agent.das.protocol", "http");
         dasprops.setProperty("agent.das.port", Integer.toString(port));
         BufferedOutputStream bos = null;

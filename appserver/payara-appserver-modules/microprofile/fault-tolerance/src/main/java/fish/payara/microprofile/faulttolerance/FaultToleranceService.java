@@ -116,7 +116,7 @@ public class FaultToleranceService implements EventListener {
     }
     
     @Override
-    public void event(Event event) {
+    public void event(Event<?> event) {
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info.getName());
@@ -135,10 +135,9 @@ public class FaultToleranceService implements EventListener {
         try {
             if (faultToleranceObjects.containsKey(applicationName)) {
                 return faultToleranceObjects.get(applicationName).isEnabled();
-            } else {
-                initialiseFaultToleranceObject(applicationName, config);
-                return faultToleranceObjects.get(applicationName).isEnabled();
             }
+            initialiseFaultToleranceObject(applicationName, config);
+            return faultToleranceObjects.get(applicationName).isEnabled();
         } catch (NullPointerException npe) {
             initialiseFaultToleranceObject(applicationName, config);
             return faultToleranceObjects.get(applicationName).isEnabled();
@@ -156,10 +155,9 @@ public class FaultToleranceService implements EventListener {
     public Boolean areFaultToleranceMetricsEnabled(String applicationName, Config config) {
         if (faultToleranceObjects.containsKey(applicationName)) {
             return faultToleranceObjects.get(applicationName).areMetricsEnabled();
-        } else {
-            initialiseFaultToleranceObject(applicationName, config);
-            return faultToleranceObjects.get(applicationName).areMetricsEnabled();
         }
+        initialiseFaultToleranceObject(applicationName, config);
+        return faultToleranceObjects.get(applicationName).areMetricsEnabled();
     }
     
     /**
@@ -526,7 +524,7 @@ public class FaultToleranceService implements EventListener {
      * @param annotatedMethod The annotated Method to generate the signature for
      * @return A String in the format of CanonicalClassName#MethodName({ParameterTypes})>ReturnType
      */
-    private String getFullMethodSignature(Method annotatedMethod) {
+    private static String getFullMethodSignature(Method annotatedMethod) {
         return annotatedMethod.getDeclaringClass().getCanonicalName() 
                 + "#" + annotatedMethod.getName() 
                 + "(" + Arrays.toString(annotatedMethod.getParameterTypes()) + ")"
@@ -547,7 +545,7 @@ public class FaultToleranceService implements EventListener {
         }
     }
     
-    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
+    private static void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
             InvocationManager invocationManager, InvocationContext invocationContext) {
         span.addSpanTag("App Name", invocationManager.getCurrentInvocation().getAppName());
         span.addSpanTag("Component ID", invocationManager.getCurrentInvocation().getComponentId());

@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.store;
 
 import java.io.BufferedInputStream;
-import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +53,8 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jline.console.ConsoleReader;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.CULoggerInfo;
@@ -173,10 +174,19 @@ public class AsadminSecurityUtil {
      * @return the password to the client side truststore
      */
     private char[] promptForPassword() throws IOException {
-        Console cons = System.console();
-        if (cons != null) {
-            return cons.readPassword(strmgr.get("certificateDbPrompt"));
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+            if (console != null) {
+                // Don't echo anything when reading
+                char echoCharacter = 0;
+                console.setEchoCharacter(echoCharacter);
+
+                String line = console.readLine(strmgr.get("certificateDbPrompt"));
+                return line.toCharArray();
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading input", ioe);
         }
+
         return null;
     }
 
