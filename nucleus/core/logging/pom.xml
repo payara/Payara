@@ -57,37 +57,37 @@
     <description>Glassfish logging classes</description>
 
     <dependencies>
-      <dependency>
-        <groupId>org.glassfish.main.common</groupId>
-        <artifactId>glassfish-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.main.admin</groupId>
-        <artifactId>admin-util</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.main.cluster</groupId>
-        <artifactId>cluster-ssh</artifactId>
-        <version>${project.version}</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.main.common</groupId>
-        <artifactId>internal-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.annotations</groupId>
-        <artifactId>logging-annotation-processor</artifactId>
-        <optional>true</optional>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.main.common</groupId>
-        <artifactId>common-util</artifactId>
-	<version>${project.version}</version>
-      </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.cluster</groupId>
+            <artifactId>cluster-ssh</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
@@ -98,6 +98,12 @@
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

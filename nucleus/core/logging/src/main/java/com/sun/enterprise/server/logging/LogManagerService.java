@@ -134,7 +134,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     @Inject
     Domain domain;
     
-    final Map<String, Handler> gfHandlers = new HashMap<String, Handler>();
+    final Map<String, Handler> gfHandlers = new HashMap<>();
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
@@ -376,17 +376,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         // logging.properties massaging.
         final LogManager logMgr = LogManager.getLogManager();
-        File logging = null;
+        File loggingPropertiesFile = null;
 
         // reset settings
         try {
 
-
-            logging = getLoggingFile();
-            System.setProperty("java.util.logging.config.file", logging.getAbsolutePath());
+            loggingPropertiesFile = getLoggingFile();
+            System.setProperty("java.util.logging.config.file", loggingPropertiesFile.getAbsolutePath());
             
-
-
             String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
             String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
             File src = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
@@ -397,11 +394,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             System.out.println("#!## LogManagerService.postConstruct : src=" +src);
             System.out.println("#!## LogManagerService.postConstruct : dest=" +dest);
 
-            if (!logging.exists()) {
-                LOGGER.log(Level.FINE, "{0} not found, creating new file from template.", logging.getAbsolutePath());
+            if (!loggingPropertiesFile.exists()) {
+                LOGGER.log(Level.FINE, "{0} not found, creating new file from template.", loggingPropertiesFile.getAbsolutePath());
                 FileUtils.copy(src, dest);
-                logging = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
+                loggingPropertiesFile = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
+            
             logMgr.readConfiguration();
 
             // replace placehoders with values from system environment variables
@@ -480,12 +478,34 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             }
         }
+             
+        // finally listen to changes to the loggingPropertiesFile.properties file
+        listenToChangesOnloggingPropsFile(loggingPropertiesFile, logMgr);
+   
+        // Log the messages that were generated very early before this Service
+        // started.  Just use our own logger...
+        List<EarlyLogger.LevelAndMessage> catchUp = EarlyLogger.getEarlyMessages();
 
+        if (!catchUp.isEmpty()) {
+            for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
+                LOGGER.log(levelAndMessage.getLevel(), levelAndMessage.getMessage());
+            }
+            catchUp.clear();
+        }
 
-                
-        // finally listen to changes to the logging.properties file
-        if (logging != null) {
-            fileMonitoring.monitors(logging, new FileMonitoring.FileChangeListener() {
+        ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
+
+        while (!catchEarlyMessage.isEmpty()) {
+            LogRecord logRecord = catchEarlyMessage.poll();
+            if (logRecord != null) {
+                LOGGER.log(logRecord);
+            }
+        }
+    }
+  
+    public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile, LogManager logMgr){
+             if (loggingPropertiesFile != null) {
+            fileMonitoring.monitors(loggingPropertiesFile, new FileMonitoring.FileChangeListener() {
                 @Override
                 public void changed(File changedFile) {
                     synchronized (gfHandlers) {
@@ -806,6 +826,22 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogRotationOnDateChangeDetail)) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogRotationOnDateChangeDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setRotationOnDateChange(Boolean.parseBoolean(val));
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
+                                        }
+                                    }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
                                         Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
@@ -855,27 +891,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             });
         }
-        // Log the messages that were generated very early before this Service
-        // started.  Just use our own logger...
-        List<EarlyLogger.LevelAndMessage> catchUp = EarlyLogger.getEarlyMessages();
-
-        if (!catchUp.isEmpty()) {
-            for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
-                LOGGER.log(levelAndMessage.getLevel(), levelAndMessage.getMessage());
-            }
-            catchUp.clear();
-        }
-
-        ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
-
-        while (!catchEarlyMessage.isEmpty()) {
-            LogRecord logRecord = catchEarlyMessage.poll();
-            if (logRecord != null) {
-                LOGGER.log(logRecord);
-            }
-        }
     }
-  
     private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props, LogManager logMgr) {
         if (formatterClassName == null || formatterClassName.isEmpty()) {
             formatterClassName = UniformLogFormatter.class.getName();
