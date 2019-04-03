@@ -133,7 +133,10 @@ public abstract class CLICommand implements PostConstruct {
     };
     private String manpageTokenValues[] = new String[manpageTokens.length];
 
-
+    static{
+        checkToDisableJLineLogging();
+    }
+    
     /**
      * The name of the command.
      * Initialized in the constructor.
@@ -1386,6 +1389,19 @@ public abstract class CLICommand implements PostConstruct {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    
+    private static void checkToDisableJLineLogging(){
+        if (Boolean.getBoolean("fish.payara.admin.command.jline.log.disable")) {
+            System.setProperty("jline.log.jul", "false");
+            final OutputStream noOpOutputStream = new OutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                    //NO-OP
+                }
+            };
+            jline.internal.Log.setOutput(new PrintStream(noOpOutputStream));
         }
     }
 }

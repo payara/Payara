@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019[ Payara Foundation and/or affiliates
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import javax.inject.Inject;
 
 
+import jline.console.ConsoleReader;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -171,22 +172,24 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        Console cons = System.console();
-
-        if (cons != null) {
-            String val = null;
-            do {
-                cons.printf("%s", Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
-                val = cons.readLine();
-                if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.finer("Generate key!");
+        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+            if (console != null) {
+                String val = null;
+                do {
+                    console.setPrompt(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
+                    val = console.readLine();
+                    if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
+                        if (logger.isLoggable(Level.FINER)) {
+                            logger.finer("Generate key!");
+                        }
+                        return true;
+                    } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
+                        break;
                     }
-                    return true;
-                } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
-                    break;
-                }
-            } while (val != null && !isValidAnswer(val));
+                } while (val != null && !isValidAnswer(val));
+            }
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading input", ioe);
         }
         return false;
     }
