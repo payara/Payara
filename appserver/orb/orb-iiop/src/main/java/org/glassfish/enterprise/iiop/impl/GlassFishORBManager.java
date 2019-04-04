@@ -81,6 +81,7 @@ import java.util.logging.Logger;
 
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
+import org.glassfish.internal.api.ServerContext;
 
 import org.jvnet.hk2.config.types.Property;
 
@@ -580,7 +581,7 @@ public final class GlassFishORBManager {
                     ModulesRegistry modulesRegistry = services.getService(ModulesRegistry.class);
 
                     for(Module m : modulesRegistry.getModules()) {
-                        if( m.getName().equals("glassfish-corba-orb") ) {
+                        if( m.getName().equals("org.glassfish.corba.glassfish-corba-orb") ) {
                             corbaOrbModule = m;
                             break;
                         }
@@ -600,7 +601,7 @@ public final class GlassFishORBManager {
             prevCL = Utility.getClassLoader();
             try {
               if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
-                Utility.setContextClassLoader(prevCL.getParent());
+                  Utility.setContextClassLoader(prevCL.getParent());
                }
                ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
             } finally {
