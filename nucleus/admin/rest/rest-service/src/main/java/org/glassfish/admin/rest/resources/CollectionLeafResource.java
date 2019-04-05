@@ -342,7 +342,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack
+    // Ugly, temporary hack "There's nothing more permanent than a temporary hack" - Kyle Simpson
     private Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
         Map<String, String> results = new HashMap<String, String>();
         StringBuilder options = new StringBuilder();
@@ -355,9 +355,17 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
 
                 String value = entry.getValue();
-                if (value != null && !value.isEmpty() || key != null && key.startsWith("-D")) {
-                    options.append("=").append(entry.getValue());
-                }
+                
+               if(value != null && !value.trim().isEmpty()){
+                   if(value.contains("=")){
+                       value = value.replaceAll("=", "");
+                   }
+                   if(key != null && !key.trim().isEmpty() && !key.endsWith("=") && !key.contains("=")){
+                       options.append("=").append(entry.getValue());
+                   }else{
+                       options.append(value);
+                   }
+               }   
                 sep = ":";
             }
         }
