@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
@@ -51,14 +52,16 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
 public class AsynchronousValidator {
     
     /**
-     * Validates the given @Asynchronous annotation.
+     * Validates the given {@link Asynchronous} annotation.
      * @param asynchronous The annotation to validate
      * @param annotatedMethod The annotated method to validate
      */
     public static void validateAnnotation(Asynchronous asynchronous, AnnotatedMethod<?> annotatedMethod) {
-        if (annotatedMethod.getJavaMember().getReturnType() != Future.class) {
+        Class<?> returnType = annotatedMethod.getJavaMember().getReturnType();
+        if (returnType != Future.class && returnType != CompletionStage.class) {
             throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Asynchronous.class.getCanonicalName() + " does not return a Future.");
+                    + " annotated with " + Asynchronous.class.getCanonicalName()
+                    + " does not return a Future or CompletionStage. Note that subtypes of these two are not permitted.");
         }
     }
 }

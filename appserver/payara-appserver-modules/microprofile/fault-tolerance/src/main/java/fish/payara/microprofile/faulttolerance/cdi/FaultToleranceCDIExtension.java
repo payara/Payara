@@ -39,29 +39,20 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import fish.payara.microprofile.faulttolerance.interceptors.AsynchronousInterceptor;
-import fish.payara.microprofile.faulttolerance.interceptors.BulkheadInterceptor;
-import fish.payara.microprofile.faulttolerance.interceptors.CircuitBreakerInterceptor;
-import fish.payara.microprofile.faulttolerance.interceptors.RetryInterceptor;
-import fish.payara.microprofile.faulttolerance.interceptors.TimeoutInterceptor;
-import fish.payara.microprofile.faulttolerance.validators.AsynchronousValidator;
-import fish.payara.microprofile.faulttolerance.validators.BulkheadValidator;
-import fish.payara.microprofile.faulttolerance.validators.CircuitBreakerValidator;
-import fish.payara.microprofile.faulttolerance.validators.FallbackValidator;
-import fish.payara.microprofile.faulttolerance.validators.RetryValidator;
-import fish.payara.microprofile.faulttolerance.validators.TimeoutValidator;
+import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceInterceptor;
+import fish.payara.microprofile.faulttolerance.model.FaultToleranceBehaviour;
 import java.lang.annotation.Annotation;
-import java.util.Set;
+import java.lang.reflect.Method;
+
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.WithAnnotations;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import javax.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
+
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -70,75 +61,50 @@ import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
- * CDI Extension that adds and validates the Fault Tolerance Annotations.
+ * CDI Extension that does the setup for FT interceptor handling.
+ * 
  * @author Andrew Pielage
+ * @author Jan Bernitt
  */
 public class FaultToleranceCDIExtension implements Extension {
-    
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        // Add each of the Fault Tolerance interceptors
-        beforeBeanDiscovery.addInterceptorBinding(Asynchronous.class);
-        AnnotatedType<AsynchronousInterceptor> asynchronousInterceptor = 
-                beanManager.createAnnotatedType(AsynchronousInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(asynchronousInterceptor, AsynchronousInterceptor.class.getName());
-        
-        beforeBeanDiscovery.addInterceptorBinding(Bulkhead.class);
-        AnnotatedType<BulkheadInterceptor> bulkheadInterceptor 
-                = beanManager.createAnnotatedType(BulkheadInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(bulkheadInterceptor, BulkheadInterceptor.class.getName());
-        
-        beforeBeanDiscovery.addInterceptorBinding(CircuitBreaker.class);
-        AnnotatedType<CircuitBreakerInterceptor> circuitBreakerInterceptor = 
-                beanManager.createAnnotatedType(CircuitBreakerInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(circuitBreakerInterceptor, CircuitBreakerInterceptor.class.getName());
-        
-        beforeBeanDiscovery.addInterceptorBinding(Retry.class);
-        AnnotatedType<RetryInterceptor> retryInterceptor = beanManager.createAnnotatedType(RetryInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(retryInterceptor, RetryInterceptor.class.getName());
-        
-        beforeBeanDiscovery.addInterceptorBinding(Timeout.class);
-        AnnotatedType<TimeoutInterceptor> timeoutInterceptor = beanManager.createAnnotatedType(TimeoutInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(timeoutInterceptor, TimeoutInterceptor.class.getName());
-    }
-    
-    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
-            Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, 
-            BeanManager beanManager) throws Exception {
-        AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
-        
-        // Validate the Fault Tolerance annotations for each annotated method
-        Set<AnnotatedMethod<? super T>> annotatedMethods = annotatedType.getMethods();
-        for (AnnotatedMethod<?> annotatedMethod : annotatedMethods) {
-            validateMethodAnnotations(annotatedMethod);
-        }
-    }
-    
+
     /**
-     * Helper method that validates the Fault Tolerance annotations for a given method.
-     * @param <T> The annotated method type
-     * @param annotatedMethod The annotated method to validate
-     * @throws Exception 
+     * The {@link FaultToleranceBehaviour} "instance" we use to dynamically mark methods at runtime that should be
+     * handled by the {@link FaultToleranceInterceptor} that handles all of the FT annotations.
      */
-    private static <T> void validateMethodAnnotations(AnnotatedMethod<T> annotatedMethod) 
-            throws ClassNotFoundException, NoSuchMethodException {      
-        Config config = ConfigProvider.getConfig();
-        
-        for (Annotation annotation : annotatedMethod.getAnnotations()) {
-            Class<? extends Annotation> annotationType = annotation.annotationType();
-            
-            if (annotationType == Asynchronous.class) {
-                AsynchronousValidator.validateAnnotation((Asynchronous) annotation, annotatedMethod);
-            } else if (annotationType == Bulkhead.class) {
-                BulkheadValidator.validateAnnotation((Bulkhead) annotation, annotatedMethod, config);
-            } else if (annotationType == CircuitBreaker.class) {
-                CircuitBreakerValidator.validateAnnotation((CircuitBreaker) annotation, annotatedMethod, config);
-            } else if (annotationType == Fallback.class) {
-                FallbackValidator.validateAnnotation((Fallback) annotation, annotatedMethod, config);
-            } else if (annotationType == Retry.class) {
-                RetryValidator.validateAnnotation((Retry) annotation, annotatedMethod, config);
-            } else if (annotationType == Timeout.class) {
-                TimeoutValidator.validateAnnotation((Timeout) annotation, annotatedMethod, config);
+    private static final Annotation MARKER = () -> FaultToleranceBehaviour.class;
+
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class));
+    }
+
+    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
+        Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, 
+            BeanManager beanManager) throws Exception {
+        mark(processAnnotatedType);
+    }
+
+    /**
+     * Marks all {@link Method}s *affected* by FT annotation with the {@link FaultToleranceBehaviour} annotation which
+     * is handled by the {@link FaultToleranceInterceptor} which processes the FT annotations.
+     * 
+     * @param processAnnotatedType type currently processed
+     */
+    private static <T> void mark(ProcessAnnotatedType<T> processAnnotatedType) {
+        boolean markAllMethods = isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
+        for (AnnotatedMethodConfigurator<?> methodConfigurator : processAnnotatedType.configureAnnotatedType().methods()) {
+            if (markAllMethods || isAnnotaetdWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
+                methodConfigurator.add(MARKER);
             }
         }
+    }
+
+    private static boolean isAnnotaetdWithFaultToleranceAnnotations(Annotated element) {
+        return element.isAnnotationPresent(Asynchronous.class) 
+                || element.isAnnotationPresent(Bulkhead.class)
+                || element.isAnnotationPresent(CircuitBreaker.class)
+                || element.isAnnotationPresent(Fallback.class)
+                || element.isAnnotationPresent(Retry.class)
+                || element.isAnnotationPresent(Timeout.class);
     }
 }

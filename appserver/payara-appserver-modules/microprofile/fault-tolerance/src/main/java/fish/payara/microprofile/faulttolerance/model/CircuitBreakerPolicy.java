@@ -1,0 +1,52 @@
+package fish.payara.microprofile.faulttolerance.model;
+
+import java.lang.reflect.Method;
+import java.time.temporal.ChronoUnit;
+
+import javax.interceptor.InvocationContext;
+
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+
+/**
+ * The resolved "cached" information of a {@link CircuitBreaker} annotation an a specific method.
+ */
+public final class CircuitBreakerPolicy extends Policy {
+
+    public final Class<? extends Throwable>[] failOn;
+    public final long delay;
+    public final ChronoUnit delayUnit;
+    public final int requestVolumeThreshold;
+    public final double failureRatio;
+    public final int successThreshold;
+
+    public CircuitBreakerPolicy(Method annotatedMethod, Class<? extends Throwable>[] failOn, long delay, ChronoUnit delayUnit,
+            int requestVolumeThreshold, double failureRatio, int successThreshold) {
+        checkAtLeast(0, annotatedMethod, CircuitBreaker.class, "delay", delay);
+        checkAtLeast(1, annotatedMethod, CircuitBreaker.class, "requestVolumeThreshold", requestVolumeThreshold);
+        checkAtLeast(0d, annotatedMethod, CircuitBreaker.class, "failureRatio", failureRatio);
+        checkAtMost(1.0d, annotatedMethod, CircuitBreaker.class, "failureRatio", failureRatio);
+        checkAtLeast(1, annotatedMethod, CircuitBreaker.class, "successThreshold", successThreshold);
+        this.failOn = failOn;
+        this.delay = delay;
+        this.delayUnit = delayUnit;
+        this.requestVolumeThreshold = requestVolumeThreshold;
+        this.failureRatio = failureRatio;
+        this.successThreshold = successThreshold;
+    }
+
+    public static CircuitBreakerPolicy create(InvocationContext context, FaultToleranceConfig config) {
+        if (config.isAnnotationPresent(CircuitBreaker.class, context) && config.isEnabled(CircuitBreaker.class, context)) {
+            CircuitBreaker annotation = config.getAnnotation(CircuitBreaker.class, context);
+            return new CircuitBreakerPolicy(context.getMethod(),
+                    config.failOn(annotation, context),
+                    config.delay(annotation, context),
+                    config.delayUnit(annotation, context),
+                    config.requestVolumeThreshold(annotation, context),
+                    config.failureRatio(annotation, context),
+                    config.successThreshold(annotation, context));
+        }
+        return null;
+    }
+}

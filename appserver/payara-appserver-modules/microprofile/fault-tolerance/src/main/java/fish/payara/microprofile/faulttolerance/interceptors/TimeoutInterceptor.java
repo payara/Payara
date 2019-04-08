@@ -39,37 +39,22 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.Priority;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.naming.NamingException;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -78,211 +63,120 @@ import org.glassfish.internal.api.Globals;
 @Interceptor
 @Timeout
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 20)
-public class TimeoutInterceptor {
-    
-    private static final Logger logger = Logger.getLogger(TimeoutInterceptor.class.getName());
-    
-    @Inject
-    private BeanManager beanManager;
+public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
+
+    public TimeoutInterceptor() {
+        super(Timeout.class, true);
+    }
 
     @AroundInvoke
-    public Object intercept(InvocationContext invocationContext) throws Exception {
-        Object proceededInvocationContext = null;
-        
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        FaultToleranceService faultToleranceService = serviceLocator.getService(FaultToleranceService.class);
-        InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
-        
-        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                Timeout.class);
-        
-        Config config = null;
+    public Object intercept(InvocationContext context) throws Exception {
+        Object resultValue = null;
+
         try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-        
-        try {
-            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-            
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && (FaultToleranceCdiUtils.getEnabledOverrideValue(
-                            config, Timeout.class, invocationContext)
-                            .orElse(Boolean.TRUE))) {
+            if (getConfig().isEnabled(context) && getConfig().isEnabled(Timeout.class, context)) {
                 // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
-                if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
-                        && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null
-                        && FaultToleranceCdiUtils.getAnnotation(
-                                beanManager, CircuitBreaker.class, invocationContext) == null) {
-                    faultToleranceService.incrementCounterMetric(metricRegistry, 
-                            "ft." + fullMethodSignature + ".invocations.total", appName, config);
+                if (getConfig().getAnnotation(Bulkhead.class, context) == null
+                        && getConfig().getAnnotation(Retry.class, context) == null
+                        && getConfig().getAnnotation(CircuitBreaker.class, context) == null) {
+                    getMetrics().incrementInvocationsTotal(Timeout.class, context);
                 }
-                
+
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
-                proceededInvocationContext = timeout(invocationContext);
+                resultValue = timeout(context);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal
-                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without timeout.", 
-                        faultToleranceService.getApplicationName(invocationManager, invocationContext));
-                proceededInvocationContext = invocationContext.proceed();
+                logger.log(Level.FINE, "Fault Tolerance not enabled, proceeding normally without timeout.");
+                resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
-            
+            Retry retry = getConfig().getAnnotation(Retry.class, context);
+
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             }
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, 
-                    invocationContext);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
-                    config, Fallback.class, invocationContext)
-                    .orElse(Boolean.TRUE))) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
                 logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                         + "falling back from Timeout");
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
+                resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".invocations.failed.total", 
-                        faultToleranceService.getApplicationName(invocationManager, invocationContext), 
-                        config);
-                
+                getMetrics().incrementInvocationsFailedTotal(Timeout.class, context);
                 throw ex;
             }
         }
-        
-        return proceededInvocationContext;
+        return resultValue;
     }
 
     /**
      * Proceeds the given invocation context with Timeout semantics.
-     * @param invocationContext The invocation context to proceed.
+     * @param context The invocation context to proceed.
      * @return The result of the invocation context.
      * @throws Exception If the invocation context execution throws an exception
      */
-    private Object timeout(InvocationContext invocationContext) throws Exception {
-        Object proceededInvocationContext = null;
-        
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        Timeout timeout = FaultToleranceCdiUtils.getAnnotation(beanManager, Timeout.class, invocationContext);
-        
-        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                Timeout.class);
-        String appName = faultToleranceService.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class), 
-                invocationContext);
-        
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-        
-        long value = FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class, "value", invocationContext, Long.class)
-                .orElse(timeout.value());
-        // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
-        ChronoUnit unit = FaultToleranceCdiUtils.getOverrideValue(
-                config, Timeout.class, "unit", invocationContext, ChronoUnit.class)
-                .orElse(timeout.unit());
+    private Object timeout(InvocationContext context) throws Exception {
+        Object resultValue = null;
+
+        Timeout timeout = getConfig().getAnnotation(Timeout.class, context);
+
+        long value = getConfig().value(timeout, context);
+        ChronoUnit unit = getConfig().unit(timeout, context);
 
         Future<?> timeoutFuture = null;
         long timeoutMillis = Duration.of(value, unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutMillis;
         long executionStartTime = System.nanoTime();
-        
+
         try {
-            timeoutFuture = startTimeout(timeoutMillis);
-            proceededInvocationContext = invocationContext.proceed();
+            timeoutFuture = getExecution().timeoutIn(timeoutMillis);
+            resultValue = context.proceed();
             stopTimeout(timeoutFuture);
 
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
-                
+                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException();
             }
-            
+
             // Record the execution time for MP Metrics
-            faultToleranceService.updateHistogramMetric(metricRegistry, 
-                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
-                    System.nanoTime() - executionStartTime,
-                    appName, config);
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
             // Record the successfuly completion for MP Metrics
-            faultToleranceService.incrementCounterMetric(metricRegistry, 
-                    "ft." + fullMethodSignature + ".timeout.callsNotTimedOut.total", appName, config);
+            getMetrics().incrementTimeoutCallsNotTimedOutTotal(context);
         } catch (InterruptedException ie) {
             // Record the execution time for MP Metrics
-            faultToleranceService.updateHistogramMetric(metricRegistry, 
-                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
-                    System.nanoTime() - executionStartTime,
-                    appName, config);
-            
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
+
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
-                
+                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
             // Record the execution time for MP Metrics
-            faultToleranceService.updateHistogramMetric(metricRegistry, 
-                    "ft." + fullMethodSignature + ".timeout.executionDuration", 
-                    System.nanoTime() - executionStartTime,
-                    appName, config);
-            
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
+
             // Deal with cases where someone has caught the thread.interrupt() and thrown the exception as something else
             if (ex.getCause() instanceof InterruptedException && System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".timeout.callsTimedOut.total", appName, config);
-                
+                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ex);
             }
-            
+
             stopTimeout(timeoutFuture);
             throw ex;
         }
-        
-        return proceededInvocationContext;
-    }
 
-    /**
-     * Helper method that schedules a thread interrupt after a period of time.
-     * @param timeoutMillis The time in milliseconds to wait before interrupting.
-     * @param timedOut A threadlocal that stores whether or not the interrupt has occurred.
-     * @return A future that can be cancelled if the method execution completes before the interrupt happens
-     * @throws NamingException If the configured ManagedScheduledExecutorService could not be found
-     */
-    private static Future<?> startTimeout(long timeoutMillis) throws NamingException {
-        final Thread thread = Thread.currentThread();
-        
-        Runnable timeoutTask = () -> {
-            thread.interrupt();
-        };
-
-        FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
-                .getService(FaultToleranceService.class);
-        ManagedScheduledExecutorService managedScheduledExecutorService = faultToleranceService.
-                getManagedScheduledExecutorService();
-
-        return managedScheduledExecutorService.schedule(timeoutTask, timeoutMillis, TimeUnit.MILLISECONDS);
+        return resultValue;
     }
 
     /**

@@ -39,31 +39,23 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.io.Serializable;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Priority;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import javax.naming.NamingException;
+
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceException;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 
 /**
  * Interceptor for the Fault Tolerance Asynchronous Annotation. Also contains the wrapper class for the Future outcome.
@@ -73,75 +65,65 @@ import org.glassfish.internal.api.Globals;
 @Interceptor
 @Asynchronous
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class AsynchronousInterceptor implements Serializable {
+public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Asynchronous> implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(AsynchronousInterceptor.class.getName());
-    
-    @Inject
-    BeanManager beanManager;
-    
+    public AsynchronousInterceptor() {
+        super(Asynchronous.class, false);
+    }
+
     @AroundInvoke
-    public Object intercept(InvocationContext invocationContext) throws Exception {
-        Object proceededInvocationContext = null;
-        
-        // Get the configured ManagedExecutorService from the Fault Tolerance Service
-        FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
-                .getService(FaultToleranceService.class);
-        ManagedExecutorService managedExecutorService = faultToleranceService.getManagedExecutorService();
+    public Object intercept(InvocationContext context) throws Exception {
+        Object resultValue = null;
 
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
-        
-        Config config = null;
         try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-        
-        try {
-            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-            
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
             // this method
-            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && (FaultToleranceCdiUtils.getEnabledOverrideValue( 
-                            config, Asynchronous.class, invocationContext)
-                            .orElse(Boolean.TRUE))) {
-                Callable<?> callable = () -> invocationContext.proceed();
-                logger.log(Level.FINER, "Proceeding invocation asynchronously");
-                proceededInvocationContext = new FutureDelegator(managedExecutorService.submit(callable));
+            if (getConfig().isEnabled(context) && getConfig().isEnabled(Asynchronous.class, context)) {
+                resultValue = asynchronous(context);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal
-                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without asynchronous.", 
-                        faultToleranceService.getApplicationName(invocationManager, invocationContext));
-                proceededInvocationContext = invocationContext.proceed();
+                logger.log(Level.FINE, "Fault Tolerance not enabled, proceeding normally without asynchronous.");
+                resultValue = context.proceed();
             }
         } catch (Exception ex) {
             // If an exception was thrown, check if the method is annotated with @Fallback
             // We should only get here if executing synchronously, as the exception wouldn't get thrown in this thread
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
-            
+            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+
             // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
             // propagate the exception upwards
-            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
-                    config, Fallback.class, invocationContext)
-                    .orElse(Boolean.TRUE))) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
+                resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 throw ex;
             }
         }
-        
-        return proceededInvocationContext;
+
+        return resultValue;
+    }
+
+    private Object asynchronous(InvocationContext context) throws Exception, NamingException {
+        Class<?> returnType = context.getMethod().getReturnType();
+        if (returnType == CompletionStage.class) {
+            logger.log(Level.FINER, "Proceeding invocation asynchronously");
+            //TODO
+            return context.proceed();
+        } 
+        if (returnType == Future.class) {
+            logger.log(Level.FINER, "Proceeding invocation asynchronously");
+            return new FutureDelegator(getExecution().runAsynchronous(context));
+        }
+        logger.log(Level.SEVERE, "Unsupported return type for @Asynchronous annotated method: " + returnType
+                + ", proceeding normally without asynchronous.");
+        return context.proceed();
     }
 
     /**
      * Wrapper class for the Future object
      */
-    class FutureDelegator implements Future<Object> {
+    static class FutureDelegator implements Future<Object> {
 
         private final Future<?> future;
 
@@ -166,46 +148,41 @@ public class AsynchronousInterceptor implements Serializable {
 
         @Override
         public Object get() throws InterruptedException, ExecutionException {
-            Object proceededInvocation;
-
             try {
-                proceededInvocation = future.get();
-                
+                Object resultValue = future.get();
+
                 // If the result of future.get() is still a future, get it again
-                if (proceededInvocation instanceof Future) {
-                    Future<?> tempFuture = (Future<?>) proceededInvocation;
-                    proceededInvocation = tempFuture.get();
+                if (resultValue instanceof Future) {
+                    Future<?> tempFuture = (Future<?>) resultValue;
+                    return tempFuture.get();
                 }
+                return resultValue;
             } catch (InterruptedException | ExecutionException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
                     throw (FaultToleranceException) ex.getCause();
                 }
                 throw ex;
             }
-            
-            return proceededInvocation;
         }
 
         @Override
         public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            Object proceededInvocation;
-
             try {
-                proceededInvocation = future.get(timeout, unit);
-                
+                Object resultValue = future.get(timeout, unit);
+
                 // If the result of future.get() is still a future, get it again
-                if (proceededInvocation instanceof Future) {
-                    Future<?> tempFuture = (Future<?>) proceededInvocation;
-                    proceededInvocation = tempFuture.get(timeout, unit);
+                if (resultValue instanceof Future) {
+                    Future<?> tempFuture = (Future<?>) resultValue;
+                    return tempFuture.get(timeout, unit);
                 }
+                return resultValue;
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
                     throw new ExecutionException(ex.getCause());
                 }
                 throw ex;
             }
-            
-            return proceededInvocation;
         }
+
     }
 }

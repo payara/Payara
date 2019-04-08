@@ -39,41 +39,22 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
-import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 
 import javax.annotation.Priority;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.naming.NamingException;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -82,186 +63,93 @@ import java.util.logging.Logger;
 @Interceptor
 @CircuitBreaker
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
-public class CircuitBreakerInterceptor implements Serializable {
+public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<CircuitBreaker> implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(CircuitBreakerInterceptor.class.getName());
-
-    @Inject
-    private BeanManager beanManager;
+    public CircuitBreakerInterceptor() {
+        super(CircuitBreaker.class, true);
+    }
 
     @AroundInvoke
-    public Object intercept(InvocationContext invocationContext) throws Exception {
-        Object proceededInvocationContext = null;
-
-        FaultToleranceService faultToleranceService =
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
-
-        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext,
-                CircuitBreaker.class);
-
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
+    public Object intercept(InvocationContext context) throws Exception {
+        Object resultValue = null;
 
         // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled for this method
         try {
-            String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && (FaultToleranceCdiUtils.getEnabledOverrideValue(
-                            config, CircuitBreaker.class, invocationContext)
-                            .orElse(Boolean.TRUE))) {
+            if (getConfig().isEnabled(context) && getConfig().isEnabled(CircuitBreaker.class, context)) {
                 // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
-                if (FaultToleranceCdiUtils.getAnnotation(beanManager, Bulkhead.class, invocationContext) == null
-                        && FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext) == null) {
-                    faultToleranceService.incrementCounterMetric(metricRegistry,
-                            "ft." + fullMethodSignature + ".invocations.total", appName, config);
+                if (getConfig().getAnnotation(Bulkhead.class, context) == null
+                        && getConfig().getAnnotation(Retry.class, context) == null) {
+                    getMetrics().incrementInvocationsTotal(CircuitBreaker.class, context);
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
-                proceededInvocationContext = circuitBreak(invocationContext);
+                resultValue = circuitBreak(context);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal
-                logger.log(Level.FINE, "Fault Tolerance not enabled for {0}, proceeding normally without "
-                        + "circuitbreaker.", faultToleranceService.getApplicationName(invocationManager,
-                                invocationContext));
-                proceededInvocationContext = invocationContext.proceed();
+                logger.log(Level.FINE, "Fault Tolerance not enabled, proceeding normally without circuitbreaker.");
+                resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Retry retry = FaultToleranceCdiUtils.getAnnotation(beanManager, Retry.class, invocationContext);
+            Retry retry = getConfig().getAnnotation(Retry.class, context);
 
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             }
-            Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
-                    config, Fallback.class, invocationContext)
-                    .orElse(Boolean.TRUE))) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
                 logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                         + "falling back from CircuitBreaker");
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, config, invocationContext);
-                proceededInvocationContext = fallbackPolicy.fallback(invocationContext, ex);
+                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
+                resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                faultToleranceService.incrementCounterMetric(metricRegistry,
-                        "ft." + fullMethodSignature + ".invocations.failed.total",
-                        faultToleranceService.getApplicationName(invocationManager, invocationContext),
-                        config);
-
+                getMetrics().incrementInvocationsFailedTotal(CircuitBreaker.class, context);
                 throw ex;
             }
         }
 
-        return proceededInvocationContext;
+        return resultValue;
     }
 
-    private Object circuitBreak(InvocationContext invocationContext) throws Exception {
-        Object proceededInvocationContext = null;
+    private Object circuitBreak(InvocationContext context) throws Exception {
+        Object resultValue = null;
 
-        FaultToleranceService faultToleranceService =
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        CircuitBreaker circuitBreaker = FaultToleranceCdiUtils.getAnnotation(beanManager, CircuitBreaker.class,
-                invocationContext);
+        CircuitBreaker circuitBreaker = getConfig().getAnnotation(CircuitBreaker.class, context);
 
-        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext,
-                CircuitBreaker.class);
-
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-
-        String appName = faultToleranceService.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class),
-                invocationContext);
-
-        Class<? extends Throwable>[] failOn = circuitBreaker.failOn();
-        try {
-            Optional<String> optionalFailOn = FaultToleranceCdiUtils.getOverrideValue(
-                    config, CircuitBreaker.class, "failOn", invocationContext, String.class);
-            if (optionalFailOn.isPresent()) {
-                String failOnString = optionalFailOn.get() ;
-                List<Class<?>> classList = new ArrayList<>();
-                // Remove any curly or square brackets from the string, as well as any spaces and ".class"es and loop
-                for (String className : failOnString.replaceAll("[\\{\\[ \\]\\}]", "")
-                        .replaceAll("\\.class", "").split(",")) {
-                    // Get a class object
-                    classList.add(Class.forName(className));
-                }
-                failOn = classList.toArray(failOn);
-            }
-        } catch (NoSuchElementException nsee) {
-            logger.log(Level.FINER, "Could not find element in config", nsee);
-        } catch (ClassNotFoundException cnfe) {
-            logger.log(Level.INFO, "Could not find class from failOn config, defaulting to annotation. "
-                        + "Make sure you give the full canonical class name.", cnfe);
-        }
-
-        long delay = FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "delay", invocationContext, Long.class)
-                .orElse(circuitBreaker.delay());
-        ChronoUnit delayUnit = FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "delayUnit", invocationContext, ChronoUnit.class)
-                .orElse(circuitBreaker.delayUnit());
-        int requestVolumeThreshold = FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "requestVolumeThreshold", invocationContext, Integer.class)
-                .orElse(circuitBreaker.requestVolumeThreshold());
-        double failureRatio = FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "failureRatio", invocationContext, Double.class)
-                .orElse(circuitBreaker.failureRatio());
-        int successThreshold = FaultToleranceCdiUtils.getOverrideValue(
-                config, CircuitBreaker.class, "successThreshold", invocationContext, Integer.class)
-                .orElse(circuitBreaker.successThreshold());
+        Class<? extends Throwable>[] failOn = getConfig().failOn(circuitBreaker, context);
+        long delay = getConfig().delay(circuitBreaker, context);
+        ChronoUnit delayUnit = getConfig().delayUnit(circuitBreaker, context);
+        int requestVolumeThreshold = getConfig().requestVolumeThreshold(circuitBreaker, context);
+        double failureRatio = getConfig().failureRatio(circuitBreaker, context);
+        int successThreshold = getConfig().successThreshold(circuitBreaker, context);
 
         long delayMillis = Duration.of(delay, delayUnit).toMillis();
 
-        CircuitBreakerState circuitBreakerState = faultToleranceService.getCircuitBreakerState(appName,
-                invocationContext.getTarget(),
-                invocationContext.getMethod(), circuitBreaker);
+        CircuitBreakerState circuitBreakerState = getExecution().getState(requestVolumeThreshold, context);
 
-        if (faultToleranceService.areFaultToleranceMetricsEnabled(appName, config)) {
-            Gauge<?> openTimeGauge = metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.open.total");
-
-            Gauge<?> halfOpenTimeGauge = metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total");
-
-            Gauge<?> closedTimeGauge = metricRegistry.getGauges()
-                    .get("ft." + fullMethodSignature + ".circuitbreaker.closed.total");
-
-            registerGaugesIfNecessary(openTimeGauge, halfOpenTimeGauge, closedTimeGauge, metricRegistry, circuitBreakerState,
-                    fullMethodSignature);
+        if (getConfig().isMetricsEnabled(context)) {
+            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::open, context);
+            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::halfOpen, context);
+            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::closed, context);
         }
-
 
         switch (circuitBreakerState.getCircuitState()) {
             case OPEN:
                 logger.log(Level.FINER, "CircuitBreaker is Open, throwing exception");
-
-                faultToleranceService.incrementCounterMetric(metricRegistry,
-                        "ft." + fullMethodSignature + ".circuitbreaker.callsPrevented.total", appName, config);
+                getMetrics().incrementCircuitbreakerCallsPreventedTotal(context);
 
                 // If open, immediately throw an error
                 throw new CircuitBreakerOpenException("CircuitBreaker for method "
-                        + invocationContext.getMethod().getName() + " is in state OPEN.");
+                        + context.getMethod().getName() + " is in state OPEN.");
             case CLOSED:
                 // If closed, attempt to proceed the invocation context
                 try {
                     logger.log(Level.FINER, "Proceeding CircuitBreaker context");
-                    proceededInvocationContext = invocationContext.proceed();
+                    resultValue = context.proceed();
                 } catch (Exception ex) {
                     logger.log(Level.FINE, "Exception executing CircuitBreaker context");
 
@@ -271,15 +159,12 @@ public class CircuitBreakerInterceptor implements Serializable {
                                 + "recording failure against CircuitBreaker");
                         // Add a failure result to the queue
                         circuitBreakerState.recordClosedResult(Boolean.FALSE);
-
-                        faultToleranceService.incrementCounterMetric(metricRegistry,
-                                "ft." + fullMethodSignature + ".circuitbreaker.callsFailed.total", appName, config);
+                        getMetrics().incrementCircuitbreakerCallsFailedTotal(context);
 
                         // Calculate the failure ratio, and if we're over it, open the circuit
                         breakCircuitIfRequired(
                                 Math.round(requestVolumeThreshold * failureRatio),
-                                circuitBreakerState, delayMillis, metricRegistry, fullMethodSignature,
-                                faultToleranceService, appName, config);
+                                circuitBreakerState, delayMillis, context);
                     }
 
                     // Finally, propagate the error upwards
@@ -288,20 +173,18 @@ public class CircuitBreakerInterceptor implements Serializable {
 
                 // If everything is bon, add a success value
                 circuitBreakerState.recordClosedResult(Boolean.TRUE);
-                faultToleranceService.incrementCounterMetric(metricRegistry,
-                        "ft." + fullMethodSignature + ".circuitbreaker.callsSucceeded.total", appName, config);
+                getMetrics().incrementCircuitbreakerCallsSucceededTotal(context);
 
                 // Calculate the failure ratio, and if we're over it, open the circuit
                 breakCircuitIfRequired(
                         Math.round(requestVolumeThreshold * failureRatio),
-                        circuitBreakerState, delayMillis, metricRegistry, fullMethodSignature,
-                        faultToleranceService, appName, config);
+                        circuitBreakerState, delayMillis, context);
                 break;
             case HALF_OPEN:
                 // If half-open, attempt to proceed the invocation context
                 try {
                     logger.log(Level.FINER, "Proceeding half open CircuitBreaker context");
-                    proceededInvocationContext = invocationContext.proceed();
+                    resultValue = context.proceed();
                 } catch (Exception ex) {
                     logger.log(Level.FINE, "Exception executing CircuitBreaker context");
 
@@ -310,13 +193,12 @@ public class CircuitBreakerInterceptor implements Serializable {
                         logger.log(Level.FINE, "Caught exception is included in CircuitBreaker failOn, "
                                 + "reopening half open circuit");
 
-                        faultToleranceService.incrementCounterMetric(metricRegistry,
-                                "ft." + fullMethodSignature + ".circuitbreaker.callsFailed.total", appName, config);
+                        getMetrics().incrementCircuitbreakerCallsFailedTotal(context);
 
                         // Open the circuit again, and reset the half-open result counter
                         circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
                         circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
-                        scheduleHalfOpen(delayMillis, circuitBreakerState);
+                        getExecution().scheduleHalfOpen(delayMillis, circuitBreakerState);
                     }
 
                     throw ex;
@@ -324,8 +206,7 @@ public class CircuitBreakerInterceptor implements Serializable {
 
                 // If the invocation context hasn't thrown an error, record a success
                 circuitBreakerState.incrementHalfOpenSuccessfulResultCounter();
-                faultToleranceService.incrementCounterMetric(metricRegistry,
-                        "ft." + fullMethodSignature + ".circuitbreaker.callsSucceeded.total", appName, config);
+                getMetrics().incrementCircuitbreakerCallsSucceededTotal(context);
 
                 logger.log(Level.FINER, "Number of consecutive successful circuitbreaker executions = {0}",
                         circuitBreakerState.getHalfOpenSuccessFulResultCounter());
@@ -347,28 +228,7 @@ public class CircuitBreakerInterceptor implements Serializable {
                 break;
         }
 
-        return proceededInvocationContext;
-    }
-
-    /**
-     * Helper method that schedules the CircuitBreaker state to be set to HalfOpen after the configured delay
-     * @param delayMillis The number of milliseconds to wait before setting the state
-     * @param circuitBreakerState The CircuitBreakerState to set the state of
-     * @throws NamingException If the ManagedScheduledExecutor couldn't be found
-     */
-    private static void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState) throws NamingException {
-        Runnable halfOpen = () -> {
-            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.HALF_OPEN);
-            logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
-        };
-
-        FaultToleranceService faultToleranceService = Globals.getDefaultBaseServiceLocator()
-                .getService(FaultToleranceService.class);
-        ManagedScheduledExecutorService managedScheduledExecutorService = faultToleranceService.
-                getManagedScheduledExecutorService();
-
-        managedScheduledExecutorService.schedule(halfOpen, delayMillis, TimeUnit.MILLISECONDS);
-        logger.log(Level.FINER, "CircuitBreaker half open state scheduled in {0} milliseconds", delayMillis);
+        return resultValue;
     }
 
     /**
@@ -377,7 +237,7 @@ public class CircuitBreakerInterceptor implements Serializable {
      * @param ex The exception to check
      * @return True if the exception is included in the array
      */
-    private static boolean shouldFail(Class<? extends Throwable>[] failOn, Exception ex) {
+    private boolean shouldFail(Class<? extends Throwable>[] failOn, Exception ex) {
         boolean shouldFail = false;
 
         if (failOn[0] != Throwable.class) {
@@ -407,9 +267,8 @@ public class CircuitBreakerInterceptor implements Serializable {
         return shouldFail;
     }
 
-    private static void breakCircuitIfRequired(long failureThreshold, CircuitBreakerState circuitBreakerState,
-            long delayMillis, MetricRegistry metricRegistry, String fullMethodSignature,
-            FaultToleranceService faultToleranceService, String appName, Config config) throws NamingException {
+    private void breakCircuitIfRequired(long failureThreshold, CircuitBreakerState circuitBreakerState,
+            long delayMillis, InvocationContext context) throws Exception {
         // If we're over the failure threshold, open the circuit
         if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
             logger.log(Level.FINE, "CircuitBreaker is over failure threshold {0}, opening circuit",
@@ -419,36 +278,11 @@ public class CircuitBreakerInterceptor implements Serializable {
             circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
 
             // Update the opened metric counter
-            faultToleranceService.incrementCounterMetric(metricRegistry,
-                    "ft." + fullMethodSignature + ".circuitbreaker.opened.total", appName, config);
+            getMetrics().incrementCircuitbreakerOpenedTotal(context);
 
             // Kick off a thread that will half-open the circuit after the specified delay
-            scheduleHalfOpen(delayMillis, circuitBreakerState);
+            getExecution().scheduleHalfOpen(delayMillis, circuitBreakerState);
         }
     }
 
-    private static void registerGaugesIfNecessary(Gauge<?> openTimeGauge, Gauge<?> halfOpenTimeGauge, Gauge<?> closedTimeGauge,
-            MetricRegistry metricRegistry, CircuitBreakerState circuitBreakerState, String fullMethodSignature) {
-
-        // Register a open time gauge if there isn't one
-        if (openTimeGauge == null) {
-            openTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.OPEN);
-
-            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.open.total", openTimeGauge);
-        }
-
-        // Register a open time gauge if there isn't one
-        if (halfOpenTimeGauge == null) {
-            halfOpenTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.HALF_OPEN);
-
-            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.halfOpen.total", halfOpenTimeGauge);
-        }
-
-        // Register a open time gauge if there isn't one
-        if (closedTimeGauge == null) {
-            closedTimeGauge = () -> circuitBreakerState.updateAndGet(CircuitBreakerState.CircuitState.CLOSED);
-
-            metricRegistry.register("ft." + fullMethodSignature + ".circuitbreaker.closed.total", closedTimeGauge);
-        }
-    }
 }

@@ -39,114 +39,77 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
-import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.interceptor.InvocationContext;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import javax.enterprise.inject.spi.CDI;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 
 /**
  * Class that executes the fallback policy defined by the {@link Fallback} annotation.
  * @author Andrew Pielage
  */
 public class FallbackPolicy {
-    
+
     private static final Logger logger = Logger.getLogger(FallbackPolicy.class.getName());
-    
+
     private final Class<? extends FallbackHandler<?>> fallbackClass;
     private final String fallbackMethod;
-    
-    @SuppressWarnings("unchecked")
-    public FallbackPolicy(Fallback fallback, Config config, InvocationContext invocationContext) 
-            throws ClassNotFoundException {     
-        Optional<String> className = FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, "value", 
-                invocationContext, String.class);
-        fallbackClass = className.isPresent()
-                ? (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader()
-                        .loadClass(className.get())
-                : fallback.value();
-        fallbackMethod = FaultToleranceCdiUtils.getOverrideValue(config, Fallback.class, 
-                "fallbackMethod", invocationContext, String.class) 
-                .orElse(fallback.fallbackMethod());
+    private final FaultToleranceExecution execution;
+    private final FaultToleranceMetrics metrics;
+
+    public FallbackPolicy(Fallback fallback, FaultToleranceConfig config, FaultToleranceExecution execution, FaultToleranceMetrics metrics,
+            InvocationContext context) {
+        this.execution = execution;
+        this.metrics = metrics;
+        this.fallbackClass = config.value(fallback, context);
+        this.fallbackMethod = config.fallbackMethod(fallback, context);
     }
-    
+
     /**
      * Performs the fallback operation defined by the @Fallback annotation.
-     * @param invocationContext The failing invocation context
+     * @param context The failing invocation context
      * @return The result of the executed fallback method
      * @throws Exception If the fallback method itself fails.
      */
-    public Object fallback(InvocationContext invocationContext, Throwable exception) throws Exception {
-        Object fallbackInvocationContext = null;
-        
-        FaultToleranceService faultToleranceService = 
-                Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
-        faultToleranceService.startFaultToleranceSpan(new RequestTraceSpan("executeFallbackMethod"),
-                invocationManager, invocationContext);
-        
-        MetricRegistry metricRegistry = CDI.current().select(MetricRegistry.class).get();
-        String fullMethodSignature = FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(invocationContext, 
-                Fallback.class);
-        String appName = faultToleranceService.getApplicationName(invocationManager, invocationContext);
-        
-        Config config = null;
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
-        }
-        
+    public Object fallback(InvocationContext context, Throwable exception) throws Exception {
+        Object resultValue = null;
+        execution.startTrace("executeFallbackMethod", context);
         try {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
                 logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
 
-                fallbackInvocationContext = FaultToleranceCdiUtils
-                        .getAnnotatedMethodClass(invocationContext, Fallback.class)
-                        .getDeclaredMethod(fallbackMethod, invocationContext.getMethod().getParameterTypes())
-                        .invoke(invocationContext.getTarget(), invocationContext.getParameters());
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".fallback.calls.total", appName, config);
+                resultValue = FaultToleranceCdiUtils
+                        .getAnnotatedMethodClass(context, Fallback.class)
+                        .getDeclaredMethod(fallbackMethod, context.getMethod().getParameterTypes())
+                        .invoke(context.getTarget(), context.getParameters());
             } else {
                 logger.log(Level.FINE, "Using fallback class: {0}", fallbackClass.getName());
 
-                ExecutionContext executionContext = new FaultToleranceExecutionContext(invocationContext.getMethod(), 
-                        invocationContext.getParameters(), exception);
+                ExecutionContext executionContext = new FaultToleranceExecutionContext(context.getMethod(), 
+                        context.getParameters(), exception);
 
-                fallbackInvocationContext = fallbackClass
-                        .getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class)
-                        .invoke(CDI.current().select(fallbackClass).get(), executionContext);
-                faultToleranceService.incrementCounterMetric(metricRegistry, 
-                        "ft." + fullMethodSignature + ".fallback.calls.total", appName, config);
+                resultValue = CDI.current().select(fallbackClass).get().handle(executionContext);
             }
+            metrics.incrementFallbackCallsTotal(context);
         } catch (Exception ex) {
             // Increment the failure counter metric
-            faultToleranceService.incrementCounterMetric(metricRegistry, 
-                    "ft." + fullMethodSignature + ".invocations.failed.total", appName, config);
-            
+            metrics.incrementInvocationsFailedTotal(Fallback.class, context);
             throw ex;
         } finally {
-            faultToleranceService.endFaultToleranceSpan();
+            execution.endTrace();
         }
-        
-        return fallbackInvocationContext;
+        return resultValue;
     }
-    
+
     /**
      * Default implementation class for the Fault Tolerance ExecutionContext interface
      */
@@ -155,13 +118,13 @@ public class FallbackPolicy {
         private final Method method;
         private final Object[] parameters;
         private final Throwable failure;
-        
+
         public FaultToleranceExecutionContext(Method method, Object[] parameters, Throwable failure) {
             this.method = method;
             this.parameters = parameters;
             this.failure = failure;
         }
-        
+
         @Override
         public Method getMethod() {
             return method;

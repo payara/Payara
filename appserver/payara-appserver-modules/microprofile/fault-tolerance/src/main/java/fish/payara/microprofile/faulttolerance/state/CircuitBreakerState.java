@@ -170,8 +170,20 @@ public class CircuitBreakerState {
      */
     public long updateAndGet(CircuitState circuitState) {
         return this.currentStateTime.is(circuitState)
-            ? this.currentStateTime.update()
-            : this.allStateTimes.get(circuitState).nanos();
+                ? this.currentStateTime.update()
+                : this.allStateTimes.get(circuitState).nanos();
+    }
+
+    public long open() {
+        return updateAndGet(CircuitState.OPEN);
+    }
+
+    public long halfOpen() {
+        return updateAndGet(CircuitState.HALF_OPEN);
+    }
+
+    public long closed() {
+        return updateAndGet(CircuitState.CLOSED);
     }
 
 }

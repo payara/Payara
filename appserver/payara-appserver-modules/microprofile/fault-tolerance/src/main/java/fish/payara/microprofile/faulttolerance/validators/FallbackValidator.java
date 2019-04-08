@@ -39,8 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import static fish.payara.microprofile.faulttolerance.FaultToleranceService.FALLBACK_HANDLER_METHOD_NAME;
-
 import java.util.Optional;
 
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
@@ -98,7 +96,7 @@ public class FallbackValidator {
                 throw new FaultToleranceDefinitionException("Could not find fallback method: " + fallbackMethod, ex);
             }
         } else if (fallbackClass != null && fallbackClass != Fallback.DEFAULT.class) {
-            if (fallbackClass.getDeclaredMethod(FALLBACK_HANDLER_METHOD_NAME, ExecutionContext.class).getReturnType() 
+            if (fallbackClass.getDeclaredMethod("handle", ExecutionContext.class).getReturnType() 
                     != annotatedMethod.getJavaMember().getReturnType()) {
                 throw new FaultToleranceDefinitionException(
                         "Return type of fallback class handle method does not match.");

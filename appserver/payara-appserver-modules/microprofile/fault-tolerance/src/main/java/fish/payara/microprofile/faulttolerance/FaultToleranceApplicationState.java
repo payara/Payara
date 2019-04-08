@@ -39,49 +39,31 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 
 /**
  *
  * @author Andrew Pielage andrew.pielage@payara.fish
  */
-public class FaultToleranceObject {
-    
-    private final boolean enabled;
-    private final boolean metricsEnabled;
-    private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates;
-    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionSemaphores;
-    private final Map<Object, Map<String, Semaphore>> bulkheadExecutionQueueSemaphores;
-    
-    public FaultToleranceObject(Boolean enabled, Boolean metricsEnabled) {
-        this.enabled = enabled;
-        this.metricsEnabled = metricsEnabled;
-        circuitBreakerStates = new ConcurrentHashMap<>();
-        bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
-        bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
-    }
+public class FaultToleranceApplicationState {
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean areMetricsEnabled() {
-        return metricsEnabled;
-    }
+    private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates = new ConcurrentHashMap<>();
+    private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
+    private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
 
     public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
         return circuitBreakerStates;
     }
 
-    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionSemaphores() {
+    public Map<Object, Map<String, BulkheadSemaphore>> getBulkheadExecutionSemaphores() {
         return bulkheadExecutionSemaphores;
     }
 
-    public Map<Object, Map<String, Semaphore>> getBulkheadExecutionQueueSemaphores() {
+    public Map<Object, Map<String, BulkheadSemaphore>> getBulkheadExecutionQueueSemaphores() {
         return bulkheadExecutionQueueSemaphores;
     }
-    
+
 }
