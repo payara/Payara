@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.internal.api;
@@ -45,13 +45,12 @@ package org.glassfish.internal.api;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.common.util.Constants;
-import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.jvnet.hk2.annotations.Optional;
 
 /**
  * Global class for storing the service locator for all hk2 services
