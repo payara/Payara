@@ -44,8 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
 />
 
-<!composition template="/templates/default.layout"
-    guiTitle="$resource{i18nc.adminAudit.PageTitle}"
+<!composition template="/templates/default.layout" guiTitle="$resource{i18n.adminAudit.PageTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:adminAudit');"
 >
 <!define name="content">
@@ -56,11 +55,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
          setPageSessionAttribute(key="ADMIN_AUDIT_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration"); 
 
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-admin-audit-configuration?target=#{pageSession.configName}"  
-                method="GET" result="#{requestScope.resp}"); 
+        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}" method="GET" result="#{requestScope.resp}"); 
                 
-        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/monitored-attribute.json" method="GET" result="#{requestScope.propTable}")
-        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.monitoredAttributes}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
