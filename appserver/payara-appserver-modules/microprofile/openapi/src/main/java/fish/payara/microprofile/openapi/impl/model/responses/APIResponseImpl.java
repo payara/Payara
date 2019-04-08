@@ -59,11 +59,11 @@ import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 
 public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIResponse {
 
-    protected String description;
-    protected Map<String, Header> headers = new HashMap<>();
-    protected Content content = new ContentImpl();
-    protected Map<String, Link> links = new HashMap<>();
-    protected String ref;
+    private String description;
+    private Map<String, Header> headers = new HashMap<>();
+    private Content content = new ContentImpl();
+    private Map<String, Link> links = new HashMap<>();
+    private String ref;
 
     @Override
     public String getDescription() {

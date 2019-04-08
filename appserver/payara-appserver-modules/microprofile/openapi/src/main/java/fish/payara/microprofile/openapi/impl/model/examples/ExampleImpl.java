@@ -52,11 +52,11 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
 
-    protected String summary;
-    protected String description;
-    protected Object value;
-    protected String externalValue;
-    protected String ref;
+    private String summary;
+    private String description;
+    private Object value;
+    private String externalValue;
+    private String ref;
 
     @Override
     public String getSummary() {

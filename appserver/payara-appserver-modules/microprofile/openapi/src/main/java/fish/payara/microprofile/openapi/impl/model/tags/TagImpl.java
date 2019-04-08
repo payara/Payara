@@ -53,9 +53,9 @@ import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 
 public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
 
-    protected String name;
-    protected String description;
-    protected ExternalDocumentation externalDocs;
+    private String name;
+    private String description;
+    private ExternalDocumentation externalDocs;
 
     @Override
     public String getName() {

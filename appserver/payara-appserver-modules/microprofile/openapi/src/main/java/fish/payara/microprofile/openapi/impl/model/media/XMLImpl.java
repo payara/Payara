@@ -45,11 +45,11 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class XMLImpl extends ExtensibleImpl<XML> implements XML {
 
-    protected String name;
-    protected String namespace;
-    protected String prefix;
-    protected Boolean attribute;
-    protected Boolean wrapped;
+    private String name;
+    private String namespace;
+    private String prefix;
+    private Boolean attribute;
+    private Boolean wrapped;
 
     @Override
     public String getName() {

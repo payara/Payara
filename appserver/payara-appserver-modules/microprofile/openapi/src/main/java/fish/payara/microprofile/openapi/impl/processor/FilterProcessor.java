@@ -80,10 +80,18 @@ public class FilterProcessor implements OASProcessor {
      */
     private OASFilter filter;
 
+    public FilterProcessor() {
+        this(null);
+    }
+
+    public FilterProcessor(OASFilter filter) {
+        this.filter = filter;
+    }
+
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         try {
-            if (config.getFilter() != null) {
+            if (filter == null && config.getFilter() != null) {
                 filter = config.getFilter().newInstance();
             }
         } catch (InstantiationException | IllegalAccessException ex) {
@@ -143,7 +151,8 @@ public class FilterProcessor implements OASProcessor {
             }
 
             // If the object is a model item
-            if (object.getClass().getPackage().getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
+            Package pkg = object.getClass().getPackage();
+            if (pkg != null && pkg.getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
 
                 // Visit each field
                 for (Field field : object.getClass().getDeclaredFields()) {

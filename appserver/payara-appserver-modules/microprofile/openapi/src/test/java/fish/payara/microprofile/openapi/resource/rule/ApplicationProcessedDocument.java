@@ -42,24 +42,41 @@ package fish.payara.microprofile.openapi.resource.rule;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
+import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
 import fish.payara.microprofile.openapi.test.app.TestApplication;
-import fish.payara.microprofile.openapi.test.app.data.TestComponent;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+
+import org.eclipse.microprofile.openapi.OASFilter;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
+import static org.junit.Assert.fail;
 
-public class ApplicationProcessedDocument extends OpenAPIImpl {
+public class ApplicationProcessedDocument {
 
-    public ApplicationProcessedDocument() throws MalformedURLException {
-        // Apply base processor
-        new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(this, null);
+    public static OpenAPI createDocument(Class<?>... extraClasses) {
+        return createDocument(null, extraClasses);
+    }
 
-        ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), singleton(TestComponent.class));
+    public static OpenAPI createDocument(Class<? extends OASFilter> filter, Class<?>... extraClasses) {
+        try {
+            ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), 
+                    new HashSet<>(asList(extraClasses)));
+            OpenAPIImpl document = new OpenAPIImpl();
+            // Apply base processor
+            new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(document, null);
 
-        // Apply application processor
-        new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(this, null);
+            // Apply application processor
+            new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(document, null);
+            if (filter != null) {
+                new FilterProcessor(filter.newInstance()).process(document, null);
+            }
+            return document;
+        } catch (Exception ex) {
+            throw new AssertionError("Failed to build document.", ex);
+        }
     }
 
 }

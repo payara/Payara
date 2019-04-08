@@ -58,6 +58,9 @@ import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.XML;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
@@ -66,45 +69,45 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
-    protected Object defaultValue;
+    private Object defaultValue;
 
-    protected String title;
-    protected BigDecimal multipleOf;
-    protected BigDecimal maximum;
-    protected Boolean exclusiveMaximum;
-    protected BigDecimal minimum;
-    protected Boolean exclusiveMinimum;
-    protected Integer maxLength;
-    protected Integer minLength;
-    protected String pattern;
-    protected Integer maxItems;
-    protected Integer minItems;
-    protected Boolean uniqueItems;
-    protected Integer maxProperties;
-    protected Integer minProperties;
-    protected List<String> required = new ArrayList<>();
-    protected SchemaType type;
-    protected Schema not;
-    protected Map<String, Schema> properties = new HashMap<>();
-    protected String description;
-    protected String format;
-    protected String ref;
-    protected Boolean nullable;
-    protected Boolean readOnly;
-    protected Boolean writeOnly;
-    protected Object example;
-    protected ExternalDocumentation externalDocs;
-    protected Boolean deprecated;
-    protected XML xml;
-    protected List<Object> enumeration = new ArrayList<>();
-    protected Discriminator discriminator;
+    private String title;
+    private BigDecimal multipleOf;
+    private BigDecimal maximum;
+    private Boolean exclusiveMaximum;
+    private BigDecimal minimum;
+    private Boolean exclusiveMinimum;
+    private Integer maxLength;
+    private Integer minLength;
+    private String pattern;
+    private Integer maxItems;
+    private Integer minItems;
+    private Boolean uniqueItems;
+    private Integer maxProperties;
+    private Integer minProperties;
+    private List<String> required = new ArrayList<>();
+    private SchemaType type;
+    private Schema not;
+    private Map<String, Schema> properties = new HashMap<>();
+    private String description;
+    private String format;
+    private String ref;
+    private Boolean nullable;
+    private Boolean readOnly;
+    private Boolean writeOnly;
+    private Object example;
+    private ExternalDocumentation externalDocs;
+    private Boolean deprecated;
+    private XML xml;
+    private List<Object> enumeration = new ArrayList<>();
+    private Discriminator discriminator;
 
-    protected List<Schema> anyOf = new ArrayList<>();
-    protected List<Schema> allOf = new ArrayList<>();
-    protected List<Schema> oneOf = new ArrayList<>();
+    private List<Schema> anyOf = new ArrayList<>();
+    private List<Schema> allOf = new ArrayList<>();
+    private List<Schema> oneOf = new ArrayList<>();
 
-    protected Object additionalProperties;
-    protected Schema items;
+    private Object additionalProperties;
+    private Schema items;
 
     @Override
     public Discriminator getDiscriminator() {
@@ -354,6 +357,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.properties.remove(key);
     }
 
+    @JsonProperty
     @Override
     public Object getAdditionalProperties() {
         return additionalProperties;
@@ -364,11 +368,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.additionalProperties = additionalProperties;
     }
 
+    @JsonIgnore
     @Override
     public Schema getAdditionalPropertiesSchema() {
         return additionalProperties instanceof Schema ? (Schema) additionalProperties : null;
     }
 
+    @JsonIgnore
     @Override
     public Boolean getAdditionalPropertiesBoolean() {
         return additionalProperties instanceof Boolean ? (Boolean)additionalProperties : null;

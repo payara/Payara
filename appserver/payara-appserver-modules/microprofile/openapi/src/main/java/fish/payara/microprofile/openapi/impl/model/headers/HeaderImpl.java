@@ -57,17 +57,17 @@ import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
 public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
-    protected String ref;
-    protected String description;
-    protected Boolean required;
-    protected Boolean deprecated;
-    protected Boolean allowEmptyValue;
-    protected Style style;
-    protected Boolean explode;
-    protected Schema schema;
-    protected Map<String, Example> examples = new HashMap<>();
-    protected Object example;
-    protected Content content;
+    private String ref;
+    private String description;
+    private Boolean required;
+    private Boolean deprecated;
+    private Boolean allowEmptyValue;
+    private Style style;
+    private Boolean explode;
+    private Schema schema;
+    private Map<String, Example> examples = new HashMap<>();
+    private Object example;
+    private Content content;
 
     @Override
     public String getRef() {

@@ -61,7 +61,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     private static final long serialVersionUID = 5549098533131353142L;
 
-    protected String ref;
+    private String ref;
 
     public CallbackImpl() {
         super();
@@ -117,9 +117,10 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
             applyReference(to, from.ref());
             return;
         }
-        if (!from.callbackUrlExpression().isEmpty()) {
-            PathItem pathItem = to.getOrDefault(from.callbackUrlExpression(), new PathItemImpl());
-            to.addPathItem(from.callbackUrlExpression(), pathItem);
+        String urlExpression = from.callbackUrlExpression();
+        if (!urlExpression.isEmpty()) {
+            PathItem pathItem = to.getOrDefault(urlExpression, new PathItemImpl());
+            to.addPathItem(urlExpression, pathItem);
             if (from.operations() != null) {
                 for (CallbackOperation callbackOperation : from.operations()) {
                     applyCallbackOperationAnnotation(pathItem, callbackOperation, override, currentSchemas);

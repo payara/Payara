@@ -50,10 +50,10 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlow {
 
-    protected String authorizationUrl;
-    protected String tokenUrl;
-    protected String refreshUrl;
-    protected Scopes scopes;
+    private String authorizationUrl;
+    private String tokenUrl;
+    private String refreshUrl;
+    private Scopes scopes;
 
     @Override
     public String getAuthorizationUrl() {
