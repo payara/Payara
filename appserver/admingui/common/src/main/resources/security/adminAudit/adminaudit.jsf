@@ -53,7 +53,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             
         getRequestValue(key="configName" value="#{pageSession.configName}");
          setPageSessionAttribute(key="ADMIN_AUDIT_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration"); 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration/get-admin-audit-configuration"); 
 
         gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}" method="GET" result="#{requestScope.resp}"); 
                 

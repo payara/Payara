@@ -251,7 +251,7 @@ public class ResourceUtil {
                                                 boolean managedJob) {            
         AsadminRecorderService asadminRecorderService = Globals.
                 getDefaultHabitat().getService(AsadminRecorderService.class);
-        if (asadminRecorderService.isEnabled()) {
+        if (asadminRecorderService != null && asadminRecorderService.isEnabled()) {
             asadminRecorderService.recordAsadminCommand(commandName, 
                                                         parameters);
         }

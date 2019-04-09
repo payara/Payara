@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!-- pluginTreeNodeJVM.jsf -->
 
@@ -50,6 +51,20 @@
 	<sun:imageHyperlink imageURL="/resource/common/security/images/security.gif" url="#{request.contextPath}/common/security/security.jsf?configName=${configName}" 
 	    alt="$resource{i18n.tree.security}" border="0" immediate="true" />
     </facet>
+    
+    <dynamicTreeNode id="adminAudit"
+	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
+	    children="#{requestScope.children}"
+	    childImageURL="/resource/common/security/images/security.gif"
+	    childExpanded="false"
+	    childURL="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?name=#{$this{valueBinding}.text}&configName=${configName}"
+	    text="$resource{i18n.tree.adminAudit}"
+	    url="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?configName=${configName}">
+	<!facet image>
+	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?configName=${configName}" 
+		alt="$resource{i18n.tree.adminAudit}" border="0" immediate="true" />
+	</facet>
+    </dynamicTreeNode>
 
     <dynamicTreeNode id="realms"
 	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"

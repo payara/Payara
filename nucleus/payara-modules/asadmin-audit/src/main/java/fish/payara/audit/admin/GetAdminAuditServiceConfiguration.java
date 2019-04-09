@@ -42,9 +42,15 @@
  */
 package fish.payara.audit.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -78,26 +84,28 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetAdminAuditServiceConfiguration implements AdminCommand {
     
-    private final static String[] headers = {"Enabled", "Audit Level"};
-    private final static String[] notifierHeaders= {"Name", "Notifier Enabled"};
+    private final static String[] ATTRIBUTE_HEADERS = {"Enabled", "Audit Level"};
+    private final static String[] NOTIFIER_HEADERS= {"Name", "Notifier Enabled"};
     
     @Inject
     private AdminAuditConfiguration config;
-
+    
     @Override
     public void execute(AdminCommandContext context) {
         
         final ActionReport actionReport = context.getActionReport();
         
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);        
+        ColumnFormatter columnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);        
         
         Object[] values = {config.getEnabled(), config.getAuditLevel()};
         columnFormatter.addRow(values);
         
+        Map<String, Object> map = new HashMap<>();
         Properties extraProperties = new Properties();
-        extraProperties.put(headers[0], config.getEnabled());
-        extraProperties.put(headers[1], config.getAuditLevel());
+        map.put(ATTRIBUTE_HEADERS[0], config.getEnabled());
+        map.put(ATTRIBUTE_HEADERS[1], config.getAuditLevel());
+        extraProperties.put("adminauditConfiguration", map);
         
         ActionReport notifiersReport = actionReport.addSubActionsReport();
         
