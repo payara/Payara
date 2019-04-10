@@ -46,6 +46,7 @@ import org.glassfish.admin.rest.resources.CollectionLeafResource;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import static org.testng.Assert.assertEquals;
+import org.testng.annotations.Test;
 
 /**
  *
