@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -48,6 +48,7 @@ import javax.inject.Inject;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
@@ -86,7 +87,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanism {
 
     private static final Logger logger = Logger.getLogger("OAuth2Mechanism");
-    
+
     private final ELProcessor elProcessor;
 
     private String authEndpoint;
@@ -105,7 +106,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private IdentityStoreHandler identityStoreHandler;
-    
+
     /**
      * Creates an OAuth2AuthenticationMechanism.
      * <p>
@@ -143,7 +144,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         clientSecret = getConfiguredValue(definition.clientSecret(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_CLIENT_SECRET).toCharArray();
         redirectURI = getConfiguredValue(definition.redirectURI(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_REDIRECT_URI);
         scopes = getConfiguredValue(definition.scope(), provider, OAuth2AuthenticationDefinition.OAUTH2_MP_SCOPE);
-        
+
         String[] params = definition.extraParameters();
         extraParameters = new String[params.length];
         for (int i = 0; i < params.length; i++) {
@@ -215,7 +216,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
 
         // Get back the result of the REST request
         String result = oauthResponse.readEntity(String.class);
-        JsonObject object = Json.createReader(new StringReader(result)).readObject();
+        JsonObject object = readJsonObject(result);
         logger.log(Level.FINEST, "Response code from endpoint: {0}", oauthResponse.getStatus());
         if (oauthResponse.getStatus() != 200) {
 
@@ -236,6 +237,12 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
             RememberMeCredential credential = new RememberMeCredential(result);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
             return context.notifyContainerAboutLogin(validationResult);
+        }
+    }
+
+    private JsonObject readJsonObject(String result) {
+        try (JsonReader reader = Json.createReader(new StringReader(result))) {
+            return reader.readObject();
         }
     }
 
@@ -264,7 +271,7 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         return context.redirect(authTokenRequest.toString());
     }
 
-    
+
     private String getConfiguredValue(String value, Config provider, String mpConfigKey){
         String result = value;
         Optional<String> configResult = provider.getOptionalValue(mpConfigKey, String.class);
@@ -275,14 +282,14 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
         if (isELExpression(value)){
             result = (String) elProcessor.getValue(toRawExpression(result), String.class);
         }
-        
+
         return result;
     }
-    
+
     private static boolean isELExpression(String expression) {
         return !expression.isEmpty() && isDeferredExpression(expression);
     }
-    
+
     private static boolean isDeferredExpression(String expression) {
         return expression.startsWith("#{") && expression.endsWith("}");
     }

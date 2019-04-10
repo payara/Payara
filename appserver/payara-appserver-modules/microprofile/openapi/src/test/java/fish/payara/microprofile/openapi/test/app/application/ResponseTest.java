@@ -44,7 +44,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -53,34 +52,21 @@ import javax.ws.rs.Produces;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A resource to test that various response types are mapped properly.
  */
 @Path("/response")
 @Produces({ APPLICATION_JSON, APPLICATION_XML })
-public class ResponseTest {
-
-    public transient static OpenAPI document;
-
-    @BeforeClass
-    public static void createDocument() {
-        try {
-            document = new ApplicationProcessedDocument();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail("Failed to build document.");
-        }
-    }
+public class ResponseTest extends OpenApiApplicationTest {
 
     @GET
-    @APIResponse(responseCode = "200", content = @Content(schema = @Schema(description = "hello!")))
+    @APIResponse(responseCode = "200", description = "success", 
+        content = @Content(schema = @Schema(description = "hello!")))
     @APIResponse(responseCode = "400", description = "error")
     public String getInheritedMediaType() {
         return null;
@@ -88,20 +74,20 @@ public class ResponseTest {
 
     @Test
     public void inheritedMediaTypeTest() {
-        APIResponses responses = document.getPaths().get("/test/response").getGET().getResponses();
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response").getGET().getResponses();
         // Test the default response doesn't exist
-        assertNull("The default response should be removed when not used.", responses.getDefault());
+        assertNull("The default response should be removed when not used.", responses.getDefaultValue());
 
         // Test the 200 response
-        assertNotNull("The 200 response should have been created.", responses.get("200"));
+        assertNotNull("The 200 response should have been created.", responses.getAPIResponse("200"));
         assertNotNull("The 200 response should return application/json.",
-                responses.get("200").getContent().get(APPLICATION_JSON));
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON));
         assertEquals("The 200 response application/json should match the specified schema.", "hello!",
-                responses.get("200").getContent().get(APPLICATION_JSON).getSchema().getDescription());
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON).getSchema().getDescription());
         assertNotNull("The 200 response should return application/xml.",
-                responses.get("200").getContent().get(APPLICATION_XML));
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML));
         assertEquals("The 200 response application/xml should match the specified schema.", "hello!",
-                responses.get("200").getContent().get(APPLICATION_XML).getSchema().getDescription());
+                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML).getSchema().getDescription());
     }
 
 }

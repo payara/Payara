@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.visitor;
 
+import java.util.Set;
+
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 
@@ -46,18 +48,20 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 
 public class OpenApiContext implements ApiContext {
 
+    private final Set<Class<?>> applicationClasses;
     private final OpenAPI api;
     private final String path;
     private final Operation operation;
 
-    public OpenApiContext(OpenAPI api, String path, Operation operation) {
+    public OpenApiContext(Set<Class<?>> applicationClasses, OpenAPI api, String path, Operation operation) {
+        this.applicationClasses = applicationClasses;
         this.api = api;
         this.path = path;
         this.operation = operation;
     }
 
-    public OpenApiContext(OpenAPI api, String path) {
-        this(api, path, null);
+    public OpenApiContext(Set<Class<?>> applicationClasses, OpenAPI api, String path) {
+        this(applicationClasses, api, path, null);
     }
 
     @Override
@@ -75,4 +79,8 @@ public class OpenApiContext implements ApiContext {
         return operation;
     }
 
+    @Override
+    public boolean isApplicationType(Class<?> type) {
+        return applicationClasses.contains(type);
+    }
 }

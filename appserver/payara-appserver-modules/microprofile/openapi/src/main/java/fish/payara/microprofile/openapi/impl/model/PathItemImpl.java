@@ -50,7 +50,7 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 
-public class PathItemImpl extends ExtensibleImpl implements PathItem {
+public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     protected String ref;
     protected String summary;
@@ -77,12 +77,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem ref(String ref) {
-        setRef(ref);
-        return this;
-    }
-
-    @Override
     public String getSummary() {
         return summary;
     }
@@ -90,12 +84,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setSummary(String summary) {
         this.summary = summary;
-    }
-
-    @Override
-    public PathItem summary(String summary) {
-        setSummary(summary);
-        return this;
     }
 
     @Override
@@ -109,12 +97,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Operation getGET() {
         return get;
     }
@@ -122,12 +104,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setGET(Operation get) {
         this.get = get;
-    }
-
-    @Override
-    public PathItem GET(Operation get) {
-        setGET(get);
-        return this;
     }
 
     @Override
@@ -141,12 +117,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem PUT(Operation put) {
-        setPUT(put);
-        return this;
-    }
-
-    @Override
     public Operation getPOST() {
         return post;
     }
@@ -154,12 +124,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setPOST(Operation post) {
         this.post = post;
-    }
-
-    @Override
-    public PathItem POST(Operation post) {
-        setPOST(post);
-        return this;
     }
 
     @Override
@@ -173,12 +137,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem DELETE(Operation delete) {
-        setDELETE(delete);
-        return this;
-    }
-
-    @Override
     public Operation getOPTIONS() {
         return options;
     }
@@ -186,12 +144,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setOPTIONS(Operation options) {
         this.options = options;
-    }
-
-    @Override
-    public PathItem OPTIONS(Operation options) {
-        setOPTIONS(options);
-        return this;
     }
 
     @Override
@@ -205,12 +157,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem HEAD(Operation head) {
-        setHEAD(head);
-        return this;
-    }
-
-    @Override
     public Operation getPATCH() {
         return patch;
     }
@@ -218,12 +164,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setPATCH(Operation patch) {
         this.patch = patch;
-    }
-
-    @Override
-    public PathItem PATCH(Operation patch) {
-        setPATCH(patch);
-        return this;
     }
 
     @Override
@@ -237,9 +177,8 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem TRACE(Operation trace) {
-        setTRACE(trace);
-        return this;
+    public Map<HttpMethod, Operation> getOperations() {
+        return readOperationsMap();
     }
 
     @Override
@@ -316,15 +255,16 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem servers(List<Server> servers) {
-        setServers(servers);
+    public PathItem addServer(Server server) {
+        if (server != null) {
+            servers.add(server);
+        }
         return this;
     }
 
     @Override
-    public PathItem addServer(Server server) {
-        servers.add(server);
-        return this;
+    public void removeServer(Server server) {
+        servers.remove(server);
     }
 
     @Override
@@ -338,15 +278,16 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem parameters(List<Parameter> parameters) {
-        setParameters(parameters);
+    public PathItem addParameter(Parameter parameter) {
+        if (parameter != null) {
+            parameters.add(parameter);
+        }
         return this;
     }
 
     @Override
-    public PathItem addParameter(Parameter parameter) {
-        parameters.add(parameter);
-        return this;
+    public void removeParameter(Parameter parameter) {
+        parameters.remove(parameter);
     }
 
     @Override
