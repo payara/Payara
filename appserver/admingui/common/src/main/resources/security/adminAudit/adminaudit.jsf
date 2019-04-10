@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
 />
 
-<!composition template="/templates/default.layout" guiTitle="$resource{i18n.adminAudit.PageTitle}"
+<!composition template="/templates/default.layout" guiTitle="$resource{i18nc.adminAudit.PageTitle}"
     guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:adminAudit');"
 >
 <!define name="content">
@@ -82,14 +82,13 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         />
     </event>
              <sun:form id="propertyForm">
-      #include "/common/monitor/monitoringConfigTabs.inc"
 #include "/common/shared/alertMsg.inc"
                 <!-- Page Title -->
-                <sun:title id="propertyContentPage" title="$resource{i18n.adminaudit.Title}" helpText="$resource{i18n.adminaudit.PageHelp}" />
+                <sun:title id="propertyContentPage" title="$resource{i18nc.adminaudit.Title}" helpText="$resource{i18nc.adminaudit.PageHelp}" />
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
-            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
-                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18nc.button.Save}"
+                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18nc.button.Processing}');}; return false;" >
                  <!command
                      mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
@@ -113,11 +112,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         #include "/common/shared/configNameSection.inc"
         <sun:propertySheetSection id="propertSectionTextField">
 
-            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.adminaudit.Enabled}" helpText="$resource{i18n.adminaudit.EnabledHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
+            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Enabled}" helpText="$resource{i18nc.adminaudit.EnabledHelp}">
+                <sun:checkbox label="$resource{i18nc.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
             </sun:property>
-            <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.adminaudit.Dynamic}" helpText="$resource{i18n.adminaudit.DynamicHelp}">
-                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
+            <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Dynamic}" helpText="$resource{i18nc.adminaudit.DynamicHelp}">
+                <sun:checkbox label="$resource{i18nc.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
             </sun:property>                     
             "<br /><br />
         </sun:propertySheetSection>
@@ -128,31 +127,20 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                                selectAll="$boolean{true}"
                                items="#{pageSession.allNotifiers}"
                                selected="#{pageSession.enabledNotifiersArr}"
-                               availableItemsLabel="$resource{i18n.adminaudit.configuration.availableNotifiers}"
-                               selectedItemsLabel="$resource{i18n.adminaudit.configuration.selectedNotifiers}">
+                               availableItemsLabel="$resource{i18nc.adminaudit.configuration.availableNotifiers}"
+                               selectedItemsLabel="$resource{i18nc.adminaudit.configuration.selectedNotifiers}">
                 </sun:addRemove>
             </sun:property>
 
             <sun:property>
-                <sun:staticText text="$resource{i18n.adminaudit.link.to.notification.page.text.prefix}" />
+                <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text.prefix}" />
                 <sun:hyperlink
-                    toolTip="$resource{i18n.adminaudit.link.to.notification.page.text}"
+                    toolTip="$resource{i18nc.adminaudit.link.to.notification.page.text}"
                     url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
-                    <sun:staticText text="$resource{i18n.adminaudit.link.to.notification.page.text}" />
+                    <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text}" />
                 </sun:hyperlink>
-                <sun:staticText text="$resource{i18n.adminaudit.link.to.notification.page.text.suffix}" />
+                <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text.suffix}" />
             </sun:property>      
-        </sun:propertySheetSection>
-        <sun:propertySheetSection>     
-            <sun:property>
-                <sun:staticText text="$resource{i18n.adminaudit.link.to.documentation.text.prefix}" />
-                <sun:hyperlink
-                    toolTip="$resource{i18n.adminaudit.link.to.documentation.hover}"
-                    onClick="var win=window.open('$resource{i18n.adminaudit.link.to.documentation}','_blank');if (win) {win.focus();}; return false;">
-                    <sun:staticText text="$resource{i18n.adminaudit.link.to.documentation.text}" />
-                </sun:hyperlink>
-                <sun:staticText text="$resource{i18n.adminaudit.link.to.documentation.text.suffix}" />
-            </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
             <sun:hidden id="helpKey" value="$resource{help_common.auditModules}" />

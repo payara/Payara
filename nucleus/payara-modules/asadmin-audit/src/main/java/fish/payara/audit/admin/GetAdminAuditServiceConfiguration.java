@@ -42,14 +42,10 @@
  */
 package fish.payara.audit.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;

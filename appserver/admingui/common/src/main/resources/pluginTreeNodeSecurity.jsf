@@ -61,7 +61,7 @@
 	    text="$resource{i18n.tree.adminAudit}"
 	    url="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?configName=${configName}">
 	<!facet image>
-	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?configName=${configName}" 
+	    <sun:iconHyperlink id="treeIcon" imageURL="/resource/common/security/images/security.gif" url="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?configName=${configName}" 
 		alt="$resource{i18n.tree.adminAudit}" border="0" immediate="true" />
 	</facet>
     </dynamicTreeNode>
