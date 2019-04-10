@@ -27,3 +27,4 @@ appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 /nucleus/payara-modules/service-exemplar/nbproject/
 /nucleus/admin/server-mgmt/nbproject/
 appserver/tests/quicklook/quicklook_summary.txt
+/nucleus/admin/rest/rest-service/nbproject/

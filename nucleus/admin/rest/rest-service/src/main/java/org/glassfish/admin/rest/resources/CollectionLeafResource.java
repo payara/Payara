@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -342,8 +342,9 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack "There's nothing more permanent than a temporary hack" - Kyle Simpson
-    private Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
+    // Ugly, temporary hack 
+    //"There's nothing more permanent than a temporary solution" - Russian Proverb
+    protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
         Map<String, String> results = new HashMap<String, String>();
         StringBuilder options = new StringBuilder();
         String sep = "";
@@ -356,16 +357,23 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
                 String value = entry.getValue();
                 
-               if(value != null && !value.trim().isEmpty()){
-                   if(value.contains("=")){
-                       value = value.replaceAll("=", "");
-                   }
-                   if(key != null && !key.trim().isEmpty() && !key.endsWith("=") && !key.contains("=")){
-                       options.append("=").append(entry.getValue());
-                   }else{
-                       options.append(value);
-                   }
-               }   
+               if (value != null && !value.trim().isEmpty()) {
+                    if (value.contains("=")) {
+                        value = value.replaceAll("=", "");
+                    }
+
+                }
+
+                if (key != null && !key.trim().isEmpty() && !key.contains("=")) {
+                    if(value != null || !value.trim().isEmpty()){
+                        options.append("=").append(value);
+                    }else{
+                        options.append("=");
+                    }    
+                } else {
+                    options.append(value);
+                }
+               
                 sep = ":";
             }
         }
