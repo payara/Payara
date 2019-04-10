@@ -79,7 +79,7 @@ public class LoggingXMLNames {
 
     public static final String alarms = "alarms";
     
-    public static final String redirectSystemStreams = "redirect-system-streams";
+    public static final String logStandardStreams = "log-standard-streams";
 
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
     // logger names from DTD
@@ -128,7 +128,7 @@ public class LoggingXMLNames {
                 put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
                 put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
-                put(redirectSystemStreams, LoggingPropertyNames.redirectSystemStreams);
+                put(logStandardStreams, LoggingPropertyNames.logStandardStreams);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);

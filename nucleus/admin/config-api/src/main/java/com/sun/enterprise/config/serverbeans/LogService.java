@@ -350,19 +350,19 @@ public interface LogService extends ConfigBeanProxy  {
     public void setRetainErrorStatisticsForHours(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the redirectSystemStreams property.
+     * Gets the value of the logStandardStreams property.
      *
      */
     @Attribute(defaultValue = "true", dataType = Boolean.class)
-    public String getRedirectSystemStreams();
+    public String getLogStandardStreams();
 
     /**
-     * Sets the value of the redirectSystemStreams property.
+     * Sets the value of the logStandardStreams property.
      *
      * @param value allowed object is {@link String }
      * @throws PropertyVetoException
      */
-    public void setRedirectSystemStreams(String value) throws PropertyVetoException;
+    public void setLogStandardStreams(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the moduleLogLevels property.

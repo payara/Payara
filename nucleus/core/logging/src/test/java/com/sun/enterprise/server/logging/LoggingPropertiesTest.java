@@ -74,7 +74,7 @@ import static org.junit.Assert.assertNull;
 public class LoggingPropertiesTest {
 
     private final Properties props = new Properties();
-    private static final String REDIRECT_SYSTEM_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.redirectSystemStreams";
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams";
     private Map<String, String> properties;
 
     @Rule
@@ -95,7 +95,7 @@ public class LoggingPropertiesTest {
     @Test
     public void setLoggingPropertiesTest() throws IOException {
         properties = new HashMap<>();
-        properties.put(REDIRECT_SYSTEM_STREAMS_PROPERTY, "false");
+        properties.put(LOG_STANDARD_STREAMS_PROPERTY, "false");
         loggingConfigImpl.setLoggingProperties(properties);
 
         Map<String, String> newProperties = new HashMap<>();
@@ -103,7 +103,7 @@ public class LoggingPropertiesTest {
         loggingConfigImpl.setLoggingProperties(newProperties);
         loadProperties();
 
-        assertEquals("Logging property doesn't match", props.get(REDIRECT_SYSTEM_STREAMS_PROPERTY), "false");
+        assertEquals("Logging property doesn't match", props.get(LOG_STANDARD_STREAMS_PROPERTY), "false");
     }
 
     @Test
@@ -120,12 +120,12 @@ public class LoggingPropertiesTest {
     @Test
     public void getLoggingPropertiesTest() throws IOException {
         loadProperties();
-        props.remove(REDIRECT_SYSTEM_STREAMS_PROPERTY);
+        props.remove(LOG_STANDARD_STREAMS_PROPERTY);
         closePropFile();
         // Should get the default value of logging properties
         properties = loggingConfigImpl.getLoggingProperties();
 
-        assertEquals("Default logging properties were not set", properties.get(REDIRECT_SYSTEM_STREAMS_PROPERTY), "true");
+        assertEquals("Default logging properties were not set", properties.get(LOG_STANDARD_STREAMS_PROPERTY), "true");
     }
 
     @Test

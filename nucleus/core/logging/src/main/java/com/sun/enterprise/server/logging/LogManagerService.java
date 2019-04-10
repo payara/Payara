@@ -162,7 +162,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
     String compressOnRotationDetail = "";
-    String redirectSystemStreamsDetail = "";
+    String logStandardStreamsDetail = "";
     
     //Payara Notification Logging   
     String payaraNotificationLogFileDetail = "";
@@ -197,7 +197,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
     private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
-    private static final String REDIRECT_SYSTEM_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.redirectSystemStreams";
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams";
     
     //Payara Notification Logging
     private static final String PAYARA_NOTIFICATION_LOG_FILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
@@ -750,14 +750,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                         }
                                     }
-                                } else if (a.equals(REDIRECT_SYSTEM_STREAMS_PROPERTY)) {
-                                    if (!val.equals(redirectSystemStreamsDetail)) {
-                                        redirectSystemStreamsDetail = val;
+                                } else if (a.equals(LOG_STANDARD_STREAMS_PROPERTY)) {
+                                    if (!val.equals(logStandardStreamsDetail)) {
+                                        logStandardStreamsDetail = val;
                                         for (Handler handler : logMgr.getLogger("").getHandlers()) {
                                             // only get the GFFileHandler
                                             if (handler.getClass().equals(GFFileHandler.class)) {
                                                 gfFileHandler = (GFFileHandler) handler;
-                                                gfFileHandler.setRedirectSystemStreams(Boolean.parseBoolean(redirectSystemStreamsDetail));
+                                                gfFileHandler.setLogStandardStreams(Boolean.parseBoolean(logStandardStreamsDetail));
                                                 break;
                                             }
                                         }
@@ -998,7 +998,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
         logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
         compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
-        redirectSystemStreamsDetail = props.get(REDIRECT_SYSTEM_STREAMS_PROPERTY);
+        logStandardStreamsDetail = props.get(LOG_STANDARD_STREAMS_PROPERTY);
 
         //Payara Notification Logging
         payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);

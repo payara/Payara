@@ -144,7 +144,7 @@ public class GFFileHandler extends StreamHandler implements
     private boolean multiLineMode;
     private String fileHandlerFormatter = "";
     private String currentFileHandlerFormatter = "";
-    private boolean redirectSystemStreams;
+    private boolean logStandardStreams;
     
     private PrintStream oStdOutBackup = System.out;
     private PrintStream oStdErrBackup = System.err;
@@ -307,11 +307,11 @@ public class GFFileHandler extends StreamHandler implements
             compressionOnRotation = Boolean.parseBoolean(propertyValue);
         }
    
-        propertyValue = manager.getProperty(className + ".redirectSystemStreams");
+        propertyValue = manager.getProperty(className + ".logStandardStreams");
         if (propertyValue != null) {
-            redirectSystemStreams = Boolean.parseBoolean(propertyValue);
-            if (redirectSystemStreams) {
-                redirectStandardStreams();
+            logStandardStreams = Boolean.parseBoolean(propertyValue);
+            if (logStandardStreams) {
+                logStandardStreams();
             }
         }
 
@@ -617,7 +617,7 @@ public class GFFileHandler extends StreamHandler implements
         
         System.setOut(oStdOutBackup);
         System.setErr(oStdErrBackup);
-        
+
         try {
             if (stdoutOutputStream != null) {
                 stdoutOutputStream.close();
@@ -1093,7 +1093,7 @@ public class GFFileHandler extends StreamHandler implements
         return status;
     }
     
-    private void redirectStandardStreams() {
+    private void logStandardStreams() {
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
   
@@ -1178,11 +1178,11 @@ public class GFFileHandler extends StreamHandler implements
         this.compressionOnRotation = compressionOnRotation;
     }
 
-    public synchronized void setRedirectSystemStreams(boolean redirectSystemStreams) {
-        this.redirectSystemStreams = redirectSystemStreams;
+    public synchronized void setLogStandardStreams(boolean logStandardStreams) {
+        this.logStandardStreams = logStandardStreams;
 
-        if (redirectSystemStreams) {
-            redirectStandardStreams();
+        if (logStandardStreams) {
+            logStandardStreams();
         } else {
             System.setOut(oStdOutBackup);
             System.setErr(oStdErrBackup);

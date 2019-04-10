@@ -139,7 +139,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             logLevels.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());
             logLevels.put("alarms", logService.getAlarms());
             logLevels.put("retain-error-statistics-for-hours", logService.getRetainErrorStatisticsForHours());
-            logLevels.put("redirect-system-streams", logService.getRedirectSystemStreams());
+            logLevels.put("log-standard-streams", logService.getLogStandardStreams());
             final Map<String, String> m = new HashMap<String, String>(logLevels);
 
             ConfigSupport.apply(new SingleConfigCode<Config>() {

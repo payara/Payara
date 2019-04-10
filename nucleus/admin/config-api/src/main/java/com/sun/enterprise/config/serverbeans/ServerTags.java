@@ -138,7 +138,7 @@ public class ServerTags  {
     public static final String PAYARA_NOTIFICATIONLOG_ROTATION_TIMELIMIT_IN_MINUTES = "payara-notification-log-rotation-timelimit-in-minutes";
     public static final String ALARMS = "alarms";
     public static final String RETAIN_ERROR_STATISTICS_FOR_HOURS = "retain-error-statistics-for-hours";
-    public static final String REDIRECT_SYSTEM_STREAMS = "redirect-system-streams";
+    public static final String LOG_STANDARD_STREAMS = "log-standard-streams";
     /** Tags for Element module-log-levels */
     public static final String MODULE_LOG_LEVELS = "module-log-levels";
     public static final String ROOT = "root";

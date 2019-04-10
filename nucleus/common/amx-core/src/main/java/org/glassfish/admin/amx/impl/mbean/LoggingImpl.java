@@ -260,7 +260,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             attributes.put(gfHandler + ".logtoFile", props.get(gfHandler + ".logtoFile"));
             attributes.put(gfHandler + ".logtoConsole", props.get(gfHandler + ".logtoConsole"));
             attributes.put(gfHandler + ".flushFrequency", props.get(gfHandler + ".flushFrequency"));
-            attributes.put(gfHandler + ".redirectSystemStreams", props.get(gfHandler + ".redirectSystemStreams"));
+            attributes.put(gfHandler + ".logStandardStreams", props.get(gfHandler + ".logStandardStreams"));
             attributes.put("handlers", props.get("handlers"));
             attributes.put(sysHandler + ".useSystemLogging", props.get(sysHandler + ".useSystemLogging"));
             return attributes;

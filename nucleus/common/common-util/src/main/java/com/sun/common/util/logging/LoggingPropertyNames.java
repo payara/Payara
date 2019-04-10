@@ -82,7 +82,7 @@ public class LoggingPropertyNames {
 
     public static final String alarms = GFFileHandler + "alarms";
 
-    public static final String redirectSystemStreams = GFFileHandler + "redirectSystemStreams";
+    public static final String logStandardStreams = GFFileHandler + "logStandardStreams";
 
     public static final String MAX_QUEUE_SIZE = GFFileHandler + "maxQueueSize";
 
