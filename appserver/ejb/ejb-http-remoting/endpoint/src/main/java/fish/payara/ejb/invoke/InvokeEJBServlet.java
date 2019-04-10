@@ -45,14 +45,13 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import javax.json.*;
+import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -78,14 +77,12 @@ public class InvokeEJBServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
-        JsonObject requestPayload = 
-                Json.createReader(request.getReader())
-                    .readObject();
-        
+
+        final JsonObject requestPayload = readJsonObject(request.getReader());
+
         if (request.getRequestURI().endsWith("lookup")) {
             boolean success = excuteInAppContext(() -> {
-                
+
                 try {
                     response.getWriter().print(
                             new InitialContext().lookup(requestPayload.getString("lookup"))
@@ -96,69 +93,75 @@ public class InvokeEJBServlet extends HttpServlet {
                 } catch (IOException | NamingException e) {
                     // Ignore for now
                 }
-                
+
                 return false;
             });
-            
+
             if (!success) {
                 response.sendError(SC_INTERNAL_SERVER_ERROR, "Name " + requestPayload.getString("lookup") + " not found when doing initial lookup");
             }
-            
+
             return;
         }
-        
+
         // Convert JSON encoded method parameter type names to actually Class instances
-        Class<?>[] argTypes = 
+        Class<?>[] argTypes =
             requestPayload.getJsonArray("argTypes").stream()
                           .map(e -> toClass(e))
                           .toArray(Class[]::new);
-        
+
         // Convert JSON encoded method parameter values to their object instances
         List<JsonValue> jsonArgValues = requestPayload.getJsonArray("argValues");
         Object[] argValues = new Object[argTypes.length];
         for (int i = 0; i < jsonArgValues.size(); i++) {
             argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
         }
-        
+
         boolean success = excuteInAppContext(() -> {
             try {
                 // Obtain the target EJB that we're going to invoke
                 Object bean = new InitialContext().lookup(requestPayload.getString("lookup"));
-                
+
                 // Authenticates the caller and if successful sets the security context
                 // *for the outgoing EJB call*. In other words, the security context for this
                 // Servlet will not be changed.
                 if (requestPayload.containsKey(SECURITY_PRINCIPAL)) {
                     ProgrammaticLogin login = new ProgrammaticLogin();
                     login.login(
-                        base64Decode(requestPayload.getString(SECURITY_PRINCIPAL)), 
+                        base64Decode(requestPayload.getString(SECURITY_PRINCIPAL)),
                         base64Decode(requestPayload.getString(SECURITY_CREDENTIALS)),
                         null, true);
                 }
-                
+
                 // Actually invoke the target EJB
-                Object result = 
+                Object result =
                     bean.getClass()
                         .getMethod(requestPayload.getString("method"), argTypes)
                         .invoke(bean, argValues);
-                
+
                 response.setContentType(APPLICATION_JSON);
                 response.getWriter().print(result instanceof String? result : JsonbBuilder.create().toJson(result));
-                
+
                 return true;
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             return false;
         });
-        
+
         if (!success) {
             response.sendError(SC_INTERNAL_SERVER_ERROR, "Name " + requestPayload.getString("lookup") + " not found when invoking");
         }
     }
-    
+
+    private JsonObject readJsonObject(Reader reader) {
+        try (JsonReader jsonReader = Json.createReader(reader)) {
+            return jsonReader.readObject();
+        }
+    }
+
     private Class<?> toClass(JsonValue classNameValue) {
         try {
             String className = null;
@@ -167,28 +170,30 @@ public class InvokeEJBServlet extends HttpServlet {
             } else {
                 className = classNameValue.toString().replace("\"", "");
             }
-            
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
-    
+
     private Object toObject(JsonValue objectValue, Class<?> type) {
-        return JsonbBuilder
-                .create()
-                .fromJson(objectValue.toString(), type);
+        try (Jsonb jsonb = JsonbBuilder.create()) {
+            return jsonb.fromJson(objectValue.toString(), type);
+        } catch (Exception e) {
+            // cannot really happen. It is just from java.lang.AutoCloseable interface
+            throw new IllegalStateException("Problem closing Jsonb.", e);
+        }
     }
-    
+
     private boolean excuteInAppContext(Supplier<Boolean> body) {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
-        
+
         for (String applicationName : registry.getAllApplicationNames()) {
             ClassLoader existingContextClassLoader = Thread.currentThread().getContextClassLoader();
             try {
-                
+
                 Thread.currentThread().setContextClassLoader(registry.get(applicationName).getAppClassLoader());
-            
+
                 try {
                     if (body.get()) {
                         return true;
@@ -196,18 +201,18 @@ public class InvokeEJBServlet extends HttpServlet {
                 } catch (Exception e) {
                     // ignore
                 }
-           
+
             } finally {
                 if (existingContextClassLoader != null) {
                     Thread.currentThread().setContextClassLoader(existingContextClassLoader);
                 }
             }
-            
+
         }
-        
+
         return false;
     }
-    
+
     private static String base64Decode(String input) {
         return new String(Base64.getDecoder().decode(input));
     }
