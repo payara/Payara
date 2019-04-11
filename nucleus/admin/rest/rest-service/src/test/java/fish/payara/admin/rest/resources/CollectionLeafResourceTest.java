@@ -66,10 +66,16 @@ public class CollectionLeafResourceTest {
         data2.put("-Dproduct.name", "");
         
         Map<String, String> data3 = new HashMap<>();
-        data3.put("-Dproduct.name", "XXX");
+        data3.put("-Dproduct.name=", "");
         
         Map<String, String> data4 = new HashMap<>();
-        data4.put("-client", "");
+        data4.put("-Dproduct.name", "XXX");
+        
+        Map<String, String> data5 = new HashMap<>();
+        data5.put("-Dproduct.name", null);
+        
+        Map<String, String> data6 = new HashMap<>();
+        data6.put("-client", "");
         
         class Wrapper extends CollectionLeafResource{
            public Map<String, String> getProcessedData(Map<String, String> data){
@@ -79,9 +85,11 @@ public class CollectionLeafResourceTest {
         
         Wrapper wrapper = new Wrapper();
         
-        assertEquals("-Dproduct.name=XXX", wrapper.getProcessedData(data1).get("id"));
-        assertEquals("-Dproduct.name=", wrapper.getProcessedData(data2).get("id"));
-        assertEquals("-Dproduct.name=XXX", wrapper.getProcessedData(data3).get("id"));
-        assertEquals("-client=", wrapper.getProcessedData(data4).get("id"));
+        assertEquals(wrapper.getProcessedData(data1).get("id"), "-Dproduct.name=XXX");
+        assertEquals(wrapper.getProcessedData(data2).get("id"), "-Dproduct.name=");
+        assertEquals(wrapper.getProcessedData(data3).get("id"), "-Dproduct.name=");
+        assertEquals(wrapper.getProcessedData(data4).get("id"), "-Dproduct.name=XXX");
+        assertEquals(wrapper.getProcessedData(data5).get("id"), "-Dproduct.name=");
+        assertEquals(wrapper.getProcessedData(data6).get("id"), "-client");
     }   
 }

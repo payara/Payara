@@ -357,23 +357,19 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
                 String value = entry.getValue();
                 
-               if (value != null && !value.trim().isEmpty()) {
-                    if (value.contains("=")) {
+                if(key != null && !key.trim().isEmpty() && key.startsWith("-D")){    
+                    if(value == null){
+                        value = "";
+                    }else if(value.contains("=")){
                         value = value.replaceAll("=", "");
                     }
-
-                }
-
-                if (key != null && !key.trim().isEmpty() && !key.contains("=")) {
-                    if(value != null || !value.trim().isEmpty()){
+                 
+                    if(key.endsWith("=")){
+                            options.append(value);
+                    }else if(!key.contains("=")){
                         options.append("=").append(value);
-                    }else{
-                        options.append("=");
-                    }    
-                } else {
-                    options.append(value);
+                    }
                 }
-               
                 sep = ":";
             }
         }
