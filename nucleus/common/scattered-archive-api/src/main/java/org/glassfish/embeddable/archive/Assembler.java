@@ -88,19 +88,19 @@ class Assembler {
                             Map<String, File> metadatas) throws IOException {
         File ear = new File(System.getProperty("java.io.tmpdir"), name + ".ear");
         ear.deleteOnExit();
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(ear));
-        for (Map.Entry<String, File> me : metadatas.entrySet()) {
-            tranferFile(me.getValue(), jos, me.getKey(), false);
-        }
-        for (Map.Entry<String, File> ame : archives.entrySet()) {
-            File archive = ame.getValue();
-            if (archive.isDirectory()) {
-                archive = new File(assembleJAR(ame.getKey(), archive,
-                        Collections.EMPTY_LIST, Collections.EMPTY_MAP));
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(ear))) {
+            for (Map.Entry<String, File> me : metadatas.entrySet()) {
+                tranferFile(me.getValue(), jos, me.getKey(), false);
             }
-            tranferFile(archive, jos, ame.getKey(), false);
+            for (Map.Entry<String, File> ame : archives.entrySet()) {
+                File archive = ame.getValue();
+                if (archive.isDirectory()) {
+                    archive = new File(assembleJAR(ame.getKey(), archive,
+                            Collections.emptyList(), Collections.emptyMap()));
+                }
+                tranferFile(archive, jos, ame.getKey(), false);
+            }
         }
-        jos.close();
         return ear.toURI();
 
     }
@@ -110,20 +110,20 @@ class Assembler {
         File archive = new File(System.getProperty("java.io.tmpdir"), name + ".war");
         archive.deleteOnExit();
 
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive));
-
-        transferDir(rootDirectory, jos, "");
-        for (Map.Entry<String, File> me : metadatas.entrySet()) {
-            tranferFile(me.getValue(), jos, me.getKey(), false);
-        }
-        for (File classpath : classpaths) {
-            if (classpath.isDirectory()) {
-                transferDir(classpath, jos, "WEB-INF/classes/");
-            } else {
-                tranferFile(classpath, jos, "WEB-INF/lib/" + classpath.getName(), false);
+        try(JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive))) {
+            transferDir(rootDirectory, jos, "");
+            for (Map.Entry<String, File> me : metadatas.entrySet()) {
+                tranferFile(me.getValue(), jos, me.getKey(), false);
+            }
+            for (File classpath : classpaths) {
+                if (classpath.isDirectory()) {
+                    transferDir(classpath, jos, "WEB-INF/classes/");
+                } else {
+                    tranferFile(classpath, jos, "WEB-INF/lib/" + classpath.getName(), false);
+                }
             }
         }
-        jos.close();
+
         return archive.toURI();
     }
 
@@ -131,19 +131,19 @@ class Assembler {
                     Map<String, File> metadatas) throws IOException {
         File archive = new File(System.getProperty("java.io.tmpdir"), name + ".jar");
         archive.deleteOnExit();
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive));
-        transferDir(rootDirectory, jos, "");
-        for (Map.Entry<String, File> me : metadatas.entrySet()) {
-            tranferFile(me.getValue(), jos, me.getKey(), false);
-        }
-        for (File classpath : classpaths) {
-            if (classpath.isDirectory()) {
-                transferDir(classpath, jos, "");
-            } else {
-                tranferFile(classpath, jos, "", true);
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive))) {
+            transferDir(rootDirectory, jos, "");
+            for (Map.Entry<String, File> me : metadatas.entrySet()) {
+                tranferFile(me.getValue(), jos, me.getKey(), false);
+            }
+            for (File classpath : classpaths) {
+                if (classpath.isDirectory()) {
+                    transferDir(classpath, jos, "");
+                } else {
+                    tranferFile(classpath, jos, "", true);
+                }
             }
         }
-        jos.close();
         return archive.toURI();
     }
 
@@ -151,42 +151,41 @@ class Assembler {
                     Map<String, File> metadatas) throws IOException {
         File rar = new File(System.getProperty("java.io.tmpdir"), name + ".rar");
         rar.deleteOnExit();
-        JarOutputStream jos = new JarOutputStream(new FileOutputStream(rar));
-        transferDir(rootDirectory, jos, "");
-        for (Map.Entry<String, File> me : metadatas.entrySet()) {
-            tranferFile(me.getValue(), jos, me.getKey(), false);
-        }
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(rar))) {
+            transferDir(rootDirectory, jos, "");
+            for (Map.Entry<String, File> me : metadatas.entrySet()) {
+                tranferFile(me.getValue(), jos, me.getKey(), false);
+            }
+            // Make a single connector jar out of all the classpath directories and add it to the RAR file.
+            List<File> classpathDirs = new ArrayList<>();
+            for (File classpath : classpaths) {
+                if (classpath.isDirectory()) {
+                    classpathDirs.add(classpath);
+                }
+            }
+            if (!classpathDirs.isEmpty()) {
+                // Compute a unique connector jar name
+                String connectorJarName = name;
+                List<String> topLevelFileNames = new ArrayList<>();
+                topLevelFileNames.addAll(getFileNames(classpaths));
+                topLevelFileNames.addAll(getFileNames(rootDirectory));
+                int count = 0;
+                while (topLevelFileNames.contains(connectorJarName + ".jar")) {
+                    connectorJarName = name + "_" + count;
+                    ++count;
+                }
+                File connectorJar = new File(assembleJAR(connectorJarName, null,
+                        classpathDirs, Collections.emptyMap()));
+                tranferFile(connectorJar, jos, connectorJar.getName(), false);
+            }
 
-        // Make a single connector jar out of all the classpath directories and add it to the RAR file.
-        List<File> classpathDirs = new ArrayList();
-        for (File classpath : classpaths) {
-            if (classpath.isDirectory()) {
-                classpathDirs.add(classpath);
+            // Add all the classpath files to the RAR files.
+            for (File classpath : classpaths) {
+                if (!classpath.isDirectory()) {
+                    tranferFile(classpath, jos, classpath.getName(), false);
+                }
             }
         }
-        if (!classpathDirs.isEmpty()) {
-            // Compute a unique connector jar name
-            String connectorJarName = name;
-            List<String> topLevelFileNames = new ArrayList();
-            topLevelFileNames.addAll(getFileNames(classpaths));
-            topLevelFileNames.addAll(getFileNames(rootDirectory));
-            int count = 0;
-            while (topLevelFileNames.contains(connectorJarName + ".jar")) {
-                connectorJarName = name + "_" + count;
-                ++count;
-            }
-            File connectorJar = new File(assembleJAR(connectorJarName, null,
-                    classpathDirs, Collections.EMPTY_MAP));
-            tranferFile(connectorJar, jos, connectorJar.getName(), false);
-        }
-
-        // Add all the classpath files to the RAR files.
-        for (File classpath : classpaths) {
-            if (!classpath.isDirectory()) {
-                tranferFile(classpath, jos, classpath.getName(), false);
-            }
-        }
-        jos.close();
         return rar.toURI();
     }
 
@@ -200,13 +199,16 @@ class Assembler {
         if (dir == null || jos == null) {
             return;
         }
-        for (File f : dir.listFiles()) {
-            if (f.isFile()) {
-                String entryName = entryNamePrefix +
-                        f.getPath().substring(basedir.getPath().length() + 1);
-                tranferFile(f, jos, entryName, false);
-            } else {
-                transferDir(basedir, f, jos, entryNamePrefix);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isFile()) {
+                    String entryName = entryNamePrefix +
+                            f.getPath().substring(basedir.getPath().length() + 1);
+                    tranferFile(f, jos, entryName, false);
+                } else {
+                    transferDir(basedir, f, jos, entryNamePrefix);
+                }
             }
         }
     }
@@ -230,18 +232,17 @@ class Assembler {
         } catch (ZipException ex) {
             return;
         }
-        FileInputStream fin = new FileInputStream(file);
-        transferContents(fin, jos);
-        jos.closeEntry();
+        try(FileInputStream fin = new FileInputStream(file)) {
+            transferContents(fin, jos);
+            jos.closeEntry();
+        }
     }
 
     void tranferEntries(File file, JarOutputStream jos) throws IOException {
         if (file == null || jos == null) {
             return;
         }
-        JarFile jarFile = null;
-        try {
-            jarFile = new JarFile(file);
+        try (JarFile jarFile = new JarFile(file)) {
             Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
@@ -257,15 +258,6 @@ class Assembler {
                     }
                 }
             }
-        } finally {
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (IOException ioe) {
-                    //ignore
-                }
-            }
-
         }
     }
 
@@ -284,13 +276,16 @@ class Assembler {
 
     private List<String> getFileNames(File directory) {
         if (directory != null && directory.exists() && directory.isDirectory()) {
-            return getFileNames(Arrays.asList(directory.listFiles()));
+            File[] files = directory.listFiles();
+            if (files != null) {
+                return getFileNames(Arrays.asList(files));
+            }
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     private List<String> getFileNames(List<File> files) {
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         for (File f : files) {
             if (!f.isDirectory()) {
                 result.add(f.getName());
@@ -299,7 +294,7 @@ class Assembler {
         return result;
     }
 
-    private static final List<Pattern> EXCLUDE_JAR_ENTRIES = new ArrayList();
+    private static final List<Pattern> EXCLUDE_JAR_ENTRIES = new ArrayList<>();
 
     static {
         EXCLUDE_JAR_ENTRIES.add(Pattern.compile("META-INF/MANIFEST\\.MF"));

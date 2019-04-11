@@ -71,6 +71,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
+import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
@@ -143,6 +145,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     ConfigSupport configSupport;
+
+    @Inject
+    CommonClassLoaderServiceImpl commonClassLoaderService;
 
     @Inject
     PayaraExecutorService executorService;
@@ -575,8 +580,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } else {
 
                 try {
+                    ResourceLocator locator = determineLocator();
                     // scan the jar and store the result in the deployment context.
-                    ParsingContext parsingContext = new ParsingContext.Builder().logger(context.getLogger()).executorService(executorService.getUnderlyingExecutorService()).build();
+                    ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder().logger(context.getLogger())
+                            .executorService(executorService.getUnderlyingExecutorService());
+                    // workaround bug in Builder
+                    parsingContextBuilder.locator(locator);
+                    ParsingContext parsingContext = parsingContextBuilder.build();
                     Parser parser = new Parser(parsingContext);
                     ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
                     parser.parse(scannerAdapter, null);
@@ -601,6 +611,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     throw new IOException(e);
                 }
             }
+        }
+    }
+
+    private ResourceLocator determineLocator() {
+        if (CommonModelRegistry.getInstance().canLoadResources()) {
+            // common model registry will handle our external class dependencies
+            return null;
+        } else {
+            return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
         }
     }
 

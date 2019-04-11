@@ -469,11 +469,15 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             }
 
             boolean createTimers = true;
-            if (!(opsparams.origin.isDeploy() || opsparams.origin.isCreateAppRef()) || env.getInstanceName().equals(dcp.target)) {
-                // Do real work only on deploy for a cluster or create-application-ref (the latter will
+            boolean isDeploymentGroup = domain.getDeploymentGroupNamed(dcp.target) != null;
+            boolean isDeployment = opsparams.origin.isDeploy() || opsparams.origin.isCreateAppRef();
+            boolean isDirectTarget = env.getInstanceName().equals(dcp.target);
+            // Create timers on DAS only if this condition is not met
+            if (!isDeployment || isDirectTarget || isDeploymentGroup) {
+                // Create them on deploy for a cluster or create-application-ref (the latter will
                 // check if it's the 1st ref being added or a subsequent one (timers with this unique id are present
                 // or not)
-                // Timers will be created by the BaseContainer if it's a single instance deploy
+                // Otherwise, timers will be created by the BaseContainer if it's a single instance deploy
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "EjbDeployer ... will only set the timeout application flag if any");
                 }

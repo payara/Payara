@@ -53,15 +53,15 @@ import org.eclipse.microprofile.openapi.models.servers.Server;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class LinkImpl extends ExtensibleImpl implements Link {
+public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
-    protected String operationRef;
-    protected String operationId;
-    protected Map<String, Object> parameters = new HashMap<>();
-    protected Object requestBody;
-    protected String description;
-    protected String ref;
-    protected Server server;
+    private String operationRef;
+    private String operationId;
+    private Map<String, Object> parameters = new HashMap<>();
+    private Object requestBody;
+    private String description;
+    private String ref;
+    private Server server;
 
     @Override
     public Server getServer() {
@@ -71,12 +71,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     @Override
     public void setServer(Server server) {
         this.server = server;
-    }
-
-    @Override
-    public Link server(Server server) {
-        setServer(server);
-        return this;
     }
 
     @Override
@@ -90,12 +84,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     }
 
     @Override
-    public Link operationRef(String operationRef) {
-        setOperationRef(operationRef);
-        return this;
-    }
-
-    @Override
     public Object getRequestBody() {
         return requestBody;
     }
@@ -103,12 +91,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     @Override
     public void setRequestBody(Object requestBody) {
         this.requestBody = requestBody;
-    }
-
-    @Override
-    public Link requestBody(Object requestBody) {
-        setRequestBody(requestBody);
-        return this;
     }
 
     @Override
@@ -122,12 +104,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     }
 
     @Override
-    public Link operationId(String operationId) {
-        setOperationId(operationId);
-        return this;
-    }
-
-    @Override
     public Map<String, Object> getParameters() {
         return parameters;
     }
@@ -138,15 +114,16 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     }
 
     @Override
-    public Link parameters(Map<String, Object> parameters) {
-        setParameters(parameters);
+    public Link addParameter(String name, Object parameter) {
+        if (parameter != null) {
+            this.parameters.put(name, parameter);
+        }
         return this;
     }
 
     @Override
-    public Link addParameter(String name, Object parameter) {
-        this.parameters.put(name, parameter);
-        return this;
+    public void removeParameter(String name) {
+        this.parameters.remove(name);
     }
 
     @Override
@@ -160,12 +137,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
     }
 
     @Override
-    public Link description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public String getRef() {
         return ref;
     }
@@ -176,12 +147,6 @@ public class LinkImpl extends ExtensibleImpl implements Link {
             ref = "#/components/links/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public Link ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.links.Link from, Link to, boolean override) {

@@ -100,8 +100,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.ejb.rest</groupId>
-            <artifactId>ejb-rest-admin</artifactId>
+            <groupId>fish.payara.ejb.http</groupId>
+            <artifactId>ejb-http-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

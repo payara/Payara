@@ -42,33 +42,64 @@ package fish.payara.microprofile.openapi.impl.model;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
-import java.util.HashMap;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
-public abstract class ExtensibleImpl implements Extensible {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-    protected Map<String, Object> extensions = new HashMap<>();
+public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
+
+    private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
+
+    @JsonIgnore
+    protected Map<String, Object> extensions = new LinkedHashMap<>();
 
     @Override
     public Map<String, Object> getExtensions() {
         return extensions;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void addExtension(String name, Object value) {
-        extensions.put(name, value);
+    public T addExtension(String name, Object value) {
+        if (value != null) {
+            extensions.put(extensionName(name), value);
+        }
+        return (T) this;
+    }
+
+    @Override
+    public void removeExtension(String name) {
+        extensions.remove(extensionName(name));
     }
 
     @Override
     public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+        this.extensions.clear();
+        for (Entry<String, Object> entry : extensions.entrySet()) {
+            this.extensions.put(extensionName(entry.getKey()), entry.getValue());
+        }
     }
 
-    public static void merge(Extension from, Extensible to, boolean override) {
+    public static String extensionName(String name) {
+        if (name != null && !name.startsWith("x-")) {
+            //NB. MP group decided that extension names should not be corrected
+            LOGGER.warning("extension name not starting with `x-` cause invalid Open API documents: " + name);
+        }
+        return name;
+    }
+
+    public static void merge(Extension from, Extensible<?> to, boolean override) {
         if (isAnnotationNull(from)) {
             return;
         }
@@ -76,15 +107,30 @@ public abstract class ExtensibleImpl implements Extensible {
             to.setExtensions(new LinkedHashMap<>());
         }
         if (from.name() != null && !from.name().isEmpty()) {
-            Object value = mergeProperty(to.getExtensions().get(from.name()), convertExtensionValue(from.value()),
-                    override);
+            Object value = mergeProperty(to.getExtensions().get(from.name()), 
+                    convertExtensionValue(from.value(), from.parseValue()), override);
             to.getExtensions().put(from.name(), value);
         }
     }
 
-    public static Object convertExtensionValue(String value) {
+    public static Object convertExtensionValue(String value, boolean parseValue) {
         if (value == null) {
             return null;
+        }
+        if (parseValue) {
+            try {
+                JsonNode node = new ObjectMapper().readTree(value);
+                if (node.isBoolean()) {
+                    return node.booleanValue();
+                }
+                if (node.isNumber()) {
+                    return node.numberValue();
+                }
+                return node;
+            } catch (Exception e) {
+                LOGGER.warning("Failed to parse extension value: " + value);
+                return value;
+            }
         }
         // Could be an array
         if (value.contains(",")) {
@@ -98,4 +144,75 @@ public abstract class ExtensibleImpl implements Extensible {
         return value;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str, "\t");
+        return str.toString();
+    }
+
+    void toString(StringBuilder str, String indent) {
+        str.append('[').append(getClass().getSimpleName()).append("] {");
+        Class<?> type = getClass();
+        while (type != Object.class) {
+            for (Field field : type.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(this);
+                        toString(str, indent, field.getName(), value);
+                    } catch (IllegalArgumentException | IllegalAccessException e) {
+                        str.append("<failure:").append(e.getMessage()).append(">");
+                    }
+                }
+            }
+            type = type.getSuperclass();
+        }
+        str.append('\n').append(indent.length() > 0 ? indent.substring(1) : indent).append('}');
+    }
+
+    private static void toString(StringBuilder str, String indent, Object key, Object value) {
+        if (isNonEmpty(value)) {
+            str.append("\n").append(indent);
+            if (key != null) {
+                str.append('"').append(key).append('"').append(": ");
+            }
+            if (value instanceof ExtensibleImpl) {
+                ((ExtensibleImpl<?>)value).toString(str, indent + "\t");
+            } else if (value instanceof Map) {
+                str.append('{');
+                for (Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+                    toString(str, indent + '\t', entry.getKey(), entry.getValue());
+                }
+                str.append('\n').append(indent).append('}');
+            } else if (value instanceof Collection) { 
+                str.append('[');
+                for (Object element : (Collection<?>)value) {
+                    toString(str, indent+ '\t', null, element);
+                    str.append(',');
+                }
+                str.append('\n').append(indent).append(']');
+            } else if (value instanceof String) {
+                str.append('"').append(value).append('"');
+            } else {
+                str.append(value);
+            }
+        }
+    }
+
+    private static boolean isNonEmpty(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof Object[]) {
+            return ((Object[])value).length > 0;
+        }
+        if (value instanceof Collection) {
+            return !((Collection<?>) value).isEmpty();
+        }
+        if (value instanceof Map) {
+            return !((Map<?, ?>) value).isEmpty();
+        }
+        return true;
+    }
 }

@@ -41,37 +41,59 @@ package fish.payara.microprofile.openapi.impl.model.responses;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 
-public class APIResponsesImpl extends LinkedHashMap<String, APIResponse> implements APIResponses {
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
+
+public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponses>
+        implements APIResponses {
 
     private static final long serialVersionUID = 2811935761440110541L;
 
-	@Override
-    public APIResponses addApiResponse(String name, APIResponse item) {
-        put(name, item);
+    public APIResponsesImpl() {
+        super();
+    }
+
+    public APIResponsesImpl(Map<String, APIResponse> responses) {
+        super(responses);
+    }
+
+    @Override
+    public APIResponses addAPIResponse(String name, APIResponse apiResponse) {
+        if (apiResponse != null) {
+            put(name, apiResponse);
+        }
         return this;
     }
 
     @Override
-    public APIResponse getDefault() {
+    public void removeAPIResponse(String name) {
+        remove(name);
+    }
+
+    @Override
+    public Map<String, APIResponse> getAPIResponses() {
+        return new APIResponsesImpl(this);
+    }
+
+    @Override
+    public void setAPIResponses(Map<String, APIResponse> items) {
+        clear();
+        putAll(items);
+    }
+
+    @Override
+    public APIResponse getDefaultValue() {
         return this.get(DEFAULT);
     }
 
     @Override
     public void setDefaultValue(APIResponse defaultValue) {
-        addApiResponse(DEFAULT, defaultValue);
-    }
-
-    @Override
-    public APIResponses defaultValue(APIResponse defaultValue) {
-        setDefaultValue(defaultValue);
-        return this;
+        put(DEFAULT, defaultValue); // this is not the same as addAPIResponse as null is set but not added
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.responses.APIResponse from, APIResponses to,
@@ -87,7 +109,7 @@ public class APIResponsesImpl extends LinkedHashMap<String, APIResponse> impleme
 
         org.eclipse.microprofile.openapi.models.responses.APIResponse response = to
                 .getOrDefault(responseName, new APIResponseImpl());
-        to.addApiResponse(responseName, response);
+        to.addAPIResponse(responseName, response);
 
         APIResponseImpl.merge(from, response, override, currentSchemas);
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -68,14 +68,16 @@ import static com.sun.enterprise.util.net.NetUtils.checkPort;
 import static com.sun.enterprise.util.net.NetUtils.isPortValid;
 import static java.util.logging.Level.FINER;
 
-import java.io.Console;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
+import jline.console.ConsoleReader;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
@@ -221,24 +223,25 @@ public final class CreateDomainCommand extends CLICommand {
          * The next prompted-for value will be the admin password, if required.
          */
         if (programOpts.getUser() == null && !noPassword) {
-            
             // prompt for it (if interactive)
-            Console console = System.console();
-            
-            if (console != null && programOpts.isInteractive()) {
-                console.printf("%s", STRINGS.get("AdminUserRequiredPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
-                
-                String val = console.readLine();
-                
-                if (ok(val)) {
-                    programOpts.setUser(val);
-                    if (adminPassword == null) {
-                        char[] pwdArr = getAdminPassword();
-                        adminPassword = pwdArr != null ? new String(pwdArr) : null;
+            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+                if (console != null && programOpts.isInteractive()) {
+                    console.setPrompt(STRINGS.get("AdminUserRequiredPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
+
+                    String val = console.readLine();
+
+                    if (ok(val)) {
+                        programOpts.setUser(val);
+                        if (adminPassword == null) {
+                            char[] pwdArr = getAdminPassword();
+                            adminPassword = pwdArr != null ? new String(pwdArr) : null;
+                        }
                     }
+                } else {
+                    throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
                 }
-            } else {
-                throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading input", ioe);
             }
         }
         

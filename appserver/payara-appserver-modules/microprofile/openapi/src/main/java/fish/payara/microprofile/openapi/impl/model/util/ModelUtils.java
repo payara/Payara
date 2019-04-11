@@ -135,25 +135,26 @@ public final class ModelUtils {
      *         none.
      */
     public static HttpMethod getHttpMethod(Method method) {
-        if (method.isAnnotationPresent(GET.class)) {
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(method.getDeclaringClass());
+        if (annotations.isAnnotationPresent(GET.class, method)) {
             return HttpMethod.GET;
         }
-        if (method.isAnnotationPresent(POST.class)) {
+        if (annotations.isAnnotationPresent(POST.class, method)) {
             return HttpMethod.POST;
         }
-        if (method.isAnnotationPresent(PUT.class)) {
+        if (annotations.isAnnotationPresent(PUT.class, method)) {
             return HttpMethod.PUT;
         }
-        if (method.isAnnotationPresent(DELETE.class)) {
+        if (annotations.isAnnotationPresent(DELETE.class, method)) {
             return HttpMethod.DELETE;
         }
-        if (method.isAnnotationPresent(HEAD.class)) {
+        if (annotations.isAnnotationPresent(HEAD.class, method)) {
             return HttpMethod.HEAD;
         }
-        if (method.isAnnotationPresent(OPTIONS.class)) {
+        if (annotations.isAnnotationPresent(OPTIONS.class, method)) {
             return HttpMethod.OPTIONS;
         }
-        if (method.isAnnotationPresent(PATCH.class)) {
+        if (annotations.isAnnotationPresent(PATCH.class, method)) {
             return HttpMethod.PATCH;
         }
         return null;
@@ -194,8 +195,8 @@ public final class ModelUtils {
      */
     public static Operation getOrCreateOperation(PathItem pathItem, HttpMethod httpMethod) {
         Operation operation = new OperationImpl();
-        if (pathItem.readOperationsMap().get(httpMethod) != null) {
-            return pathItem.readOperationsMap().get(httpMethod);
+        if (pathItem.getOperations().get(httpMethod) != null) {
+            return pathItem.getOperations().get(httpMethod);
         }
         switch (httpMethod) {
         case GET:
@@ -231,7 +232,7 @@ public final class ModelUtils {
     public static Operation findOperation(OpenAPI api, Method method, String path) {
         Operation foundOperation = null;
         try {
-            return api.getPaths().get(path).readOperationsMap().get(getHttpMethod(method));
+            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(method));
         } catch (NullPointerException ex) {
             // Operation not found
         }
@@ -326,67 +327,42 @@ public final class ModelUtils {
     }
 
     public static boolean isRequestBody(Parameter parameter) {
-        if (parameter.getDeclaredAnnotations().length == 0) {
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+        if (annotations.getAnnotationCount(parameter) == 0) {
             return true;
         }
-        if (parameter.isAnnotationPresent(FormParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(QueryParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(MatrixParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(BeanParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(HeaderParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(PathParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(CookieParam.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(Context.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(Inject.class)) {
-            return false;
-        }
-        if (parameter.isAnnotationPresent(Provider.class)) {
-            return false;
-        }
-        return true;
+        return !annotations.isAnyAnnotationPresent(parameter, FormParam.class, QueryParam.class, MatrixParam.class, 
+                BeanParam.class, HeaderParam.class, PathParam.class, CookieParam.class, Context.class, Inject.class, 
+                Provider.class);
     }
 
     public static In getParameterType(Parameter parameter) {
-        if (parameter.isAnnotationPresent(PathParam.class)) {
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+        if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
             return In.PATH;
         }
-        if (parameter.isAnnotationPresent(QueryParam.class)) {
+        if (annotations.isAnnotationPresent(QueryParam.class, parameter)) {
             return In.QUERY;
         }
-        if (parameter.isAnnotationPresent(HeaderParam.class)) {
+        if (annotations.isAnnotationPresent(HeaderParam.class, parameter)) {
             return In.HEADER;
         }
-        if (parameter.isAnnotationPresent(CookieParam.class)) {
+        if (annotations.isAnnotationPresent(CookieParam.class, parameter)) {
             return In.COOKIE;
         }
         return null;
     }
 
     public static String getParameterName(Parameter parameter) {
-        if (parameter.isAnnotationPresent(PathParam.class)) {
-            return parameter.getDeclaredAnnotation(PathParam.class).value();
-        } else if (parameter.isAnnotationPresent(QueryParam.class)) {
-            return parameter.getDeclaredAnnotation(QueryParam.class).value();
-        } else if (parameter.isAnnotationPresent(HeaderParam.class)) {
-            return parameter.getDeclaredAnnotation(HeaderParam.class).value();
-        } else if (parameter.isAnnotationPresent(CookieParam.class)) {
-            return parameter.getDeclaredAnnotation(CookieParam.class).value();
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+        if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
+            return annotations.getAnnotation(PathParam.class, parameter).value();
+        } else if (annotations.isAnnotationPresent(QueryParam.class, parameter)) {
+            return annotations.getAnnotation(QueryParam.class, parameter).value();
+        } else if (annotations.isAnnotationPresent(HeaderParam.class, parameter)) {
+            return annotations.getAnnotation(HeaderParam.class, parameter).value();
+        } else if (annotations.isAnnotationPresent(CookieParam.class, parameter)) {
+            return annotations.getAnnotation(CookieParam.class, parameter).value();
         }
         return null;
     }
@@ -395,36 +371,43 @@ public final class ModelUtils {
         if (annotation == null) {
             return true;
         }
-        boolean allNull = true;
         for (Method m : annotation.annotationType().getDeclaredMethods()) {
             if (m.getParameterCount() == 0) {
                 try {
                     Object value = m.invoke(annotation);
-                    if (value != null) {
-                        if (value.getClass().isArray() && Array.getLength(value) > 0) {
-                            return false;
-                        } else if (value instanceof Collection && !Collection.class.cast(value).isEmpty()) {
-                            return false;
-                        } else if (value instanceof Boolean && Boolean.class.cast(value)) {
-                            return false;
-                        } else if (value.getClass().equals(Class.class)
-                                && !Class.class.cast(value).getTypeName().equals("java.lang.Void")) {
-                            return false;
-                        } else if (value.getClass().isEnum() && !Enum.class.cast(value).name().isEmpty()
-                                && !Enum.class.cast(value).name().equalsIgnoreCase("DEFAULT")) {
-                            return false;
-                        } else if (String.class.isAssignableFrom(value.getClass()) && !value.toString().isEmpty()) {
-                            return false;
-                        } else if (value instanceof Annotation) {
-                            allNull = isAnnotationNull((Annotation) value);
-                        }
+                    // NB. annotation attribute values cannot be null
+                    if (value.getClass().isArray() && Array.getLength(value) > 0) {
+                        return false;
+                    } else if (value instanceof Boolean && ((Boolean) value).booleanValue()) {
+                        return false;
+                    } else if (value instanceof Class && value != Void.class) {
+                        return false;
+                    } else if (value instanceof Enum && !((Enum<?>) value).name().equalsIgnoreCase("DEFAULT")) {
+                        return false;
+                    } else if (value instanceof String && !value.toString().isEmpty()) {
+                        return false;
+                    } else if (value instanceof Annotation && !isAnnotationNull((Annotation) value)) {
+                        return false;
                     }
+                    // else it must be another primitive wrapper but we have no rules on them
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     LOGGER.log(WARNING, "Unable to access annotation element.", ex);
                 }
             }
         }
-        return allNull;
+        return true;
+    }
+
+    public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {
+        return mergeProperty(current, Boolean.valueOf(offer), override);
+    }
+
+    public static Boolean mergeProperty(boolean current, Boolean offer, boolean override) {
+        return mergeProperty(Boolean.valueOf(current), offer, override);
+    }
+
+    public static Boolean mergeProperty(boolean current, boolean offer, boolean override) {
+        return mergeProperty(Boolean.valueOf(current), Boolean.valueOf(offer), override);
     }
 
     public static <E> E mergeProperty(E current, E offer, boolean override) {
@@ -467,7 +450,7 @@ public final class ModelUtils {
                 if (currentValue != null && !field.getName().equals("ref")) {
                     // If the field is a collection, clear it
                     if (Collection.class.isAssignableFrom(field.getType())) {
-                        Collection.class.cast(field.get(referee)).clear();
+                        ((Collection<?>) field.get(referee)).clear();
                         continue;
                     }
                     // If the field is an array, clear it
@@ -510,19 +493,22 @@ public final class ModelUtils {
                     Object currentValue = f.get(to);
                     if (newValue != null) {
                         if (newValue instanceof Map) {
-                            for (Entry<Object, Object> entry : (Set<Entry<Object, Object>>) Map.class.cast(newValue)
-                                    .entrySet()) {
-                                if (!Map.class.cast(currentValue).containsKey(entry.getKey())) {
-                                    Map.class.cast(currentValue).put(entry.getKey(), entry.getValue());
+                            Map<Object, Object> newMap = (Map<Object, Object>) newValue;
+                            Map<Object, Object> currentMap = (Map<Object, Object>) currentValue;
+                            for (Entry<Object, Object> entry : newMap.entrySet()) {
+                                if (!currentMap.containsKey(entry.getKey())) {
+                                    currentMap.put(entry.getKey(), entry.getValue());
                                 } else {
-                                    merge(entry.getValue(), Map.class.cast(currentValue).get(entry.getKey()), override);
+                                    merge(entry.getValue(), currentMap.get(entry.getKey()), override);
                                 }
                             }
                         }
                         else if (newValue instanceof Collection) {
-                            for (Object o : Collection.class.cast(newValue)) {
-                                if (!Collection.class.cast(currentValue).contains(o)) {
-                                    Collection.class.cast(currentValue).add(o);
+                            Collection<Object> newCollection = (Collection<Object>) newValue;
+                            Collection<Object> currentCollection = (Collection<Object>) currentValue;
+                            for (Object o : newCollection) {
+                                if (!currentCollection.contains(o)) {
+                                    currentCollection.add(o);
                                 }
                             }
                         }
@@ -542,52 +528,54 @@ public final class ModelUtils {
             }
         }
     }
-    
+
     public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method,
             OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
         String path = getResourcePath(method, resourceMapping);
         if (path != null) {
-            PathItem pathItem = api.getPaths().get(path);
+            PathItem pathItem = api.getPaths().getPathItem(path);
             if (pathItem != null) {
                 PathItem.HttpMethod httpMethod = getHttpMethod(method);
-                return pathItem.readOperationsMap().get(httpMethod);
+                return pathItem.getOperations().get(httpMethod);
             }
         }
         return null;
     }
 
     public static String getResourcePath(GenericDeclaration declaration, Map<String, Set<Class<?>>> resourceMapping) {
-        String path = null;
         if (declaration instanceof Method) {
-            Method method = (Method) declaration;
+            return getResourcePath((Method) declaration, resourceMapping);
+        }
+        if (declaration instanceof Class) {
+            return getResourcePath((Class<?>) declaration, resourceMapping);
+        }
+        return null;
+    }
 
-            // If the method is a valid resource
-            if (method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(POST.class)
-                    || method.isAnnotationPresent(PUT.class) || method.isAnnotationPresent(DELETE.class)
-                    || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(OPTIONS.class)
-                    || method.isAnnotationPresent(PATCH.class)) {
-                if (method.isAnnotationPresent(Path.class)) {
-                    path = getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"
-                            + method.getDeclaredAnnotation(Path.class).value();
-                } else {
-                    path = getResourcePath(method.getDeclaringClass(), resourceMapping);
+    private static String getResourcePath(Class<?> clazz, Map<String, Set<Class<?>>> resourceMapping) {
+        // If the class is a resource and contains a mapping
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(clazz);
+        if (annotations.isAnnotationPresent(Path.class)) {
+            for (Map.Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
+                if (entry.getValue() != null && entry.getValue().contains(clazz)) {
+                    return normaliseUrl(entry.getKey() + "/" + annotations.getAnnotation(Path.class).value());
                 }
             }
         }
-         if (declaration instanceof Class) {
-            Class<?> clazz = (Class<?>) declaration;
-            clazz.toString();
-          
+        return null;
+    }
 
-            // If the class is a resource and contains a mapping
-            if (clazz.isAnnotationPresent(Path.class)) {
-                for (Map.Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
-                    if (entry.getValue() != null && entry.getValue().contains(clazz)) {
-                        path = entry.getKey() + "/" + clazz.getDeclaredAnnotation(Path.class).value();
-                    }
-                }
+    private static String getResourcePath(Method method, Map<String, Set<Class<?>>> resourceMapping) {
+        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(method.getDeclaringClass());
+        if (annotations.isAnyAnnotationPresent(method,
+                GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class)) {
+            if (annotations.isAnnotationPresent(Path.class, method)) {
+                // If the method is a valid resource
+                return normaliseUrl(getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"
+                        + annotations.getAnnotation(Path.class, method).value());
             }
+            return normaliseUrl(getResourcePath(method.getDeclaringClass(), resourceMapping));
         }
-        return normaliseUrl(path);
-    }   
+        return null;
+    }
 }

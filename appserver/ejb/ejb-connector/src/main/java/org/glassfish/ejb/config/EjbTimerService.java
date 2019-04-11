@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.ejb.config;
 
@@ -68,6 +68,8 @@ import javax.validation.constraints.Min;
 
 @Configured
 public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
+    String TYPE_NONE = "None";
+    String TYPE_DATABASE = "Database";
 
     /**
      * Gets the value of the minimumDeliveryIntervalInMillis property.
@@ -160,11 +162,16 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      * Gets the value of the EJB Timer Service  property.
      *
      * The EJB Timer Service type to use in Payara.
+     * Supported values:
+     * <ul>
+     *     <li>{@value #TYPE_DATABASE} for database-backed persistence</li>
+     *     <li>"DataGrid" for DataGrid-backed persistence</li>
+     *     <li>{@value #TYPE_NONE} for non-persistent timer service</li>
+     * </ul>
      *
-     * @return possible object is
-     *         {@link String }
+     * @return One of the options above
      */
-    @Attribute (defaultValue="Database")
+    @Attribute (defaultValue=TYPE_DATABASE)
     String getEjbTimerService();
 
     /**

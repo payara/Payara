@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -391,9 +391,11 @@ public abstract class EJBTimerService {
 
     private static synchronized void initPersistentTimerService(String target, boolean force) {
         if (persistentTimerService == null) {
+            EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+            String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEjbTimerService();
             List<PersistentTimerService> persistentTSList
                     = EjbContainerUtilImpl.getInstance().getServices().getAllServices(PersistentTimerService.class);
-            if (persistentTSList.isEmpty()) {
+            if (persistentTSList.isEmpty() || EjbTimerService.TYPE_NONE.equals(serviceType)) {
                 try {
                     persistentTimerService = new NonPersistentEJBTimerService();
                     persistentTimerServiceVerified = true;
@@ -403,8 +405,6 @@ public abstract class EJBTimerService {
             } else {
                 synchronized (LOCK) {
                     // choose service based on the configuration setting
-                    EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEjbTimerService();
                     PersistentTimerService persistentTS = null;
                     for (PersistentTimerService pts : persistentTSList) {
                         if (pts.getClass().getSimpleName().startsWith(serviceType)) {

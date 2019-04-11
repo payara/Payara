@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.remote;
 
@@ -68,6 +68,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jline.console.ConsoleReader;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandEventBroker;
@@ -171,52 +173,62 @@ public class RemoteCLICommand extends CLICommand {
          */
         @Override
         protected boolean updateAuthentication() {
-            Console cons;
-            if (programOpts.isInteractive() && (cons = System.console()) != null) {
-                // if appropriate, tell the user why authentication failed
-                PasswordLocation pwloc = programOpts.getPasswordLocation();
-                if (pwloc == PasswordLocation.PASSWORD_FILE) {
-                    logger.log(Level.FINE, strings.get("BadPasswordFromFile", programOpts.getPasswordFile()));
-                } else if (pwloc == PasswordLocation.LOGIN_FILE) {
-                    try {
-                        LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
-                        logger.log(Level.FINE, strings.get("BadPasswordFromLogin", store.getName()));
+            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+                if (programOpts.isInteractive() && console != null) {
+                    // if appropriate, tell the user why authentication failed
+                    PasswordLocation pwloc = programOpts.getPasswordLocation();
+                    if (pwloc == PasswordLocation.PASSWORD_FILE) {
+                        logger.log(Level.FINE, strings.get("BadPasswordFromFile", programOpts.getPasswordFile()));
+                    } else if (pwloc == PasswordLocation.LOGIN_FILE) {
+                        try {
+                            LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
+                            logger.log(Level.FINE, strings.get("BadPasswordFromLogin", store.getName()));
+                        }
+                        catch (StoreException ex) {
+                            // ignore it
+                        }
                     }
-                    catch (StoreException ex) {
-                        // ignore it
-                    }
-                }
 
-                String user = null;
-                // only prompt for a user name if the user name is set to
-                // the default.  otherwise, assume the user specified the
-                // correct username to begin with and all we need is the
-                // password.
-                if (programOpts.getUser() == null) {
-                    cons.printf("%s ", strings.get("AdminUserPrompt"));
-                    user = cons.readLine();
-                    if (user == null) {
+                    String user = null;
+                    // only prompt for a user name if the user name is set to
+                    // the default.  otherwise, assume the user specified the
+                    // correct username to begin with and all we need is the
+                    // password.
+                    if (programOpts.getUser() == null) {
+                        console.setPrompt(strings.get("AdminUserPrompt"));
+
+                        try {
+                            user = console.readLine();
+                        } catch (IOException ioe) {
+                            logger.log(Level.WARNING, "Error reading input", ioe);
+                        }
+
+                        if (user == null) {
+                            return false;
+                        }
+                    }
+                    char[] password;
+                    String puser = ok(user) ? user : programOpts.getUser();
+                    if (ok(puser)) {
+                        password = readPassword(strings.get("AdminUserPasswordPrompt", puser));
+                    } else {
+                        password = readPassword(strings.get("AdminPasswordPrompt"));
+                    }
+                    if (password == null){
                         return false;
                     }
+                    if (ok(user)) {      // if none entered, don't change
+                        programOpts.setUser(user);
+                        this.user = user;
+                    }
+                    programOpts.setPassword(password, PasswordLocation.USER);
+                    this.password = password;
+                    return true;
                 }
-                char[] password;
-                String puser = ok(user) ? user : programOpts.getUser();
-                if (ok(puser)) {
-                    password = readPassword(strings.get("AdminUserPasswordPrompt", puser));
-                } else {
-                    password = readPassword(strings.get("AdminPasswordPrompt"));
-                }
-                if (password == null){
-                    return false;
-                }
-                if (ok(user)) {      // if none entered, don't change
-                    programOpts.setUser(user);
-                    this.user = user;
-                }
-                programOpts.setPassword(password, PasswordLocation.USER);
-                this.password = password;
-                return true;
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading input", ioe);
             }
+
             return false;
         }
 

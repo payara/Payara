@@ -108,7 +108,7 @@ public class RetryInterceptor {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    && (FaultToleranceCdiUtils.getEnabledOverrideValue(
                             config, Retry.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
                 // Increment the invocations metric
@@ -127,7 +127,7 @@ public class RetryInterceptor {
             Fallback fallback = FaultToleranceCdiUtils.getAnnotation(beanManager, Fallback.class, invocationContext);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
                     config, Fallback.class, invocationContext)
                     .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Retry");
@@ -182,12 +182,12 @@ public class RetryInterceptor {
         } catch (Exception ex) {
             Class<? extends Throwable>[] retryOn = retry.retryOn();
             try {
-                Optional optionalRetryOn = FaultToleranceCdiUtils.getOverrideValue(
+                Optional<String> optionalRetryOn = FaultToleranceCdiUtils.getOverrideValue(
                         config, Retry.class, "retryOn", invocationContext, String.class);
                 if (optionalRetryOn.isPresent()) {
-                    String retryOnString = ((String) optionalRetryOn.get());
+                    String retryOnString = optionalRetryOn.get();
 
-                    List<Class> classList = new ArrayList<>();
+                    List<Class<?>> classList = new ArrayList<>();
 
                     // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
                     for (String className : retryOnString.replaceAll("[\\{\\[ \\]\\}]", "")
@@ -206,12 +206,12 @@ public class RetryInterceptor {
 
             Class<? extends Throwable>[] abortOn = retry.abortOn();
             try {
-                Optional optionalAbortOn = FaultToleranceCdiUtils.getOverrideValue(
+                Optional<String> optionalAbortOn = FaultToleranceCdiUtils.getOverrideValue(
                         config, Retry.class, "abortOn", invocationContext, String.class);
                 if (optionalAbortOn.isPresent()) {
-                    String abortOnString = (String) optionalAbortOn.get();
+                    String abortOnString = optionalAbortOn.get(); 
 
-                    List<Class> classList = new ArrayList<>();
+                    List<Class<?>> classList = new ArrayList<>();
 
                     // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
                     for (String className : abortOnString.replaceAll("[\\{\\[ \\]\\}]", "")
@@ -233,29 +233,29 @@ public class RetryInterceptor {
                 throw ex;
             }
 
-            int maxRetries = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+            int maxRetries = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxRetries", invocationContext, Integer.class)
                 .orElse(retry.maxRetries());
-            long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
+            long delay = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "delay", invocationContext, Long.class)
                 .orElse(retry.delay());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
-            ChronoUnit delayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "delayUnit", invocationContext, String.class)
+            ChronoUnit delayUnit = FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "delayUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.delayUnit());
-            long maxDuration = (Long) FaultToleranceCdiUtils.getOverrideValue(
+            long maxDuration = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", invocationContext, Long.class)
                 .orElse(retry.maxDuration());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
-            ChronoUnit durationUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "durationUnit", invocationContext, String.class)
+            ChronoUnit durationUnit = FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "durationUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.durationUnit());
-            long jitter = (Long) FaultToleranceCdiUtils.getOverrideValue(
+            long jitter = FaultToleranceCdiUtils.getOverrideValue(
                 config, Retry.class, "jitter", invocationContext, Long.class)
                 .orElse(retry.jitter());
             // Look for a String and cast to ChronoUnit - Use the Common Sense Convertor
-            ChronoUnit jitterDelayUnit = (ChronoUnit) FaultToleranceCdiUtils.getOverrideValue(
-                config, Retry.class, "jitterDelayUnit", invocationContext, String.class)
+            ChronoUnit jitterDelayUnit = FaultToleranceCdiUtils.getOverrideValue(
+                config, Retry.class, "jitterDelayUnit", invocationContext, ChronoUnit.class)
                 .orElse(retry.jitterDelayUnit());
 
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
@@ -411,7 +411,7 @@ public class RetryInterceptor {
      * @param ex The caught exception
      * @return True if retry should be attempted.
      */
-    private boolean shouldRetry(Class<? extends Throwable>[] retryOn, Class<? extends Throwable>[] abortOn,
+    private static boolean shouldRetry(Class<? extends Throwable>[] retryOn, Class<? extends Throwable>[] abortOn,
             Exception ex) {
         boolean shouldRetry = false;
 
@@ -423,18 +423,17 @@ public class RetryInterceptor {
                             ex.getClass().getSimpleName());
                     shouldRetry = true;
                     break;
-                }  else {
-                    try {
-                        // If we there isn't a direct match, check if the exception is a subclass
-                        ex.getClass().asSubclass(throwable);
-                        shouldRetry = true;
+                }
+                try {
+                    // If we there isn't a direct match, check if the exception is a subclass
+                    ex.getClass().asSubclass(throwable);
+                    shouldRetry = true;
 
-                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in retryOn: {1}",
-                                new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
-                        break;
-                    } catch (ClassCastException cce) {
-                        // Om nom nom
-                    }
+                    logger.log(Level.FINER, "Exception {0} is a child of a Throwable in retryOn: {1}",
+                            new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
+                    break;
+                } catch (ClassCastException cce) {
+                    // Om nom nom
                 }
             }
         } else {
@@ -449,18 +448,17 @@ public class RetryInterceptor {
                             ex.getClass().getSimpleName());
                     shouldRetry = false;
                     break;
-                } else {
-                    try {
-                        // If we there isn't a direct match, check if the exception is a subclass
-                        ex.getClass().asSubclass(throwable);
-                        shouldRetry = false;
+                }
+                try {
+                    // If we there isn't a direct match, check if the exception is a subclass
+                    ex.getClass().asSubclass(throwable);
+                    shouldRetry = false;
 
-                        logger.log(Level.FINER, "Exception {0} is a child of a Throwable in abortOn: {1}",
-                                new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
-                        break;
-                    } catch (ClassCastException cce) {
-                        // Om nom nom
-                    }
+                    logger.log(Level.FINER, "Exception {0} is a child of a Throwable in abortOn: {1}",
+                            new String[]{ex.getClass().getSimpleName(), throwable.getSimpleName()});
+                    break;
+                } catch (ClassCastException cce) {
+                    // Om nom nom
                 }
             }
         }
