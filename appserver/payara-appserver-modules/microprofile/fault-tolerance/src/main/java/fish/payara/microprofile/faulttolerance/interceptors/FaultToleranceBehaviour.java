@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.interceptors;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

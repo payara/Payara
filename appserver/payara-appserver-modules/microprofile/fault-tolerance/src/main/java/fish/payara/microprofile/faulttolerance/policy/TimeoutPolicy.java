@@ -1,6 +1,7 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 import javax.interceptor.InvocationContext;
@@ -31,5 +32,9 @@ public final class TimeoutPolicy extends Policy {
                     config.unit(annotation, context));
         }
         return null;
+    }
+
+    public long toMillis() {
+        return Duration.of(value, unit).toMillis();
     }
 }

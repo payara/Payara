@@ -41,9 +41,10 @@ package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceExecutionContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
-import java.lang.reflect.Method;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.interceptor.InvocationContext;
@@ -108,36 +109,5 @@ public class FallbackPolicy {
             execution.endTrace();
         }
         return resultValue;
-    }
-
-    /**
-     * Default implementation class for the Fault Tolerance ExecutionContext interface
-     */
-    private class FaultToleranceExecutionContext implements ExecutionContext {
-
-        private final Method method;
-        private final Object[] parameters;
-        private final Throwable failure;
-
-        public FaultToleranceExecutionContext(Method method, Object[] parameters, Throwable failure) {
-            this.method = method;
-            this.parameters = parameters;
-            this.failure = failure;
-        }
-
-        @Override
-        public Method getMethod() {
-            return method;
-        }
-
-        @Override
-        public Object[] getParameters() {
-            return parameters;
-        }
-
-        @Override
-        public Throwable getFailure() {
-            return failure;
-        }
     }
 }

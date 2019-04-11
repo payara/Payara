@@ -135,7 +135,7 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
         long executionStartTime = System.nanoTime();
 
         try {
-            timeoutFuture = getExecution().timeoutIn(timeoutMillis);
+            timeoutFuture = getExecution().scheduleDelayed(timeoutMillis, Thread.currentThread()::interrupt);
             resultValue = context.proceed();
             stopTimeout(timeoutFuture);
 

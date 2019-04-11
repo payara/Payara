@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 

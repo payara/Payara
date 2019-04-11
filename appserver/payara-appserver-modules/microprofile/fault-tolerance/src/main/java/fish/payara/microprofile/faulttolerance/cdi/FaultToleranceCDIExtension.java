@@ -39,8 +39,9 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
+import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceBehaviour;
 import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceInterceptor;
-import fish.payara.microprofile.faulttolerance.model.FaultToleranceBehaviour;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
@@ -75,7 +76,7 @@ public class FaultToleranceCDIExtension implements Extension {
     private static final Annotation MARKER = () -> FaultToleranceBehaviour.class;
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class));
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
     }
 
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,

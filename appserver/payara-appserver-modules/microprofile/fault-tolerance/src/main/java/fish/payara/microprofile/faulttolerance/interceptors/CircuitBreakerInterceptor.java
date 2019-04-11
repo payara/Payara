@@ -132,9 +132,9 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
         CircuitBreakerState circuitBreakerState = getExecution().getState(requestVolumeThreshold, context);
 
         if (getConfig().isMetricsEnabled(context)) {
-            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::open, context);
-            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::halfOpen, context);
-            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::closed, context);
+            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::isOpen, context);
+            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::isHalfOpen, context);
+            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::isClosed, context);
         }
 
         switch (circuitBreakerState.getCircuitState()) {
@@ -198,7 +198,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                         // Open the circuit again, and reset the half-open result counter
                         circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
                         circuitBreakerState.resetHalfOpenSuccessfulResultCounter();
-                        getExecution().scheduleHalfOpen(delayMillis, circuitBreakerState);
+                        getExecution().scheduleDelayed(delayMillis, circuitBreakerState::halfOpen);
                     }
 
                     throw ex;
@@ -281,7 +281,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
             getMetrics().incrementCircuitbreakerOpenedTotal(context);
 
             // Kick off a thread that will half-open the circuit after the specified delay
-            getExecution().scheduleHalfOpen(delayMillis, circuitBreakerState);
+            getExecution().scheduleDelayed(delayMillis, circuitBreakerState::halfOpen);
         }
     }
 

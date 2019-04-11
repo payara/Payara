@@ -1,8 +1,9 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
@@ -62,5 +63,26 @@ public abstract class Policy implements Serializable {
 
     private static String attribute(String attribute) {
         return "value".equals(attribute) ? "" : attribute + " ";
+    }
+
+    public static boolean isCaught(Exception ex, Class<? extends Throwable>[] caught) {
+        if (caught.length == 0) {
+            return false;
+        }
+        if (caught[0] == Throwable.class) {
+            return true;
+        }
+        for (Class<? extends Throwable> caughtType : caught) {
+            if (ex.getClass() == caughtType) {
+                CircuitBreakerPolicy.logger.log(Level.FINER, "Exception {0} matches a Throwable", ex.getClass().getSimpleName());
+                return true;
+            }
+            if (caughtType.isAssignableFrom(ex.getClass())) {
+                CircuitBreakerPolicy.logger.log(Level.FINER, "Exception {0} is a child of a Throwable: {1}",
+                        new String[] { ex.getClass().getSimpleName(), caughtType.getSimpleName() });
+                return true;
+            }
+        }
+        return false;
     }
 }

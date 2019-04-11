@@ -1,7 +1,10 @@
 package fish.payara.microprofile.faulttolerance.interceptors;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
@@ -10,19 +13,23 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
-import fish.payara.microprofile.faulttolerance.model.FaultToleranceBehaviour;
-import fish.payara.microprofile.faulttolerance.model.FaultTolerancePolicy;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
 @Interceptor
 @FaultToleranceBehaviour
 @Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class FaultToleranceInterceptor implements Stereotypes {
+public class FaultToleranceInterceptor implements Stereotypes, Serializable {
+
+    private static final Logger logger = Logger.getLogger(FaultToleranceInterceptor.class.getName());
 
     @Inject
     private BeanManager beanManager;
@@ -30,14 +37,17 @@ public class FaultToleranceInterceptor implements Stereotypes {
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
-            FaultToleranceExecution execution =
-                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceExecution.class);
-            FaultTolerancePolicy info = FaultTolerancePolicy.get(context, this::getConfig);
-            if (info.isFaultToleranceEnabled) {
-                System.out.println("yes");
+            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, this::getConfig);
+            if (policy.isFaultToleranceEnabled) {
+                FaultToleranceExecution execution =
+                        Globals.getDefaultBaseServiceLocator().getService(FaultToleranceExecution.class);
+                FaultToleranceMetrics metrics = policy.isMetricsEnabled ? new CdiFaultToleranceMetrics(null) : null;
+                return policy.processWithFaultTolerance(context, execution, metrics);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (FaultToleranceDefinitionException e) {
+            logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"
+                    + " falling back to plain method invocation.", e);
+            // fall-through to normal proceed
         }
         return context.proceed();
     }

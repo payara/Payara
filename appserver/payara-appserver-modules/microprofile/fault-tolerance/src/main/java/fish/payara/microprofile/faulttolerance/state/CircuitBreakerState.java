@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  */
 public class CircuitBreakerState {
 
-    private static final Logger LOGGER = Logger.getLogger(CircuitBreakerState.class.getName());
+    private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
 
     public enum CircuitState {
         OPEN, CLOSED, HALF_OPEN
@@ -97,13 +97,13 @@ public class CircuitBreakerState {
 
     /**
      * Records a success or failure result to the CircuitBreaker.
-     * @param result True for a success, false for a failure
+     * @param success True for a success, false for a failure
      */
-    public void recordClosedResult(Boolean result) {
+    public void recordClosedResult(boolean success) {
         // If the queue is full, remove the oldest result and add
-        if (!this.closedResultsQueue.offer(result)) {
+        if (!this.closedResultsQueue.offer(success)) {
             this.closedResultsQueue.poll();
-            this.closedResultsQueue.offer(result);
+            this.closedResultsQueue.offer(success);
         }
     }
 
@@ -158,7 +158,7 @@ public class CircuitBreakerState {
                 }
             }
         } else {
-            LOGGER.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
+            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
 
         return over;
@@ -174,16 +174,38 @@ public class CircuitBreakerState {
                 : this.allStateTimes.get(circuitState).nanos();
     }
 
-    public long open() {
+    public long isOpen() {
         return updateAndGet(CircuitState.OPEN);
     }
 
-    public long halfOpen() {
+    public long isHalfOpen() {
         return updateAndGet(CircuitState.HALF_OPEN);
     }
 
-    public long closed() {
+    public long isClosed() {
         return updateAndGet(CircuitState.CLOSED);
     }
 
+    public void close() {
+        setCircuitState(CircuitState.CLOSED);
+        resetHalfOpenSuccessfulResultCounter();
+        resetResults();
+    }
+
+    public void open() {
+        setCircuitState(CircuitState.OPEN);
+        resetHalfOpenSuccessfulResultCounter();
+    }
+
+    public void halfOpen() {
+        logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
+        setCircuitState(CircuitState.HALF_OPEN);
+    }
+
+    public void halfOpenSuccessful(int successThreshold) {
+        incrementHalfOpenSuccessfulResultCounter();
+        if (getHalfOpenSuccessFulResultCounter() == successThreshold) {
+            close();
+        }
+    }
 }

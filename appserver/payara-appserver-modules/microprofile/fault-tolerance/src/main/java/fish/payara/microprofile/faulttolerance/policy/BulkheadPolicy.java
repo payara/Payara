@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
 

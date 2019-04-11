@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
@@ -35,5 +35,11 @@ public final class AsynchronousPolicy extends Policy {
             throw new FaultToleranceDefinitionException(describe(context.getMethod(), Asynchronous.class, "")
                     + "does not return a Future or CompletionStage but: " + returnType.getName());
         }
+    }
+
+    public static Future<?> toFuture(Object asyncResult) {
+        return asyncResult instanceof CompletionStage
+                ? ((CompletionStage<?>) asyncResult).toCompletableFuture()
+                : (Future<?>) asyncResult;
     }
 }

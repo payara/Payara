@@ -1,7 +1,8 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
+import java.util.logging.Logger;
 
 import javax.interceptor.InvocationContext;
 
@@ -14,6 +15,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
  */
 public final class CircuitBreakerPolicy extends Policy {
 
+    static final Logger logger = Logger.getLogger(CircuitBreakerPolicy.class.getName());
+    
     public final Class<? extends Throwable>[] failOn;
     public final long delay;
     public final ChronoUnit delayUnit;
@@ -48,5 +51,15 @@ public final class CircuitBreakerPolicy extends Policy {
                     config.successThreshold(annotation, context));
         }
         return null;
+    }
+
+    /**
+     * Helper method that checks whether or not the given exception is included in the failOn parameter.
+     * 
+     * @param ex The exception to check
+     * @return True if the exception is covered by {@link #failOn} list of this policy
+     */
+    public boolean failOn(Exception ex) {
+        return Policy.isCaught(ex, failOn);
     }
 }

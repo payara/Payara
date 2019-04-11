@@ -39,15 +39,21 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -55,11 +61,16 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -104,13 +115,19 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
     private Events events;
 
     private final Map<String, FaultToleranceApplicationState> stateByApplication = new ConcurrentHashMap<>();
-
+    private ManagedScheduledExecutorService defaultScheduledExecutorService;
+    private ManagedExecutorService defaultExecutorService;
+    
     @PostConstruct
-    public void postConstruct() {
+    public void postConstruct() throws NamingException {
         events.register(this);
         serviceConfig = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
         invocationManager = serviceLocator.getService(InvocationManager.class);
         requestTracingService = serviceLocator.getService(RequestTracingService.class);
+        InitialContext context = new InitialContext();
+        defaultExecutorService = (ManagedExecutorService) context.lookup("java:comp/DefaultManagedExecutorService");
+        defaultScheduledExecutorService = (ManagedScheduledExecutorService) context
+                .lookup("java:comp/DefaultManagedScheduledExecutorService");
     }
 
     @Override
@@ -121,303 +138,53 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
         }
     }
 
-    /**
-     * Helper method that sets the enabled status for a given application.
-     * @param applicationName The name of the application to register
-     * @param serviceConfig The config to check for override values from
-     */
-    private void initialiseFaultToleranceObject(String applicationName) {
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has added the application");
-        stateByApplication.computeIfAbsent(applicationName, key ->  new FaultToleranceApplicationState());
-    }
-
-    /**
-     * Gets the configured ManagedExecutorService.
-     * @return The configured ManagedExecutorService, or the default ManagedExecutorService if the configured one 
-     * couldn't be found
-     * @throws NamingException If the default ManagedExecutorService couldn't be found
-     */
-    private ManagedExecutorService getManagedExecutorService() throws NamingException {
-        String managedExecutorServiceName = serviceConfig.getManagedExecutorService();
-        InitialContext ctx = new InitialContext();
-
-        ManagedExecutorService managedExecutorService;
-
-        // If no name has been set, just get the default
-        if (managedExecutorServiceName == null || managedExecutorServiceName.isEmpty()) {
-            managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-        } else {
-            try {
-                managedExecutorService = (ManagedExecutorService) ctx.lookup(managedExecutorServiceName);
-            } catch (NamingException ex) {
-                logger.log(Level.INFO, "Could not find configured ManagedExecutorService, " 
-                        + managedExecutorServiceName + ", so resorting to default", ex);
-                managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
-            } 
-        }
-
-        return managedExecutorService;
-    }
-    
     //TODO use the scheduler to schedule a clean of FT Info
 
-    /**
-     * Gets the configured ManagedScheduledExecutorService.
-     * @return The configured ManagedExecutorService, or the default ManagedScheduledExecutorService if the configured 
-     * one couldn't be found
-     * @throws NamingException If the default ManagedScheduledExecutorService couldn't be found 
-     */
-    private ManagedScheduledExecutorService getManagedScheduledExecutorService() throws NamingException {
-        String managedScheduledExecutorServiceName = serviceConfig
-                .getManagedScheduledExecutorService();
-        InitialContext ctx = new InitialContext();
+    private ManagedExecutorService getManagedExecutorService() {
+        return lookup(serviceConfig.getManagedExecutorService(), defaultExecutorService);
+    }
 
-        ManagedScheduledExecutorService managedScheduledExecutorService = null;
+    private ManagedScheduledExecutorService getManagedScheduledExecutorService() {
+        return lookup(serviceConfig.getManagedScheduledExecutorService(), defaultScheduledExecutorService);
+    }
 
+    @SuppressWarnings("unchecked")
+    private static <T> T lookup(String name, T defaultInstance) {
         // If no name has been set, just get the default
-        if (managedScheduledExecutorServiceName == null || managedScheduledExecutorServiceName.isEmpty()) {
-            managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
-                    "java:comp/DefaultManagedScheduledExecutorService");
-        } else {
-            try {
-                managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
-                        managedScheduledExecutorServiceName);
-            } catch (NamingException ex) {
-                logger.log(Level.INFO, "Could not find configured ManagedScheduledExecutorService, " 
-                        + managedScheduledExecutorServiceName + ", so resorting to default", ex);
-                managedScheduledExecutorService = (ManagedScheduledExecutorService) ctx.lookup(
-                        "java:comp/DefaultManagedScheduledExecutorService");
-            } 
+        if (name == null || name.isEmpty()) {
+            return defaultInstance; 
         }
-
-        return managedScheduledExecutorService;   
-    }
-
-    /**
-     * Gets the Bulkhead Execution Semaphore for a given application method, registering it to the 
-     * FaultToleranceService if it hasn't already.
-     * @param applicationName The name of the application
-     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
-     * @param annotatedMethod The method that's annotated with @Bulkhead
-     * @param bulkheadValue The value parameter of the Bulkhead annotation
-     * @return The Semaphore for the given application method.
-     */
-    public BulkheadSemaphore getBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
-            Method annotatedMethod, int bulkheadValue) {
-        BulkheadSemaphore bulkheadExecutionSemaphore;
-        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
-
-        Map<String, BulkheadSemaphore> annotatedMethodSemaphores = null;
-
         try {
-            annotatedMethodSemaphores = stateByApplication.get(applicationName).getBulkheadExecutionSemaphores()
-                    .get(invocationTarget);
-        } catch (NullPointerException npe) {
-            logger.log(Level.FINE, "NPE caught trying to get semaphores for annotated method", npe);
+            return (T) new InitialContext().lookup(name);
+        } catch (Exception ex) {
+            logger.log(Level.INFO, "Could not find configured , " + name + ", so resorting to default", ex);
+            return defaultInstance;
         }
-
-        // If there isn't a semaphore registered for this bean, register one, otherwise just return
-        // the one already registered
-        if (annotatedMethodSemaphores == null) {
-            logger.log(Level.FINER, "No matching application or bean in bulkhead execution semaphore map, registering...");
-            bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, invocationTarget, 
-                    fullMethodSignature, bulkheadValue);
-        } else {
-            bulkheadExecutionSemaphore = annotatedMethodSemaphores.get(fullMethodSignature);
-
-            // If there isn't a semaphore registered for this method signature, register one, otherwise just return
-            // the one already registered
-            if (bulkheadExecutionSemaphore == null) {
-                logger.log(Level.FINER, "No matching method signature in the bulkhead execution semaphore map, "
-                        + "registering...");
-                bulkheadExecutionSemaphore = createBulkheadExecutionSemaphore(applicationName, invocationTarget, 
-                        fullMethodSignature, bulkheadValue);
-            }
-        }
-
-        return bulkheadExecutionSemaphore;
     }
 
-    /**
-     * Helper method to create and register a Bulkhead Execution Semaphore for an annotated method
-     * @param applicationName The name of the application
-     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
-     * @param fullMethodSignature The method signature to register the semaphore against
-     * @param bulkheadValue The size of the bulkhead
-     * @return The Bulkhead Execution Semaphore for the given method signature and application
-     */
-    private synchronized BulkheadSemaphore createBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
-            String fullMethodSignature, int bulkheadValue) {
-
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the application to "
-                + "the bulkhead execution semaphore map");
-        if (stateByApplication.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget) == null) {
-            logger.log(Level.FINER, "Registering bean to bulkhead execution semaphore map: {0}", 
-                    invocationTarget);
-
-            stateByApplication.get(applicationName).getBulkheadExecutionSemaphores().put(
-                    invocationTarget, 
-                    new ConcurrentHashMap<>());
-        }
-
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
-                + "to the bulkhead execution semaphore map");
-        if (stateByApplication.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
-                .get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map", fullMethodSignature);
-            stateByApplication.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
-            .put(fullMethodSignature, new BulkheadSemaphore(bulkheadValue));
-        }
-
-        return stateByApplication.get(applicationName).getBulkheadExecutionSemaphores().get(invocationTarget)
-                .get(fullMethodSignature);
+    private FaultToleranceApplicationState getApplicationState(String applicationName) {
+        return stateByApplication.computeIfAbsent(applicationName, key -> new FaultToleranceApplicationState());
     }
 
-    /**
-     * Gets the Bulkhead Execution Queue Semaphore for a given application method, registering it to the 
-     * FaultToleranceService if it hasn't already.
-     * @param applicationName The name of the application
-     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
-     * @param annotatedMethod The method that's annotated with @Bulkhead and @Asynchronous
-     * @param bulkheadWaitingTaskQueue The waitingTaskQueue parameter of the Bulkhead annotation
-     * @return The Semaphore for the given application method.
-     */
-    public BulkheadSemaphore getBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
+    private BulkheadSemaphore getBulkheadExecutionSemaphore(String applicationName, Object invocationTarget, 
+            Method annotatedMethod, int bulkheadValue) {
+        return getApplicationState(applicationName).getBulkheadExecutionSemaphores()
+                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
+                .computeIfAbsent( getFullMethodSignature(annotatedMethod), key -> new BulkheadSemaphore(bulkheadValue));
+    }
+
+    private BulkheadSemaphore getBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
             Method annotatedMethod, int bulkheadWaitingTaskQueue) {
-        BulkheadSemaphore bulkheadExecutionQueueSemaphore;
-        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
-
-        Map<String, BulkheadSemaphore> annotatedMethodExecutionQueueSemaphores = 
-                stateByApplication.get(applicationName).getBulkheadExecutionQueueSemaphores().get(invocationTarget);
-
-        // If there isn't a semaphore registered for this application name, register one, otherwise just return
-        // the one already registered
-        if (annotatedMethodExecutionQueueSemaphores == null) {
-            logger.log(Level.FINER, "No matching application in the bulkhead execution semaphore map, registering...");
-            bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, invocationTarget, 
-                    fullMethodSignature, bulkheadWaitingTaskQueue);
-        } else {
-            bulkheadExecutionQueueSemaphore = annotatedMethodExecutionQueueSemaphores.get(fullMethodSignature);
-
-            // If there isn't a semaphore registered for this method signature, register one, otherwise just return
-            // the one already registered
-            if (bulkheadExecutionQueueSemaphore == null) {
-                logger.log(Level.FINER, "No matching method signature in the bulkhead execution queue semaphore map, "
-                        + "registering...");
-                bulkheadExecutionQueueSemaphore = createBulkheadExecutionQueueSemaphore(applicationName, invocationTarget, 
-                        fullMethodSignature, bulkheadWaitingTaskQueue);
-            }
-        }
-
-        return bulkheadExecutionQueueSemaphore;
+        return getApplicationState(applicationName).getBulkheadExecutionQueueSemaphores()
+                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
+                .computeIfAbsent( getFullMethodSignature(annotatedMethod), key -> new BulkheadSemaphore(bulkheadWaitingTaskQueue));
     }
 
-    /**
-     * Helper method to create and register a Bulkhead Execution Queue Semaphore for an annotated method
-     * @param applicationName The name of the application
-     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
-     * @param fullMethodSignature The method signature to register the semaphore against
-     * @param bulkheadWaitingTaskQueue The size of the waiting task queue of the bulkhead
-     * @return The Bulkhead Execution Queue Semaphore for the given method signature and application
-     */
-    private synchronized BulkheadSemaphore createBulkheadExecutionQueueSemaphore(String applicationName, Object invocationTarget, 
-            String fullMethodSignature, int bulkheadWaitingTaskQueue) {
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the object to "
-                + "the bulkhead execution queue semaphore map");
-        FaultToleranceApplicationState applicationState = stateByApplication.get(applicationName);
-        Map<Object, Map<String, BulkheadSemaphore>> applicationSemaphores = applicationState.getBulkheadExecutionQueueSemaphores();
-        if (applicationSemaphores.get(invocationTarget) == null) {
-            logger.log(Level.FINER, "Registering object to the bulkhead execution queue semaphore map: {0}", 
-                    invocationTarget);
-            applicationSemaphores.put(invocationTarget, new ConcurrentHashMap<>());
-        }
-
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
-                + "to the bulkhead execution queue semaphore map");
-        if (applicationSemaphores.get(invocationTarget).get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering semaphore for method {0} to the bulkhead execution semaphore map", 
-                    fullMethodSignature);
-            applicationSemaphores.get(invocationTarget).put(fullMethodSignature,
-                    new BulkheadSemaphore(bulkheadWaitingTaskQueue));
-        }
-
-        return applicationSemaphores.get(invocationTarget).get(fullMethodSignature);
-    }
-
-    /**
-     * Gets the CircuitBreakerState object for a given application name and method.If a CircuitBreakerState hasn't been 
-     * registered for the given application name and method, it will register the given CircuitBreaker.
-     * @param applicationName The name of the application
-     * @param invocationTarget The target object obtained from InvocationContext.getTarget()
-     * @param annotatedMethod The method annotated with @CircuitBreaker
-     * @param circuitBreaker The @CircuitBreaker annotation from the annotated method
-     * @return The CircuitBreakerState for the given application and method
-     */
     private CircuitBreakerState getCircuitBreakerState(String applicationName, Object invocationTarget, 
             Method annotatedMethod, int requestVolumeThreshold) {
-        CircuitBreakerState circuitBreakerState;
-        String fullMethodSignature = getFullMethodSignature(annotatedMethod);
-
-        Map<String, CircuitBreakerState> annotatedMethodCircuitBreakerStates = 
-                stateByApplication.get(applicationName).getCircuitBreakerStates().get(invocationTarget);
-
-        // If there isn't a CircuitBreakerState registered for this application name, register one, otherwise just 
-        // return the one already registered
-        if (annotatedMethodCircuitBreakerStates == null) {
-            logger.log(Level.FINER, "No matching object in the circuit breaker states map, registering...");
-            circuitBreakerState = registerCircuitBreaker(applicationName, invocationTarget, fullMethodSignature, 
-                    requestVolumeThreshold);
-        } else {
-            circuitBreakerState = annotatedMethodCircuitBreakerStates.get(fullMethodSignature);
-
-            // If there isn't a CircuitBreakerState registered for this method, register one, otherwise just 
-            // return the one already registered
-            if (circuitBreakerState == null) {
-                logger.log(Level.FINER, "No matching method in the circuit breaker states map, registering...");
-                circuitBreakerState = registerCircuitBreaker(applicationName, invocationTarget, fullMethodSignature, 
-                        requestVolumeThreshold);
-            }
-        }
-
-        return circuitBreakerState;
-    }
-
-    /**
-     * Helper method to create and register a CircuitBreakerState object for an annotated method
-     * @param applicationName The application name to register the CircuitBreakerState against
-     * @param fullMethodSignature The method signature to register the CircuitBreakerState against
-     * @param bulkheadWaitingTaskQueue The CircuitBreaker annotation of the annotated method
-     * @return The CircuitBreakerState object for the given method signature and application
-     */
-    private synchronized CircuitBreakerState registerCircuitBreaker(String applicationName, Object invocationTarget, 
-            String fullMethodSignature, int requestVolumeThreshold) {
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the object "
-                + "to the circuit breaker states map");
-        Map<Object, Map<String, CircuitBreakerState>> applicationStates = stateByApplication.get(applicationName).getCircuitBreakerStates();
-        Map<String, CircuitBreakerState> targetStates = applicationStates.get(invocationTarget);
-        if (targetStates == null) {
-            logger.log(Level.FINER, "Registering application to the circuit breaker states map: {0}", 
-                    invocationTarget);
-            applicationStates.put(invocationTarget, new ConcurrentHashMap<>());
-        }
-
-        // Double lock as multiple methods can get inside the calling if at the same time
-        logger.log(Level.FINER, "Checking double lock to see if something else has already added the annotated method "
-                + "to the circuit breaker states map");
-        if (targetStates.get(fullMethodSignature) == null) {
-            logger.log(Level.FINER, "Registering CircuitBreakerState for method {0} to the circuit breaker states map", 
-                    fullMethodSignature);
-            targetStates
-            .put(fullMethodSignature, new CircuitBreakerState(requestVolumeThreshold));
-        }
-
-        return targetStates.get(fullMethodSignature);
+        return getApplicationState(applicationName).getCircuitBreakerStates()
+                .computeIfAbsent(invocationTarget, key -> new ConcurrentHashMap<>())
+                .computeIfAbsent(getFullMethodSignature(annotatedMethod), key -> new CircuitBreakerState(requestVolumeThreshold));
     }
 
     /**
@@ -504,22 +271,6 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
                 context.getMethod(), requestVolumeThreshold);
     }
 
-    /**
-     * Helper method that schedules the CircuitBreaker state to be set to HalfOpen after the configured delay
-     * @param delayMillis The number of milliseconds to wait before setting the state
-     * @param circuitBreakerState The CircuitBreakerState to set the state of
-     * @throws NamingException If the ManagedScheduledExecutor couldn't be found
-     */
-    @Override
-    public void scheduleHalfOpen(long delayMillis, CircuitBreakerState circuitBreakerState) throws NamingException {
-        Runnable halfOpen = () -> {
-            circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.HALF_OPEN);
-            logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
-        };
-        getManagedScheduledExecutorService().schedule(halfOpen, delayMillis, TimeUnit.MILLISECONDS);
-        logger.log(Level.FINER, "CircuitBreaker half open state scheduled in {0} milliseconds", delayMillis);
-    }
-
     @Override
     public BulkheadSemaphore getExecutionSemaphoreOf(int maxConcurrentThreads, InvocationContext context) {
         return getBulkheadExecutionSemaphore(getApplicationName(context),
@@ -533,14 +284,64 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
     }
 
     @Override
-    public Future<?> runAsynchronous(InvocationContext context) throws Exception {
-        return getManagedExecutorService().submit(() -> context.proceed());
+    public void delay(long delayMillis, InvocationContext context) throws InterruptedException {
+        if (delayMillis <= 0) {
+            return;
+        }
+        startTrace("delayRetry", context);
+        try {
+            Thread.sleep(delayMillis);
+        } finally {
+            endTrace();
+        }
     }
 
     @Override
-    public Future<?> timeoutIn(long millis) throws Exception {
-        final Thread thread = Thread.currentThread();
-        return getManagedScheduledExecutorService().schedule(thread::interrupt, millis, TimeUnit.MILLISECONDS);
+    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> operation) throws Exception {
+        Runnable task = () -> {
+            if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                try {
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(operation.call());
+                    if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
+                        if (!asyncResult.isDone()) {
+                            asyncResult.complete(futureResult.get());
+                        }
+                    } else {
+                        futureResult.cancel(true);
+                    }
+                } catch (ExecutionException ex) {
+                    asyncResult.completeExceptionally(ex.getCause());
+                } catch (Exception ex) {
+                    asyncResult.completeExceptionally(ex);
+                }
+            }
+        };
+        getManagedExecutorService().submit(task);
+    }
+
+    @Override
+    public Future<?> scheduleDelayed(long delayMillis, Runnable operation) throws Exception {
+        return getManagedScheduledExecutorService().schedule(operation, delayMillis, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, InvocationContext context,
+            Exception exception) throws Exception {
+        return CDI.current().select(fallbackClass).get()
+                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), exception));
+    }
+
+    @Override
+    public Object fallbackInvoke(String fallbackMethod, InvocationContext context) throws Exception {
+        try {
+        return FaultToleranceCdiUtils.getAnnotatedMethodClass(context, Fallback.class)
+            .getDeclaredMethod(fallbackMethod, context.getMethod().getParameterTypes())
+            .invoke(context.getTarget(), context.getParameters());
+        } catch (InvocationTargetException e) {
+            throw (Exception) e.getTargetException();
+        } catch (IllegalAccessException | NoSuchMethodException e) {
+            throw new FaultToleranceDefinitionException(e); // should not happen as we validated
+        }
     }
 
     @Override

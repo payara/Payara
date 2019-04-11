@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.model;
+package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
 
@@ -18,17 +18,25 @@ public final class FallbackPolicy extends Policy {
 
     public final Class<? extends FallbackHandler<?>> value;
     public final String fallbackMethod;
+    public final Method method;
 
     public FallbackPolicy(Method method, Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
         checkUnambiguous(value, fallbackMethod);
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             checkReturnsSameAs(method, Fallback.class, "fallbackMethod", method.getDeclaringClass(), fallbackMethod, 
                     method.getParameterTypes());
-        }
-        if (value != null && value != Fallback.DEFAULT.class) {
-            checkReturnsSameAs(method, Fallback.class, "value", value, "handle", ExecutionContext.class);
+            try {
+                this.method = method.getDeclaringClass().getDeclaredMethod(fallbackMethod, method.getParameterTypes());
+            } catch (NoSuchMethodException | SecurityException e) {
+                throw new FaultToleranceDefinitionException(e);
+            }
+        } else {
+            this.method = null;
         }
         this.value = value;
+        if (isHandlerPresent()) {
+            checkReturnsSameAs(method, Fallback.class, "value", value, "handle", ExecutionContext.class);
+        }
         this.fallbackMethod = fallbackMethod;
     }
 
@@ -46,5 +54,9 @@ public final class FallbackPolicy extends Policy {
         if (fallbackMethod != null && !fallbackMethod.isEmpty() && value != null && value != Fallback.DEFAULT.class) {
                 throw new FaultToleranceDefinitionException("Both a fallback class and method have been set.");
         }
+    }
+
+    public boolean isHandlerPresent() {
+        return value != null && value != Fallback.DEFAULT.class;
     }
 }

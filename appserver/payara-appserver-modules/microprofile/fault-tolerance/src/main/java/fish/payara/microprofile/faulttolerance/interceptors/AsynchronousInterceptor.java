@@ -39,13 +39,9 @@
  */
 package fish.payara.microprofile.faulttolerance.interceptors;
 
-import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 import java.io.Serializable;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.annotation.Priority;
 import javax.interceptor.AroundInvoke;
@@ -55,7 +51,6 @@ import javax.naming.NamingException;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Fallback;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceException;
 
 /**
  * Interceptor for the Fault Tolerance Asynchronous Annotation. Also contains the wrapper class for the Future outcome.
@@ -94,8 +89,8 @@ public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Async
             // propagate the exception upwards
             if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
-                FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
-                resultValue = fallbackPolicy.fallback(context, ex);
+                //FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
+                resultValue = null; // fallbackPolicy.fallback(context, ex);
             } else {
                 throw ex;
             }
@@ -113,76 +108,10 @@ public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Async
         } 
         if (returnType == Future.class) {
             logger.log(Level.FINER, "Proceeding invocation asynchronously");
-            return new FutureDelegator(getExecution().runAsynchronous(context));
+            return null; //TODO run 
         }
         logger.log(Level.SEVERE, "Unsupported return type for @Asynchronous annotated method: " + returnType
                 + ", proceeding normally without asynchronous.");
         return context.proceed();
-    }
-
-    /**
-     * Wrapper class for the Future object
-     */
-    static class FutureDelegator implements Future<Object> {
-
-        private final Future<?> future;
-
-        public FutureDelegator(Future<?> future) {
-            this.future = future;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return future.cancel(mayInterruptIfRunning);
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return future.isCancelled();
-        }
-
-        @Override
-        public boolean isDone() {
-            return future.isDone();
-        }
-
-        @Override
-        public Object get() throws InterruptedException, ExecutionException {
-            try {
-                Object resultValue = future.get();
-
-                // If the result of future.get() is still a future, get it again
-                if (resultValue instanceof Future) {
-                    Future<?> tempFuture = (Future<?>) resultValue;
-                    return tempFuture.get();
-                }
-                return resultValue;
-            } catch (InterruptedException | ExecutionException ex) {
-                if (ex.getCause() instanceof FaultToleranceException) {
-                    throw (FaultToleranceException) ex.getCause();
-                }
-                throw ex;
-            }
-        }
-
-        @Override
-        public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            try {
-                Object resultValue = future.get(timeout, unit);
-
-                // If the result of future.get() is still a future, get it again
-                if (resultValue instanceof Future) {
-                    Future<?> tempFuture = (Future<?>) resultValue;
-                    return tempFuture.get(timeout, unit);
-                }
-                return resultValue;
-            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-                if (ex.getCause() instanceof FaultToleranceException) {
-                    throw new ExecutionException(ex.getCause());
-                }
-                throw ex;
-            }
-        }
-
     }
 }
