@@ -52,9 +52,14 @@
 	    alt="$resource{i18n.tree.security}" border="0" immediate="true" />
     </facet>
     
+    <!facet image>
+	<sun:imageHyperlink imageURL="/resource/common/security/images/security.gif" url="#{request.contextPath}/common/adminAudit/adminaudit.jsf?configName=${configName}" 
+	    alt="$resource{i18n.tree.adminAudit}" border="0" immediate="true" />
+    </facet>
+    
     <dynamicTreeNode id="adminAudit"
 	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
-	    children="#{requestScope.children}"
+	    children="#{requestScope.child}"
 	    childImageURL="/resource/common/security/images/security.gif"
 	    childExpanded="false"
 	    childURL="#{request.contextPath}/common/security/adminAudit/adminaudit.jsf?name=#{$this{valueBinding}.text}&configName=${configName}"
