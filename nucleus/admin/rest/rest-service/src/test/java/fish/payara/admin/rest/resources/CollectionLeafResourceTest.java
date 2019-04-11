@@ -43,7 +43,6 @@ package fish.payara.admin.rest.resources;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.admin.rest.resources.CollectionLeafResource;
-import org.jvnet.hk2.config.TransactionFailure;
 
 import static org.testng.Assert.assertEquals;
 import org.testng.annotations.Test;
@@ -58,7 +57,7 @@ public class CollectionLeafResourceTest {
     }
 
     @Test
-    public void testProcessData() throws TransactionFailure{      
+    public void testProcessData() {      
         Map<String, String> data1 = new HashMap<>();
         data1.put("-Dproduct.name=XXX", "");
      
