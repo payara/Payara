@@ -41,22 +41,24 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import javax.inject.Inject;
-
-
-import jline.console.ConsoleReader;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.logging.Level;
 
 /**
  *  This is a local command that distributes the SSH public key to remote node(s)
@@ -172,12 +174,20 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-            if (console != null) {
-                String val = null;
+        LineReader lineReader = null;
+        try {
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(new DumbTerminal(System.in, System.out))
+                    .build();
+
+            if (lineReader != null) {
+                String val;
                 do {
-                    console.setPrompt(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
-                    val = console.readLine();
+                    lineReader = LineReaderBuilder.builder()
+                            .terminal(new DumbTerminal(System.in, System.out))
+                            .build();
+
+                    val = lineReader.readLine(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
                     if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
                         if (logger.isLoggable(Level.FINER)) {
                             logger.finer("Generate key!");
@@ -191,6 +201,16 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);
         }
+        finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
+        }
+
         return false;
     }
 

@@ -44,16 +44,19 @@ package com.sun.enterprise.admin.cli;
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
-import com.sun.enterprise.admin.cli.remote.*;
+import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
 import java.io.IOException;
 import java.util.logging.Level;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.*;
 
 /**
  * The asadmin login command.
@@ -123,24 +126,35 @@ public class LoginCommand extends CLICommand {
     private String getAdminUser() {
         String user = null;
 
-        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
+        String val;
+        LineReader lineReader = null;
+        try {
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(new DumbTerminal(System.in, System.out))
+                    .build();
+
             String defuser = programOpts.getUser();
             if (defuser == null) {
                 defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
             }
-            if (console != null) {
-                console.setPrompt(strings.get("AdminUserPrompt", defuser));
 
-                String val = null;
-                val = console.readLine();
-                if (val != null && val.length() > 0){
-                    user = val;
-                } else {
-                    user = defuser;
-                }
+            val = lineReader.readLine(strings.get("AdminUserPrompt", defuser));
+            if (val != null && val.length() > 0){
+                user = val;
+            } else {
+                user = defuser;
             }
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);
+        }
+        finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
         }
 
         return user;

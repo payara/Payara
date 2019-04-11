@@ -41,24 +41,26 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.util.logging.Level;
+import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
-import java.io.*;
-import java.util.*;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.Param;
-import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-
-import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
 
 /*
  * @author Byron Nevins
@@ -77,7 +79,7 @@ public final class SetupLocalDcom extends CLICommand {
     private static final String CPP_APP_FILENAME = "DcomConfigurator.exe";
     private static final File TMPDIR = new File(System.getProperty("java.io.tmpdir"));
     private static final File CPP_APP = new File(TMPDIR, CPP_APP_FILENAME);
-    private ConsoleReader console;
+    private LineReader lineReader;
 
     @Override
     protected void validate() throws CommandException {
@@ -87,16 +89,18 @@ public final class SetupLocalDcom extends CLICommand {
             throw new CommandException(Strings.get("vld.windows.only"));
 
         // Instantiate console if null
-        if (console == null) {
+        if (lineReader == null) {
             try {
-                console = new ConsoleReader(System.in, System.out, null);
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error instantiating console", ioe);
+                logger.log(Level.WARNING, "Error instantiating reader", ioe);
             }
         }
 
         // Check if console is still null
-        if (console == null) {
+        if (lineReader == null) {
             throw new CommandException(Strings.get("vld.noconsole"));
         }
 
@@ -221,11 +225,11 @@ public final class SetupLocalDcom extends CLICommand {
             out.write(buf, 0, len);
         }
     }
+
     /*
      * note how this method will likely be inlined by the compiler since it is tiny
      * and private...
      */
-
     private CommandException exceptionMaker(String key, Object... args) {
         if (args == null || args.length == 0)
             return new CommandException(Strings.get(key));
@@ -239,12 +243,7 @@ public final class SetupLocalDcom extends CLICommand {
 
         String msg = Strings.get("vld.areyousure");
 
-        String answer = null;
-        try {
-            answer = console.readLine(msg);
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading input", ioe);
-        }
+        String answer = lineReader.readLine(msg);
 
         if (!"yes".equalsIgnoreCase(answer))
             throw new CommandException(Strings.get("vld.no"));

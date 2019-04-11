@@ -162,8 +162,9 @@
             <version>${jsonp.version}</version>
         </dependency>
         <dependency>
-            <groupId>jline</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
+            <version>${jline.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

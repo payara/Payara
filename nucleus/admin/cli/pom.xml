@@ -166,7 +166,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jline</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
         </dependency>
     </dependencies>

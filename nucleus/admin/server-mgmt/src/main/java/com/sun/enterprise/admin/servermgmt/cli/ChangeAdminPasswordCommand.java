@@ -37,24 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.logging.Level;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.security.common.FileRealmStorageManager;
-import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.launcher.GFLauncher;
@@ -66,6 +51,22 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.security.common.FileRealmStorageManager;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.logging.Level;
 
 /**
  * The change-admin-password command. The remote command implementation presents a different interface (set of options)
@@ -114,26 +115,34 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         if (programOpts.getUser() == null) {
 
             // prompt for it (if interactive)
-            try (ConsoleReader cons = new ConsoleReader(System.in, System.out, null)) {
-                if (cons != null && programOpts.isInteractive()) {
-                    cons.setPrompt(STRINGS.get("AdminUserDefaultPrompt",
-                            SystemPropertyConstants.DEFAULT_ADMIN_USER));
+            LineReader lineReader = null;
+            try {
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
 
-                    try {
-                        String val = cons.readLine();
-                        if (ok(val)) {
-                            programOpts.setUser(val);
-                        } else {
-                            programOpts.setUser(SystemPropertyConstants.DEFAULT_ADMIN_USER);
-                        }
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error reading input", ioe);
+                if (lineReader != null && programOpts.isInteractive()) {
+                    String val = lineReader.readLine(STRINGS.get("AdminUserDefaultPrompt",
+                            SystemPropertyConstants.DEFAULT_ADMIN_USER));
+                    if (ok(val)) {
+                        programOpts.setUser(val);
+                    } else {
+                        programOpts.setUser(SystemPropertyConstants.DEFAULT_ADMIN_USER);
                     }
                 } else {
                     throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
                 }
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error instantiating console", ioe);
+            }
+            finally {
+                if (lineReader != null && lineReader.getTerminal() != null) {
+                    try {
+                        lineReader.getTerminal().close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing terminal", ioe);
+                    }
+                }
             }
         }
 

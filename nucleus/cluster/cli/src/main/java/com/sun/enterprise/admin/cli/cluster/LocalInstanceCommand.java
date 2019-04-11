@@ -42,25 +42,26 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.servermgmt.cli.LocalServerCommand;
+import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.InstanceDirs;
+import com.sun.enterprise.util.io.ServerDirs;
+import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+
 import java.io.*;
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Properties;
 import java.util.logging.Level;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-
-import com.sun.enterprise.admin.servermgmt.cli.LocalServerCommand;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.net.NetUtils;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.io.ServerDirs;
 
 /**
  * A base class for local commands that manage a local server instance.
@@ -500,9 +501,16 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                     Integer.toString(programOpts.getPort())));
             port = programOpts.getPort();
         } else {
-            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-                if (console != null) {
-                    String line = console.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
+
+
+            LineReader lineReader = null;
+            try {
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
+
+                if (lineReader != null) {
+                    String line = lineReader.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
                             propfile.toString(), Integer.toString(port),
                             Integer.toString(programOpts.getPort())));
                     while (line != null && line.length() > 0) {
@@ -513,7 +521,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                         } catch (NumberFormatException nfex) {
                             //try again
                         }
-                        line = console.readLine(Strings.get("Instance.reenterPort", Integer.toString(programOpts.getPort())));
+                        line = lineReader.readLine(Strings.get("Instance.reenterPort", Integer.toString(programOpts.getPort())));
                     }
                 } else {
                     logger.info(Strings.get("Instance.oldDasPropertiesWrong",
@@ -528,6 +536,16 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                         Integer.toString(programOpts.getPort())));
                 port = programOpts.getPort();
             }
+            finally {
+                if (lineReader != null && lineReader.getTerminal() != null) {
+                    try {
+                        lineReader.getTerminal().close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing terminal", ioe);
+                    }
+                }
+            }
+
         }
 
         dasprops.setProperty("agent.das.protocol", "http");

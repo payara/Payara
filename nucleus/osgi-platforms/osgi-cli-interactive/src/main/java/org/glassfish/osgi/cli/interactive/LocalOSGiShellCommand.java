@@ -37,46 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.osgi.cli.interactive;
 
-import com.sun.enterprise.admin.cli.ArgumentTokenizer;
-import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.admin.cli.CLIUtil;
-import com.sun.enterprise.admin.cli.Environment;
-import com.sun.enterprise.admin.cli.MultimodeCommand;
-import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import javax.inject.Inject;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
-import jline.console.completer.StringsCompleter;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.*;
+import java.util.*;
 
 /**
  * A simple local asadmin sub-command to establish an interactive osgi shell.
@@ -225,9 +212,8 @@ public class LocalOSGiShellCommand extends CLICommand {
     }
 
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
-        ConsoleReader reader = null;
+    protected int executeCommand() throws CommandException {
+        LineReader reader;
 
         if(cmd == null) {
             throw new CommandException("Remote command 'osgi' is not available.");
@@ -247,9 +233,10 @@ public class LocalOSGiShellCommand extends CLICommand {
 
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                reader = new ConsoleReader(REMOTE_COMMAND,
-                        new FileInputStream(FileDescriptor.in), System.out,
-                        null);
+                reader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(new FileInputStream(FileDescriptor.in), System.out))
+                        .appName(REMOTE_COMMAND)
+                        .build();
             } else {
                 printPrompt = false;
                 if (!file.canRead()) {
@@ -275,13 +262,12 @@ public class LocalOSGiShellCommand extends CLICommand {
                     }
                 };
 
-                reader = new ConsoleReader(REMOTE_COMMAND,
-                        new FileInputStream(file), out,
-                        null);
+                reader = LineReaderBuilder.builder()
+                        .completer(getCommandCompleter())
+                        .terminal(new DumbTerminal(new FileInputStream(file), out))
+                        .appName(REMOTE_COMMAND)
+                        .build();
             }
-
-            reader.setBellEnabled(false);
-            reader.addCompleter(getCommandCompleter());
 
             return executeCommands(reader);
         } catch (IOException e) {
@@ -376,7 +362,7 @@ public class LocalOSGiShellCommand extends CLICommand {
      *
      * @return the exit code of the last command executed
      */
-    private int executeCommands(ConsoleReader reader)
+    private int executeCommands(LineReader reader)
             throws CommandException, CommandValidationException, IOException {
         String line = null;
         int rc = 0;

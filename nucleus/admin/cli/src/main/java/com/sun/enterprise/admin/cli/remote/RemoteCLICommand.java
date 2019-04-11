@@ -61,6 +61,20 @@ import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.component.MultiMap;
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -68,23 +82,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jline.console.ConsoleReader;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.AdminCommandEventBroker;
-import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
-import org.glassfish.api.admin.AdminCommandState;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-import org.glassfish.api.admin.CommandProgress;
-import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.common.util.admin.ManPageFinder;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.jvnet.hk2.component.MultiMap;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -173,8 +170,14 @@ public class RemoteCLICommand extends CLICommand {
          */
         @Override
         protected boolean updateAuthentication() {
-            try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-                if (programOpts.isInteractive() && console != null) {
+
+
+            LineReader lineReader = null;
+            try {
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
+                if (programOpts.isInteractive() && lineReader != null) {
                     // if appropriate, tell the user why authentication failed
                     PasswordLocation pwloc = programOpts.getPasswordLocation();
                     if (pwloc == PasswordLocation.PASSWORD_FILE) {
@@ -195,13 +198,8 @@ public class RemoteCLICommand extends CLICommand {
                     // correct username to begin with and all we need is the
                     // password.
                     if (programOpts.getUser() == null) {
-                        console.setPrompt(strings.get("AdminUserPrompt"));
 
-                        try {
-                            user = console.readLine();
-                        } catch (IOException ioe) {
-                            logger.log(Level.WARNING, "Error reading input", ioe);
-                        }
+                        user = lineReader.readLine(strings.get("AdminUserPrompt"));
 
                         if (user == null) {
                             return false;
@@ -228,6 +226,16 @@ public class RemoteCLICommand extends CLICommand {
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error reading input", ioe);
             }
+            finally {
+                if (lineReader != null && lineReader.getTerminal() != null) {
+                    try {
+                        lineReader.getTerminal().close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing terminal", ioe);
+                    }
+                }
+            }
+
 
             return false;
         }

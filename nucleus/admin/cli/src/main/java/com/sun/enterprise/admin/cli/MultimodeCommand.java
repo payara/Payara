@@ -37,33 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
-import static com.sun.enterprise.admin.cli.CLICommand.ERROR;
-import java.io.*;
-import java.util.*;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
-
-import com.sun.enterprise.admin.util.*;
+import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.util.logging.Level;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.InvalidCommandException;
+import org.glassfish.hk2.api.*;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * A scaled-down implementation of multi-mode command.
@@ -135,12 +137,16 @@ public class MultimodeCommand extends CLICommand {
 
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
-        ConsoleReader reader = null;
+        LineReader reader = null;
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
-        try {            
+        try {
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                reader = new ConsoleReader(ASADMIN, System.in, System.out, null, encoding);
+
+                reader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(Terminal.TYPE_DUMB, Terminal.TYPE_DUMB, System.in, System.out, encoding != null ? Charset.forName(encoding) : null))
+                        .appName(ASADMIN)
+                        .build();
             } else {
                 printPrompt = false;
                 if (!file.canRead()) {
@@ -162,13 +168,15 @@ public class MultimodeCommand extends CLICommand {
                     public void write(byte[] b, int off, int len) throws IOException {
                         return;
                     }
-                };                
-                reader = new ConsoleReader(ASADMIN, new FileInputStream(file), out, null, encoding);
+                };
+
+                reader = LineReaderBuilder.builder()
+                        .completer(getAllCommandsCompleter())
+                        .terminal(new DumbTerminal(Terminal.TYPE_DUMB, Terminal.TYPE_DUMB, new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : null))
+                        .appName(ASADMIN)
+                        .build();
             }
-            
-            reader.setBellEnabled(false);
-            reader.addCompleter(getAllCommandsCompleter());
-            
+
             return executeCommands(reader);
         }
         catch (IOException e) {
@@ -176,8 +184,8 @@ public class MultimodeCommand extends CLICommand {
         }
         finally {
             try {
-                if (file != null && reader != null)
-                    reader.close();
+                if (file != null && reader != null && reader.getTerminal() != null)
+                    reader.getTerminal().close();
             }
             catch (Exception e) {
                 // ignore it
@@ -202,8 +210,8 @@ public class MultimodeCommand extends CLICommand {
      *
      * @return the exit code of the last command executed
      */
-    private int executeCommands(ConsoleReader reader) throws CommandException, CommandValidationException, IOException {
-        String line = null;
+    private int executeCommands(LineReader reader) throws IOException {
+        String line;
         int rc = 0;
 
         /*
