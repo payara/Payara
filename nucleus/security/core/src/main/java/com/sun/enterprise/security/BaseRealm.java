@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.util.*;
@@ -59,7 +59,13 @@ import com.sun.enterprise.util.i18n.StringManager;
  * @author Harpreet Singh
  */
 public abstract class BaseRealm extends Realm {
-    public static final String JAAS_CONTEXT_PARAM = "jaas-context";
+    /**
+     * Recommended property for keeping JAAS Context of a realm.
+     *
+     * @deprecated Moved to parent class, which actually implements the behaviour
+     */
+    @Deprecated
+    public static final String JAAS_CONTEXT_PARAM = Realm.JAAS_CONTEXT_PARAM;
 
     protected static final StringManager sm = StringManager.getManager(Realm.class);
 
@@ -180,7 +186,7 @@ public abstract class BaseRealm extends Realm {
      * name which does not already exist as a user.
      * @param password Cleartext password for the user. If non-null the user password is changed to this value. If null, the
      * original password is retained.
-     * @param groupList List of groups to which user belongs.
+     * @param groups List of groups to which user belongs.
      * @throws BadRealmException If there are problems adding user.
      * @throws NoSuchUserException If user does not exist.
      *

@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.file;
 
 import static com.sun.enterprise.security.common.Util.isEmbeddedServer;
 import static com.sun.enterprise.security.common.Util.writeConfigFileToTempDir;
 import static java.util.Arrays.asList;
 import static java.util.Collections.enumeration;
+import static java.util.logging.Level.FINE;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.security.common.FileRealmStorageManager;
@@ -179,8 +179,8 @@ public final class FileRealm extends BaseRealm {
         }
         setProperty(BaseRealm.JAAS_CONTEXT_PARAM, jaasCtx);
 
-        _logger.log(Level.FINE, "FileRealm : " + PARAM_KEYFILE + "={0}", file);
-        _logger.log(Level.FINE, "FileRealm : " + JAAS_CONTEXT_PARAM + "={0}", jaasCtx);
+        _logger.log(FINE, "FileRealm : " + PARAM_KEYFILE + "={0}", file);
+        _logger.log(FINE, "FileRealm : " + JAAS_CONTEXT_PARAM + "={0}", jaasCtx);
 
         try {
             if (isEmbeddedServer()) {

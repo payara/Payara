@@ -1,0 +1,22 @@
+{
+  "200": {
+    "description": "a pet to be returned",
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/Pet"
+        }
+      }
+    }
+  },
+  "default": {
+    "description": "Unexpected error",
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/ErrorModel"
+        }
+      }
+    }
+  }
+}

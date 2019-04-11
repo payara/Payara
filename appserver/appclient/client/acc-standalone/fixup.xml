@@ -111,7 +111,7 @@
             manifest file, so we need to explicitly touch it after updating
             the manifest.
         -->
-        <sleep seconds="3"/>
+        <sleep seconds="5"/>
         <manifest mode="update" file="${stage.dir}/META-INF/MANIFEST.MF">
             <attribute name="Class-Path" value="${classpath} ${classpath.additions} ${classpath.conditional.additions}"/>
             <attribute name="GlassFish-Conditional-Additions" value="${classpath.conditional.additions}"/>

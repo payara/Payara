@@ -46,11 +46,11 @@ import org.eclipse.microprofile.openapi.models.info.Contact;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class ContactImpl extends ExtensibleImpl implements Contact {
+public class ContactImpl extends ExtensibleImpl<Contact> implements Contact {
 
-    protected String name;
-    protected String url;
-    protected String email;
+    private String name;
+    private String url;
+    private String email;
 
     @Override
     public String getName() {
@@ -60,12 +60,6 @@ public class ContactImpl extends ExtensibleImpl implements Contact {
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public Contact name(String name) {
-        setName(name);
-        return this;
     }
 
     @Override
@@ -79,12 +73,6 @@ public class ContactImpl extends ExtensibleImpl implements Contact {
     }
 
     @Override
-    public Contact url(String url) {
-        setUrl(url);
-        return this;
-    }
-
-    @Override
     public String getEmail() {
         return email;
     }
@@ -92,12 +80,6 @@ public class ContactImpl extends ExtensibleImpl implements Contact {
     @Override
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    @Override
-    public Contact email(String email) {
-        setEmail(email);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.info.Contact from, Contact to,

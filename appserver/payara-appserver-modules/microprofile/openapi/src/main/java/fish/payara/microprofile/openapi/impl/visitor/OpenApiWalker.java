@@ -41,15 +41,21 @@ package fish.payara.microprofile.openapi.impl.visitor;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOperation;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
+import static java.util.logging.Level.WARNING;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
@@ -67,6 +73,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Application;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -74,8 +81,10 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -93,19 +102,21 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
  */
 public class OpenApiWalker implements ApiWalker {
 
+    private static final Logger LOGGER = Logger.getLogger(OpenApiWalker.class.getName());
+
     private final OpenAPI api;
     private final Set<Class<?>> classes;
     private final Map<String, Set<Class<?>>> resourceMapping;
 
-    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses, Map<String, Set<Class<?>>> resourceMapping) {
+    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses) {
         this.api = api;
-        this.resourceMapping = resourceMapping;
         this.classes = new TreeSet<>((class1, class2) -> {
             if (class1.equals(class2)) {
                 return 0;
@@ -126,13 +137,30 @@ public class OpenApiWalker implements ApiWalker {
             return 1;
         });
         this.classes.addAll(allowedClasses);
+        addInnerClasses(); // must happen before generating the resource mapping
+        this.resourceMapping = generateResourceMapping(classes);
+    }
+
+    private void addInnerClasses() {
+        List<Class<?>> topLevelClasses = new ArrayList<>(classes);
+        for (Class<?> topLevelClass : topLevelClasses) {
+            addInnerClasses(topLevelClass);
+        }
+    }
+
+    private void addInnerClasses(Class<?> topLevelClass) {
+        if (topLevelClass != null) {
+            classes.addAll(Arrays.asList(topLevelClass.getDeclaredClasses()));
+            if (topLevelClass.getSuperclass() != Object.class) {
+                addInnerClasses(topLevelClass.getSuperclass());
+            }
+        }
     }
 
     @Override
     public void accept(ApiVisitor visitor) {
         // OpenAPI necessary annotations
-        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI, true);
-        processAnnotations(Schema.class, visitor::visitSchema, true);
+        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI);
 
         // JAX-RS methods
         processAnnotations(GET.class, visitor::visitGET);
@@ -151,111 +179,141 @@ public class OpenApiWalker implements ApiWalker {
         processAnnotations(FormParam.class, visitor::visitFormParam);
 
         // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema, true);
-        processAnnotations(Server.class, visitor::visitServer, Servers.class, visitor::visitServers, true);
-        processAnnotations(Extension.class, visitor::visitExtension, true);
+        processAnnotations(Schema.class, visitor::visitSchema);
+        processAnnotations(Server.class, visitor::visitServer, Servers.class);
+        processAnnotations(Servers.class, visitor::visitServers, Server.class);
+        processAnnotations(Extensions.class, visitor::visitExtensions, Extension.class);
+        processAnnotations(Extension.class, visitor::visitExtension, Extensions.class);
         processAnnotations(Operation.class, visitor::visitOperation);
-        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class, visitor::visitCallbacks);
-        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class,
-                visitor::visitAPIResponses, true);
-        processAnnotations(Parameter.class, visitor::visitParameter, true);
-        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation, true);
-        processAnnotations(Tag.class, visitor::visitTag, Tags.class, visitor::visitTags, true);
-        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class,
-                visitor::visitSecuritySchemes, true);
-        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class,
-                visitor::visitSecurityRequirements, true);
+        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class);
+        processAnnotations(Callbacks.class, visitor::visitCallbacks, Callback.class);
+        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class);
+        processAnnotations(APIResponses.class, visitor::visitAPIResponses, APIResponse.class);
+        processAnnotations(Parameters.class, visitor::visitParameters, Parameter.class);
+        processAnnotations(Parameter.class, visitor::visitParameter, Parameters.class);
+        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation);
+        processAnnotations(Tag.class, visitor::visitTag, Tags.class);
+        processAnnotations(Tags.class, visitor::visitTags, Tag.class);
+        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class);
+        processAnnotations(SecuritySchemes.class, visitor::visitSecuritySchemes, SecurityScheme.class);
+        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class);
+        processAnnotations(SecurityRequirements.class, visitor::visitSecurityRequirements, SecurityRequirement.class);
 
         // JAX-RS response types
         processAnnotations(Produces.class, visitor::visitProduces);
         processAnnotations(Consumes.class, visitor::visitConsumes);
+
+        // OpenAPI response types
         processAnnotations(RequestBody.class, visitor::visitRequestBody);
     }
 
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction, boolean allowInterfaces) {
+    @SafeVarargs
+    private final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
+            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
+            Class<? extends Annotation>... alternatives) {
         for (Class<?> clazz : classes) {
-
-            // Don't read interfaces if the annotation should only be read from concrete classes
-            if (!allowInterfaces && (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface())) {
-                continue;
-            }
-
-            processAnnotation(clazz, annotationClass, annotationFunction, altClass, altFunction,
-                    new OpenApiContext(api, getResourcePath(clazz, resourceMapping)));
-
-            for (Field field : clazz.getDeclaredFields()) {
-                processAnnotation(field, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, null));
-            }
-
-            for (Method method : clazz.getDeclaredMethods()) {
-
-                processAnnotation(method, annotationClass, annotationFunction, altClass, altFunction,
-                        new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
-
-                for (java.lang.reflect.Parameter parameter : method.getParameters()) {
-                    processAnnotation(parameter, annotationClass, annotationFunction, altClass, altFunction,
-                            new OpenApiContext(api, getResourcePath(method, resourceMapping), getOperation(method, api, resourceMapping)));
-                }
-            }
+            processAnnotation(clazz, annotationClass, annotationFunction, alternatives);
         }
     }
 
-    private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
-            VisitorFunction<A, E> function) {
-        processAnnotations(annotationClass, function, false);
-    }
+    @SafeVarargs
+    private final <T, A extends Annotation, E extends AnnotatedElement> void processAnnotation(
+            Class<T> annotatedClass, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
+            Class<? extends Annotation>... alternatives) {
+        AnnotationInfo<T> annotations = AnnotationInfo.valueOf(annotatedClass);
+        processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
+                new OpenApiContext(classes, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
 
-    private <A extends Annotation, E extends AnnotatedElement> void processAnnotations(Class<A> annotationClass,
-            VisitorFunction<A, E> function, boolean allowInterfaces) {
-        processAnnotations(annotationClass, function, null, null, allowInterfaces);
-    }
+        for (Field field : annotatedClass.getDeclaredFields()) {
+            if (annotations.isAnnotationPresent(annotationClass, field)) {
+                if (   annotationClass == HeaderParam.class
+                    || annotationClass == CookieParam.class
+                    || annotationClass == PathParam.class
+                    || annotationClass == QueryParam.class) {
+                    // NB. if fields are annotated as Param all methods have it
+                    for (Method method : annotatedClass.getDeclaredMethods()) {
+                        OpenApiContext context = new OpenApiContext(classes, api,
+                                getResourcePath(method, resourceMapping),
+                                getOperation(method, api, resourceMapping));
+                        if (context.getWorkingOperation() != null) {
+                            processAnnotation(field, annotationClass, annotationFunction, annotations, context,
+                                    alternatives);
+                        }
+                    }
+                } else {
+                    processAnnotation(field, annotationClass, annotationFunction, annotations,
+                            new OpenApiContext(classes, api, null), alternatives);
+                }
+            }
+        }
 
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, Class<A2> altClass,
-            VisitorFunction<A2, E> altFunction) {
-        processAnnotations(annotationClass, annotationFunction, altClass, altFunction, false);
+        for (final Method method : annotatedClass.getDeclaredMethods()) {
+            OpenApiContext context = new OpenApiContext(classes, api,
+                    getResourcePath(method, resourceMapping),
+                    getOperation(method, api, resourceMapping));
+            processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);
+
+            for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+                processAnnotation(parameter, annotationClass, annotationFunction, annotations, context, alternatives);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private <A extends Annotation, A2 extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
-            Class<A2> altClass, VisitorFunction<A2, E> altFunction, ApiContext context) {
+    @SafeVarargs
+    private static <A extends Annotation, E extends AnnotatedElement> void processAnnotation(
+            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
+            AnnotationInfo<?> annotations, ApiContext context, Class<? extends Annotation>... alternatives) {
         // If it's just the one annotation class
-        if (altClass == null) {
-            // Check the element
-            if (element.isAnnotationPresent(annotationClass)) {
-                annotationFunction.apply(element.getDeclaredAnnotation(annotationClass), (E) element, context);
-            } else if (element instanceof Method
-                    && Method.class.cast(element).getDeclaringClass().isAnnotationPresent(annotationClass)) {
-                // If the method isn't annotated, inherit the class annotation
-                if (context.getPath() != null) {
-                    annotationFunction.apply(
-                            Method.class.cast(element).getDeclaringClass().getDeclaredAnnotation(annotationClass),
-                            (E) element, context);
-                }
+        // Check the element
+        if (annotations.isAnnotationPresent(annotationClass, element)) {
+            annotationFunction.apply(annotations.getAnnotation(annotationClass, element), (E) element, context);
+        } else if (element instanceof Method && annotations.isAnnotationPresent(annotationClass)
+                && !annotations.isAnyAnnotationPresent(element, alternatives)) {
+            // If the method isn't annotated, inherit the class annotation
+            if (context.getPath() != null) {
+                annotationFunction.apply(annotations.getAnnotation(annotationClass), (E) element, context);
             }
-        } else {
-            // If it's annotated with both
-            if (element.isAnnotationPresent(annotationClass) || element.isAnnotationPresent(altClass)) {
-                if (element.isAnnotationPresent(annotationClass)) {
-                    annotationFunction.apply(element.getDeclaredAnnotation(annotationClass), (E) element, context);
-                }
-                if (element.isAnnotationPresent(altClass)) {
-                    altFunction.apply(element.getDeclaredAnnotation(altClass), (E) element, context);
-                }
-            } else if (element instanceof Method && context.getPath() != null) {
-                Class<?> declaringClass = Method.class.cast(element).getDeclaringClass();
-                if (declaringClass.isAnnotationPresent(annotationClass)) {
-                    annotationFunction.apply(declaringClass.getDeclaredAnnotation(annotationClass), (E) element,
-                            context);
-                }
-                if (declaringClass.isAnnotationPresent(altClass)) {
-                    altFunction.apply(declaringClass.getDeclaredAnnotation(altClass), (E) element, context);
+        }
+    }
+
+    /**
+     * Generates a map listing the location each resource class is mapped to.
+     */
+    private static Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
+        Map<String, Set<Class<?>>> resourceMapping = new HashMap<>();
+        for (Class<?> clazz : classList) {
+            if (clazz.isAnnotationPresent(ApplicationPath.class) && Application.class.isAssignableFrom(clazz)) {
+                // Produce the mapping
+                String key = clazz.getDeclaredAnnotation(ApplicationPath.class).value();
+                Set<Class<?>> resourceClasses = new HashSet<>();
+                resourceMapping.put(key, resourceClasses);
+
+                try {
+                    Application app = (Application) clazz.newInstance();
+                    // Add all classes contained in the application
+                    resourceClasses.addAll(app.getClasses());
+                    // Remove all Jersey providers
+                    resourceClasses.removeIf(resource -> resource.getPackage().getName().contains("org.glassfish.jersey"));
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    LOGGER.log(WARNING, "Unable to initialise application class.", ex);
                 }
             }
         }
+
+        // If there is one application and it's empty, add all classes
+        if (resourceMapping.keySet().size() == 1) {
+            Set<Class<?>> classes = resourceMapping.values().iterator().next();
+            if (classes.isEmpty()) {
+                classes.addAll(classList);
+            }
+        }
+
+        // If there is no application, add all classes to the context root.
+        if (resourceMapping.isEmpty()) {
+            resourceMapping.put("/", classList);
+        }
+
+        return resourceMapping;
     }
 }

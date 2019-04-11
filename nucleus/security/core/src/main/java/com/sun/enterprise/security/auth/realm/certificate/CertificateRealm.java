@@ -37,16 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.certificate;
 
+import static java.util.Arrays.asList;
+import static java.util.logging.Level.FINEST;
+
+import java.security.Principal;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
 
 import org.glassfish.security.common.Group;
+import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.security.BaseRealm;
 import com.sun.enterprise.security.SecurityContext;
@@ -55,16 +64,6 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
-
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.logging.Level;
-import javax.security.auth.callback.Callback;
-
-
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -98,7 +97,8 @@ public final class CertificateRealm extends BaseRealm {
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
-    private LinkedList<String> defaultGroups = new LinkedList<>();
+    
+    private List<String> defaultGroups = new LinkedList<>();
 
     /**
      * Initialize a realm with some properties. This can be used when instantiating realms from their descriptions. This
@@ -115,7 +115,7 @@ public final class CertificateRealm extends BaseRealm {
 
         String[] groups = addAssignGroups(null);
         if (groups != null && groups.length > 0) {
-            defaultGroups.addAll(Arrays.asList(groups));
+            defaultGroups.addAll(asList(groups));
         }
 
         String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
@@ -134,24 +134,19 @@ public final class CertificateRealm extends BaseRealm {
     public String getAuthType() {
         return AUTH_TYPE;
     }
-    
 
     /**
      * Returns the name of all the groups that this user belongs to.
      *
-     * @param username Name of the user in this realm whose group listing
-     *     is needed.
+     * @param username Name of the user in this realm whose group listing is needed.
      * @return Enumeration of group names (strings).
-     * @exception InvalidOperationException thrown if the realm does not
-     *     support this operation - e.g. Certificate realm does not support
-     *     this operation.
+     * @exception InvalidOperationException thrown if the realm does not support this operation - e.g. Certificate realm
+     * does not support this operation.
      * @throws com.sun.enterprise.security.auth.realm.NoSuchUserException
      *
      */
     @Override
-    public Enumeration getGroupNames(String username)
-        throws NoSuchUserException, InvalidOperationException
-    {
+    public Enumeration<String> getGroupNames(String username) throws NoSuchUserException, InvalidOperationException {
         // This is called during web container role check, not during
         // EJB container role cheks... fix RI for consistency.
 
@@ -173,21 +168,19 @@ public final class CertificateRealm extends BaseRealm {
         // 4646134 for reasons why this matters.
         String name = principal.getName();
 
-        if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, "Certificate realm setting up security context for: {0}", name);
-        }
+        _logger.log(FINEST, "Certificate realm setting up security context for: {0}", name);
 
         if (defaultGroups != null) {
-	    Set<Principal> principalSet = subject.getPrincipals();
-	    for (String groupName : defaultGroups) {
-		principalSet.add(new Group(groupName));
-	    }
-	}
+            Set<Principal> principalSet = subject.getPrincipals();
+            for (String groupName : defaultGroups) {
+                principalSet.add(new Group(groupName));
+            }
+        }
 
         if (!subject.getPrincipals().isEmpty()) {
             subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(principal));
         }
-        
+
         SecurityContext.setCurrent(new SecurityContext(name, subject));
     }
 
@@ -214,9 +207,8 @@ public final class CertificateRealm extends BaseRealm {
         }
 
         /**
-         * Set the fully qualified module name. The module name consists
-         * of the application name (if not a singleton) followed by a '#'
-         * and the name of the module.
+         * Set the fully qualified module name. The module name consists of the application name (if not a singleton) followed
+         * by a '#' and the name of the module.
          * 
          * @param moduleID
          */

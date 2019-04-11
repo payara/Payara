@@ -51,11 +51,11 @@ import org.eclipse.microprofile.openapi.models.tags.Tag;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 
-public class TagImpl extends ExtensibleImpl implements Tag {
+public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
 
-    protected String name;
-    protected String description;
-    protected ExternalDocumentation externalDocs;
+    private String name;
+    private String description;
+    private ExternalDocumentation externalDocs;
 
     @Override
     public String getName() {
@@ -65,12 +65,6 @@ public class TagImpl extends ExtensibleImpl implements Tag {
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public Tag name(String name) {
-        setName(name);
-        return this;
     }
 
     @Override
@@ -84,12 +78,6 @@ public class TagImpl extends ExtensibleImpl implements Tag {
     }
 
     @Override
-    public Tag description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public ExternalDocumentation getExternalDocs() {
         return externalDocs;
     }
@@ -97,12 +85,6 @@ public class TagImpl extends ExtensibleImpl implements Tag {
     @Override
     public void setExternalDocs(ExternalDocumentation externalDocs) {
         this.externalDocs = externalDocs;
-    }
-
-    @Override
-    public Tag externalDocs(ExternalDocumentation externalDocs) {
-        setExternalDocs(externalDocs);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.tags.Tag from, Tag to, boolean override) {

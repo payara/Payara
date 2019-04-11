@@ -44,7 +44,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 
-public class ExternalDocumentationImpl extends ExtensibleImpl implements ExternalDocumentation {
+public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentation> implements ExternalDocumentation {
 
     protected String description;
     protected String url;
@@ -60,12 +60,6 @@ public class ExternalDocumentationImpl extends ExtensibleImpl implements Externa
     }
 
     @Override
-    public ExternalDocumentation description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public String getUrl() {
         return url;
     }
@@ -73,12 +67,6 @@ public class ExternalDocumentationImpl extends ExtensibleImpl implements Externa
     @Override
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    @Override
-    public ExternalDocumentation url(String url) {
-        setUrl(url);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.ExternalDocumentation from, ExternalDocumentation to,
