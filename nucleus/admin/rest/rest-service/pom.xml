@@ -56,9 +56,9 @@
     <name>GlassFish Admin REST Service</name>
     
     <description>Rest Interface for GlassFish Management and Monitoring</description>
-
-            <dependencies>
-                <dependency>
+    
+    <dependencies>
+        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
@@ -112,7 +112,7 @@
             <artifactId>jersey-media-sse</artifactId>
             <scope>provided</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
             <scope>provided</scope>
@@ -175,7 +175,7 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
-            </dependencies>
+    </dependencies>
     
     <build> 
         <plugins>
