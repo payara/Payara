@@ -122,6 +122,11 @@ public final class CertificateRealm extends BaseRealm {
         if (jaasCtx != null) {
             setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
+        
+        String useCommonName = props.getProperty("common-name-as-principal-name");
+        if (useCommonName != null) {
+            setProperty("useCommonName", useCommonName);
+        }
     }
 
     /**
@@ -167,6 +172,22 @@ public final class CertificateRealm extends BaseRealm {
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
         String name = principal.getName();
+        
+        Properties props = this.getProperties();
+        
+        if (getProperty("useCommonName") != null && 
+           getProperty("useCommonName").equals("true")) {
+        
+            String[] certificateParts = name.split(",");
+            for (String part : certificateParts) {
+                String temp = part.trim();
+                if (temp.startsWith("CN=")) {
+                    name = temp;
+                }
+            }
+            
+            name = name.replace("CN=", "");
+        }
 
         _logger.log(FINEST, "Certificate realm setting up security context for: {0}", name);
 
