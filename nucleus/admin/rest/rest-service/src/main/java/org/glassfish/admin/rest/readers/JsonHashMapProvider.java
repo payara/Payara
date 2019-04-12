@@ -38,7 +38,7 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2018] Payara Foundation and/affiliates
+// Portions Copyright [2017-2019] Payara Foundation and/affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -49,6 +49,9 @@ import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
@@ -89,18 +92,18 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
                 obj = JsonValue.EMPTY_JSON_OBJECT;
             }
 
-            for (String k : obj.keySet()) {
-                JsonValue value = obj.get(k);
+            for (Entry<String, JsonValue> entry : obj.entrySet()) {
+                JsonValue value = entry.getValue();
                 if (value.getValueType() == ValueType.STRING){
-                    map.put(k, ((JsonString) value).getString());
+                    map.put(entry.getKey(), ((JsonString) value).getString());
                 } else {
-                    map.put(k, value.toString());
+                    map.put(entry.getKey(), value.toString());
                 }
             }
             return map;
 
         } catch (JsonException ex) {
-//            map.put("error", "Entity Parsing Error: " + ex.getMessage());
+            Logger.getLogger("org.glassfish.admin.rest.readers").log(Level.FINER, null, ex);
             return map;
         }
     }
