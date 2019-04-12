@@ -358,14 +358,14 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 String value = entry.getValue();
                 
                 if (key != null && !key.trim().isEmpty() && key.startsWith("-D")) {    
-                    if (value == null) {
+                    if (value == null || value.equals("null")) {
                         value = "";
                     } else if(value.contains("=")) {
                         value = value.replaceAll("=", "");
                     }
                  
-                    if (key.endsWith("=")) {
-                            options.append(value);
+                    if (key.endsWith("=")) {                   
+                        options.append(value);
                     } else if(!key.contains("=")) {
                         options.append("=").append(value);
                     }

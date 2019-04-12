@@ -45,6 +45,7 @@ import java.util.Map;
 import org.glassfish.admin.rest.resources.CollectionLeafResource;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 import org.testng.annotations.Test;
 
 /**
@@ -74,7 +75,13 @@ public class CollectionLeafResourceTest {
         data5.put("-Dproduct.name", null);
         
         Map<String, String> data6 = new HashMap<>();
-        data6.put("-client", "");
+        data6.put("-Dproduct.name=", null);
+        
+        Map<String, String> data7 = new HashMap<>();
+        data7.put("-client", "");
+        
+        Map<String, String> data8 = new HashMap<>();
+        data8.put("-client", null);
         
         class Wrapper extends CollectionLeafResource{
            public Map<String, String> getProcessedData(Map<String, String> data){
@@ -89,6 +96,8 @@ public class CollectionLeafResourceTest {
         assertEquals(wrapper.getProcessedData(data3).get("id"), "-Dproduct.name=");
         assertEquals(wrapper.getProcessedData(data4).get("id"), "-Dproduct.name=XXX");
         assertEquals(wrapper.getProcessedData(data5).get("id"), "-Dproduct.name=");
-        assertEquals(wrapper.getProcessedData(data6).get("id"), "-client");
+        assertEquals(wrapper.getProcessedData(data6).get("id"), "-Dproduct.name=");
+        assertEquals(wrapper.getProcessedData(data7).get("id"), "-client");
+        assertEquals(wrapper.getProcessedData(data8).get("id"), "-client");
     }   
 }
