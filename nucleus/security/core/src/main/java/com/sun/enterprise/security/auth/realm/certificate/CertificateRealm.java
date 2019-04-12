@@ -123,6 +123,7 @@ public final class CertificateRealm extends BaseRealm {
             setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
         
+        //Gets the property from the admin console - requires server restart when updating or removing
         String useCommonName = props.getProperty("common-name-as-principal-name");
         if (useCommonName != null) {
             setProperty("useCommonName", useCommonName);
@@ -173,20 +174,20 @@ public final class CertificateRealm extends BaseRealm {
         // 4646134 for reasons why this matters.
         String name = principal.getName();
         
-        Properties props = this.getProperties();
-        
+        //Checks if the property for using common name is set
         if (getProperty("useCommonName") != null && 
            getProperty("useCommonName").equals("true")) {
         
             String[] certificateParts = name.split(",");
             for (String part : certificateParts) {
+                //Given property is checked and CN is present in the certificate
+                //Replace full certificate string with the value of CN
                 String temp = part.trim();
                 if (temp.startsWith("CN=")) {
-                    name = temp;
+                    //Remove CN prefix and place into name for authentication
+                    name = temp.replace("CN=", "");
                 }
             }
-            
-            name = name.replace("CN=", "");
         }
 
         _logger.log(FINEST, "Certificate realm setting up security context for: {0}", name);
