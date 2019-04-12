@@ -45,7 +45,6 @@ import java.util.Map;
 import org.glassfish.admin.rest.resources.CollectionLeafResource;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
 import org.testng.annotations.Test;
 
 /**
