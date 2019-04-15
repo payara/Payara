@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -51,22 +51,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import javax.ws.rs.core.UriInfo;
 
-import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.jersey.internal.util.collection.Ref;
 
@@ -111,7 +107,6 @@ public class SessionsResource extends AbstractResource {
         boolean responseErrorStatusSet = false;
         Subject subject = null;
         try {
-//            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultHabitat(), grizzlyRequest, hostName);
             subject = ResourceUtil.authenticateViaAdminRealm(locatorBridge.getRemoteLocator(), grizzlyRequest, hostName);
             isAuthorized = ResourceUtil.isAuthorized(locatorBridge.getRemoteLocator(), subject, "domain/rest-sessions/rest-session", "create");
         } catch (RemoteAdminAccessException e) {

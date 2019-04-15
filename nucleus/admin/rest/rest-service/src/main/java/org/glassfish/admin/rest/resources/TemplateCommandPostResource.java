@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation]
+// Portions Copyright [2016-2010] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -93,8 +93,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommandLegacyFormat(preprocessData(data));
@@ -107,8 +107,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommand(preprocessData(data));
@@ -144,8 +144,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommandAsSse(preprocessData(data));

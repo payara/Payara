@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -77,7 +77,7 @@ public class PropertiesBagResource extends AbstractResource {
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PropertiesBagResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PropertiesBagResource.class);
 
     static public class PropertyResource extends TemplateRestResource {
         @Override
@@ -146,8 +146,7 @@ public class PropertiesBagResource extends AbstractResource {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, null);
 
-            String successMessage = localStrings.getLocalString("rest.resource.delete.message",
-                        "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()});
+            String successMessage = localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.", uriInfo.getAbsolutePath());
             return ResourceUtil.getResponse(200, successMessage, requestHeaders, uriInfo);
         } catch (Exception ex) {
             if (ex.getCause() instanceof ValidationException) {
@@ -214,21 +213,18 @@ public class PropertiesBagResource extends AbstractResource {
             }
 
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
-                    "\"{0}\" updated successfully.", new Object[]{uriInfo.getAbsolutePath()});
+                    "\"{0}\" updated successfully.", uriInfo.getAbsolutePath());
 
             ar.setSuccess();
             ar.setMessage(successMessage);
+        } catch (ValidationException ex) {
+            ar.setFailure();
+            ar.setFailureCause(ex);
+            ar.setMessage(ex.getLocalizedMessage());
         } catch (Exception ex) {
-            if (ex.getCause() instanceof ValidationException) {
-                ar.setFailure();
-                ar.setFailureCause(ex);
-                ar.setMessage(ex.getLocalizedMessage());
-            } else {
                 logger.log(Level.FINE, "Error processing properties", ex);
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-            }
-        }
-        finally {
+        } finally {
             TranslatedConfigView.doSubstitution.set(Boolean.TRUE);
         }
 

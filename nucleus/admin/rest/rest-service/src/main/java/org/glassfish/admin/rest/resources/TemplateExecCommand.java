@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -76,16 +76,17 @@ import org.glassfish.jersey.media.sse.EventOutput;
 
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
-import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
-import org.glassfish.admin.rest.utils.Util;
 
 /**
  * @author ludo
  */
 public class TemplateExecCommand extends AbstractResource implements OptionsCapable {
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateExecCommand.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateExecCommand.class);
+    protected static final String ERROR = "error";
+    protected static final String ERROR_STRING = "rest.request.parsing.error";
+    protected static final String ERROR_DEFAULT_MESSAGE = "Unable to parse the input entity. Please check the syntax.";
 
     protected String resourceName;
     protected String commandName;
@@ -143,11 +144,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     @OPTIONS
     @Produces(Constants.MEDIA_TYPE_JSON)
     public String options() throws JsonException {
-        try {
-            return new RestResourceMetadata(this).toJson().toString();
-        } catch (JsonException ex) {
-            throw new RuntimeException(ex);
-        }
+        return new RestResourceMetadata(this).toJson().toString();
     }
 
     protected Response executeCommandAsSse(ParameterMap data) {
@@ -160,7 +157,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         final ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         final int status = (exitCode == ActionReport.ExitCode.FAILURE) ?
                      HttpURLConnection.HTTP_INTERNAL_ERROR : HttpURLConnection.HTTP_OK;
-        ActionReportResult option = (ActionReportResult) optionsLegacyFormat();
+        ActionReportResult option = optionsLegacyFormat();
         ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
         results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
         results.setCommandDisplayName(commandDisplayName);
@@ -285,8 +282,6 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
 
     protected String getParent(UriInfo uriInfo) {
         List<PathSegment> segments = uriInfo.getPathSegments(true);
-        String parent = segments.get(segments.size()-2).getPath();
-
-        return parent;
+        return segments.get(segments.size()-2).getPath();
     }
 }
