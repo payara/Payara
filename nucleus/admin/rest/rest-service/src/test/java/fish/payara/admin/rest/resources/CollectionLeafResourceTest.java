@@ -53,51 +53,74 @@ import org.testng.annotations.Test;
  * @author asroth
  */
 public class CollectionLeafResourceTest {
-    
-    public CollectionLeafResourceTest() {
-    }
 
+    class Wrapper extends CollectionLeafResource {
+        public Map<String, String> getProcessedData(Map<String, String> data) {
+            return processData(data, true);
+        }
+    };
+    
     @Test
-    public void testProcessData() {      
+    public void when_property_has_value_given_with_key_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data1 = new HashMap<>();
         data1.put("-Dproduct.name=XXX", "");
-     
+        assertEquals(wrapper.getProcessedData(data1).get("id"), "-Dproduct.name=XXX");
+    }
+    
+    @Test
+    public void when_property_has_no_equals_sign_and_empty_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data2 = new HashMap<>();
         data2.put("-Dproduct.name", "");
-        
+        assertEquals(wrapper.getProcessedData(data2).get("id"), "-Dproduct.name=");
+    }
+    
+    @Test
+    public void when_property_has_empty_value_export_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data3 = new HashMap<>();
         data3.put("-Dproduct.name=", "");
-        
+        assertEquals(wrapper.getProcessedData(data3).get("id"), "-Dproduct.name=");
+    }
+    
+    @Test
+    public void when_property_has_no_equals_sign_with_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data4 = new HashMap<>();
         data4.put("-Dproduct.name", "XXX");
-        
+        assertEquals(wrapper.getProcessedData(data4).get("id"), "-Dproduct.name=XXX");
+    }
+    
+    @Test
+    public void when_property_has_no_equals_sign_and_null_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data5 = new HashMap<>();
         data5.put("-Dproduct.name", null);
-        
+        assertEquals(wrapper.getProcessedData(data5).get("id"), "-Dproduct.name=");
+    }
+    
+    @Test
+    public void when_property_has_null_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data6 = new HashMap<>();
         data6.put("-Dproduct.name=", null);
-        
+        assertEquals(wrapper.getProcessedData(data6).get("id"), "-Dproduct.name=");
+    }
+    
+    @Test
+    public void when_property_is_client_empty_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data7 = new HashMap<>();
         data7.put("-client", "");
-        
+        assertEquals(wrapper.getProcessedData(data7).get("id"), "-client");
+    }
+    
+    @Test
+    public void when_property_is_client_null_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
         Map<String, String> data8 = new HashMap<>();
         data8.put("-client", null);
-        
-        class Wrapper extends CollectionLeafResource{
-           public Map<String, String> getProcessedData(Map<String, String> data){
-               return processData(data, true);
-           }
-        };
-        
-        Wrapper wrapper = new Wrapper();
-        
-        assertEquals(wrapper.getProcessedData(data1).get("id"), "-Dproduct.name=XXX");
-        assertEquals(wrapper.getProcessedData(data2).get("id"), "-Dproduct.name=");
-        assertEquals(wrapper.getProcessedData(data3).get("id"), "-Dproduct.name=");
-        assertEquals(wrapper.getProcessedData(data4).get("id"), "-Dproduct.name=XXX");
-        assertEquals(wrapper.getProcessedData(data5).get("id"), "-Dproduct.name=");
-        assertEquals(wrapper.getProcessedData(data6).get("id"), "-Dproduct.name=");
-        assertEquals(wrapper.getProcessedData(data7).get("id"), "-client");
         assertEquals(wrapper.getProcessedData(data8).get("id"), "-client");
-    }   
+    } 
 }
