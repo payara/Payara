@@ -118,8 +118,35 @@ class ClusterScopeContext implements Context {
         }
     }
     
+    /**
+     * Get the most appropriate name for a bean. First checks the `@Clustered`
+     * annotation key name property, then the bean EL name, then the bean class
+     * name.
+     * 
+     * @param bean       the bean to reference.
+     * @param annotation the Clustered annotation to reference.
+     * @throws IllegalArgumentException if no name can be found for the bean.
+     */
     static <TT> String getBeanName(Bean<TT> bean, Clustered annotation) {
-        return annotation.keyName().isEmpty()? bean.getName() : annotation.keyName();
+        // Check the annotation keyName
+        String beanName = annotation.keyName();
+        if (beanName != null && !beanName.isEmpty()) {
+            return beanName;
+        }
+
+        // Check the CDI bean name
+        beanName = bean.getName();
+        if (beanName != null && !beanName.isEmpty()) {
+            return beanName;
+        }
+
+        // Check the bean class name
+        beanName = bean.getBeanClass().getName();
+        if (beanName != null && !beanName.isEmpty()) {
+            return beanName;
+        }
+
+        throw new IllegalArgumentException("Could not find the name for bean: " + bean.toString());
     }
 
     static <TT> Clustered getAnnotation(BeanManager beanManager, Bean<TT> bean) {
