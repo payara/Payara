@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -67,7 +69,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.HttpHeaders;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
-import org.glassfish.admin.rest.model.ResponseBody;
 
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
@@ -87,7 +88,7 @@ import org.jvnet.hk2.config.ConfigModel;
  */
 public class Util {
     private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
 
     private Util() {
@@ -161,7 +162,7 @@ public class Util {
         String name = getName(url, '/');
         // Find the : to skip past the protocal part of the URL, as that is causing
         // problems with resources named 'http'.
-        int nameIndex = url.indexOf(name, url.indexOf(":") + 1);
+        int nameIndex = url.indexOf(name, url.indexOf(':') + 1);
         return getName(url.substring(0, nameIndex - 1), '/');
     }
 
@@ -203,12 +204,18 @@ public class Util {
         return string;
     }
 
+    /**
+     * Decodes an encoded URL using UTF-8
+     * @param string string to decode
+     * @return decoded string, or the original string if decoding failed
+     */
     public static String decode(String string) {
         String ret = string;
 
         try {
             ret = URLDecoder.decode(string, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+            //UTF-8 *Should* be supported by every system
         }
 
         return ret;
@@ -255,10 +262,8 @@ public class Util {
         String name = upperCaseFirstLetter(eleminateHypen(getName(uri, '/')));
 
         result = result + "<h1>" + name + "</h1>";
-        result = result + message;//+ "<br><br>";
+        result = result + message;
         result = result + "<a href=\"" + uri + "\">Back</a>";
-
-        //  result =  result +  "<br>";
         result = result + "</body></html>";
         return result;
     }
@@ -401,7 +406,7 @@ public class Util {
         StringBuilder ret = new StringBuilder();
         boolean nextisUpper = true;
         for (int i = 0; i < elementName.length(); i++) {
-            if (nextisUpper == true) {
+            if (nextisUpper) {
                 ret.append(elementName.substring(i, i + 1).toUpperCase(Locale.US));
                 nextisUpper = false;
             } else {
@@ -464,7 +469,6 @@ public class Util {
             String sep = "";
             for (CommandModel.ParamModel model : params) {
                 Param param = model.getParam();
-                boolean include = true;
                 if (param.optional() && !includeOptional) {
                     continue;
                 }
@@ -495,12 +499,7 @@ public class Util {
         File f = null;
         try {
             if (fileName.contains(".")) {
-                //String prefix = fileName.substring(0, fileName.indexOf("."));
-                // String suffix = fileName.substring(fileName.indexOf("."), fileName.length());
-                //if (prefix.length() < 3) {
-                //    prefix = "glassfish" + prefix;
-                //}
-                f = new File(new File(System.getProperty("java.io.tmpdir")), fileName);
+                f = new File(new File(System.getProperty(JAVA_IO_TMPDIR)), fileName);
             }
 
 
