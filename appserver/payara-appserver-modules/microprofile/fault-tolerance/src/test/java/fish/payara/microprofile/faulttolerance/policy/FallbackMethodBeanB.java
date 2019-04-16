@@ -50,29 +50,4 @@ public class FallbackMethodBeanB<L> extends FallbackMethodBeanC {
         return "fallbackMethodSuperclassPrivate";
     }
 
-    /*
-     * Common Helper Methods
-     */
-    static Object[] createNullArgumentsFor(Method method) {
-        Object[] args = new Object[method.getParameterCount()];
-        for (int i = 0; i < method.getParameterCount(); i++) {
-            if (method.getParameterTypes()[i].isPrimitive()) {
-                args[i] = Integer.valueOf(0);
-            }
-        }
-        return args;
-    }
-
-    static Method getMethod(Class<?> target, String name) {
-        for (Method m : target.getDeclaredMethods()) {
-            if (name.equals(m.getName())) {
-                return m;
-            }
-        }
-        if (target.getSuperclass() != Object.class) {
-            return getMethod(target.getSuperclass(), name);
-        }
-        fail("Test setup failure: no method with name: "+name);
-        return null;
-    }
 }

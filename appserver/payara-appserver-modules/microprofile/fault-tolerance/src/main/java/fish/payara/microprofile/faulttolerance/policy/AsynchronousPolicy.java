@@ -1,5 +1,6 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 
@@ -23,16 +24,16 @@ public final class AsynchronousPolicy extends Policy {
 
     public static AsynchronousPolicy create(InvocationContext context, FaultToleranceConfig config) {
         if (config.isAnnotationPresent(Asynchronous.class, context) && config.isEnabled(Asynchronous.class, context)) {
-            checkReturnsFutureOrCompletionStage(context);
+            checkReturnsFutureOrCompletionStage(context.getMethod());
             return IS_ASYNCHRONOUS;
         }
         return null;
     }
 
-    private static void checkReturnsFutureOrCompletionStage(InvocationContext context) {
-        Class<?> returnType = context.getMethod().getReturnType();
+    static void checkReturnsFutureOrCompletionStage(Method annotated) {
+        Class<?> returnType = annotated.getReturnType();
         if (returnType != Future.class && returnType != CompletionStage.class) {
-            throw new FaultToleranceDefinitionException(describe(context.getMethod(), Asynchronous.class, "")
+            throw new FaultToleranceDefinitionException(describe(annotated, Asynchronous.class, "")
                     + "does not return a Future or CompletionStage but: " + returnType.getName());
         }
     }

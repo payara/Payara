@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 
 import javax.enterprise.inject.spi.BeanManager;
+import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
@@ -37,7 +38,7 @@ public interface FaultToleranceConfig {
      * General
      */
 
-    default boolean isEnabled(InvocationContext context) {
+    default boolean isNonFallbackEnabled(InvocationContext context) {
         return true;
     }
 
@@ -56,6 +57,10 @@ public interface FaultToleranceConfig {
 
     default boolean isAnnotationPresent(Class<? extends Annotation> annotationType, InvocationContext context) {
         return getAnnotation(annotationType, context) != null;
+    }
+
+    default int interceptorPriority() {
+        return Interceptor.Priority.PLATFORM_AFTER + 15;
     }
 
 

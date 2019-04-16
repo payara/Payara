@@ -69,16 +69,15 @@ public final class FaultTolerancePolicy implements Serializable {
      */
     public static FaultTolerancePolicy get(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier)
             throws FaultToleranceDefinitionException {
-        return POLICY_BY_METHOD.compute(context.getMethod(), (method, policy) ->
-        policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
+        return POLICY_BY_METHOD.compute(context.getMethod(), 
+                (method, policy) -> policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
     }
 
     private static FaultTolerancePolicy create(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier) {
         FaultToleranceConfig config = configSpplier.get();
-        boolean isFaultToleranceEnabled = config.isEnabled(context);
-        boolean metricsEnabled = config.isMetricsEnabled(context);
-        return new FaultTolerancePolicy(isFaultToleranceEnabled,
-                metricsEnabled,
+        return new FaultTolerancePolicy(
+                config.isNonFallbackEnabled(context),
+                config.isMetricsEnabled(context),
                 AsynchronousPolicy.create(context, config),
                 BulkheadPolicy.create(context, config),
                 CircuitBreakerPolicy.create(context, config),
@@ -89,7 +88,7 @@ public final class FaultTolerancePolicy implements Serializable {
 
     private final long expiresMillis;
     public final boolean isPresent;
-    public final boolean isFaultToleranceEnabled;
+    public final boolean isNonFallbackEnabled;
     public final boolean isMetricsEnabled;
     public final AsynchronousPolicy asynchronous;
     public final BulkheadPolicy bulkhead;
@@ -98,11 +97,11 @@ public final class FaultTolerancePolicy implements Serializable {
     public final RetryPolicy retry;
     public final TimeoutPolicy timeout;
 
-    public FaultTolerancePolicy(boolean isFaultToleranceEnabled, boolean isMetricsEnabled, AsynchronousPolicy asynchronous,
+    public FaultTolerancePolicy(boolean isNonFallbackEnabled, boolean isMetricsEnabled, AsynchronousPolicy asynchronous,
             BulkheadPolicy bulkhead, CircuitBreakerPolicy circuitBreaker, FallbackPolicy fallback, RetryPolicy retry,
             TimeoutPolicy timeout) {
         this.expiresMillis = System.currentTimeMillis() + TTL;
-        this.isFaultToleranceEnabled = isFaultToleranceEnabled;
+        this.isNonFallbackEnabled = isNonFallbackEnabled;
         this.isMetricsEnabled = isMetricsEnabled;
         this.asynchronous = asynchronous;
         this.bulkhead = bulkhead;

@@ -56,7 +56,7 @@ public abstract class Policy implements Serializable {
             String attribute, Method value) {
         if (value.getReturnType() != annotatedMethod.getReturnType()) {
             throw new FaultToleranceDefinitionException(describe(annotatedMethod, annotationType, attribute)
-                    + "whose return type of does not match.");
+                    + "value whose return type of does not match.");
         }
     }
 

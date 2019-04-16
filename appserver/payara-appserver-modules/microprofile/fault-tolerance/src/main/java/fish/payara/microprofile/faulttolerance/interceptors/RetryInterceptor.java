@@ -72,7 +72,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(Retry.class, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Retry.class, context)) {
                 // Increment the invocations metric
                 getMetrics().incrementInvocationsTotal(Retry.class, context);
 

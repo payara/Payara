@@ -77,7 +77,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(Bulkhead.class, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Bulkhead.class, context)) {
                 if (getConfig().isMetricsEnabled(context)) {
                     // Only increment the invocations metric if the Retry annotation isn't present
                     if (getConfig().getAnnotation(Retry.class, context) == null) {

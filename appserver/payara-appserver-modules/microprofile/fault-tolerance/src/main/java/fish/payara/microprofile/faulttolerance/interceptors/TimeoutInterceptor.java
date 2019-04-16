@@ -76,7 +76,7 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(Timeout.class, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Timeout.class, context)) {
                 // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
                 if (getConfig().getAnnotation(Bulkhead.class, context) == null
                         && getConfig().getAnnotation(Retry.class, context) == null

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -22,8 +23,8 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
 @Interceptor
 @FaultToleranceBehaviour
-@Priority(Interceptor.Priority.PLATFORM_AFTER)
-public class FaultToleranceInterceptor implements Stereotypes, Serializable {
+@Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
+public class FaultToleranceInterceptor implements Stereotypes, Serializable, Prioritized {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceInterceptor.class.getName());
 
@@ -55,6 +56,11 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
     @Override
     public Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype) {
         return beanManager.getStereotypeDefinition(stereotype);
+    }
+
+    @Override
+    public int getPriority() {
+        return Interceptor.Priority.PLATFORM_AFTER + 15; //TODO dynamic via config
     }
 }
 

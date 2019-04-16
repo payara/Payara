@@ -22,14 +22,14 @@ public final class FallbackPolicy extends Policy {
     public final Method method;
 
     public FallbackPolicy(Method annotated, Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
-        checkUnambiguous(value, fallbackMethod);
+        checkUnambiguous(annotated, value, fallbackMethod);
         this.value = value;
         this.fallbackMethod = fallbackMethod;
         if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
             method = MethodLookupUtils.findMethodWithMatchingNameAndArguments(fallbackMethod, annotated);
             if (method == null) {
-                throw new FaultToleranceDefinitionException("Fallback method \"" + fallbackMethod + "\" not defined for "
-                        + annotated.getDeclaringClass().getName());
+                throw new FaultToleranceDefinitionException(describe(annotated, Fallback.class, "fallbackMethod")
+                        + "value referring to a method that is not defined or has a incompatible method signature.");
             }
             checkReturnsSameAs(annotated, Fallback.class, "fallbackMethod", method);
             checkAccessible(annotated, method);
@@ -51,9 +51,10 @@ public final class FallbackPolicy extends Policy {
         return null;
     }
 
-    private static void checkUnambiguous(Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
+    private static void checkUnambiguous(Method annotated, Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
         if (fallbackMethod != null && !fallbackMethod.isEmpty() && value != null && value != Fallback.DEFAULT.class) {
-                throw new FaultToleranceDefinitionException("Both a fallback class and method have been set.");
+            throw new FaultToleranceDefinitionException(
+                    describe(annotated, Fallback.class, "") + "defined both a fallback handler and a fallback method.");
         }
     }
 
@@ -63,7 +64,7 @@ public final class FallbackPolicy extends Policy {
         if (Modifier.isPackage(fallback.getModifiers()) && !samePackage
                 || Modifier.isPrivate(fallback.getModifiers()) && !sameClass) {
             throw new FaultToleranceDefinitionException(describe(annotated, Fallback.class, "fallbackMethod")
-                    + "that refers to a method that is not accessible.");
+                    + "value referring to a method that is not accessible.");
         }
     }
 

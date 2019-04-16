@@ -5,10 +5,12 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.config.Config;
@@ -31,17 +33,19 @@ import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereo
  */
 public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializable {
 
-    public static final String FAULT_TOLERANCE_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
-    public static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
+    private static final String NON_FALLBACK_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
+    private static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
+    private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
 
     private static final Logger logger = Logger.getLogger(CdiFaultToleranceConfig.class.getName());
 
     /**
-     * These two property should only be read once at the start of the application, therefore they are cached in static
-     * field.
+     * These tree properties should only be read once at the start of the application, therefore they are cached in
+     * static field.
      */
     private final AtomicReference<Boolean> nonFallbackEnabled = new AtomicReference<>();
     private final AtomicReference<Boolean> metricsEnabled = new AtomicReference<>();
+    private final AtomicInteger interceptorPriority = new AtomicInteger(-1);
 
     private final Stereotypes sterotypes;
     private transient Config config;
@@ -69,10 +73,10 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
      */
 
     @Override
-    public boolean isEnabled(InvocationContext context) {
+    public boolean isNonFallbackEnabled(InvocationContext context) {
         if (nonFallbackEnabled.get() == null) {
             nonFallbackEnabled.compareAndSet(null,
-                    getConfig().getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(true));
+                    getConfig().getOptionalValue(NON_FALLBACK_ENABLED_PROPERTY, Boolean.class).orElse(true));
         }
         return nonFallbackEnabled.get().booleanValue();
     }
@@ -89,12 +93,19 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
     @Override
     public boolean isEnabled(Class<? extends Annotation> annotationType, InvocationContext context) {
         return FaultToleranceCdiUtils.getEnabledOverrideValue(getConfig(), annotationType, context, 
-                annotationType == Fallback.class || isEnabled(context));
+                annotationType == Fallback.class || isNonFallbackEnabled(context));
     }
 
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotationType, InvocationContext context) {
         return FaultToleranceCdiUtils.getAnnotation(sterotypes, annotationType, context);
+    }
+
+    @Override
+    public int interceptorPriority() {
+        return interceptorPriority.updateAndGet(priority -> priority > 0 ? priority
+                : getConfig().getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY, Integer.class)
+                        .orElse(Interceptor.Priority.PLATFORM_AFTER + 15));
     }
 
     /*

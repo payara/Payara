@@ -76,7 +76,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
         // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled for this method
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(CircuitBreaker.class, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(CircuitBreaker.class, context)) {
                 // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
                 if (getConfig().getAnnotation(Bulkhead.class, context) == null
                         && getConfig().getAnnotation(Retry.class, context) == null) {

@@ -56,7 +56,7 @@ public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
 
         try {
             // Attempt to proceed the InvocationContext with FT semantics if FT is enabled for this method
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(annotationType, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(annotationType, context)) {
                 // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
                 if (!getConfig().isAnnotationPresent(Bulkhead.class, context)
                         && !getConfig().isAnnotationPresent(Retry.class, context)

@@ -73,7 +73,7 @@ public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Async
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
             // this method
-            if (getConfig().isEnabled(context) && getConfig().isEnabled(Asynchronous.class, context)) {
+            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Asynchronous.class, context)) {
                 resultValue = asynchronous(context);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal

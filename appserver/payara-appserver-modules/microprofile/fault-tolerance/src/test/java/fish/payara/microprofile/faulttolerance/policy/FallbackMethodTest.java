@@ -12,6 +12,8 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.junit.Test;
 
+import fish.payara.microprofile.faulttolerance.test.TestUtils;
+
 /**
  * Tests scenarios for valid declarations as given in the TCK
  * {@code org.eclipse.microprofile.fault.tolerance.tck.fallbackmethod} package. Names used are based on the TCK tests
@@ -274,14 +276,14 @@ public class FallbackMethodTest extends FallbackMethodBeanA<Long, String> {
     private void assertFallbackMethod(Class<?> target) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         String testName = stackTraceElements[target == getClass() ? 3 : 2].getMethodName();
-        Method annotatedMethod = getMethod(target, testName + "_Method");
-        FallbackPolicy policy = new FallbackPolicy(annotatedMethod, null,
-                annotatedMethod.getAnnotation(Fallback.class).fallbackMethod());
+        Method annotatedMethod = TestUtils.getMethod(target, testName + "_Method");
+        Fallback fallback = annotatedMethod.getAnnotation(Fallback.class);
+        FallbackPolicy policy = new FallbackPolicy(annotatedMethod, fallback.value(), fallback.fallbackMethod());
         assertNotNull(policy);
         assertNotNull(policy.fallbackMethod);
         assertNotNull(policy.method);
         try {
-            Object[] args = createNullArgumentsFor(annotatedMethod);
+            Object[] args = TestUtils.createNullArgumentsFor(annotatedMethod);
             Object actual = policy.method.invoke(this, args);
             assertEquals(testName, actual.toString());
         } catch (Exception e) {
