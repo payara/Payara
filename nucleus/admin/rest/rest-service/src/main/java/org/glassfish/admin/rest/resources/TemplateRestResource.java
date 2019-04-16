@@ -185,7 +185,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @DELETE
-    public Response delete(HashMap<String, String> data) {
+    public Response delete(Map<String, String> data) {
         return Response.ok(ResourceUtil.getActionReportResult(doDelete(data),
                 localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.",
                 uriInfo.getAbsolutePath()),
@@ -213,7 +213,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      * @param data
      * @return
      */
-    protected RestActionReporter doCreateOrUpdate(HashMap<String, String> data) {
+    protected RestActionReporter doCreateOrUpdate(Map<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
@@ -253,7 +253,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         }
     }
 
-    protected ExitCode doDelete(HashMap<String, String> data) {
+    protected ExitCode doDelete(Map<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
@@ -564,7 +564,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      *
      * @return
      */
-    private RestActionReporter runCommand(String commandName, HashMap<String, String> data) {
+    private RestActionReporter runCommand(String commandName, Map<String, String> data) {
         if (commandName != null) {
             return ResourceUtil.runCommand(commandName, data, getSubject());
         }
@@ -573,7 +573,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     // This has to be smarter, since we are encoding / in resource names now
-    private void addDefaultParameter(HashMap<String, String> data) {
+    private void addDefaultParameter(Map<String, String> data) {
         String defaultParameterValue = getEntity().getKey();
         if (defaultParameterValue == null) {// no primary key
             //we take the parent key.

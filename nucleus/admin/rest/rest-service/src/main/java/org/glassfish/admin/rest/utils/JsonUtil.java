@@ -79,7 +79,7 @@ public class JsonUtil {
      * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
      * a class that has a REST model or an array of one of the above.
      * @param object The object to convert
-     * @return
+     * @return The resulting JsonValue
      * @throws JsonException If the object cannot be converted to a JsonValue
      */
     public static JsonValue getJsonValue(Object object) throws JsonException{
@@ -93,25 +93,8 @@ public class JsonUtil {
      * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
      * a class that has a REST model or an array of one of the above.
      * @param object The object to convert
-     * @return
-     * @throws JsonException If the object cannot be converted to a JsonValue
-     * @deprecated As of 5.0, replaced by {@link #getJsonValue(Object)} as a more accurately named method
-     * with the removal of Jettison the return value is no longer JSONObject but JsonValue.
-     */
-    @Deprecated
-    public static JsonValue getJsonObject(Object object) throws JsonException {
-        return getJsonValue(object, true);
-    }
-    
-    /**
-     * Converts an object to a JsonValue
-     * <p>
-     * The object must be one of {@link JsonValue}, {@link Collection}, {@link Map}, {@link ResponseBody}, {@link String},
-     * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
-     * a class that has a REST model or an array of one of the above.
-     * @param object The object to convert
      * @param hideConfidentialProperties
-     * @return
+     * @return resulting JsonValue
      * @throws JsonException If the object cannot be converted to a JsonValue
      */
     public static JsonValue getJsonValue(Object object, boolean hideConfidentialProperties) throws JsonException {
