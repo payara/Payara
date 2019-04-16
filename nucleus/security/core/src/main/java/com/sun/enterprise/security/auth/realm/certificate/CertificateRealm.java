@@ -168,7 +168,7 @@ public final class CertificateRealm extends BaseRealm {
      * @param principal The Principal object from the user certificate.
      *
      */
-    public void authenticate(Subject subject, Principal principal) {
+    public String authenticate(Subject subject, Principal principal) {
         // It is important to use x500name.getName() in order to be
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
@@ -184,7 +184,7 @@ public final class CertificateRealm extends BaseRealm {
                 //Replace full certificate string with the value of CN
                 String temp = part.trim();
                 if (temp.startsWith("CN=")) {
-                    //Remove CN prefix and place into name for authentication
+                    //Remove CN prefix and place into name for role mapping
                     name = temp.replace("CN=", "");
                 }
             }
@@ -204,6 +204,7 @@ public final class CertificateRealm extends BaseRealm {
         }
 
         SecurityContext.setCurrent(new SecurityContext(name, subject));
+        return name;
     }
 
     /**
