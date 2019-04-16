@@ -126,7 +126,7 @@
         <javax.security.enterprise.version>1.1-b01.payara-p3</javax.security.enterprise.version>
 
         <!-- JACC -->
-        <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
+        <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
 
         <!-- JASPIC -->
         <jakarta.security.auth.message-api.version>1.1.2</jakarta.security.auth.message-api.version>
@@ -350,14 +350,14 @@
                         <!-- JACC -->
                         <spec>
                             <artifact>
-                                <groupId>javax.security.jacc</groupId>
-                                <artifactId>javax.security.jacc-api</artifactId>
-                                <version>${javax.security.jacc-api.version}</version>
+                                <groupId>jakarta.security.jacc</groupId>
+                                <artifactId>jakarta.security.jacc-api</artifactId>
+                                <version>${jakarta.security.jacc-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.security.jacc-api.version}</specVersion>
-                            <specImplVersion>${javax.security.jacc-api.version}</specImplVersion>
+                            <specVersion>${jakarta.security.jacc-api.version}</specVersion>
+                            <specImplVersion>${jakarta.security.jacc-api.version}</specImplVersion>
                             <apiPackage>javax.security.jacc</apiPackage>
                         </spec>
 
@@ -697,9 +697,9 @@
 
             <!-- JACC -->
             <dependency>
-                <groupId>javax.security.jacc</groupId>
-                <artifactId>javax.security.jacc-api</artifactId>
-                <version>${javax.security.jacc-api.version}</version>
+                <groupId>jakarta.security.jacc</groupId>
+                <artifactId>jakarta.security.jacc-api</artifactId>
+                <version>${jakarta.security.jacc-api.version}</version>
             </dependency>
 
             <!-- JASPIC -->
