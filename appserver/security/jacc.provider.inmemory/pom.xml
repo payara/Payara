@@ -89,8 +89,8 @@
     
     <dependencies>
         <dependency>
-            <groupId>javax.security.jacc</groupId>
-            <artifactId>javax.security.jacc-api</artifactId>
+            <groupId>jakarta.security.jacc</groupId>
+            <artifactId>jakarta.security.jacc-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
