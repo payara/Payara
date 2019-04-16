@@ -448,13 +448,13 @@
                         <!-- Servlet -->
                         <spec>
                             <artifact>
-                                <groupId>javax.servlet</groupId>
-                                <artifactId>javax.servlet-api</artifactId>
+                                <groupId>jakarta.servlet</groupId>
+                                <artifactId>jakarta.servlet-api</artifactId>
                                 <version>${servlet-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>3.1</specVersion>
+                            <specVersion>4.0</specVersion>
                             <specImplVersion>${servlet-api.version}</specImplVersion>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
