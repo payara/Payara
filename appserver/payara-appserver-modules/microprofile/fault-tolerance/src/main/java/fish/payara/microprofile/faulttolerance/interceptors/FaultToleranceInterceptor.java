@@ -16,11 +16,7 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceConfig;
-import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
@@ -37,12 +33,11 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
-            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, this::getConfig);
-            if (policy.isFaultToleranceEnabled) {
-                FaultToleranceExecution execution =
-                        Globals.getDefaultBaseServiceLocator().getService(FaultToleranceExecution.class);
-                FaultToleranceMetrics metrics = policy.isMetricsEnabled ? new CdiFaultToleranceMetrics(null) : null;
-                return policy.processWithFaultTolerance(context, execution, metrics);
+            FaultToleranceExecution execution =
+                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceExecution.class);
+            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> execution.getConfig(context, this));
+            if (policy.isPresent) {
+                return policy.proceed(context, execution);
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"
@@ -50,10 +45,6 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
             // fall-through to normal proceed
         }
         return context.proceed();
-    }
-
-    private FaultToleranceConfig getConfig() {
-        return new CdiFaultToleranceConfig(null, this);
     }
 
     @Override

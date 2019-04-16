@@ -45,19 +45,24 @@ public abstract class Policy implements Serializable {
             String attribute, Class<?> valueType, String valueMethodName, Class<?>... valueParameterTypes) {
         try {
             Method actual = valueType.getDeclaredMethod(valueMethodName, valueParameterTypes);
-            if (actual.getReturnType() != annotatedMethod.getReturnType()) {
-                throw new FaultToleranceDefinitionException(describe(annotatedMethod, annotationType, attribute)
-                        + "whose return type of does not match.");
-            }
+            checkReturnsSameAs(annotatedMethod, annotationType, attribute, actual);
         } catch (NoSuchMethodException ex) {
             throw new FaultToleranceDefinitionException(describe(annotatedMethod, annotationType, attribute)
                     + "refering to a method "+valueMethodName+" that does not exist for type: " + valueType.getName(), ex);
         }
     }
 
+    public static void checkReturnsSameAs(Method annotatedMethod, Class<? extends Annotation> annotationType,
+            String attribute, Method value) {
+        if (value.getReturnType() != annotatedMethod.getReturnType()) {
+            throw new FaultToleranceDefinitionException(describe(annotatedMethod, annotationType, attribute)
+                    + "whose return type of does not match.");
+        }
+    }
+
     protected static String describe(Method annotatedMethod, Class<? extends Annotation> annotationType, String attribute) {
         return "Method \"" + annotatedMethod.getName() + "\" in " + annotatedMethod.getDeclaringClass().getName()
-                + " annotated with " + annotationType.getCanonicalName()
+                + " annotated with " + annotationType.getSimpleName()
                 + (attribute.isEmpty() ? " " : " has a " + attribute(attribute));
     }
 

@@ -5,8 +5,7 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,6 +36,13 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
 
     private static final Logger logger = Logger.getLogger(CdiFaultToleranceConfig.class.getName());
 
+    /**
+     * These two property should only be read once at the start of the application, therefore they are cached in static
+     * field.
+     */
+    private final AtomicReference<Boolean> nonFallbackEnabled = new AtomicReference<>();
+    private final AtomicReference<Boolean> metricsEnabled = new AtomicReference<>();
+
     private final Stereotypes sterotypes;
     private transient Config config;
 
@@ -64,17 +70,26 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
 
     @Override
     public boolean isEnabled(InvocationContext context) {
-        return getConfig().getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(true);
-    }
-
-    @Override
-    public boolean isEnabled(Class<? extends Annotation> annotationType, InvocationContext context) {
-        return FaultToleranceCdiUtils.getEnabledOverrideValue(getConfig(), annotationType, context).orElse(true);
+        if (nonFallbackEnabled.get() == null) {
+            nonFallbackEnabled.compareAndSet(null,
+                    getConfig().getOptionalValue(FAULT_TOLERANCE_ENABLED_PROPERTY, Boolean.class).orElse(true));
+        }
+        return nonFallbackEnabled.get().booleanValue();
     }
 
     @Override
     public boolean isMetricsEnabled(InvocationContext context) {
-        return getConfig().getOptionalValue(METRICS_ENABLED_PROPERTY, Boolean.class).orElse(true);
+        if (metricsEnabled.get() == null) {
+            metricsEnabled.compareAndSet(null,
+                    getConfig().getOptionalValue(METRICS_ENABLED_PROPERTY, Boolean.class).orElse(true));
+        }
+        return metricsEnabled.get().booleanValue();
+    }
+
+    @Override
+    public boolean isEnabled(Class<? extends Annotation> annotationType, InvocationContext context) {
+        return FaultToleranceCdiUtils.getEnabledOverrideValue(getConfig(), annotationType, context, 
+                annotationType == Fallback.class || isEnabled(context));
     }
 
     @Override
@@ -204,17 +219,17 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
     @SuppressWarnings("unchecked")
     @Override
     public Class<? extends FallbackHandler<?>> value(Fallback annotation, InvocationContext context) {
-        Optional<String> className = FaultToleranceCdiUtils.getOverrideValue(getConfig(), Fallback.class, "value", 
-                context, String.class);
-        if (className.isPresent()) {
-            try {
-                return (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader()
-                        .loadClass(className.get());
-            } catch (ClassNotFoundException e) {
-                // fall through
-            }
+        String className = FaultToleranceCdiUtils.getOverrideValue(getConfig(), Fallback.class, "value", 
+                context, String.class, null);
+        if (className == null) {
+            return annotation.value();
         }
-        return annotation.value();
+        try {
+            return (Class<? extends FallbackHandler<?>>) Thread.currentThread().getContextClassLoader()
+                    .loadClass(className);
+        } catch (ClassNotFoundException e) {
+            return annotation.value();
+        }
     }
 
     @Override
@@ -244,30 +259,28 @@ public class CdiFaultToleranceConfig implements FaultToleranceConfig, Serializab
 
     private <T> T value(Class<? extends Annotation> annotationType, String attribute,
             InvocationContext context, Class<T> valueType, T annotationValue) {
-        return FaultToleranceCdiUtils.getOverrideValue(getConfig(), annotationType, attribute, context, valueType) 
-                .orElse(annotationValue);
+        return FaultToleranceCdiUtils.getOverrideValue(getConfig(), annotationType, attribute, context, valueType, annotationValue);
     }
 
     private Class<? extends Throwable>[] getClassArrayValue(Class<? extends Annotation> annotationType,
             String attributeName, InvocationContext context, Class<? extends Throwable>[] annotationValue) {
+        String classNames = FaultToleranceCdiUtils.getOverrideValue(getConfig(), annotationType, attributeName, context,
+                String.class, null);
+        if (classNames == null) {
+            return annotationValue;
+        }
         try {
-            Optional<String> classNames = FaultToleranceCdiUtils.getOverrideValue(
-                    getConfig(), annotationType, attributeName, context, String.class);
-            if (classNames.isPresent()) {
-                List<Class<?>> classList = new ArrayList<>();
-                // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
-                for (String className : classNames.get().replaceAll("[\\{\\[ \\]\\}]", "")
-                        .replaceAll("\\.class", "").split(",")) {
-                    classList.add(Class.forName(className));
-                }
-                return classList.toArray(annotationValue);
+            List<Class<?>> classList = new ArrayList<>();
+            // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
+            for (String className : classNames.replaceAll("[\\{\\[ \\]\\}]", "").replaceAll("\\.class", "")
+                    .split(",")) {
+                classList.add(Class.forName(className));
             }
-        } catch (NoSuchElementException nsee) {
-            logger.log(Level.FINER, "Could not find element in config", nsee);
+            return classList.toArray(annotationValue);
         } catch (ClassNotFoundException cnfe) {
             logger.log(Level.INFO, "Could not find class from " + attributeName + " config, defaulting to annotation. "
                     + "Make sure you give the full canonical class name.", cnfe);
+            return annotationValue;
         }
-        return annotationValue;
     }
 }

@@ -54,6 +54,10 @@ public final class FaultTolerancePolicy implements Serializable {
         POLICY_BY_METHOD.entrySet().removeIf(entry -> now > entry.getValue().expiresMillis);
     }
 
+    public static FaultTolerancePolicy asAnnotated(Method annotated) {
+        return create(new StaticAnalysisMethodContext(annotated), () -> FaultToleranceConfig.ANNOTATED);
+    }
+
     /**
      * Returns the {@link FaultTolerancePolicy} to use for the method invoked in the current context.
      *
@@ -65,18 +69,16 @@ public final class FaultTolerancePolicy implements Serializable {
      */
     public static FaultTolerancePolicy get(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier)
             throws FaultToleranceDefinitionException {
-        return POLICY_BY_METHOD.compute(context.getMethod(), (method, info) ->
-        info != null && !info.isExpired() ? info : create(context, configSpplier));
+        return POLICY_BY_METHOD.compute(context.getMethod(), (method, policy) ->
+        policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
     }
 
     private static FaultTolerancePolicy create(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier) {
         FaultToleranceConfig config = configSpplier.get();
         boolean isFaultToleranceEnabled = config.isEnabled(context);
-        if (!isFaultToleranceEnabled) {
-            return new FaultTolerancePolicy(false, false, null, null, null, null, null, null);
-        }
+        boolean metricsEnabled = config.isMetricsEnabled(context);
         return new FaultTolerancePolicy(isFaultToleranceEnabled,
-                config.isMetricsEnabled(context),
+                metricsEnabled,
                 AsynchronousPolicy.create(context, config),
                 BulkheadPolicy.create(context, config),
                 CircuitBreakerPolicy.create(context, config),
@@ -86,6 +88,7 @@ public final class FaultTolerancePolicy implements Serializable {
     }
 
     private final long expiresMillis;
+    public final boolean isPresent;
     public final boolean isFaultToleranceEnabled;
     public final boolean isMetricsEnabled;
     public final AsynchronousPolicy asynchronous;
@@ -107,6 +110,8 @@ public final class FaultTolerancePolicy implements Serializable {
         this.fallback = fallback;
         this.retry = retry;
         this.timeout = timeout;
+        this.isPresent = isAsynchronous() || isBulkheadPresent() || isCircuitBreakerPresent()
+                || isFallbackPresent() || isRetryPresent() || isTimeoutPresent();
     }
 
     private boolean isExpired() {
@@ -158,6 +163,7 @@ public final class FaultTolerancePolicy implements Serializable {
         }
 
         Object runStageWithWorker(InvocationStage stage) throws Exception {
+            timeoutIfConcludedConcurrently();
             Thread current = Thread.currentThread();
             asyncWorkers.add(current);
             try {
@@ -166,21 +172,26 @@ public final class FaultTolerancePolicy implements Serializable {
                 asyncWorkers.remove(current);
             }
         }
+
+        void timeoutIfConcludedConcurrently() throws TimeoutException {
+            if (asyncResult != null && asyncResult.isDone() || Thread.currentThread().isInterrupted()) {
+                throw new TimeoutException("Computation already concluded in a concurrent attempt");
+            }
+        }
     }
 
-    public Object processWithFaultTolerance(InvocationContext context, FaultToleranceExecution execution,
-            FaultToleranceMetrics metrics) throws Exception {
-        if (!isFaultToleranceEnabled) {
+    public Object proceed(InvocationContext context, FaultToleranceExecution execution) throws Exception {
+        if (!isPresent) {
             return context.proceed();
         }
-        return processAsynchronousStage(context, execution, metrics);
+        return processAsynchronousStage(context, execution);
     }
 
     /**
      * Stage that takes care of the {@link AsynchronousPolicy} handling.
      */
-    private Object processAsynchronousStage(InvocationContext context, FaultToleranceExecution execution,
-            FaultToleranceMetrics metrics) throws Exception {
+    private Object processAsynchronousStage(InvocationContext context, FaultToleranceExecution execution) throws Exception {
+        FaultToleranceMetrics metrics = isMetricsEnabled ? execution.getMetrics(context) : null;
         if (!isAsynchronous()) {
             return processFallbackStage(new FaultToleranceInvocation(context, execution, metrics, null, null));
         }
@@ -214,11 +225,15 @@ public final class FaultTolerancePolicy implements Serializable {
         try {
             return processRetryStage(invocation);
         } catch (Exception ex) {
-            if (fallback.isHandlerPresent()) {
-                return invocation.execution.fallbackHandle(fallback.value, invocation.context, ex);
-            }
-            return invocation.execution.fallbackInvoke(fallback.fallbackMethod, invocation.context);
+            return processFallbackException(invocation, ex);
         }
+    }
+
+    private Object processFallbackException(FaultToleranceInvocation invocation, Exception ex) throws Exception {
+        if (fallback.isHandlerPresent()) {
+            return invocation.execution.fallbackHandle(fallback.value, invocation.context, ex);
+        }
+        return invocation.execution.fallbackInvoke(fallback.method, invocation.context);
     }
 
     /**
@@ -241,7 +256,6 @@ public final class FaultTolerancePolicy implements Serializable {
                     invocation.execution.delay(retry.jitteredDelay(), invocation.context);
                 }
             }
-            logger.info("Retry: " + attemptsLeft);
         }
         // this line should never be reached as we throw above
         throw new FaultToleranceException("Retry failed"); 
@@ -249,13 +263,14 @@ public final class FaultTolerancePolicy implements Serializable {
 
     private Object processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
         CompletableFuture<Object> asyncTry = new CompletableFuture<>();
+        //TODO try if it works to use the asyncTry thread as inv asyncResult
         invocation.execution.runAsynchronous(asyncTry,
                 () -> invocation.runStageWithWorker(inv -> processCircuitBreakerStage(inv, asyncTry)));
         try {
             asyncTry.get(); // wait and only proceed on success
-            if (invocation.asyncResult.isDone()) { // maybe another try finished by now?
-                throw new TimeoutException();
-            }
+            //TODO this below check should not be needed since it only could be done from a another try which only riggers if this fails with an exception
+            // BUT need to remember that cancel can occur
+            invocation.timeoutIfConcludedConcurrently();
             return asyncTry;
         } catch (ExecutionException ex) {
             throw (Exception) ex.getCause();
@@ -334,18 +349,14 @@ public final class FaultTolerancePolicy implements Serializable {
                 Thread.interrupted(); // clear the flag
             }
             if (didTimeout.get() || System.currentTimeMillis() > timeoutTime) {
-                logger.info("throwing TimeoutException");
                 throw new TimeoutException();
             }
-            logger.info("returning "+resultValue);
             return resultValue;
         } catch (Exception ex) {
             if ((ex instanceof InterruptedException || ex.getCause() instanceof InterruptedException)
                     && System.currentTimeMillis() > timeoutTime) {
-                logger.info("throwing TimeoutException after interrupted");
                 throw new TimeoutException(ex); 
             }
-            logger.info("throwing a "+ex.getClass().getSimpleName());
             throw ex;
         } finally {
             timeout.cancel(true);
@@ -374,6 +385,7 @@ public final class FaultTolerancePolicy implements Serializable {
         BulkheadSemaphore waitingQueueSemaphore = invocation.execution.getWaitingQueueSemaphoreOf(bulkhead.waitingTaskQueue, invocation.context);
         if (waitingQueueSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
             try {
+                invocation.timeoutIfConcludedConcurrently(); // avoid execution if not needed
                 executionSemaphore.acquire(); // block until execution permit becomes available
             } catch (InterruptedException ex) {
                 waitingQueueSemaphore.release();
@@ -393,9 +405,8 @@ public final class FaultTolerancePolicy implements Serializable {
      * Stage where the actual wrapped method call occurs.
      */
     private Object processMethodCallStage(FaultToleranceInvocation invocation) throws Exception {
-        if (isAsynchronous() && invocation.asyncResult.isDone()) {
-             throw new TimeoutException();
-        }
+        invocation.timeoutIfConcludedConcurrently();
         return invocation.context.proceed();
     }
+
 }

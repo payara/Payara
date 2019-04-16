@@ -1,5 +1,6 @@
 package fish.payara.microprofile.faulttolerance;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -8,10 +9,15 @@ import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 public interface FaultToleranceExecution {
+
+    FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes);
+
+    FaultToleranceMetrics getMetrics(InvocationContext context);
 
     CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context);
 
@@ -30,7 +36,7 @@ public interface FaultToleranceExecution {
 
     Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, InvocationContext context, Exception exception) throws Exception;
 
-    Object fallbackInvoke(String fallbackMethod, InvocationContext context) throws Exception;
+    Object fallbackInvoke(Method fallbackMethod, InvocationContext context) throws Exception;
 
     void startTrace(String method, InvocationContext context);
 

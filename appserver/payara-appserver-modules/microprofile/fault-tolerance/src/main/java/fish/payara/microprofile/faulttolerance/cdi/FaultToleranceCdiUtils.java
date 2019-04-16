@@ -72,7 +72,6 @@ public class FaultToleranceCdiUtils {
      */
     public static <A extends Annotation> A getAnnotation(Stereotypes sterotypes, Class<A> annotationClass, 
             InvocationContext context) {
-        Class<?> annotatedClass = getAnnotatedMethodClass(context, annotationClass);
         logger.log(Level.FINER, "Attempting to get annotation {0} from {1}", 
                 new String[]{annotationClass.getSimpleName(), context.getMethod().getName()});
         // Try to get the annotation from the method, otherwise attempt to get it from the class
@@ -80,6 +79,7 @@ public class FaultToleranceCdiUtils {
             logger.log(Level.FINER, "Annotation was directly present on the method");
             return context.getMethod().getAnnotation(annotationClass);
         }
+        Class<?> annotatedClass = getAnnotatedMethodClass(context, annotationClass);
         if (annotatedClass.isAnnotationPresent(annotationClass)) {
             logger.log(Level.FINER, "Annotation was directly present on the class");
             return annotatedClass.getAnnotation(annotationClass);
@@ -88,13 +88,13 @@ public class FaultToleranceCdiUtils {
             return null;
         }
         logger.log(Level.FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
-        // Account for Stereotypes
         for (Annotation annotation : annotatedClass.getAnnotations()) {
             Class<? extends Annotation> annotationType = annotation.annotationType();
             if (annotationType == annotationClass) {
                 logger.log(Level.FINER, "Annotation was found in a stereotype");
                 return annotationClass.cast(annotation);
             }
+            // Account for Stereotypes
             if (sterotypes.isStereotype(annotationType)) {
                 for (Annotation metaAnnotation : sterotypes.getStereotypeDefinition(annotationType)) {
                     if (metaAnnotation.annotationType() == annotationClass) {
@@ -118,6 +118,7 @@ public class FaultToleranceCdiUtils {
      * @param parameterType The type of the parameter to get the override value of
      * @return 
      */
+    @Deprecated //TODO remove with validators
     public static <A extends Annotation, T> Optional<T> getOverrideValue(Config config, Class<A> annotationClass, 
             String parameterName, String annotatedMethodName, String annotatedClassCanonicalName, Class<T> parameterType) {
         Optional<T> value = Optional.empty();
@@ -159,56 +160,15 @@ public class FaultToleranceCdiUtils {
      * Gets overriding config parameter values if they're present from an invocation context.
      * @param <A> The annotation type
      * @param config The config to get the overriding parameter values from
-     * @param annotationClass The annotation class
+     * @param annotationType The annotation class
      * @param parameterName The name of the parameter to get the override value of
      * @param context The context of the invoking request
      * @param parameterType The type of the parameter to get the override value of
      * @return 
      */
-    public static <A extends Annotation, T> Optional<T> getOverrideValue(Config config, Class<A> annotationClass, 
-            String parameterName, InvocationContext context, Class<T> parameterType) {
-        Optional<T> value = Optional.empty();
-
-        // Get the annotation, method, and class names
-        String annotationName = annotationClass.getSimpleName();
-        String annotatedMethodName = context.getMethod().getName();
-        String annotatedClassCanonicalName = getAnnotatedMethodClassCanonicalName(
-                getAnnotatedMethodClass(context, annotationClass));
-
-        // Check if there's a config override
-        if (config != null) {
-            logger.log(Level.FINER, "Getting config override for annotated method...");
-
-            // Check if there's a config override for this specific method
-            value = config.getOptionalValue(annotatedClassCanonicalName + "/" 
-                    + annotatedMethodName + "/" + annotationName + "/" + parameterName, parameterType);
-
-            if (!value.isPresent()) {
-                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
-                        + "annotated directly...");
-                // If the method is annotated directly, check for a global level override and return
-                if (context.getMethod().getAnnotation(annotationClass) != null) {
-                    logger.log(Level.FINER, "Method is annotated directly, checking for global override...");
-                    // The only thing that should override a method-level annotation is a method or global-level config
-                    return checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
-                }
-
-                // If the method wasn't annotated directly, check if there's an override for the class
-                if (!value.isPresent()) {
-                    value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, parameterName, 
-                            parameterType, config);
-
-                    // If there wasn't a config override for the class, check if there's a global one
-                    if (!value.isPresent()) {
-                        value = checkForGlobalLevelOverride(annotationName, parameterName, parameterType, config);
-                    }
-                }
-            }
-        } else {
-            logger.log(Level.FINE, "No config to get override parameters from.");
-        }
-
-        return value;
+    public static <A extends Annotation, T> T getOverrideValue(Config config, Class<A> annotationType,
+            String parameterName, InvocationContext context, Class<T> parameterType, T defaultValue) {
+        return getOverrideValue(config, context, annotationType, parameterName, parameterType, defaultValue, true);
     }
 
     /**
@@ -217,123 +177,39 @@ public class FaultToleranceCdiUtils {
      * 
      * @param <A> The annotation type
      * @param config The config to get the overriding enabled value from
-     * @param annotationClass The annotation class
+     * @param annotationType The annotation class
      * @param context The context of the invoking request
      * @return 
      */
-    public static <A extends Annotation> Optional<Boolean> getEnabledOverrideValue(Config config, Class<A> annotationClass,
-            InvocationContext context) {
-        Optional<Boolean> value = Optional.empty();
+    public static <A extends Annotation> boolean getEnabledOverrideValue(Config config, Class<A> annotationType,
+            InvocationContext context, boolean defaultValue) {
+        return getOverrideValue(config, context, annotationType, "enabled", Boolean.class, defaultValue, false);
+    }
 
-        // Get the annotation, method, and class names
-        String annotationName = annotationClass.getSimpleName();
-        String annotatedMethodName = context.getMethod().getName();
-        String annotatedClassCanonicalName = getAnnotatedMethodClassCanonicalName(
-                getAnnotatedMethodClass(context, annotationClass));
+    private static <T, A extends Annotation> T getOverrideValue(Config config, InvocationContext context,
+            Class<A> annotationType, String propertyName, Class<T> resultType, T defaultValue,
+            boolean requiresAnnotation) {
+        Class<?> targetClass = getAnnotatedMethodClass(context, annotationType);
+        String annotationName = annotationType.getSimpleName();
+        String methodName = context.getMethod().getName();
+        String className = getPlainCanonicalName(targetClass);
 
-        // Check if there's a config override
-        if (config != null) {
-            logger.log(Level.FINER, "Getting config override for annotated method...");
-
-            // Check if there's a config override for this specific method
-            value = config.getOptionalValue(annotatedClassCanonicalName + "/" 
-                    + annotatedMethodName + "/" + annotationName + "/" + "enabled", Boolean.class);
-
-            if (!value.isPresent()) {
-                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
-                        + "annotated directly...");
-                // If the method is annotated directly, check for a cless or global-level override
-                if (context.getMethod().getAnnotation(annotationClass) != null) {
-                    logger.log(Level.FINER, "Method is annotated directly, checking for class or global override...");
-                    checkAnnotatedMethodForEnabledOverride(annotatedClassCanonicalName, annotationName, config);
-                }
-
-                // If the method wasn't annotated directly, check if there's an override for the class
-                if (!value.isPresent()) {
-                    value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
-                            Boolean.class, config);
-
-                    // If there wasn't a config override for the class, check if there's a global one
-                    if (!value.isPresent()) {
-                        value = checkForGlobalLevelOverride(annotationName, "enabled", Boolean.class, config);
-                    }
-                }
+        String key = String.format("%s/%s/%s/%s", className, methodName, annotationName, propertyName);
+        Optional<T> overrideValue = config.getOptionalValue(key, resultType);
+        boolean methodAnnotated = context.getMethod().isAnnotationPresent(annotationType);
+        if (overrideValue.isPresent() && (!requiresAnnotation || methodAnnotated)) {
+            return overrideValue.get();
+        }
+        if (!requiresAnnotation || !methodAnnotated) {
+            key = String.format("%s/%s/%s", className, annotationName, propertyName);
+            overrideValue = config.getOptionalValue(key, resultType);
+            if (overrideValue.isPresent() && (!requiresAnnotation || targetClass.isAnnotationPresent(annotationType))) {
+                return overrideValue.get();
             }
-        } else {
-            logger.log(Level.FINE, "No config to get override parameters from.");
         }
-
-        return value;
-    }
-
-    /**
-     * Helper method that logs whether an override was found.
-     * @param value The Optional value to check if an override was found for
-     * @param level A String denoting the level of override you were checking for
-     */
-    private static void logOverride(Optional<?> value, String level) {
-        if (value.isPresent()) {
-            logger.log(Level.FINER, "{0} override found.", level);
-        } else {
-            logger.log(Level.FINER, "No config overrides.");
-        }
-    }
-
-    /**
-     * Helper method that checks if a directly annotated method has a class or global-level override for the enabled 
-     * parameter. This gets its own method as the enabled parameter has a different override priority.
-     * @param annotatedClassCanonicalName The canonical name of the annotated class
-     * @param annotationName The name of the annotation
-     * @param config The config to get the overriding enabled value from
-     * @return An overriding enabled value if there is one
-     */
-    private static Optional<Boolean> checkAnnotatedMethodForEnabledOverride(String annotatedClassCanonicalName, 
-            String annotationName, Config config) {
-        Optional<Boolean> value = checkForClassLevelOverride(annotatedClassCanonicalName, annotationName, "enabled", 
-                Boolean.class, config);
-
-        if (!value.isPresent()) {
-            value = checkForGlobalLevelOverride(annotationName,  "enabled", Boolean.class, config);
-        }
-
-        return value;
-    }
-
-    /**
-     * Helper method that checks if there is an override for a parameter at the class level.
-     * @param annotatedClassCanonicalName The canonical name of the annotated class
-     * @param annotationName The name of the annotation
-     * @param parameterName The name of the parameter
-     * @param parameterType The parameter class
-     * @param config The config to get the overriding value from
-     * @return An overriding value for the provided parameter if there is one
-     */
-    private static <T> Optional<T> checkForClassLevelOverride(String annotatedClassCanonicalName, String annotationName, 
-            String parameterName, Class<T> parameterType, Config config) {
-        logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
-                + "annotated class...");
-        Optional<T> value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName 
-                + "/" + parameterName, parameterType);
-        logOverride(value, "Class-level");
-
-        return value;
-    }
-
-    /**
-     * Helper method that checks if there is an override for a parameter at the global level.
-     * @param annotationName The name of the annotation
-     * @param parameterName The name of the parameter
-     * @param parameterType The parameter class
-     * @param config The config to get the overriding value from
-     * @return 
-     */
-    private static <T> Optional<T> checkForGlobalLevelOverride(String annotationName, String parameterName, Class<T> parameterType, 
-            Config config) {
-        logger.log(Level.FINER, "No config override for annotated class, checking for global override.");
-        Optional<T> value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
-        logOverride(value, "Global");
-
-        return value;
+        key = String.format("%s/%s", annotationName, propertyName);
+        overrideValue = config.getOptionalValue(key, resultType);
+        return overrideValue.orElse(defaultValue);
     }
 
     /**
@@ -347,7 +223,6 @@ public class FaultToleranceCdiUtils {
     public static <A extends Annotation> Class<?> getAnnotatedMethodClass(InvocationContext context, 
             Class<A> annotationClass) {
         Class<?> targetClass = context.getTarget().getClass();
-
         if (targetClass.isAnnotationPresent(annotationClass)) {
             return targetClass;
         }
@@ -358,18 +233,17 @@ public class FaultToleranceCdiUtils {
      * Helper method that gets the canonical name of an annotated class. This is used to strip out any Weld proxy
      * naming that gets appended to the real class name.
      * @param <A> The class of the annotation
-     * @param annotatedClass The class of the annotation
+     * @param type The class of the annotation
      * @return The canonical name of the annotated method's class
      */
-    public static <A extends Annotation> String getAnnotatedMethodClassCanonicalName(Class<?> annotatedClass) {
-        String canonicalClassName = annotatedClass.getCanonicalName();
-
+    public static <A extends Annotation> String getPlainCanonicalName(Class<?> type) {
+        String canonicalName = type.getCanonicalName();
         // If the class was a proxy from Weld, cut away the appended gubbins
         // Author Note: There's probably a better way of doing this...
-        if (canonicalClassName.contains("$Proxy$_$$_WeldSubclass")) {
-            return canonicalClassName.split("\\$Proxy\\$_\\$\\$_WeldSubclass")[0];
+        if (canonicalName.contains("$Proxy$_$$_WeldSubclass")) {
+            return canonicalName.split("\\$Proxy\\$_\\$\\$_WeldSubclass")[0];
         }
-        return canonicalClassName;
+        return canonicalName;
     }
 
     /**
@@ -381,7 +255,7 @@ public class FaultToleranceCdiUtils {
      */
     public static <A extends Annotation> String getFullAnnotatedMethodSignature(InvocationContext context,
             Class<A> annotationClass) {
-        return getAnnotatedMethodClassCanonicalName(getAnnotatedMethodClass(context, annotationClass)) + "." 
+        return getPlainCanonicalName(getAnnotatedMethodClass(context, annotationClass)) + "." 
                 + context.getMethod().getName();
     }
 }

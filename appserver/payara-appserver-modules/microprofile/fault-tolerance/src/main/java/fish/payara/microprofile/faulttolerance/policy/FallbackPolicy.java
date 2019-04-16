@@ -10,6 +10,7 @@ import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import javassist.Modifier;
 
 /**
  * The resolved "cached" information of a {@link Fallback} annotation an a specific method.
@@ -20,24 +21,24 @@ public final class FallbackPolicy extends Policy {
     public final String fallbackMethod;
     public final Method method;
 
-    public FallbackPolicy(Method method, Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
+    public FallbackPolicy(Method annotated, Class<? extends FallbackHandler<?>> value, String fallbackMethod) {
         checkUnambiguous(value, fallbackMethod);
-        if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
-            checkReturnsSameAs(method, Fallback.class, "fallbackMethod", method.getDeclaringClass(), fallbackMethod, 
-                    method.getParameterTypes());
-            try {
-                this.method = method.getDeclaringClass().getDeclaredMethod(fallbackMethod, method.getParameterTypes());
-            } catch (NoSuchMethodException | SecurityException e) {
-                throw new FaultToleranceDefinitionException(e);
-            }
-        } else {
-            this.method = null;
-        }
         this.value = value;
-        if (isHandlerPresent()) {
-            checkReturnsSameAs(method, Fallback.class, "value", value, "handle", ExecutionContext.class);
-        }
         this.fallbackMethod = fallbackMethod;
+        if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
+            method = MethodLookupUtils.findMethodWithMatchingNameAndArguments(fallbackMethod, annotated);
+            if (method == null) {
+                throw new FaultToleranceDefinitionException("Fallback method \"" + fallbackMethod + "\" not defined for "
+                        + annotated.getDeclaringClass().getName());
+            }
+            checkReturnsSameAs(annotated, Fallback.class, "fallbackMethod", method);
+            checkAccessible(annotated, method);
+        } else {
+            method = null;
+        }
+        if (isHandlerPresent()) {
+            checkReturnsSameAs(annotated, Fallback.class, "value", value, "handle", ExecutionContext.class);
+        }
     }
 
     public static FallbackPolicy create(InvocationContext context, FaultToleranceConfig config) {
@@ -56,7 +57,18 @@ public final class FallbackPolicy extends Policy {
         }
     }
 
+    private static void checkAccessible(Method annotated, Method fallback) {
+        boolean samePackage = fallback.getDeclaringClass().getPackage().equals(annotated.getDeclaringClass().getPackage());
+        boolean sameClass = fallback.getDeclaringClass().equals(annotated.getDeclaringClass());
+        if (Modifier.isPackage(fallback.getModifiers()) && !samePackage
+                || Modifier.isPrivate(fallback.getModifiers()) && !sameClass) {
+            throw new FaultToleranceDefinitionException(describe(annotated, Fallback.class, "fallbackMethod")
+                    + "that refers to a method that is not accessible.");
+        }
+    }
+
     public boolean isHandlerPresent() {
         return value != null && value != Fallback.DEFAULT.class;
     }
+
 }

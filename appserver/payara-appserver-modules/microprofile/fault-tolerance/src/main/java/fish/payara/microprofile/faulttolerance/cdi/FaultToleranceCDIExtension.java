@@ -41,6 +41,7 @@ package fish.payara.microprofile.faulttolerance.cdi;
 
 import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceBehaviour;
 import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceInterceptor;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -82,7 +83,7 @@ public class FaultToleranceCDIExtension implements Extension {
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, 
             BeanManager beanManager) throws Exception {
-        mark(processAnnotatedType);
+        validateAndMark(processAnnotatedType);
     }
 
     /**
@@ -91,10 +92,11 @@ public class FaultToleranceCDIExtension implements Extension {
      * 
      * @param processAnnotatedType type currently processed
      */
-    private static <T> void mark(ProcessAnnotatedType<T> processAnnotatedType) {
+    private static <T> void validateAndMark(ProcessAnnotatedType<T> processAnnotatedType) {
         boolean markAllMethods = isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
         for (AnnotatedMethodConfigurator<?> methodConfigurator : processAnnotatedType.configureAnnotatedType().methods()) {
             if (markAllMethods || isAnnotaetdWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
+                FaultTolerancePolicy.asAnnotated(methodConfigurator.getAnnotated().getJavaMember());
                 methodConfigurator.add(MARKER);
             }
         }

@@ -16,7 +16,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 public final class CircuitBreakerPolicy extends Policy {
 
     static final Logger logger = Logger.getLogger(CircuitBreakerPolicy.class.getName());
-    
+
     public final Class<? extends Throwable>[] failOn;
     public final long delay;
     public final ChronoUnit delayUnit;

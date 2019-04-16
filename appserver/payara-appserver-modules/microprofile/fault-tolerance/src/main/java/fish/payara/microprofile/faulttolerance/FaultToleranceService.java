@@ -39,8 +39,12 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.cdi.CdiFaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
+import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
+import fish.payara.microprofile.faulttolerance.policy.FallbackPolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
@@ -117,7 +121,7 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
     private final Map<String, FaultToleranceApplicationState> stateByApplication = new ConcurrentHashMap<>();
     private ManagedScheduledExecutorService defaultScheduledExecutorService;
     private ManagedExecutorService defaultExecutorService;
-    
+
     @PostConstruct
     public void postConstruct() throws NamingException {
         events.register(this);
@@ -136,6 +140,20 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info.getName());
         }
+    }
+
+    @Override
+    public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
+        FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
+        return appState.getConfig()
+                .updateAndGet(config -> config != null ? config : new CdiFaultToleranceConfig(null, stereotypes));
+    }
+
+    @Override
+    public FaultToleranceMetrics getMetrics(InvocationContext context) {
+        FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
+        return appState.getMetrics()
+                .updateAndGet(metrics -> metrics != null ? metrics : new CdiFaultToleranceMetrics(null));
     }
 
     //TODO use the scheduler to schedule a clean of FT Info
@@ -202,7 +220,7 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
      * @param context The context of the current invocation
      * @return The application name
      */
-    private String getApplicationName(InvocationContext context) {
+    private String getApplicationContext(InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         String appName = currentInvocation.getAppName();
         if (appName != null) {
@@ -267,19 +285,19 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
 
     @Override
     public CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context) {
-        return getCircuitBreakerState(getApplicationName(context), context.getTarget(),
+        return getCircuitBreakerState(getApplicationContext(context), context.getTarget(),
                 context.getMethod(), requestVolumeThreshold);
     }
 
     @Override
     public BulkheadSemaphore getExecutionSemaphoreOf(int maxConcurrentThreads, InvocationContext context) {
-        return getBulkheadExecutionSemaphore(getApplicationName(context),
+        return getBulkheadExecutionSemaphore(getApplicationContext(context),
                 context.getTarget(), context.getMethod(), maxConcurrentThreads);
     }
 
     @Override
     public BulkheadSemaphore getWaitingQueueSemaphoreOf(int queueCapacity, InvocationContext context) {
-        return getBulkheadExecutionQueueSemaphore(getApplicationName(context),
+        return getBulkheadExecutionQueueSemaphore(getApplicationContext(context),
                 context.getTarget(), context.getMethod(), queueCapacity);
     }
 
@@ -332,14 +350,13 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
     }
 
     @Override
-    public Object fallbackInvoke(String fallbackMethod, InvocationContext context) throws Exception {
+    public Object fallbackInvoke(Method fallbackMethod, InvocationContext context) throws Exception {
         try {
-        return FaultToleranceCdiUtils.getAnnotatedMethodClass(context, Fallback.class)
-            .getDeclaredMethod(fallbackMethod, context.getMethod().getParameterTypes())
-            .invoke(context.getTarget(), context.getParameters());
+            fallbackMethod.setAccessible(true);
+            return fallbackMethod.invoke(context.getTarget(), context.getParameters());
         } catch (InvocationTargetException e) {
             throw (Exception) e.getTargetException();
-        } catch (IllegalAccessException | NoSuchMethodException e) {
+        } catch (IllegalAccessException e) {
             throw new FaultToleranceDefinitionException(e); // should not happen as we validated
         }
     }
