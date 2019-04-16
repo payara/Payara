@@ -129,12 +129,14 @@ class ClusterScopeContext implements Context {
      * 
      * @param bean       the bean to reference.
      * @param annotation the Clustered annotation to reference.
+     * @throws IllegalArgumentException if no name can be found for the bean.
      */
     static <TT> String getBeanName(Bean<TT> bean, Clustered annotation) {
-        return Optional.fromNullable(annotation.keyName())
-                .or(Optional.fromNullable(bean.getName()))
-                .or(Optional.fromNullable(bean.getBeanClass().getName()))
-                .orNull();
+        try {
+            return firstNonNull(annotation.keyName(), bean.getName(), bean.getBeanClass().getName());
+        } catch (Throwable t) {
+            throw new IllegalArgumentException("Could not find the name for bean: " + bean.toString(), t);
+        }
     }
 
     static <TT> Clustered getAnnotation(BeanManager beanManager, Bean<TT> bean) {
@@ -143,5 +145,14 @@ class ClusterScopeContext implements Context {
 
     static <TT> Clustered getAnnotation(BeanManager beanManager, Class<?> clazz) {
         return CdiUtils.getAnnotation(beanManager, clazz, Clustered.class).get();
+    }
+
+    private static String firstNonNull(String... items) {
+        for (String i : items) {
+            if (i != null && !i.isEmpty()) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("All elements were null.");
     }
 }

@@ -82,14 +82,14 @@ public class ClusterScopeContextTest {
 
     @Test
     public void when_key_name_empty_expect_correct_getBeanName() {
-        when(annotation.keyName()).thenReturn(null);
+        when(annotation.keyName()).thenReturn("");
         assertEquals(CDI_BEAN_NAME, ClusterScopeContext.getBeanName(bean, annotation));
     }
 
     @Test
     public void when_key_name_and_bean_name_empty_expect_correct_getBeanName() {
         when(annotation.keyName()).thenReturn(null);
-        when(bean.getName()).thenReturn(null);
+        when(bean.getName()).thenReturn("");
         assertEquals("java.lang.Object", ClusterScopeContext.getBeanName(bean, annotation));
     }
 
