@@ -39,20 +39,24 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.google.common.base.Optional;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import fish.payara.cluster.Clustered;
-import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 import java.lang.annotation.Annotation;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+
+import com.google.common.base.Optional;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
+
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.soteria.cdi.CdiUtils;
+
+import fish.payara.cluster.Clustered;
+import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScoped;
 
 /**
  * @Clustered singleton CDI context implementation
@@ -125,28 +129,12 @@ class ClusterScopeContext implements Context {
      * 
      * @param bean       the bean to reference.
      * @param annotation the Clustered annotation to reference.
-     * @throws IllegalArgumentException if no name can be found for the bean.
      */
     static <TT> String getBeanName(Bean<TT> bean, Clustered annotation) {
-        // Check the annotation keyName
-        String beanName = annotation.keyName();
-        if (beanName != null && !beanName.isEmpty()) {
-            return beanName;
-        }
-
-        // Check the CDI bean name
-        beanName = bean.getName();
-        if (beanName != null && !beanName.isEmpty()) {
-            return beanName;
-        }
-
-        // Check the bean class name
-        beanName = bean.getBeanClass().getName();
-        if (beanName != null && !beanName.isEmpty()) {
-            return beanName;
-        }
-
-        throw new IllegalArgumentException("Could not find the name for bean: " + bean.toString());
+        return Optional.fromNullable(annotation.keyName())
+                .or(Optional.fromNullable(bean.getName()))
+                .or(Optional.fromNullable(bean.getBeanClass().getName()))
+                .orNull();
     }
 
     static <TT> Clustered getAnnotation(BeanManager beanManager, Bean<TT> bean) {
