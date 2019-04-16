@@ -81,15 +81,27 @@ public class ClusterScopeContextTest {
     }
 
     @Test
+    public void when_key_name_null_expect_correct_getBeanName() {
+        when(annotation.keyName()).thenReturn(null);
+        assertEquals(CDI_BEAN_NAME, ClusterScopeContext.getBeanName(bean, annotation));
+    }
+
+    @Test
     public void when_key_name_empty_expect_correct_getBeanName() {
         when(annotation.keyName()).thenReturn("");
         assertEquals(CDI_BEAN_NAME, ClusterScopeContext.getBeanName(bean, annotation));
     }
 
     @Test
-    public void when_key_name_and_bean_name_empty_expect_correct_getBeanName() {
+    public void when_key_name_blank_expect_correct_getBeanName() {
+        when(annotation.keyName()).thenReturn(" ");
+        assertEquals(CDI_BEAN_NAME, ClusterScopeContext.getBeanName(bean, annotation));
+    }
+
+    @Test
+    public void when_key_name_and_bean_name_null_expect_correct_getBeanName() {
         when(annotation.keyName()).thenReturn(null);
-        when(bean.getName()).thenReturn("");
+        when(bean.getName()).thenReturn(null);
         assertEquals("java.lang.Object", ClusterScopeContext.getBeanName(bean, annotation));
     }
 

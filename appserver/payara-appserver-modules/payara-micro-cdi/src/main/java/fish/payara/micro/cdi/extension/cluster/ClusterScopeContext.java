@@ -149,7 +149,7 @@ class ClusterScopeContext implements Context {
 
     private static String firstNonNull(String... items) {
         for (String i : items) {
-            if (i != null && !i.isEmpty()) {
+            if (i != null && !i.trim().isEmpty()) {
                 return i;
             }
         }
