@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
 
@@ -55,7 +55,7 @@
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
 
     <properties>
-      <libpam4j.version>3.5.0</libpam4j.version>
+      <libpam4j.jna.version>4.5.2</libpam4j.jna.version>
     </properties>
 
     <build>
@@ -84,7 +84,7 @@
                              in the final bundle
                         -->
                         <!-- Exclude unnecessary imports -->
-                        <Export-Package>*;version=${libpam4j.version}</Export-Package>
+                        <Export-Package>*;version=${libpam4j.jna.version}</Export-Package>
                         <Private-Package>!*</Private-Package>
                         <!-- Make it an HK2 module, as GlassFish needs it to be HK2 module.
                          This is needed because we don't want to change the packaging type to
@@ -122,7 +122,7 @@
         <dependency>
             <groupId>org.kohsuke</groupId>
             <artifactId>libpam4j</artifactId>
-            <version>1.7</version>
+            <version>1.11</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

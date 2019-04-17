@@ -14,7 +14,6 @@ target/
 .idea
 .DS_Store
 gfbuild.log
-/nucleus/payara-modules/requesttracing-core/nbproject/
 nb-configuration.xml
 /appserver/tests/quicklook/classes/
 /appserver/tests/quicklook/dist/
@@ -22,8 +21,6 @@ nb-configuration.xml
 /appserver/tests/quicklook/*.output
 /appserver/tests/quicklook/**/*.war
 *.log
-/nucleus/payara-modules/nucleus-microprofile/config-service/nbproject/
 appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
-/nucleus/payara-modules/service-exemplar/nbproject/
-/nucleus/admin/server-mgmt/nbproject/
 appserver/tests/quicklook/quicklook_summary.txt
+**/nbproject

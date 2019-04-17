@@ -50,12 +50,12 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class InfoImpl extends ExtensibleImpl<Info> implements Info {
 
-    protected String title;
-    protected String description;
-    protected String termsOfService;
-    protected Contact contact;
-    protected License license;
-    protected String version;
+    private String title;
+    private String description;
+    private String termsOfService;
+    private Contact contact;
+    private License license;
+    private String version;
 
     @Override
     public String getTitle() {

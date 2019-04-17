@@ -54,10 +54,10 @@ import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 
 public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements RequestBody {
 
-    protected String description;
-    protected Content content = new ContentImpl();
-    protected Boolean required;
-    protected String ref;
+    private String description;
+    private Content content = new ContentImpl();
+    private Boolean required;
+    private String ref;
 
     @Override
     public String getDescription() {

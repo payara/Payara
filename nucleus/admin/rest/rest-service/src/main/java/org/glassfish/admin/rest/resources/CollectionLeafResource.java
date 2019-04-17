@@ -340,8 +340,9 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack
-    private Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
+    // Ugly, temporary hack 
+    //"There's nothing more permanent than a temporary solution" - Russian Proverb
+    protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
         Map<String, String> results = new HashMap<String, String>();
         StringBuilder options = new StringBuilder();
         String sep = "";
@@ -353,8 +354,19 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
 
                 String value = entry.getValue();
-                if (value != null && !value.isEmpty() || key != null && key.startsWith("-D")) {
-                    options.append("=").append(entry.getValue());
+                
+                if (key != null && !key.trim().isEmpty() && key.startsWith("-D")) {    
+                    if (value == null) {
+                        value = "";
+                    } else if(value.contains("=")) {
+                        value = value.replaceAll("=", "");
+                    }
+                 
+                    if (key.endsWith("=")) {                   
+                        options.append(value);
+                    } else if(!key.contains("=")) {
+                        options.append("=").append(value);
+                    }
                 }
                 sep = ":";
             }

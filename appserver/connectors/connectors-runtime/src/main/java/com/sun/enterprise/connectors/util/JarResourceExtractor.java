@@ -52,7 +52,7 @@ import java.util.logging.Level;
 /**
  * JarResourceExtractor: JarResourceExtractor maps all resources included in a Zip or Jar file.
  * Additionaly, it provides a method to extract one as a blob.
- * 
+ *
  * @author Sivakumar Thyagarajan
  */
 
@@ -61,21 +61,21 @@ public final class JarResourceExtractor {
 
     //resourceName as String Vs contents as byte[]
     private Hashtable htJarContents = new Hashtable();
-    
+
     /**
      * creates a JarResourceExtractor. It extracts all resources from a Jar into an
      * internal hashtable, keyed by resource names.
-     * 
+     *
      * @param jarFileName
      *            a jar or zip file
      */
     public JarResourceExtractor(String jarFileName) {
         init(jarFileName);
     }
-    
+
     /**
      * Extracts a jar resource as a blob.
-     * 
+     *
      * @param name
      *            a resource name.
      */
@@ -85,33 +85,21 @@ public final class JarResourceExtractor {
         }
         return (byte[]) htJarContents.get(name);
     }
-    
+
     /** initializes internal hash tables with Jar file resources. */
     private void init(String jarFileName) {
-        ZipInputStream zis = null;
-        try {
-            //extract resources and put them into the hashtable.
-            FileInputStream fis = new FileInputStream(jarFileName);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            zis = new ZipInputStream(bis);
+        //extract resources and put them into the hashtable.
+        try (ZipInputStream zis =
+                 new ZipInputStream(new BufferedInputStream(new FileInputStream(jarFileName)))) {
             extractResources(zis);
         } catch (Exception ex){
-            ex.printStackTrace();
-        }finally{
-            if(zis != null){
-                try{
-                    zis.close();
-                }catch(Exception e){}
+            if(_logger.isLoggable(Level.WARNING)) {
+                _logger.log(Level.WARNING, "ExtractResources failed.", ex);
             }
         }
-        
     }
-    
-    /**
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    private void extractResources(ZipInputStream zis) throws FileNotFoundException, IOException {
+
+    private void extractResources(ZipInputStream zis) throws IOException {
         ZipEntry ze = null;
         while ((ze = zis.getNextEntry()) != null) {
             if(_logger.isLoggable(Level.FINER)) {
@@ -120,11 +108,7 @@ public final class JarResourceExtractor {
             extractZipEntryContents(ze, zis);
         }
     }
-    
-    /**
-     * @param zis
-     * @throws IOException
-     */
+
     private void extractZipEntryContents(ZipEntry ze, ZipInputStream zis) throws IOException {
             if (ze.isDirectory()) {
                 return;
@@ -157,19 +141,19 @@ public final class JarResourceExtractor {
                 }
             }
     }
-    
+
     private byte[] getZipEntryContents(ZipEntry ze, ZipInputStream zis) throws IOException{
         int size = (int) ze.getSize();
-        
+
         byte[] b = null;
         // -1 means unknown size.
         if (size != -1) {
             //got a proper size, read 'size' bytes
             b = new byte[(int) size];
-            
+
             int rb = 0;
             int chunk = 0;
-            
+
             while (((int) size - rb) > 0) {
                 chunk = zis.read(b, rb, (int) size - rb);
                 if (chunk == -1) {
@@ -193,7 +177,7 @@ public final class JarResourceExtractor {
                 b[i] = btArr[i].byteValue();
             }
         }
-        
+
         return b;
     }
 }

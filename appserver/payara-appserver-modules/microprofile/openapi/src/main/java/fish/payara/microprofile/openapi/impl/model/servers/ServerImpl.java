@@ -52,9 +52,9 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
-    protected String url;
-    protected String description;
-    protected Map<String, ServerVariable> variables;
+    private String url;
+    private String description;
+    private Map<String, ServerVariable> variables;
 
     @Override
     public String getUrl() {

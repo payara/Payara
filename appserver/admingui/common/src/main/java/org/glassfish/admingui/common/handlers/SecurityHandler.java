@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.handlers;
 
@@ -82,7 +82,12 @@ public class SecurityHandler {
         handlerCtx.setOutputValue("realmClasses", realmClassList);
         handlerCtx.setOutputValue("classnameOption", "predefine");
         Map attrMap = new HashMap();
+        attrMap.put("fileJaax", "fileRealm");
+        attrMap.put("ldapJaax", "ldapRealm" );
+        attrMap.put("solarisJaax", "solarisRealm");
+        attrMap.put("jdbcJaax", "jdbcRealm");
         attrMap.put("predefinedClassname", Boolean.TRUE);
+        attrMap.put("createNew", true);
         handlerCtx.setOutputValue("attrMap", attrMap);
         handlerCtx.setOutputValue("properties", new ArrayList());
     }
@@ -237,7 +242,7 @@ public class SecurityHandler {
     public static void saveRealm(HandlerContext handlerCtx) {
         String option = (String) handlerCtx.getInputValue("classnameOption");
         List<Map<String,String>> propListOrig = (List)handlerCtx.getInputValue("propList");
-        List<Map<String,String>> propList = new ArrayList(propListOrig);
+        PropertyList propList = PropertyList.fromList(propListOrig);
         Map<String,String> attrMap = (Map)handlerCtx.getInputValue("attrMap");
         Boolean edit = (Boolean) handlerCtx.getInputValue("edit");
 
@@ -250,71 +255,69 @@ public class SecurityHandler {
             classname = attrMap.get("classname");
 
             if(classname.indexOf("FileRealm")!= -1){
-                putOptional(attrMap, propList, "file", "file");
-                putOptional(attrMap, propList, "jaas-context", "fileJaax");
-                putOptional(attrMap, propList, "assign-groups", "fileAsGroups");
+                propList.put( "file", attrMap, "file");
+                propList.put( "jaas-context", attrMap, "fileJaax");
+                propList.put( "assign-groups", attrMap, "fileAsGroups");
             }else
             if(classname.indexOf("LDAPRealm")!= -1){
-                putOptional(attrMap, propList, "jaas-context", "ldapJaax");
-                putOptional(attrMap, propList, "base-dn", "baseDn");
-                putOptional(attrMap, propList, "directory", "directory");
-                putOptional(attrMap, propList, "assign-groups", "ldapAsGroups");
+                propList.put( "jaas-context", attrMap, "ldapJaax");
+                propList.put( "base-dn", attrMap, "baseDn");
+                propList.put( "directory", attrMap, "directory");
+                propList.put( "assign-groups", attrMap, "ldapAsGroups");
             }else
             if(classname.indexOf("SolarisRealm")!= -1){
-                putOptional(attrMap, propList, "jaas-context", "solarisJaax");
-                putOptional(attrMap, propList, "assign-groups", "solarisAsGroups");
+                propList.put( "jaas-context", attrMap, "solarisJaax");
+                propList.put( "assign-groups", attrMap, "solarisAsGroups");
             }else
             if(classname.indexOf("PamRealm")!= -1){
-                putOptional(attrMap, propList, "jaas-context", "pamJaax");
+                propList.put( "jaas-context", attrMap, "pamJaax");
             }else
             if(classname.indexOf("JDBCRealm")!= -1){
-                putOptional(attrMap, propList, "jaas-context", "jdbcJaax");
-                putOptional(attrMap, propList, "datasource-jndi", "datasourceJndi");
-                putOptional(attrMap, propList, "user-table", "userTable");
-                putOptional(attrMap, propList, "user-name-column", "userNameColumn");
-                putOptional(attrMap, propList, "password-column", "passwordColumn");
-                putOptional(attrMap, propList, "group-table", "groupTable");
-                putOptional(attrMap, propList, "group-table-user-name-column", "groupTableUserName");
-                putOptional(attrMap, propList, "group-name-column", "groupNameColumn");
-                putOptional(attrMap, propList, "db-user", "dbUser");
-                putOptional(attrMap, propList, "db-password", "dbPassword");
-                putOptional(attrMap, propList, "digest-algorithm", "digestAlgorithm");
-                putOptional(attrMap, propList, "digestrealm-password-enc-algorithm", "pswdEncAlgorithm");
-                putOptional(attrMap, propList, "encoding", "encoding");
-                putOptional(attrMap, propList, "charset", "charset");
-                putOptional(attrMap, propList, "assign-groups", "jdbcAsGroups");
+                propList.put( "jaas-context", attrMap, "jdbcJaax");
+                propList.put( "datasource-jndi", attrMap, "datasourceJndi");
+                propList.put( "user-table", attrMap, "userTable");
+                propList.put( "user-name-column", attrMap, "userNameColumn");
+                propList.put( "password-column", attrMap, "passwordColumn");
+                propList.put( "group-table", attrMap, "groupTable");
+                propList.put( "group-table-user-name-column", attrMap, "groupTableUserName");
+                propList.put( "group-name-column", attrMap, "groupNameColumn");
+                propList.put( "db-user", attrMap, "dbUser");
+                propList.put( "db-password", attrMap, "dbPassword");
+                propList.put( "digest-algorithm", attrMap, "digestAlgorithm");
+                propList.put( "digestrealm-password-enc-algorithm", attrMap, "pswdEncAlgorithm");
+                propList.put( "encoding", attrMap, "encoding");
+                propList.put( "charset", attrMap, "charset");
+                propList.put( "assign-groups", attrMap, "jdbcAsGroups");
            }else {
                if(classname.indexOf("CertificateRealm")!= -1){
-                   putOptional(attrMap, propList, "assign-groups", "certAsGroups");
+                   propList.put( "assign-groups", attrMap, "certAsGroups");
                }
            }
         } else {
            classname = attrMap.get("classnameInput");
         }
 
-        String endpoint = (String) handlerCtx.getInputValue("endpoint");
         //for edit case, only properties will be changed since we don't allow classname change.
         //return the prop list so it can continue processing in the .jsf
         if (edit){
-            handlerCtx.setOutputValue("newPropList", propList);
+            handlerCtx.setOutputValue("newPropList", propList.toList());
             return;
         }
+
         Map<String, Object> cMap = new HashMap();
         cMap.put("name", attrMap.get("Name"));
         cMap.put("classname", classname);
-        StringBuilder sb = new StringBuilder();
-        for(Map oneProp: propList) {
-            if (GuiUtil.isEmpty( (String)oneProp.get("name")) || GuiUtil.isEmpty((String)oneProp.get("value"))){
-                continue;
-            }
-            sb.append(oneProp.get("name")).append("=");
-            String value = ((String) oneProp.get("value")).replaceAll("\\\\", "\\\\\\\\");
-            value = UtilHandlers.escapePropertyValue(value);
-            sb.append(value).append(":");
-        }
-        endpoint = endpoint + "/auth-realm";
         cMap.put(TARGET, attrMap.get(TARGET));
-        cMap.put("property", sb.toString());
+
+        if (Boolean.parseBoolean(attrMap.get("registerLoginModule"))) {
+            propList.put("jaas-context", attrMap, "loginModuleJaax");
+            cMap.put("login-module", attrMap.get("loginModuleClass"));
+        }
+
+        cMap.put("property", propList.toParamValue());
+
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        endpoint = endpoint + "/auth-realm";
         RestUtil.restRequest(endpoint, cMap, "post", handlerCtx, false);
       }catch(Exception ex){
           GuiUtil.handleException(handlerCtx, ex);

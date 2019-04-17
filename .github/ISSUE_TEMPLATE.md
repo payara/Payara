@@ -19,7 +19,8 @@
 
 <!-- 
 
-Describe the test to reproduce the bug in a series of steps. Make each step simple to follow by describing configuration changes, commands to run or simple instructions; for example:
+If possible it is always preferred if you host a test case as a maven project on Github that simply demonstrates the issue.
+If this is not appropriate then describe the test to reproduce the bug in a series of steps. Make each step simple to follow by describing configuration changes, commands to run or simple instructions; for example:
 
 1 -**  Start the domain
 

@@ -42,9 +42,7 @@
 
 package com.sun.common.util.logging;
 
-import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -58,19 +56,19 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import javax.inject.Inject;
-
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
+
+import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 
 /**
  * Implementation of Logging Commands
@@ -96,6 +94,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
+        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logStandardStreams", "true");
         DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
     }
 
@@ -201,7 +200,6 @@ public class LoggingConfigImpl implements LoggingConfig {
     @Override
     public synchronized Map<String, String> setLoggingProperties(Map<String, String> properties) throws IOException {
         loadLoggingProperties();
-        checkForLoggingProperties(properties);
         // need to map the name given to the new name in logging.properties file
         Map<String, String> m = getMap(properties);
         closePropFile();

@@ -105,12 +105,10 @@ public class AsynchronousInterceptor implements Serializable {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
             // this method
             if (faultToleranceService.isFaultToleranceEnabled(appName, config)
-                    && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+                    && (FaultToleranceCdiUtils.getEnabledOverrideValue( 
                             config, Asynchronous.class, invocationContext)
                             .orElse(Boolean.TRUE))) {
-                Callable callable = () -> {
-                    return invocationContext.proceed();
-                };
+                Callable<?> callable = () -> invocationContext.proceed();
                 logger.log(Level.FINER, "Proceeding invocation asynchronously");
                 proceededInvocationContext = new FutureDelegator(managedExecutorService.submit(callable));
             } else {
@@ -126,7 +124,7 @@ public class AsynchronousInterceptor implements Serializable {
             
             // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
             // propagate the exception upwards
-            if (fallback != null && ((Boolean) FaultToleranceCdiUtils.getEnabledOverrideValue(
+            if (fallback != null && (FaultToleranceCdiUtils.getEnabledOverrideValue(
                     config, Fallback.class, invocationContext)
                     .orElse(Boolean.TRUE))) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
@@ -175,15 +173,14 @@ public class AsynchronousInterceptor implements Serializable {
                 
                 // If the result of future.get() is still a future, get it again
                 if (proceededInvocation instanceof Future) {
-                    Future tempFuture = (Future) proceededInvocation;
+                    Future<?> tempFuture = (Future<?>) proceededInvocation;
                     proceededInvocation = tempFuture.get();
                 }
             } catch (InterruptedException | ExecutionException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
                     throw (FaultToleranceException) ex.getCause();
-                } else {
-                    throw ex;
                 }
+                throw ex;
             }
             
             return proceededInvocation;
@@ -198,15 +195,14 @@ public class AsynchronousInterceptor implements Serializable {
                 
                 // If the result of future.get() is still a future, get it again
                 if (proceededInvocation instanceof Future) {
-                    Future tempFuture = (Future) proceededInvocation;
+                    Future<?> tempFuture = (Future<?>) proceededInvocation;
                     proceededInvocation = tempFuture.get(timeout, unit);
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 if (ex.getCause() instanceof FaultToleranceException) {
                     throw new ExecutionException(ex.getCause());
-                } else {
-                    throw ex;
                 }
+                throw ex;
             }
             
             return proceededInvocation;

@@ -48,8 +48,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class LicenseImpl extends ExtensibleImpl<License> implements License {
 
-    protected String name;
-    protected String url;
+    private String name;
+    private String url;
 
     @Override
     public String getName() {

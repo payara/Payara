@@ -55,13 +55,13 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
-    protected String operationRef;
-    protected String operationId;
-    protected Map<String, Object> parameters = new HashMap<>();
-    protected Object requestBody;
-    protected String description;
-    protected String ref;
-    protected Server server;
+    private String operationRef;
+    private String operationId;
+    private Map<String, Object> parameters = new HashMap<>();
+    private Object requestBody;
+    private String description;
+    private String ref;
+    private Server server;
 
     @Override
     public Server getServer() {

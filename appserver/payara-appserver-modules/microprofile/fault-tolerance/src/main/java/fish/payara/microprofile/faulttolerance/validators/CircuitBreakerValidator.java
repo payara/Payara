@@ -59,22 +59,22 @@ public class CircuitBreakerValidator {
      */
     public static void validateAnnotation(CircuitBreaker circuitBreaker, AnnotatedMethod<?> annotatedMethod, 
             Config config) {
-        long delay = (Long) FaultToleranceCdiUtils.getOverrideValue(
+        long delay = FaultToleranceCdiUtils.getOverrideValue( 
                 config, CircuitBreaker.class, "delay", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(circuitBreaker.delay());
         
-        int requestVolumeThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int requestVolumeThreshold = FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "requestVolumeThreshold", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(circuitBreaker.requestVolumeThreshold());
         
-        double failureRatio = (Double) FaultToleranceCdiUtils.getOverrideValue(
+        double failureRatio = FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "failureRatio", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Double.class)
                 .orElse(circuitBreaker.failureRatio());
         
-        int successThreshold = (Integer) FaultToleranceCdiUtils.getOverrideValue(
+        int successThreshold = FaultToleranceCdiUtils.getOverrideValue(
                 config, CircuitBreaker.class, "successThreshold", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(circuitBreaker.successThreshold());

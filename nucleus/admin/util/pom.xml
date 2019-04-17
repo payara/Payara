@@ -161,5 +161,10 @@
             <artifactId>javax.json-api</artifactId>
             <version>${jsonp.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

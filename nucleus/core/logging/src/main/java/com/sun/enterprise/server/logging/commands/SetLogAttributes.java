@@ -40,14 +40,6 @@
 // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.server.logging.commands;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.inject.Inject;
-import javax.validation.ValidationException;
-
 import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -55,7 +47,12 @@ import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.inject.Inject;
+import javax.validation.ValidationException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -142,6 +139,7 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
         "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode",
         "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation",
+        "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams",
         "com.sun.enterprise.server.logging.UniformLogFormatter.ansiColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.infoColor",
         "com.sun.enterprise.server.logging.UniformLogFormatter.warnColor",

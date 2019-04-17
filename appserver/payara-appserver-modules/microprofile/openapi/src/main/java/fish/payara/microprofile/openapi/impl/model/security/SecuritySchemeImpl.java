@@ -52,16 +52,16 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implements SecurityScheme {
 
-    protected SecurityScheme.Type type;
-    protected String description;
-    protected String name;
-    protected String ref;
+    private SecurityScheme.Type type;
+    private String description;
+    private String name;
+    private String ref;
 
-    protected SecurityScheme.In in;
-    protected String scheme;
-    protected String bearerFormat;
-    protected OAuthFlows flows;
-    protected String openIdConnectUrl;
+    private SecurityScheme.In in;
+    private String scheme;
+    private String bearerFormat;
+    private OAuthFlows flows;
+    private String openIdConnectUrl;
 
     @Override
     public SecurityScheme.Type getType() {
