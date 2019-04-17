@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation]
 
 package com.sun.enterprise.admin.launcher;
 
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
+import com.sun.enterprise.util.JDK;
 import java.io.*;
 import java.util.*;
 
@@ -132,17 +134,23 @@ class JavaConfig {
         // options in one String -- the JVM will ignore the second option...
         // sample "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9999"
         List<String> empty = Collections.emptyList();
-        String s = map.get("debug-options");
+        String debugOptions = map.get("debug-options");
 
-        if(!GFLauncherUtils.ok(s)) {
+        if(!GFLauncherUtils.ok(debugOptions)) {
             return empty;
         }
-        String[] ss = s.split(" ");
 
-        if(ss.length <= 0) {
+        if(JDK.getMajor() >= 9
+                && debugOptions.contains("address=")
+                && !debugOptions.contains("address=*:")){
+            debugOptions = debugOptions.replace("address=", "address=*:");
+        }
+        String[] debugOptionArray = debugOptions.split(" ");
+
+        if(debugOptionArray.length <= 0) {
             return empty;
         }
-        return Arrays.asList(ss);
+        return Arrays.asList(debugOptionArray);
     }
 
     boolean isDebugEnabled() {

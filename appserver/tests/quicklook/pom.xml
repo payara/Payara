@@ -81,7 +81,7 @@
                                 <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
-                                
+
                                 <echo message="compile classpath: ${compile_classpath}"/>
                                 <echo message="${line.separator} ###############################" />
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
@@ -255,6 +255,13 @@
                         <version>1.8.1</version>
                         <scope>runtime</scope>
                     </dependency>
+                    <dependency>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools-jar</artifactId>
+                        <version>1</version>
+                        <scope>system</scope>
+                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -269,24 +276,6 @@
             <properties>
                 <test.gd>true</test.gd>
             </properties>
-        </profile>
-    
-        <profile>
-            <id>default</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/../lib/tools.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools-jar</artifactId>
-                    <version>1</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
         </profile>
 
         <profile>
