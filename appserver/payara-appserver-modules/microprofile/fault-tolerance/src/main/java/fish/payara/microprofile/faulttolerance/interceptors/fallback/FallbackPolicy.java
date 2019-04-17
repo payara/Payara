@@ -40,7 +40,7 @@
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
-import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceEnvironment;
 import fish.payara.microprofile.faulttolerance.FaultToleranceExecutionContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
@@ -64,10 +64,10 @@ public class FallbackPolicy {
 
     private final Class<? extends FallbackHandler<?>> fallbackClass;
     private final String fallbackMethod;
-    private final FaultToleranceExecution execution;
+    private final FaultToleranceEnvironment execution;
     private final FaultToleranceMetrics metrics;
 
-    public FallbackPolicy(Fallback fallback, FaultToleranceConfig config, FaultToleranceExecution execution, FaultToleranceMetrics metrics,
+    public FallbackPolicy(Fallback fallback, FaultToleranceConfig config, FaultToleranceEnvironment execution, FaultToleranceMetrics metrics,
             InvocationContext context) {
         this.execution = execution;
         this.metrics = metrics;

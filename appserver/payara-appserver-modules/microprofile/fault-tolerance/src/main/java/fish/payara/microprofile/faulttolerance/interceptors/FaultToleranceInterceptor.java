@@ -17,7 +17,7 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceEnvironment;
 import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
@@ -34,11 +34,11 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable, Pri
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
-            FaultToleranceExecution execution =
-                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceExecution.class);
-            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> execution.getConfig(context, this));
+            FaultToleranceEnvironment env =
+                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceEnvironment.class);
+            FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> env.getConfig(context, this));
             if (policy.isPresent) {
-                return policy.proceed(context, execution);
+                return policy.proceed(context, env);
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"

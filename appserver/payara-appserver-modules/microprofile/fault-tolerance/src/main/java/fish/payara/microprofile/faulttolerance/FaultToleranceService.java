@@ -95,10 +95,10 @@ import org.jvnet.hk2.annotations.Service;
  * 
  * @author Andrew Pielage
  */
-@ContractsProvided(FaultToleranceExecution.class)
+@ContractsProvided(FaultToleranceEnvironment.class)
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
-public class FaultToleranceService implements EventListener, FaultToleranceExecution {
+public class FaultToleranceService implements EventListener, FaultToleranceEnvironment {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceService.class.getName());
 
@@ -290,13 +290,13 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
     }
 
     @Override
-    public BulkheadSemaphore getExecutionSemaphoreOf(int maxConcurrentThreads, InvocationContext context) {
+    public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
         return getBulkheadExecutionSemaphore(getApplicationContext(context),
                 context.getTarget(), context.getMethod(), maxConcurrentThreads);
     }
 
     @Override
-    public BulkheadSemaphore getWaitingQueueSemaphoreOf(int queueCapacity, InvocationContext context) {
+    public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
         return getBulkheadExecutionQueueSemaphore(getApplicationContext(context),
                 context.getTarget(), context.getMethod(), queueCapacity);
     }

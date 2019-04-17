@@ -13,7 +13,7 @@ import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereo
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
-public interface FaultToleranceExecution {
+public interface FaultToleranceEnvironment {
 
     FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes);
 
@@ -21,9 +21,9 @@ public interface FaultToleranceExecution {
 
     CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context);
 
-    BulkheadSemaphore getExecutionSemaphoreOf(int maxConcurrentThreads, InvocationContext context);
+    BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context);
 
-    BulkheadSemaphore getWaitingQueueSemaphoreOf(int queueCapacity, InvocationContext context);
+    BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context);
 
     void delay(long delayMillis, InvocationContext context) throws InterruptedException;
 

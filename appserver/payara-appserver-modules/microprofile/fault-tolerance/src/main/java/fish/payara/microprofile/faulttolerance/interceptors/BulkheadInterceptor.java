@@ -133,7 +133,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
 
         Bulkhead bulkhead = getConfig().getAnnotation(Bulkhead.class, context);
 
-        BulkheadSemaphore bulkheadExecutionSemaphore = getExecution().getExecutionSemaphoreOf(getConfig().value(bulkhead, context), context);
+        BulkheadSemaphore bulkheadExecutionSemaphore = getExecution().getConcurrentExecutions(getConfig().value(bulkhead, context), context);
 
         if (getConfig().isMetricsEnabled(context)) {
             getMetrics().insertBulkheadConcurrentExecutions(bulkheadExecutionSemaphore::acquiredPermits, context);
@@ -141,7 +141,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
 
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
         if (getConfig().getAnnotation(Asynchronous.class, context) != null) {
-            BulkheadSemaphore bulkheadExecutionQueueSemaphore = getExecution().getWaitingQueueSemaphoreOf(getConfig().waitingTaskQueue(bulkhead, context), context);
+            BulkheadSemaphore bulkheadExecutionQueueSemaphore = getExecution().getWaitingQueuePopulation(getConfig().waitingTaskQueue(bulkhead, context), context);
 
             if (getConfig().isMetricsEnabled(context)) {
                 getMetrics().insertBulkheadWaitingQueuePopulation(bulkheadExecutionQueueSemaphore::acquiredPermits, context);

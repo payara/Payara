@@ -14,7 +14,7 @@ import org.eclipse.microprofile.faulttolerance.Retry;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.FaultToleranceExecution;
+import fish.payara.microprofile.faulttolerance.FaultToleranceEnvironment;
 import fish.payara.microprofile.faulttolerance.interceptors.fallback.FallbackPolicy;
 
 public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
@@ -24,7 +24,7 @@ public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
     private final Class<T> annotationType;
     private final boolean throwExceptionForRetry;
     private FaultToleranceConfig config = FaultToleranceConfig.ANNOTATED;
-    private FaultToleranceExecution execution;
+    private FaultToleranceEnvironment execution;
     private FaultToleranceMetrics metrics;
 
     protected BaseFaultToleranceInterceptor(Class<T> annotationType, boolean throwExceptionForRetry) {
@@ -46,7 +46,7 @@ public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
         return metrics;
     }
 
-    public FaultToleranceExecution getExecution() {
+    public FaultToleranceEnvironment getExecution() {
         return execution;
     }
 
