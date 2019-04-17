@@ -47,11 +47,12 @@ public final class FaultTolerancePolicy implements Serializable {
 
     private static final long TTL = 60 * 1000;
 
-    private static final ConcurrentHashMap<Method, FaultTolerancePolicy> POLICY_BY_METHOD = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Method, FaultTolerancePolicy>> POLICY_BY_METHOD = new ConcurrentHashMap<>();
 
     public static void clean() {
         long now = System.currentTimeMillis();
-        POLICY_BY_METHOD.entrySet().removeIf(entry -> now > entry.getValue().expiresMillis);
+        POLICY_BY_METHOD.forEachValue(Long.MAX_VALUE,
+                map -> map.entrySet().removeIf(entry -> now > entry.getValue().expiresMillis));
     }
 
     public static FaultTolerancePolicy asAnnotated(Method annotated) {
@@ -69,8 +70,9 @@ public final class FaultTolerancePolicy implements Serializable {
      */
     public static FaultTolerancePolicy get(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier)
             throws FaultToleranceDefinitionException {
-        return POLICY_BY_METHOD.compute(context.getMethod(), 
-                (method, policy) -> policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
+        return POLICY_BY_METHOD.computeIfAbsent(context.getTarget().getClass(), target -> new ConcurrentHashMap<>())
+                .compute(context.getMethod(), (method, policy) -> 
+                    policy != null && !policy.isExpired() ? policy : create(context, configSpplier));
     }
 
     private static FaultTolerancePolicy create(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier) {
