@@ -99,8 +99,8 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         
         Map<String, Object> map = new HashMap<>();
         Properties extraProperties = new Properties();
-        map.put(ATTRIBUTE_HEADERS[0], config.getEnabled());
-        map.put(ATTRIBUTE_HEADERS[1], config.getAuditLevel());
+        map.put("enabled", config.getEnabled());
+        map.put("auditLevel", config.getAuditLevel());
         extraProperties.put("adminauditConfiguration", map);
         
         ActionReport notifiersReport = actionReport.addSubActionsReport();

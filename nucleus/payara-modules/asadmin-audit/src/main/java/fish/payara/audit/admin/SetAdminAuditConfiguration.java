@@ -42,6 +42,8 @@
  */
 package fish.payara.audit.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -61,6 +63,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -94,16 +97,24 @@ public class SetAdminAuditConfiguration implements AdminCommand {
 
     @Param(name = "auditLevel", optional = true, acceptableValues = "MODIFIERS, ACCESSORS, INTERNAL")
     private String auditLevel;
+    
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    private String target;
+    private Config targetConfig;
 
     @Inject
     private AdminAuditService auditService;
 
     @Inject
-    private AdminAuditConfiguration configuration;
+    private Target targetUtil;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
+        
+        targetConfig = targetUtil.getConfig(target);
+
+        final AdminAuditConfiguration configuration = targetConfig.getExtensionByType(AdminAuditConfiguration.class);
 
         try {
             ConfigSupport.apply(new SingleConfigCode<AdminAuditConfiguration>() {

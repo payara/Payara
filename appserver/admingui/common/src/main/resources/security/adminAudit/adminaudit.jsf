@@ -53,9 +53,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             
         getRequestValue(key="configName" value="#{pageSession.configName}");
          setPageSessionAttribute(key="ADMIN_AUDIT_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration/get-admin-audit-configuration"); 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration"); 
 
-        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}" method="GET" result="#{requestScope.resp}"); 
+        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration" method="GET" result="#{requestScope.resp}"); 
                 
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
@@ -85,27 +85,22 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #include "/common/shared/alertMsg.inc"
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18nc.adminaudit.Title}" helpText="$resource{i18nc.adminaudit.PageHelp}" />
-    <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18nc.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18nc.button.Processing}');}; return false;" >
                  <!command
                      mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                     mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
                      prepareSuccessfulMsg();
-                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-jmx-monitoring-configuration" 
+                     gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration" 
                      attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-
-                     if (#{pageSession.hasPropertyTable}) {
-                        javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service-configuration/monitored-attribute.json", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-                     }
+                     
                      py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
 
                     />
             </sun:button>
         </sun:panelGroup>
-    </facet>
     <!-- PropertySheet .... -->
     <sun:propertySheet id="propertySheet">			 
         <!-- Text Field section -->
@@ -117,7 +112,11 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             </sun:property>
             <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Dynamic}" helpText="$resource{i18nc.adminaudit.DynamicHelp}">
                 <sun:checkbox label="$resource{i18nc.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
-            </sun:property>                     
+            </sun:property>
+            <sun:property id="auditLevelProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.UnitLabel}" helpText="$resource{i18nc.adminaudit.UnitLabelHelp}">
+                <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['auditLevel']}" 
+                              labels={"MODIFIERS","ACCESSORS","INTERNAL"} />
+            </sun:property>   
             "<br /><br />
         </sun:propertySheetSection>
 

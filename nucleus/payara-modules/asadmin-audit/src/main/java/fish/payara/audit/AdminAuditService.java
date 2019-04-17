@@ -169,11 +169,13 @@ public class AdminAuditService {
             Set<PrincipalImpl> principals = subject.getPrincipals(PrincipalImpl.class);
             String name = principals.iterator().next().getName();
             for (NotifierExecutionOptions notifierExecutionOptions : notifierExecutionOptionsList) {
-
-                NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                NotificationEvent notificationEvent = notificationEventFactory
-                       .buildNotificationEvent(Level.WARNING, AUDIT_MESSAGE, name + " issued command " + command + " with parameters " + parameters.toString(), null);
-                notificationSevice.notify(EventSource.AUDIT, notificationEvent);
+                
+                if (notifierExecutionOptions.isEnabled()) {
+                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
+                    NotificationEvent notificationEvent = notificationEventFactory
+                            .buildNotificationEvent(Level.WARNING, AUDIT_MESSAGE, name + " issued command " + command + " with parameters " + parameters.toString(), null);
+                    notificationSevice.notify(EventSource.AUDIT, notificationEvent);
+                }
             }
         }
     }
