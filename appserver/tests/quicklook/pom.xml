@@ -255,13 +255,6 @@
                         <version>1.8.1</version>
                         <scope>runtime</scope>
                     </dependency>
-                    <dependency>
-                        <groupId>com.sun</groupId>
-                        <artifactId>tools-jar</artifactId>
-                        <version>1</version>
-                        <scope>system</scope>
-                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -270,12 +263,27 @@
     <profiles>
         <profile>
             <id>all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <test.gd>true</test.gd>
             </properties>
+        </profile>
+
+        <profile>
+            <id>tools_jar</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools-jar</artifactId>
+                    <version>1</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
         </profile>
 
         <profile>
