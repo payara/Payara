@@ -61,7 +61,7 @@ public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
                 if (!getConfig().isAnnotationPresent(Bulkhead.class, context)
                         && !getConfig().isAnnotationPresent(Retry.class, context)
                         && !getConfig().isAnnotationPresent(CircuitBreaker.class, context)) {
-                    getMetrics().incrementInvocationsTotal(annotationType, context);
+                    getMetrics().incrementInvocationsTotal(context);
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with " + type + " semantics");
@@ -87,7 +87,7 @@ public abstract class BaseFaultToleranceInterceptor<T extends Annotation> {
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(annotationType, context);
+                getMetrics().incrementInvocationsFailedTotal(context);
                 throw ex;
             }
         }

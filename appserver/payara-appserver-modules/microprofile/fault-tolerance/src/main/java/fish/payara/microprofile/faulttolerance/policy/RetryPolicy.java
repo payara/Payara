@@ -68,6 +68,10 @@ public final class RetryPolicy extends Policy {
         return NONE;
     }
 
+    public boolean isNone() {
+        return this != NONE;
+    }
+
     public boolean retryOn(Exception ex) {
         return isCaught(ex, retryOn) && !isCaught(ex, abortOn);
     }

@@ -80,7 +80,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                 // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
                 if (getConfig().getAnnotation(Bulkhead.class, context) == null
                         && getConfig().getAnnotation(Retry.class, context) == null) {
-                    getMetrics().incrementInvocationsTotal(CircuitBreaker.class, context);
+                    getMetrics().incrementInvocationsTotal(context);
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
@@ -107,7 +107,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(CircuitBreaker.class, context);
+                getMetrics().incrementInvocationsFailedTotal(context);
                 throw ex;
             }
         }
@@ -132,9 +132,9 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
         CircuitBreakerState circuitBreakerState = getExecution().getState(requestVolumeThreshold, context);
 
         if (getConfig().isMetricsEnabled(context)) {
-            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::isOpen, context);
-            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::isHalfOpen, context);
-            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::isClosed, context);
+            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::nanosOpen, context);
+            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::nanosHalfOpen, context);
+            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::nanosClosed, context);
         }
 
         switch (circuitBreakerState.getCircuitState()) {
@@ -270,7 +270,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
     private void breakCircuitIfRequired(long failureThreshold, CircuitBreakerState circuitBreakerState,
             long delayMillis, InvocationContext context) throws Exception {
         // If we're over the failure threshold, open the circuit
-        if (circuitBreakerState.isOverFailureThreshold(failureThreshold)) {
+        if (circuitBreakerState.isOverFailureThreshold(0, 0d)) {
             logger.log(Level.FINE, "CircuitBreaker is over failure threshold {0}, opening circuit",
                     failureThreshold);
 

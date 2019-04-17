@@ -81,7 +81,7 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
                 if (getConfig().getAnnotation(Bulkhead.class, context) == null
                         && getConfig().getAnnotation(Retry.class, context) == null
                         && getConfig().getAnnotation(CircuitBreaker.class, context) == null) {
-                    getMetrics().incrementInvocationsTotal(Timeout.class, context);
+                    getMetrics().incrementInvocationsTotal(context);
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
@@ -108,7 +108,7 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(Timeout.class, context);
+                getMetrics().incrementInvocationsFailedTotal(context);
                 throw ex;
             }
         }

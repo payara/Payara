@@ -81,7 +81,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                 if (getConfig().isMetricsEnabled(context)) {
                     // Only increment the invocations metric if the Retry annotation isn't present
                     if (getConfig().getAnnotation(Retry.class, context) == null) {
-                        getMetrics().incrementInvocationsTotal(Bulkhead.class, context);
+                        getMetrics().incrementInvocationsTotal(context);
                     }
                 }
 
@@ -114,7 +114,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                 logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
 
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(Bulkhead.class, context);
+                getMetrics().incrementInvocationsFailedTotal(context);
                 throw ex;
             }
         }

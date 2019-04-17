@@ -74,7 +74,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
             // method
             if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Retry.class, context)) {
                 // Increment the invocations metric
-                getMetrics().incrementInvocationsTotal(Retry.class, context);
+                getMetrics().incrementInvocationsTotal(context);
 
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 resultValue = retry(context);
@@ -93,7 +93,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(Retry.class, context);
+                getMetrics().incrementInvocationsFailedTotal(context);
                 throw ex;
             }
         }

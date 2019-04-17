@@ -16,7 +16,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
  */
 public final class AsynchronousPolicy extends Policy {
 
-    private static final AsynchronousPolicy IS_ASYNCHRONOUS = new AsynchronousPolicy();
+    private static final AsynchronousPolicy FUTURE = new AsynchronousPolicy();
+    private static final AsynchronousPolicy COMPLETION_STAGE = new AsynchronousPolicy();
 
     private AsynchronousPolicy() {
         // hide
@@ -25,7 +26,7 @@ public final class AsynchronousPolicy extends Policy {
     public static AsynchronousPolicy create(InvocationContext context, FaultToleranceConfig config) {
         if (config.isAnnotationPresent(Asynchronous.class, context) && config.isEnabled(Asynchronous.class, context)) {
             checkReturnsFutureOrCompletionStage(context.getMethod());
-            return IS_ASYNCHRONOUS;
+            return context.getMethod().getReturnType() == Future.class ? FUTURE : COMPLETION_STAGE;
         }
         return null;
     }
@@ -42,5 +43,9 @@ public final class AsynchronousPolicy extends Policy {
         return asyncResult instanceof CompletionStage
                 ? ((CompletionStage<?>) asyncResult).toCompletableFuture()
                 : (Future<?>) asyncResult;
+    }
+
+    public boolean isSuccessWhenCompletedExceptionally() {
+        return this == FUTURE;
     }
 }

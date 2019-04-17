@@ -1,6 +1,5 @@
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import java.lang.annotation.Annotation;
 import java.util.function.LongSupplier;
 
 import javax.enterprise.inject.spi.CDI;
@@ -25,21 +24,18 @@ public class CdiFaultToleranceMetrics implements FaultToleranceMetrics {
     }
 
     @Override
-    public void increment(String keyPattern, Class<? extends Annotation> annotationType, 
-            InvocationContext context) {
-        getMetricRegistry().counter(metricName(keyPattern, annotationType, context)).inc();
+    public void increment(String keyPattern, InvocationContext context) {
+        getMetricRegistry().counter(metricName(keyPattern, context)).inc();
     }
 
     @Override
-    public void add(String keyPattern, long duration, Class<? extends Annotation> annotationType, 
-            InvocationContext context) {
-        getMetricRegistry().histogram(metricName(keyPattern, annotationType, context)).update(duration);
+    public void add(String keyPattern, long duration, InvocationContext context) {
+        getMetricRegistry().histogram(metricName(keyPattern, context)).update(duration);
     }
 
     @Override
-    public void insert(String keyPattern, LongSupplier gauge, Class<? extends Annotation> annotationType,
-            InvocationContext context) {
-        String metricName = metricName(keyPattern, annotationType, context);
+    public void insert(String keyPattern, LongSupplier gauge, InvocationContext context) {
+        String metricName = metricName(keyPattern, context);
         Gauge<?> existingGauge = getMetricRegistry().getGauges().get(metricName);
         if (existingGauge == null) {
             Gauge<Long> newGauge = gauge::getAsLong;
@@ -47,9 +43,8 @@ public class CdiFaultToleranceMetrics implements FaultToleranceMetrics {
         }
     }
 
-    private static String metricName(String keyPattern, Class<? extends Annotation> annotationType,
-            InvocationContext context) {
-        return String.format(keyPattern, FaultToleranceCdiUtils.getFullAnnotatedMethodSignature(context, annotationType));
+    private static String metricName(String keyPattern, InvocationContext context) {
+        return String.format(keyPattern, FaultToleranceCdiUtils.getCanonicalMethodName(context));
     }
 
     private MetricRegistry getMetricRegistry() {

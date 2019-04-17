@@ -141,10 +141,10 @@ public class CircuitBreakerState {
      * @param failureThreshold The number of failures before the circuit breaker should open
      * @return True if the CircuitBreaker is over the failure threshold
      */
-    public boolean isOverFailureThreshold(long failureThreshold) {
+    public boolean isOverFailureThreshold(int requestVolumeThreshold, double failureRatio) {
         boolean over = false;
         int failures = 0;
-
+        int failureThreshold = (int) Math.round(requestVolumeThreshold * failureRatio);
         // Only check if the queue is full
         if (this.closedResultsQueue.remainingCapacity() == 0) {
             for (Boolean success : this.closedResultsQueue) {
@@ -174,15 +174,15 @@ public class CircuitBreakerState {
                 : this.allStateTimes.get(circuitState).nanos();
     }
 
-    public long isOpen() {
+    public long nanosOpen() {
         return updateAndGet(CircuitState.OPEN);
     }
 
-    public long isHalfOpen() {
+    public long nanosHalfOpen() {
         return updateAndGet(CircuitState.HALF_OPEN);
     }
 
-    public long isClosed() {
+    public long nanosClosed() {
         return updateAndGet(CircuitState.CLOSED);
     }
 

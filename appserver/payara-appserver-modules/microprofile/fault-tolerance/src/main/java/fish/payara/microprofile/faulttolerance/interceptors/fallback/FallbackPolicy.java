@@ -103,7 +103,7 @@ public class FallbackPolicy {
             metrics.incrementFallbackCallsTotal(context);
         } catch (Exception ex) {
             // Increment the failure counter metric
-            metrics.incrementInvocationsFailedTotal(Fallback.class, context);
+            metrics.incrementInvocationsFailedTotal(context);
             throw ex;
         } finally {
             execution.endTrace();

@@ -327,10 +327,9 @@ public class FaultToleranceService implements EventListener, FaultToleranceExecu
                     } else {
                         futureResult.cancel(true);
                     }
-                } catch (ExecutionException ex) {
-                    asyncResult.completeExceptionally(ex.getCause());
                 } catch (Exception ex) {
-                    asyncResult.completeExceptionally(ex);
+                    // Note that even ExecutionException is not unpacked (intentionally)
+                    asyncResult.completeExceptionally(ex); 
                 }
             }
         };
