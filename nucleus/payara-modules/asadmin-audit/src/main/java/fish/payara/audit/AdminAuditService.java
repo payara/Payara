@@ -53,6 +53,7 @@ import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -166,7 +167,7 @@ public class AdminAuditService {
     public void recordAsadminCommand(String command, ParameterMap parameters, Subject subject) {
         if (enabled && notifierExecutionOptionsList != null && checkAuditLevel(command)) {
             
-            Set<PrincipalImpl> principals = subject.getPrincipals(PrincipalImpl.class);
+            Set<Principal> principals = subject.getPrincipals();
             String name = principals.iterator().next().getName();
             for (NotifierExecutionOptions notifierExecutionOptions : notifierExecutionOptionsList) {
                 
