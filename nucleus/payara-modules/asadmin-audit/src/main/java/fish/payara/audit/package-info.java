@@ -40,55 +40,10 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.audit;
-
-import fish.payara.nucleus.notification.configuration.Notifier;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-import javax.validation.constraints.Pattern;
-
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
 
 /**
- * Configuration for the Admin Audit service
- * @author jonathan coustick
+ * Audit system for the admin console and rest management interface
+ * @since 5.192
+ * @author Jonathan Coustick
  */
-@Configured
-public interface AdminAuditConfiguration extends ConfigBeanProxy, ConfigExtension {
-    
-    @Attribute(defaultValue="false",dataType=Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
-    
-    @Attribute(defaultValue="MODIFIERS")
-    @Pattern(regexp = "MODIFIERS|ACCESSORS|INTERNAL", message = "Invalid audit level. Value must be one of: MODIFIERS, ACCESSORS or INTERNAL.")
-    String getAuditLevel();
-    void setAuditLevel(String value) throws PropertyVetoException;
-    
-    @Element("*")
-    List<Notifier> getNotifierList();
-    
-    @DuckTyped
-    <T extends Notifier> T getNotifierByType(Class<T> type);
-    
-    class Duck {
-        public static <T extends Notifier> T getNotifierByType(AdminAuditConfiguration config, Class<T> type) {
-            for (Notifier notifier : config.getNotifierList()) {
-                try {
-                    return type.cast(notifier);
-                } catch (Exception e) {
-                    // ignore, not the right type.
-                }
-            }
-            return null;
-        }
-
-    }
-    
-}
+package fish.payara.audit;

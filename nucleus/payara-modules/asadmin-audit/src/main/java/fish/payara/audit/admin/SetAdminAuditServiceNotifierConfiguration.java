@@ -92,7 +92,7 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
  * setting.
  *
  * @author jonathan coustick
- * @since 5.191
+ * @since 5.192
  */
 @Service(name = "set-admin-audit-service-notifier-configuration")
 @PerLookup

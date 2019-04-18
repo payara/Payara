@@ -66,7 +66,6 @@ import javax.security.auth.Subject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.security.common.PrincipalImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;

@@ -39,7 +39,6 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -59,12 +58,8 @@
 
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
-        
-        setPageSessionAttribute(key="adminAuditUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration/get-admin-audit-configuration");
-        gf.restRequest(endpoint="#{pageSession.adminAuditUrl}" method="GET" result="#{requestScope.auditProps}");
-        
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
-        setPageSessionAttribute(key="convertToFalseList" value={"auditEnabled","activateDefaultPrincipalToRoleMapping", "adminAuditEnabled"})
+        setPageSessionAttribute(key="convertToFalseList" value={"auditEnabled","activateDefaultPrincipalToRoleMapping"})
         />
     </event>
             <sun:form id="propertyForm" autoComplete="off">
@@ -88,14 +83,6 @@
                         removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
                         javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-                        
-                        gf.createEntity(endpoint="#{pageSession.adminAuditUrl}"
-                            attrs="#{pageSession.adminAudit}"
-                            skipAttrs="#{pageSession.skipAttrsList}"
-                            convertToFalse="#{pageSession.convertToFalseList}"
-                        );
-                        
-                        
                         prepareSuccessfulMsg();
                         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     />

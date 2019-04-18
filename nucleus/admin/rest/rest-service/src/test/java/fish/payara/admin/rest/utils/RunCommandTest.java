@@ -42,10 +42,18 @@
  */
 package fish.payara.admin.rest.utils;
 
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.v3.admin.CommandRunnerImpl;
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+
+import javax.security.auth.Subject;
+
 import com.sun.enterprise.v3.common.DoNothingActionReporter;
+
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.audit.AdminAuditService;
 import fish.payara.audit.admin.GetAdminAuditServiceConfiguration;
@@ -54,23 +62,12 @@ import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
-import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.beans.PropertyVetoException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.security.auth.Subject;
+
+
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
@@ -83,9 +80,6 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.ProgressStatus;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
 
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -100,16 +94,20 @@ import org.glassfish.hk2.runlevel.internal.RunLevelControllerImpl;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 import org.testng.Assert;
+
 import sun.security.acl.PrincipalImpl;
 
 /**
- *
- * @author jonathan
+ * Test for running a command to check that is is processed properly.
+ * This tests the admin audit service.
+ * @see ResourceUtil#runCommand(java.lang.String, org.glassfish.api.admin.ParameterMap, javax.security.auth.Subject) 
+ * @author jonathan coustick
  */
 public class RunCommandTest {
     
@@ -157,7 +155,7 @@ public class RunCommandTest {
     }
     
     @Test
-    public void test() {
+    public void testAdminAudit() {
         Subject testSubject = new Subject();
         testSubject.getPrincipals().add(new PrincipalImpl("testuser"));
         RestActionReporter commandResult = ResourceUtil.runCommand("get-admin-audit-configuration", new ParameterMap(), testSubject);
