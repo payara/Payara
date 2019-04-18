@@ -160,7 +160,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                     // If there is a free queue permit, queue for an executor permit
                     try {
                         logger.log(Level.FINER, "Attempting to acquire bulkhead execution semaphore.");
-                        getExecution().startTrace("obtainBulkheadSemaphore", context);
+                        getExecution().trace("obtainBulkheadSemaphore", context);
                         try {
                             bulkheadExecutionSemaphore.acquire();
                         } finally {

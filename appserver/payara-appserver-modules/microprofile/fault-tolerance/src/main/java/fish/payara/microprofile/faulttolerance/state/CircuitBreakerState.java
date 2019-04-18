@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 /**
  * Class that represents the state of a CircuitBreaker.
  * @author Andrew Pielage
+ * @author Jan Bernitt (2.0)
  */
 public class CircuitBreakerState {
 
@@ -99,7 +100,7 @@ public class CircuitBreakerState {
      * Records a success or failure result to the CircuitBreaker.
      * @param success True for a success, false for a failure
      */
-    public void recordClosedResult(boolean success) {
+    public void recordClosedOutcome(boolean success) {
         // If the queue is full, remove the oldest result and add
         if (!this.closedResultsQueue.offer(success)) {
             this.closedResultsQueue.poll();
@@ -202,10 +203,12 @@ public class CircuitBreakerState {
         setCircuitState(CircuitState.HALF_OPEN);
     }
 
-    public void halfOpenSuccessful(int successThreshold) {
+    public boolean halfOpenSuccessfulClosedCircuit(int successThreshold) {
         incrementHalfOpenSuccessfulResultCounter();
         if (getHalfOpenSuccessFulResultCounter() == successThreshold) {
             close();
+            return true;
         }
+        return false;
     }
 }

@@ -42,7 +42,7 @@ public interface FaultToleranceService {
 
     Object fallbackInvoke(Method fallbackMethod, InvocationContext context) throws Exception;
 
-    void startTrace(String method, InvocationContext context);
+    void trace(String method, InvocationContext context);
 
     void endTrace();
 

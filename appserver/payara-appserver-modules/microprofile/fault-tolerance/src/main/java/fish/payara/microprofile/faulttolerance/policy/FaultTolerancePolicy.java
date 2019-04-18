@@ -9,9 +9,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.interceptor.InvocationContext;
 
@@ -37,16 +38,25 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
  * effective values.
  * 
  * The policy class also reduces the need to analyse FT annotations for each invocation and works as a consistent source
- * of truth throughout the execution of FT behaviour that is convenient to pass around as a single immutable value.
+ * of truth throughout the processing of FT behaviour that is convenient to pass around as a single immutable value.
  *
  * @author Jan Bernitt
  */
 public final class FaultTolerancePolicy implements Serializable {
 
+    static final Logger logger = Logger.getLogger(FaultTolerancePolicy.class.getName());
+
     private static final long TTL = 60 * 1000;
 
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Method, FaultTolerancePolicy>> POLICY_BY_METHOD = new ConcurrentHashMap<>();
+    /**
+     * A simple cache with a fix {@link #TTL} with a policy for each target method.
+     */
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Method, FaultTolerancePolicy>> POLICY_BY_METHOD 
+        = new ConcurrentHashMap<>();
 
+    /**
+     * Removes all expired policies from the cache.
+     */
     public static void clean() {
         long now = System.currentTimeMillis();
         POLICY_BY_METHOD.forEachValue(Long.MAX_VALUE,
@@ -174,6 +184,14 @@ public final class FaultTolerancePolicy implements Serializable {
                 throw new TimeoutException("Computation already concluded in a concurrent attempt");
             }
         }
+
+        void trace(String method) {
+            service.trace(method, context);
+        }
+
+        void endTrace() {
+            service.endTrace();
+        }
     }
 
     /**
@@ -195,11 +213,12 @@ public final class FaultTolerancePolicy implements Serializable {
      * 
      * @param context intercepted call context
      * @param service the environment used to execute the FT behaviour
-     * @return the result of {@link InvocationContext#proceed()} wrapped with FT behaviour
+     * @return the result of {@link InvocationContext#proceed()} after applying FT behaviour
      * @throws Exception as thrown by the wrapped invocation or a {@link FaultToleranceException}
      */
     public Object proceed(InvocationContext context, FaultToleranceService service) throws Exception {
         if (!isPresent) {
+            logger.log(Level.FINER, "Fault Tolerance not enabled, proceeding normally.");
             return context.proceed();
         }
         FaultToleranceMetrics metrics = isMetricsEnabled 
@@ -222,12 +241,14 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isAsynchronous()) {
             return processFallbackStage(new FaultToleranceInvocation(context, service, metrics, null, null));
         }
+        logger.log(Level.FINER, "Proceeding invocation with asynchronous semantics");
         Set<Thread> workers = ConcurrentHashMap.newKeySet();
         CompletableFuture<Object> asyncResult = new CompletableFuture<Object>() {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 if (super.cancel(mayInterruptIfRunning)) {
+                    logger.log(Level.FINE, "Asynchronous computation was cancelled by caller.");
                     if (mayInterruptIfRunning) {
                         workers.forEach(worker -> worker.interrupt());
                     }
@@ -242,6 +263,7 @@ public final class FaultTolerancePolicy implements Serializable {
              */
             @Override
             public boolean completeExceptionally(Throwable ex) {
+                logger.log(Level.FINE, "Asynchronous computation completed with exception", ex);
                 if (ex instanceof ExecutionException) {
                     metrics.incrementInvocationsFailedTotal();
                     return super.completeExceptionally(ex.getCause());
@@ -264,14 +286,20 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isFallbackPresent()) {
             return processRetryStage(invocation);
         }
+        logger.log(Level.FINER, "Proceeding invocation with fallback semantics");
+        invocation.trace("executeFallbackMethod");
         try {
             return processRetryStage(invocation);
         } catch (Exception ex) {
             invocation.metrics.incrementFallbackCallsTotal();
             if (fallback.isHandlerPresent()) {
+                logger.log(Level.FINE, "Using fallback class: {0}", fallback.value.getName());
                 return invocation.service.fallbackHandle(fallback.value, invocation.context, ex);
             }
+            logger.log(Level.FINE, "Using fallback method: {0}", fallback.method.getName());
             return invocation.service.fallbackInvoke(fallback.method, invocation.context);
+        } finally {
+            invocation.endTrace();
         }
     }
 
@@ -279,6 +307,9 @@ public final class FaultTolerancePolicy implements Serializable {
      * Stage that takes care of the {@link RetryPolicy} handling.
      */
     private Object processRetryStage(FaultToleranceInvocation invocation) throws Exception {
+        if (!retry.isNone()) {
+            logger.log(Level.FINER, "Proceeding invocation with retry semantics");
+        }
         int totalAttempts = retry.totalAttempts();
         int attemptsLeft = totalAttempts;
         Long retryTimeoutTime = retry.timeoutTimeNow();
@@ -287,6 +318,7 @@ public final class FaultTolerancePolicy implements Serializable {
             try {
                 boolean firstAttempt = attemptsLeft == totalAttempts - 1;
                 if (!firstAttempt) {
+                    logger.log(Level.FINER, "Attempting retry.");
                     invocation.metrics.incrementRetryRetriesTotal();
                 }
                 Object resultValue = isAsynchronous() 
@@ -299,12 +331,13 @@ public final class FaultTolerancePolicy implements Serializable {
                 }
                 return resultValue;
             } catch (Exception ex) {
-                if (attemptsLeft <= 0 
-                        || !retry.retryOn(ex) 
-                        || retryTimeoutTime != null && System.currentTimeMillis() >= retryTimeoutTime) {
+                boolean timedOut = retryTimeoutTime != null && System.currentTimeMillis() >= retryTimeoutTime;
+                if (attemptsLeft <= 0 || !retry.retryOn(ex) || timedOut) {
+                    logger.log(Level.FINE, "Retry attemp failed. Giving up{0}", timedOut ? " due to time-out." : ".");
                     invocation.metrics.incrementRetryCallsFailedTotal();
                     throw ex;
                 }
+                logger.log(Level.FINE, "Retry attempt failed. {0} attempts left.", attemptsLeft);
                 if (retry.isDelayed()) {
                     invocation.service.delay(retry.jitteredDelay(), invocation.context);
                 }
@@ -341,6 +374,7 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isCircuitBreakerPresent()) {
             return processTimeoutStage(invocation, asyncAttempt);
         }
+        logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
         CircuitBreakerState state = invocation.service.getState(circuitBreaker.requestVolumeThreshold, invocation.context);
         if (isMetricsEnabled) {
             invocation.metrics.insertCircuitbreakerOpenTotal(state::nanosOpen);
@@ -351,36 +385,43 @@ public final class FaultTolerancePolicy implements Serializable {
         switch (state.getCircuitState()) {
         default:
         case OPEN:
+            logger.log(Level.FINER, "CircuitBreaker is open, throwing exception");
             invocation.metrics.incrementCircuitbreakerCallsPreventedTotal();
             throw new CircuitBreakerOpenException();
         case HALF_OPEN:
+            logger.log(Level.FINER, "Proceeding half open CircuitBreaker context");
             try {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
             } catch (Exception ex) {
                 invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 if (circuitBreaker.failOn(ex)) {
+                    logger.log(Level.FINE, "Exception causes CircuitBreaker to transit: half-open => open");
                     invocation.metrics.incrementCircuitbreakerOpenedTotal();
                     state.open();
                     invocation.service.scheduleDelayed(circuitBreaker.delay, state::halfOpen);
                 }
                 throw ex;
             }
-            state.halfOpenSuccessful(circuitBreaker.successThreshold);
+            if (state.halfOpenSuccessfulClosedCircuit(circuitBreaker.successThreshold)) {
+                logger.log(Level.FINE, "Success threshold causes CircuitBreaker to transit: half-open => closed");
+            }
             invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
             return resultValue;
         case CLOSED:
+            logger.log(Level.FINER, "Proceeding closed CircuitBreaker context");
             Exception failedOn = null;
             try {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
-                state.recordClosedResult(true);
+                state.recordClosedOutcome(true);
             } catch (Exception ex) {
                 invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 if (circuitBreaker.failOn(ex)) {
-                    state.recordClosedResult(false);
+                    state.recordClosedOutcome(false);
                 }
                 failedOn = ex;
             }
             if (state.isOverFailureThreshold(circuitBreaker.requestVolumeThreshold, circuitBreaker.failureRatio)) {
+                logger.log(Level.FINE, "Failure threshold causes CircuitBreaker to transit: closed => open");
                 invocation.metrics.incrementCircuitbreakerOpenedTotal();
                 state.open();
                 invocation.service.scheduleDelayed(circuitBreaker.delay, state::halfOpen);
@@ -400,12 +441,14 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isTimeoutPresent()) {
             return processBulkheadStage(invocation);
         }
+        logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
         long timeoutDuration = Duration.of(timeout.value, timeout.unit).toMillis();
         long timeoutTime = System.currentTimeMillis() + timeoutDuration;
         Thread current = Thread.currentThread();
-        AtomicBoolean didTimeout = new AtomicBoolean(false);
+        AtomicBoolean timedOut = new AtomicBoolean(false);
         Future<?> timeout = invocation.service.scheduleDelayed(timeoutDuration, () -> { 
-            didTimeout.set(true);
+            logger.log(Level.FINE, "Interrupting attempt due to timeout.");
+            timedOut.set(true);
             current.interrupt();
             invocation.metrics.incrementTimeoutCallsTimedOutTotal();
             if (asyncAttempt != null) {
@@ -419,15 +462,18 @@ public final class FaultTolerancePolicy implements Serializable {
             if (current.isInterrupted()) {
                 Thread.interrupted(); // clear the flag
             }
-            if (didTimeout.get() || System.currentTimeMillis() > timeoutTime) {
+            if (timedOut.get() || System.currentTimeMillis() > timeoutTime) {
                 throw new TimeoutException();
             }
             invocation.metrics.incrementTimeoutCallsNotTimedOutTotal();
             return resultValue;
+        } catch (TimeoutException ex) {
+            logger.log(Level.FINE, "Execution timed out.");
+            throw ex;
         } catch (Exception ex) {
-            if ((ex instanceof InterruptedException || ex.getCause() instanceof InterruptedException)
-                    && System.currentTimeMillis() > timeoutTime) {
-                throw new TimeoutException(ex); 
+            if (timedOut.get() || System.currentTimeMillis() > timeoutTime) {
+                logger.log(Level.FINE, "Execution timed out.");
+                throw new TimeoutException(ex);
             }
             throw ex;
         } finally {
@@ -443,6 +489,7 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isBulkheadPresent()) {
             return proceed(invocation);
         }
+        logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
         InvocationContext context = invocation.context;
         BulkheadSemaphore concurrentExecutions = invocation.service.getConcurrentExecutions(bulkhead.value, context);
         BulkheadSemaphore waitingQueuePopulation = !isAsynchronous() ? null
@@ -454,7 +501,9 @@ public final class FaultTolerancePolicy implements Serializable {
             }
         }
         long executionStartTime = System.nanoTime();
-        if (concurrentExecutions.tryAcquire(0, TimeUnit.SECONDS)) {
+        logger.log(Level.FINER, "Attempting to acquire bulkhead execution permit.");
+        if (concurrentExecutions.tryAcquireFair()) {
+            logger.log(Level.FINE, "Acquired bulkhead execution permit.");
             invocation.metrics.incrementBulkheadCallsAcceptedTotal();
             if (isAsynchronous()) {
                 invocation.metrics.addBulkheadWaitingDuration(0L); // we did not wait but need to factor in the invocation for histogram quartiles
@@ -471,15 +520,21 @@ public final class FaultTolerancePolicy implements Serializable {
             throw new BulkheadException("No free work permits.");
         }
         // from here: queueing style:
-        if (waitingQueuePopulation.tryAcquire(0, TimeUnit.SECONDS)) {
+        logger.log(Level.FINER, "Attempting to acquire bulkhead queue permit.");
+        if (waitingQueuePopulation.tryAcquireFair()) {
+            logger.log(Level.FINE, "Acquired bulkhead queue permit.");
             invocation.metrics.incrementBulkheadCallsAcceptedTotal();
             long queueStartTime = System.nanoTime();
             try {
+                invocation.trace("obtainBulkheadSemaphore");
                 concurrentExecutions.acquire(); // block until execution permit becomes available
             } catch (InterruptedException ex) {
+                logger.log(Level.FINE, "Interrupted acquiring bulkhead permit", ex);
+                invocation.metrics.incrementBulkheadCallsRejectedTotal();
                 waitingQueuePopulation.release();
                 throw new BulkheadException(ex);
             } finally {
+                invocation.endTrace();
                 invocation.metrics.addBulkheadWaitingDuration(System.nanoTime() - queueStartTime);
             }
             waitingQueuePopulation.release();
@@ -498,6 +553,7 @@ public final class FaultTolerancePolicy implements Serializable {
      */
     private static Object proceed(FaultToleranceInvocation invocation) throws Exception {
         invocation.timeoutIfConcludedConcurrently();
+        logger.log(Level.FINER, "Proceeding invocation chain");
         return invocation.context.proceed();
     }
 

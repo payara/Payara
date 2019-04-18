@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
@@ -12,7 +13,7 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
 public class TestUtils {
 
-    public static Object[] createNullArgumentsFor(Method method) {
+    public static Object[] createNullArgumentsFor(Executable method) {
         Object[] args = new Object[method.getParameterCount()];
         for (int i = 0; i < method.getParameterCount(); i++) {
             if (method.getParameterTypes()[i].isPrimitive()) {

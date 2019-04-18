@@ -305,7 +305,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         if (delayMillis <= 0) {
             return;
         }
-        startTrace("delayRetry", context);
+        trace("delayRetry", context);
         try {
             Thread.sleep(delayMillis);
         } finally {
@@ -360,7 +360,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     @Override
-    public void startTrace(String method, InvocationContext context) {
+    public void trace(String method, InvocationContext context) {
         startFaultToleranceSpan(new RequestTraceSpan(method), context);
     }
 

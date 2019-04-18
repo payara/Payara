@@ -6,6 +6,11 @@ import java.util.Map;
 
 import javax.interceptor.InvocationContext;
 
+/**
+ * A {@link InvocationContext} used during static analysis.
+ * 
+ * @author Jan Bernitt
+ */
 final class StaticAnalysisContext implements InvocationContext {
 
     private final Class<?> targetClass;

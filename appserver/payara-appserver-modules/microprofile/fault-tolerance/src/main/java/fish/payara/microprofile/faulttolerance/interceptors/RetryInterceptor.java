@@ -138,7 +138,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
 
             Exception retryException = ex;
 
-            getExecution().startTrace("retryMethod", context);
+            getExecution().trace("retryMethod", context);
 
             boolean succeeded = false;
 
@@ -160,7 +160,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                getExecution().startTrace("delayRetry", context);
+                                getExecution().trace("delayRetry", context);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
                                 } finally {
@@ -185,7 +185,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                getExecution().startTrace("delayRetry", context);
+                                getExecution().trace("delayRetry", context);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
                                 } finally {
@@ -212,7 +212,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                getExecution().startTrace("delayRetry", context);
+                                getExecution().trace("delayRetry", context);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
                                 } finally {
@@ -239,7 +239,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                             }
 
                             if (delayMillis > 0 || jitterMillis > 0) {
-                                getExecution().startTrace("delayRetry", context);
+                                getExecution().trace("delayRetry", context);
                                 try {
                                     Thread.sleep(delayMillis + ThreadLocalRandom.current().nextLong(0, jitterMillis));
                                 } finally {

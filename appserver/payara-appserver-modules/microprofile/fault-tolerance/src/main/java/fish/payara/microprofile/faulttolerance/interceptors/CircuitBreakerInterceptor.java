@@ -158,7 +158,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                         logger.log(Level.FINE, "Caught exception is included in CircuitBreaker failOn, "
                                 + "recording failure against CircuitBreaker");
                         // Add a failure result to the queue
-                        circuitBreakerState.recordClosedResult(Boolean.FALSE);
+                        circuitBreakerState.recordClosedOutcome(Boolean.FALSE);
                         getMetrics().incrementCircuitbreakerCallsFailedTotal();
 
                         // Calculate the failure ratio, and if we're over it, open the circuit
@@ -172,7 +172,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                 }
 
                 // If everything is bon, add a success value
-                circuitBreakerState.recordClosedResult(Boolean.TRUE);
+                circuitBreakerState.recordClosedOutcome(Boolean.TRUE);
                 getMetrics().incrementCircuitbreakerCallsSucceededTotal();
 
                 // Calculate the failure ratio, and if we're over it, open the circuit

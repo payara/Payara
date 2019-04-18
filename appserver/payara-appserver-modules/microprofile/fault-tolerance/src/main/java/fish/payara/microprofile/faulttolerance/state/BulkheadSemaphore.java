@@ -1,6 +1,7 @@
 package fish.payara.microprofile.faulttolerance.state;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public final class BulkheadSemaphore extends Semaphore {
 
@@ -23,5 +24,17 @@ public final class BulkheadSemaphore extends Semaphore {
      */
     public int acquiredPermits() {
         return totalPermits - availablePermits();
+    }
+
+    /**
+     * Mainly exist to document the special semantics of {@link #tryAcquire(long, TimeUnit)} used that means trying to
+     * acquire a permit fair.
+     */
+    public boolean tryAcquireFair() {
+        try {
+            return tryAcquire(0, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 }

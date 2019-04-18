@@ -83,7 +83,7 @@ public class FallbackPolicy {
      */
     public Object fallback(InvocationContext context, Throwable exception) throws Exception {
         Object resultValue = null;
-        execution.startTrace("executeFallbackMethod", context);
+        execution.trace("executeFallbackMethod", context);
         try {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
                 logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);

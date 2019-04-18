@@ -66,7 +66,7 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  * CDI Extension that does the setup for FT interceptor handling.
  * 
  * @author Andrew Pielage
- * @author Jan Bernitt
+ * @author Jan Bernitt (2.0)
  */
 public class FaultToleranceCDIExtension implements Extension {
 
