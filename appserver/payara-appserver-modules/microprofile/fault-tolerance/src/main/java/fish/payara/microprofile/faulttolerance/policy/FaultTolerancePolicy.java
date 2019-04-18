@@ -377,9 +377,9 @@ public final class FaultTolerancePolicy implements Serializable {
         logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
         CircuitBreakerState state = invocation.service.getState(circuitBreaker.requestVolumeThreshold, invocation.context);
         if (isMetricsEnabled) {
-            invocation.metrics.insertCircuitbreakerOpenTotal(state::nanosOpen);
-            invocation.metrics.insertCircuitbreakerHalfOpenTotal(state::nanosHalfOpen);
-            invocation.metrics.insertCircuitbreakerClosedTotal(state::nanosClosed);
+            invocation.metrics.linkCircuitbreakerOpenTotal(state::nanosOpen);
+            invocation.metrics.linkCircuitbreakerHalfOpenTotal(state::nanosHalfOpen);
+            invocation.metrics.linkCircuitbreakerClosedTotal(state::nanosClosed);
         }
         Object resultValue = null;
         switch (state.getCircuitState()) {
@@ -495,9 +495,9 @@ public final class FaultTolerancePolicy implements Serializable {
         BulkheadSemaphore waitingQueuePopulation = !isAsynchronous() ? null
                 : invocation.service.getWaitingQueuePopulation(bulkhead.waitingTaskQueue, context);
         if (isMetricsEnabled) {
-            invocation.metrics.insertBulkheadConcurrentExecutions(concurrentExecutions::acquiredPermits);
+            invocation.metrics.linkBulkheadConcurrentExecutions(concurrentExecutions::acquiredPermits);
             if (waitingQueuePopulation != null) {
-                invocation.metrics.insertBulkheadWaitingQueuePopulation(waitingQueuePopulation::acquiredPermits);
+                invocation.metrics.linkBulkheadWaitingQueuePopulation(waitingQueuePopulation::acquiredPermits);
             }
         }
         long executionStartTime = System.nanoTime();

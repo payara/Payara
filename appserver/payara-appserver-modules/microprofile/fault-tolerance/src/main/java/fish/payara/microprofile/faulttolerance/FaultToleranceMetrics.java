@@ -3,13 +3,16 @@ package fish.payara.microprofile.faulttolerance;
 import java.util.function.LongSupplier;
 
 /**
- * Encodes the specifics of the FT metrics names using default methods while decoupling
- * {@link org.eclipse.microprofile.metrics.MetricRegistry}.
+ * Encodes the specifics of the FT metrics names using default methods while decoupling rest of the implementation from
+ * the {@link org.eclipse.microprofile.metrics.MetricRegistry}.
  *
  * @author Jan Bernitt
  */
 public interface FaultToleranceMetrics {
 
+    /**
+     * Can be used as NULL object when metrics are disabled so avoid testing for enabled but still do essentially NOOPs.
+     */
     FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() { /* does nothing */ };
 
     /*
@@ -19,35 +22,29 @@ public interface FaultToleranceMetrics {
     /**
      * Counters:
      *
-     * @param metric
-     * @param annotationType
-     * @param context
+     * @param metric full name of the metric with {@code %s} used as placeholder for the method name
      */
-    default void increment(String metric) {
+    default void incrementCounter(String metric) {
         //NOOP (used when metrics are disabled)
     }
 
     /**
      * Histogram:
      *
-     * @param metric
-     * @param nanos
-     * @param annotationType
-     * @param context
+     * @param metric full name of the metric with {@code %s} used as placeholder for the method name
+     * @param nanos amount of nanoseconds to add to the histogram (>= 0)
      */
-    default void add(String metric, long nanos) {
+    default void addToHistogram(String metric, long nanos) {
         //NOOP (used when metrics are disabled)
     }
 
     /**
      * Gauge:
      *
-     * @param metric
-     * @param gauge
-     * @param annotationType
-     * @param context
+     * @param metric full name of the metric with{@code %s} used as placeholder for the method name
+     * @param gauge the gauge function to use in case the gauge is not already linked
      */
-    default void insert(String metric, LongSupplier gauge) {
+    default void linkGauge(String metric, LongSupplier gauge) {
         //NOOP (used when metrics are disabled)
     }
 
@@ -57,11 +54,11 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementInvocationsTotal() {
-        increment("ft.%s.invocations.total");
+        incrementCounter("ft.%s.invocations.total");
     }
 
     default void incrementInvocationsFailedTotal() {
-        increment("ft.%s.invocations.failed.total");
+        incrementCounter("ft.%s.invocations.failed.total");
     }
 
 
@@ -70,19 +67,19 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementRetryCallsSucceededNotRetriedTotal() {
-        increment("ft.%s.retry.callsSucceededNotRetried.total");
+        incrementCounter("ft.%s.retry.callsSucceededNotRetried.total");
     }
 
     default void incrementRetryCallsSucceededRetriedTotal() {
-        increment("ft.%s.retry.callsSucceededRetried.total");
+        incrementCounter("ft.%s.retry.callsSucceededRetried.total");
     }
 
     default void incrementRetryCallsFailedTotal() {
-        increment("ft.%s.retry.callsFailed.total");
+        incrementCounter("ft.%s.retry.callsFailed.total");
     }
 
     default void incrementRetryRetriesTotal() {
-        increment("ft.%s.retry.retries.total");
+        incrementCounter("ft.%s.retry.retries.total");
     }
 
 
@@ -91,15 +88,15 @@ public interface FaultToleranceMetrics {
      */
 
     default void addTimeoutExecutionDuration(long duration) {
-        add("ft.%s.timeout.executionDuration", duration);
+        addToHistogram("ft.%s.timeout.executionDuration", duration);
     }
 
     default void incrementTimeoutCallsTimedOutTotal() {
-        increment("ft.%s.timeout.callsTimedOut.total");
+        incrementCounter("ft.%s.timeout.callsTimedOut.total");
     }
 
     default void incrementTimeoutCallsNotTimedOutTotal() {
-        increment("ft.%s.timeout.callsNotTimedOut.total");
+        incrementCounter("ft.%s.timeout.callsNotTimedOut.total");
     }
 
 
@@ -108,31 +105,31 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementCircuitbreakerCallsSucceededTotal() {
-        increment("ft.%s.circuitbreaker.callsSucceeded.total");
+        incrementCounter("ft.%s.circuitbreaker.callsSucceeded.total");
     }
 
     default void incrementCircuitbreakerCallsFailedTotal() {
-        increment("ft.%s.circuitbreaker.callsFailed.total");
+        incrementCounter("ft.%s.circuitbreaker.callsFailed.total");
     }
 
     default void incrementCircuitbreakerCallsPreventedTotal() {
-        increment("ft.%s.circuitbreaker.callsPrevented.total");
+        incrementCounter("ft.%s.circuitbreaker.callsPrevented.total");
     }
 
     default void incrementCircuitbreakerOpenedTotal() {
-        increment("ft.%s.circuitbreaker.opened.total");
+        incrementCounter("ft.%s.circuitbreaker.opened.total");
     }
 
-    default void insertCircuitbreakerOpenTotal(LongSupplier gauge) {
-        insert("ft.%s.circuitbreaker.open.total", gauge);
+    default void linkCircuitbreakerOpenTotal(LongSupplier gauge) {
+        linkGauge("ft.%s.circuitbreaker.open.total", gauge);
     }
 
-    default void insertCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
-        insert("ft.%s.circuitbreaker.halfOpen.total", gauge);
+    default void linkCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
+        linkGauge("ft.%s.circuitbreaker.halfOpen.total", gauge);
     }
 
-    default void insertCircuitbreakerClosedTotal(LongSupplier gauge) {
-        insert("ft.%s.circuitbreaker.closed.total", gauge);
+    default void linkCircuitbreakerClosedTotal(LongSupplier gauge) {
+        linkGauge("ft.%s.circuitbreaker.closed.total", gauge);
     }
 
 
@@ -141,27 +138,27 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementBulkheadCallsAcceptedTotal() {
-        increment("ft.%s.bulkhead.callsAccepted.total");
+        incrementCounter("ft.%s.bulkhead.callsAccepted.total");
     }
 
     default void incrementBulkheadCallsRejectedTotal() {
-        increment("ft.%s.bulkhead.callsRejected.total");
+        incrementCounter("ft.%s.bulkhead.callsRejected.total");
     }
 
-    default void insertBulkheadConcurrentExecutions(LongSupplier gauge) {
-        insert("ft.%s.bulkhead.concurrentExecutions", gauge);
+    default void linkBulkheadConcurrentExecutions(LongSupplier gauge) {
+        linkGauge("ft.%s.bulkhead.concurrentExecutions", gauge);
     }
 
-    default void insertBulkheadWaitingQueuePopulation(LongSupplier gauge) {
-        insert("ft.%s.bulkhead.waitingQueue.population", gauge);
+    default void linkBulkheadWaitingQueuePopulation(LongSupplier gauge) {
+        linkGauge("ft.%s.bulkhead.waitingQueue.population", gauge);
     }
 
     default void addBulkheadExecutionDuration(long duration) {
-        add("ft.%s.bulkhead.executionDuration", duration);
+        addToHistogram("ft.%s.bulkhead.executionDuration", duration);
     }
 
     default void addBulkheadWaitingDuration(long duration) {
-        add("ft.%s.bulkhead.waiting.duration", duration);
+        addToHistogram("ft.%s.bulkhead.waiting.duration", duration);
     }
 
 
@@ -170,6 +167,6 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementFallbackCallsTotal() {
-        increment("ft.%s.fallback.calls.total");
+        incrementCounter("ft.%s.fallback.calls.total");
     }
 }

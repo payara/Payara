@@ -40,7 +40,6 @@
 package fish.payara.microprofile.faulttolerance.service;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
-import fish.payara.microprofile.faulttolerance.FaultToleranceExecutionContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
@@ -58,6 +57,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -255,9 +255,9 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
                 + ">" + annotatedMethod.getReturnType().getSimpleName();
     }
 
-    private void startFaultToleranceSpan(RequestTraceSpan span, InvocationContext invocationContext) {
+    private void startFaultToleranceSpan(RequestTraceSpan span, InvocationContext context) {
         if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
-            addGenericFaultToleranceRequestTracingDetails(span, invocationContext);
+            addGenericFaultToleranceRequestTracingDetails(span, context);
             requestTracingService.startTrace(span);
         }
     }
@@ -269,12 +269,12 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span, 
-            InvocationContext invocationContext) {
+            InvocationContext context) {
         span.addSpanTag("App Name", invocationManager.getCurrentInvocation().getAppName());
         span.addSpanTag("Component ID", invocationManager.getCurrentInvocation().getComponentId());
         span.addSpanTag("Module Name", invocationManager.getCurrentInvocation().getModuleName());
-        span.addSpanTag("Class Name", invocationContext.getMethod().getDeclaringClass().getName());
-        span.addSpanTag("Method Name", invocationContext.getMethod().getName());
+        span.addSpanTag("Class Name", context.getMethod().getDeclaringClass().getName());
+        span.addSpanTag("Method Name", context.getMethod().getName());
     }
 
 
@@ -314,11 +314,12 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> operation) throws Exception {
-        Runnable task = () -> {
+    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+            throws RejectedExecutionException {
+        Runnable completionTask = () -> {
             if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
                 try {
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(operation.call());
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
                             asyncResult.complete(futureResult.get());
@@ -332,19 +333,19 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
                 }
             }
         };
-        getManagedExecutorService().submit(task);
+        getManagedExecutorService().submit(completionTask);
     }
 
     @Override
-    public Future<?> scheduleDelayed(long delayMillis, Runnable operation) throws Exception {
-        return getManagedScheduledExecutorService().schedule(operation, delayMillis, TimeUnit.MILLISECONDS);
+    public Future<?> scheduleDelayed(long delayMillis, Runnable task) throws Exception {
+        return getManagedScheduledExecutorService().schedule(task, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, InvocationContext context,
-            Exception exception) throws Exception {
-        return CDI.current().select(fallbackClass).get()
-                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), exception));
+            Exception ex) throws Exception {
+        return CDI.current().select(fallbackClass).get().handle(
+                new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }
 
     @Override

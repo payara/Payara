@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Andrew Pielage andrew.pielage@payara.fish
  */
-public class FaultToleranceApplicationState {
+final class FaultToleranceApplicationState {
 
     private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();

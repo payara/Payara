@@ -18,6 +18,8 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  * that the processing can be declared independent of the actual resolution mechanism.
  * 
  * The default implementations provided will extract properties plain from the given annotations.
+ * 
+ * @author Jan Bernitt
  */
 @FunctionalInterface
 public interface FaultToleranceConfig {
@@ -66,7 +68,7 @@ public interface FaultToleranceConfig {
 
 
     /*
-     * Retry
+     * @Retry
      */
 
     default int maxRetries(Retry annotation) {
@@ -107,7 +109,7 @@ public interface FaultToleranceConfig {
 
 
     /*
-     * Circuit-Breaker
+     * @CircuitBreaker
      */
 
     default Class<? extends Throwable>[] failOn(CircuitBreaker annotation) {
@@ -136,7 +138,7 @@ public interface FaultToleranceConfig {
 
 
     /*
-     * Bulkhead
+     * @Bulkhead
      */
 
     default int value(Bulkhead annotation) {
@@ -149,7 +151,7 @@ public interface FaultToleranceConfig {
 
 
     /*
-     * Timeout
+     * @Timeout
      */
 
     default long value(Timeout annotation) {
@@ -162,7 +164,7 @@ public interface FaultToleranceConfig {
 
 
     /*
-     * Fallback
+     * @Fallback
      */
 
     default Class<? extends FallbackHandler<?>> value(Fallback annotation) {

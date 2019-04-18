@@ -68,17 +68,17 @@ final class FaultToleranceMetricsFactory implements FaultToleranceMetrics {
      */
 
     @Override
-    public void increment(String keyPattern) {
+    public void incrementCounter(String keyPattern) {
         metricRegistry.counter(metricName(keyPattern)).inc();
     }
 
     @Override
-    public void add(String keyPattern, long duration) {
+    public void addToHistogram(String keyPattern, long duration) {
         metricRegistry.histogram(metricName(keyPattern)).update(duration);
     }
 
     @Override
-    public void insert(String keyPattern, LongSupplier gauge) {
+    public void linkGauge(String keyPattern, LongSupplier gauge) {
         String metricName = metricName(keyPattern);
         Gauge<?> existingGauge = metricRegistry.getGauges().get(metricName);
         if (existingGauge == null) {

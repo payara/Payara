@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.faulttolerance.service;
 
 import java.lang.reflect.Method;
 
@@ -7,13 +7,13 @@ import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 /**
  * Default implementation class for the Fault Tolerance ExecutionContext interface
  */
-public final class FaultToleranceExecutionContext implements ExecutionContext {
+final class FaultToleranceExecutionContext implements ExecutionContext {
 
     private final Method method;
     private final Object[] parameters;
     private final Throwable failure;
 
-    public FaultToleranceExecutionContext(Method method, Object[] parameters, Throwable failure) {
+    FaultToleranceExecutionContext(Method method, Object[] parameters, Throwable failure) {
         this.method = method;
         this.parameters = parameters;
         this.failure = failure;
