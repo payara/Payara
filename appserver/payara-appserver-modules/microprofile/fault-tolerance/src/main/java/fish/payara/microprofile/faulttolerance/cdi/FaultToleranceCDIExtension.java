@@ -42,12 +42,12 @@ package fish.payara.microprofile.faulttolerance.cdi;
 import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceBehaviour;
 import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceInterceptor;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
@@ -93,21 +93,15 @@ public class FaultToleranceCDIExtension implements Extension {
      * @param processAnnotatedType type currently processed
      */
     private static <T> void validateAndMark(ProcessAnnotatedType<T> processAnnotatedType) {
-        boolean markAllMethods = isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
+        boolean markAllMethods = FaultToleranceUtils
+                .isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
+        Class<?> targetClass = processAnnotatedType.getAnnotatedType().getJavaClass();
         for (AnnotatedMethodConfigurator<?> methodConfigurator : processAnnotatedType.configureAnnotatedType().methods()) {
-            if (markAllMethods || isAnnotaetdWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
-                FaultTolerancePolicy.asAnnotated(methodConfigurator.getAnnotated().getJavaMember());
+            if (markAllMethods || FaultToleranceUtils
+                    .isAnnotaetdWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
+                FaultTolerancePolicy.asAnnotated(targetClass, methodConfigurator.getAnnotated().getJavaMember());
                 methodConfigurator.add(MARKER);
             }
         }
-    }
-
-    private static boolean isAnnotaetdWithFaultToleranceAnnotations(Annotated element) {
-        return element.isAnnotationPresent(Asynchronous.class) 
-                || element.isAnnotationPresent(Bulkhead.class)
-                || element.isAnnotationPresent(CircuitBreaker.class)
-                || element.isAnnotationPresent(Fallback.class)
-                || element.isAnnotationPresent(Retry.class)
-                || element.isAnnotationPresent(Timeout.class);
     }
 }

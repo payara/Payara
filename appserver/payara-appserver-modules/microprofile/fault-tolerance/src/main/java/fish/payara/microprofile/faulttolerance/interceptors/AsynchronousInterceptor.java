@@ -73,7 +73,7 @@ public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Async
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for 
             // this method
-            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Asynchronous.class, context)) {
+            if (getConfig().isNonFallbackEnabled() && getConfig().isEnabled(Asynchronous.class)) {
                 resultValue = asynchronous(context);
             } else {
                 // If fault tolerance isn't enabled, just proceed as normal
@@ -83,11 +83,11 @@ public class AsynchronousInterceptor extends BaseFaultToleranceInterceptor<Async
         } catch (Exception ex) {
             // If an exception was thrown, check if the method is annotated with @Fallback
             // We should only get here if executing synchronously, as the exception wouldn't get thrown in this thread
-            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class);
 
             // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
             // propagate the exception upwards
-            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class)) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Asynchronous");
                 //FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
                 resultValue = null; // fallbackPolicy.fallback(context, ex);

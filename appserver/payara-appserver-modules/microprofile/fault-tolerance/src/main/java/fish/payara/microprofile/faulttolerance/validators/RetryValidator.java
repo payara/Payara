@@ -39,11 +39,12 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 /**
  * Validator for the Fault Tolerance Retry annotation.
@@ -58,22 +59,22 @@ public class RetryValidator {
      * @param config The config to get any override values from
      */
     public static void validateAnnotation(Retry retry, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int maxRetries = FaultToleranceCdiUtils.getOverrideValue( 
+        int maxRetries = FaultToleranceUtils.getOverrideValue( 
                 config, Retry.class, "maxRetries", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(retry.maxRetries());
         
-        long delay = FaultToleranceCdiUtils.getOverrideValue(
+        long delay = FaultToleranceUtils.getOverrideValue(
                 config, Retry.class, "delay", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.delay());
         
-        long maxDuration = FaultToleranceCdiUtils.getOverrideValue(
+        long maxDuration = FaultToleranceUtils.getOverrideValue(
                 config, Retry.class, "maxDuration", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.maxDuration());
         
-        long jitter = FaultToleranceCdiUtils.getOverrideValue(
+        long jitter = FaultToleranceUtils.getOverrideValue(
                 config, Retry.class, "jitter", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(retry.jitter());

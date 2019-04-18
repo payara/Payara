@@ -13,6 +13,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link Retry} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class RetryPolicy extends Policy {
 
@@ -52,18 +54,18 @@ public final class RetryPolicy extends Policy {
     }
 
     public static RetryPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Retry.class, context) && config.isEnabled(Retry.class, context)) {
-            Retry annotation = config.getAnnotation(Retry.class, context);
+        if (config.isAnnotationPresent(Retry.class) && config.isEnabled(Retry.class)) {
+            Retry annotation = config.getAnnotation(Retry.class);
             return new RetryPolicy(context.getMethod(),
-                    config.maxRetries(annotation, context),
-                    config.delay(annotation, context),
-                    config.delayUnit(annotation, context),
-                    config.maxDuration(annotation, context),
-                    config.durationUnit(annotation, context),
-                    config.jitter(annotation, context),
-                    config.jitterDelayUnit(annotation, context),
-                    config.retryOn(annotation, context),
-                    config.abortOn(annotation, context));
+                    config.maxRetries(annotation),
+                    config.delay(annotation),
+                    config.delayUnit(annotation),
+                    config.maxDuration(annotation),
+                    config.durationUnit(annotation),
+                    config.jitter(annotation),
+                    config.jitterDelayUnit(annotation),
+                    config.retryOn(annotation),
+                    config.abortOn(annotation));
         }
         return NONE;
     }

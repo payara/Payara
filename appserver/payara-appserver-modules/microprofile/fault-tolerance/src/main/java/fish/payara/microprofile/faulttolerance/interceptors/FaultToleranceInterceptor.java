@@ -17,9 +17,9 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceEnvironment;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils.Stereotypes;
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
+import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 
 @Interceptor
 @FaultToleranceBehaviour
@@ -34,8 +34,8 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable, Pri
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
-            FaultToleranceEnvironment env =
-                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceEnvironment.class);
+            FaultToleranceService env =
+                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
             FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, () -> env.getConfig(context, this));
             if (policy.isPresent) {
                 return policy.proceed(context, env);

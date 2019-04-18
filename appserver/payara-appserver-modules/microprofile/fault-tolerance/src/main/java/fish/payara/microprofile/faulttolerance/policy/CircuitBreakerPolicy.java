@@ -12,6 +12,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link CircuitBreaker} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class CircuitBreakerPolicy extends Policy {
 
@@ -40,15 +42,15 @@ public final class CircuitBreakerPolicy extends Policy {
     }
 
     public static CircuitBreakerPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(CircuitBreaker.class, context) && config.isEnabled(CircuitBreaker.class, context)) {
-            CircuitBreaker annotation = config.getAnnotation(CircuitBreaker.class, context);
+        if (config.isAnnotationPresent(CircuitBreaker.class) && config.isEnabled(CircuitBreaker.class)) {
+            CircuitBreaker annotation = config.getAnnotation(CircuitBreaker.class);
             return new CircuitBreakerPolicy(context.getMethod(),
-                    config.failOn(annotation, context),
-                    config.delay(annotation, context),
-                    config.delayUnit(annotation, context),
-                    config.requestVolumeThreshold(annotation, context),
-                    config.failureRatio(annotation, context),
-                    config.successThreshold(annotation, context));
+                    config.failOn(annotation),
+                    config.delay(annotation),
+                    config.delayUnit(annotation),
+                    config.requestVolumeThreshold(annotation),
+                    config.failureRatio(annotation),
+                    config.successThreshold(annotation));
         }
         return null;
     }

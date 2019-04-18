@@ -13,6 +13,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link Asynchronous} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class AsynchronousPolicy extends Policy {
 
@@ -24,7 +26,7 @@ public final class AsynchronousPolicy extends Policy {
     }
 
     public static AsynchronousPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Asynchronous.class, context) && config.isEnabled(Asynchronous.class, context)) {
+        if (config.isAnnotationPresent(Asynchronous.class) && config.isEnabled(Asynchronous.class)) {
             checkReturnsFutureOrCompletionStage(context.getMethod());
             return context.getMethod().getReturnType() == Future.class ? FUTURE : COMPLETION_STAGE;
         }

@@ -37,30 +37,32 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance.cdi;
+package fish.payara.microprofile.faulttolerance.service;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.enterprise.inject.spi.Annotated;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
  * Utility Methods for the Fault Tolerance Interceptors.
+ * 
  * @author Andrew Pielage
+ * @author Jan Bernitt (2.0)
  */
-public class FaultToleranceCdiUtils {
+public class FaultToleranceUtils {
 
-    private static final Logger logger = Logger.getLogger(FaultToleranceCdiUtils.class.getName());
-
-    public interface Stereotypes {
-
-        boolean isStereotype(Class<? extends Annotation> annotationType);
-
-        Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype);
-    }
+    private static final Logger logger = Logger.getLogger(FaultToleranceUtils.class.getName());
 
     /**
      * Gets the annotation from the method that triggered the interceptor.
@@ -254,5 +256,14 @@ public class FaultToleranceCdiUtils {
      */
     public static String getCanonicalMethodName(InvocationContext context) {
         return getPlainCanonicalName(context.getMethod().getDeclaringClass()) + "." + context.getMethod().getName();
+    }
+
+    public static boolean isAnnotaetdWithFaultToleranceAnnotations(Annotated element) {
+        return element.isAnnotationPresent(Asynchronous.class) 
+                || element.isAnnotationPresent(Bulkhead.class)
+                || element.isAnnotationPresent(CircuitBreaker.class)
+                || element.isAnnotationPresent(Fallback.class)
+                || element.isAnnotationPresent(Retry.class)
+                || element.isAnnotationPresent(Timeout.class);
     }
 }

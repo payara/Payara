@@ -37,7 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.faulttolerance.service;
 
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
@@ -46,7 +46,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- *
  * @author Andrew Pielage andrew.pielage@payara.fish
  */
 public class FaultToleranceApplicationState {
@@ -54,8 +53,8 @@ public class FaultToleranceApplicationState {
     private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
-    private final AtomicReference<FaultToleranceConfig> config = new AtomicReference<>();
-    private final AtomicReference<FaultToleranceMetrics> metrics = new AtomicReference<>();
+    private final AtomicReference<FaultToleranceConfigFactory> config = new AtomicReference<>();
+    private final AtomicReference<FaultToleranceMetricsFactory> metrics = new AtomicReference<>();
 
     public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
         return circuitBreakerStates;
@@ -69,11 +68,11 @@ public class FaultToleranceApplicationState {
         return bulkheadExecutionQueueSemaphores;
     }
 
-    public AtomicReference<FaultToleranceConfig> getConfig() {
+    public AtomicReference<FaultToleranceConfigFactory> getConfig() {
         return config;
     }
 
-    public AtomicReference<FaultToleranceMetrics> getMetrics() {
+    public AtomicReference<FaultToleranceMetricsFactory> getMetrics() {
         return metrics;
     }
 }

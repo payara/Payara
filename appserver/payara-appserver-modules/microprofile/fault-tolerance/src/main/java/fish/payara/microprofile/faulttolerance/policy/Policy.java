@@ -7,6 +7,11 @@ import java.util.logging.Level;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
+/**
+ * Contains general helper method for FT policy validation.
+ * 
+ * @author Jan Bernitt
+ */
 public abstract class Policy implements Serializable {
 
     public static void checkAtLeast(long minimum, Method annotatedMethod, Class<? extends Annotation> annotationType,

@@ -10,6 +10,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link Bulkhead} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class BulkheadPolicy extends Policy {
 
@@ -24,11 +26,11 @@ public final class BulkheadPolicy extends Policy {
     }
 
     public static BulkheadPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Bulkhead.class, context) && config.isEnabled(Bulkhead.class, context)) {
-            Bulkhead annotation = config.getAnnotation(Bulkhead.class, context);
+        if (config.isAnnotationPresent(Bulkhead.class) && config.isEnabled(Bulkhead.class)) {
+            Bulkhead annotation = config.getAnnotation(Bulkhead.class);
             return new BulkheadPolicy(context.getMethod(),
-                    config.value(annotation, context), 
-                    config.waitingTaskQueue(annotation, context));
+                    config.value(annotation), 
+                    config.waitingTaskQueue(annotation));
         }
         return null;
     }

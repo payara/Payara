@@ -14,6 +14,8 @@ import javassist.Modifier;
 
 /**
  * The resolved "cached" information of a {@link Fallback} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class FallbackPolicy extends Policy {
 
@@ -42,11 +44,11 @@ public final class FallbackPolicy extends Policy {
     }
 
     public static FallbackPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Fallback.class, context) && config.isEnabled(Fallback.class, context)) {
-            Fallback annotation = config.getAnnotation(Fallback.class, context);
+        if (config.isAnnotationPresent(Fallback.class) && config.isEnabled(Fallback.class)) {
+            Fallback annotation = config.getAnnotation(Fallback.class);
             return new FallbackPolicy(context.getMethod(),
-                    config.value(annotation, context),
-                    config.fallbackMethod(annotation, context));
+                    config.value(annotation),
+                    config.fallbackMethod(annotation));
         }
         return null;
     }

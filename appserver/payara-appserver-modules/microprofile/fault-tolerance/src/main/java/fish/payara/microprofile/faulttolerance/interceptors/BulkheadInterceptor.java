@@ -77,11 +77,11 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Bulkhead.class, context)) {
-                if (getConfig().isMetricsEnabled(context)) {
+            if (getConfig().isNonFallbackEnabled() && getConfig().isEnabled(Bulkhead.class)) {
+                if (getConfig().isMetricsEnabled()) {
                     // Only increment the invocations metric if the Retry annotation isn't present
-                    if (getConfig().getAnnotation(Retry.class, context) == null) {
-                        getMetrics().incrementInvocationsTotal(context);
+                    if (getConfig().getAnnotation(Retry.class) == null) {
+                        getMetrics().incrementInvocationsTotal();
                     }
                 }
 
@@ -94,18 +94,18 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                 resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Retry retry = getConfig().getAnnotation(Retry.class, context);
+            Retry retry = getConfig().getAnnotation(Retry.class);
 
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             }
             // If an exception was thrown, check if the method is annotated with @Fallback
-            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class);
 
             // If the method was annotated with Fallback and the annotation is enabled, attempt it, otherwise just 
             // propagate the exception upwards
-            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class)) {
                 logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                         + "falling back from Bulkhead");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
@@ -114,7 +114,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                 logger.log(Level.FINE, "Fallback annotation not found on method, propagating error upwards.", ex);
 
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(context);
+                getMetrics().incrementInvocationsFailedTotal();
                 throw ex;
             }
         }
@@ -131,20 +131,20 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
     private Object bulkhead(InvocationContext context) throws Exception {
         Object resultValue = null;
 
-        Bulkhead bulkhead = getConfig().getAnnotation(Bulkhead.class, context);
+        Bulkhead bulkhead = getConfig().getAnnotation(Bulkhead.class);
 
-        BulkheadSemaphore bulkheadExecutionSemaphore = getExecution().getConcurrentExecutions(getConfig().value(bulkhead, context), context);
+        BulkheadSemaphore bulkheadExecutionSemaphore = getExecution().getConcurrentExecutions(getConfig().value(bulkhead), context);
 
-        if (getConfig().isMetricsEnabled(context)) {
-            getMetrics().insertBulkheadConcurrentExecutions(bulkheadExecutionSemaphore::acquiredPermits, context);
+        if (getConfig().isMetricsEnabled()) {
+            getMetrics().insertBulkheadConcurrentExecutions(bulkheadExecutionSemaphore::acquiredPermits);
         }
 
         // If the Asynchronous annotation is present, use threadpool style, otherwise use semaphore style
-        if (getConfig().getAnnotation(Asynchronous.class, context) != null) {
-            BulkheadSemaphore bulkheadExecutionQueueSemaphore = getExecution().getWaitingQueuePopulation(getConfig().waitingTaskQueue(bulkhead, context), context);
+        if (getConfig().getAnnotation(Asynchronous.class) != null) {
+            BulkheadSemaphore bulkheadExecutionQueueSemaphore = getExecution().getWaitingQueuePopulation(getConfig().waitingTaskQueue(bulkhead), context);
 
-            if (getConfig().isMetricsEnabled(context)) {
-                getMetrics().insertBulkheadWaitingQueuePopulation(bulkheadExecutionQueueSemaphore::acquiredPermits, context);
+            if (getConfig().isMetricsEnabled()) {
+                getMetrics().insertBulkheadWaitingQueuePopulation(bulkheadExecutionQueueSemaphore::acquiredPermits);
             }
 
             // Start measuring the queue duration for MP Metrics
@@ -168,7 +168,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                             getExecution().endTrace();
 
                             // Record the queue time for MP Metrics
-                            getMetrics().addBulkheadWaitingDuration(System.nanoTime() - queueStartTime, context);
+                            getMetrics().addBulkheadWaitingDuration(System.nanoTime() - queueStartTime);
                         }
 
                         logger.log(Level.FINER, "Acquired bulkhead queue semaphore.");
@@ -177,7 +177,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                         bulkheadExecutionQueueSemaphore.release();
 
                         // Incremement the MP Metrics callsAccepted counter
-                        getMetrics().incrementBulkheadCallsAcceptedTotal(context);
+                        getMetrics().incrementBulkheadCallsAcceptedTotal();
 
                         // Start measuring the execution duration for MP Metrics
                         long executionStartTime = System.nanoTime();
@@ -194,36 +194,36 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                             bulkheadExecutionQueueSemaphore.release();
 
                             // Record the execution time for MP Metrics              
-                            getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                            getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                             // Let the exception propagate further up - we just want to release the semaphores
                             throw ex;
                         }
 
                         // Record the execution time for MP Metrics
-                        getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                        getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                         // Release the execution permit
                         bulkheadExecutionSemaphore.release();
                     } catch (InterruptedException ex) {
                         // Incremement the MP Metrics callsRejected counter
-                        getMetrics().incrementBulkheadCallsRejectedTotal(context);
+                        getMetrics().incrementBulkheadCallsRejectedTotal();
 
                         logger.log(Level.INFO, "Interrupted acquiring bulkhead semaphore", ex);
                         throw new BulkheadException(ex);
                     }
                 } else {
                     // Incremement the MP Metrics callsRejected counter
-                    getMetrics().incrementBulkheadCallsRejectedTotal(context);
+                    getMetrics().incrementBulkheadCallsRejectedTotal();
 
                     throw new BulkheadException("No free work or queue permits.");
                 }
             } else {
                 // Incremement the MP Metrics callsAccepted counter
-                getMetrics().incrementBulkheadCallsAcceptedTotal(context);
+                getMetrics().incrementBulkheadCallsAcceptedTotal();
 
                 // Record the queue time for MP Metrics
-                getMetrics().addBulkheadWaitingDuration(System.nanoTime() - queueStartTime, context);
+                getMetrics().addBulkheadWaitingDuration(System.nanoTime() - queueStartTime);
 
                 // Start measuring the execution duration for MP Metrics
                 long executionStartTime = System.nanoTime();
@@ -239,14 +239,14 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                     bulkheadExecutionSemaphore.release();
 
                     // Record the execution time for MP Metrics
-                    getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                    getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                     // Let the exception propagate further up - we just want to release the semaphores
                     throw ex;
                 }
 
                 // Record the execution time for MP Metrics
-                getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
@@ -255,7 +255,7 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
             // Try to get an execution permit
             if (bulkheadExecutionSemaphore.tryAcquire(0, TimeUnit.SECONDS)) {
                 // Incremement the MP Metrics callsAccepted counter
-                getMetrics().incrementBulkheadCallsAcceptedTotal(context);
+                getMetrics().incrementBulkheadCallsAcceptedTotal();
 
                 // Start measuring the execution duration for MP Metrics
                 long executionStartTime = System.nanoTime();
@@ -271,20 +271,20 @@ public class BulkheadInterceptor extends BaseFaultToleranceInterceptor<Bulkhead>
                     bulkheadExecutionSemaphore.release();
 
                     // Record the execution time for MP Metrics
-                    getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                    getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                     // Let the exception propagate further up - we just want to release the semaphores
                     throw ex;
                 }
 
                 // Record the execution time for MP Metrics
-                getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime, context);
+                getMetrics().addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
 
                 // Release the permit
                 bulkheadExecutionSemaphore.release();
             } else {
                 // Incremement the MP Metrics callsRejected counter
-                getMetrics().incrementBulkheadCallsRejectedTotal(context);
+                getMetrics().incrementBulkheadCallsRejectedTotal();
 
                 throw new BulkheadException("No free work permits.");
             }

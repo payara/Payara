@@ -40,10 +40,10 @@
 package fish.payara.microprofile.faulttolerance.interceptors.fallback;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
-import fish.payara.microprofile.faulttolerance.FaultToleranceEnvironment;
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 import fish.payara.microprofile.faulttolerance.FaultToleranceExecutionContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,15 +64,15 @@ public class FallbackPolicy {
 
     private final Class<? extends FallbackHandler<?>> fallbackClass;
     private final String fallbackMethod;
-    private final FaultToleranceEnvironment execution;
+    private final FaultToleranceService execution;
     private final FaultToleranceMetrics metrics;
 
-    public FallbackPolicy(Fallback fallback, FaultToleranceConfig config, FaultToleranceEnvironment execution, FaultToleranceMetrics metrics,
+    public FallbackPolicy(Fallback fallback, FaultToleranceConfig config, FaultToleranceService execution, FaultToleranceMetrics metrics,
             InvocationContext context) {
         this.execution = execution;
         this.metrics = metrics;
-        this.fallbackClass = config.value(fallback, context);
-        this.fallbackMethod = config.fallbackMethod(fallback, context);
+        this.fallbackClass = config.value(fallback);
+        this.fallbackMethod = config.fallbackMethod(fallback);
     }
 
     /**
@@ -88,7 +88,7 @@ public class FallbackPolicy {
             if (fallbackMethod != null && !fallbackMethod.isEmpty()) {
                 logger.log(Level.FINE, "Using fallback method: {0}", fallbackMethod);
 
-                resultValue = FaultToleranceCdiUtils
+                resultValue = FaultToleranceUtils
                         .getAnnotatedMethodClass(context, Fallback.class)
                         .getDeclaredMethod(fallbackMethod, context.getMethod().getParameterTypes())
                         .invoke(context.getTarget(), context.getParameters());
@@ -100,10 +100,10 @@ public class FallbackPolicy {
 
                 resultValue = CDI.current().select(fallbackClass).get().handle(executionContext);
             }
-            metrics.incrementFallbackCallsTotal(context);
+            metrics.incrementFallbackCallsTotal();
         } catch (Exception ex) {
             // Increment the failure counter metric
-            metrics.incrementInvocationsFailedTotal(context);
+            metrics.incrementInvocationsFailedTotal();
             throw ex;
         } finally {
             execution.endTrace();

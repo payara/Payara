@@ -6,17 +6,30 @@ import java.util.Map;
 
 import javax.interceptor.InvocationContext;
 
-final class StaticAnalysisMethodContext implements InvocationContext {
+final class StaticAnalysisContext implements InvocationContext {
 
+    private final Class<?> targetClass;
     private final Method annotated;
+    private transient Object target;
 
-    public StaticAnalysisMethodContext(Method annotated) {
+    public StaticAnalysisContext(Class<?> targetClass, Method annotated) {
+        this.targetClass = targetClass;
         this.annotated = annotated;
     }
 
     @Override
     public Object getTarget() {
-        throw new UnsupportedOperationException();
+        if (target == null) {
+            try {
+                target = targetClass.newInstance();
+            } catch (Exception e) {
+                target = new UnsupportedOperationException();
+            }
+        }
+        if (target instanceof UnsupportedOperationException) {
+            throw (UnsupportedOperationException) target;
+        }
+        return target;
     }
 
     @Override

@@ -38,7 +38,8 @@ public class TestUtils {
     public static void assertAnnotationInvalid(String expectedErrorMessage) {
         try {
             Method annotatedMethod = getAnnotatedMethod();
-            FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(annotatedMethod);
+            FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(annotatedMethod.getDeclaringClass(),
+                    annotatedMethod);
             fail("Annotation should be invalid for " + annotatedMethod + " but got: " + policy);
         } catch (FaultToleranceDefinitionException ex) {
             String message = ex.getMessage();

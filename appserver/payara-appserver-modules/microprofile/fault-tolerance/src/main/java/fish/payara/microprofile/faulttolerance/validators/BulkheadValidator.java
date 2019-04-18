@@ -39,11 +39,12 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 /**
  * Validator for the Fault Tolerance Bulkhead annotation.
@@ -58,11 +59,11 @@ public class BulkheadValidator {
      * @param config The config to get any override values from
      */
     public static void validateAnnotation(Bulkhead bulkhead, AnnotatedMethod<?> annotatedMethod, Config config) {
-        int value = FaultToleranceCdiUtils.getOverrideValue( 
+        int value = FaultToleranceUtils.getOverrideValue( 
                 config, Bulkhead.class, "value", annotatedMethod.getJavaMember().getName(),
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.value());
-        int waitingTaskQueue = FaultToleranceCdiUtils.getOverrideValue(
+        int waitingTaskQueue = FaultToleranceUtils.getOverrideValue(
                 config, Bulkhead.class, "waitingTaskQueue", annotatedMethod.getJavaMember().getName(),
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(bulkhead.waitingTaskQueue());

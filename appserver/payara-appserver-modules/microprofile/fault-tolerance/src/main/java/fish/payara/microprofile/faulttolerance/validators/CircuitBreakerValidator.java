@@ -39,11 +39,12 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 /**
  * Validator for the Fault Tolerance CircuitBreaker annotation.
@@ -59,22 +60,22 @@ public class CircuitBreakerValidator {
      */
     public static void validateAnnotation(CircuitBreaker circuitBreaker, AnnotatedMethod<?> annotatedMethod, 
             Config config) {
-        long delay = FaultToleranceCdiUtils.getOverrideValue( 
+        long delay = FaultToleranceUtils.getOverrideValue( 
                 config, CircuitBreaker.class, "delay", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(circuitBreaker.delay());
         
-        int requestVolumeThreshold = FaultToleranceCdiUtils.getOverrideValue(
+        int requestVolumeThreshold = FaultToleranceUtils.getOverrideValue(
                 config, CircuitBreaker.class, "requestVolumeThreshold", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(circuitBreaker.requestVolumeThreshold());
         
-        double failureRatio = FaultToleranceCdiUtils.getOverrideValue(
+        double failureRatio = FaultToleranceUtils.getOverrideValue(
                 config, CircuitBreaker.class, "failureRatio", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Double.class)
                 .orElse(circuitBreaker.failureRatio());
         
-        int successThreshold = FaultToleranceCdiUtils.getOverrideValue(
+        int successThreshold = FaultToleranceUtils.getOverrideValue(
                 config, CircuitBreaker.class, "successThreshold", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Integer.class)
                 .orElse(circuitBreaker.successThreshold());

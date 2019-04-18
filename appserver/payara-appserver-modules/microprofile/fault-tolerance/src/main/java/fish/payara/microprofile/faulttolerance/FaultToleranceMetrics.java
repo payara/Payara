@@ -2,8 +2,6 @@ package fish.payara.microprofile.faulttolerance;
 
 import java.util.function.LongSupplier;
 
-import javax.interceptor.InvocationContext;
-
 /**
  * Encodes the specifics of the FT metrics names using default methods while decoupling
  * {@link org.eclipse.microprofile.metrics.MetricRegistry}.
@@ -25,7 +23,7 @@ public interface FaultToleranceMetrics {
      * @param annotationType
      * @param context
      */
-    default void increment(String metric, InvocationContext context) {
+    default void increment(String metric) {
         //NOOP (used when metrics are disabled)
     }
 
@@ -37,7 +35,7 @@ public interface FaultToleranceMetrics {
      * @param annotationType
      * @param context
      */
-    default void add(String metric, long nanos, InvocationContext context) {
+    default void add(String metric, long nanos) {
         //NOOP (used when metrics are disabled)
     }
 
@@ -49,7 +47,7 @@ public interface FaultToleranceMetrics {
      * @param annotationType
      * @param context
      */
-    default void insert(String metric, LongSupplier gauge, InvocationContext context) {
+    default void insert(String metric, LongSupplier gauge) {
         //NOOP (used when metrics are disabled)
     }
 
@@ -58,12 +56,12 @@ public interface FaultToleranceMetrics {
      * @Retry, @Timeout, @CircuitBreaker, @Bulkhead and @Fallback
      */
 
-    default void incrementInvocationsTotal(InvocationContext context) {
-        increment("ft.%s.invocations.total", context);
+    default void incrementInvocationsTotal() {
+        increment("ft.%s.invocations.total");
     }
 
-    default void incrementInvocationsFailedTotal(InvocationContext context) {
-        increment("ft.%s.invocations.failed.total", context);
+    default void incrementInvocationsFailedTotal() {
+        increment("ft.%s.invocations.failed.total");
     }
 
 
@@ -71,20 +69,20 @@ public interface FaultToleranceMetrics {
      * @Retry
      */
 
-    default void incrementRetryCallsSucceededNotRetriedTotal(InvocationContext context) {
-        increment("ft.%s.retry.callsSucceededNotRetried.total", context);
+    default void incrementRetryCallsSucceededNotRetriedTotal() {
+        increment("ft.%s.retry.callsSucceededNotRetried.total");
     }
 
-    default void incrementRetryCallsSucceededRetriedTotal(InvocationContext context) {
-        increment("ft.%s.retry.callsSucceededRetried.total", context);
+    default void incrementRetryCallsSucceededRetriedTotal() {
+        increment("ft.%s.retry.callsSucceededRetried.total");
     }
 
-    default void incrementRetryCallsFailedTotal(InvocationContext context) {
-        increment("ft.%s.retry.callsFailed.total", context);
+    default void incrementRetryCallsFailedTotal() {
+        increment("ft.%s.retry.callsFailed.total");
     }
 
-    default void incrementRetryRetriesTotal(InvocationContext context) {
-        increment("ft.%s.retry.retries.total", context);
+    default void incrementRetryRetriesTotal() {
+        increment("ft.%s.retry.retries.total");
     }
 
 
@@ -92,16 +90,16 @@ public interface FaultToleranceMetrics {
      * @Timeout
      */
 
-    default void addTimeoutExecutionDuration(long duration, InvocationContext context) {
-        add("ft.%s.timeout.executionDuration", duration, context);
+    default void addTimeoutExecutionDuration(long duration) {
+        add("ft.%s.timeout.executionDuration", duration);
     }
 
-    default void incrementTimeoutCallsTimedOutTotal(InvocationContext context) {
-        increment("ft.%s.timeout.callsTimedOut.total", context);
+    default void incrementTimeoutCallsTimedOutTotal() {
+        increment("ft.%s.timeout.callsTimedOut.total");
     }
 
-    default void incrementTimeoutCallsNotTimedOutTotal(InvocationContext context) {
-        increment("ft.%s.timeout.callsNotTimedOut.total", context);
+    default void incrementTimeoutCallsNotTimedOutTotal() {
+        increment("ft.%s.timeout.callsNotTimedOut.total");
     }
 
 
@@ -109,32 +107,32 @@ public interface FaultToleranceMetrics {
      * @CircuitBreaker
      */
 
-    default void incrementCircuitbreakerCallsSucceededTotal(InvocationContext context) {
-        increment("ft.%s.circuitbreaker.callsSucceeded.total", context);
+    default void incrementCircuitbreakerCallsSucceededTotal() {
+        increment("ft.%s.circuitbreaker.callsSucceeded.total");
     }
 
-    default void incrementCircuitbreakerCallsFailedTotal(InvocationContext context) {
-        increment("ft.%s.circuitbreaker.callsFailed.total", context);
+    default void incrementCircuitbreakerCallsFailedTotal() {
+        increment("ft.%s.circuitbreaker.callsFailed.total");
     }
 
-    default void incrementCircuitbreakerCallsPreventedTotal(InvocationContext context) {
-        increment("ft.%s.circuitbreaker.callsPrevented.total", context);
+    default void incrementCircuitbreakerCallsPreventedTotal() {
+        increment("ft.%s.circuitbreaker.callsPrevented.total");
     }
 
-    default void incrementCircuitbreakerOpenedTotal(InvocationContext context) {
-        increment("ft.%s.circuitbreaker.opened.total", context);
+    default void incrementCircuitbreakerOpenedTotal() {
+        increment("ft.%s.circuitbreaker.opened.total");
     }
 
-    default void insertCircuitbreakerOpenTotal(LongSupplier gauge, InvocationContext context) {
-        insert("ft.%s.circuitbreaker.open.total", gauge, context);
+    default void insertCircuitbreakerOpenTotal(LongSupplier gauge) {
+        insert("ft.%s.circuitbreaker.open.total", gauge);
     }
 
-    default void insertCircuitbreakerHalfOpenTotal(LongSupplier gauge, InvocationContext context) {
-        insert("ft.%s.circuitbreaker.halfOpen.total", gauge, context);
+    default void insertCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
+        insert("ft.%s.circuitbreaker.halfOpen.total", gauge);
     }
 
-    default void insertCircuitbreakerClosedTotal(LongSupplier gauge, InvocationContext context) {
-        insert("ft.%s.circuitbreaker.closed.total", gauge, context);
+    default void insertCircuitbreakerClosedTotal(LongSupplier gauge) {
+        insert("ft.%s.circuitbreaker.closed.total", gauge);
     }
 
 
@@ -142,28 +140,28 @@ public interface FaultToleranceMetrics {
      * @Bulkhead
      */
 
-    default void incrementBulkheadCallsAcceptedTotal(InvocationContext context) {
-        increment("ft.%s.bulkhead.callsAccepted.total", context);
+    default void incrementBulkheadCallsAcceptedTotal() {
+        increment("ft.%s.bulkhead.callsAccepted.total");
     }
 
-    default void incrementBulkheadCallsRejectedTotal(InvocationContext context) {
-        increment("ft.%s.bulkhead.callsRejected.total", context);
+    default void incrementBulkheadCallsRejectedTotal() {
+        increment("ft.%s.bulkhead.callsRejected.total");
     }
 
-    default void insertBulkheadConcurrentExecutions(LongSupplier gauge, InvocationContext context) {
-        insert("ft.%s.bulkhead.concurrentExecutions", gauge, context);
+    default void insertBulkheadConcurrentExecutions(LongSupplier gauge) {
+        insert("ft.%s.bulkhead.concurrentExecutions", gauge);
     }
 
-    default void insertBulkheadWaitingQueuePopulation(LongSupplier gauge, InvocationContext context) {
-        insert("ft.%s.bulkhead.waitingQueue.population", gauge, context);
+    default void insertBulkheadWaitingQueuePopulation(LongSupplier gauge) {
+        insert("ft.%s.bulkhead.waitingQueue.population", gauge);
     }
 
-    default void addBulkheadExecutionDuration(long duration, InvocationContext context) {
-        add("ft.%s.bulkhead.executionDuration", duration, context);
+    default void addBulkheadExecutionDuration(long duration) {
+        add("ft.%s.bulkhead.executionDuration", duration);
     }
 
-    default void addBulkheadWaitingDuration(long duration, InvocationContext context) {
-        add("ft.%s.bulkhead.waiting.duration", duration, context);
+    default void addBulkheadWaitingDuration(long duration) {
+        add("ft.%s.bulkhead.waiting.duration", duration);
     }
 
 
@@ -171,7 +169,7 @@ public interface FaultToleranceMetrics {
      * @Fallback
      */
 
-    default void incrementFallbackCallsTotal(InvocationContext context) {
-        increment("ft.%s.fallback.calls.total", context);
+    default void incrementFallbackCallsTotal() {
+        increment("ft.%s.fallback.calls.total");
     }
 }

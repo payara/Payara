@@ -76,11 +76,11 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
         // Attempt to proceed the invocation with CircuitBreaker semantics if Fault Tolerance is enabled for this method
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled
-            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(CircuitBreaker.class, context)) {
+            if (getConfig().isNonFallbackEnabled() && getConfig().isEnabled(CircuitBreaker.class)) {
                 // Only increment the invocations metric if the Retry and Bulkhead annotations aren't present
-                if (getConfig().getAnnotation(Bulkhead.class, context) == null
-                        && getConfig().getAnnotation(Retry.class, context) == null) {
-                    getMetrics().incrementInvocationsTotal(context);
+                if (getConfig().getAnnotation(Bulkhead.class) == null
+                        && getConfig().getAnnotation(Retry.class) == null) {
+                    getMetrics().incrementInvocationsTotal();
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
@@ -91,23 +91,23 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                 resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Retry retry = getConfig().getAnnotation(Retry.class, context);
+            Retry retry = getConfig().getAnnotation(Retry.class);
 
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             }
-            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class)) {
                 logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                         + "falling back from CircuitBreaker");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(context);
+                getMetrics().incrementInvocationsFailedTotal();
                 throw ex;
             }
         }
@@ -118,29 +118,29 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
     private Object circuitBreak(InvocationContext context) throws Exception {
         Object resultValue = null;
 
-        CircuitBreaker circuitBreaker = getConfig().getAnnotation(CircuitBreaker.class, context);
+        CircuitBreaker circuitBreaker = getConfig().getAnnotation(CircuitBreaker.class);
 
-        Class<? extends Throwable>[] failOn = getConfig().failOn(circuitBreaker, context);
-        long delay = getConfig().delay(circuitBreaker, context);
-        ChronoUnit delayUnit = getConfig().delayUnit(circuitBreaker, context);
-        int requestVolumeThreshold = getConfig().requestVolumeThreshold(circuitBreaker, context);
-        double failureRatio = getConfig().failureRatio(circuitBreaker, context);
-        int successThreshold = getConfig().successThreshold(circuitBreaker, context);
+        Class<? extends Throwable>[] failOn = getConfig().failOn(circuitBreaker);
+        long delay = getConfig().delay(circuitBreaker);
+        ChronoUnit delayUnit = getConfig().delayUnit(circuitBreaker);
+        int requestVolumeThreshold = getConfig().requestVolumeThreshold(circuitBreaker);
+        double failureRatio = getConfig().failureRatio(circuitBreaker);
+        int successThreshold = getConfig().successThreshold(circuitBreaker);
 
         long delayMillis = Duration.of(delay, delayUnit).toMillis();
 
         CircuitBreakerState circuitBreakerState = getExecution().getState(requestVolumeThreshold, context);
 
-        if (getConfig().isMetricsEnabled(context)) {
-            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::nanosOpen, context);
-            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::nanosHalfOpen, context);
-            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::nanosClosed, context);
+        if (getConfig().isMetricsEnabled()) {
+            getMetrics().insertCircuitbreakerOpenTotal(circuitBreakerState::nanosOpen);
+            getMetrics().insertCircuitbreakerHalfOpenTotal(circuitBreakerState::nanosHalfOpen);
+            getMetrics().insertCircuitbreakerClosedTotal(circuitBreakerState::nanosClosed);
         }
 
         switch (circuitBreakerState.getCircuitState()) {
             case OPEN:
                 logger.log(Level.FINER, "CircuitBreaker is Open, throwing exception");
-                getMetrics().incrementCircuitbreakerCallsPreventedTotal(context);
+                getMetrics().incrementCircuitbreakerCallsPreventedTotal();
 
                 // If open, immediately throw an error
                 throw new CircuitBreakerOpenException("CircuitBreaker for method "
@@ -159,7 +159,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                                 + "recording failure against CircuitBreaker");
                         // Add a failure result to the queue
                         circuitBreakerState.recordClosedResult(Boolean.FALSE);
-                        getMetrics().incrementCircuitbreakerCallsFailedTotal(context);
+                        getMetrics().incrementCircuitbreakerCallsFailedTotal();
 
                         // Calculate the failure ratio, and if we're over it, open the circuit
                         breakCircuitIfRequired(
@@ -173,7 +173,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
 
                 // If everything is bon, add a success value
                 circuitBreakerState.recordClosedResult(Boolean.TRUE);
-                getMetrics().incrementCircuitbreakerCallsSucceededTotal(context);
+                getMetrics().incrementCircuitbreakerCallsSucceededTotal();
 
                 // Calculate the failure ratio, and if we're over it, open the circuit
                 breakCircuitIfRequired(
@@ -193,7 +193,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
                         logger.log(Level.FINE, "Caught exception is included in CircuitBreaker failOn, "
                                 + "reopening half open circuit");
 
-                        getMetrics().incrementCircuitbreakerCallsFailedTotal(context);
+                        getMetrics().incrementCircuitbreakerCallsFailedTotal();
 
                         // Open the circuit again, and reset the half-open result counter
                         circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
@@ -206,7 +206,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
 
                 // If the invocation context hasn't thrown an error, record a success
                 circuitBreakerState.incrementHalfOpenSuccessfulResultCounter();
-                getMetrics().incrementCircuitbreakerCallsSucceededTotal(context);
+                getMetrics().incrementCircuitbreakerCallsSucceededTotal();
 
                 logger.log(Level.FINER, "Number of consecutive successful circuitbreaker executions = {0}",
                         circuitBreakerState.getHalfOpenSuccessFulResultCounter());
@@ -278,7 +278,7 @@ public class CircuitBreakerInterceptor extends BaseFaultToleranceInterceptor<Cir
             circuitBreakerState.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
 
             // Update the opened metric counter
-            getMetrics().incrementCircuitbreakerOpenedTotal(context);
+            getMetrics().incrementCircuitbreakerOpenedTotal();
 
             // Kick off a thread that will half-open the circuit after the specified delay
             getExecution().scheduleDelayed(delayMillis, circuitBreakerState::halfOpen);

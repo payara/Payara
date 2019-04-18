@@ -76,12 +76,12 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Timeout.class, context)) {
+            if (getConfig().isNonFallbackEnabled() && getConfig().isEnabled(Timeout.class)) {
                 // Only increment the invocations metric if the Retry, Bulkhead, and CircuitBreaker annotations aren't present
-                if (getConfig().getAnnotation(Bulkhead.class, context) == null
-                        && getConfig().getAnnotation(Retry.class, context) == null
-                        && getConfig().getAnnotation(CircuitBreaker.class, context) == null) {
-                    getMetrics().incrementInvocationsTotal(context);
+                if (getConfig().getAnnotation(Bulkhead.class) == null
+                        && getConfig().getAnnotation(Retry.class) == null
+                        && getConfig().getAnnotation(CircuitBreaker.class) == null) {
+                    getMetrics().incrementInvocationsTotal();
                 }
 
                 logger.log(Level.FINER, "Proceeding invocation with timeout semantics");
@@ -92,23 +92,23 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
                 resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Retry retry = getConfig().getAnnotation(Retry.class, context);
+            Retry retry = getConfig().getAnnotation(Retry.class);
 
             if (retry != null) {
                 logger.log(Level.FINE, "Retry annotation found on method, propagating error upwards.");
                 throw ex;
             }
-            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class)) {
                 logger.log(Level.FINE, "Fallback annotation found on method, and no Retry annotation - "
                         + "falling back from Timeout");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(context);
+                getMetrics().incrementInvocationsFailedTotal();
                 throw ex;
             }
         }
@@ -124,10 +124,10 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
     private Object timeout(InvocationContext context) throws Exception {
         Object resultValue = null;
 
-        Timeout timeout = getConfig().getAnnotation(Timeout.class, context);
+        Timeout timeout = getConfig().getAnnotation(Timeout.class);
 
-        long value = getConfig().value(timeout, context);
-        ChronoUnit unit = getConfig().unit(timeout, context);
+        long value = getConfig().value(timeout);
+        ChronoUnit unit = getConfig().unit(timeout);
 
         Future<?> timeoutFuture = null;
         long timeoutMillis = Duration.of(value, unit).toMillis();
@@ -141,33 +141,33 @@ public class TimeoutInterceptor extends BaseFaultToleranceInterceptor<Timeout> {
 
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
+                getMetrics().incrementTimeoutCallsTimedOutTotal();
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException();
             }
 
             // Record the execution time for MP Metrics
-            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime);
             // Record the successfuly completion for MP Metrics
-            getMetrics().incrementTimeoutCallsNotTimedOutTotal(context);
+            getMetrics().incrementTimeoutCallsNotTimedOutTotal();
         } catch (InterruptedException ie) {
             // Record the execution time for MP Metrics
-            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime);
 
             if (System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
+                getMetrics().incrementTimeoutCallsTimedOutTotal();
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ie);
             }
         } catch (Exception ex) {
             // Record the execution time for MP Metrics
-            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime, context);
+            getMetrics().addTimeoutExecutionDuration(System.nanoTime() - executionStartTime);
 
             // Deal with cases where someone has caught the thread.interrupt() and thrown the exception as something else
             if (ex.getCause() instanceof InterruptedException && System.currentTimeMillis() > timeoutTime) {
                 // Record the timeout for MP Metrics
-                getMetrics().incrementTimeoutCallsTimedOutTotal(context);
+                getMetrics().incrementTimeoutCallsTimedOutTotal();
                 logger.log(Level.FINE, "Execution timed out");
                 throw new TimeoutException(ex);
             }

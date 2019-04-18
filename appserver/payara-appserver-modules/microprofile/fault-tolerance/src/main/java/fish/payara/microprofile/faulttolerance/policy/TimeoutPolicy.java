@@ -12,6 +12,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link Timeout} annotation an a specific method.
+ * 
+ * @author Jan Bernitt
  */
 public final class TimeoutPolicy extends Policy {
 
@@ -25,11 +27,11 @@ public final class TimeoutPolicy extends Policy {
     }
 
     public static TimeoutPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Timeout.class, context) && config.isEnabled(Timeout.class, context)) {
-            Timeout annotation = config.getAnnotation(Timeout.class, context);
+        if (config.isAnnotationPresent(Timeout.class) && config.isEnabled(Timeout.class)) {
+            Timeout annotation = config.getAnnotation(Timeout.class);
             return new TimeoutPolicy(context.getMethod(),
-                    config.value(annotation, context),
-                    config.unit(annotation, context));
+                    config.value(annotation),
+                    config.unit(annotation));
         }
         return null;
     }

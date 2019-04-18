@@ -41,13 +41,14 @@ package fish.payara.microprofile.faulttolerance.validators;
 
 import java.util.Optional;
 
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 /**
  * Validator for the Fault Tolerance Fallback Annotation.
@@ -66,13 +67,13 @@ public class FallbackValidator {
     public static void validateAnnotation(Fallback fallback, AnnotatedMethod<?> annotatedMethod, Config config) 
             throws ClassNotFoundException, NoSuchMethodException {
         // Get the fallbackMethod
-        String fallbackMethod = FaultToleranceCdiUtils.getOverrideValue( 
+        String fallbackMethod = FaultToleranceUtils.getOverrideValue( 
                 config, Fallback.class, "fallbackMethod", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class)
                 .orElse(fallback.fallbackMethod());
         
         // Get the fallbackClass, and check that it can be found
-        Optional<String> fallbackClassName = FaultToleranceCdiUtils
+        Optional<String> fallbackClassName = FaultToleranceUtils
                 .getOverrideValue(config, Fallback.class, "value", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), String.class);
         @SuppressWarnings("unchecked")

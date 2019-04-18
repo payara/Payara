@@ -39,11 +39,12 @@
  */
 package fish.payara.microprofile.faulttolerance.validators;
 
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceCdiUtils;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 /**
  * Validator for the Fault Tolerance Timeout annotation.
@@ -51,7 +52,7 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
  */
 public class TimeoutValidator {
     public static void validateAnnotation(Timeout timeout, AnnotatedMethod<?> annotatedMethod, Config config) {
-        long value = FaultToleranceCdiUtils.getOverrideValue( 
+        long value = FaultToleranceUtils.getOverrideValue( 
                 config, Timeout.class, "value", annotatedMethod.getJavaMember().getName(), 
                 annotatedMethod.getJavaMember().getDeclaringClass().getCanonicalName(), Long.class)
                 .orElse(timeout.value());

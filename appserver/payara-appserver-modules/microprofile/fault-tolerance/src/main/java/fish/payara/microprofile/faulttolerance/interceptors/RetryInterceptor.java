@@ -72,9 +72,9 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
         try {
             // Attempt to proceed the InvocationContext with Asynchronous semantics if Fault Tolerance is enabled for this
             // method
-            if (getConfig().isNonFallbackEnabled(context) && getConfig().isEnabled(Retry.class, context)) {
+            if (getConfig().isNonFallbackEnabled() && getConfig().isEnabled(Retry.class)) {
                 // Increment the invocations metric
-                getMetrics().incrementInvocationsTotal(context);
+                getMetrics().incrementInvocationsTotal();
 
                 logger.log(Level.FINER, "Proceeding invocation with retry semantics");
                 resultValue = retry(context);
@@ -84,16 +84,16 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                 resultValue = context.proceed();
             }
         } catch (Exception ex) {
-            Fallback fallback = getConfig().getAnnotation(Fallback.class, context);
+            Fallback fallback = getConfig().getAnnotation(Fallback.class);
 
             // Only fall back if the annotation hasn't been disabled
-            if (fallback != null && getConfig().isEnabled(Fallback.class, context)) {
+            if (fallback != null && getConfig().isEnabled(Fallback.class)) {
                 logger.log(Level.FINE, "Fallback annotation found on method - falling back from Retry");
                 FallbackPolicy fallbackPolicy = new FallbackPolicy(fallback, getConfig(), getExecution(), getMetrics(), context);
                 resultValue = fallbackPolicy.fallback(context, ex);
             } else {
                 // Increment the failure counter metric
-                getMetrics().incrementInvocationsFailedTotal(context);
+                getMetrics().incrementInvocationsFailedTotal();
                 throw ex;
             }
         }
@@ -110,27 +110,27 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
      */
     private Object retry(InvocationContext context) throws Exception {
         Object resultValue = null;
-        Retry retry = getConfig().getAnnotation(Retry.class, context);
+        Retry retry = getConfig().getAnnotation(Retry.class);
 
         try {
             resultValue = context.proceed();
-            getMetrics().incrementRetryCallsSucceededNotRetriedTotal(context);
+            getMetrics().incrementRetryCallsSucceededNotRetriedTotal();
         } catch (Exception ex) {
-            final Class<? extends Throwable>[] retryOn = getConfig().retryOn(retry, context);
-            final Class<? extends Throwable>[] abortOn = getConfig().abortOn(retry, context);
+            final Class<? extends Throwable>[] retryOn = getConfig().retryOn(retry);
+            final Class<? extends Throwable>[] abortOn = getConfig().abortOn(retry);
 
             if (!shouldRetry(retryOn, abortOn, ex)) {
                 logger.log(Level.FINE, "Exception is contained in retryOn or abortOn, not retrying.", ex);
                 throw ex;
             }
 
-            int maxRetries = getConfig().maxRetries(retry, context);
-            long delay = getConfig().delay(retry, context);
-            ChronoUnit delayUnit = getConfig().delayUnit(retry, context);
-            long maxDuration = getConfig().maxDuration(retry, context);
-            ChronoUnit durationUnit = getConfig().durationUnit(retry, context);
-            long jitter = getConfig().jitter(retry, context);
-            ChronoUnit jitterDelayUnit = getConfig().jitterDelayUnit(retry, context);
+            int maxRetries = getConfig().maxRetries(retry);
+            long delay = getConfig().delay(retry);
+            ChronoUnit delayUnit = getConfig().delayUnit(retry);
+            long maxDuration = getConfig().maxDuration(retry);
+            ChronoUnit durationUnit = getConfig().durationUnit(retry);
+            long jitter = getConfig().jitter(retry);
+            ChronoUnit jitterDelayUnit = getConfig().jitterDelayUnit(retry);
 
             long delayMillis = Duration.of(delay, delayUnit).toMillis();
             long jitterMillis = Duration.of(jitter, jitterDelayUnit).toMillis();
@@ -147,11 +147,11 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                     logger.log(Level.FINER, "Retrying until maxDuration is breached.");
 
                     while (System.currentTimeMillis() < timeoutTime) {
-                        getMetrics().incrementRetryRetriesTotal(context);
+                        getMetrics().incrementRetryRetriesTotal();
                         try {
                             resultValue = context.proceed();
                             succeeded = true;
-                            getMetrics().incrementRetryCallsSucceededRetriedTotal(context);
+                            getMetrics().incrementRetryCallsSucceededRetriedTotal();
                             break;
                         } catch (Exception caughtException) {
                             retryException = caughtException;
@@ -172,10 +172,10 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                 } else if (maxRetries == -1 && maxDuration == 0) {
                     logger.log(Level.INFO, "Retrying potentially forever!");
                     while (true) {
-                        getMetrics().incrementRetryRetriesTotal(context);
+                        getMetrics().incrementRetryRetriesTotal();
                         try {
                             resultValue = context.proceed();
-                            getMetrics().incrementRetryCallsSucceededRetriedTotal(context);
+                            getMetrics().incrementRetryCallsSucceededRetriedTotal();
                             succeeded = true;
                             break;
                         } catch (Exception caughtException) {
@@ -199,10 +199,10 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                             "Retrying as long as maxDuration ({0}ms) isn''t breached, and no more than {1} times",
                             new Object[]{Duration.of(maxDuration, durationUnit).toMillis(), maxRetries});
                     while (maxRetries > 0 && System.currentTimeMillis() < timeoutTime) {
-                        getMetrics().incrementRetryRetriesTotal(context);
+                        getMetrics().incrementRetryRetriesTotal();
                         try {
                             resultValue = context.proceed();
-                            getMetrics().incrementRetryCallsSucceededRetriedTotal(context);
+                            getMetrics().incrementRetryCallsSucceededRetriedTotal();
                             succeeded = true;
                             break;
                         } catch (Exception caughtException) {
@@ -226,10 +226,10 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
                 } else {
                     logger.log(Level.INFO, "Retrying no more than {0} times", maxRetries);
                     while (maxRetries > 0) {
-                        getMetrics().incrementRetryRetriesTotal(context);
+                        getMetrics().incrementRetryRetriesTotal();
                         try {
                             resultValue = context.proceed();
-                            getMetrics().incrementRetryCallsSucceededRetriedTotal(context);
+                            getMetrics().incrementRetryCallsSucceededRetriedTotal();
                             succeeded = true;
                             break;
                         } catch (Exception caughtException) {
@@ -256,7 +256,7 @@ public class RetryInterceptor extends BaseFaultToleranceInterceptor<Retry> {
             }
 
             if (!succeeded) {
-                getMetrics().incrementRetryCallsFailedTotal(context);
+                getMetrics().incrementRetryCallsFailedTotal();
                 throw retryException;
             }
         }

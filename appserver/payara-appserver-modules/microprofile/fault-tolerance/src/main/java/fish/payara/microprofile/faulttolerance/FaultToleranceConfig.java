@@ -1,11 +1,10 @@
 package fish.payara.microprofile.faulttolerance;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
 
-import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -13,9 +12,6 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
-import org.jvnet.hk2.annotations.Contract;
-
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
  * Encapsulates all properties extracted from FT annotations and the {@link org.eclipse.microprofile.config.Config} so
@@ -23,44 +19,49 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
  * 
  * The default implementations provided will extract properties plain from the given annotations.
  */
-@SuppressWarnings("unused")
-@Contract
+@FunctionalInterface
 public interface FaultToleranceConfig {
+
+    int DEFAULT_INTERCEPTOR_PRIORITY = Interceptor.Priority.PLATFORM_AFTER + 15;
 
     /**
      * FT behaves as stated by the present FT annotations.
      */
-    FaultToleranceConfig ANNOTATED = new FaultToleranceConfig() {
-        // uses default methods
-    };
+    static FaultToleranceConfig asAnnotated(Class<?> target, Method method) {
+        return new FaultToleranceConfig() {
+            @Override
+            public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
+                A annotation = method.getAnnotation(annotationType);
+                return annotation != null ? annotation : target.getAnnotation(annotationType);
+            }
+        };
+    }
+
+    <A extends Annotation> A getAnnotation(Class<A> annotationType);
 
     /*
      * General
      */
 
-    default boolean isNonFallbackEnabled(InvocationContext context) {
+    default boolean isNonFallbackEnabled() {
         return true;
     }
 
-    default boolean isEnabled(Class<? extends Annotation> annotationType, InvocationContext context) {
+    @SuppressWarnings("unused")
+    default boolean isEnabled(Class<? extends Annotation> annotationType) {
         return true;
     }
 
-    default boolean isMetricsEnabled(InvocationContext context) {
+    default boolean isMetricsEnabled() {
         return true;
     }
 
-    default <A extends Annotation> A getAnnotation(Class<A> annotationType, InvocationContext context) {
-        A annotation = context.getMethod().getAnnotation(annotationType);
-        return annotation != null ? annotation : context.getMethod().getDeclaringClass().getAnnotation(annotationType);
-    }
-
-    default boolean isAnnotationPresent(Class<? extends Annotation> annotationType, InvocationContext context) {
-        return getAnnotation(annotationType, context) != null;
+    default boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
+        return getAnnotation(annotationType) != null;
     }
 
     default int interceptorPriority() {
-        return Interceptor.Priority.PLATFORM_AFTER + 15;
+        return DEFAULT_INTERCEPTOR_PRIORITY;
     }
 
 
@@ -68,39 +69,39 @@ public interface FaultToleranceConfig {
      * Retry
      */
 
-    default int maxRetries(Retry annotation, InvocationContext context) {
+    default int maxRetries(Retry annotation) {
         return annotation.maxRetries();
     }
 
-    default long delay(Retry annotation, InvocationContext context) {
+    default long delay(Retry annotation) {
         return annotation.delay();
     }
 
-    default ChronoUnit delayUnit(Retry annotation, InvocationContext context) {
+    default ChronoUnit delayUnit(Retry annotation) {
         return annotation.delayUnit();
     }
 
-    default long maxDuration(Retry annotation, InvocationContext context) {
+    default long maxDuration(Retry annotation) {
         return annotation.maxDuration();
     }
 
-    default ChronoUnit durationUnit(Retry annotation, InvocationContext context) {
+    default ChronoUnit durationUnit(Retry annotation) {
         return annotation.durationUnit();
     }
 
-    default long jitter(Retry annotation, InvocationContext context) {
+    default long jitter(Retry annotation) {
         return annotation.jitter();
     }
 
-    default ChronoUnit jitterDelayUnit(Retry annotation, InvocationContext context) {
+    default ChronoUnit jitterDelayUnit(Retry annotation) {
         return annotation.jitterDelayUnit();
     }
 
-    default Class<? extends Throwable>[] retryOn(Retry annotation, InvocationContext context) {
+    default Class<? extends Throwable>[] retryOn(Retry annotation) {
         return annotation.retryOn();
     }
 
-    default Class<? extends Throwable>[] abortOn(Retry annotation, InvocationContext context) {
+    default Class<? extends Throwable>[] abortOn(Retry annotation) {
         return annotation.abortOn();
     }
 
@@ -109,27 +110,27 @@ public interface FaultToleranceConfig {
      * Circuit-Breaker
      */
 
-    default Class<? extends Throwable>[] failOn(CircuitBreaker annotation, InvocationContext context) {
+    default Class<? extends Throwable>[] failOn(CircuitBreaker annotation) {
         return annotation.failOn();
     }
 
-    default long delay(CircuitBreaker annotation, InvocationContext context) {
+    default long delay(CircuitBreaker annotation) {
         return annotation.delay();
     }
 
-    default ChronoUnit delayUnit(CircuitBreaker annotation, InvocationContext context) {
+    default ChronoUnit delayUnit(CircuitBreaker annotation) {
         return annotation.delayUnit();
     }
 
-    default int requestVolumeThreshold(CircuitBreaker annotation, InvocationContext context) {
+    default int requestVolumeThreshold(CircuitBreaker annotation) {
         return annotation.requestVolumeThreshold();
     }
 
-    default double failureRatio(CircuitBreaker annotation, InvocationContext context) {
+    default double failureRatio(CircuitBreaker annotation) {
         return annotation.failureRatio();
     }
 
-    default int successThreshold(CircuitBreaker annotation, InvocationContext context) {
+    default int successThreshold(CircuitBreaker annotation) {
         return annotation.successThreshold();
     }
 
@@ -138,11 +139,11 @@ public interface FaultToleranceConfig {
      * Bulkhead
      */
 
-    default int value(Bulkhead annotation, InvocationContext context) {
+    default int value(Bulkhead annotation) {
         return annotation.value();
     }
 
-    default int waitingTaskQueue(Bulkhead annotation, InvocationContext context) {
+    default int waitingTaskQueue(Bulkhead annotation) {
         return annotation.waitingTaskQueue();
     }
 
@@ -151,11 +152,11 @@ public interface FaultToleranceConfig {
      * Timeout
      */
 
-    default long value(Timeout annotation, InvocationContext context) {
+    default long value(Timeout annotation) {
         return annotation.value();
     }
 
-    default ChronoUnit unit(Timeout annotation, InvocationContext context) {
+    default ChronoUnit unit(Timeout annotation) {
         return annotation.unit();
     }
 
@@ -164,11 +165,11 @@ public interface FaultToleranceConfig {
      * Fallback
      */
 
-    default Class<? extends FallbackHandler<?>> value(Fallback annotation, InvocationContext context) {
+    default Class<? extends FallbackHandler<?>> value(Fallback annotation) {
         return annotation.value();
     }
 
-    default String fallbackMethod(Fallback annotation, InvocationContext context) {
+    default String fallbackMethod(Fallback annotation) {
         return annotation.fallbackMethod();
     }
 }
