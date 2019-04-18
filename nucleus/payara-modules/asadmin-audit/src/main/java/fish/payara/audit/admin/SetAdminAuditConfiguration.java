@@ -60,6 +60,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -107,7 +108,7 @@ public class SetAdminAuditConfiguration implements AdminCommand {
 
     @Inject
     private Target targetUtil;
-
+    
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -127,7 +128,7 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                 }
             }, configuration);
 
-            if (dynamic) {
+            if (dynamic && target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
                 auditService.setEnabled(enabled);
                 auditService.setAuditLevel(AuditLevel.valueOf(auditLevel));
             }

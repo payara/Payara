@@ -55,7 +55,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
          setPageSessionAttribute(key="ADMIN_AUDIT_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration"); 
 
-        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration" method="GET" result="#{requestScope.resp}"); 
+        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration?target=#{pageSession.configName}" method="GET" result="#{requestScope.resp}"); 
                 
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
         setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
@@ -93,7 +93,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                      mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                      mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
                      prepareSuccessfulMsg();
-                     gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration" 
+                     gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration?target=#{pageSession.configName}" 
                      attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                      
                      py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");

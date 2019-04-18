@@ -42,14 +42,22 @@
  */
 package fish.payara.audit.admin;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -60,7 +68,12 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * Gets the current configuration of the admin audit service
@@ -84,7 +97,14 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
     private final static String[] NOTIFIER_HEADERS= {"Name", "Notifier Enabled"};
     
     @Inject
-    private AdminAuditConfiguration config;
+    ServiceLocator habitat;
+    
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    private String target;
+    private Config targetConfig;
+    
+    @Inject
+    private Target targetUtil;
     
     @Override
     public void execute(AdminCommandContext context) {
@@ -92,10 +112,13 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         
         ColumnFormatter columnFormatter = new ColumnFormatter(ATTRIBUTE_HEADERS);
-        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);        
+        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);   
         
-        Object[] values = {config.getEnabled(), config.getAuditLevel()};
-        columnFormatter.addRow(values);
+        targetConfig = targetUtil.getConfig(target);
+        AdminAuditConfiguration config = targetConfig.getExtensionByType(AdminAuditConfiguration.class);
+        
+        Object[] configValues = {config.getEnabled(), config.getAuditLevel()};
+        columnFormatter.addRow(configValues);
         
         Map<String, Object> map = new HashMap<>();
         Properties extraProperties = new Properties();
@@ -105,11 +128,39 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         
         ActionReport notifiersReport = actionReport.addSubActionsReport();
         
+        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+        
         Properties notifierProps = new Properties();
-        for (Notifier notifier: config.getNotifierList()) {
-            Object[] notifierValues = { notifier.toString(), notifier.getEnabled()};
-            notifiersColumnFormatter.addRow(notifierValues);
-            notifierProps.put(notifier.toString(), notifier.getEnabled());
+        if (!config.getNotifierList().isEmpty()) {
+            List<Class<Notifier>> notifierClassList = Lists.transform(config.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
+                @Override
+                public Class<Notifier> apply(Notifier input) {
+                    return resolveNotifierClass(input);
+                }
+            });
+
+            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
+                Notifier notifier = config.getNotifierByType(serviceHandle.getService().getNotifierType());
+                if (notifier != null) {
+                    ConfigView view = ConfigSupport.getImpl(notifier);
+                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+
+                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
+                        Object values[] = new Object[2];
+                        values[0] = annotation.type();
+                        values[1] = notifier.getEnabled();
+                        notifiersColumnFormatter.addRow(values);
+
+                        Map<String, Object> mapNotifiers = new HashMap<>(2);
+                        mapNotifiers.put("notifierName", values[0]);
+                        mapNotifiers.put("notifierEnabled", values[1]);
+
+                        notifierProps.put("notifierList" + annotation.type(), mapNotifiers);
+                    }
+                }
+
+             //   extraProperties.putAll(notifierProps);
+            }
         }
         notifiersReport.setMessage(notifiersColumnFormatter.toString());
         extraProperties.put("notifiers", notifierProps);
@@ -119,6 +170,11 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         
         actionReport.setMessage(columnFormatter.toString());
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+    
+    private Class<Notifier> resolveNotifierClass(Notifier input) {
+        ConfigView view = ConfigSupport.getImpl(input);
+        return view.getProxyType();
     }
     
 }
