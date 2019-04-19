@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,13 +27,12 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
  *
  * @author Jan Bernitt
  */
-final class FaultToleranceConfigFactory implements FaultToleranceConfig {
+final class BindableFaultToleranceConfig implements FaultToleranceConfig {
 
     private static final String NON_FALLBACK_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
     private static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
-    private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
 
-    private static final Logger logger = Logger.getLogger(FaultToleranceConfigFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(BindableFaultToleranceConfig.class.getName());
 
     /**
      * These tree properties should only be read once at the start of the application, therefore they are cached in
@@ -42,29 +40,25 @@ final class FaultToleranceConfigFactory implements FaultToleranceConfig {
      */
     private final AtomicReference<Boolean> nonFallbackEnabled;
     private final AtomicReference<Boolean> metricsEnabled;
-    private final AtomicInteger interceptorPriority;
     private final Config config;
     private final Stereotypes sterotypes;
     private final InvocationContext context;
 
-    public FaultToleranceConfigFactory(Stereotypes sterotypes) {
+    public BindableFaultToleranceConfig(Stereotypes sterotypes) {
         this.sterotypes = sterotypes;
         this.config = resolveConfig();
         this.nonFallbackEnabled = new AtomicReference<>();
         this.metricsEnabled = new AtomicReference<>();
-        this.interceptorPriority = new AtomicInteger(-1);
         this.context = null; // factory is unbound
     }
 
-    private FaultToleranceConfigFactory(InvocationContext context, Stereotypes sterotypes, Config config,
-            AtomicReference<Boolean> nonFallbackEnabled, AtomicReference<Boolean> metricsEnabled,
-            AtomicInteger interceptorPriority) {
+    private BindableFaultToleranceConfig(InvocationContext context, Stereotypes sterotypes, Config config,
+            AtomicReference<Boolean> nonFallbackEnabled, AtomicReference<Boolean> metricsEnabled) {
         this.context = context;
         this.sterotypes = sterotypes;
         this.config = config;
         this.nonFallbackEnabled = nonFallbackEnabled;
         this.metricsEnabled = metricsEnabled;
-        this.interceptorPriority = interceptorPriority;
     }
 
     private static Config resolveConfig() {
@@ -84,8 +78,7 @@ final class FaultToleranceConfigFactory implements FaultToleranceConfig {
     public FaultToleranceConfig bindTo(InvocationContext context) {
         return config == null
                 ? FaultToleranceConfig.asAnnotated(context.getTarget().getClass(), context.getMethod())
-                : new FaultToleranceConfigFactory(context, sterotypes, config, nonFallbackEnabled, metricsEnabled,
-                        interceptorPriority);
+                : new BindableFaultToleranceConfig(context, sterotypes, config, nonFallbackEnabled, metricsEnabled);
     }
 
     /*
@@ -119,13 +112,6 @@ final class FaultToleranceConfigFactory implements FaultToleranceConfig {
     public boolean isEnabled(Class<? extends Annotation> annotationType) {
         return FaultToleranceUtils.getEnabledOverrideValue(config, annotationType, context,
                         annotationType == Fallback.class || isNonFallbackEnabled());
-    }
-
-    @Override
-    public int interceptorPriority() {
-        return interceptorPriority.updateAndGet(priority -> priority > 0 ? priority
-                        : config.getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY, Integer.class)
-                                .orElse(DEFAULT_INTERCEPTOR_PRIORITY));
     }
 
     /*

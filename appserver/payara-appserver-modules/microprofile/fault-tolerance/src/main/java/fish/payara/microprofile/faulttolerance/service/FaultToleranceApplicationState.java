@@ -53,8 +53,8 @@ final class FaultToleranceApplicationState {
     private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
     private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
-    private final AtomicReference<FaultToleranceConfigFactory> config = new AtomicReference<>();
-    private final AtomicReference<FaultToleranceMetricsFactory> metrics = new AtomicReference<>();
+    private final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
+    private final AtomicReference<BindableFaultToleranceMetrics> metrics = new AtomicReference<>();
 
     public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
         return circuitBreakerStates;
@@ -68,11 +68,11 @@ final class FaultToleranceApplicationState {
         return bulkheadExecutionQueueSemaphores;
     }
 
-    public AtomicReference<FaultToleranceConfigFactory> getConfig() {
+    public AtomicReference<BindableFaultToleranceConfig> getConfig() {
         return config;
     }
 
-    public AtomicReference<FaultToleranceMetricsFactory> getMetrics() {
+    public AtomicReference<BindableFaultToleranceMetrics> getMetrics() {
         return metrics;
     }
 }

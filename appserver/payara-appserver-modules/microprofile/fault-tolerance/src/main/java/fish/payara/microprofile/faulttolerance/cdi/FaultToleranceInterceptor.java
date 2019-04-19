@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.interceptors;
+package fish.payara.microprofile.faulttolerance.cdi;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -22,9 +21,9 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 
 @Interceptor
-@FaultToleranceBehaviour
+@FaultTolerance
 @Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
-public class FaultToleranceInterceptor implements Stereotypes, Serializable, Prioritized {
+public class FaultToleranceInterceptor implements Stereotypes, Serializable {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceInterceptor.class.getName());
 
@@ -58,9 +57,5 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable, Pri
         return beanManager.getStereotypeDefinition(stereotype);
     }
 
-    @Override
-    public int getPriority() {
-        return Interceptor.Priority.PLATFORM_AFTER + 15; //TODO dynamic via config
-    }
 }
 

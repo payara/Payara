@@ -145,14 +145,14 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
         FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
         return appState.getConfig().updateAndGet(
-                config -> config != null ? config : new FaultToleranceConfigFactory(stereotypes)).bindTo(context);
+                config -> config != null ? config : new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
     @Override
     public FaultToleranceMetrics getMetrics(InvocationContext context) {
         FaultToleranceApplicationState appState = getApplicationState(getApplicationContext(context));
         return appState.getMetrics().updateAndGet(
-                metrics -> metrics != null ? metrics : new FaultToleranceMetricsFactory()).bindTo(context);
+                metrics -> metrics != null ? metrics : new BindableFaultToleranceMetrics()).bindTo(context);
     }
 
     //TODO use the scheduler to schedule a clean of FT Info

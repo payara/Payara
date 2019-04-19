@@ -39,14 +39,14 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceBehaviour;
-import fish.payara.microprofile.faulttolerance.interceptors.FaultToleranceInterceptor;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Optional;
 
+import javax.annotation.Priority;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -54,7 +54,9 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.WithAnnotations;
 import javax.enterprise.inject.spi.configurator.AnnotatedMethodConfigurator;
+import javax.enterprise.util.AnnotationLiteral;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -68,31 +70,28 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  * @author Andrew Pielage
  * @author Jan Bernitt (2.0)
  */
-public class FaultToleranceCDIExtension implements Extension {
+public class FaultToleranceExtension implements Extension {
 
     /**
-     * The {@link FaultToleranceBehaviour} "instance" we use to dynamically mark methods at runtime that should be
+     * The {@link FaultTolerance} "instance" we use to dynamically mark methods at runtime that should be
      * handled by the {@link FaultToleranceInterceptor} that handles all of the FT annotations.
      */
-    private static final Annotation MARKER = () -> FaultToleranceBehaviour.class;
+    private static final Annotation MARKER = () -> FaultTolerance.class;
+
+    private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
         beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
     }
 
-    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
-        Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType, 
-            BeanManager beanManager) throws Exception {
-        validateAndMark(processAnnotatedType);
-    }
-
     /**
-     * Marks all {@link Method}s *affected* by FT annotation with the {@link FaultToleranceBehaviour} annotation which
+     * Marks all {@link Method}s *affected* by FT annotation with the {@link FaultTolerance} annotation which
      * is handled by the {@link FaultToleranceInterceptor} which processes the FT annotations.
      * 
      * @param processAnnotatedType type currently processed
      */
-    private static <T> void validateAndMark(ProcessAnnotatedType<T> processAnnotatedType) {
+    <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
+        Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
         boolean markAllMethods = FaultToleranceUtils
                 .isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
         Class<?> targetClass = processAnnotatedType.getAnnotatedType().getJavaClass();
@@ -102,6 +101,31 @@ public class FaultToleranceCDIExtension implements Extension {
                 FaultTolerancePolicy.asAnnotated(targetClass, methodConfigurator.getAnnotated().getJavaMember());
                 methodConfigurator.add(MARKER);
             }
+        }
+    }
+
+    void changeInterceptorPriority(@Observes ProcessAnnotatedType<FaultToleranceInterceptor> interceptorType) {
+        Optional<Integer> priorityOverride = ConfigProvider.getConfig().getOptionalValue(INTERCEPTOR_PRIORITY_PROPERTY,
+                Integer.class);
+        if (priorityOverride.isPresent()) {
+            interceptorType.configureAnnotatedType()
+                .remove(annotation -> annotation instanceof Priority)
+                .add(new PriorityLiteral(priorityOverride.get()));
+        }
+    }
+
+    public static final class PriorityLiteral extends AnnotationLiteral<Priority> implements Priority {
+        private static final long serialVersionUID = 1L;
+
+        private final int value;
+
+        public PriorityLiteral(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public int value() {
+            return value;
         }
     }
 }

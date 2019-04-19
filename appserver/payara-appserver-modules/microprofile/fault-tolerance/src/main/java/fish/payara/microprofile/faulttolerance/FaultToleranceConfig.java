@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
 
-import javax.interceptor.Interceptor;
-
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
@@ -23,8 +21,6 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  */
 @FunctionalInterface
 public interface FaultToleranceConfig {
-
-    int DEFAULT_INTERCEPTOR_PRIORITY = Interceptor.Priority.PLATFORM_AFTER + 15;
 
     /**
      * FT behaves as stated by the present FT annotations.
@@ -60,10 +56,6 @@ public interface FaultToleranceConfig {
 
     default boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
         return getAnnotation(annotationType) != null;
-    }
-
-    default int interceptorPriority() {
-        return DEFAULT_INTERCEPTOR_PRIORITY;
     }
 
 

@@ -13,18 +13,17 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 
 /**
- * The {@link FaultToleranceMetricsFactory} works both as a factory where {@link #bindTo(InvocationContext)} is used to
- * create context aware instances of a {@link FaultToleranceMetrics} and as the bound {@link FaultToleranceMetrics}. For
- * thread safety immutable objects are used or created.
+ * The {@link BindableFaultToleranceMetrics} works both as a factory where {@link #bindTo(InvocationContext)} is used to
+ * create context aware instances of a {@link FaultToleranceMetrics}.
  * 
  * This {@link FaultToleranceMetrics} uses {@link CDI} to resolve the {@link MetricRegistry}. When resolution fails
  * {@link #bindTo(InvocationContext)} will use {@link FaultToleranceMetrics#DISABLED}.
  * 
  * @author Jan Bernitt
  */
-final class FaultToleranceMetricsFactory implements FaultToleranceMetrics {
+final class BindableFaultToleranceMetrics implements FaultToleranceMetrics {
 
-    private static final Logger logger = Logger.getLogger(FaultToleranceMetricsFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(BindableFaultToleranceMetrics.class.getName());
 
     private final MetricRegistry metricRegistry;
     /**
@@ -33,12 +32,12 @@ final class FaultToleranceMetricsFactory implements FaultToleranceMetrics {
      */
     private final String canonicalMethodName;
 
-    public FaultToleranceMetricsFactory() {
+    public BindableFaultToleranceMetrics() {
         this.metricRegistry = resolveRegistry();
         this.canonicalMethodName = "(unbound)";
     }
 
-    private FaultToleranceMetricsFactory(MetricRegistry metricRegistry, String canonicalMethodName) {
+    private BindableFaultToleranceMetrics(MetricRegistry metricRegistry, String canonicalMethodName) {
         this.metricRegistry = metricRegistry;
         this.canonicalMethodName = canonicalMethodName;
     }
@@ -60,7 +59,7 @@ final class FaultToleranceMetricsFactory implements FaultToleranceMetrics {
     FaultToleranceMetrics bindTo(InvocationContext context) {
         return metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
-                : new FaultToleranceMetricsFactory(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
+                : new BindableFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
     }
 
     /*

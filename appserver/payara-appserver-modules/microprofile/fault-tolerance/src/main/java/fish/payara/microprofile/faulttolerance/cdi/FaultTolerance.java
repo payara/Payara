@@ -1,4 +1,4 @@
-package fish.payara.microprofile.faulttolerance.interceptors;
+package fish.payara.microprofile.faulttolerance.cdi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -27,6 +27,6 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 @InterceptorBinding
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
-public @interface FaultToleranceBehaviour {
+public @interface FaultTolerance {
     //marker
 }
