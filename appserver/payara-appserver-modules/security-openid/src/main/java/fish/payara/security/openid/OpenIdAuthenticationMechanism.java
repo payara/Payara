@@ -193,7 +193,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
             Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
             if (expectedState.isPresent()) {
-                if (expectedState.get().equals(receivedState.get())) {
+                if (expectedState.equals(receivedState)) {
                     // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
                     return validateAuthorizationCode(httpContext);
                 } else {
