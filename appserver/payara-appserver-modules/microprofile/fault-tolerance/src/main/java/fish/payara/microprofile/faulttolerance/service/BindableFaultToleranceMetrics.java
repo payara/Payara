@@ -95,6 +95,16 @@ final class BindableFaultToleranceMetrics implements FaultToleranceMetrics {
      * Factory method
      */
 
+    /**
+     * Creates a {@link FaultToleranceMetrics} that is bound to the given {@link InvocationContext} that is currently
+     * processed.
+     * 
+     * Implementation note: If the {@link MetricRegistry} could not be resolved the
+     * {@link FaultToleranceMetrics#DISABLED} is returned.
+     * 
+     * @param context the currently processed context to bind to
+     * @return a {@link FaultToleranceMetrics} bound to the given context
+     */
     FaultToleranceMetrics bindTo(InvocationContext context) {
         return metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED

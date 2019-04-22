@@ -114,6 +114,16 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
      * Factory method
      */
 
+    /**
+     * Creates a {@link FaultToleranceConfig} that is bound to the given {@link InvocationContext} that is currently
+     * processed.
+     * 
+     * Implementation note: If this configuration template has no {@link Config} available it falls back to pure
+     * annotation lookup.
+     * 
+     * @param context the currently processed context to bind to
+     * @return A {@link FaultToleranceConfig} bound to the given context
+     */
     public FaultToleranceConfig bindTo(InvocationContext context) {
         return config == null
                 ? FaultToleranceConfig.asAnnotated(context.getTarget().getClass(), context.getMethod())
