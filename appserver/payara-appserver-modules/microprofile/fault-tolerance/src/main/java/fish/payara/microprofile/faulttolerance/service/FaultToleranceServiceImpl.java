@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
@@ -138,6 +139,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info.getName());
+            FaultTolerancePolicy.clean();
         }
     }
 
@@ -154,8 +156,6 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
         return appState.getMetrics().updateAndGet(
                 metrics -> metrics != null ? metrics : new BindableFaultToleranceMetrics()).bindTo(context);
     }
-
-    //TODO use the scheduler to schedule a clean of FT Info
 
     private ManagedExecutorService getManagedExecutorService() {
         return lookup(serviceConfig.getManagedExecutorService(), defaultExecutorService);
@@ -314,11 +314,12 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+    public void runAsynchronous(CompletableFuture<Object> asyncResult, InvocationContext context, Callable<Object> task)
             throws RejectedExecutionException {
         Runnable completionTask = () -> {
             if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
                 try {
+                    trace("runAsynchronous", context);
                     Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
@@ -330,6 +331,8 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
                 } catch (Exception ex) {
                     // Note that even ExecutionException is not unpacked (intentionally)
                     asyncResult.completeExceptionally(ex); 
+                } finally {
+                    endTrace();
                 }
             }
         };
