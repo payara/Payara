@@ -37,22 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance.policy;
+package fish.payara.microprofile.faulttolerance.service;
 
-@SuppressWarnings("unused")
-public interface FallbackMethodBean {
+public class ConfigOverridePriorityTest {
 
-    /*
-     * FallbackMethodDefaultMethodTest
-     */
+    //TODO override prio test
 
-    default String fallbackMethodDefaultMethod_Fallback(int a, Long b) {
-        return "fallbackMethodDefaultMethod";
-    }
-
-    /*
-     * FallbackMethodInterfaceTest
-     */
-
-    public String fallbackMethodInterface_Fallback(int a, Long b);
+    //TODO enabled override prio test
 }
