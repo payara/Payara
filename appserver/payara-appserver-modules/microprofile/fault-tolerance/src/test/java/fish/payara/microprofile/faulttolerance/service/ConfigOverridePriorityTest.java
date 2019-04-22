@@ -39,9 +39,129 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.reflect.Method;
+import java.time.temporal.ChronoUnit;
+
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.junit.Test;
+
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.policy.StaticAnalysisContext;
+import fish.payara.microprofile.faulttolerance.test.ConfigOverrides;
+import fish.payara.microprofile.faulttolerance.test.TestUtils;
+
+/**
+ * Tests that the priority of different override levels is correct.
+ * 
+ * @author Jan Bernitt
+ */
+@Retry(delayUnit = ChronoUnit.MINUTES)
 public class ConfigOverridePriorityTest {
 
-    //TODO override prio test
+    private ConfigOverrides overrides = new ConfigOverrides();
+    private BindableFaultToleranceConfig configFactory = new BindableFaultToleranceConfig(overrides, null);
 
-    //TODO enabled override prio test
+    @Test
+    public void onlyMethodLevelAnnotationPresent() {
+        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        FaultToleranceConfig config = configFactory.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        Timeout timeout = config.getAnnotation(Timeout.class);
+        assertEquals(42L, config.value(timeout));
+
+        overrides.override(Timeout.class, "value", 11L);
+        assertEquals("should be: global override effective", 11L, config.value(timeout));
+
+        overrides.override(getClass(), Timeout.class, "value", 22L);
+        assertEquals("should be: class level override ineffective because no class level annotation present",
+                11L, config.value(timeout));
+
+        // do method level override
+        overrides.override(annotatedMethod, Timeout.class, "value", 33L);
+        assertEquals("should be: method level override effective", 33L, config.value(timeout));
+    }
+
+    @Timeout(value = 42L)
+    public String onlyMethodLevelAnnotationPresent_Method() {
+        return "test";
+    }
+
+    @Test
+    public void methodAndClassLevelAnnotationPresent() {
+        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        FaultToleranceConfig config = configFactory.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        Retry retry = config.getAnnotation(Retry.class);
+        assertEquals(ChronoUnit.WEEKS, config.delayUnit(retry));
+
+        overrides.override(Retry.class, "delayUnit", ChronoUnit.ERAS);
+        assertEquals("should be: global override effective", ChronoUnit.ERAS, config.delayUnit(retry));
+
+        overrides.override(getClass(), Retry.class, "delayUnit", ChronoUnit.MICROS);
+        assertEquals("should be: class level annotation present but override ineffective because method level annotation is present",
+                ChronoUnit.ERAS, config.delayUnit(retry));
+
+        overrides.override(annotatedMethod, Retry.class, "delayUnit", ChronoUnit.YEARS);
+        assertEquals("should be: method level override effective", ChronoUnit.YEARS, config.delayUnit(retry));
+    }
+
+    @Retry(delayUnit = ChronoUnit.WEEKS)
+    public String methodAndClassLevelAnnotationPresent_Method() {
+        return "test";
+    }
+
+    @Test
+    public void onlyClassLevelAnnotationPresent() {
+        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        FaultToleranceConfig config = configFactory.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        Retry annotation = config.getAnnotation(Retry.class);
+        assertEquals(ChronoUnit.MINUTES, config.delayUnit(annotation));
+
+        overrides.override(Retry.class, "delayUnit", ChronoUnit.CENTURIES);
+        assertEquals("should be: global override effective", ChronoUnit.CENTURIES, config.delayUnit(annotation));
+
+        overrides.override(getClass(), Retry.class, "delayUnit", ChronoUnit.DAYS);
+        assertEquals("should be: class level override effective because annotation present on class level",
+                ChronoUnit.DAYS, config.delayUnit(annotation));
+
+        overrides.override(annotatedMethod, Retry.class, "delayUnit", ChronoUnit.HOURS);
+        assertEquals("should be: method level override ineffective because no method level annotation present",
+                ChronoUnit.DAYS, config.delayUnit(annotation));
+    }
+
+    public String onlyClassLevelAnnotationPresent_Method() {
+        return "test";
+    }
+
+    @Test
+    public void enabledIsIndependentOfPresentAnnotations() {
+        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        FaultToleranceConfig config = configFactory.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        assertTrue("should be: present annotation is enabled by default", config.isEnabled(Asynchronous.class));
+        assertTrue("should be: not present annotation is enabled by default", config.isEnabled(Retry.class));
+
+        overrides.override(Asynchronous.class, "enabled", false);
+        overrides.override(Retry.class, "enabled", false);
+        assertFalse("should be: global override for present annotation has effect", config.isEnabled(Asynchronous.class));
+        assertFalse("should be: global override for not present annotation has effect", config.isEnabled(Retry.class));
+
+        overrides.override(getClass(), Asynchronous.class, "enabled", true);
+        overrides.override(getClass(), Retry.class, "enabled", true);
+        assertTrue("should be: class level override for present annotation has effect", config.isEnabled(Asynchronous.class));
+        assertTrue("should be: class level override for not present annotation has effect", config.isEnabled(Retry.class));
+
+        overrides.override(annotatedMethod, Asynchronous.class, "enabled", false);
+        overrides.override(annotatedMethod, Retry.class, "enabled", false);
+        assertFalse("should be: method level override for present annotation has effect", config.isEnabled(Asynchronous.class));
+        assertFalse("should be: method level override for not present annotation has effect", config.isEnabled(Retry.class));
+    }
+
+    @Asynchronous
+    public String enabledIsIndependentOfPresentAnnotations_Method() {
+        return "test";
+    }
 }

@@ -63,7 +63,7 @@ import fish.payara.microprofile.faulttolerance.test.ConfigOverrides;
 /**
  * Tests that properties can be used to override annotation attributes.
  * 
- * In response to:
+ * Also in response to:
  * 
  * - https://github.com/payara/Payara/issues/3762 
  * - https://github.com/payara/Payara/issues/3821
@@ -73,7 +73,7 @@ import fish.payara.microprofile.faulttolerance.test.ConfigOverrides;
 public class ConfigOverrideTest {
 
     private ConfigOverrides overrides = new ConfigOverrides();
-    private BindableFaultToleranceConfig config = new BindableFaultToleranceConfig(overrides, null);
+    private BindableFaultToleranceConfig configFactory = new BindableFaultToleranceConfig(overrides, null);
 
     /*
      * Tests
@@ -168,15 +168,15 @@ public class ConfigOverrideTest {
     private <T, A extends Annotation> void assertOverridden(Class<A> annotationType, String propertyName, T annotated,
             T overridden, BiFunction<FaultToleranceConfig, A, T> property) {
         Method annotatedMethod = getAnnotatedMethod();
-        A annotation = annotatedMethod.getAnnotation(annotationType);
-        FaultToleranceConfig boundConfig = config.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        FaultToleranceConfig config = configFactory.bindTo(new StaticAnalysisContext(getClass(), annotatedMethod));
+        A annotation = config.getAnnotation(annotationType);
         // check we get the expected annotated value
-        T actual = property.apply(boundConfig, annotation);
+        T actual = property.apply(config, annotation);
         assertEqualValue(annotated, actual);
         // make the override
         overrides.override(annotatedMethod, annotationType, propertyName, overridden);
         // now check that we get the expected overridden value
-        actual = property.apply(boundConfig, annotation);
+        actual = property.apply(config, annotation);
         assertEqualValue(overridden, actual);
     }
 

@@ -61,8 +61,21 @@ public final class ConfigOverrides implements Config {
 
     public void override(Method annotatedMethod, Class<? extends Annotation> annotationType, String propertyName,
             Object value) {
-        overrides.put(String.format("%s/%s/%s/%s", annotatedMethod.getDeclaringClass().getName(),
-                annotatedMethod.getName(), annotationType.getSimpleName(), propertyName), toString(value));
+        override(value, String.format("%s/%s/%s/%s", annotatedMethod.getDeclaringClass().getName(),
+                annotatedMethod.getName(), annotationType.getSimpleName(), propertyName));
+    }
+
+    public void override(Class<?> target, Class<? extends Annotation> annotationType, String propertyName,
+            Object value) {
+        override(value, String.format("%s/%s/%s", target.getName(), annotationType.getSimpleName(), propertyName));
+    }
+
+    public void override(Class<? extends Annotation> annotationType, String propertyName, Object value) {
+        override(value, String.format("%s/%s", annotationType.getSimpleName(), propertyName));
+    }
+
+    private void override(Object value, String key) {
+        overrides.put(key, toString(value));
     }
 
     private static String toString(Object value) {
@@ -99,10 +112,13 @@ public final class ConfigOverrides implements Config {
         if (propertyType == Long.class) {
             return (Optional<T>) Optional.of(Long.valueOf(value));
         }
+        if (propertyType == Boolean.class) {
+            return (Optional<T>) Optional.of(Boolean.valueOf(value));
+        }
         if (propertyType.isEnum()) {
             return (Optional<T>) Optional.of(enumValue(propertyType, value));
         }
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("value type not supported: " + propertyType.getSimpleName());
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
