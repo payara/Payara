@@ -68,8 +68,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
  */
 final class BindableFaultToleranceConfig implements FaultToleranceConfig {
 
-    private static final String NON_FALLBACK_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
-    private static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
+    static final String NON_FALLBACK_ENABLED_PROPERTY = "MP_Fault_Tolerance_NonFallback_Enabled";
+    static final String METRICS_ENABLED_PROPERTY = "MP_Fault_Tolerance_Metrics_Enabled";
 
     private static final Logger logger = Logger.getLogger(BindableFaultToleranceConfig.class.getName());
 

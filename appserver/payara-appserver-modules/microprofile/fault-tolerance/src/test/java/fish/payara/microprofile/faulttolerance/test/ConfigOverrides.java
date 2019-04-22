@@ -61,20 +61,20 @@ public final class ConfigOverrides implements Config {
 
     public void override(Method annotatedMethod, Class<? extends Annotation> annotationType, String propertyName,
             Object value) {
-        override(value, String.format("%s/%s/%s/%s", annotatedMethod.getDeclaringClass().getName(),
-                annotatedMethod.getName(), annotationType.getSimpleName(), propertyName));
+        override(String.format("%s/%s/%s/%s", annotatedMethod.getDeclaringClass().getName(),
+                annotatedMethod.getName(), annotationType.getSimpleName(), propertyName), value);
     }
 
     public void override(Class<?> target, Class<? extends Annotation> annotationType, String propertyName,
             Object value) {
-        override(value, String.format("%s/%s/%s", target.getName(), annotationType.getSimpleName(), propertyName));
+        override(String.format("%s/%s/%s", target.getName(), annotationType.getSimpleName(), propertyName), value);
     }
 
     public void override(Class<? extends Annotation> annotationType, String propertyName, Object value) {
-        override(value, String.format("%s/%s", annotationType.getSimpleName(), propertyName));
+        override(String.format("%s/%s", annotationType.getSimpleName(), propertyName), value);
     }
 
-    private void override(Object value, String key) {
+    public void override(String key, Object value) {
         overrides.put(key, toString(value));
     }
 
