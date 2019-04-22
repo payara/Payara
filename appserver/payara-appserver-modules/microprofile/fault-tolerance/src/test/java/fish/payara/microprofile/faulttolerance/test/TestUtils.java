@@ -53,7 +53,8 @@ public class TestUtils {
     public static Method getAnnotatedMethod() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         int i = 0;
-        while (!stackTraceElements[i].getClassName().endsWith("Test")) {
+        while (!stackTraceElements[i].getClassName().endsWith("Test") 
+                || stackTraceElements[i].getMethodName().startsWith("assert")) {
             i++;
         }
         StackTraceElement testMethodElement = stackTraceElements[i];

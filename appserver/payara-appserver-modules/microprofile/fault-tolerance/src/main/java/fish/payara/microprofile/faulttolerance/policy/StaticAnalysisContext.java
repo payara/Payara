@@ -50,7 +50,7 @@ import javax.interceptor.InvocationContext;
  * 
  * @author Jan Bernitt
  */
-final class StaticAnalysisContext implements InvocationContext {
+public final class StaticAnalysisContext implements InvocationContext {
 
     private final Class<?> targetClass;
     private final Method annotated;

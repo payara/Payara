@@ -84,8 +84,12 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     private final InvocationContext context;
 
     public BindableFaultToleranceConfig(Stereotypes sterotypes) {
+        this(resolveConfig(), sterotypes);
+    }
+
+    public BindableFaultToleranceConfig(Config config, Stereotypes sterotypes) {
+        this.config = config;
         this.sterotypes = sterotypes;
-        this.config = resolveConfig();
         this.nonFallbackEnabled = new AtomicReference<>();
         this.metricsEnabled = new AtomicReference<>();
         this.context = null; // factory is unbound
