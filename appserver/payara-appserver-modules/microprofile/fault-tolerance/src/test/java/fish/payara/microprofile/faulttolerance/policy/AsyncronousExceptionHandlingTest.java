@@ -70,16 +70,20 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 public class AsyncronousExceptionHandlingTest {
 
     final AtomicInteger asyncFutureWithRetryCallCount = new AtomicInteger();
-    final AtomicInteger asyncCompletionStageWithRetryCallCount = new AtomicInteger();
+    final AtomicInteger asyncFutureWithRetryThrowsExceptionCallCount = new AtomicInteger();
 
+    final AtomicInteger asyncCompletionStageWithRetryCallCount = new AtomicInteger();
+    final AtomicInteger asyncCompletionStageWithRetryThrowsExceptionCallCount = new AtomicInteger();
+    final AtomicInteger asyncCompletionStageWithRetrySuccessOnRetryCallCount = new AtomicInteger();
+
+    /**
+     * When returning a {@link Future} there is only 1 attempt made since a {@link Future} instance is returned on first
+     * attempt.
+     */
     @Test
     public void asyncFutureWithRetry() throws Exception {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
-        Future<?> result = AsynchronousPolicy.toFuture(
-                policy.proceed(new StaticAnalysisContext(this, annotatedMethod), new FaultToleranceServiceStub()));
-        assertTrue(result.isDone());
-        assertEquals("no retry should have happend", 1, asyncFutureWithRetryCallCount.get());
+        Future<?> result = proceedToDoneFuture();
+        assertEquals("no retry attempt should occur", 1, asyncFutureWithRetryCallCount.get());
         assertOriginalException(result);
     }
 
@@ -90,14 +94,32 @@ public class AsyncronousExceptionHandlingTest {
         return completedExceptionally(new IllegalStateException("Original exception"));
     }
 
+    /**
+     * When the method returning a {@link Future} throws an {@link Exception} the {@link Retry} is applied and further
+     * attempts are made.
+     */
+    @Test
+    public void asyncFutureWithRetryThrowsException() throws Exception {
+        Future<?> result = proceedToDoneFuture();
+        assertEquals("all retry attempts should occur", 4, asyncFutureWithRetryThrowsExceptionCallCount.get());
+        assertOriginalException(result);
+    }
+
+    @Retry(jitter = 0L)
+    @Asynchronous
+    public Future<String> asyncFutureWithRetryThrowsException_Method() {
+        asyncFutureWithRetryThrowsExceptionCallCount.incrementAndGet();
+        throw new IllegalStateException("Originally thrown exception");
+    }
+
+    /**
+     * A method returning {@link CompletionStage} must complete successful otherwise {@link Retry} is effective and
+     * further attempts are made.
+     */
     @Test
     public void asyncCompletionStageWithRetry() throws Exception {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
-        Future<?> result = AsynchronousPolicy.toFuture(
-                policy.proceed(new StaticAnalysisContext(this, annotatedMethod), new FaultToleranceServiceStub()));
-        assertTrue(result.isDone());
-        assertEquals("retry should have happend", 3, asyncCompletionStageWithRetryCallCount.get());
+        Future<?> result = proceedToDoneFuture();
+        assertEquals("all retry attempts should occur", 3, asyncCompletionStageWithRetryCallCount.get());
         assertOriginalException(result);
     }
 
@@ -108,6 +130,49 @@ public class AsyncronousExceptionHandlingTest {
         return completedExceptionally(new IllegalStateException("Original exception"));
     }
 
+    @Test
+    public void asyncCompletionStageWithRetryThrowsException() throws Exception {
+        Future<?> result = proceedToDoneFuture();
+        assertEquals("all retry attempts should occur", 3, asyncCompletionStageWithRetryThrowsExceptionCallCount.get());
+        assertOriginalException(result);
+    }
+
+    @Retry(maxRetries = 2, jitter = 0L)
+    @Asynchronous
+    public CompletionStage<String> asyncCompletionStageWithRetryThrowsException_Method() {
+        asyncCompletionStageWithRetryThrowsExceptionCallCount.incrementAndGet();
+        throw new IllegalStateException("Originally thrown exception");
+    }
+
+    /**
+     * A {@link CompletionStage} that first completes exceptionally should make further {@link Retry} attempts and
+     * complete successful in this scenario.
+     */
+    @Test
+    public void asyncCompletionStageWithRetrySuccessOnRetry() throws Exception {
+        Future<?> result = proceedToDoneFuture();
+        assertEquals("one retry should lead to success", 2, asyncCompletionStageWithRetrySuccessOnRetryCallCount.get());
+        assertEquals("Success", result.get());
+    }
+
+    @Retry(maxRetries = 2, jitter = 0L)
+    @Asynchronous
+    public CompletionStage<String> asyncCompletionStageWithRetrySuccessOnRetry_Method() {
+        int callNo = asyncCompletionStageWithRetrySuccessOnRetryCallCount.incrementAndGet();
+        return callNo < 2
+                ? completedExceptionally(new IllegalStateException("Original exception"))
+                : CompletableFuture.completedFuture("Success");
+    }
+
+    private Future<?> proceedToDoneFuture() throws Exception {
+        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
+        Future<?> result = AsynchronousPolicy.toFuture(
+                policy.proceed(new StaticAnalysisContext(this, annotatedMethod), new FaultToleranceServiceStub()));
+        assertTrue(result.isDone());
+        return result;
+    }
+
     private static void assertOriginalException(Future<?> result) throws InterruptedException {
         try {
             result.get();
@@ -115,7 +180,7 @@ public class AsyncronousExceptionHandlingTest {
         } catch (ExecutionException ex) {
             assertEquals("Did not preseve the exception the returned future was completed with", 
                     IllegalStateException.class, ex.getCause().getClass());
-            assertEquals("Original exception", ex.getCause().getMessage());
+            assertTrue(ex.getCause().getMessage().startsWith("Original"));
         }
     }
 

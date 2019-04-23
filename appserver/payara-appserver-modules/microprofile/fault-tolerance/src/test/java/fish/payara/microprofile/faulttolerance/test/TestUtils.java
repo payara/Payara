@@ -92,8 +92,7 @@ public class TestUtils {
     public static Method getAnnotatedMethod() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         int i = 0;
-        while (!stackTraceElements[i].getClassName().endsWith("Test") 
-                || stackTraceElements[i].getMethodName().startsWith("assert")) {
+        while (!isTestMethod(stackTraceElements[i])) {
             i++;
         }
         StackTraceElement testMethodElement = stackTraceElements[i];
@@ -102,6 +101,19 @@ public class TestUtils {
             return TestUtils.getMethod(Class.forName(testMethodElement.getClassName()), testName + "_Method");
         } catch (Exception e) {
             throw new AssertionError("Failed to find annotated method in test class: ", e);
+        }
+    }
+
+    private static boolean isTestMethod(StackTraceElement element) {
+        if (!element.getClassName().endsWith("Test")) {
+            return false;
+        }
+        try {
+            Class<?> testClass = Class.forName(element.getClassName());
+            Method elementMethod = testClass.getMethod(element.getMethodName());
+            return elementMethod.isAnnotationPresent(org.junit.Test.class);
+        } catch (Exception e) {
+            return false;
         }
     }
 }

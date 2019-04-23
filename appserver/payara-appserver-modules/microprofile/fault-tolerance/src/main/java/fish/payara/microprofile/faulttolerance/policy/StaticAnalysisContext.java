@@ -40,6 +40,7 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -122,7 +123,11 @@ public final class StaticAnalysisContext implements InvocationContext {
         if (arguments.length != annotated.getParameterCount()) {
             throw new UnsupportedOperationException();
         }
-        return annotated.invoke(getTarget(), arguments);
+        try {
+            return annotated.invoke(getTarget(), arguments);
+        } catch (InvocationTargetException ex) {
+            throw (Exception) ex.getTargetException();
+        }
     }
 
 }

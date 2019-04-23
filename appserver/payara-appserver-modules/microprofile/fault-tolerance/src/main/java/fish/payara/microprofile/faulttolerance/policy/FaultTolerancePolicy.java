@@ -541,20 +541,15 @@ public final class FaultTolerancePolicy implements Serializable {
                 invocation.metrics.linkBulkheadWaitingQueuePopulation(waitingQueuePopulation::acquiredPermits);
             }
         }
-        long executionStartTime = System.nanoTime();
         logger.log(Level.FINER, "Attempting to acquire bulkhead execution permit.");
         if (concurrentExecutions.tryAcquireFair()) {
             logger.log(Level.FINE, "Acquired bulkhead execution permit.");
             invocation.metrics.incrementBulkheadCallsAcceptedTotal();
             if (isAsynchronous()) {
-                invocation.metrics.addBulkheadWaitingDuration(0L); // we did not wait but need to factor in the invocation for histogram quartiles
+                // we did not wait but need to factor in the invocation for histogram quartiles
+                invocation.metrics.addBulkheadWaitingDuration(1L); // using 1ns because 0 leads to flaky test
             }
-            try {
-                return proceed(invocation);
-            } finally {
-                invocation.metrics.addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
-                concurrentExecutions.release();
-            }
+            return processBulkheadExecution(invocation, concurrentExecutions);
         }
         if (waitingQueuePopulation == null) { // plain semaphore style, fail:
             invocation.metrics.incrementBulkheadCallsRejectedTotal();
@@ -565,10 +560,11 @@ public final class FaultTolerancePolicy implements Serializable {
         if (waitingQueuePopulation.tryAcquireFair()) {
             logger.log(Level.FINE, "Acquired bulkhead queue permit.");
             invocation.metrics.incrementBulkheadCallsAcceptedTotal();
-            long queueStartTime = System.nanoTime();
+            long waitingSince = System.nanoTime();
             try {
                 invocation.trace("obtainBulkheadSemaphore");
                 concurrentExecutions.acquire(); // block until execution permit becomes available
+                waitingQueuePopulation.release();
             } catch (InterruptedException ex) {
                 logger.log(Level.FINE, "Interrupted acquiring bulkhead permit", ex);
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
@@ -576,18 +572,23 @@ public final class FaultTolerancePolicy implements Serializable {
                 throw new BulkheadException(ex);
             } finally {
                 invocation.endTrace();
-                invocation.metrics.addBulkheadWaitingDuration(System.nanoTime() - queueStartTime);
+                invocation.metrics.addBulkheadWaitingDuration(System.nanoTime() - waitingSince);
             }
-            waitingQueuePopulation.release();
-            try {
-                return proceed(invocation);
-            } finally {
-                invocation.metrics.addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
-                concurrentExecutions.release();
-            }
+            return processBulkheadExecution(invocation, concurrentExecutions);
         }
         invocation.metrics.incrementBulkheadCallsRejectedTotal();
         throw new BulkheadException("No free work or queue permits.");
+    }
+
+    private static Object processBulkheadExecution(FaultToleranceInvocation invocation, BulkheadSemaphore concurrentExecutions)
+            throws Exception {
+        long executionSince = System.nanoTime();
+        try {
+            return proceed(invocation);
+        } finally {
+            invocation.metrics.addBulkheadExecutionDuration(System.nanoTime() - executionSince);
+            concurrentExecutions.release();
+        }
     }
 
     /**
