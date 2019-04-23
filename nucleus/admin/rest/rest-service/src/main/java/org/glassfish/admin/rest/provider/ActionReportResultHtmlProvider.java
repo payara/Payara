@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.provider;
 
@@ -68,6 +69,13 @@ import org.glassfish.admin.rest.utils.ResourceUtil;
 @Provider
 @Produces(MediaType.TEXT_HTML)
 public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportResult> {
+    
+    private static final String ANCHOR_OPEN = "<a href=\"";
+    private static final String HEADING_END = "</h3>";
+    private static final String LIST_ITEM_END = "</li>";
+    private static final String LIST_END = "</ul>";
+    private static final String DELETE = "DELETE";
+    
     public ActionReportResultHtmlProvider() {
         super(ActionReportResult.class, MediaType.TEXT_HTML_TYPE);
     }
@@ -79,7 +87,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         final String message = ResourceUtil.encodeString(ar.getCombinedMessage());
 
         if (!message.isEmpty()) {
-            result.append("<h3>").append(message).append("</h3>");
+            result.append("<h3>").append(message).append(HEADING_END);
         }
 
         if (proxy.isError()) {
@@ -89,7 +97,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
             final Map<String, String> childResources = (Map<String, String>) ar.getExtraProperties().get("childResources");
             final List<Map<String, String>> commands = (List<Map<String, String>>) ar.getExtraProperties().get("commands");
             final MethodMetaData postMetaData = proxy.getMetaData().getMethodMetaData("POST");
-            final MethodMetaData deleteMetaData = proxy.getMetaData().getMethodMetaData("DELETE");
+            final MethodMetaData deleteMetaData = proxy.getMetaData().getMethodMetaData(DELETE);
             final MethodMetaData getMetaData = proxy.getMetaData().getMethodMetaData("GET");
             final ConfigBean entity = proxy.getEntity();
 
@@ -104,7 +112,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                 result.append(getHtmlForComponent(postCommand, "Create " + ar.getActionDescription(), ""));
             }
             if ((deleteMetaData != null) && (entity == null)) {
-                String deleteCommand = getHtmlRespresentationsForCommand(deleteMetaData, "DELETE", ( proxy.getCommandDisplayName()==null )? "Delete" : proxy.getCommandDisplayName(), uriInfo.get());
+                String deleteCommand = getHtmlRespresentationsForCommand(deleteMetaData, DELETE, ( proxy.getCommandDisplayName()==null )? "Delete" : proxy.getCommandDisplayName(), uriInfo.get());
                 result.append(getHtmlForComponent(deleteCommand, "Delete " + ar.getActionDescription(), ""));
             }
             if ((getMetaData != null) && (entity == null) &&(proxy.getCommandDisplayName()!=null )) {
@@ -115,7 +123,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                 String attributes = ProviderUtil.getHtmlRepresentationForAttributes(proxy.getEntity(), uriInfo.get());
                 result.append(ProviderUtil.getHtmlForComponent(attributes, ar.getActionDescription() + " Attributes", ""));
 
-                String deleteCommand = ProviderUtil.getHtmlRespresentationsForCommand(proxy.getMetaData().getMethodMetaData("DELETE"), "DELETE", (proxy.getCommandDisplayName() == null) ? "Delete" : proxy.getCommandDisplayName(), uriInfo.get());
+                String deleteCommand = ProviderUtil.getHtmlRespresentationsForCommand(proxy.getMetaData().getMethodMetaData(DELETE), DELETE, (proxy.getCommandDisplayName() == null) ? "Delete" : proxy.getCommandDisplayName(), uriInfo.get());
                 result.append(ProviderUtil.getHtmlForComponent(deleteCommand, "Delete " + entity.model.getTagName(), ""));
 
             } else if (proxy.getLeafContent()!=null){ //it is a single leaf @Element
@@ -150,17 +158,18 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                                 result.append("<ul>");
 
                                 while (i.hasNext()) {
-                                    result.append("<li>").append(getHtmlRepresentation(i.next())).append("</li>");
+                                    result.append("<li>").append(getHtmlRepresentation(i.next())).append(LIST_ITEM_END);
                                 }
-                                result.append("</ul>");
-                                result.append("</li>");
+                                result.append(LIST_END);
+                                result.append(LIST_ITEM_END);
 
                             }
                         } else if (object instanceof Map) {
                             if (!((Map) object).isEmpty()) {
                                 Map m = (Map) object;
                                 if (vals.size() != 1) {//add a link if more than 1 child
-                                    result.append("<li>").append("<a href=\"" + uriInfo.get().getAbsolutePath().toString() + "/" + entry.getKey() + "\">" + entry.getKey() + "</a>");
+                                    result.append("<li>").append(ANCHOR_OPEN).append(uriInfo.get().getAbsolutePath().toString()).append("/")
+                                            .append(entry.getKey()).append("\">").append(entry.getKey()).append("</a>");
                                 } else {
                                     result.append("<li>").append(entry.getKey());
                                 }
@@ -169,19 +178,19 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                                 for (Map.Entry anEntry : (Set<Map.Entry>) m.entrySet()) {
                                     final String htmlRepresentation = getHtmlRepresentation(anEntry.getValue());
                                     if (htmlRepresentation != null) {
-                                        result.append("<li>").append(anEntry.getKey()).append(" : ").append(htmlRepresentation).append("</li>");
+                                        result.append("<li>").append(anEntry.getKey()).append(" : ").append(htmlRepresentation).append(LIST_ITEM_END);
                                     }
                                 }
-                                result.append("</ul>");
-                                result.append("</li>");
+                                result.append(LIST_END);
+                                result.append(LIST_ITEM_END);
 
 
                             }
                         } else {
-                            result.append("<li>").append(entry.getKey()).append(" : ").append(object.toString()).append("</li>");
+                            result.append("<li>").append(entry.getKey()).append(" : ").append(object.toString()).append(LIST_ITEM_END);
                         }
                     }
-                    result.append("</ul>");
+                    result.append(LIST_END);
 
                 } else {//no values to show... give an hint
                     if ((childResources == null) || (childResources.isEmpty())) {
@@ -217,7 +226,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
     protected String getResourcesLinks(Map<String, String> childResources) {
         StringBuilder links = new StringBuilder("<div>");
         for (Map.Entry<String, String> link : childResources.entrySet()) {
-            links.append("<a href=\"")
+            links.append(ANCHOR_OPEN)
                 .append(link.getValue())
                 .append("\">")
                 .append(link.getKey())
@@ -234,15 +243,15 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         for (Map<String, String> commandList : commands) {
             String command = commandList.get("command");
             String path = commandList.get("path");
-            if (path.startsWith("_")&&(showHiddenCommands==false)) {//hidden cli command name
+            if (path.startsWith("_") && (!showHiddenCommands)) {//hidden cli command name
                 result.append("<!--");//hide the link in a comment
             }
-            result.append("<a href=\"")
+            result.append(ANCHOR_OPEN)
                     .append(ProviderUtil.getElementLink(uriInfo.get(), command))
                     .append("\">")
                     .append(command)
                     .append("</a><br>");
-            if (path.startsWith("_")&&(showHiddenCommands==false)) {//hidden cli
+            if (path.startsWith("_") && (!showHiddenCommands)) {//hidden cli
                 result.append("-->");
             }
         }
@@ -266,10 +275,10 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                 .append("<pre>")
                 .append(message)
                 .append("</pre>")
-                .append("</h3>");
+                .append(HEADING_END);
         }
         if (ar.getActionExitCode() != ExitCode.SUCCESS) {
-            result.append("<h3>Exit Code: ").append(ar.getActionExitCode().toString()).append("</h3>");
+            result.append("<h3>Exit Code: ").append(ar.getActionExitCode().toString()).append(HEADING_END);
 
         }
 
@@ -288,12 +297,12 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         }
 
         List<ActionReport.MessagePart> children = ar.getTopMessagePart().getChildren();
-        if (children.size() > 0) {
+        if (!children.isEmpty()) {
             result.append(processChildren(children));
         }
 
         List<ActionReporter> subReports = ar.getSubActionsReport();
-        if (subReports.size() > 0) {
+        if (!subReports.isEmpty()) {
             result.append(processSubReports(subReports));
         }
 
@@ -326,7 +335,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                     .append(getHtml(part.getProps()))
                     .append("</td></tr>");
             List<ActionReport.MessagePart> children = part.getChildren();
-            if (children.size() > 0) {
+            if (!children.isEmpty()) {
                 result.append("<tr><td>Children</td><td>")
                         .append(processChildren(part.getChildren()))
                         .append("</td></tr>");
@@ -334,7 +343,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
             result.append("</table></li>");
         }
 
-        return result.append("</ul>").toString();
+        return result.append(LIST_END).toString();
     }
 
     protected String processSubReports(List<ActionReporter> subReports) {
@@ -344,7 +353,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
             result.append(processReport(subReport));
         }
 
-        return result.append("</ul>").toString();
+        return result.append(LIST_END).toString();
     }
 
     protected String getHtmlRepresentation(Object object) {
@@ -372,7 +381,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         while (i.hasNext()) {
             result.append("<li>")
                     .append(getHtmlRepresentation(i.next()))
-                    .append("</li>");
+                    .append(LIST_ITEM_END);
         }
 
         return result.append("</li></ul>").toString();

@@ -91,7 +91,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
 
     /** Creates a new instance of xxxResource */
     public CollectionLeafResource() {
@@ -310,8 +310,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage =
-                        localStrings.getLocalString(successMsgKey,
-                            successMsg, new Object[] {attributeName});
+                        localStrings.getLocalString(successMsgKey, successMsg, attributeName);
                     return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
@@ -319,8 +318,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
             String message =
-                localStrings.getLocalString(operationForbiddenMsgKey,
-                    operationForbiddenMsg, new Object[] {uriInfo.getAbsolutePath()});
+                localStrings.getLocalString(operationForbiddenMsgKey, operationForbiddenMsg, uriInfo.getAbsolutePath());
             return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
 
         } catch (Exception e) {
@@ -391,10 +389,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
      * @return
      */
     protected String escapeOptionPart(String part) {
-        String changed = part
-                .replace("\\", "\\\\")
+        return part.replace("\\", "\\\\")
                 .replace(":", "\\:");
-        return changed;
     }
 
     // TODO: JvmOptions needs to have its own class, but the generator doesn't seem to support
@@ -407,7 +403,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
-            int index = option.indexOf("=");
+            int index = option.indexOf('=');
             if (index > -1) {
                 existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
             } else {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -80,7 +80,7 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations,
         MediaType mediaType) {
         String submittedType = mediaType.toString();
-        int index = submittedType.indexOf(";");
+        int index = submittedType.indexOf(';');
         if (index > -1) {
             submittedType = submittedType.substring(0, index);
         }
@@ -110,7 +110,7 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
                         .build();
                 throw new WebApplicationException(response);
             }
-            return (T) model;
+            return model;
         } catch (JsonException ex) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
                     .entity(ex.getLocalizedMessage()).build());
