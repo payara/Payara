@@ -197,13 +197,15 @@
         </message-security-config>
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
-      <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
-        <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
-        <jvm-options>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
-        <jvm-options>--illegal-access=permit</jvm-options>
-        <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
-        <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
+      <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
+        <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
+        <!-- Hazelcast internal package access requirement to get the best performance results. -->
+        <jvm-options>[9|]--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.lang=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
@@ -231,6 +233,7 @@
         <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
         <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
         <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
+        <jvm-options>[9|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
       </java-config>
       <availability-service>
           <web-container-availability/>
@@ -384,13 +387,15 @@
       <monitoring-service-configuration></monitoring-service-configuration>
       <microprofile-metrics-configuration></microprofile-metrics-configuration>
          <diagnostic-service />
-      <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-        <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap.jar</jvm-options>
-        <jvm-options>--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
-        <jvm-options>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
-        <jvm-options>--illegal-access=permit</jvm-options>
-        <jvm-options>-XX:+IgnoreUnrecognizedVMOptions</jvm-options>
-        <jvm-options>-XX:+UnlockExperimentalVMOptions</jvm-options>
+      <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
+        <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvm-options>
+        <!-- Hazelcast internal package access requirement to get the best performance results. -->
+        <jvm-options>[9|]--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.lang=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
         <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-XX:MetaspaceSize=256m</jvm-options>
@@ -417,6 +422,7 @@
         <jvm-options>[1.8.0u121|1.8.0u160]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.7.jar</jvm-options>
         <jvm-options>[1.8.0u161|1.8.0u190]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.jar</jvm-options>
         <jvm-options>[1.8.0u191|1.8.0u500]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
+        <jvm-options>[9|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
       </java-config>
          <availability-service>
              <web-container-availability/>

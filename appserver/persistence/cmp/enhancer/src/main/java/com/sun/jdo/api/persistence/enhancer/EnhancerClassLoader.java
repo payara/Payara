@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * EnhancerClassLoader.java
@@ -47,7 +47,6 @@ package com.sun.jdo.api.persistence.enhancer;
 
 import java.lang.ref.WeakReference;
 
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,9 +56,6 @@ import java.util.Properties;
 
 import java.net.URLClassLoader;
 import java.net.URL;
-
-import jdk.internal.loader.Resource;
-import jdk.internal.loader.URLClassPath;
 import sun.security.tools.PathList;
 
 import java.util.jar.Manifest;

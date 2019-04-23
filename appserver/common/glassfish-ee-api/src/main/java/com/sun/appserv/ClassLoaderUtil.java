@@ -40,6 +40,7 @@
 // Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
 package com.sun.appserv;
 
+import com.sun.enterprise.util.JDK;
 import static java.util.logging.Level.WARNING;
 
 import java.io.IOException;
@@ -54,7 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.logging.LogDomains;
-import java.util.ArrayDeque;
+import java.util.Collection;
 
 
 /**
@@ -77,7 +78,7 @@ public class ClassLoaderUtil {
     private static final String URLCLASSPATH_JDK9_CLASS_NAME = "jdk.internal.loader.URLClassPath";
     
     private static final String URLCLASSPATH_LOADERS_FIELD_NAME = "loaders"; // ArrayList of URLClassPath.Loader 
-    private static final String URLCLASSPATH_URLS_FIELD_NAME = "unopenedUrls"; // The deque of unopened URLs
+    private static final String URLCLASSPATH_URLS_FIELD_NAME = JDK.getMajor() < 11 ? "urls" : "unopenedUrls";
     private static final String URLCLASSPATH_LMAP_FIELD_NAME = "lmap"; // HashMap of String -> URLClassPath.Loader
 
     private static final String URLCLASSPATH_JARLOADER_INNER_CLASS_NAME = "$JarLoader";
@@ -146,7 +147,7 @@ public class ClassLoaderUtil {
 
             Object ucp = ucpField.get(classLoader);
             List<?> loaders = (List<?>) loadersField.get(ucp);
-            ArrayDeque<?> unopenedUrls = (ArrayDeque<?>) unopenedUrlsField.get(ucp);
+            Collection<?> unopenedUrls = (Collection<?>) unopenedUrlsField.get(ucp);
             Map<String, Object> lmap = (Map<String, Object>) lmapField.get(ucp);
 
             /*

@@ -231,7 +231,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * Return a default SSLInfo object.
      */
     private SSLInfo getDefaultSslInfo() throws Exception {
-       return init(null, false, null, true, null, true, true, true, true);
+       return init(null, false, null, true, null, true, true, true, false);
     }
 
     /**
