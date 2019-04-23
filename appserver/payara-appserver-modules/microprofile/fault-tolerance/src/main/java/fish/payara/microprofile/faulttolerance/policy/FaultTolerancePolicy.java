@@ -386,7 +386,7 @@ public final class FaultTolerancePolicy implements Serializable {
         throw new FaultToleranceException("Retry failed"); 
     }
 
-    private Object processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
+    private CompletableFuture<Object> processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
         CompletableFuture<Object> asyncAttempt = new CompletableFuture<>();
         invocation.service.runAsynchronous(asyncAttempt, invocation.context,
                 () -> invocation.runStageWithWorker(() -> processCircuitBreakerStage(invocation, asyncAttempt)));
@@ -398,7 +398,9 @@ public final class FaultTolerancePolicy implements Serializable {
             if (ex.getCause() instanceof ExecutionException) { 
                 // this cause ExecutionException is caused by annotated method returned a Future that completed exceptionally
                 if (asynchronous.isSuccessWhenCompletedExceptionally()) {
-                    return new CompletableFuture<>().completeExceptionally(ex.getCause()); // only unwrap level added by async processing
+                    CompletableFuture<Object> exceptionalResult = new CompletableFuture<>();
+                    exceptionalResult.completeExceptionally(ex.getCause().getCause()); // unwrap
+                    return exceptionalResult;
                 }
                 throw (Exception) ex.getCause().getCause(); // for retry handling return plain cause
             }
@@ -580,6 +582,7 @@ public final class FaultTolerancePolicy implements Serializable {
             try {
                 return proceed(invocation);
             } finally {
+                invocation.metrics.addBulkheadExecutionDuration(System.nanoTime() - executionStartTime);
                 concurrentExecutions.release();
             }
         }

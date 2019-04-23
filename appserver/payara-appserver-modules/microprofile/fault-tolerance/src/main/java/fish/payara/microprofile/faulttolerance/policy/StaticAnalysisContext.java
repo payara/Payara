@@ -54,11 +54,22 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     private final Class<?> targetClass;
     private final Method annotated;
+    private final Object[] arguments;
     private transient Object target;
 
     public StaticAnalysisContext(Class<?> targetClass, Method annotated) {
+        this(null, targetClass, annotated);
+    }
+
+    public StaticAnalysisContext(Object target, Method annotated, Object... arguments) {
+        this(target, target.getClass(), annotated, arguments);
+    }
+
+    private StaticAnalysisContext(Object target, Class<?> targetClass, Method annotated, Object... arguments) {
+        this.target = target;
         this.targetClass = targetClass;
         this.annotated = annotated;
+        this.arguments = arguments;
     }
 
     @Override
@@ -108,7 +119,10 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     @Override
     public Object proceed() throws Exception {
-        throw new UnsupportedOperationException();
+        if (arguments.length != annotated.getParameterCount()) {
+            throw new UnsupportedOperationException();
+        }
+        return annotated.invoke(getTarget(), arguments);
     }
 
 }
