@@ -130,6 +130,10 @@ public class AsyncronousExceptionHandlingTest {
         return completedExceptionally(new IllegalStateException("Original exception"));
     }
 
+    /**
+     * For a method returning {@link CompletionStage} throwing an exception is similarly handled to returning a value
+     * that later completes exceptionally. Therefore retry attempts should occur.
+     */
     @Test
     public void asyncCompletionStageWithRetryThrowsException() throws Exception {
         Future<?> result = proceedToDoneFuture();
