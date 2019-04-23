@@ -106,18 +106,6 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
 })
 public class SetAdminAuditServiceNotifierConfiguration implements AdminCommand {
 
-    @Inject
-    private Target targetUtil;
-
-    @Inject
-    private ServerEnvironment server;
-
-    @Inject
-    private ConfigModularityUtils configModularityUtils;
-
-    @Inject
-    private AdminAuditService auditService;
-
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
@@ -134,6 +122,18 @@ public class SetAdminAuditServiceNotifierConfiguration implements AdminCommand {
     @Param(name = "notifier")
     private String notifierName;
     private NotifierType notifierType;
+
+   @Inject
+    private Target targetUtil;
+
+    @Inject
+    private ServerEnvironment server;
+
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
+    @Inject
+    private AdminAuditService auditService;
 
     private ActionReport report;
     

@@ -97,7 +97,7 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
     private final static String[] NOTIFIER_HEADERS= {"Name", "Notifier Enabled"};
     
     @Inject
-    ServiceLocator habitat;
+    ServiceLocator serviceLocator;
     
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target;
@@ -128,7 +128,7 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
         
         ActionReport notifiersReport = actionReport.addSubActionsReport();
         
-        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = serviceLocator.getAllServiceHandles(BaseNotifierService.class);
         
         Properties notifierProps = new Properties();
         if (!config.getNotifierList().isEmpty()) {

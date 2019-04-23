@@ -249,8 +249,7 @@ public class ResourceUtil {
                                                 ParameterMap parameters,
                                                 Subject subject,
                                                 boolean managedJob) {            
-        AsadminRecorderService asadminRecorderService = Globals.
-                getDefaultHabitat().getService(AsadminRecorderService.class);
+        AsadminRecorderService asadminRecorderService = Globals.get(AsadminRecorderService.class);
         if (asadminRecorderService != null && asadminRecorderService.isEnabled()) {
             asadminRecorderService.recordAsadminCommand(commandName, 
                                                         parameters);

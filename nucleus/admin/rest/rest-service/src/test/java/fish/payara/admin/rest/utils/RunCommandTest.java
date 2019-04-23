@@ -111,21 +111,21 @@ import sun.security.acl.PrincipalImpl;
  */
 public class RunCommandTest {
     
-    private ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
     
     private List<NotificationEvent> events;
     
     @Before
     public void setUp() {
-        habitat = ServiceLocatorFactory.getInstance().create("testServiceLocator");
-        ServiceLocatorUtilities.addOneConstant(habitat, new TestNotificationService());
-        ServiceLocatorUtilities.addOneConstant(habitat, this);
-        ServiceLocatorUtilities.addClasses(habitat, AdminAuditService.class, GetAdminAuditServiceConfiguration.class, TestConfiguration.class,
+        serviceLocator = ServiceLocatorFactory.getInstance().create("testServiceLocator");
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, new TestNotificationService());
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, this);
+        ServiceLocatorUtilities.addClasses(serviceLocator, AdminAuditService.class, GetAdminAuditServiceConfiguration.class, TestConfiguration.class,
                 Target.class, NotificationEventFactoryStore.class, NotifierExecutionOptionsFactoryStore.class, TestCommandRunner.class);
         
-        Globals.setDefaultHabitat(habitat);
+        Globals.setDefaultHabitat(serviceLocator);
         
-        DynamicConfigurationService dcs = habitat.getService(DynamicConfigurationService.class);
+        DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
         
         config.addActiveDescriptor(RunLevelControllerImpl.class);
@@ -134,8 +134,8 @@ public class RunCommandTest {
             
         config.commit();
         
-        habitat.getService(RunLevelController.class).proceedTo(StartupRunLevel.VAL);
-        habitat.getService(NotificationEventFactoryStore.class).register(NotifierType.LOG, new fish.payara.nucleus.notification.log.LogNotificationEventFactory() {
+        serviceLocator.getService(RunLevelController.class).proceedTo(StartupRunLevel.VAL);
+        serviceLocator.getService(NotificationEventFactoryStore.class).register(NotifierType.LOG, new fish.payara.nucleus.notification.log.LogNotificationEventFactory() {
             @Override
             public LogNotificationEvent buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
                 LogNotificationEvent event = new LogNotificationEvent();
