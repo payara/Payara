@@ -54,7 +54,7 @@ import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.junit.Test;
 
-import fish.payara.microprofile.faulttolerance.test.FaultToleranceServiceStub;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 /**

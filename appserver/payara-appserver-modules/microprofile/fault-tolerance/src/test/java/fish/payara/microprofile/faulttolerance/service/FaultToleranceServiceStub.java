@@ -37,8 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance.test;
+package fish.payara.microprofile.faulttolerance.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +49,7 @@ import java.util.concurrent.RejectedExecutionException;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
@@ -118,12 +120,20 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     @Override
     public Object fallbackHandle(Class<? extends FallbackHandler<?>> fallbackClass, InvocationContext context,
             Exception ex) throws Exception {
-        throw new UnsupportedOperationException("Override for test case");
+        return fallbackClass.newInstance()
+                .handle(new FaultToleranceExecutionContext(context.getMethod(), context.getParameters(), ex));
     }
 
     @Override
     public Object fallbackInvoke(Method fallbackMethod, InvocationContext context) throws Exception {
-        throw new UnsupportedOperationException("Override for test case");
+        try {
+            fallbackMethod.setAccessible(true);
+            return fallbackMethod.invoke(context.getTarget(), context.getParameters());
+        } catch (InvocationTargetException e) {
+            throw (Exception) e.getTargetException();
+        } catch (IllegalAccessException e) {
+            throw new FaultToleranceDefinitionException(e); // should not happen as we validated
+        }
     }
 
     @Override

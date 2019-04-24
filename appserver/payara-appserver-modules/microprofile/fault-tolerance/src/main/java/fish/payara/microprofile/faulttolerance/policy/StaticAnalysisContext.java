@@ -55,7 +55,7 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     private final Class<?> targetClass;
     private final Method annotated;
-    private final Object[] arguments;
+    private Object[] arguments;
     private transient Object target;
 
     public StaticAnalysisContext(Class<?> targetClass, Method annotated) {
@@ -105,12 +105,12 @@ public final class StaticAnalysisContext implements InvocationContext {
 
     @Override
     public Object[] getParameters() {
-        throw new UnsupportedOperationException();
+        return arguments;
     }
 
     @Override
     public void setParameters(Object[] params) {
-        throw new UnsupportedOperationException();
+        this.arguments = params;
     }
 
     @Override
