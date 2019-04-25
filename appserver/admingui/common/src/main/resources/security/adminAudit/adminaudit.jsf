@@ -81,30 +81,35 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
         />
     </event>
-             <sun:form id="propertyForm">
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
-                <!-- Page Title -->
-                <sun:title id="propertyContentPage" title="$resource{i18nc.adminaudit.Title}" helpText="$resource{i18nc.adminaudit.PageHelp}" />
+        <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18nc.adminaudit.Title}" helpText="$resource{i18nc.adminaudit.PageHelp}">
+                <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
-            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18nc.button.Save}"
-                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18nc.button.Processing}');}; return false;" >
-                 <!command
-                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                     mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
-                     prepareSuccessfulMsg();
-                     gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration?target=#{pageSession.configName}" 
-                     attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                     
-                     py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        <!command
+                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                            mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                            mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
+                            prepareSuccessfulMsg();
+                            gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration?target=#{pageSession.configName}" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
 
-                    />
+                            py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" 
+                                selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+
+                        />
             </sun:button>
         </sun:panelGroup>
+        </facet>
+    </sun:title>
     <!-- PropertySheet .... -->
     <sun:propertySheet id="propertySheet">			 
         <!-- Text Field section -->
-        #include "/common/shared/configNameSection.inc"
+#include "/common/shared/configNameSection.inc"
         <sun:propertySheetSection id="propertSectionTextField">
 
             <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Enabled}" helpText="$resource{i18nc.adminaudit.EnabledHelp}">
@@ -142,7 +147,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             </sun:property>      
         </sun:propertySheetSection>
     </sun:propertySheet>
-            <sun:hidden id="helpKey" value="$resource{help_common.auditModules}" />
-            </sun:form>
+    <sun:hidden id="helpKey" value="$resource{help_common.auditModules}" />
+</sun:form>
 </define>
 </composition>
