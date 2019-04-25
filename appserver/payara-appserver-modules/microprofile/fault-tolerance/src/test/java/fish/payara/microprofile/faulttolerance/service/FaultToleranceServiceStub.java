@@ -103,7 +103,7 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     }
 
     @Override
-    public Future<?> scheduleDelayed(long delayMillis, Runnable task) throws Exception {
+    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
         throw new UnsupportedOperationException("Override for test case");
     }
 

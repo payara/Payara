@@ -55,7 +55,6 @@ import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
-import org.junit.Before;
 import org.junit.Test;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
@@ -67,13 +66,14 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
  * Tests the basic correctness of {@link Bulkhead} handling.
  * 
  * @author Jan Bernitt
- *
  */
 public class BulkheadBasicTest {
 
     final AtomicReference<BulkheadSemaphore> concurrentExecutions = new AtomicReference<>();
     final AtomicReference<BulkheadSemaphore> waitingQueuePopulation = new AtomicReference<>();
-    final AtomicInteger bulkheadCallCount = new AtomicInteger();
+    final AtomicInteger bulkheadWithoutQueueCallCount = new AtomicInteger();
+    final AtomicInteger bulkheadWithQueueCallCount = new AtomicInteger();
+    final AtomicInteger bulkheadWithQueueInterruptedCallCount = new AtomicInteger();
 
     private final FaultToleranceService service = new FaultToleranceServiceStub() {
         @Override
@@ -88,11 +88,6 @@ public class BulkheadBasicTest {
             value != null ? value : new BulkheadSemaphore(queueCapacity));
         }
     };
-
-    @Before
-    public void resetCounters() {
-        bulkheadCallCount.set(0);
-    }
 
     /**
      * Makes 2 concurrent request that should succeed acquiring a bulkhead permit.
@@ -111,18 +106,13 @@ public class BulkheadBasicTest {
         assertProceedingThrowsBulkheadException(annotatedMethod); 
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(2, bulkheadCallCount.get());
+        assertEquals(2, bulkheadWithoutQueueCallCount.get());
     }
 
     @Bulkhead(value = 2)
-    public String bulkheadWithoutQueue_Method(Future<Void> waiter) {
-        bulkheadCallCount.incrementAndGet();
-        try {
-            waiter.get();
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return "Success";
+    public CompletionStage<String> bulkheadWithoutQueue_Method(Future<Void> waiter) {
+        bulkheadWithoutQueueCallCount.incrementAndGet();
+        return waitThenReturnSuccess(waiter);
     }
 
     /**
@@ -145,19 +135,14 @@ public class BulkheadBasicTest {
         assertProceedingThrowsBulkheadException(annotatedMethod); 
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(4, bulkheadCallCount.get());
+        assertEquals(4, bulkheadWithQueueCallCount.get());
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
     public CompletionStage<String> bulkheadWithQueue_Method(Future<Void> waiter) {
-        bulkheadCallCount.incrementAndGet();
-        try {
-            waiter.get();
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-        return CompletableFuture.completedFuture("Success");
+        bulkheadWithQueueCallCount.incrementAndGet();
+        return waitThenReturnSuccess(waiter);
     }
 
     /**
@@ -171,6 +156,8 @@ public class BulkheadBasicTest {
         Runnable task = () ->  proceedToResultValueOrFail(this, annotatedMethod, waiter);
         new Thread(task).start();
         new Thread(task).start();
+        // must wait here to ensure these two threads actually are the ones getting permits
+        waitUntilPermitsAquired(2, 0); 
         Thread queueing1 = new Thread(task);
         queueing1.start();
         Thread queueing2 = new Thread(task);
@@ -182,13 +169,14 @@ public class BulkheadBasicTest {
         waitUntilPermitsAquired(2, 0);
         waiter.complete(null);
         waitUntilPermitsAquired(0, 0);
-        assertEquals(2, bulkheadCallCount.get());
+        assertEquals(2, bulkheadWithQueueInterruptedCallCount.get());
     }
 
     @Asynchronous
     @Bulkhead(value = 2, waitingTaskQueue = 2)
     public CompletionStage<String> bulkheadWithQueueInterrupted_Method(Future<Void> waiter) {
-        return bulkheadWithQueue_Method(waiter);
+        bulkheadWithQueueInterruptedCallCount.incrementAndGet();
+        return waitThenReturnSuccess(waiter);
     }
 
     /*
@@ -206,6 +194,15 @@ public class BulkheadBasicTest {
     private Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
         return policy.proceed(new StaticAnalysisContext(test, annotatedMethod, argument), service);
+    }
+
+    private static CompletionStage<String> waitThenReturnSuccess(Future<Void> waiter) throws AssertionError {
+        try {
+            waiter.get();
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+        return CompletableFuture.completedFuture("Success");
     }
 
     private void assertProceedingThrowsBulkheadException(Method annotatedMethod) throws Exception {
@@ -235,7 +232,7 @@ public class BulkheadBasicTest {
         }
     }
 
-    private static boolean equalAcquiredPermits(int expected, BulkheadSemaphore semaphore) {
-        return semaphore == null ? expected == 0 : semaphore.acquiredPermits() == expected;
+    private static boolean equalAcquiredPermits(int expected, BulkheadSemaphore actual) {
+        return actual == null ? expected == 0 : actual.acquiredPermits() == expected;
     }
 }

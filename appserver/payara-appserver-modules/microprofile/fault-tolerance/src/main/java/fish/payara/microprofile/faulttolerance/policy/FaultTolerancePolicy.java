@@ -437,9 +437,7 @@ public final class FaultTolerancePolicy implements Serializable {
                 invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 if (circuitBreaker.failOn(ex)) {
                     logger.log(Level.FINE, "Exception causes CircuitBreaker to transit: half-open => open");
-                    invocation.metrics.incrementCircuitbreakerOpenedTotal();
-                    state.open();
-                    invocation.service.scheduleDelayed(circuitBreaker.delay, state::halfOpen);
+                    openCircuit(invocation, state);
                 }
                 throw ex;
             }
@@ -463,15 +461,23 @@ public final class FaultTolerancePolicy implements Serializable {
             }
             if (state.isOverFailureThreshold(circuitBreaker.requestVolumeThreshold, circuitBreaker.failureRatio)) {
                 logger.log(Level.FINE, "Failure threshold causes CircuitBreaker to transit: closed => open");
-                invocation.metrics.incrementCircuitbreakerOpenedTotal();
-                state.open();
-                invocation.service.scheduleDelayed(circuitBreaker.delay, state::halfOpen);
+                openCircuit(invocation, state);
             }
             if (failedOn != null) {
                 throw failedOn;
             }
             invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
             return resultValue;
+        }
+    }
+
+    private void openCircuit(FaultToleranceInvocation invocation, CircuitBreakerState state) throws Exception {
+        invocation.metrics.incrementCircuitbreakerOpenedTotal();
+        state.open();
+        if (circuitBreaker.delay == 0L) {
+            state.halfOpen();
+        } else {
+            invocation.service.runDelayed(circuitBreaker.delay, state::halfOpen);
         }
     }
 
@@ -487,7 +493,7 @@ public final class FaultTolerancePolicy implements Serializable {
         long timeoutTime = System.currentTimeMillis() + timeoutDuration;
         Thread current = Thread.currentThread();
         AtomicBoolean timedOut = new AtomicBoolean(false);
-        Future<?> timeout = invocation.service.scheduleDelayed(timeoutDuration, () -> { 
+        Future<?> timeout = invocation.service.runDelayed(timeoutDuration, () -> { 
             logger.log(Level.FINE, "Interrupting attempt due to timeout.");
             timedOut.set(true);
             current.interrupt();

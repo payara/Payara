@@ -117,7 +117,7 @@ public interface FaultToleranceService {
      * @param task        operation to run
      * @return A future that can be cancelled if the operation should no longer be run
      */
-    Future<?> scheduleDelayed(long delayMillis, Runnable task) throws Exception;
+    Future<?> runDelayed(long delayMillis, Runnable task) throws Exception;
 
     /**
      * Runs the task asynchronously and completes the given asyncResult with the its outcome.

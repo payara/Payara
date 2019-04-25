@@ -340,7 +340,7 @@ public class FaultToleranceServiceImpl implements EventListener, FaultToleranceS
     }
 
     @Override
-    public Future<?> scheduleDelayed(long delayMillis, Runnable task) throws Exception {
+    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
         return getManagedScheduledExecutorService().schedule(task, delayMillis, TimeUnit.MILLISECONDS);
     }
 
