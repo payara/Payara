@@ -84,7 +84,8 @@ import org.jvnet.hk2.config.ConfigView;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG,
+    CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = AdminAuditConfiguration.class, 
             opType = RestEndpoint.OpType.GET,
@@ -159,7 +160,6 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
                     }
                 }
 
-             //   extraProperties.putAll(notifierProps);
             }
         }
         notifiersReport.setMessage(notifiersColumnFormatter.toString());

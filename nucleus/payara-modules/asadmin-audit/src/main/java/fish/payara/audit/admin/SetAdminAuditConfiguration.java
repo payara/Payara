@@ -60,7 +60,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -79,7 +78,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "set-admin-audit-configuration")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG,
+    CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = AdminAuditConfiguration.class,
             opType = RestEndpoint.OpType.POST,
@@ -128,7 +128,7 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                 }
             }, configuration);
 
-            if (dynamic && target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
+            if (dynamic && target.equals("server-config")) {
                 auditService.setEnabled(enabled);
                 auditService.setAuditLevel(AuditLevel.valueOf(auditLevel));
             }
