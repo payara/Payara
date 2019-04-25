@@ -44,6 +44,7 @@ package com.sun.enterprise.server.logging;
 import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.BooleanLatch;
 import com.sun.common.util.logging.GFLogRecord;
+import com.sun.common.util.logging.LoggingOutputStream;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -52,18 +53,6 @@ import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
 import fish.payara.enterprise.server.logging.PayaraNotificationLogRotationTimer;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import org.glassfish.api.logging.Task;
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.*;
 import java.security.PrivilegedAction;
 import java.text.FieldPosition;
@@ -74,9 +63,25 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.*;
+import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.zip.GZIPOutputStream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.glassfish.api.logging.Task;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 
 import static java.security.AccessController.doPrivileged;
 
@@ -139,6 +144,12 @@ public class GFFileHandler extends StreamHandler implements
     private boolean multiLineMode;
     private String fileHandlerFormatter = "";
     private String currentFileHandlerFormatter = "";
+    private boolean logStandardStreams;
+    
+    private PrintStream oStdOutBackup = System.out;
+    private PrintStream oStdErrBackup = System.err;
+    private LoggingOutputStream stdoutOutputStream=null;
+    private LoggingOutputStream stderrOutputStream=null;
 
     /** Initially the LogRotation will be off until the domain.xml value is read. */
     private int limitForFileRotation = 0;
@@ -294,6 +305,14 @@ public class GFFileHandler extends StreamHandler implements
         compressionOnRotation = false;
         if (propertyValue != null) {
             compressionOnRotation = Boolean.parseBoolean(propertyValue);
+        }
+   
+        propertyValue = manager.getProperty(className + ".logStandardStreams");
+        if (propertyValue != null) {
+            logStandardStreams = Boolean.parseBoolean(propertyValue);
+            if (logStandardStreams) {
+                logStandardStreams();
+            }
         }
 
         String formatterName = manager.getProperty(className + ".formatter");
@@ -595,6 +614,22 @@ public class GFFileHandler extends StreamHandler implements
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
         }
+        
+        System.setOut(oStdOutBackup);
+        System.setErr(oStdErrBackup);
+
+        try {
+            if (stdoutOutputStream != null) {
+                stdoutOutputStream.close();
+            }
+
+            if (stderrOutputStream != null) {
+                stderrOutputStream.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         done.tryReleaseShared(1);
         if (pumpFuture != null) {
             pumpFuture.cancel(true);
@@ -1057,7 +1092,22 @@ public class GFFileHandler extends StreamHandler implements
 
         return status;
     }
-
+    
+    private void logStandardStreams() {
+        // redirect stderr and stdout, a better way to do this
+        //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
+  
+        Logger _ologger = LogFacade.STDOUT_LOGGER;
+        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
+        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
+        System.setOut(pout);
+    
+        Logger _elogger = LogFacade.STDERR_LOGGER;
+        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
+        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
+        System.setErr(perr);
+    }
+    
     public synchronized void setLogFile(String fileName) {
         String logFileName = TranslatedConfigView.getTranslatedValue(fileName).toString();
         File logFile = new File(logFileName);
@@ -1126,5 +1176,16 @@ public class GFFileHandler extends StreamHandler implements
 
     public synchronized void setCompressionOnRotation(boolean compressionOnRotation) {
         this.compressionOnRotation = compressionOnRotation;
+    }
+
+    public synchronized void setLogStandardStreams(boolean logStandardStreams) {
+        this.logStandardStreams = logStandardStreams;
+
+        if (logStandardStreams) {
+            logStandardStreams();
+        } else {
+            System.setOut(oStdOutBackup);
+            System.setErr(oStdErrBackup);
+        }
     }
 }

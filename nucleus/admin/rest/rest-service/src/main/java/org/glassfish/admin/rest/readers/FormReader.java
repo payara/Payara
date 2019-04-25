@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -47,6 +48,7 @@ import java.io.Reader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import javax.ws.rs.Consumes;
@@ -63,6 +65,8 @@ import javax.ws.rs.ext.Provider;
 @Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_OCTET_STREAM})
 @Provider
 public class FormReader implements MessageBodyReader<HashMap<String, String>> {
+    
+    private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.toString();
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -72,7 +76,7 @@ public class FormReader implements MessageBodyReader<HashMap<String, String>> {
     @Override
     public HashMap<String, String> readFrom(Class<HashMap<String, String>> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers, 
-            InputStream in) throws IOException {
+            InputStream in) throws IOException {        
         String formData = readAsString(in);
 
         HashMap<String, String> map = new HashMap<String, String>();
@@ -82,13 +86,12 @@ public class FormReader implements MessageBodyReader<HashMap<String, String>> {
             token = tokenizer.nextToken();
             int idx = token.indexOf('=');
             if (idx < 0) {
-                map.put(URLDecoder.decode(token,"UTF-8"), null);
+                map.put(URLDecoder.decode(token, DEFAULT_CHARSET), null);
             } else if (idx > 0) {
-                map.put(URLDecoder.decode(token.substring(0, idx),"UTF-8"), URLDecoder.decode(token.substring(idx+1),"UTF-8"));
+                map.put(URLDecoder.decode(token.substring(0, idx), DEFAULT_CHARSET), URLDecoder.decode(token.substring(idx+1), DEFAULT_CHARSET));
             }
         }
         return map;
-        //return new NameValuePair(map.get("name"), map.get("value"));
     }
     
     public final String readAsString(InputStream in) throws IOException {

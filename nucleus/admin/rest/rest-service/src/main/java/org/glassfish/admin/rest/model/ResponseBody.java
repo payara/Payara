@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
@@ -163,14 +163,12 @@ public class ResponseBody {
             }
             object.put("messages", array.build());
         }
-        if (includeResourceLinks) {
-            if (!getResourceLinks().isEmpty()) {
+        if (includeResourceLinks && !getResourceLinks().isEmpty()) {
                 JsonArrayBuilder array = Json.createArrayBuilder();
                 for (ResourceLink link : getResourceLinks()) {
                     array.add(link.toJson());
                 }
                 object.put("resources", array.build());
-            }
         }
     }
 }

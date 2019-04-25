@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -46,6 +46,8 @@ import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import java.io.*;
 import java.util.*;
+
+import jline.console.ConsoleReader;
 import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
 
@@ -75,7 +77,7 @@ public final class SetupLocalDcom extends CLICommand {
     private static final String CPP_APP_FILENAME = "DcomConfigurator.exe";
     private static final File TMPDIR = new File(System.getProperty("java.io.tmpdir"));
     private static final File CPP_APP = new File(TMPDIR, CPP_APP_FILENAME);
-    private final Console console = System.console();
+    private ConsoleReader console;
 
     @Override
     protected void validate() throws CommandException {
@@ -84,8 +86,19 @@ public final class SetupLocalDcom extends CLICommand {
         if (!OS.isWindowsForSure())
             throw new CommandException(Strings.get("vld.windows.only"));
 
-        if (console == null)
+        // Instantiate console if null
+        if (console == null) {
+            try {
+                console = new ConsoleReader(System.in, System.out, null);
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error instantiating console", ioe);
+            }
+        }
+
+        // Check if console is still null
+        if (console == null) {
             throw new CommandException(Strings.get("vld.noconsole"));
+        }
 
         if(!force)
             areYouSure();
@@ -225,7 +238,13 @@ public final class SetupLocalDcom extends CLICommand {
             throw new CommandException(Strings.get("vld.not.interactive"));
 
         String msg = Strings.get("vld.areyousure");
-        String answer = console.readLine("%s:  ", msg);
+
+        String answer = null;
+        try {
+            answer = console.readLine(msg);
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading input", ioe);
+        }
 
         if (!"yes".equalsIgnoreCase(answer))
             throw new CommandException(Strings.get("vld.no"));

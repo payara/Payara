@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -135,8 +135,8 @@
                     values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter", "fish.payara.enterprise.server.logging.JSONLogFormatter"} />
           </sun:property>
 
-        <sun:property id="disableStdioRedirect" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.DirectStdIO}" helpText="$resource{i18nc.log.DirectStdIOHelp}">
-            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.stdio.disable']}" selectedValue="true"/>
+        <sun:property id="logStandardStreamsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogStandardStreams}" helpText="$resource{i18nc.log.LogStandardStreamsHelp}">
+            <sun:checkbox id="logStandardStreamsEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams']}" selectedValue="true"/>
         </sun:property>
 
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">

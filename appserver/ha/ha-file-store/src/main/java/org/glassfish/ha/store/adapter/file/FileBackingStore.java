@@ -40,12 +40,15 @@
 
 package org.glassfish.ha.store.adapter.file;
 
-import org.glassfish.ha.store.api.*;
+import org.glassfish.ha.store.api.BackingStore;
+import org.glassfish.ha.store.api.BackingStoreConfiguration;
+import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.api.BackingStoreFactory;
 
 import java.io.*;
-
 import java.util.Map;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of BackingStore that uses file system to
@@ -84,10 +87,10 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (conf.getLogger() != null) {
             logger = conf.getLogger();
         }
-        
+
         super.initialize(conf);
         debugStr = "[FileBackingStore - " + conf.getStoreName() + "] ";
-        
+
         baseDir = conf.getBaseDirectory();
 
         try {
@@ -122,20 +125,17 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     public V load(K key, String version) throws BackingStoreException {
 
         String fileName = key.toString();
-        V value = null;
-
 
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Entered load(" + key + ", " + version + ")");
         }
 
+        V value = null;
         byte[] data = readFromfile(fileName);
         if (data != null) {
-            try {
-                ByteArrayInputStream bis2 = new ByteArrayInputStream(data);
-                ObjectInputStream ois = super.createObjectInputStream(bis2);
+            try (ObjectInputStream ois =
+                     super.createObjectInputStream(new ByteArrayInputStream(data))) {
                 value = (V) ois.readObject();
-
                 if (logger.isLoggable(TRACE_LEVEL)) {
                     logger.log(TRACE_LEVEL, debugStr + "Done load(" + key + ", " + version + ")");
                 }
@@ -143,7 +143,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
                 logger.log(Level.WARNING,debugStr + "Failed to load(" + key + ", " + version + ")", ex);
             }
         }
-        
+
         return value;
     }
 
@@ -198,7 +198,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         return removeExpired(defaultMaxIdleTimeoutInSeconds * 1000L);
     }
 
-    //TODO: deprecate after next shoal integration   
+    //TODO: deprecate after next shoal integration
     public int removeExpired(long idleForMillis) {
         long threshold = System.currentTimeMillis() - idleForMillis;
         int expiredSessions = 0;
@@ -271,7 +271,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             throws BackingStoreException {
         updateTimestamp(k, timeStamp);
     }
-    
+
     public void updateTimestamp(K sessionKey, long time)
             throws BackingStoreException {
         if (logger.isLoggable(TRACE_LEVEL)) {

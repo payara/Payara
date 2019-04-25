@@ -162,12 +162,12 @@ public class ProviderUtil {
         return sb.toString();
     }
 
-    static public String getElementLink(UriInfo uriInfo, String elementName) {
+    public static String getElementLink(UriInfo uriInfo, String elementName) {
         return uriInfo.getRequestUriBuilder().segment(elementName).build().toASCIIString();
 
     }
 
-    static protected String getStartXmlElement(String name) {
+    protected static String getStartXmlElement(String name) {
         assert((name != null) && name.length() > 0);
         String result ="<";
         result = result + name;
@@ -175,7 +175,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static protected String getEndXmlElement(String name) {
+    protected static String getEndXmlElement(String name) {
         assert((name != null) && name.length() > 0);
         String result ="<";
         result = result + "/";
@@ -184,7 +184,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static public Map getStatistics(Statistic statistic) throws
+    public static Map getStatistics(Statistic statistic) throws
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         HashMap results = new HashMap();
         Class classObject = statistic.getClass();
@@ -199,8 +199,8 @@ public class ProviderUtil {
                      name = name.substring("get".length());
                      Class<?> returnType = method.getReturnType();
                      //consider only the methods that return primitives or String objects)
-                     if (returnType.isPrimitive() || returnType.getName().equals("java.lang.String")) {
-                         results.put(name, method.invoke(statistic, null));
+                     if (returnType.isPrimitive() || "java.lang.String".equals(returnType.getName())) {
+                         results.put(name, method.invoke(statistic));
                      } else {
                          //control should never reach here
                          //we do not expect statistic object to return object
@@ -212,7 +212,7 @@ public class ProviderUtil {
         return results;
     }
 
-    static public Map<String, Object> getStatistic(Statistic statistic) {
+    public static Map<String, Object> getStatistic(Statistic statistic) {
         Map<String,Object> statsMap;
         // Most likely we will get the proxy of the StatisticImpl,
         // reconvert that so you can access getStatisticAsMap method
@@ -225,30 +225,25 @@ public class ProviderUtil {
         return  statsMap;
     }
 
-    static public HashMap<String, String> getStringMap(Map<String, Object> map) {
+    /**
+     * Converts a map of &lt;String, Object&gt; to a map of &lt;String, String&gt;
+     * @param map The map to convert
+     * @return the resulting map
+     */
+    public static HashMap<String, String> getStringMap(Map<String, Object> map) {
         HashMap<String, String> stringMap = new HashMap<String, String>();
         if (map != null) {
             //Convert attribute value to String if that's not the case.
             //Attribute value can be Boolean, Interger etc.
-            String key = null;
-            Object value = null;
             //We know keys in the map are always stored as String objects
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 stringMap.put(entry.getKey(), entry.getValue().toString());
             }
-            /*
-            Iterator<String> iterator = map.keySet().iterator();
-            while (iterator.hasNext()) {
-                key = iterator.next();
-                value = map.get(key);
-                stringMap.put(key, value.toString());
-            }
-            */
         }
         return stringMap;
     }
 
-    static protected String getHtmlRepresentationForAttributes(ConfigBean proxy, UriInfo uriInfo) {
+    protected static String getHtmlRepresentationForAttributes(ConfigBean proxy, UriInfo uriInfo) {
         StringBuilder result = new StringBuilder();
 
         MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(proxy.model);
@@ -277,7 +272,7 @@ public class ProviderUtil {
         }
     }
 
-    static protected String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
+    protected static String getHtmlRespresentationsForCommand(MethodMetaData methodMetaData, String commandMethod,
                                                               String commandDisplayName, UriInfo uriInfo) {
         StringBuilder result = new StringBuilder();
         if (methodMetaData != null) {
@@ -339,7 +334,7 @@ public class ProviderUtil {
         return result.toString();
     }
 
-    static protected String getHtmlForComponent(String component, String heading, String result) {
+    protected static String getHtmlForComponent(String component, String heading, String result) {
         if ((component != null) && (component.length() > 0)) {
             result = result + "<h2>" + heading + "</h2>";
             result = result + component;
@@ -355,7 +350,7 @@ public class ProviderUtil {
      * @param mediaType the media type of the input request
      * @return a hit to display when module monitoring levels are all OFF
      */
-    static protected String getHint(UriInfo uriInfo, String mediaType) {
+    protected static String getHint(UriInfo uriInfo, String mediaType) {
         String result = "";
         java.net.URI baseUri = uriInfo.getBaseUri();
         String monitoringLevelsConfigUrl = baseUri.getScheme() + "://" +
@@ -365,8 +360,7 @@ public class ProviderUtil {
         String name = Util.localStrings.getLocalString(
             "rest.monitoring.levels.hint.heading", "Hint");
         String value = Util.localStrings.getLocalString("rest.monitoring.levels.hint.message",
-            "Module monitoring levels may be OFF. To set module monitoring levels please visit following url: {0}",
-                new Object[] {monitoringLevelsConfigUrl});
+            "Module monitoring levels may be OFF. To set module monitoring levels please visit following url: {0}", monitoringLevelsConfigUrl);
 
         if (mediaType.equals(MediaType.TEXT_HTML)) {
             monitoringLevelsConfigUrl =
@@ -374,8 +368,7 @@ public class ProviderUtil {
                     monitoringLevelsConfigUrl + "</a>";
 
             value = Util.localStrings.getLocalString("rest.monitoring.levels.hint.message",
-                "Module monitoring levels may be OFF. To set module monitoring levels please visit following url: {0}",
-                    new Object[] {monitoringLevelsConfigUrl});
+                "Module monitoring levels may be OFF. To set module monitoring levels please visit following url: {0}", monitoringLevelsConfigUrl);
 
             result = result + "<h2>" + name + "</h2>";
             result = result + value + "<br>";
@@ -396,7 +389,7 @@ public class ProviderUtil {
        return result;
     }
 
-    static public String jsonValue(Object value) {
+    public static String jsonValue(Object value) {
         String result ="";
 
         if (value.getClass().getName().equals("java.lang.String")) {
@@ -408,7 +401,7 @@ public class ProviderUtil {
         return result;
     }
 
-    static public String getHtmlHeader(String baseUri) {
+    public static String getHtmlHeader(String baseUri) {
         String title = Version.getVersion() + " REST Interface";
         String result = "<html><head><title>" + title + "</title>";
         result = result + getInternalStyleSheet(baseUri);
@@ -419,26 +412,26 @@ public class ProviderUtil {
         return result;
     }
 
-    static protected JsonArray getJsonForMethodMetaData(OptionsResult metaData) throws JsonException {
+    protected static JsonArray getJsonForMethodMetaData(OptionsResult metaData) throws JsonException {
         OptionsResultJsonProvider provider = new OptionsResultJsonProvider();
         return provider.getRespresenationForMethodMetaData(metaData);
     }
 
-    static protected String getJsonForMethodMetaData(OptionsResult metaData, String indent) {
+    protected static String getJsonForMethodMetaData(OptionsResult metaData, String indent) {
         OptionsResultJsonProvider provider = new OptionsResultJsonProvider();
         return provider.getRespresenationForMethodMetaData(metaData).toString();
     }
 
-    static protected String getXmlForMethodMetaData(OptionsResult metaData, String indent) {
+    protected static String getXmlForMethodMetaData(OptionsResult metaData, String indent) {
         OptionsResultXmlProvider provider = new OptionsResultXmlProvider();
         return provider.getRespresenationForMethodMetaData(metaData, indent);
     }
 
-    static private String getHtmlRespresentationForParameter(String parameter, ParameterMetaData parameterMetaData) {
+    private static String getHtmlRespresentationForParameter(String parameter, ParameterMetaData parameterMetaData) {
         return getHtmlRespresentationForParameter(parameter, parameterMetaData, null);
     }
 
-    static private String getHtmlRespresentationForParameter(String parameter,
+    private static String getHtmlRespresentationForParameter(String parameter,
             ParameterMetaData parameterMetaData, String parameterValue) {
 
       if ("true".equals(parameterMetaData.getAttributeValue(Constants.DEPRECATED))) {
@@ -482,7 +475,7 @@ public class ProviderUtil {
             hasValue = true;
         }
 
-        boolean keyAttribute = Boolean.valueOf(parameterMetaData.getAttributeValue(Constants.KEY)).booleanValue();
+        boolean keyAttribute = Boolean.valueOf(parameterMetaData.getAttributeValue(Constants.KEY));
         if (keyAttribute) {
             if (hasValue) {
                 result.append("<dd><input name=\"")

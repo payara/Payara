@@ -68,9 +68,10 @@
     <properties>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
         <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.1.0</maven.javadoc.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <profiles>
@@ -194,18 +195,42 @@
                             <execution>
                                 <id>aggregate</id>
                                 <goals>
-                                    <goal>aggregate</goal>
-                                    <goal>aggregate-jar</goal>
+                                    <goal>aggregate-no-fork</goal>
+                                    <!--
+                                        until no-fork variant of jar is available, we'll package
+                                        directly with jar plugin
+                                    -->
+                                    <!--<goal>aggregate-jar</goal>-->
                                 </goals>
                                 <phase>pre-site</phase>
                                 <configuration>
                                     <!-- Specific configuration for the aggregate report -->
                                     <finalName>payara-5.192-SNAPSHOT</finalName>
+                                    <minmemory>512m</minmemory>
+                                    <maxmemory>2g</maxmemory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>javadoc-jar</id>
+                                <goals>
+                                   <goal>jar</goal>
+                                </goals>
+                                <phase>pre-site</phase>
+                                <configuration>
+                                    <classesDirectory>${project.build.directory}/site/apidocs</classesDirectory>
+                                    <classifier>javadoc</classifier>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
+                <finalName>payara-${project.version}</finalName>
             </build>
         </profile>
 

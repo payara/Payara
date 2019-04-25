@@ -38,11 +38,10 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +51,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.rest.resources.TemplateCommandPostResource;
-import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.config.Dom;
 
@@ -72,7 +70,7 @@ public class SetDomainConfigResource extends TemplateCommandPostResource {
     @POST
     @Produces({MediaType.TEXT_HTML,MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public Response setDomainConfig(HashMap<String, String> data) {
+    public Response setDomainConfig(Map<String, String> data) {
 
         final Iterator<Entry<String, String>> iterator = data.entrySet().iterator();
         if (iterator.hasNext()) {

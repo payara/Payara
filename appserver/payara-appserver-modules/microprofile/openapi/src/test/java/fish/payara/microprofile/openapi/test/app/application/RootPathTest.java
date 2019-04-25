@@ -41,34 +41,19 @@ package fish.payara.microprofile.openapi.test.app.application;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A resource to test that a resource at the context root is mapped correctly.
  */
 @Path("")
-public class RootPathTest {
-
-    public transient static OpenAPI document;
-
-    @BeforeClass
-    public static void createDocument() {
-        try {
-            document = new ApplicationProcessedDocument();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail("Failed to build document.");
-        }
-    }
+public class RootPathTest extends OpenApiApplicationTest {
 
     @GET
     public String getRoot() {
@@ -77,8 +62,8 @@ public class RootPathTest {
 
     @Test
     public void testRoot() {
-        assertNotNull("The root resource wasn't found.", document.getPaths().getPathItem("/test"));
+        assertNotNull("The root resource wasn't found.", getDocument().getPaths().getPathItem("/test"));
         assertEquals("The root resource had the wrong origin.", "getRoot",
-                document.getPaths().getPathItem("/test").getGET().getOperationId());
+                getDocument().getPaths().getPathItem("/test").getGET().getOperationId());
     }
 }

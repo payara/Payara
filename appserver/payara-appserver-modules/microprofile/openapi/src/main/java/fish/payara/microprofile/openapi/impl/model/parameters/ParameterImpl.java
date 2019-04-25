@@ -62,21 +62,21 @@ import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
 public class ParameterImpl extends ExtensibleImpl<Parameter> implements Parameter {
 
-    protected String name;
-    protected In in;
-    protected String description;
-    protected Boolean required;
-    protected Boolean deprecated;
-    protected Boolean allowEmptyValue;
-    protected String ref;
+    private String name;
+    private In in;
+    private String description;
+    private Boolean required;
+    private Boolean deprecated;
+    private Boolean allowEmptyValue;
+    private String ref;
 
-    protected Style style;
-    protected Boolean explode;
-    protected Boolean allowReserved;
-    protected Schema schema;
-    protected Map<String, Example> examples = new HashMap<>();
-    protected Object example;
-    protected Content content;
+    private Style style;
+    private Boolean explode;
+    private Boolean allowReserved;
+    private Schema schema;
+    private Map<String, Example> examples = new HashMap<>();
+    private Object example;
+    private Content content;
 
     @Override
     public String getName() {

@@ -59,7 +59,7 @@ public class ActionReportResultXmlProvider extends BaseProvider<ActionReportResu
 
     @Override
     public String getContent(ActionReportResult proxy) {
-        ActionReporter ar = (ActionReporter)proxy.getActionReport();
+        ActionReporter ar = proxy.getActionReport();
         ActionReportXmlProvider provider = new ActionReportXmlProvider();
         return provider.getContent(ar);
     }

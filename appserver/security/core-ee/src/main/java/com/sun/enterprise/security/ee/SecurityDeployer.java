@@ -246,7 +246,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @param remove boolean indicated whether any existing policy statements are removed form context before translation
      * @throws DeploymentException
      */
-    private void loadPolicy(WebBundleDescriptor webDescriptor, boolean remove) throws DeploymentException {
+    public void loadPolicy(WebBundleDescriptor webDescriptor, boolean remove) throws DeploymentException {
         try {
             if (webDescriptor != null) {
                 if (remove) {

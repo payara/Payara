@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.logviewer;
 
@@ -57,7 +58,7 @@ public /*for now, until Hudson migration completes*/ final class CharSpool exten
     private int pos;
 
     @Override
-    public void write(char cbuf[], int off, int len) {
+    public void write(char[] cbuf, int off, int len) {
         while(len>0) {
             int sz = Math.min(last.length-pos,len);
             System.arraycopy(cbuf,off,last,pos,sz);

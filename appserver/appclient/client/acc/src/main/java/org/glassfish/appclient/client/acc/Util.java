@@ -132,22 +132,15 @@ public class Util {
      * @throws FileNotFoundException if the temp file cannot be opened for any reason
      */
      public static File writeTextToTempFile(String content, String prefix, String suffix, boolean retainTempFiles) throws IOException, FileNotFoundException {
-        BufferedWriter wtr = null;
-        try {
-            File result = File.createTempFile(prefix, suffix);
-            if ( ! retainTempFiles) {
-                result.deleteOnExit();
-            }
-            FileOutputStream fos = new FileOutputStream(result);
-            wtr = new BufferedWriter(new OutputStreamWriter(fos));
-            wtr.write(content);
-            wtr.close();
-            return result;
-        } finally {
-            if (wtr != null) {
-                wtr.close();
-            }
+        File result = File.createTempFile(prefix, suffix);
+        if ( ! retainTempFiles) {
+            result.deleteOnExit();
         }
+        try (BufferedWriter writer =
+                 new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result)))) {
+            writer.write(content);
+        }
+        return result;
     }
 
     /**
