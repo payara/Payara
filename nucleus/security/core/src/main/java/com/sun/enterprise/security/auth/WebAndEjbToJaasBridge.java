@@ -230,7 +230,7 @@ public class WebAndEjbToJaasBridge {
                     lg.login();
                 }
                 
-                //Assigns the value used in roll mapping for validation consistency
+                // The name that the cert realm decided to set as the caller principal name
                 user = certRealm.authenticate(subject, x500principal);
                 realmName = CertificateRealm.AUTH_TYPE;
 

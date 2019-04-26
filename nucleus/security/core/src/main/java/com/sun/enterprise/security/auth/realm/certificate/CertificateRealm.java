@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 
@@ -123,7 +125,7 @@ public final class CertificateRealm extends BaseRealm {
             setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
         }
         
-        //Gets the property from the admin console - requires server restart when updating or removing
+        // Gets the property from the realm configuration - requires server restart when updating or removing
         String useCommonName = props.getProperty("common-name-as-principal-name");
         if (useCommonName != null) {
             setProperty("useCommonName", useCommonName);
@@ -169,25 +171,14 @@ public final class CertificateRealm extends BaseRealm {
      *
      */
     public String authenticate(Subject subject, Principal principal) {
-        // It is important to use x500name.getName() in order to be
+        // It is important to use X500Principal.getName() in order to be
         // consistent with web containers view of the name - see bug
         // 4646134 for reasons why this matters.
         String name = principal.getName();
         
-        //Checks if the property for using common name is set
-        if (getProperty("useCommonName") != null && 
-           getProperty("useCommonName").equals("true")) {
-        
-            String[] certificateParts = name.split(",");
-            for (String part : certificateParts) {
-                //Given property is checked and CN is present in the certificate
-                //Replace full certificate string with the value of CN
-                String temp = part.trim();
-                if (temp.startsWith("CN=")) {
-                    //Remove CN prefix and place into name for role mapping
-                    name = temp.replace("CN=", "");
-                }
-            }
+        // Checks if the property for using common name is set
+        if (Boolean.valueOf(getProperty("useCommonName"))) {
+            name = extractCN(name);
         }
 
         _logger.log(FINEST, "Certificate realm setting up security context for: {0}", name);
@@ -205,6 +196,23 @@ public final class CertificateRealm extends BaseRealm {
 
         SecurityContext.setCurrent(new SecurityContext(name, subject));
         return name;
+    }
+    
+    private static String extractCN(String dn) {
+        try {
+            return (String) 
+                new LdapName(dn)
+                    .getRdns()
+                    .stream()
+                    .filter(rdn -> rdn.getType().equalsIgnoreCase("CN"))
+                    .findFirst()
+                    .orElseThrow(
+                        () -> new IllegalStateException(
+                                "common-name-as-principal-name set to true, but no CN present in " + dn))
+                    .getValue();
+        } catch (InvalidNameException e) {
+            throw new IllegalStateException("Exception extracting CN from DN " + dn, e);
+        }
     }
 
     /**
