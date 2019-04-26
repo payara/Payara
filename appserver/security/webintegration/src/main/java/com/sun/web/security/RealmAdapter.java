@@ -589,7 +589,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Override
     public Principal authenticate(X509Certificate certs[]) {
         if (authenticate(null, null, certs, null)) {
-            return new WebPrincipal(certs, SecurityContext.getCurrent());
+            return new WebPrincipal(certs, SecurityContext.getCurrent(), true);
         }
 
         return null;
