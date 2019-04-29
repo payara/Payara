@@ -209,7 +209,7 @@ public class FaultToleranceUtils {
         return getPlainCanonicalName(context.getMethod().getDeclaringClass()) + "." + context.getMethod().getName();
     }
 
-    public static boolean isAnnotaetdWithFaultToleranceAnnotations(Annotated element) {
+    public static boolean isAnnotatedWithFaultToleranceAnnotations(Annotated element) {
         return element.isAnnotationPresent(Asynchronous.class) 
                 || element.isAnnotationPresent(Bulkhead.class)
                 || element.isAnnotationPresent(CircuitBreaker.class)

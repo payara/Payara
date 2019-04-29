@@ -93,11 +93,11 @@ public class FaultToleranceExtension implements Extension {
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
         boolean markAllMethods = FaultToleranceUtils
-                .isAnnotaetdWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
+                .isAnnotatedWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
         Class<?> targetClass = processAnnotatedType.getAnnotatedType().getJavaClass();
         for (AnnotatedMethodConfigurator<?> methodConfigurator : processAnnotatedType.configureAnnotatedType().methods()) {
             if (markAllMethods || FaultToleranceUtils
-                    .isAnnotaetdWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
+                    .isAnnotatedWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
                 FaultTolerancePolicy.asAnnotated(targetClass, methodConfigurator.getAnnotated().getJavaMember());
                 methodConfigurator.add(MARKER);
             }
