@@ -79,13 +79,13 @@ public class BulkheadBasicTest {
         @Override
         public BulkheadSemaphore getConcurrentExecutions(int maxConcurrentThreads, InvocationContext context) {
             return concurrentExecutions.updateAndGet(value -> 
-            value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
+                value != null ? value : new BulkheadSemaphore(maxConcurrentThreads));
         }
 
         @Override
         public BulkheadSemaphore getWaitingQueuePopulation(int queueCapacity, InvocationContext context) {
             return waitingQueuePopulation.updateAndGet(value -> 
-            value != null ? value : new BulkheadSemaphore(queueCapacity));
+                value != null ? value : new BulkheadSemaphore(queueCapacity));
         }
     };
 
