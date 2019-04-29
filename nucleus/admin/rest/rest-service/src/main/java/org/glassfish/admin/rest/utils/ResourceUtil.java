@@ -38,7 +38,7 @@
  * holder.
  */
  
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -65,6 +65,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -121,11 +122,15 @@ import org.jvnet.hk2.config.DomDocument;
 public class ResourceUtil {
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
+    private static final String DEFAULT = "DEFAULT";
+    
     private static RestConfig restConfig = null;
     // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom,
     // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
     // stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
+    
+    private static final Logger LOGGER = Logger.getLogger(ResourceUtil.class.getPackage().toString());
     
     static {
         String pattern = or(
@@ -167,13 +172,11 @@ public class ResourceUtil {
      * parameter name to DEFAULT irrespective of what user provides.
      */
     public static void adjustParameters(Map<String, String> data) {
-        if (data != null) {
-            if (!(data.containsKey("DEFAULT"))) {
-                boolean isRenamed = renameParameter(data, "id", "DEFAULT");
+        if (data != null && !(data.containsKey(DEFAULT))) {
+                boolean isRenamed = renameParameter(data, "id", DEFAULT);
                 if (!isRenamed) {
-                    renameParameter(data, "name", "DEFAULT");
+                    renameParameter(data, "name", DEFAULT);
                 }
-            }
         }
     }
 
@@ -184,10 +187,8 @@ public class ResourceUtil {
      * to DEFAULT irrespective of what user provides.
      */
     public static void defineDefaultParameters(Map<String, String> data) {
-        if (data != null) {
-            if (!(data.containsKey("DEFAULT"))) {
-                renameParameter(data, "id", "DEFAULT");
-            }
+        if (data != null && !(data.containsKey(DEFAULT))) {
+                renameParameter(data, "id", DEFAULT);
         }
     }
 
@@ -204,7 +205,7 @@ public class ResourceUtil {
         try {
             cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
         } catch (MultiException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, null, e);
         }
 
         if (cbp != null) {
@@ -348,7 +349,6 @@ public class ResourceUtil {
      *
      * @param command the command associated with the resource method
      * @param habitat the habitat
-     * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(String command, ServiceLocator habitat) {
@@ -362,10 +362,9 @@ public class ResourceUtil {
      * @param commandParamsToSkip the command parameters for which not to
      * include the meta-data.
      * @param habitat the habitat
-     * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
-    public static MethodMetaData getMethodMetaData(String command, HashMap<String, String> commandParamsToSkip,
+    public static MethodMetaData getMethodMetaData(String command, Map<String, String> commandParamsToSkip,
             ServiceLocator habitat) {
         MethodMetaData methodMetaData = new MethodMetaData();
 
@@ -474,7 +473,7 @@ public class ResourceUtil {
                 }
             }
         } catch (MultiException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, null, e);
         }
 
         return methodMetaData;
@@ -565,9 +564,8 @@ public class ResourceUtil {
             habitat.getService(AdminCommand.class, commandName);
             return true;
         } catch (Exception e) {
-
+            return false;
         }
-        return false;
     }
 
     /**
@@ -575,7 +573,6 @@ public class ResourceUtil {
      *
      * @param commandName the command associated with the resource method
      * @param habitat the habitat
-     * @param logger the logger to use
      * @return Collection the meta-data for the parameter of the resource
      * method.
      */
@@ -596,7 +593,6 @@ public class ResourceUtil {
      * @param commandParamsToSkip the command parameters for which not to
      * include the meta-data.
      * @param habitat the habitat
-     * @param logger the logger to use
      * @return Collection the meta-data for the parameter of the resource
      * method.
      */
@@ -617,11 +613,13 @@ public class ResourceUtil {
             }
         }
 
-        //print(metaData);
         return metaData;
     }
 
-    //removes entries with empty value from the given Map
+    /**
+     * Removes entries with empty value from the given Map
+     * @param data  data to remove empty entries from
+     */
     public static void purgeEmptyEntries(Map<String, String> data) {
 
         //hack-2 : remove empty entries if the form has a hidden param for __remove_empty_entries__
@@ -785,27 +783,20 @@ public class ResourceUtil {
             }
         }
 
-        if (media != null) {
-            if ((media.equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE))
-                    && (isClientAcceptsHtml)) {
-                return true;
-            }
-        }
-
-        return false;
+        return media != null && (media.equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE)) && (isClientAcceptsHtml);
     }
 
     private static String getXsdType(String javaType) {
-        if (javaType.indexOf(Constants.JAVA_STRING_TYPE) != -1) {
+        if (javaType.contains(Constants.JAVA_STRING_TYPE)) {
             return Constants.XSD_STRING_TYPE;
         }
-        if (javaType.indexOf(Constants.JAVA_BOOLEAN_TYPE) != -1) {
+        if (javaType.contains(Constants.JAVA_BOOLEAN_TYPE)) {
             return Constants.XSD_BOOLEAN_TYPE;
         }
-        if (javaType.indexOf(Constants.JAVA_INT_TYPE) != -1) {
+        if (javaType.contains(Constants.JAVA_INT_TYPE)) {
             return Constants.XSD_INT_TYPE;
         }
-        if (javaType.indexOf(Constants.JAVA_PROPERTIES_TYPE) != -1) {
+        if (javaType.contains(Constants.JAVA_PROPERTIES_TYPE)) {
             return Constants.XSD_PROPERTIES_TYPE;
         }
         return javaType;
@@ -851,7 +842,7 @@ public class ResourceUtil {
      * <code>sourceData</code> where key of each entry from it is converted to
      * xml name
      */
-    public static HashMap<String, String> translateCamelCasedNamesToXMLNames(Map<String, String> sourceData) {
+    public static Map<String, String> translateCamelCasedNamesToXMLNames(Map<String, String> sourceData) {
         HashMap<String, String> convertedData = new HashMap<String, String>(sourceData.size());
         for (Map.Entry<String, String> entry : sourceData.entrySet()) {
             String camelCasedKeyName = entry.getKey();
@@ -921,13 +912,13 @@ public class ResourceUtil {
      * REST can now be configured via RestConfig to show or hide the deprecated
      * elements and attributes @return true if this model is deprecated
      */
-    static public boolean isDeprecated(ConfigModel model) {
+    public static boolean isDeprecated(ConfigModel model) {
         try {
             Class<? extends ConfigBeanProxy> cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
             Deprecated dep = cbp.getAnnotation(Deprecated.class);
             return dep != null;
         } catch (MultiException e) {
-            //e.printStackTrace();
+            LOGGER.log(Level.SEVERE, null, e);
         }
         return false;
 
@@ -986,7 +977,7 @@ public class ResourceUtil {
      * substring of qualifiedTypeName after last "."
      */
     public static String getUnqualifiedTypeName(String qualifiedTypeName) {
-        return qualifiedTypeName.substring(qualifiedTypeName.lastIndexOf(".") + 1, qualifiedTypeName.length());
+        return qualifiedTypeName.substring(qualifiedTypeName.lastIndexOf('.') + 1, qualifiedTypeName.length());
     }
 
     public static boolean isOnlyATag(ConfigModel model) {
@@ -1144,10 +1135,7 @@ public class ResourceUtil {
     public static boolean canShowDeprecatedItems(ServiceLocator habitat) {
 
         RestConfig rg = getRestConfig(habitat);
-        if ((rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"))) {
-            return true;
-        }
-        return false;
+        return (rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"));
     }
 
     /**

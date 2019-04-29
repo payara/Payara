@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates.
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates.
  */
 package org.glassfish.admin.rest.resources.admin;
 
@@ -79,7 +79,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
  */
 @Path("/")
 public class CommandResource {
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
+    private static final LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
     public static final int MAX_AGE = 86400 ;
@@ -461,8 +461,7 @@ public class CommandResource {
         }  else {
             value = uuidGenerator.generateUuid() + '.' + getServerName();
         }
-        NewCookie result = new NewCookie(SESSION_COOKIE_NAME, value, "/command", null, null, MAX_AGE, false);
-        return result;
+        return new NewCookie(SESSION_COOKIE_NAME, value, "/command", null, null, MAX_AGE, false);
     }
 
     private boolean isJSessionCookieOk(String value) {

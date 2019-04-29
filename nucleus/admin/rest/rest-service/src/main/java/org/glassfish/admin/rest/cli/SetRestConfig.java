@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -191,6 +193,5 @@ public class SetRestConfig implements AdminCommand {
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        return;
     }
 }

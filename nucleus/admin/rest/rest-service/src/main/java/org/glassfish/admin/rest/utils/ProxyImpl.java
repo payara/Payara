@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+
 package org.glassfish.admin.rest.utils;
 
 import java.net.MalformedURLException;
@@ -169,6 +170,7 @@ public abstract class ProxyImpl implements Proxy {
             this.host = host;
         }
 
+        @Override
         public boolean verify(String s, SSLSession sslSession) {
             return host.equals(s);
         }

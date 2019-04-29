@@ -38,14 +38,13 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -229,7 +229,9 @@ public class WebAndEjbToJaasBridge {
                     LoginContext lg = new LoginContext(jaasCtx, subject, new ServerLoginCallbackHandler(user, null, appModuleID));
                     lg.login();
                 }
-                certRealm.authenticate(subject, x500principal);
+                
+                // The name that the cert realm decided to set as the caller principal name
+                user = certRealm.authenticate(subject, x500principal);
                 realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);

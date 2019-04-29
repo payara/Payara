@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.adapter;
 
 import static java.util.logging.Level.INFO;
@@ -49,7 +51,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 
 import javax.inject.Inject;
 import javax.security.auth.Subject;
@@ -73,7 +74,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.ServiceFinder;
-import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ContainerFactory;

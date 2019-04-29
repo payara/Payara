@@ -72,7 +72,7 @@ public class XmlInputObject extends InputObject {
     }
 
 
-    public XmlInputObject(XmlInputReader xmlReader) throws InputException {
+    public XmlInputObject(XmlInputReader xmlReader) {
         this.xmlReader = xmlReader;
         map = new HashMap();
     }
@@ -92,7 +92,7 @@ public class XmlInputObject extends InputObject {
     }
 
 
-    public Map getMap() throws InputException {
+    public Map getMap() {
         return map;
     }
 
@@ -248,31 +248,31 @@ public class XmlInputObject extends InputObject {
 
 
     /** The Character '&'. */
-    public static final Character AMP   = Character.valueOf('&');
+    public static final Character AMP   = '&';
 
     /** The Character '''. */
-    public static final Character APOS  = Character.valueOf('\'');
+    public static final Character APOS  = '\'';
 
     /** The Character '!'. */
-    public static final Character BANG  = Character.valueOf('!');
+    public static final Character BANG  = '!';
 
     /** The Character '='. */
-    public static final Character EQ    = Character.valueOf('=');
+    public static final Character EQ    = '=';
 
     /** The Character '>'. */
-    public static final Character GT    = Character.valueOf('>');
+    public static final Character GT    = '>';
 
     /** The Character '<'. */
-    public static final Character LT    = Character.valueOf('<');
+    public static final Character LT    = '<';
 
     /** The Character '?'. */
-    public static final Character QUEST = Character.valueOf('?');
+    public static final Character QUEST = '?';
 
     /** The Character '"'. */
-    public static final Character QUOT  = Character.valueOf('"');
+    public static final Character QUOT  = '"';
 
     /** The Character '/'. */
-    public static final Character SLASH = Character.valueOf('/');
+    public static final Character SLASH = '/';
 
     private XmlInputReader xmlReader;
 }

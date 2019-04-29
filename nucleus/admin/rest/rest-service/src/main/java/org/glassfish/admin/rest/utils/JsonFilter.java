@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -63,7 +62,7 @@ import javax.ws.rs.core.Response.Status;
  */
 public class JsonFilter {
 
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JsonFilter.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JsonFilter.class);
 
     private boolean defaultInclude;
     private List<Filter> filters = new ArrayList<Filter>();
@@ -103,7 +102,7 @@ public class JsonFilter {
         return this;
     }
 
-    protected static enum Result { Exclude, Include, Deferr }
+    protected enum Result { EXCLUDE, INCLUDE, DEFERR }
 
     public static interface Filter {
         Result filter(String attr);
@@ -114,11 +113,12 @@ public class JsonFilter {
         public IdentityFilter(String identityAttr) {
             this.identityAttr = identityAttr;
         }
+        @Override
         public Result filter(String attr) {
             if (identityAttr.equals(attr)) {
-                return Result.Include;
+                return Result.INCLUDE;
             }
-            return Result.Deferr;
+            return Result.DEFERR;
         }
     }
 
@@ -130,7 +130,7 @@ public class JsonFilter {
             for (String attrString : attrsString.split(",")) {
                 attrString = attrString.trim();
                 if (attrs.contains(attrString) || parentAttrs.contains(attrString)) {
-                    throwOverlappingFieldsException(locale, attrsString);
+                    throwOverlappingFieldsException(attrsString);
                 }
                 attrs.add(attrString);
                 // loop through this attr's parents
@@ -141,7 +141,7 @@ public class JsonFilter {
                 for (String comp : attrString.split("\\.")) {
                     // Split the guts of the loop into a function to shut up findbugs complaints
                     // about accumulating a string in a loop with '+'
-                    parent = processParentComponent(locale, attrsString, attrString, parent, comp.trim(), first);
+                    parent = processParentComponent(attrsString, attrString, parent, comp.trim(), first);
                     first = false;
                 }
             }
@@ -150,7 +150,7 @@ public class JsonFilter {
             }
         }
 
-        private String processParentComponent(Locale locale, String attrsString, String attrString, String parent, String comp, boolean first) throws Exception {
+        private String processParentComponent(String attrsString, String attrString, String parent, String comp, boolean first) throws Exception {
             StringBuilder sb = new StringBuilder();
             sb.append(parent);
             if (!first) {
@@ -160,22 +160,22 @@ public class JsonFilter {
             parent = sb.toString();
             if (!parent.equals(attrString)) { // only look at my parents
                 if (attrs.contains(parent)) {
-                    throwOverlappingFieldsException(locale, attrsString);
+                    throwOverlappingFieldsException(attrsString);
                 }
                 parentAttrs.add(parent);
             }
             return parent;
         }
 
-        private void throwOverlappingFieldsException(Locale locale, String attrs) throws Exception {
-            String msg =
+        private void throwOverlappingFieldsException(String attrs) throws Exception {
+            String msg = 
                 localStrings.getLocalString(
                     "filter.overLappingFieldsSpecified",
-                    "The field names must not overlap or be specified more than once: {0}",
-                    new Object[] { attrs });
+                    "The field names must not overlap or be specified more than once: {0}", attrs);
             throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(msg).build());
         }
 
+        @Override
         public Result filter(String attr) {
             // See if we know about this exact attr
             if (attrs.contains(attr) || parentAttrs.contains(attr)) {
@@ -197,26 +197,26 @@ public class JsonFilter {
 
     public static class IncludeFilter extends AttrsFilter {
         public IncludeFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, true); }
-        protected Result foundResult() { return Result.Include; }
-        protected Result notFoundResult() { return Result.Deferr; }
+        protected Result foundResult() { return Result.INCLUDE; }
+        protected Result notFoundResult() { return Result.DEFERR; }
     }
 
     public static class ExcludeFilter extends AttrsFilter {
         public ExcludeFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, false); }
-        protected Result foundResult() { return Result.Exclude; }
-        protected Result notFoundResult() { return Result.Deferr; }
+        protected Result foundResult() { return Result.EXCLUDE; }
+        protected Result notFoundResult() { return Result.DEFERR; }
     }
 
     public static class IncludeExceptFilter extends AttrsFilter {
         public IncludeExceptFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, false); }
-        protected Result foundResult() { return Result.Deferr; }
-        protected Result notFoundResult() { return Result.Include; }
+        protected Result foundResult() { return Result.DEFERR; }
+        protected Result notFoundResult() { return Result.INCLUDE; }
     }
 
     public static class ExcludeExceptFilter extends AttrsFilter {
         public ExcludeExceptFilter(Locale locale, String attrsString) throws Exception { super(locale, attrsString, true); }
-        protected Result foundResult() { return Result.Deferr; }
-        protected Result notFoundResult() { return Result.Exclude; }
+        protected Result foundResult() { return Result.DEFERR; }
+        protected Result notFoundResult() { return Result.EXCLUDE; }
     }
 
     public JsonObject trim(JsonObject j) {
@@ -233,7 +233,7 @@ public class JsonFilter {
         private Stack<String> scopeStack = null;
 
         private Scope() {
-            if (filters.size() > 0) {
+            if (!filters.isEmpty()) {
                 scopeStack = new Stack<String>();
             }
         }
@@ -313,10 +313,10 @@ public class JsonFilter {
                 String attr = (scopeStack.isEmpty()) ? property : scopeStack.peek() + "." + property;
                 for (Filter filter : filters) {
                     Result r = filter.filter(attr);
-                    if (r == Result.Include) {
+                    if (r == Result.INCLUDE) {
                         return true;
                     }
-                    if (r == Result.Exclude) {
+                    if (r == Result.EXCLUDE) {
                         return false;
                     }
                 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.composite.metadata;
 
@@ -46,6 +46,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
@@ -66,7 +67,7 @@ import org.glassfish.admin.rest.utils.JsonUtil;
 public class RestResourceMetadata {
     private MultivaluedHashMap<String, RestMethodMetadata> resourceMethods = new MultivaluedHashMap<String, RestMethodMetadata>();
     private List<String> subResources = new ArrayList<String>();
-    private OptionsCapable context;
+    private final OptionsCapable context;
 
     public RestResourceMetadata(OptionsCapable context) {
         this.context = context;
@@ -132,9 +133,9 @@ public class RestResourceMetadata {
 
         if (!resourceMethods.isEmpty()) {
             final JsonObjectBuilder methods = Json.createObjectBuilder();
-            for (String key : resourceMethods.keySet()) {
-                for (RestMethodMetadata rmm : resourceMethods.get(key)) {
-                    methods.add(key, rmm.toJson());
+            for (Map.Entry<String, List<RestMethodMetadata>> entry : resourceMethods.entrySet()) {
+                for (RestMethodMetadata rmm : entry.getValue()) {
+                    methods.add(entry.getKey(), rmm.toJson());
                 }
             }
 

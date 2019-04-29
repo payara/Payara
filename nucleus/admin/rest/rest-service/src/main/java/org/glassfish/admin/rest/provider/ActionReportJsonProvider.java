@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
@@ -165,7 +165,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
             }
             object.add("properties", Json.createObjectBuilder((Map)part.getProps()).build());
             List<MessagePart> children = part.getChildren();
-            if (children.size() > 0) {
+            if (!children.isEmpty()) {
                 object.add("children", processChildren(part.getChildren()));
             }
             array.add(object.build());

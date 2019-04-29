@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -115,8 +116,7 @@ public class SynchronizeRealmFromConfig implements AdminCommand {
     private Configs configs;
     @Inject
     RealmsManager realmsManager;
-    private static final LocalStringManagerImpl _localStrings =
-            new LocalStringManagerImpl(SupportsUserManagementCommand.class);
+    private static final LocalStringManagerImpl _localStrings = new LocalStringManagerImpl(SupportsUserManagementCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -146,13 +146,12 @@ public class SynchronizeRealmFromConfig implements AdminCommand {
             }
             //this is not an active config so try and update the backend
             //directly
-            Realm r = realmsManager.getFromLoadedRealms(realConfig.getName(), realmName);
-            if (r == null) {
+            Realm realm = realmsManager.getFromLoadedRealms(realConfig.getName(), realmName);
+            if (realm == null) {
                 //realm is not loaded yet
                 report.setMessage(
                         _localStrings.getLocalString("REALM_SYNCH_SUCCESSFUL",
-                        "Synchronization of Realm {0} from Configuration Successful.",
-                        new Object[]{realmName}));
+                        "Synchronization of Realm {0} from Configuration Successful.", realmName));
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return;
             }
@@ -189,11 +188,10 @@ public class SynchronizeRealmFromConfig implements AdminCommand {
         Properties extraProperties = new Properties();
         Map<String, Object> entity = new HashMap<String, Object>();
         mp.setMessage(_localStrings.getLocalString("RESTART_REQUIRED",
-                "Restart required for configuration updates to active server realm: {0}.",
-                new Object[]{realmName}));
+                "Restart required for configuration updates to active server realm: {0}.", realmName));
         entity.put("restartRequired", "true");
         extraProperties.put("entity", entity);
-        ((ActionReport) report).setExtraProperties(extraProperties);
+        report.setExtraProperties(extraProperties);
     }
 
     private boolean instantiateRealm(Config cfg, String realmName)
@@ -212,7 +210,6 @@ public class SynchronizeRealmFromConfig implements AdminCommand {
             }
         }
         throw new NoSuchRealmException(
-                _localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}",
-                new Object[]{realmName}));
+                _localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}", realmName));
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -142,6 +143,5 @@ public class GetTokensCommand implements AdminCommand {
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         report.setExtraProperties(properties);
         
-        return;
     }
 }

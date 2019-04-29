@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -110,8 +110,8 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     protected String tagName;
     protected ConfigModel childModel; //good model even if the child entity is null
     protected String childID; // id of the current child if part of a list, might be null
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateRestResource.class);
-    final private static List<String> attributesToSkip = new ArrayList<String>() {
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateRestResource.class);
+    private static final List<String> attributesToSkip = new ArrayList<String>() {
 
         {
             add("parent");
@@ -166,7 +166,8 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      * allows for remote files to be put in a tmp area and we pass the
      * local location of this file to the corresponding command instead of the content of the file
      * * Yu need to add  enctype="multipart/form-data" in the form
-     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
+     * for ex:  
+     * {@code <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">}
      * then any param of type="file" will be uploaded, stored locally and the param will use the local location
      * on the server side (ie. just the path)
      */
@@ -184,10 +185,10 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @DELETE
-    public Response delete(HashMap<String, String> data) {
+    public Response delete(Map<String, String> data) {
         return Response.ok(ResourceUtil.getActionReportResult(doDelete(data),
                 localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.",
-                new Object[]{ uriInfo.getAbsolutePath() }),
+                uriInfo.getAbsolutePath()),
                 requestHeaders,
                 uriInfo))
                 .build(); //200 - ok
@@ -212,7 +213,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      * @param data
      * @return
      */
-    protected RestActionReporter doCreateOrUpdate(HashMap<String, String> data) {
+    protected RestActionReporter doCreateOrUpdate(Map<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
@@ -252,7 +253,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         }
     }
 
-    protected ExitCode doDelete(HashMap<String, String> data) {
+    protected ExitCode doDelete(Map<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
@@ -263,8 +264,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         }
 
         if (getDeleteCommand() == null) {
-            String message = localStrings.getLocalString("rest.resource.delete.forbidden",
-                    "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()});
+            String message = localStrings.getLocalString("rest.resource.delete.forbidden", "DELETE on \"{0}\" is forbidden.", uriInfo.getAbsolutePath());
             throwError(Status.FORBIDDEN, message);
         }
 
@@ -316,7 +316,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
 
         throw new WebApplicationException(handleError(Status.BAD_REQUEST,
                 localStrings.getLocalString("rest.resource.delete.forbidden",
-                "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()})));
+                "DELETE on \"{0}\" is forbidden.", uriInfo.getAbsolutePath())));
     }
 
     @Override
@@ -499,10 +499,8 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         } else if (childModel != null) {
             ar.setActionDescription(childModel.getTagName());
         }
-        if (showEntityValues) {
-            if (entity != null) {
-                ar.getExtraProperties().put("entity", getAttributes(entity));
-            }
+        if (showEntityValues && entity != null) {
+            ar.getExtraProperties().put("entity", getAttributes(entity));
         }
         OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo));
         Map<String, MethodMetaData> mmd = getMethodMetaData();
@@ -566,7 +564,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      *
      * @return
      */
-    private RestActionReporter runCommand(String commandName, HashMap<String, String> data) {
+    private RestActionReporter runCommand(String commandName, Map<String, String> data) {
         if (commandName != null) {
             return ResourceUtil.runCommand(commandName, data, getSubject());
         }
@@ -575,7 +573,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     // This has to be smarter, since we are encoding / in resource names now
-    private void addDefaultParameter(HashMap<String, String> data) {
+    private void addDefaultParameter(Map<String, String> data) {
         String defaultParameterValue = getEntity().getKey();
         if (defaultParameterValue == null) {// no primary key
             //we take the parent key.
@@ -644,7 +642,6 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
 
     protected Response handleError(final Status error, final String message) throws WebApplicationException {
         //TODO better error handling.
-//                return Response.status(400).entity(ResourceUtil.getActionReportResult(ar, "Could not apply changes" + ar.getMessage(), requestHeaders, uriInfo)).build();
         return Response.status(error).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
     }
 }
