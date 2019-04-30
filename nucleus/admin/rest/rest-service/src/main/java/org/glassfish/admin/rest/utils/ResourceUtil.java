@@ -39,10 +39,13 @@
  */
  
 // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+
+import fish.payara.audit.AdminAuditService;
 import fish.payara.asadmin.recorder.AsadminRecorderService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -247,17 +250,20 @@ public class ResourceUtil {
                                                 ParameterMap parameters,
                                                 Subject subject,
                                                 boolean managedJob) {            
-        AsadminRecorderService asadminRecorderService = Globals.
-                getDefaultHabitat().getService(AsadminRecorderService.class);
-        if (asadminRecorderService.isEnabled()) {
+        AsadminRecorderService asadminRecorderService = Globals.get(AsadminRecorderService.class);
+        if (asadminRecorderService != null && asadminRecorderService.isEnabled()) {
             asadminRecorderService.recordAsadminCommand(commandName, 
                                                         parameters);
-        }        
+        }
+        
+        AdminAuditService auditService = Globals.getDefaultHabitat().getService(AdminAuditService.class);
+        if (auditService != null && auditService.isEnabled()) {
+            auditService.recordAsadminCommand(commandName, parameters, subject);
+        }
 
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
-        final CommandInvocation commandInvocation =
-                cr.getCommandInvocation(commandName, ar, subject);
+        final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar, subject);
         if (managedJob) {
             commandInvocation.managedJob();
         }
