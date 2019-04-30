@@ -109,8 +109,8 @@ public class FaultToleranceExtension implements Extension {
                 Integer.class);
         if (priorityOverride.isPresent()) {
             interceptorType.configureAnnotatedType()
-                .remove(annotation -> annotation instanceof Priority)
-                .add(new PriorityLiteral(priorityOverride.get()));
+                    .remove(annotation -> annotation instanceof Priority)
+                    .add(new PriorityLiteral(priorityOverride.get()));
         }
     }
 
