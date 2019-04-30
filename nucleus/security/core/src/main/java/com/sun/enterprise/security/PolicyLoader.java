@@ -135,11 +135,11 @@ public class PolicyLoader {
         }
 
         if (javaPolicy == null) {
-            javaPolicy = System.getProperty(POLICY_PROVIDER_13);
-            if (javaPolicy != null) {
+            if (System.getProperty(POLICY_PROVIDER_13) != null) {
                 // Warn user j2ee13 property is being used
                 j2ee13 = true;
-                _logger.log(WARNING, policyProviderConfigOverrideWarning, new String[] { POLICY_PROVIDER_13, javaPolicy });
+                _logger.log(WARNING, policyProviderConfigOverrideWarning,
+                        new String[] { POLICY_PROVIDER_13, System.getProperty(POLICY_PROVIDER_13) });
             }
         }
 
@@ -153,31 +153,19 @@ public class PolicyLoader {
                 Class<?> javaPolicyClass = loader.loadClass(javaPolicy);
                 Object obj = javaPolicyClass.newInstance();
                 
-                if (j2ee13) {
-                    // Use JDK 1.3 classes if j2ee1 3 property being used
-                    if (!(obj instanceof javax.security.auth.Policy)) {
-                        throw new RuntimeException(stringManager.getString("enterprise.security.plcyload.not13"));
-                    }
-                    javax.security.auth.Policy policy = (javax.security.auth.Policy) obj;
-                    javax.security.auth.Policy.setPolicy(policy);
-                    policy.refresh();
+                if (!(obj instanceof java.security.Policy)) {
+                    throw new RuntimeException(stringManager.getString("enterprise.security.plcyload.not14"));
+                }
 
-                } else {
-                    // Otherwise use JDK 1.4 classes.
-                    if (!(obj instanceof java.security.Policy)) {
-                        throw new RuntimeException(stringManager.getString("enterprise.security.plcyload.not14"));
-                    }
-                    
-                    Policy policy = (java.security.Policy) obj;
-                    Policy.setPolicy(policy);
-                    
-                    // TODO: causing ClassCircularity error when SM ON and
-                    // deployment use library feature and ApplibClassLoader
-                    // it is likely a problem caused by the way classloading is done
-                    // in this case.
-                    if (System.getSecurityManager() == null) {
-                        policy.refresh();
-                    }
+                Policy policy = (java.security.Policy) obj;
+                Policy.setPolicy(policy);
+
+                // TODO: causing ClassCircularity error when SM ON and
+                // deployment use library feature and ApplibClassLoader
+                // it is likely a problem caused by the way classloading is done
+                // in this case.
+                if (System.getSecurityManager() == null) {
+                    policy.refresh();
                 }
 
             } catch (Exception e) {

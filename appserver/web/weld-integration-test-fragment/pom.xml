@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -68,30 +68,44 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Fragment-Host>org.jboss.weld.osgi-bundle</Fragment-Host>
+                                <Export-Package>
+                                    org.jboss.weld.literal,
+                                    org.jboss.weld.logging,
+                                    org.jboss.weld.logging.messages,
+                                    org.jboss.metadata.validation,
+                                    org.jboss.weld.bean.interceptor,
+                                    org.jboss.weld.metadata,
+                                    org.jboss.weld.metadata.cache,
+                                    org.jboss.weld.resources,
+                                    org.jboss.weld.test,
+                                    org.jboss.weld.tests,
+                                    org.jboss.weld.tests.extensions,
+                                    org.jboss.weld.tests.extensions.injectionTarget,
+                                    org.jboss.weld.exceptions,
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-                        <manifestEntries>
-                            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-                            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-                            <Fragment-Host>org.jboss.weld.osgi-bundle</Fragment-Host>
-                            <Export-Package>
-org.jboss.weld.literal,
-org.jboss.weld.logging,
-org.jboss.weld.logging.messages,
-org.jboss.metadata.validation,
-org.jboss.weld.bean.interceptor,
-org.jboss.weld.metadata,
-org.jboss.weld.metadata.cache,
-org.jboss.weld.resources,
-org.jboss.weld.test,
-org.jboss.weld.tests,
-org.jboss.weld.tests.extensions,
-org.jboss.weld.tests.extensions.injectionTarget,
-org.jboss.weld.exceptions,
-                            </Export-Package>
-                            <Bundle-Description>${project.description}</Bundle-Description> 
-                        </manifestEntries>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
             </plugin>

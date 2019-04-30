@@ -381,7 +381,6 @@
 			<jvmarg value="-Djava.compiler=NONE"/>
 			<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
 			<jvmarg value="-Dhttp.port=${glassfish.http.port}"/>
-			<jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
 			<jvmarg value="-DASADMIN=${ASADMIN}" />
 			<jvmarg value="-DAPPCLIENT=${APPCLIENT}"/>
 			<sysproperty key="glassfish.home" value="${glassfish.home}"/>

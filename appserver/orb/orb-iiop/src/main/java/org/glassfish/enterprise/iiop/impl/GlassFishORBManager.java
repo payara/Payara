@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -81,6 +81,7 @@ import java.util.logging.Logger;
 
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
+import org.glassfish.internal.api.ServerContext;
 
 import org.jvnet.hk2.config.types.Property;
 
@@ -114,10 +115,10 @@ public final class GlassFishORBManager {
     private static final String ORB_SINGLETON_CLASS =
             ORBSingleton.class.getName() ;
 
-    private static final String ORB_SE_CLASS =
-            "com.sun.corba.se.impl.orb.ORBImpl";
-    private static final String ORB_SE_SINGLETON_CLASS =
-            "com.sun.corba.se.impl.orb.ORBSingleton";
+    private static final String ORB_EE_CLASS =
+            "com.sun.corba.ee.impl.orb.ORBImpl";
+    private static final String ORB_EE_SINGLETON_CLASS =
+            "com.sun.corba.ee.impl.orb.ORBSingleton";
 
     private static final String PEORB_CONFIG_CLASS =
             PEORBConfigurator.class.getName() ;
@@ -369,7 +370,7 @@ public final class GlassFishORBManager {
                         if (System.getProperty("java.vendor").contains(
                             "Sun Microsystems Inc.")) {
                             System.setProperty(OMG_ORB_CLASS_PROPERTY,
-                                ORB_SE_CLASS);
+                                ORB_EE_CLASS);
                         } else {
                             // if not Sun, then set to EE class
                             System.setProperty(OMG_ORB_CLASS_PROPERTY,
@@ -384,7 +385,7 @@ public final class GlassFishORBManager {
                             "Sun Microsystems Inc.")) {
                             System.setProperty(
                                 OMG_ORB_SINGLETON_CLASS_PROPERTY,
-                                ORB_SE_SINGLETON_CLASS);
+                                ORB_EE_SINGLETON_CLASS);
                         } else {
                             // if not Sun, then set to EE class
                             System.setProperty(
@@ -580,7 +581,7 @@ public final class GlassFishORBManager {
                     ModulesRegistry modulesRegistry = services.getService(ModulesRegistry.class);
 
                     for(Module m : modulesRegistry.getModules()) {
-                        if( m.getName().equals("glassfish-corba-orb") ) {
+                        if( m.getName().equals("org.glassfish.corba.glassfish-corba-orb") ) {
                             corbaOrbModule = m;
                             break;
                         }
@@ -600,7 +601,7 @@ public final class GlassFishORBManager {
             prevCL = Utility.getClassLoader();
             try {
               if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
-                Utility.setContextClassLoader(prevCL.getParent());
+                  Utility.setContextClassLoader(prevCL.getParent());
                }
                ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
             } finally {

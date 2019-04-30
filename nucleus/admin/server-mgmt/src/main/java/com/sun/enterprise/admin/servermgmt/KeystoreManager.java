@@ -94,6 +94,7 @@ import com.sun.enterprise.util.ProcessExecutor;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.net.NetUtils;
+import java.nio.file.Paths;
 import java.util.Map.Entry;
 
 /**
@@ -289,7 +290,12 @@ public class KeystoreManager {
     protected void copyCertificatesFromJdk(File trustStore, String masterPassword) throws RepositoryException {
         // Gets the location of the JDK trust store.
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
-        String jreHome = (javaHome.contains("jre")) ? javaHome : javaHome + "jre/";
+        String jreHome;
+        if (Files.exists(Paths.get(javaHome , "jre/"))) {
+            jreHome = javaHome + "jre/";
+        } else {
+            jreHome = javaHome;
+        }
         String javaTrustStoreLocation = jreHome + "lib/security/";
         File javaTrustStoreFile = new File(javaTrustStoreLocation, "cacerts");
 
