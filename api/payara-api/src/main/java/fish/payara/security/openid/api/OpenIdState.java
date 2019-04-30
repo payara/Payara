@@ -41,6 +41,7 @@ package fish.payara.security.openid.api;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -80,6 +81,19 @@ public class OpenIdState implements Serializable {
     }
 
     /**
+     * Factory method which creates an {@link OpenIdState} if the
+     * state provided is not NULL or empty.
+     * @param state the state to create an {@link OpenIdState} from
+     * @return an {@link OpenIdState} if the state provided is not NULL or empty
+     */
+    public static Optional<OpenIdState> from(String state) {
+        if (state == null || "".equals(state.trim())) {
+            return Optional.empty();
+        }
+        return Optional.of(new OpenIdState(state.trim()));
+    }
+
+    /**
      * Gets the state
      *
      * @return the state
@@ -90,9 +104,7 @@ public class OpenIdState implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof String) {
-            return Objects.equals(this.state, obj);
-        } else if (obj instanceof OpenIdState) {
+        if (obj instanceof OpenIdState) {
             return Objects.equals(this.state, ((OpenIdState)obj).state);
         }
         return false;
