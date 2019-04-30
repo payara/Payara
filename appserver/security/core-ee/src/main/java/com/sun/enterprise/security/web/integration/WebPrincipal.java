@@ -54,15 +54,15 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
     private static final long serialVersionUID = 1L;
 
     private char[] password;
-    private X509Certificate[] certs;
+    private X509Certificate[] certificates;
     private boolean useCertificate;
     private SecurityContext securityContext;
     private Principal customPrincipal;
 
-    public WebPrincipal(Principal p, SecurityContext context) {
-        super(p.getName());
-        if (!(p instanceof PrincipalImpl)) {
-            customPrincipal = p;
+    public WebPrincipal(Principal principal, SecurityContext context) {
+        super(principal.getName());
+        if (!(principal instanceof PrincipalImpl)) {
+            customPrincipal = principal;
         }
         this.useCertificate = false;
         this.securityContext = context;
@@ -87,9 +87,9 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         this(certs, context, false);
     }
     
-    public WebPrincipal(X509Certificate[] certs, SecurityContext context, boolean nameFromContext) {
-        super(getPrincipalName(certs, context, nameFromContext));
-        this.certs = certs;
+    public WebPrincipal(X509Certificate[] certificates, SecurityContext context, boolean nameFromContext) {
+        super(getPrincipalName(certificates, context, nameFromContext));
+        this.certificates = certificates;
         this.useCertificate = true;
         this.securityContext = context;
     }
@@ -100,7 +100,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
     }
 
     public X509Certificate[] getCertificates() {
-        return certs;
+        return certificates;
     }
 
     public boolean isUsingCertificate() {
@@ -152,7 +152,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         return customPrincipal;
     }
     
-    private static String getPrincipalName(X509Certificate[] certs, SecurityContext context, boolean nameFromContext) {
+    private static String getPrincipalName(X509Certificate[] certificates, SecurityContext context, boolean nameFromContext) {
         if (nameFromContext) {
             // Use the principal name from the security context, ensuring the context caller principal and
             // the web principal have the same name.
@@ -170,18 +170,10 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
             return context.getCallerPrincipal().getName();
         }
         
-        // Use the full DN name from the certificates. Using the default SUN JCE provider this will
-        // be sun.security.x509.X500Name
-        //
-        // The format of the X.500 distinguished name (DN) returned here will be then be in RFC 1779, e.g.
-        // C=UK, ST=lak, L=zak, O=kaz, OU=bar, CN=lfoo
-        //
-        // See https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/sun/security/x509/X500Name.java#L610
-        //
-        // Note that getSubjectDN is *Denigrated* (deprecated) and should actually not be used.
-        //
-        // If another JCE provider is installed, the result returned here is undetermined
-        return certs[0].getSubjectDN().getName();
+        // Use the full DN name from the certificates. This should normally be the same as 
+        // context.getCallerPrincipal(), but a realm could have decided to map the name in which
+        // case they will be different.
+        return certificates[0].getSubjectX500Principal().getName();
     }
 
 }

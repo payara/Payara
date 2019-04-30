@@ -42,25 +42,34 @@ package com.sun.enterprise.security.ee;
 
 import static java.util.logging.Level.FINE;
 
-import java.security.*;
+import java.security.Policy;
+import java.util.Collection;
+import java.util.logging.Logger;
 
-import javax.security.jacc.*;
-import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
-import com.sun.enterprise.security.util.IASSecurityException;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.*;
-import java.util.logging.*;
+import javax.security.jacc.PolicyConfiguration;
+import javax.security.jacc.PolicyConfigurationFactory;
+import javax.security.jacc.PolicyContextException;
+
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import org.glassfish.deployment.versioning.VersioningUtils;
+
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import java.util.Collection;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.deployment.versioning.VersioningUtils;
+import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
+import com.sun.enterprise.security.util.IASSecurityException;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
 
 /**
- * This utility class encloses all the calls to a ejb method in a specified subject
+ * This utility class contains JACC related utilities.
+ * 
+ * <p>
+ * This is mostly used by the SecurityDeployer, but the getContextID method
+ * is broadly shared, and the other public methods are used by the EJBSecurityManagaer 
+ * and EJBDeployer.
  * 
  * @author Harpreet Singh
  * @author Shing Wai Chan
@@ -77,47 +86,36 @@ public class SecurityUtil {
     // The repository is defined in PolicyFileMgr.
     // It is repeated here since JACC provider is not reference directly.
     public static final String repository = System.getProperty(REPOSITORY_HOME_PROP);
-
-    /**
-     * This method obtains the policy configuration object corresponding to the name, and causes the corresponding policy
-     * statements to be put in service. This method also informs the policy module to refresh its in service policy
-     * contexts. Note that policy statements have already been added to the pc, this method works to put them in Service.
-     * 
-     * @param String name - the module id which serves to identify the corresponding policy context. The name shall not be
-     * null. If the underlying PolicyModule is the RI PolicyModule, A SecurityRoleMapper must have been bound to the policy
-     * context before this method is called or the embedded call to pc.commit will throw an exception.
-     */
-    public static void generatePolicyFile(String name) throws IASSecurityException {
-        if (name == null) {
-            throw new IASSecurityException("Invalid Module Name");
+    
+    
+    public static String getContextID(WebBundleDescriptor webBundleDescriptor) {
+        if (webBundleDescriptor == null) {
+            return null;
         }
-
-        try {
-            boolean inService = PolicyConfigurationFactory.getPolicyConfigurationFactory().inService(name);
-            if (!inService) {
-                // find the PolicyConfig using remove=false to ensure policy stmts
-                // are retained.
-
-                // Note that it is presumed that the pc exists, and that
-                // it is populated with the desired policy statements.
-                // If this is not true, the call to commit will not
-                // result in the correct policy statements being made
-                // available to the policy module.
-                PolicyConfigurationFactory pcf = PolicyConfigurationFactory.getPolicyConfigurationFactory();
-                PolicyConfiguration pc = pcf.getPolicyConfiguration(name, false);
-                pc.commit();
-                
-                if (_logger.isLoggable(FINE)) {
-                    _logger.fine("JACC: committed policy for context: " + name);
-                }
-            }
-
-            Policy.getPolicy().refresh();
-        } catch (ClassNotFoundException | PolicyContextException cnfe) {
-            throw new IASSecurityException(cnfe);
-        }
+        
+        return 
+            VersioningUtils.getRepositoryName(
+                webBundleDescriptor.getApplication().getRegistrationName()) + 
+                '/' + 
+                webBundleDescriptor.getUniqueFriendlyId();
     }
-
+    
+    public static String getContextID(EjbBundleDescriptor ejbBundleDesc) {
+        String cid = null;
+        if (ejbBundleDesc != null) {
+            /*
+             * detect special case of EJBs embedded in a war, and make sure psuedo policy context id is unique within app
+             */
+            Object root = ejbBundleDesc.getModuleDescriptor().getDescriptor();
+            if ((root != ejbBundleDesc) && (root instanceof WebBundleDescriptor)) {
+                cid = createUniquePseudoModuleID(ejbBundleDesc);
+            } else {
+                cid = VersioningUtils.getRepositoryName(ejbBundleDesc.getApplication().getRegistrationName()) + '/' + ejbBundleDesc.getUniqueFriendlyId();
+            }
+        }
+        return cid;
+    }
+    
     /**
      * Inform the policy module to take the named policy context out of service. The policy context is transitioned to the
      * deleted state. In our provider implementation, the corresponding policy file is deleted, as the presence of a policy
@@ -151,6 +149,66 @@ public class SecurityUtil {
             throw new IASSecurityException(pce.toString());
         }
     }
+    
+    public static SecurityRoleMapperFactory getRoleMapperFactory() {
+        SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
+        if (factory == null) {
+            throw new IllegalArgumentException("This application has no role mapper factory defined");
+        }
+        return factory;
+    }
+
+    public static void removeRoleMapper(DeploymentContext dc) {
+        OpsParams params = dc.getCommandParameters(OpsParams.class);
+        if (params.origin != OpsParams.Origin.undeploy) {
+            return;
+        }
+        String appName = params.name();
+        SecurityRoleMapperFactory factory = getRoleMapperFactory();
+        factory.removeRoleMapper(appName);
+    }
+    
+    
+
+    /**
+     * This method obtains the policy configuration object corresponding to the name, and causes the corresponding policy
+     * statements to be put in service. This method also informs the policy module to refresh its in service policy
+     * contexts. Note that policy statements have already been added to the pc, this method works to put them in Service.
+     * 
+     * @param String name - the module id which serves to identify the corresponding policy context. The name shall not be
+     * null. If the underlying PolicyModule is the RI PolicyModule, A SecurityRoleMapper must have been bound to the policy
+     * context before this method is called or the embedded call to pc.commit will throw an exception.
+     */
+    static void generatePolicyFile(String name) throws IASSecurityException {
+        if (name == null) {
+            throw new IASSecurityException("Invalid Module Name");
+        }
+
+        try {
+            boolean inService = PolicyConfigurationFactory.getPolicyConfigurationFactory().inService(name);
+            if (!inService) {
+                // find the PolicyConfig using remove=false to ensure policy stmts
+                // are retained.
+
+                // Note that it is presumed that the pc exists, and that
+                // it is populated with the desired policy statements.
+                // If this is not true, the call to commit will not
+                // result in the correct policy statements being made
+                // available to the policy module.
+                PolicyConfigurationFactory pcf = PolicyConfigurationFactory.getPolicyConfigurationFactory();
+                PolicyConfiguration pc = pcf.getPolicyConfiguration(name, false);
+                pc.commit();
+                
+                if (_logger.isLoggable(FINE)) {
+                    _logger.fine("JACC: committed policy for context: " + name);
+                }
+            }
+
+            Policy.getPolicy().refresh();
+        } catch (ClassNotFoundException | PolicyContextException cnfe) {
+            throw new IASSecurityException(cnfe);
+        }
+    }
 
     /**
      * This method obtains the policy configuration object corresponding to the name, and links it, for roleMapping purposes
@@ -165,7 +223,7 @@ public class SecurityUtil {
      * @return boolean if linkName is null, returns the inService state of the PC identified in the name argument. Otherwise
      * returns the value passed to lastInService.
      */
-    public static boolean linkPolicyFile(String name, String linkName, boolean lastInService) throws IASSecurityException {
+    static boolean linkPolicyFile(String name, String linkName, boolean lastInService) throws IASSecurityException {
         boolean rvalue = lastInService;
 
         if (name == null) {
@@ -205,7 +263,7 @@ public class SecurityUtil {
         
         return rvalue;
     }
-
+    
     /**
      * create pseudo module context id, and make sure it is unique, by chacking it against the names of all the other
      * modules in the app.
@@ -248,49 +306,5 @@ public class SecurityUtil {
         } while (!unique);
 
         return VersioningUtils.getRepositoryName(app.getRegistrationName()) + "/" + pseudonym;
-    }
-
-    public static String getContextID(EjbBundleDescriptor ejbBundleDesc) {
-        String cid = null;
-        if (ejbBundleDesc != null) {
-            /*
-             * detect special case of EJBs embedded in a war, and make sure psuedo policy context id is unique within app
-             */
-            Object root = ejbBundleDesc.getModuleDescriptor().getDescriptor();
-            if ((root != ejbBundleDesc) && (root instanceof WebBundleDescriptor)) {
-                cid = createUniquePseudoModuleID(ejbBundleDesc);
-            } else {
-                cid = VersioningUtils.getRepositoryName(ejbBundleDesc.getApplication().getRegistrationName()) + '/' + ejbBundleDesc.getUniqueFriendlyId();
-            }
-        }
-        return cid;
-    }
-
-    public static String getContextID(WebBundleDescriptor wbd) {
-        String cid = null;
-        if (wbd != null) {
-            // String moduleId = wbd.getUniqueFriendlyId();
-            cid = VersioningUtils.getRepositoryName(wbd.getApplication().getRegistrationName()) + '/' + wbd.getUniqueFriendlyId();
-        }
-        return cid;
-    }
-
-    public static void removeRoleMapper(DeploymentContext dc) {
-        OpsParams params = dc.getCommandParameters(OpsParams.class);
-        if (params.origin != OpsParams.Origin.undeploy) {
-            return;
-        }
-        String appName = params.name();
-        SecurityRoleMapperFactory factory = getRoleMapperFactory();
-        factory.removeRoleMapper(appName);
-
-    }
-
-    public static SecurityRoleMapperFactory getRoleMapperFactory() {
-        SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
-        if (factory == null) {
-            throw new IllegalArgumentException("This application has no role mapper factory defined");
-        }
-        return factory;
     }
 }

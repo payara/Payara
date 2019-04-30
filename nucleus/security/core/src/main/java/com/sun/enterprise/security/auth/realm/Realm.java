@@ -401,7 +401,7 @@ public abstract class Realm extends AbstractStatefulRealm implements Comparable<
      * @return the requested realm
      */
     private static synchronized Realm _getInstance(String name) {
-        return tryGetRealmsManager()._getInstance(name);
+        return tryGetRealmsManager().getInstance(name);
     }
 
     /**
@@ -412,7 +412,7 @@ public abstract class Realm extends AbstractStatefulRealm implements Comparable<
      * @return the requested realm
      */
     private static synchronized Realm _getInstance(String configName, String name) {
-        return tryGetRealmsManager()._getInstance(configName, name);
+        return tryGetRealmsManager().getInstance(configName, name);
     }
     
     private static void registerRealmStatsProvier() {
