@@ -213,6 +213,16 @@ public class AzureOpenIdExtension extends OpenIdExtension {
             public int jwksReadTimeout() {
                 return azureDefinition.jwksReadTimeout();
             }
+
+            @Override
+            public boolean tokenAutoRefresh() {
+                return false; // TODO check if "true" is working with Azure
+            }
+
+            @Override
+            public int tokenMinValidity() {
+                return 0;
+            }
         };
     }
 

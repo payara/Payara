@@ -320,4 +320,32 @@ public @interface OpenIdAuthenticationDefinition {
      * <code>{@value}</code>.
      */
     public static final String OPENID_MP_CLIENT_ENC_JWKS = "payara.security.openid.client.encryption.jwks";
+    
+    /**
+     * The Microprofile Config key for the Access Token auto refresh is
+     * <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_TOKEN_AUTO_REFRESH = "payara.security.openid.token.auto-refresh";
+
+    /**
+     * The Microprofile Config key for the minimum validity in secondes of
+     * Access Tokens is <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_TOKEN_MIN_VALIDITY = "payara.security.openid.token.min-validity";
+
+    /**
+     * Optional. Enables or disables the automatically performed refresh of
+     * Access and Refresh Token.
+     *
+     * @return {@code true}, if Access and Refresh Token shall be refreshed
+     * automatically when they are expired.
+     */
+    boolean tokenAutoRefresh() default true;
+
+    /**
+     * Optional. Sets the minimum validity time in milliseconds the Access Token
+     * must be valid before it is considered expired. Value must not be negative
+     * and if value is zero then infinite timeout.
+     */
+    int tokenMinValidity() default 10 * 1000;
 }

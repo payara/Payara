@@ -56,6 +56,8 @@ import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OP
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_RESPONSE_MODE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_RESPONSE_TYPE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_SCOPE;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_TOKEN_AUTO_REFRESH;
+import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_TOKEN_MIN_VALIDITY;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_AUTHORIZATION_ENDPOINT;
@@ -205,6 +207,9 @@ public class ConfigurationController {
         String callerNameClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerNameClaim(), provider, OPENID_MP_CALLER_NAME_CLAIM);
         String callerGroupsClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerGroupsClaim(), provider, OPENID_MP_CALLER_GROUP_CLAIM);
 
+        boolean tokenAutoRefresh = getConfiguredValue(Boolean.class, definition.tokenAutoRefresh(), provider, OPENID_MP_TOKEN_AUTO_REFRESH);
+        int tokenMinValidity = getConfiguredValue(Integer.class, definition.tokenMinValidity(), provider, OPENID_MP_TOKEN_MIN_VALIDITY);
+        
         OpenIdConfiguration configuration = new OpenIdConfiguration()
                 .setProviderMetadata(
                         new OpenIdProviderMetadata(providerDocument)
@@ -236,7 +241,9 @@ public class ConfigurationController {
                 .setUseNonce(nonce)
                 .setUseSession(session)
                 .setJwksConnectTimeout(jwksConnectTimeout)
-                .setJwksReadTimeout(jwksReadTimeout);
+                .setJwksReadTimeout(jwksReadTimeout)
+                .setTokenAutoRefresh(tokenAutoRefresh)
+                .setTokenMinValidity(tokenMinValidity);
 
         validateConfiguration(configuration);
 

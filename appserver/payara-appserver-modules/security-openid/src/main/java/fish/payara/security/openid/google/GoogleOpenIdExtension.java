@@ -202,6 +202,16 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
             public int jwksReadTimeout() {
                 return googleDefinition.jwksReadTimeout();
             }
+
+            @Override
+            public boolean tokenAutoRefresh() {
+                return false; // TODO check if "true" is working with Google
+            }
+
+            @Override
+            public int tokenMinValidity() {
+                return 0;
+            }
         };
     }
 

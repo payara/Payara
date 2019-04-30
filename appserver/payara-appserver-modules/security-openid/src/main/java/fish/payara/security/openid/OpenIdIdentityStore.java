@@ -46,8 +46,10 @@ import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Map;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -57,7 +59,6 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.enterprise.inject.Typed;
-import javax.security.enterprise.credential.CallerOnlyCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import net.minidev.json.JSONArray;
@@ -84,17 +85,27 @@ public class OpenIdIdentityStore implements IdentityStore {
         HttpMessageContext httpContext = credential.getHttpContext();
         OpenIdConfiguration configuration = credential.getConfiguration();
         IdentityTokenImpl idToken = (IdentityTokenImpl) credential.getIdentityToken();
-
+        
         Algorithm idTokenAlgorithm = idToken.getTokenJWT().getHeader().getAlgorithm();
-        Map<String, Object> idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
-        if (idToken.isEncrypted()) {
-            idToken.setClaims(idTokenClaims);
+        
+        Principal userPrincipal = httpContext.getRequest().getUserPrincipal();
+
+        if (isNull(userPrincipal)) {
+            // Initial validation request (3)
+            // On re-authentication (refresh of tokens), the user principal is already set
+
+            Map<String, Object> idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
+            if (idToken.isEncrypted()) {
+                idToken.setClaims(idTokenClaims);
+            }
+            context.setIdentityToken(idToken);
         }
-        context.setIdentityToken(idToken);
 
         AccessTokenImpl accessToken = (AccessTokenImpl) credential.getAccessToken();
         if (nonNull(accessToken)) {
-            Map<String, Object> accesTokenClaims = tokenController.validateAccessToken(accessToken, idTokenAlgorithm, idTokenClaims, configuration);
+            Map<String, Object> accesTokenClaims = tokenController.validateAccessToken(
+                    accessToken, idTokenAlgorithm, context.getIdentityToken().getClaims(), configuration
+            );
             if (accessToken.isEncrypted()) {
                 accessToken.setClaims(accesTokenClaims);
             }

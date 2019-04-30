@@ -47,6 +47,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
 import fish.payara.security.openid.api.OpenIdState;
+import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
 import fish.payara.security.openid.controller.StateController;
@@ -54,27 +55,35 @@ import fish.payara.security.openid.controller.TokenController;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
 import fish.payara.security.openid.domain.RefreshTokenImpl;
+import java.io.IOException;
 import java.io.StringReader;
+import java.security.Principal;
+import java.util.Date;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.logging.Level.WARNING;
 
 import java.util.Optional;
+import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
-import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
+import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
@@ -115,7 +124,6 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
 //  |        |<------------------------------------------------------|        |
 //  |        |                                                       |        |
 //  +--------+                                                       +--------+
-@AutoApplySession
 @Typed(OpenIdAuthenticationMechanism.class)
 public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanism {
 
@@ -174,13 +182,51 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         this.configuration = configurationController.buildConfig(definition);
         return this;
     }
-
+    
     @Override
     public AuthenticationStatus validateRequest(
             HttpServletRequest request,
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
+        Principal userPrincipal = request.getUserPrincipal();
+
+        if (isNull(userPrincipal)) {
+            LOGGER.fine("UserPrincipal is not set, authenticate user using OpenId Connect protocol.");
+            // User is not authenticated
+            // Perform steps (1) to (6)
+            return this.authenticate(request, response, httpContext);
+
+        } else {
+            // User has been authenticated in request before
+
+            // Try-catch-block taken from AutoApplySessionInterceptor
+            // We cannot use @AutoApplySession, because validateRequest(...) must be called on every request
+            // to handle re-authentication (refreshing tokens)
+            // https://stackoverflow.com/questions/51678821/soteria-httpmessagecontext-setregistersession-not-working-as-expected/51819055
+            // https://github.com/javaee/security-soteria/blob/master/impl/src/main/java/org/glassfish/soteria/cdi/AutoApplySessionInterceptor.java
+            try {
+                httpContext.getHandler().handle(new Callback[]{
+                    new CallerPrincipalCallback(httpContext.getClientSubject(), request.getUserPrincipal())}
+                );
+            } catch (IOException | UnsupportedCallbackException ex) {
+                throw new AuthenticationException("Failed to register CallerPrincipalCallback.", ex);
+            }
+
+            if (configuration.isTokenAutoRefresh()) {
+                LOGGER.log(Level.FINE, "UserPrincipal is set, check if Access Token is valid.");
+                return this.reAuthenticate(request, response, httpContext);
+            } else {
+                return SUCCESS;
+            }
+        }
+    }
+
+    private AuthenticationStatus authenticate(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            HttpMessageContext httpContext) throws AuthenticationException {
+        
         if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
             // (1) The End-User is not already authenticated
             return authenticationController.authenticateUser(configuration, httpContext);
@@ -235,6 +281,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
+            
+            // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
+            httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
             return httpContext.notifyContainerAboutLogin(validationResult);
         } else {
             // Token Request is invalid or unauthorized
@@ -242,6 +291,70 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             errorDescription = tokensObject.getString(ERROR_DESCRIPTION_PARAM, "Unknown");
             LOGGER.log(WARNING, "Error occurred in validating Authorization Code : {0} caused by {1}", new Object[]{error, errorDescription});
             return httpContext.notifyContainerAboutLogin(INVALID_RESULT);
+        }
+    }
+    
+    private AuthenticationStatus reAuthenticate(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            HttpMessageContext httpContext) throws AuthenticationException {
+
+        if (isAccessTokenExpired()) {
+            // Access Token expired
+            LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
+
+            AuthenticationStatus refreshStatus = this.context.getRefreshToken()
+                    .map(rt -> this.refreshTokens(httpContext, rt))
+                    .orElse(AuthenticationStatus.SEND_FAILURE);
+
+            if (refreshStatus != AuthenticationStatus.SUCCESS) {
+                LOGGER.log(Level.FINE, "Failed to refresh Access Token (Refresh Token might be invalid).");
+                try {
+                    request.logout();
+                } catch (ServletException ex) {
+                    LOGGER.log(WARNING, "Failed to logout user after failing to refresh token.", ex);
+                }
+                // Redirect user to OpenID connect provider for re-authentication
+                return authenticationController.authenticateUser(configuration, httpContext);
+            }
+        }
+
+        return SUCCESS;
+
+    }
+
+    /**
+     * Checks if the Access Token is expired, taking into account the min
+     * validity time configured by the user.
+     *
+     * @see OpenIdAuthenticationDefinition2#tokenMinValidity()
+     * @see OpenIdAuthenticationDefinition2#OPENID_MP_TOKEN_MIN_VALIDITY
+     * @return {@code true}, if token is expired or it will be expired in the
+     * next X millisecondes configured by user.
+     */
+    private boolean isAccessTokenExpired() {
+        Date exp = (Date) this.context.getAccessToken().getClaim("exp");
+        return System.currentTimeMillis() + configuration.getTokenMinValidity() > exp.getTime();
+    }
+
+    private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
+        Response response = tokenController.getTokens(configuration, refreshToken);
+        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));//Json.createReader(new StringReader(tokensBody)).readObject();
+
+        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+            // Successful Token Response
+            updateContext(tokensObject);
+            OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
+            CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
+            // Register session manually (if @AutoApplySession used, this would be done by its interceptor)
+            httpContext.setRegisterSession(validationResult.getCallerPrincipal().getName(), validationResult.getCallerGroups());
+            return httpContext.notifyContainerAboutLogin(validationResult);
+        } else {
+            // Token Request is invalid (refresh token invalid or expired)
+            String error = tokensObject.getString(ERROR_PARAM, "Unknown Error");
+            String errorDescription = tokensObject.getString(ERROR_DESCRIPTION_PARAM, "Unknown");
+            LOGGER.log(Level.FINE, "Error occurred in refreshing Access Token and Refresh Token : {0} caused by {1}", new Object[]{error, errorDescription});
+            return AuthenticationStatus.SEND_FAILURE;
         }
     }
 

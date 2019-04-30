@@ -72,6 +72,8 @@ import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_SECRET;
 import static fish.payara.security.openid.api.OpenIdConstant.CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.GRANT_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
+import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
+import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
@@ -202,6 +204,31 @@ public class TokenController {
 //        }
 
         return claims;
+    }
+
+    /**
+     * Makes a refresh request to the token endpoint and the OpenId Provider
+     * responds with a new (updated) Access Token and Refreshs Token.
+     *
+     * @param configuration
+     * @param refreshToken Refresh Token received from previous token request.
+     * @return a JSON object representation of OpenID Connect token response
+     * from the Token endpoint.
+     */
+    public Response getTokens(OpenIdConfiguration configuration, RefreshToken refreshToken) {
+
+        Form form = new Form()
+                .param(CLIENT_ID, configuration.getClientId())
+                .param(CLIENT_SECRET, new String(configuration.getClientSecret()))
+                .param(GRANT_TYPE, REFRESH_TOKEN)
+                .param(REFRESH_TOKEN, refreshToken.getToken());
+
+        // Access Token and RefreshToken Request
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(configuration.getProviderMetadata().getTokenEndpoint());
+        return target.request()
+                .accept(APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 
     private JWTClaimsSet validateBearerToken(JWT token, JWTClaimsSetVerifier jwtVerifier, OpenIdConfiguration configuration) {
