@@ -225,7 +225,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-microprofile-rest-client</artifactId>
+            <artifactId>mp-rest-client</artifactId>
         </dependency>
             
         <!-- OpenTracing -->
