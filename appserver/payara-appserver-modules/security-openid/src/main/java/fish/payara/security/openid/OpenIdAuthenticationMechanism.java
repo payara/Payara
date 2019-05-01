@@ -58,6 +58,8 @@ import java.io.StringReader;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.logging.Level.WARNING;
+
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
@@ -184,18 +186,18 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             return authenticationController.authenticateUser(configuration, httpContext);
         }
 
-        String recievedState = request.getParameter(STATE);
+        Optional<OpenIdState> receivedState = OpenIdState.from(request.getParameter(STATE));
         String redirectURI = configuration.buildRedirectURI(request);
-        if (nonNull(recievedState)
+        if (receivedState.isPresent()
                 && request.getRequestURL().toString().equals(redirectURI)) {
 
-            OpenIdState expectedState = stateController.get(configuration, httpContext);
-            if (nonNull(expectedState)) {
-                if (expectedState.equals(recievedState)) {
+            Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
+            if (expectedState.isPresent()) {
+                if (expectedState.equals(receivedState)) {
                     // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
                     return validateAuthorizationCode(httpContext);
                 } else {
-                    LOGGER.fine("Inconsistent recieved state, value not matched");
+                    LOGGER.fine("Inconsistent received state, value not matched");
                     return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
                 }
             } else {
@@ -230,7 +232,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
         if (response.getStatus() == Status.OK.getStatusCode()) {
             // Successful Token Response
-            updateContext(tokensObject, httpContext);
+            updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
             return httpContext.notifyContainerAboutLogin(validationResult);
@@ -249,7 +251,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         }
     }
 
-    private void updateContext(JsonObject tokensObject, HttpMessageContext httpContext) {
+    private void updateContext(JsonObject tokensObject) {
         context.setProviderMetadata(configuration.getProviderMetadata().getDocument());
         context.setTokenType(tokensObject.getString(TOKEN_TYPE, null));
 
