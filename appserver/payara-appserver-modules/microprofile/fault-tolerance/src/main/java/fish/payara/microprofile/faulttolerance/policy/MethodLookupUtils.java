@@ -81,22 +81,22 @@ public final class MethodLookupUtils {
     }
 
     private static boolean isMatchingParameterList(Method sample, Method candidate) {
-        return isMatchtingParameterList(sample.getGenericParameterTypes(), candidate.getGenericParameterTypes());
+        return isMatchingParameterList(sample.getGenericParameterTypes(), candidate.getGenericParameterTypes());
     }
 
-    private static boolean isMatchtingParameterList(Type[] samples, Type[] candidates) {
+    private static boolean isMatchingParameterList(Type[] samples, Type[] candidates) {
         if (samples.length != candidates.length) {
             return false;
         }
         for (int i = 0; i < samples.length; i++) {
-            if (!isMatchtingType(samples[i], candidates[i])) {
+            if (!isMatchingType(samples[i], candidates[i])) {
                 return false;
             }
         }
         return true;
     }
 
-    private static boolean isMatchtingType(Type sample, Type candidate) {
+    private static boolean isMatchingType(Type sample, Type candidate) {
         return sample.equals(candidate) 
                 || (candidate instanceof TypeVariable)
                 || (candidate instanceof GenericArrayType)
@@ -108,8 +108,8 @@ public final class MethodLookupUtils {
         if (sample instanceof WildcardType && candidate instanceof WildcardType) {
             WildcardType sampleType = (WildcardType) sample;
             WildcardType candidateType = (WildcardType) candidate;
-            return isMatchtingParameterList(sampleType.getLowerBounds(), candidateType.getLowerBounds())
-                    && isMatchtingParameterList(sampleType.getUpperBounds(), candidateType.getUpperBounds());
+            return isMatchingParameterList(sampleType.getLowerBounds(), candidateType.getLowerBounds())
+                    && isMatchingParameterList(sampleType.getUpperBounds(), candidateType.getUpperBounds());
         }
         return false;
     }
@@ -121,7 +121,7 @@ public final class MethodLookupUtils {
             if (sampleType.getRawType() != candidateType.getRawType()) {
                 return false;
             }
-            return isMatchtingParameterList(sampleType.getActualTypeArguments(),
+            return isMatchingParameterList(sampleType.getActualTypeArguments(),
                     candidateType.getActualTypeArguments());
         }
         return false;
