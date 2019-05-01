@@ -202,6 +202,7 @@
         <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -412,6 +413,7 @@
              <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
              <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
+             <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
              <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>

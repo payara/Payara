@@ -184,6 +184,7 @@
         <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
@@ -380,6 +381,7 @@
         <jvm-options>[9|]--add-opens=java.base/java.nio=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvm-options>
         <jvm-options>[9|]--add-opens=java.management/sun.management=ALL-UNNAMED</jvm-options>
+        <jvm-options>[9|]--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx2g</jvm-options>
         <jvm-options>-Xms2g</jvm-options>
         <jvm-options>-XX:+UseG1GC</jvm-options>
