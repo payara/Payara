@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <sc:subMenu value="Deploy" id="deployMenu">
 <sc:menuItem value="Web Application" url="#{request.contextPath}/web/webApp/upload.jsf?appType=webApp" />
@@ -77,6 +78,7 @@
     <sc:subMenu value="Security">
 	    <sc:menuItem value="Security Settings" url="#{request.contextPath}/common/security/security.jsf" />
 	    <sc:menuItem value="Realms" url="#{request.contextPath}/common/security/realms/realms.jsf" />
+            <sc:menuItem value="Admin Audit" url="#{request.contextPath}/common/security/adminAudit/adminAudit.jsf" />
 	    <sc:menuItem value="Audit Modules" url="#{request.contextPath}/common/security/auditModules/auditModules.jsf" />
 	    <sc:menuItem value="JACC Providers" url="#{request.contextPath}/layouttest.jsf?page=JACC+Providers" />
 	    <sc:menuItem value="Thread Pools" url="#{request.contextPath}/layouttest.jsf?page=Thread+Pools" />

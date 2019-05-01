@@ -1,0 +1,153 @@
+<!--
+
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+   Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at glassfish/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+-->
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
+/>
+
+<!composition template="/templates/default.layout" guiTitle="$resource{i18nc.adminAudit.PageTitle}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:security:adminAudit');"
+>
+<!define name="content">
+    <event>
+        <!beforeCreate
+            
+        getRequestValue(key="configName" value="#{pageSession.configName}");
+         setPageSessionAttribute(key="ADMIN_AUDIT_URL", 
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-audit-configuration"); 
+
+        gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration?target=#{pageSession.configName}" method="GET" result="#{requestScope.resp}"); 
+                
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+                
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+        if (#{pageSession.valueMap['enabled']}=true) {
+            setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+
+        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+        
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+            gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
+        }
+        py.sortHealthcheckEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.extraProperties}" avaliableNotifiers="#{pageSession.allservices}"
+            enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
+        convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
+
+        />
+    </event>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+        <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18nc.adminaudit.Title}" helpText="$resource{i18nc.adminaudit.PageHelp}">
+                <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
+                        submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                        <!command
+                            mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                            mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                            mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
+                            prepareSuccessfulMsg();
+                            gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration?target=#{pageSession.configName}" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+
+                            py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" 
+                                selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
+
+                        />
+            </sun:button>
+        </sun:panelGroup>
+        </facet>
+    </sun:title>
+    <!-- PropertySheet .... -->
+    <sun:propertySheet id="propertySheet">			 
+        <!-- Text Field section -->
+#include "/common/shared/configNameSection.inc"
+        <sun:propertySheetSection id="propertSectionTextField">
+
+            <sun:property id="enabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Enabled}" helpText="$resource{i18nc.adminaudit.EnabledHelp}">
+                <sun:checkbox label="$resource{i18nc.common.Enabled}" selected="#{pageSession.enabledSelected}" selectedValue="true"/>
+            </sun:property>
+            <sun:property id="dynamicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.Dynamic}" helpText="$resource{i18nc.adminaudit.DynamicHelp}">
+                <sun:checkbox label="$resource{i18nc.common.Enabled}" selected="#{pageSession.dynamic}" selectedValue="true"/>
+            </sun:property>
+            <sun:property id="auditLevelProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.adminaudit.UnitLabel}" helpText="$resource{i18nc.adminaudit.UnitLabelHelp}">
+                <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['auditLevel']}" 
+                              labels={"MODIFIERS","ACCESSORS","INTERNAL"} />
+            </sun:property>   
+            "<br /><br />
+        </sun:propertySheetSection>
+
+        <sun:propertySheetSection id="notifiers">
+            <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+                <sun:addRemove id="notifiersAddRemove"
+                               selectAll="$boolean{true}"
+                               items="#{pageSession.allNotifiers}"
+                               selected="#{pageSession.enabledNotifiersArr}"
+                               availableItemsLabel="$resource{i18nc.adminaudit.configuration.availableNotifiers}"
+                               selectedItemsLabel="$resource{i18nc.adminaudit.configuration.selectedNotifiers}">
+                </sun:addRemove>
+            </sun:property>
+
+            <sun:property>
+                <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text.prefix}" />
+                <sun:hyperlink
+                    toolTip="$resource{i18nc.adminaudit.link.to.notification.page.text}"
+                    url="/payaraExtras/notification/notification.jsf?configName=#{configName}">
+                    <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text}" />
+                </sun:hyperlink>
+                <sun:staticText text="$resource{i18nc.adminaudit.link.to.notification.page.text.suffix}" />
+            </sun:property>      
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+    <sun:hidden id="helpKey" value="$resource{help_common.auditModules}" />
+</sun:form>
+</define>
+</composition>

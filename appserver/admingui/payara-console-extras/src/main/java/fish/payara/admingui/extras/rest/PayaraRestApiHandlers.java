@@ -1,5 +1,5 @@
 /* 
- *     Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -574,10 +574,12 @@ public class PayaraRestApiHandlers {
         boolean forRequestTracing = false;
         boolean forHealthCheck = false;
         boolean forMonitoring = false;
+        boolean forAdminAudit = false;
 
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
             String restEndpoint;
+            Map<String, Object> attributes = new HashMap<>();
             if (endpoint.contains("request-tracing-service-configuration")){
                 restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
                 forRequestTracing = true;
@@ -587,21 +589,29 @@ public class PayaraRestApiHandlers {
             } else if (endpoint.contains("monitoring-service-configuration")){
                 restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
                 forMonitoring = true;
+            } else if (endpoint.contains("admin-audit-configuration")) {
+                restEndpoint = endpoint + "/set-admin-audit-service-notifier-configuration";
+                attributes.put("notifier", name);
+                forAdminAudit = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
             }
             
-            HashMap<String, Object> attrs = new HashMap<>();
+            
             if (enabledNotifiers.contains(notifier)){
-                attrs.put("enabled", "true");                
+                attributes.put("enabled", "true");                
             } else {
-                attrs.put("enabled", "false");
+                attributes.put("enabled", "false");
             }
-            //PAYARA-1616 go silent, bootstrap will take place after iteration.
-            attrs.put("dynamic", "false");
-            attrs.put("target", target);
-            RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
+            if (!forAdminAudit) {
+                //PAYARA-1616 go silent, bootstrap will take place after iteration.
+                attributes.put("dynamic", "false");
+            } else {
+                attributes.put("dynamic", "true");
+            }
+            attributes.put("target", target);
+            RestUtil.restRequest(restEndpoint, attributes, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
         // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.

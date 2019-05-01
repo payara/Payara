@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- *
+ * 
+ *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,23 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- *
+ * 
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License.
+ * 
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- *
+ * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- *
+ * 
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,52 +40,55 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.security.openid.controller;
+package fish.payara.audit;
 
-import static fish.payara.security.openid.OpenIdUtil.not;
-import fish.payara.security.openid.api.OpenIdState;
-import fish.payara.security.openid.domain.OpenIdConfiguration;
-import static fish.payara.security.openid.http.HttpStorageController.getInstance;
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import org.glassfish.common.util.StringHelper;
+import fish.payara.nucleus.notification.configuration.Notifier;
 
-import java.util.Optional;
+import java.beans.PropertyVetoException;
+import java.util.List;
+import javax.validation.constraints.Pattern;
+
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 
 /**
- * Controller to manage OpenId state parameter value
- *
- * @author Gaurav Gupta
+ * Configuration for the Admin Audit service
+ * @author jonathan coustick
  */
-@ApplicationScoped
-public class StateController {
+@Configured
+public interface AdminAuditConfiguration extends ConfigBeanProxy, ConfigExtension {
+    
+    @Attribute(defaultValue="false",dataType=Boolean.class)
+    String getEnabled();
+    void enabled(String value) throws PropertyVetoException;
+    
+    @Attribute(defaultValue="MODIFIERS")
+    @Pattern(regexp = "MODIFIERS|ACCESSORS|INTERNAL", message = "Invalid audit level. Value must be one of: MODIFIERS, ACCESSORS or INTERNAL.")
+    String getAuditLevel();
+    void setAuditLevel(String value) throws PropertyVetoException;
+    
+    @Element("*")
+    List<Notifier> getNotifierList();
+    
+    @DuckTyped
+    <T extends Notifier> T getNotifierByType(Class<T> type);
+    
+    class Duck {
+        public static <T extends Notifier> T getNotifierByType(AdminAuditConfiguration config, Class<T> type) {
+            for (Notifier notifier : config.getNotifierList()) {
+                try {
+                    return type.cast(notifier);
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
 
-    private static final String STATE_KEY = "oidc.state";
-
-    public void store(
-            OpenIdState state,
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        getInstance(configuration, context)
-                .store(STATE_KEY, state.getValue(), null);
     }
-
-    public Optional<OpenIdState> get(
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        return getInstance(configuration, context)
-                .getAsString(STATE_KEY)
-                .filter(not(StringHelper::isEmpty))
-                .map(OpenIdState::new);
-    }
-
-    public void remove(
-            OpenIdConfiguration configuration,
-            HttpMessageContext context) {
-
-        getInstance(configuration, context)
-                .remove(STATE_KEY);
-    }
+    
 }

@@ -330,7 +330,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
                     // Check if this listener is using HTTP or HTTPS
                     boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
-                    List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
+                    List<Integer> ports = securityEnabled ? httpsPorts : httpPorts;
 
                     // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
                     if (!networkListener.getName().equals(adminListener)) {

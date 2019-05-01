@@ -155,6 +155,11 @@
         
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>asadmin-audit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
         </dependency>
