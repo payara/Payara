@@ -170,7 +170,6 @@ public class JaspicRealm {
         return getServerAuthConfig() != null;
     }
 
-
     public boolean validateRequest(HttpRequest request, HttpResponse response, Context context, Authenticator authenticator, boolean calledFromAuthenticate, Function<HttpServletRequest, Boolean> isMandatoryFn) throws IOException {
         try {
             context.fireContainerEvent(BEFORE_AUTHENTICATION, null);
@@ -263,7 +262,10 @@ public class JaspicRealm {
     }
 
 
+    
+    // ############################   Private methods ######################################
 
+    
     private ServerAuthConfig getServerAuthConfig() {
         if (jaspicServices == null) {
             return null;

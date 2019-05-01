@@ -104,7 +104,11 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
                 // Create a new JaccWebAuthorizationManager for this context
                 
                 probeProvider.securityManagerCreationStartedEvent(webBundleDescriptor.getModuleID());
+                
+                // As "side-effect" of constructing the manager, the web constraints in the web bundle
+                // descriptor will be translated to permissions and loaded into a JACC policy configuration
                 manager = new JaccWebAuthorizationManager(webBundleDescriptor, context, this, register);
+                
                 probeProvider.securityManagerCreationEndedEvent(webBundleDescriptor.getModuleID());
 
                 if (register) {

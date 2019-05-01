@@ -55,6 +55,7 @@ import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
+import javax.security.auth.x500.X500Principal;
 
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
@@ -66,6 +67,7 @@ import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.Realm;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -120,9 +122,9 @@ public final class CertificateRealm extends BaseRealm {
             defaultGroups.addAll(asList(groups));
         }
 
-        String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
+        String jaasCtx = props.getProperty(Realm.JAAS_CONTEXT_PARAM);
         if (jaasCtx != null) {
-            setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
+            setProperty(Realm.JAAS_CONTEXT_PARAM, jaasCtx);
         }
         
         // Gets the property from the realm configuration - requires server restart when updating or removing
@@ -167,22 +169,22 @@ public final class CertificateRealm extends BaseRealm {
      * Returns the name of all the groups that this user belongs to.
      *
      * @param subject The Subject object for the authentication request.
-     * @param principal The Principal object from the user certificate.
+     * @param callerPrincipal The Principal object from the user certificate.
      *
      */
-    public String authenticate(Subject subject, Principal principal) {
-        // It is important to use X500Principal.getName() in order to be
-        // consistent with web containers view of the name - see bug
-        // 4646134 for reasons why this matters.
-        String name = principal.getName();
+    public String authenticate(Subject subject, X500Principal callerPrincipal) {
+        // It is important to use X500Principal.getName() as that will
+        // return the LDAP name in RFC2253
+        String callerPrincipalName = callerPrincipal.getName();
         
         // Checks if the property for using common name is set
         if (Boolean.valueOf(getProperty("useCommonName"))) {
-            name = extractCN(name);
+            callerPrincipalName = extractCN(callerPrincipalName);
         }
 
-        _logger.log(FINEST, "Certificate realm setting up security context for: {0}", name);
+        _logger.log(FINEST, "Certificate realm setting up security context for: {0}", callerPrincipalName);
 
+        // Optionally add groups that indicate this caller was authenticated via certificates
         if (defaultGroups != null) {
             Set<Principal> principalSet = subject.getPrincipals();
             for (String groupName : defaultGroups) {
@@ -191,11 +193,14 @@ public final class CertificateRealm extends BaseRealm {
         }
 
         if (!subject.getPrincipals().isEmpty()) {
-            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(principal));
+            subject.getPublicCredentials().add(new DistinguishedPrincipalCredential(callerPrincipal));
         }
 
-        SecurityContext.setCurrent(new SecurityContext(name, subject));
-        return name;
+        // Making authentication final - setting the authenticated caller name in the
+        // security context
+        SecurityContext.setCurrent(new SecurityContext(callerPrincipalName, subject));
+        
+        return callerPrincipalName;
     }
     
     private static String extractCN(String dn) {
