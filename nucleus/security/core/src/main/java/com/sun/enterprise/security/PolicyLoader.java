@@ -247,14 +247,7 @@ public class PolicyLoader {
             LOGGER.log(INFO, SecurityLoggerInfo.policyLoading, policyClassName);
 
             Object policyInstance = loadClass(policyClassName);
-            
-            if (j2ee13) {
-                // Use JDK 1.3 classes if j2ee1 3 property being used
-                installPolicy13(policyInstance);
-            } else {
-                // Otherwise use JDK 1.4 classes.
-                installPolicy14(policyInstance);
-            }
+            installPolicy14(policyInstance);
 
         } catch (Exception e) {
             LOGGER.log(SEVERE, policyInstallError, e.getLocalizedMessage());
@@ -264,16 +257,6 @@ public class PolicyLoader {
         // Success.
         LOGGER.log(FINE, () -> "Policy set to: " + policyClassName);
         isPolicyInstalled = true;
-    }
-    
-    private void installPolicy13(Object policyInstance) {
-        // Use JDK 1.3 classes if j2ee1 3 property being used
-        if (!(policyInstance instanceof javax.security.auth.Policy)) {
-            throw new RuntimeException(STRING_MANAGER.getString("enterprise.security.plcyload.not13"));
-        }
-        javax.security.auth.Policy policy = (javax.security.auth.Policy) policyInstance;
-        javax.security.auth.Policy.setPolicy(policy);
-        policy.refresh();
     }
     
     private void installPolicy14(Object policyInstance) {
