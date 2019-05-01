@@ -116,6 +116,7 @@
         <javax.interceptor-api.version>1.2.1</javax.interceptor-api.version>
 
         <!-- CDI -->
+        <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0.SP1</cdi-api.version>
         <weld.version>3.1.0.Final</weld.version>
         <weld-bundle.version>3.1.0.Final</weld-bundle.version>
@@ -282,7 +283,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>jakarta.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
                     <specs>
 
                         <!-- JavaMail -->
@@ -663,9 +664,9 @@
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>jakarta.inject</artifactId>
-                <version>${hk2.version}</version>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
             </dependency>
     	    <dependency>
                 <groupId>javax.resource</groupId>

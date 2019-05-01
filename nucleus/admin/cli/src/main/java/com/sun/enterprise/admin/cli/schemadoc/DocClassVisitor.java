@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.admin.cli.schemadoc;
-
-import org.objectweb.asm.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 public class DocClassVisitor extends ClassVisitor {
     private boolean hasConfiguredAnnotation = false;
@@ -55,7 +54,7 @@ public class DocClassVisitor extends ClassVisitor {
     private boolean showDeprecated;
 
     public DocClassVisitor(final boolean showDep) {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM5);
         showDeprecated = showDep;
     }
 
