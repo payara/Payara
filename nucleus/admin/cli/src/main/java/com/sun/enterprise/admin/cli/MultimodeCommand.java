@@ -43,6 +43,14 @@ package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.logging.Level;
+import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
@@ -51,21 +59,14 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.logging.Level;
 
 /**
  * A scaled-down implementation of multi-mode command.
@@ -211,7 +212,7 @@ public class MultimodeCommand extends CLICommand {
      * @return the exit code of the last command executed
      */
     private int executeCommands(LineReader reader) throws IOException {
-        String line;
+        String line = null;
         int rc = 0;
 
         /*
@@ -222,14 +223,20 @@ public class MultimodeCommand extends CLICommand {
         programOpts.toEnvironment(env);
         String prompt = programOpts.getCommandName() + "> ";
         for (;;) {
-            if (printPrompt) {
-                line = reader.readLine(prompt);
-            } else {
-                line = reader.readLine();
-            }
-            if (line == null) {
-                if (printPrompt)
-                    System.out.println();
+            try {
+                if (printPrompt) {
+                    line = reader.readLine(prompt);
+                } else {
+                    line = reader.readLine();
+                }
+                if (line == null) {
+                    if (printPrompt) {
+                        System.out.println();
+                    }
+                    break;
+                }
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore
                 break;
             }
 
