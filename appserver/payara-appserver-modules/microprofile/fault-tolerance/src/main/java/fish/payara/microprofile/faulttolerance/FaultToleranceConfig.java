@@ -43,6 +43,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
 
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
@@ -61,6 +62,15 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  */
 @FunctionalInterface
 public interface FaultToleranceConfig {
+
+    /**
+     * A payara specific feature that allows to specify a list of annotation classes that have a similar effect as
+     * {@link Asynchronous}.
+     */
+    String ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY = "MP_Fault_Tolerance_Alternative_Asynchronous_Annotations";
+
+    @SuppressWarnings("unchecked")
+    Class<? extends Annotation>[] NO_ALTERNATIVE_ANNOTATIONS = new Class[0];
 
     /**
      * @return A {@link FaultToleranceConfig} that behaves as stated by the present FT annotations. {@link Method}
@@ -122,6 +132,10 @@ public interface FaultToleranceConfig {
      */
     default boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
         return getAnnotation(annotationType) != null;
+    }
+
+    default boolean isAlternativeAsynchronousAnnoationPresent() {
+        return false;
     }
 
 

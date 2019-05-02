@@ -65,7 +65,8 @@ public final class AsynchronousPolicy extends Policy {
     }
 
     public static AsynchronousPolicy create(InvocationContext context, FaultToleranceConfig config) {
-        if (config.isAnnotationPresent(Asynchronous.class) && config.isEnabled(Asynchronous.class)) {
+        if ((config.isAnnotationPresent(Asynchronous.class) || config.isAlternativeAsynchronousAnnoationPresent())
+                && config.isEnabled(Asynchronous.class)) {
             checkReturnsFutureOrCompletionStage(context.getMethod());
             return context.getMethod().getReturnType() == Future.class ? FUTURE : COMPLETION_STAGE;
         }
