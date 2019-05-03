@@ -80,9 +80,9 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     /**
      * The keys checked when creating a {@link Context} with {@link #getInitialContext(Hashtable)}. If these are not set
      * in the environment we they are initialised to a {@link System#getProperty(String)}. The name of the property is
-     * the same except {@code fish.parara.}/{@code java.naming.} is replaced with {@code fish.payara.ejb.http.}
-     * effectively looking for properties with names like {@code fish.payara.ejb.http.sslContext} or
-     * {@code fish.payara.ejb.http.provider.url}.
+     * the same except {@code fish.parara.}/{@code java.naming.} is replaced with {@code fish.payara.ejb.http.client}
+     * effectively looking for properties with names like {@code fish.payara.ejb.http.client.sslContext} or
+     * {@code fish.payara.ejb.http.client.provider.url}.
      */
     private String[] SYSTEM_PROPERTY_KEYS = { Context.PROVIDER_URL, Context.SECURITY_CREDENTIALS,
             Context.SECURITY_PRINCIPAL, FISH_PAYARA_CONNECT_TIMEOUT, FISH_PAYARA_EXECUTOR_SERVICE,
@@ -100,7 +100,8 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     private void updateEnvironmentFromSystemProperties(Hashtable<String, Object> environment) {
         for (String key : SYSTEM_PROPERTY_KEYS) {
             if (!environment.containsKey(key)) {
-                String systemPropertyName = key.replaceFirst("fish\\.parara\\.|java\\.naming\\.", "fish.payara.ejb.http.");
+                String systemPropertyName = key.replaceFirst("fish\\.payara\\.|java\\.naming\\.", "fish.payara.ejb.http.client.");
+                System.out.println("Checking "+systemPropertyName);
                 String value = System.getProperty(systemPropertyName, null);
                 if (value != null) {
                     environment.put(key, value);
