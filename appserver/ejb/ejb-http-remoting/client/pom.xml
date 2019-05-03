@@ -91,5 +91,11 @@
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
        </dependency>
+
+       <dependency>
+           <groupId>javax.jms</groupId>
+           <artifactId>javax.jms-api</artifactId>
+           <scope>test</scope>
+       </dependency>
     </dependencies>
 </project>
