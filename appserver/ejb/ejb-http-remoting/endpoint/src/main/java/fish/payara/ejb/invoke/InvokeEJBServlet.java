@@ -164,10 +164,10 @@ public class InvokeEJBServlet extends HttpServlet {
 
     private static Class<?> toClass(JsonValue classNameValue) {
         try {
-            if (classNameValue instanceof JsonString) {
-                return Class.forName(((JsonString) classNameValue).getString());
-            }
-            return Class.forName(classNameValue.toString().replace("\"", ""));
+            String className = classNameValue instanceof JsonString 
+                    ? ((JsonString) classNameValue).getString() 
+                    : classNameValue.toString().replace("\"", "");
+            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
