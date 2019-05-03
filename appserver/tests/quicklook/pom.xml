@@ -255,6 +255,13 @@
                         <version>1.8.1</version>
                         <scope>runtime</scope>
                     </dependency>
+                    <dependency>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools-jar</artifactId>
+                        <version>1</version>
+                        <scope>system</scope>
+                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -268,7 +275,7 @@
             </properties>
         </profile>
 
-        <profile>
+        <!-- <profile>
             <id>tools_jar</id>
             <activation>
                 <file>
@@ -284,7 +291,7 @@
                     <systemPath>${java.home}/../lib/tools.jar</systemPath>
                 </dependency>
             </dependencies>
-        </profile>
+        </profile> -->
 
         <profile>
             <id>report</id>

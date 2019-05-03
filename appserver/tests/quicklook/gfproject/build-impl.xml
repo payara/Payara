@@ -130,7 +130,6 @@
         <fileset id="dist.contents" dir="${java.home}/../lib" includes="*"/> 
         <property name="prop.dist.contents" refid="dist.contents"/>
         <echo>${prop.dist.contents}</echo>
-        <echo>${toString:classpath}</echo>
 
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
