@@ -102,14 +102,14 @@ public class InvokeEJBServlet extends HttpServlet {
             }
         } else {
             String methodName = requestPayload.getString("method");
-            Class<?>[] argTypes = toClasses(requestPayload.getJsonArray("argTypes"));
-            Object[] argValues = toObjects(argTypes, requestPayload.getJsonArray("argValues"));
+            JsonArray argTypeNames = requestPayload.getJsonArray("argTypes");
+            JsonArray argValuesJson = requestPayload.getJsonArray("argValues");
             String principal = requestPayload.getString(SECURITY_PRINCIPAL, "");
             String credentials = requestPayload.getString(SECURITY_CREDENTIALS, "");
             try {
-                Object result = invokeBeanMethod(beanName, methodName, argTypes, argValues, principal, credentials);
+                Object result = invokeBeanMethod(beanName, methodName, argTypeNames, argValuesJson, principal, credentials);
                 response.setContentType(APPLICATION_JSON);
-                response.getWriter().print(result instanceof String? result : JsonbBuilder.create().toJson(result));
+                response.getWriter().print(JsonbBuilder.create().toJson(result));
             } catch (NamingException ex) {
                 response.sendError(SC_INTERNAL_SERVER_ERROR,
                         "Name " + beanName + " not found when invoking method " + methodName);
@@ -139,8 +139,8 @@ public class InvokeEJBServlet extends HttpServlet {
         });
     }
 
-    private static Object invokeBeanMethod(String beanName, String methodName, Class<?>[] argTypes, Object[] argValues,
-            String principal, String credentials) throws Exception {
+    private static Object invokeBeanMethod(String beanName, String methodName, JsonArray argTypeNames,
+            JsonArray argValuesJson, String principal, String credentials) throws Exception {
         return excuteInAppContext(beanName, bean -> {
             // Authenticates the caller and if successful sets the security context
             // *for the outgoing EJB call*. In other words, the security context for this
@@ -149,6 +149,8 @@ public class InvokeEJBServlet extends HttpServlet {
                 new ProgrammaticLogin().login(base64Decode(principal), base64Decode(credentials), null, true);
             }
             // Actually invoke the target EJB
+            Class<?>[] argTypes = toClasses(argTypeNames);
+            Object[] argValues = toObjects(argTypes, argValuesJson);
             return bean.getClass().getMethod(methodName, argTypes).invoke(bean, argValues);
         });
     }
