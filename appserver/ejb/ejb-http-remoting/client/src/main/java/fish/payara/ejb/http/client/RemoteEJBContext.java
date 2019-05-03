@@ -39,6 +39,8 @@
  */
 package fish.payara.ejb.http.client;
 
+import fish.payara.ejb.http.client.adapter.ClientAdapter;
+
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_CONNECT_TIMEOUT;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_EXECUTOR_SERVICE;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_HOSTNAME_VERIFIER;
@@ -57,6 +59,7 @@ import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -104,12 +107,19 @@ import javax.ws.rs.core.Configuration;
  *
  */
 class RemoteEJBContext implements Context {
-    
+
+    private ClientAdapter clientAdapter;
     private Hashtable<String, Object> environment;
     
     @SuppressWarnings("unchecked")
     public RemoteEJBContext(Hashtable<?, ?> environment) {
         this.environment = (Hashtable<String, Object>) environment;
+        if (environment.containsKey(RemoteEJBContextFactory.FISH_PAYARA_CLIENT_ADAPTER)) {
+            Object adapter =  environment.get(RemoteEJBContextFactory.FISH_PAYARA_CLIENT_ADAPTER);
+            if (adapter instanceof ClientAdapter) {
+                this.clientAdapter = (ClientAdapter)adapter;
+            }
+        }
     }
 
     @Override
@@ -119,9 +129,18 @@ class RemoteEJBContext implements Context {
 
     @Override
     public Object lookup(String name) throws NamingException {
+        if (name == null) {
+            throw new NullPointerException("Lookup name cannot be null");
+        }
         String url = (String) environment.get(PROVIDER_URL);
         
         try {
+            if (clientAdapter != null) {
+                Optional<Object> resolvedAdapter = clientAdapter.makeClientAdapter(name, this);
+                if (resolvedAdapter.isPresent()) {
+                    return resolvedAdapter.get();
+                }
+            }
             // Get client build with all optional config applied
             ClientBuilder clientBuilder = getClientBuilder();
             

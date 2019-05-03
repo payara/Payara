@@ -76,6 +76,7 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
     public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+    public static final String FISH_PAYARA_CLIENT_ADAPTER = "fish.payara.clientAdapter";
 
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
