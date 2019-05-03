@@ -123,6 +123,14 @@
         </fileset>
         <property name="source.file.list" refid="java.source.id"/> 
         <echo message="Listing of source files: ${source.file.list}"/> 
+        
+        <echo message="JAVA HOME: ${java.home}"/>
+        
+        <!-- DEBUG: does tools.jar exist? - -->
+        <fileset id="dist.contents" dir="${java.home}/../lib" includes="*"/> 
+        <property name="prop.dist.contents" refid="dist.contents"/>
+        <echo>${prop.dist.contents}</echo>
+        <echo>${toString:classpath}</echo>
 
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
