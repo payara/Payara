@@ -66,7 +66,7 @@ import javax.naming.spi.InitialContextFactory;
  * @since Payara 5.191
  */
 public class RemoteEJBContextFactory implements InitialContextFactory {
-    
+
     public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
     public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
     public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
@@ -77,9 +77,35 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
 
+    /**
+     * The keys checked when creating a {@link Context} with {@link #getInitialContext(Hashtable)}. If these are not set
+     * in the environment we they are initialised to a {@link System#getProperty(String)}. The name of the property is
+     * the same except {@code fish.parara.}/{@code java.naming.} is replaced with {@code fish.payara.ejb.http.}
+     * effectively looking for properties with names like {@code fish.payara.ejb.http.sslContext} or
+     * {@code fish.payara.ejb.http.provider.url}.
+     */
+    private String[] SYSTEM_PROPERTY_KEYS = { Context.PROVIDER_URL, Context.SECURITY_CREDENTIALS,
+            Context.SECURITY_PRINCIPAL, FISH_PAYARA_CONNECT_TIMEOUT, FISH_PAYARA_EXECUTOR_SERVICE,
+            FISH_PAYARA_HOSTNAME_VERIFIER, FISH_PAYARA_KEY_STORE, FISH_PAYARA_READ_TIMEOUT,
+            FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE, FISH_PAYARA_SSL_CONTEXT, FISH_PAYARA_TRUST_STORE,
+            FISH_PAYARA_WITH_CONFIG };
+
+    @SuppressWarnings("unchecked")
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
+        updateEnvironmentFromSystemProperties((Hashtable<String, Object>) environment);
         return new RemoteEJBContext(environment);
     }
-    
+
+    private void updateEnvironmentFromSystemProperties(Hashtable<String, Object> environment) {
+        for (String key : SYSTEM_PROPERTY_KEYS) {
+            if (!environment.containsKey(key)) {
+                String systemPropertyName = key.replaceFirst("fish\\.parara\\.|java\\.naming\\.", "fish.payara.ejb.http.");
+                String value = System.getProperty(systemPropertyName, null);
+                if (value != null) {
+                    environment.put(key, value);
+                }
+            }
+        }
+    }
 }
