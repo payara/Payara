@@ -101,7 +101,6 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
         for (String key : SYSTEM_PROPERTY_KEYS) {
             if (!environment.containsKey(key)) {
                 String systemPropertyName = key.replaceFirst("fish\\.payara\\.|java\\.naming\\.", "fish.payara.ejb.http.client.");
-                System.out.println("Checking "+systemPropertyName);
                 String value = System.getProperty(systemPropertyName, null);
                 if (value != null) {
                     environment.put(key, value);
