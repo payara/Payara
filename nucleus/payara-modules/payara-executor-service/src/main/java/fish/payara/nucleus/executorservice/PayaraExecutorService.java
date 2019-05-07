@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,8 @@
  */
 package fish.payara.nucleus.executorservice;
 
-import com.sun.enterprise.config.serverbeans.Config;
+import static org.glassfish.api.admin.ProcessEnvironment.ProcessType.ACC;
+
 import java.beans.PropertyChangeEvent;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
@@ -52,14 +53,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
@@ -72,6 +75,8 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import com.sun.enterprise.config.serverbeans.Config;
 
 /**
  *
@@ -90,6 +95,9 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @Inject
     ServerEnvironment serverEnvironment;
+    
+    @Inject
+    private ProcessEnvironment processEnvironment;
 
     @Inject
     private Events events;
@@ -99,14 +107,18 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @PostConstruct
     public void postConstruct() {
+        
+        if (isACC()) {
+            // The application client container doesn't use the executor service locally for now
+            return;
+        }
 
         if (events != null) {
             events.register(this);
         }
 
         if (payaraExecutorServiceConfiguration == null) {
-            payaraExecutorServiceConfiguration = Globals.getDefaultHabitat()
-                    .getService(PayaraExecutorServiceConfiguration.class);
+            payaraExecutorServiceConfiguration = Globals.get(PayaraExecutorServiceConfiguration.class);
         }
 
         if (transactions != null) {
@@ -321,5 +333,9 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
         }
 
         return false;
+    }
+    
+    public boolean isACC() {
+        return processEnvironment.getProcessType().equals(ACC);
     }
 }
