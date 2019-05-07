@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.executorservice;
 
+import static java.util.logging.Level.SEVERE;
 import static org.glassfish.api.admin.ProcessEnvironment.ProcessType.ACC;
 
 import java.beans.PropertyChangeEvent;
@@ -107,12 +108,6 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
 
     @PostConstruct
     public void postConstruct() {
-        
-        if (isACC()) {
-            // The application client container doesn't use the executor service locally for now
-            return;
-        }
-
         if (events != null) {
             events.register(this);
         }
@@ -141,37 +136,64 @@ public class PayaraExecutorService implements ConfigListener, EventListener {
     }
 
     private void initialiseThreadPools() {
-        int threadPoolExecutorQueueSize = Integer.valueOf(
-                payaraExecutorServiceConfiguration.getThreadPoolExecutorQueueSize());
-        if (threadPoolExecutorQueueSize > 0) {
+        if (isACC()) {
+            
+            // The application client container doesn't use the executor service locally for now.
+            // But create a "mock" executor to be absolutely sure.
             threadPoolExecutor = new ThreadPoolExecutor(
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorCorePoolSize()),
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize()),
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTime()),
-                    TimeUnit.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTimeUnit()),
-                    new LinkedBlockingQueue<>(threadPoolExecutorQueueSize),
-                    (Runnable r) -> new Thread(r, "payara-executor-service-task"));
+                0,
+                1,
+                0,
+                TimeUnit.SECONDS,
+                new SynchronousQueue<>(), 
+                r -> new Thread(r, "payara-executor-service-task"));
+            threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+            
+            scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
+                    0, r -> {
+                        Thread t = new Thread(r, "payara-executor-service-scheduled-task");
+                        t.setUncaughtExceptionHandler( (thread, thrwbl) -> 
+                            Logger.getLogger(PayaraExecutorService.class.getName()).log(SEVERE, "Uncaught exception in Payara Scheduled Executor thread ", thrwbl));
+                        return t;
+            });
+            scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+            
+            
         } else {
-            threadPoolExecutor = new ThreadPoolExecutor(
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorCorePoolSize()),
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize()),
-                    Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTime()),
-                    TimeUnit.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTimeUnit()),
-                    new SynchronousQueue<>(), (Runnable r) -> new Thread(r, "payara-executor-service-task"));
+            int threadPoolExecutorQueueSize = Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorQueueSize());
+            
+            if (threadPoolExecutorQueueSize > 0) {
+                threadPoolExecutor = new ThreadPoolExecutor(
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorCorePoolSize()),
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize()),
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTime()),
+                        TimeUnit.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTimeUnit()),
+                        new LinkedBlockingQueue<>(threadPoolExecutorQueueSize),
+                        (Runnable r) -> new Thread(r, "payara-executor-service-task"));
+            } else {
+                threadPoolExecutor = new ThreadPoolExecutor(
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorCorePoolSize()),
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorMaxPoolSize()),
+                        Integer.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTime()),
+                        TimeUnit.valueOf(payaraExecutorServiceConfiguration.getThreadPoolExecutorKeepAliveTimeUnit()),
+                        new SynchronousQueue<>(), (Runnable r) -> new Thread(r, "payara-executor-service-task"));
+            }
+            
+            threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+            scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
+                    Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()), (Runnable r) -> {
+                        Thread t = new Thread(r, "payara-executor-service-scheduled-task");
+                        t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread thread, Throwable thrwbl) {
+                                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Uncaught exception in Payara Scheduled Executor thread ",thrwbl);
+                            }
+                        });
+                        return t;
+            });
+            scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         }
-        threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(
-                Integer.valueOf(payaraExecutorServiceConfiguration.getScheduledThreadPoolExecutorCorePoolSize()), (Runnable r) -> {
-                    Thread t = new Thread(r, "payara-executor-service-scheduled-task");
-                    t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                        @Override
-                        public void uncaughtException(Thread thread, Throwable thrwbl) {
-                            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Uncaught exception in Payara Scheduled Executor thread ",thrwbl);
-                        }
-                    });
-                    return t;
-        });
-        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        
     }
 
     public <T> Future<T> submit(Callable<T> task) {
