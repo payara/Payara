@@ -66,6 +66,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.sun.enterprise.admin.util.ClassUtil;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -109,7 +110,12 @@ public class InvokeEJBServlet extends HttpServlet {
             try {
                 Object result = invokeBeanMethod(beanName, methodName, argTypeNames, argValuesJson, principal, credentials);
                 response.setContentType(APPLICATION_JSON);
-                response.getWriter().print(JsonbBuilder.create().toJson(result));
+                if (result == null) {
+                    // JSON-B cannot marshall null
+                    response.getWriter().print("null");
+                } else {
+                    response.getWriter().print(JsonbBuilder.create().toJson(result));
+                }
             } catch (NamingException ex) {
                 response.sendError(SC_INTERNAL_SERVER_ERROR,
                         "Name " + beanName + " not found when invoking method " + methodName);
@@ -135,6 +141,7 @@ public class InvokeEJBServlet extends HttpServlet {
                 return beanName.substring(bangIndex + 1);
             }
             // there should only be one interface otherwise plain name would not be allowed (portable names at least)
+            // in fact, there can be some implementation-specific interfaces in the proxy as well
             return bean.getClass().getInterfaces()[0].getName();
         });
     }
@@ -167,7 +174,28 @@ public class InvokeEJBServlet extends HttpServlet {
             String className = classNameValue instanceof JsonString 
                     ? ((JsonString) classNameValue).getString() 
                     : classNameValue.toString().replace("\"", "");
-            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            switch (className) {
+                case "int":
+                    return int.class;
+                case "long":
+                    return long.class;
+                case "short":
+                    return short.class;
+                case "byte":
+                    return byte.class;
+                case "boolean":
+                    return boolean.class;
+                case "float":
+                    return float.class;
+                case "double":
+                    return double.class;
+                case "char":
+                    return char.class;
+                case "void":
+                    return void.class;
+                default:
+                    return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
