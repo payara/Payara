@@ -65,6 +65,7 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
@@ -143,12 +144,21 @@ public class MultimodeCommand extends CLICommand {
         try {
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
+                Terminal terminal = TerminalBuilder.builder()
+                        .name(ASADMIN)
+                        .system(true)
+                        .encoding(encoding != null ? Charset.forName(encoding) : null)
+                        .build();
 
                 reader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(Terminal.TYPE_DUMB, Terminal.TYPE_DUMB, System.in, System.out, encoding != null ? Charset.forName(encoding) : null))
                         .appName(ASADMIN)
+                        .terminal(terminal)
+                        .completer(getAllCommandsCompleter())
                         .build();
+
+                reader.unsetOpt(LineReader.Option.INSERT_TAB);
             } else {
+
                 printPrompt = false;
                 if (!file.canRead()) {
                     throw new CommandException("File: " + file + " can not be read");
@@ -179,16 +189,14 @@ public class MultimodeCommand extends CLICommand {
             }
 
             return executeCommands(reader);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new CommandException(e);
-        }
-        finally {
+        } finally {
             try {
-                if (file != null && reader != null && reader.getTerminal() != null)
+                if (file != null && reader != null && reader.getTerminal() != null) {
                     reader.getTerminal().close();
-            }
-            catch (Exception e) {
+                }
+            } catch (Exception e) {
                 // ignore it
             }
         }
@@ -362,5 +370,5 @@ public class MultimodeCommand extends CLICommand {
     private Completer getAllCommandsCompleter(){
         return new StringsCompleter(CLIUtil.getAllCommands(container, programOpts, env));
         
-    }
+    }    
 }

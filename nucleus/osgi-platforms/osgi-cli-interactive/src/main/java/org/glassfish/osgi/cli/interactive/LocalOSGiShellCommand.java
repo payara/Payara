@@ -45,6 +45,9 @@ import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.io.*;
+import java.util.*;
+import javax.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -54,16 +57,16 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import java.io.*;
-import java.util.*;
 
 /**
  * A simple local asadmin sub-command to establish an interactive osgi shell.
@@ -233,10 +236,20 @@ public class LocalOSGiShellCommand extends CLICommand {
 
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                reader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(new FileInputStream(FileDescriptor.in), System.out))
-                        .appName(REMOTE_COMMAND)
+                Terminal terminal = TerminalBuilder.builder()
+                        .name(REMOTE_COMMAND)
+                        .system(true)
+                        .streams(new FileInputStream(FileDescriptor.in), System.out)
                         .build();
+
+                reader = LineReaderBuilder.builder()
+                        .appName(REMOTE_COMMAND)
+                        .terminal(terminal)
+                        .completer(getCommandCompleter())
+                        .build();
+
+                reader.unsetOpt(LineReader.Option.INSERT_TAB);
+                
             } else {
                 printPrompt = false;
                 if (!file.canRead()) {
@@ -263,7 +276,6 @@ public class LocalOSGiShellCommand extends CLICommand {
                 };
 
                 reader = LineReaderBuilder.builder()
-                        .completer(getCommandCompleter())
                         .terminal(new DumbTerminal(new FileInputStream(file), out))
                         .appName(REMOTE_COMMAND)
                         .build();
@@ -378,19 +390,24 @@ public class LocalOSGiShellCommand extends CLICommand {
 
         try {
             for (;;) {
-                if (printPrompt) {
-                    line = reader.readLine(shellType + "$ ");
-                } else {
-                    line = reader.readLine();
-                }
-
-                if (line == null) {
+                try {
                     if (printPrompt) {
-                        System.out.println();
+                        line = reader.readLine(shellType + "$ ");
+                    } else {
+                        line = reader.readLine();
                     }
+
+                    if (line == null) {
+                        if (printPrompt) {
+                            System.out.println();
+                        }
+                        break;
+                    }
+                } catch (UserInterruptException | EndOfFileException e) {
+                    // Ignore
                     break;
                 }
-
+                
                 if (line.trim().startsWith("#")) // ignore comment lines
                 {
                     continue;
