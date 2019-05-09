@@ -37,30 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] Payara Foundation and/or Affiliates
+// Portions Copyright [2017-2019] Payara Foundation and/or Affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.CLIConstants;
-import com.sun.enterprise.admin.cli.Environment;
+import static com.sun.enterprise.admin.cli.CLIConstants.WAIT_FOR_DAS_TIME_MS;
+import static com.sun.enterprise.util.StringUtils.ok;
+import static com.sun.enterprise.util.net.NetUtils.isRunning;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.logging.Level.FINER;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import org.glassfish.api.admin.CommandException;
+
+import com.sun.enterprise.admin.cli.CLIConstants;
+import com.sun.enterprise.admin.cli.CLIUtil;
+import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.launcher.GFLauncher;
 import com.sun.enterprise.admin.launcher.GFLauncherException;
 import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.ServerDirs;
 import com.sun.enterprise.util.net.NetUtils;
-import org.glassfish.api.admin.CommandException;
-import static com.sun.enterprise.util.StringUtils.ok;
-import static com.sun.enterprise.admin.cli.CLIConstants.WAIT_FOR_DAS_TIME_MS;
-import com.sun.enterprise.admin.cli.CLIUtil;
 
 /**
  * Java does not allow multiple inheritance.  Both StartDomainCommand and
@@ -117,9 +122,12 @@ public class StartServerHelper {
             logger.info(STRINGS.get("ServerStart.DebuggerSuspendedMessage", "" + debugPort));
         }
     }
-
-    // TODO check the i18n messages
+    
     public void waitForServer() throws CommandException {
+        waitForServer(CLIConstants.WAIT_FOR_DAS_TIME_MS, MILLISECONDS); // 10 minutes
+    }
+
+    public void waitForServer(long timeout, TimeUnit unit) throws CommandException {
         long startWait = System.currentTimeMillis();
         if (!terse) {
             // use stdout because logger always appends a newline
@@ -130,32 +138,31 @@ public class StartServerHelper {
         int count = 0;
 
         pinged:
-        while (!timedOut(startWait)) {
+        while (!timedOut(startWait, unit.toMillis(timeout))) {
             if (pidFile != null) {
-                if (logger.isLoggable(Level.FINER)) {
-                    logger.log(Level.FINER, "Check for pid file: {0}", pidFile);
-                }
+                logger.log(FINER, "Check for pid file: {0}", pidFile);
                 if (pidFile.exists()) {
                     alive = true;
                     break pinged;
                 }
             } else {
-                // first, see if the admin port is responding
-                // if it is, the DAS is up
-                for (HostAndPort addr : addresses) {
-                    if (NetUtils.isRunning(addr.getHost(), addr.getPort())) {
+                // First, see if the admin port is responding.
+                // If it is, the DAS is up
+                for (HostAndPort address : addresses) {
+                    if (isRunning(address.getHost(), address.getPort())) {
                         alive = true;
                         break pinged;
                     }
                 }
             }
 
-            // check to make sure the DAS process is still running
-            // if it isn't, startup failed
+            // Check to make sure the DAS process is still running.
+            // If it isn't, startup failed.
             try {
-                Process p = launcher.getProcess();
-                int exitCode = p.exitValue();
-                // uh oh, DAS died
+                int exitCode = launcher.getProcess().exitValue();
+                
+                // If we reach this location, there's an exit code, so uh oh, DAS died
+                // If the DAS is still alive an exception is thrown here
                 String sname;
 
                 if (info.isDomain()) {
@@ -164,8 +171,7 @@ public class StartServerHelper {
                     sname = "instance " + info.getInstanceName();
                 }
 
-                ProcessStreamDrainer psd = launcher.getProcessStreamDrainer();
-                String output = psd.getOutErrString();
+                String output = launcher.getProcessStreamDrainer().getOutErrString();
                 if (ok(output)) {
                     throw new CommandException(STRINGS.get("serverDiedOutput", sname, exitCode, output));
                 } else {
@@ -177,7 +183,7 @@ public class StartServerHelper {
                 // process is still alive
             }
 
-            // wait before checking again
+            // Wait before checking again
             try {
                 Thread.sleep(100);
                 if (!terse && count++ % 10 == 0) {
@@ -194,13 +200,12 @@ public class StartServerHelper {
 
         if (!alive) {
             String msg;
-            String time = "" + (WAIT_FOR_DAS_TIME_MS / 1000);
+            String time = "" + unit.toSeconds(timeout);
             if (info.isDomain()) {
-                msg = STRINGS.get("serverNoStart", STRINGS.get("DAS"),
-                        info.getDomainName(), time);
+                msg = STRINGS.get("serverNoStart", STRINGS.get("DAS"), info.getDomainName(), time);
             } else {
-                msg = STRINGS.get("serverNoStart", STRINGS.get("INSTANCE"),
-                        info.getInstanceName(), time);
+                // e.g. No response from the Instance Server (instance1) after 600 seconds.
+                msg = STRINGS.get("serverNoStart", STRINGS.get("INSTANCE"), info.getInstanceName(), time);
             }
 
             throw new CommandException(msg);
@@ -305,7 +310,7 @@ public class StartServerHelper {
     private void deletePidFile() {
         String msg = serverDirs.deletePidFile();
 
-        if (msg != null && logger.isLoggable(Level.FINER)) {
+        if (msg != null && logger.isLoggable(FINER)) {
             logger.finer(msg);
         }
     }

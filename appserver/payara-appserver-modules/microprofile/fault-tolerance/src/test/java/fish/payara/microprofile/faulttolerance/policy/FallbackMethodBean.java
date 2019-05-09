@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,41 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.admin.servermgmt.services;
+package fish.payara.microprofile.faulttolerance.policy;
 
-/**
- * A type that defines the application server entity that can have service support. Currently, only a
- * <code> Domain </code> and <code> Instance </code> can have such support.
- * 
- * @since 9.1
- * @author Kedar Mhaswade
- * @author Byron Nevins
- */
-public enum AppserverServiceType {
-    Domain("start-domain", "restart-domain", "stop-domain"), 
-    Instance("start-local-instance", "restart-local-instance", "stop-local-instance");
-    
-    private final String start;
-    private final String restart;
-    private final String stop;
-    
-    private AppserverServiceType(String start, String restart, String stop) {
-        this.start = start;
-        this.restart = restart;
-        this.stop = stop;
+@SuppressWarnings("unused")
+public interface FallbackMethodBean {
+
+    /*
+     * FallbackMethodDefaultMethodTest
+     */
+
+    default String fallbackMethodDefaultMethod_Fallback(int a, Long b) {
+        return "fallbackMethodDefaultMethod";
     }
 
-    public String startCommand() {
-        return start;
-    }
+    /*
+     * FallbackMethodInterfaceTest
+     */
 
-    public String restartCommand() {
-        return restart;
-    }
-
-    public String stopCommand() {
-        return stop;
-    }
-    
+    public String fallbackMethodInterface_Fallback(int a, Long b);
 }
