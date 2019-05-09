@@ -41,11 +41,19 @@
 
 package com.sun.enterprise.resource;
 
+import com.sun.enterprise.resource.pool.ConnectionPool;
+import com.sun.logging.LogDomains;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ResourceState {
     private boolean enlisted;
     private boolean busy;
     private long timestamp;
     private TwiceBusyException busyException;
+    
+    //This is the same logger as in ConnectionPool, used to check the log level
+    private Logger LOGGER = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
 
     public boolean isEnlisted() {
         return enlisted;
@@ -69,7 +77,7 @@ public class ResourceState {
 
     public void setBusy(boolean busy) {
         this.busy = busy;
-        if (!busy) {
+        if (!busy && LOGGER.isLoggable(Level.FINE)) {
             busyException = new TwiceBusyException();
         }
     }

@@ -1020,11 +1020,14 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
         if (!state.isBusy()) {
             //throw new IllegalStateException("state.isBusy() : false");
-            MultiException noBusyException = new MultiException(state.getBusyStackException());
-            noBusyException.addError(new IllegalStateException("state.isBusy() : false"));
-            _logger.log(Level.WARNING, "state.isBusy already set to false for " + h.getName() + "#" + h.getId(), noBusyException);
+            _logger.log(Level.WARNING, "state.isBusy already set to false for {0}#{1}", new Object[]{h.getName(), h.getId()});
+            if (_logger.isLoggable(Level.FINE)) {
+                MultiException noBusyException = new MultiException(state.getBusyStackException());
+                noBusyException.addError(new IllegalStateException("state.isBusy() : false"));
+                _logger.log(Level.WARNING, null, noBusyException);
+            }
         }
-
+            
         setResourceStateToFree(h);  // mark as not busy
         state.touchTimestamp();
 
