@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,41 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.admin.servermgmt.services;
+package fish.payara.microprofile.faulttolerance.cdi;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.interceptor.InterceptorBinding;
+
+import org.eclipse.microprofile.faulttolerance.Fallback;
 
 /**
- * A type that defines the application server entity that can have service support. Currently, only a
- * <code> Domain </code> and <code> Instance </code> can have such support.
+ * Added to methods at runtime in case they are affected by one of the FT annotations.
+ * This means a FT annotation is either present directly on the method or on the class declaring the method.
  * 
- * @since 9.1
- * @author Kedar Mhaswade
- * @author Byron Nevins
+ * This indirection is needed for two reasons:
+ * 
+ * 1) Allow to process all FT annotations with a single interceptor
+ * 
+ * 2) Allow to process {@link Fallback} even though it cannot be annotated on type level what would be needed to bind it
+ *    to an interceptor directly.
+ * 
+ * @author Jan Bernitt
  */
-public enum AppserverServiceType {
-    Domain("start-domain", "restart-domain", "stop-domain"), 
-    Instance("start-local-instance", "restart-local-instance", "stop-local-instance");
-    
-    private final String start;
-    private final String restart;
-    private final String stop;
-    
-    private AppserverServiceType(String start, String restart, String stop) {
-        this.start = start;
-        this.restart = restart;
-        this.stop = stop;
-    }
-
-    public String startCommand() {
-        return start;
-    }
-
-    public String restartCommand() {
-        return restart;
-    }
-
-    public String stopCommand() {
-        return stop;
-    }
-    
+@Inherited
+@InterceptorBinding
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD, ElementType.TYPE })
+public @interface FaultTolerance {
+    //marker
 }

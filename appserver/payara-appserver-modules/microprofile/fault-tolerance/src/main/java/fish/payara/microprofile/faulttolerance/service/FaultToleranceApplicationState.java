@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,28 +37,42 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.faulttolerance.validators;
+package fish.payara.microprofile.faulttolerance.service;
 
-import java.util.concurrent.Future;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import fish.payara.microprofile.faulttolerance.state.BulkheadSemaphore;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Validator for the Fault Tolerance Asynchronous annotation.
- * @author Andrew Pielage
+ * @author Andrew Pielage andrew.pielage@payara.fish
  */
-public class AsynchronousValidator {
-    
-    /**
-     * Validates the given @Asynchronous annotation.
-     * @param asynchronous The annotation to validate
-     * @param annotatedMethod The annotated method to validate
-     */
-    public static void validateAnnotation(Asynchronous asynchronous, AnnotatedMethod<?> annotatedMethod) {
-        if (annotatedMethod.getJavaMember().getReturnType() != Future.class) {
-            throw new FaultToleranceDefinitionException("Method \"" + annotatedMethod.getJavaMember().getName() + "\""
-                    + " annotated with " + Asynchronous.class.getCanonicalName() + " does not return a Future.");
-        }
+final class FaultToleranceApplicationState {
+
+    private final Map<Object, Map<String, CircuitBreakerState>> circuitBreakerStates = new ConcurrentHashMap<>();
+    private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionSemaphores = new ConcurrentHashMap<>();
+    private final Map<Object, Map<String, BulkheadSemaphore>> bulkheadExecutionQueueSemaphores = new ConcurrentHashMap<>();
+    private final AtomicReference<BindableFaultToleranceConfig> config = new AtomicReference<>();
+    private final AtomicReference<BindableFaultToleranceMetrics> metrics = new AtomicReference<>();
+
+    public Map<Object, Map<String, CircuitBreakerState>> getCircuitBreakerStates() {
+        return circuitBreakerStates;
+    }
+
+    public Map<Object, Map<String, BulkheadSemaphore>> getBulkheadExecutionSemaphores() {
+        return bulkheadExecutionSemaphores;
+    }
+
+    public Map<Object, Map<String, BulkheadSemaphore>> getBulkheadExecutionQueueSemaphores() {
+        return bulkheadExecutionQueueSemaphores;
+    }
+
+    public AtomicReference<BindableFaultToleranceConfig> getConfig() {
+        return config;
+    }
+
+    public AtomicReference<BindableFaultToleranceMetrics> getMetrics() {
+        return metrics;
     }
 }

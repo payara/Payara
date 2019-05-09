@@ -93,5 +93,9 @@
             <artifactId>javaee-api</artifactId>
             <version>${javaee.api.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
     </dependencies>
 </project>
