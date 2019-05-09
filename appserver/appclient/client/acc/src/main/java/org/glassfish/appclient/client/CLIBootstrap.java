@@ -58,6 +58,7 @@ import org.glassfish.appclient.client.acc.UserError;
 
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
+import java.util.Arrays;
 
 /**
  *
@@ -808,7 +809,7 @@ public class CLIBootstrap {
             }
             this.introducer = introducer;
             this.defaultValue = defaultValue;
-            this.gfValues = asList(gfValues);
+            this.gfValues = Arrays.asList(gfValues);
         }
 
         @Override
@@ -821,7 +822,7 @@ public class CLIBootstrap {
                 values.clear();
                 hasCommandLineValueAppeared = true;
             }
-            values.addAll(asList(args[slot++].substring(introducer.length() + 1).split(java.pathSeparator())));
+            values.addAll(Arrays.asList(args[slot++].substring(introducer.length() + 1).split(java.pathSeparator())));
             return slot;
         }
 
