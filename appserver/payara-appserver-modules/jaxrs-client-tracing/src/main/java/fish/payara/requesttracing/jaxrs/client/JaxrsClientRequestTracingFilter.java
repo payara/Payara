@@ -70,6 +70,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,6 +80,7 @@ import java.util.logging.Logger;
  * @author Andrew Pielage
  */
 public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, ClientResponseFilter {
+    public static String REQUEST_CONTEXT_TRACING_PREDICATE = "fish.payara.requesttracing.jaxrs.client.TracingPredicate";
 
     private ServiceLocator serviceLocator;
     private RequestTracingService requestTracing;
@@ -210,19 +212,13 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
     private boolean shouldTrace(ClientRequestContext requestContext) {
         boolean shouldTrace = true;
 
-        Map<String, String> skipTracingOn = (Map) requestContext.getClient().getConfiguration()
-                .getProperty("skipTracingOn");
-        if (skipTracingOn != null) {
-            for (String endpoint : skipTracingOn.keySet()) {
-                if (endpoint.equals(requestContext.getUri().getPath())
-                        && skipTracingOn.get(endpoint).equals(requestContext.getMethod())) {
-                    shouldTrace = false;
-                    break;
-                }
-            }
-        }
+        Object traceFilter = requestContext.getConfiguration().getProperty(REQUEST_CONTEXT_TRACING_PREDICATE);
 
-        return shouldTrace;
+        if (traceFilter instanceof Predicate) {
+            return ((Predicate<ClientRequestContext>) traceFilter).test(requestContext);
+        } else {
+            return true;
+        }
     }
 
     /**

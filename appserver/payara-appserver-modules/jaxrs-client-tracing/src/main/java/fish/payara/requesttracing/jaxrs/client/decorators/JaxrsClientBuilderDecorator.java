@@ -50,6 +50,8 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
+
+import org.glassfish.jersey.client.Initializable;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 
 /**
@@ -59,6 +61,8 @@ import org.glassfish.jersey.client.JerseyClientBuilder;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class JaxrsClientBuilderDecorator extends ClientBuilder {
+
+    public static final String EARLY_BUILDER_INIT = "fish.payara.requesttracing.jaxrs.client.decorators.EarlyBuilderInit";
 
     protected ClientBuilder clientBuilder;
     
@@ -129,7 +133,17 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
         this.register(JaxrsClientRequestTracingFilter.class);
 
         // Build and return a decorated client
-        return new JaxrsClientDecorator(this.clientBuilder.build());
+        Client client = this.clientBuilder.build();
+
+        // initialize the client if requested
+        Object earlyInit = getConfiguration().getProperty(EARLY_BUILDER_INIT);
+        if (earlyInit instanceof Boolean && (Boolean)earlyInit) {
+            if (client instanceof Initializable) {
+                ((Initializable) client).preInitialize();
+            }
+        }
+
+        return new JaxrsClientDecorator(client);
     }
 
     @Override

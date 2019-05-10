@@ -587,9 +587,9 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * This HttpServletRequest authenticate variant is primarily used by the SSLAuthenticator
      */
     @Override
-    public Principal authenticate(X509Certificate certs[]) {
-        if (authenticate(null, null, certs, null)) {
-            return new WebPrincipal(certs, SecurityContext.getCurrent(), true);
+    public Principal authenticate(X509Certificate certificates[]) {
+        if (authenticate(null, null, certificates, null)) {
+            return new WebPrincipal(certificates, SecurityContext.getCurrent(), true);
         }
 
         return null;
@@ -901,7 +901,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
             } else if (digestParams != null) {
 
-                // Digest parameters used to authenticate
+                // Digest credential used to authenticate
 
                 WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
             }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -100,62 +101,59 @@ import org.w3c.dom.ls.LSSerializer;
  */
 abstract class CombinedXPath {
 
-    private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+    private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER,
                 JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
     /** property names for the types of combined JNLP content */
     private static final String OWNED_PROPERTY_NAME = "owned";
     private static final String DEFAULTED_PROPERTY_NAME = "defaulted";
     private static final String MERGED_PROPERTY_NAME = "merged";
-    
-    private final static XPathFactory xPathFactory = XPathFactory.newInstance();
 
-    private final static XPath xPath = xPathFactory.newXPath();
+    private final static XPathFactory xPathFactory = XPathFactory.newInstance();
 
     private static LSSerializer lsSerializer = null;
     private static LSOutput lsOutput = null;
 
     private final String parentPath;
     private final String targetRelativePath;
-    
+
     /** xpath expression for the target node in the DOM for the developer's XML */
     private final XPathExpression targetExpr;
-    
+
     /** if developer didn't provide the target, this is the parent where we'll
      * create a new child.
      */
     private final XPathExpression parentExpr;
 
-    private static enum Type {
+    private enum Type {
         OWNED(OWNED_PROPERTY_NAME) {
             CombinedXPath combinedXPath(String pathA, String pathB) {
-                return new OwnedXPath(xPath, pathA, pathB);
+                return new OwnedXPath(xPathFactory.newXPath(), pathA, pathB);
             }
         },
         DEFAULTED(DEFAULTED_PROPERTY_NAME) {
             CombinedXPath combinedXPath(String pathA, String pathB) {
-                return new DefaultedXPath(xPath, pathA, pathB);
+                return new DefaultedXPath(xPathFactory.newXPath(), pathA, pathB);
             }
         },
         MERGED(MERGED_PROPERTY_NAME) {
             CombinedXPath combinedXPath(String pathA, String pathB) {
-                return new MergedXPath(xPath, pathA, pathB);
+                return new MergedXPath(xPathFactory.newXPath(), pathA, pathB);
             }
         };
-        
+
         private String propertyName;
-        
+
         Type(final String propName) {
             propertyName = propName;
         }
-        
+
         abstract CombinedXPath combinedXPath(String pathA, String pathB);
-        
+
     }
 
     static List<CombinedXPath> parse(final Properties p) {
-        List<CombinedXPath> result = new ArrayList<CombinedXPath>();
-//        result.addAll(CombinedXPath.parse(p, CombinedXPath.Type.OWNED));
+        List<CombinedXPath> result = new ArrayList<>();
         result.addAll(CombinedXPath.parse(p, CombinedXPath.Type.DEFAULTED));
         result.addAll(CombinedXPath.parse(p, CombinedXPath.Type.MERGED));
         return result;
@@ -173,12 +171,12 @@ abstract class CombinedXPath {
     private static List<CombinedXPath> parse(
                 final Properties p,
                 Type type) {
-            
+
             final List<CombinedXPath> result = new
-                    ArrayList<CombinedXPath>();
+                    ArrayList<>();
             final String refs = p.getProperty(type.propertyName);
             for (String ref : refs.split(",")) {
-                final String paths[] = ref.split(":");
+                final String[] paths = ref.split(":");
                 if (paths.length != 2) {
                     throw new IllegalArgumentException(ref);
                 }
@@ -189,7 +187,7 @@ abstract class CombinedXPath {
 
     /**
      * Creates a new combined XPath.
-     * 
+     *
      * @param xPath XPath available for searching
      * @param parentPath path to parent for new child (if developer's document lacks the target)
      * @param targetRelativePath path relative to the parent for the target node in the developer DOM
@@ -324,7 +322,7 @@ abstract class CombinedXPath {
                 }
             }
         }
-        
+
     }
 
     /**

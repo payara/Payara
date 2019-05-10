@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
@@ -111,13 +111,13 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      *
      */
     @Override
-    final public void initialize(Subject subject, CallbackHandler callbackHandler, Map sharedState, Map options) {
+    public final void initialize(Subject subject, CallbackHandler callbackHandler, Map sharedState, Map options) {
         _subject = subject;
         _sharedState = sharedState;
         _options = options;
         
         if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "Login module initialized: " + this.getClass().toString());
+            _logger.log(FINE, "Login module initialized: " + getClass());
         }
     }
 
@@ -135,7 +135,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      *
      */
     @Override
-    final public boolean login() throws LoginException {
+    public final boolean login() throws LoginException {
         // Extract the username and password
         extractCredentials();
 
@@ -158,7 +158,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     @Override
     public boolean commit() throws LoginException {
-        if (_succeeded == false) {
+        if (!_succeeded) {
             return false;
         }
 
@@ -214,14 +214,14 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      *
      */
     @Override
-    final public boolean abort() throws LoginException {
+    public final boolean abort() throws LoginException {
         _logger.fine("JAAS authentication aborted.");
 
-        if (_succeeded == false) {
+        if (!_succeeded) {
             return false;
         }
         
-        if (_succeeded == true && _commitSucceeded == false) {
+        if (!_commitSucceeded) {
             // login succeeded but overall authentication failed
             _succeeded = false;
             setUsername(null);
@@ -233,7 +233,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
             }
             _groupsList = null;
         } else {
-            // overall authentication succeeded and commit succeeded,
+            // Overall authentication succeeded and commit succeeded,
             // but someone else's commit failed
             logout();
         }
@@ -246,9 +246,9 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      *
      */
     @Override
-    final public boolean logout() throws LoginException {
+    public final boolean logout() throws LoginException {
         if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "JAAS logout for: " + _subject.toString());
+            _logger.log(FINE, "JAAS logout for: " + _subject);
         }
 
         _subject.getPrincipals().clear();
@@ -308,7 +308,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      *
      * @throws javax.security.auth.login.LoginException
      */
-    final public void extractCredentials() throws LoginException {
+    public final void extractCredentials() throws LoginException {
         if (_subject == null) {
             String msg = sm.getString("pwdlm.noinfo");
             _logger.log(SEVERE, msg);
