@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.persistence.jpaconnector;
 
 
@@ -120,8 +120,10 @@ public class JPASniffer  extends GenericSniffer {
                         entryName.indexOf(SEPERATOR_CHAR, libLocation.length() + 1 ) == -1 ) { // && not WEB-INf/lib/foo/bar.jar
                     try {
                         ReadableArchive jarInLib = parentArchive.getSubArchive(entryName);
-                        puRootPresent = isEntryPresent(jarInLib, META_INF_PERSISTENCE_XML);
-                        jarInLib.close();
+                        if (jarInLib != null) {
+                            puRootPresent = isEntryPresent(jarInLib, META_INF_PERSISTENCE_XML);
+                            jarInLib.close();
+                        }
                     } catch (IOException e) {
                         // Something went wrong while reading the jar. Do not attempt to scan it
                     } // catch
@@ -134,7 +136,7 @@ public class JPASniffer  extends GenericSniffer {
     private boolean isEntryPresent(ReadableArchive location, String entry) {
             boolean entryPresent = false;
             try {
-                entryPresent = location.exists(entry);
+                entryPresent = location != null && location.exists(entry);
             } catch (IOException e) {
                 // ignore
             }
