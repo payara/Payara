@@ -99,7 +99,8 @@
 
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
-        <yasson.version>1.0.4.payara-p1-SNAPSHOT</yasson.version>
+        <!--<yasson.version>1.0.4.payara-p1-SNAPSHOT</yasson.version>-->
+        <yasson.version>1.0.3-SNAPSHOT</yasson.version>
 
         <!-- JPA -->
         <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
@@ -971,6 +972,16 @@
                 <groupId>org.eclipse</groupId>
                 <artifactId>yasson</artifactId>
                 <version>${yasson.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.json.bind</groupId>
+                        <artifactId>jakarta.json.bind-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.glassfish</groupId>
+                        <artifactId>jakarta.json</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- JSON-P -->
