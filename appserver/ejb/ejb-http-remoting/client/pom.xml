@@ -46,16 +46,16 @@
         <artifactId>ejb-http-remoting</artifactId>
         <version>5.192-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>ejb-http-client</artifactId>
-    
+
     <name>EJB - HTTP Client</name>
     <description>
         Module providing support for the EJB HTTP Client. This contains an InitialContext based lookup mechanism that uses HTTP calls back
         to Payara to lookup EJB beans, as well as a proxy mechanism to invoke methods on an EJB, which will be sent via HTTP all well
         to Payara.
     </description>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -69,6 +69,31 @@
                     </instructions>
                     <unpackBundle>true</unpackBundle>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <!-- enable flattening -->
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <!-- ensure proper cleanup -->
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -98,5 +123,25 @@
            <artifactId>javax.jms-api</artifactId>
            <scope>test</scope>
        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-binding</artifactId>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.json.bind</groupId>
+                    <artifactId>jakarta.json.bind-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.json.bind</groupId>
+            <artifactId>javax.json.bind-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
