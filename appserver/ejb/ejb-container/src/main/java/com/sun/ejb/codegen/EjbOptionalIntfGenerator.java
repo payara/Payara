@@ -37,30 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] Payara Foundation and/or affiliates
-
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.ejb.codegen;
 
-import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import com.sun.enterprise.deployment.util.TypeUtil;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ReflectPermission;
-import java.security.AccessController;
-import java.security.Permission;
-import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+import java.security.Permission;
+
+import com.sun.enterprise.deployment.util.TypeUtil;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.GeneratorAdapter;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
 
 public class EjbOptionalIntfGenerator
     implements Opcodes {

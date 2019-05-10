@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 -exportcontents: org.glassfish.weld.*; \
                  org.glassfish.cdi.*; version=${project.osgi.version}
@@ -45,5 +46,6 @@ Bundle-Activator: org.glassfish.weld.WeldActivator
 # Because this module needs to run in web profile which does not have
 # full javaee deployment support, we mark corresponding package as optional.
 Import-Package: org.glassfish.javaee.full.deployment; resolution:= optional, \
+                javax.xml.ws; version=${jaxws-api.version}, \
                 javax.transaction;, \
                 *
