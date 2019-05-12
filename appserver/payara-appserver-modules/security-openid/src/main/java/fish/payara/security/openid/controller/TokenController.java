@@ -215,7 +215,7 @@ public class TokenController {
      * @return a JSON object representation of OpenID Connect token response
      * from the Token endpoint.
      */
-    public Response getTokens(OpenIdConfiguration configuration, RefreshToken refreshToken) {
+    public Response refreshTokens(OpenIdConfiguration configuration, RefreshToken refreshToken) {
 
         Form form = new Form()
                 .param(CLIENT_ID, configuration.getClientId())

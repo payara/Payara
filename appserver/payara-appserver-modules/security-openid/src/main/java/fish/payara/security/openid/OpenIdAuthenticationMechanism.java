@@ -327,8 +327,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * Checks if the Access Token is expired, taking into account the min
      * validity time configured by the user.
      *
-     * @see OpenIdAuthenticationDefinition2#tokenMinValidity()
-     * @see OpenIdAuthenticationDefinition2#OPENID_MP_TOKEN_MIN_VALIDITY
+     * @see OpenIdAuthenticationDefinition#tokenMinValidity()
+     * @see OpenIdAuthenticationDefinition#OPENID_MP_TOKEN_MIN_VALIDITY
      * @return {@code true}, if token is expired or it will be expired in the
      * next X millisecondes configured by user.
      */
@@ -338,8 +338,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
-        Response response = tokenController.getTokens(configuration, refreshToken);
-        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));//Json.createReader(new StringReader(tokensBody)).readObject();
+        Response response = tokenController.refreshTokens(configuration, refreshToken);
+        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
 
         if (response.getStatus() == Response.Status.OK.getStatusCode()) {
             // Successful Token Response
