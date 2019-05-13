@@ -70,8 +70,10 @@ import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.DumbTerminal;
@@ -1215,6 +1217,8 @@ public abstract class CLICommand implements PostConstruct {
             return line.toCharArray();
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "IOException reading password.", ioe);
+        } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore           
         } finally {
             if (lineReader != null && lineReader.getTerminal() != null) {
                 try {

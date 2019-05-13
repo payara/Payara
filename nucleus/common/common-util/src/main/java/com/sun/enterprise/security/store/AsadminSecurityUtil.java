@@ -52,8 +52,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -184,8 +186,9 @@ public class AsadminSecurityUtil {
             return line.toCharArray();
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);
-        }
-        finally {
+        } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore           
+        }finally {
             if (lineReader != null && lineReader.getTerminal() != null) {
                 try {
                     lineReader.getTerminal().close();
