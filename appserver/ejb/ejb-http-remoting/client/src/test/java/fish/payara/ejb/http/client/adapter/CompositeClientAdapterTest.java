@@ -50,11 +50,11 @@ import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
-public class ClientAdapterRegistryTest {
+public class CompositeClientAdapterTest {
     @Test
     public void builtRegistryIsUnmodifiable() throws NamingException {
-        ClientAdapterRegistry.Builder b = ClientAdapterRegistry.newBuilder().register(ClientAdapterRegistryTest::returnEmpty);
-        ClientAdapterRegistry registry = b.build();
+        CompositeClientAdapter.Builder b = CompositeClientAdapter.newBuilder().register(CompositeClientAdapterTest::returnEmpty);
+        CompositeClientAdapter registry = b.build();
         b.register(returnConstant("VALUE")).build();
 
         assertEquals("Additional adapter should not be considered in already built registry",
@@ -64,16 +64,16 @@ public class ClientAdapterRegistryTest {
 
     @Test
     public void adaptersAreEvaluatedInOrder() throws NamingException {
-        ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder()
-                .register(ClientAdapterRegistryTest::returnEmpty, returnConstant("one"), returnConstant("two"))
+        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder()
+                .register(CompositeClientAdapterTest::returnEmpty, returnConstant("one"), returnConstant("two"))
                 .build();
         assertEquals(Optional.of("one"), registry.makeLocalProxy("any", null));
     }
 
     @Test(expected = NamingException.class)
     public void namingExceptionStopsIterationAndPropagates() throws NamingException {
-        ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder()
-                .register(ClientAdapterRegistryTest::throwNamingException, returnConstant("one")).build();
+        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder()
+                .register(CompositeClientAdapterTest::throwNamingException, returnConstant("one")).build();
         registry.makeLocalProxy("any", null);
     }
 
@@ -85,7 +85,7 @@ public class ClientAdapterRegistryTest {
             return returnConstant(number);
         };
 
-        ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder().register(adapterFactory).build();
+        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder().register(adapterFactory).build();
         assertEquals(Optional.of(1), registry.makeLocalProxy("any", null));
         assertEquals(Optional.of(2), registry.makeLocalProxy("any", null));
     }
@@ -93,7 +93,7 @@ public class ClientAdapterRegistryTest {
     @Test
     public void registeredClassIsInstantiatedOnce() throws NamingException {
         assertEquals(0, InstantiatedClientAdapter.instantiationCount);
-        ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder().register(InstantiatedClientAdapter.class).build();
+        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder().register(InstantiatedClientAdapter.class).build();
 
         assertEquals(1, InstantiatedClientAdapter.instantiationCount);
         assertEquals(Optional.empty(), registry.makeLocalProxy("any", null));

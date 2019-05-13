@@ -51,11 +51,11 @@ import java.util.Optional;
  * client-side wrappers to return instead of direct remote proxy.</p>
  * <p>Adapter is registered in RemoteEJBContext via property
  * {@value fish.payara.ejb.http.client.RemoteEJBContextFactory#CLIENT_ADAPTER}. The property should refer to an instance
- * of {@code ClientAdapter}. To construct more complex sets of adapters, you can use {@link ClientAdapterRegistry} and
+ * of {@code ClientAdapter}. To construct more complex sets of adapters, you can use {@link CompositeClientAdapter} and
  * {@link ClientAdapterCustomizer}</p>.
  *
  * @see fish.payara.ejb.http.client.RemoteEJBContextFactory
- * @see ClientAdapterRegistry
+ * @see CompositeClientAdapter
  */
 public interface ClientAdapter {
 

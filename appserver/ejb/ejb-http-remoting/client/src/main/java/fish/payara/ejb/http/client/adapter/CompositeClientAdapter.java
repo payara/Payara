@@ -48,21 +48,24 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Registry of Client Adapters to use for specific remote context.
- * <p>The class offers a {@link Builder} to register static or dynamic client adapters, and implements logic to call
- * them in sequence in order to find the one matching specific jndi name</p>
+ * Adapter that allows composing multiple adapter implementations. {@Ccode CompositeClientAdapter}
+ * invokes all registered adapters in order in which they were registered, and returns first non-empty match for a name.
+ * <p>Downstream adapters are registered by constructing a new {@link Builder}, or method {@link #newBuilder()}</p>
+ * <p>Downstream adapters can also be customized by decorators provided by {@link ClientAdapterCustomizer}, which
+ * allows separating name matching from proxy construction in adapters' implementations.</p>
+ * @see ClientAdapterCustomizer
  */
-public final class ClientAdapterRegistry implements ClientAdapter {
+public final class CompositeClientAdapter implements ClientAdapter {
     private final List<Supplier<? extends ClientAdapter>> adapterSuppliers;
 
-    private ClientAdapterRegistry(Builder builder) {
+    private CompositeClientAdapter(Builder builder) {
         this.adapterSuppliers = new ArrayList<>(builder.adapterSuppliers);
     }
 
     /**
-     * Find a client adapter for handling specific {@code jndiName}. The registry will attempt invoking
+     * Find a client adapter for handling specific {@code jndiName}. Composite client adapter will attempt invoking
      * {@link ClientAdapter#makeLocalProxy(String, Context)} for all registered adapters in order they were
-     * registered. The iteration ends when
+     * registered in. The iteration ends when
      * <ol>
      *     <li>A registered adapter returns non-empty value; or</li>
      *     <li>A registered adapter throws {@code NamingException}</li>
@@ -129,7 +132,7 @@ public final class ClientAdapterRegistry implements ClientAdapter {
 
 
     /**
-     * Builder for Client Adapter Registry.
+     * Builder for composite Client Adapter.
      * <p>Adapters can be registered in three ways:</p>
      * <ul>
      *     <li>{@link #register(ClientAdapter...)} : providing an instance</li>
@@ -143,11 +146,11 @@ public final class ClientAdapterRegistry implements ClientAdapter {
         private List<Supplier<? extends ClientAdapter>> adapterSuppliers = new ArrayList<>();
 
         /**
-         * Build resulting registry.
-         * @return new instance of ClientAdapterRegistry
+         * Build resulting adapter.
+         * @return new instance of CompositeClientAdapter
          */
-        public ClientAdapterRegistry build() {
-            return new ClientAdapterRegistry(this);
+        public CompositeClientAdapter build() {
+            return new CompositeClientAdapter(this);
         }
 
         /**

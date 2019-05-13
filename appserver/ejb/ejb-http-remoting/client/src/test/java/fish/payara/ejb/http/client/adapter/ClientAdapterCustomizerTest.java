@@ -52,7 +52,7 @@ public class ClientAdapterCustomizerTest {
     @Test
     public void prefixedInstanceOnlyCalledOnSpecifiedPrefix() throws NamingException {
         ClientAdapter suffix =  (name, context) -> Optional.of(name);
-        ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder()
+        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder()
                 .register(customize(suffix).matchPrefix("prefix1/"),
                           customize(suffix).matchPrefix("prefix2"))
                 .build();

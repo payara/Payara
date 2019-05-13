@@ -41,7 +41,7 @@
 package fish.payara.ejb.http.client.adapter.example.client;
 
 import fish.payara.ejb.http.client.RemoteEJBContextFactory;
-import fish.payara.ejb.http.client.adapter.ClientAdapterRegistry;
+import fish.payara.ejb.http.client.adapter.CompositeClientAdapter;
 import fish.payara.ejb.http.client.adapter.example.stub.ConnectionFactoryAdapter;
 import fish.payara.ejb.http.client.adapter.example.stub.QueueAdapter;
 import fish.payara.ejb.http.client.adapter.example.stub.RemoteCallAdapter;
@@ -81,7 +81,7 @@ public class ClientUsageTest {
         props.put(Context.INITIAL_CONTEXT_FACTORY, RemoteEJBContextFactory.FACTORY_CLASS);
         props.put(Context.PROVIDER_URL, "http://not.relevant/");
         props.put(RemoteEJBContextFactory.FISH_PAYARA_CLIENT_ADAPTER,
-                ClientAdapterRegistry.newBuilder()
+                CompositeClientAdapter.newBuilder()
                     .register(customize(new ConnectionFactoryAdapter((ctx) -> remoteCallMock)).matchPrefix("jms/"),
                             customize(QueueAdapter.class).matchPrefix("queue/"))
                     .build()

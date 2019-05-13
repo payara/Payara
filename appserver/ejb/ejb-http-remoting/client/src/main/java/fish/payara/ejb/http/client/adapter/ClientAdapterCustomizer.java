@@ -47,7 +47,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static fish.payara.ejb.http.client.adapter.ClientAdapterRegistry.Builder.instantiate;
+import static fish.payara.ejb.http.client.adapter.CompositeClientAdapter.Builder.instantiate;
 
 /**
  * Customizer for externalizing JNDI name matching and name transformation.
@@ -55,13 +55,13 @@ import static fish.payara.ejb.http.client.adapter.ClientAdapterRegistry.Builder.
  * passed to downstream adapter.
  * <p>Most common use case is represented by method {@link #matchPrefix(String)}: Given the prefix, the downstream
  * adapter is only called when requested name matches prefix, and it is invoked with the prefix stripped from name.</p>
- * <p>Class is intended to use as static import during construction of {@link ClientAdapterRegistry}.</p>
+ * <p>Class is intended to use as static import during construction of {@link CompositeClientAdapter}.</p>
  * <pre>
  * {@code
  * import static fish.payara.ejb.http.client.adapter.ClientAdapterCustomizer.*;
  *
  * ...
- * ClientAdapterRegistry.builder()
+ * CompositeClientAdapter.builder()
  *     .register(customize(JmsStubAdapter.class).matchPrefix("java:comp/jms"),
  *               customize(new ConnectionFactoryStub()).matchName(Pattern.compile("jms/.+Factory")::matches))
  *     .build()
