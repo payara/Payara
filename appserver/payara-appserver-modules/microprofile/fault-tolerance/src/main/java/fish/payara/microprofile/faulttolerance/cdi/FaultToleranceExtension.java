@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
@@ -48,6 +49,9 @@ import java.util.Optional;
 
 import javax.annotation.Priority;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
@@ -92,16 +96,38 @@ public class FaultToleranceExtension implements Extension {
      */
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
-        boolean markAllMethods = FaultToleranceUtils
-                .isAnnotatedWithFaultToleranceAnnotations(processAnnotatedType.getAnnotatedType());
-        Class<?> targetClass = processAnnotatedType.getAnnotatedType().getJavaClass();
+        Class<? extends Annotation>[] alternativeAsynchronousAnnotations = getAlternativeAsynchronousAnnotations();
+        AnnotatedType<T> type = processAnnotatedType.getAnnotatedType();
+        boolean markAllMethods = FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(type)
+                || isAnyAnnotationPresent(type, alternativeAsynchronousAnnotations);
+        Class<?> targetClass = type.getJavaClass();
         for (AnnotatedMethodConfigurator<?> methodConfigurator : processAnnotatedType.configureAnnotatedType().methods()) {
-            if (markAllMethods || FaultToleranceUtils
-                    .isAnnotatedWithFaultToleranceAnnotations(methodConfigurator.getAnnotated())) {
-                FaultTolerancePolicy.asAnnotated(targetClass, methodConfigurator.getAnnotated().getJavaMember());
+            AnnotatedMethod<?> method = methodConfigurator.getAnnotated();
+            if (markAllMethods || FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(method)
+                    || isAnyAnnotationPresent(method, alternativeAsynchronousAnnotations)) {
+                FaultTolerancePolicy.asAnnotated(targetClass, method.getJavaMember());
                 methodConfigurator.add(MARKER);
             }
         }
+    }
+
+    private static boolean isAnyAnnotationPresent(Annotated element, Class<? extends Annotation>[] annotationTypes) {
+        for (Class<? extends Annotation> annotationType : annotationTypes) {
+            if (element.isAnnotationPresent(annotationType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Class<? extends Annotation>[] getAlternativeAsynchronousAnnotations() {
+        Optional<String> alternativeAsynchronousAnnotationNames = ConfigProvider.getConfig().getOptionalValue(
+                FaultToleranceConfig.ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, String.class);
+        return alternativeAsynchronousAnnotationNames.isPresent()
+                ? FaultToleranceUtils.toClassArray(alternativeAsynchronousAnnotationNames.get(),
+                        FaultToleranceConfig.ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY,
+                        FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS)
+                : FaultToleranceConfig.NO_ALTERNATIVE_ANNOTATIONS;
     }
 
     void changeInterceptorPriority(@Observes ProcessAnnotatedType<FaultToleranceInterceptor> interceptorType) {
