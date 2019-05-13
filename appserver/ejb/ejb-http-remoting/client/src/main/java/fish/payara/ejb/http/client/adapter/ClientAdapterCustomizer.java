@@ -121,7 +121,7 @@ public final class ClientAdapterCustomizer implements ClientAdapter {
      */
     public ClientAdapterCustomizer transformName(Function<String, String> nameTransformation) {
         ClientAdapterCustomizer conditional = new ClientAdapterCustomizer(this);
-        conditional.nameTransformation = nameTransformation;
+        conditional.nameTransformation = nameTransformation != null ? nameTransformation : Function.identity();
         return conditional;
     }
 

@@ -45,7 +45,7 @@ import javax.naming.NamingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Adapter that allows composing multiple adapter implementations. {@Ccode CompositeClientAdapter}
@@ -56,10 +56,10 @@ import java.util.function.Supplier;
  * @see ClientAdapterCustomizer
  */
 public final class CompositeClientAdapter implements ClientAdapter {
-    private final List<Supplier<? extends ClientAdapter>> adapterSuppliers;
+    private final List<ClientAdapter> adapters;
 
     private CompositeClientAdapter(Builder builder) {
-        this.adapterSuppliers = new ArrayList<>(builder.adapterSuppliers);
+        this.adapters = new ArrayList<>(builder.adapters);
     }
 
     /**
@@ -79,22 +79,13 @@ public final class CompositeClientAdapter implements ClientAdapter {
      */
     @Override
     public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
-        Optional<ResolutionResult> resolutionResult = adapterSuppliers.stream()
-                .map(Supplier::get)
-                .map(adapter -> resolve(adapter, jndiName, remoteContext))
-                .filter(Optional::isPresent)
-                .findFirst()
-                .map(Optional::get);
-        if (resolutionResult.isPresent()) {
-            ResolutionResult result = resolutionResult.get();
-            if (result.exception != null) {
-                throw result.exception;
-            } else {
-                return Optional.of(result.instance);
+        for (ClientAdapter adapter : adapters) {
+            Optional<Object> result = adapter.makeLocalProxy(jndiName, remoteContext);
+            if (result.isPresent()) {
+                return result;
             }
-        } else {
-            return Optional.empty();
         }
+        return Optional.empty();
     }
 
     /**
@@ -105,45 +96,17 @@ public final class CompositeClientAdapter implements ClientAdapter {
         return new Builder();
     }
 
-    private Optional<ResolutionResult> resolve(ClientAdapter adapter, String jndiName, Context remoteContext) {
-        try {
-            return adapter.makeLocalProxy(jndiName, remoteContext).map(ResolutionResult::result);
-        } catch (NamingException e) {
-            return Optional.of(ResolutionResult.exception(e));
-        }
-    }
-
-    private static class ResolutionResult {
-        Object instance;
-        NamingException exception;
-
-        static ResolutionResult result(Object instance) {
-            ResolutionResult result = new ResolutionResult();
-            result.instance = instance;
-            return result;
-        }
-
-        static ResolutionResult exception(NamingException exception) {
-            ResolutionResult result = new ResolutionResult();
-            result.exception = exception;
-            return result;
-        }
-    }
-
-
     /**
      * Builder for composite Client Adapter.
      * <p>Adapters can be registered in three ways:</p>
      * <ul>
      *     <li>{@link #register(ClientAdapter...)} : providing an instance</li>
      *     <li>{@link #register(Class[])} : providing a class name. Class will be immediately instantiated via default constructor. </li>
-     *     <li>{@link #register(Supplier[])} : providing instance supplier. The supplier will be invoked for each lookup. This can enable more contextual
-     *          use cases, for example thread-local adapters.</li>
      * </ul>
      * Further customization of client adapter is possible by means of {@link ClientAdapterCustomizer}
      */
     public static final class Builder {
-        private List<Supplier<? extends ClientAdapter>> adapterSuppliers = new ArrayList<>();
+        private List<ClientAdapter> adapters = new ArrayList<>();
 
         /**
          * Build resulting adapter.
@@ -161,7 +124,7 @@ public final class CompositeClientAdapter implements ClientAdapter {
         public Builder register(Class<? extends ClientAdapter>... adapterClasses) {
             for (Class<? extends ClientAdapter> adapterClass : adapterClasses) {
                 ClientAdapter instance = instantiate(adapterClass);
-                register(() -> instance);
+                register(instance);
             }
             return this;
         }
@@ -172,27 +135,12 @@ public final class CompositeClientAdapter implements ClientAdapter {
          * @return this builder
          */
         public Builder register(ClientAdapter... adapterInstances) {
-            for (ClientAdapter adapterInstance : adapterInstances) {
-                register(() -> adapterInstance);
-            }
+            Stream.of(adapterInstances).forEach(this::register);
             return this;
         }
 
-        /**
-         * Register new adapter by means of instance suppliers. The adapter classes are fetched from supplier at every
-         * lookup.
-         * @param adapterSuppliers adapter suppliers to register
-         * @return this builder
-         */
-        public Builder register(Supplier<? extends ClientAdapter>... adapterSuppliers) {
-            for (Supplier<? extends ClientAdapter> adapterSupplier : adapterSuppliers) {
-                register(adapterSupplier);
-            }
-            return this;
-        }
-
-        private void register(Supplier<? extends ClientAdapter> adapterSupplier) {
-            adapterSuppliers.add(adapterSupplier);
+        private void register(ClientAdapter adapterSupplier) {
+            adapters.add(adapterSupplier);
         }
 
         static ClientAdapter instantiate(Class<? extends ClientAdapter> adapterClass) {
