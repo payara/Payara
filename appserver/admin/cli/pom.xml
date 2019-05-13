@@ -77,7 +77,6 @@
                             <mainClass>org.glassfish.admin.cli.AsadminMain</mainClass>
                         </manifest>
                         <manifestEntries>
-                            <Class-Path>../../modules/admin-cli.jar jna.jar</Class-Path>
                             <Class-Path>../../modules/admin-cli.jar ../../modules/jaxb-runtime.jar ../../modules/istack-commons-runtime.jar jna.jar</Class-Path>
                         </manifestEntries>
                     </archive>
