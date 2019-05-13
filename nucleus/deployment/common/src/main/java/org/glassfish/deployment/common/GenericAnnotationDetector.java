@@ -37,29 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
-
+//Portions Copyright [2016-2017] [Payara Foundation]
 package org.glassfish.deployment.common;
 
 
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
-
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.ArrayList;
+
+import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
+import java.net.URI;
+
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassReader;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
+import org.glassfish.internal.api.Globals;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class will detect whether an archive contains specified annotations.

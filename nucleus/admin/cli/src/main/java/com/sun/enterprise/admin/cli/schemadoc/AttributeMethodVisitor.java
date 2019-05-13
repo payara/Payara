@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
-
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.enterprise.admin.cli.schemadoc;
 
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.Opcodes;
 import org.jvnet.hk2.config.Attribute;
 
 public class AttributeMethodVisitor extends MethodVisitor {
@@ -55,7 +54,7 @@ public class AttributeMethodVisitor extends MethodVisitor {
     private boolean duckTyped;
 
     public AttributeMethodVisitor(ClassDef classDef, String method, String aggType) {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM5);
         def = classDef;
         name = method;
         type = aggType;

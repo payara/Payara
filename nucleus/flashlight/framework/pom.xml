@@ -111,8 +111,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-commons</artifactId>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>asm-repackaged</artifactId>
         </dependency>
     </dependencies>
     <build>
