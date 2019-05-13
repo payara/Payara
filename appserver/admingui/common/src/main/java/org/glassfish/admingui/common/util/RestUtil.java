@@ -893,9 +893,8 @@ public class RestUtil {
 
     public static RestResponse post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        Map formData = buildMultivalueMap(payload);
+        // Map formData = buildMultivalueMap(payload); Commented for sakes of reference in future rather that removal
         Response cr = target
-                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON), Response.class);
