@@ -70,6 +70,9 @@ public class JsonUtils {
                     current = current.get(Integer.parseInt(nameOrIndex.substring(1, nameOrIndex.length() - 1)));
                 } else if (!nameOrIndex.isEmpty() && Character.isDigit(nameOrIndex.charAt(0))) {
                     current = current.get(Integer.parseInt(nameOrIndex));
+                } else if (nameOrIndex.startsWith("\"") && nameOrIndex.endsWith("\"")
+                        || nameOrIndex.startsWith("'") && nameOrIndex.endsWith("'")) {
+                    current = current.get(nameOrIndex.substring(1, nameOrIndex.length() - 1));
                 } else {
                     current = current.get(nameOrIndex);
                 }
