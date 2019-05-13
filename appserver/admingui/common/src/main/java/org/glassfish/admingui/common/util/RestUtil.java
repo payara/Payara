@@ -891,14 +891,14 @@ public class RestUtil {
         return rr;
     }
 
-    public static RestResponse  post(String address, Map<String, Object> payload) {
+    public static RestResponse post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        MultivaluedMap formData = buildMultivalueMap(payload);
+        Map formData = buildMultivalueMap(payload);
         Response cr = target
                 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+                .post(Entity.entity(payload, MediaType.APPLICATION_JSON), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
