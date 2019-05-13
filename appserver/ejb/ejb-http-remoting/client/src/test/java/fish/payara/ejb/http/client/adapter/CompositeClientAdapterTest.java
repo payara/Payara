@@ -45,8 +45,6 @@ import org.junit.Test;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -75,19 +73,6 @@ public class CompositeClientAdapterTest {
         CompositeClientAdapter registry = CompositeClientAdapter.newBuilder()
                 .register(CompositeClientAdapterTest::throwNamingException, returnConstant("one")).build();
         registry.makeLocalProxy("any", null);
-    }
-
-    @Test
-    public void suppliersAreCalledForEachLookup() throws NamingException {
-        AtomicInteger counter = new AtomicInteger();
-        Supplier<ClientAdapter> adapterFactory = () -> {
-            int number = counter.incrementAndGet();
-            return returnConstant(number);
-        };
-
-        CompositeClientAdapter registry = CompositeClientAdapter.newBuilder().register(adapterFactory).build();
-        assertEquals(Optional.of(1), registry.makeLocalProxy("any", null));
-        assertEquals(Optional.of(2), registry.makeLocalProxy("any", null));
     }
 
     @Test
