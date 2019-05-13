@@ -96,7 +96,7 @@ public class FaultToleranceExtension implements Extension {
      */
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
-        Class<? extends Annotation>[] alternativeAsynchronousAnnotations =getAlternativeAsynchronousAnnotations();
+        Class<? extends Annotation>[] alternativeAsynchronousAnnotations = getAlternativeAsynchronousAnnotations();
         AnnotatedType<T> type = processAnnotatedType.getAnnotatedType();
         boolean markAllMethods = FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(type)
                 || isAnyAnnotationPresent(type, alternativeAsynchronousAnnotations);
