@@ -41,20 +41,6 @@ package fish.payara.ejb.http.client;
 
 import fish.payara.ejb.http.client.adapter.ClientAdapter;
 
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
-import java.net.URI;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
@@ -67,6 +53,19 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Configuration;
+import java.net.URI;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -128,7 +127,7 @@ class RemoteEJBContext implements Context {
         
         try {
             if (clientAdapter != null) {
-                Optional<Object> resolvedAdapter = clientAdapter.makeClientAdapter(name, this);
+                Optional<Object> resolvedAdapter = clientAdapter.makeLocalProxy(name, this);
                 if (resolvedAdapter.isPresent()) {
                     return resolvedAdapter.get();
                 }

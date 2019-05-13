@@ -45,12 +45,14 @@ import javax.naming.NamingException;
 import java.util.Optional;
 
 /**
- * Adapter for client-side stubs.
+ * Adapter for client-side stubs/proxies.
  * <p>In cases when your client side code depends on finer-grained interaction that would be unsuitable for stateless
- * client invocation (for example JMS resources), ClientAdapter allow you to register client-side wrappers to return
- * instead of direct remote proxy.</p>
+ * client invocation (for example JMS resources), ClientAdapter allow you to intercept the lookup process and construct
+ * client-side wrappers to return instead of direct remote proxy.</p>
  * <p>Adapter is registered in RemoteEJBContext via property
- * {@value fish.payara.ejb.http.client.RemoteEJBContextFactory#FISH_PAYARA_CLIENT_ADAPTER}</p>
+ * {@value fish.payara.ejb.http.client.RemoteEJBContextFactory#CLIENT_ADAPTER}. The property should refer to an instance
+ * of {@code ClientAdapter}. To construct more complex sets of adapters, you can use {@link ClientAdapterRegistry} and
+ * {@link ClientAdapterCustomizer}</p>.
  *
  * @see fish.payara.ejb.http.client.RemoteEJBContextFactory
  * @see ClientAdapterRegistry
@@ -58,12 +60,18 @@ import java.util.Optional;
 public interface ClientAdapter {
 
     /**
+     * Construct local (client-side) proxy if name matches. The method is expected to examing {@code jndiName} being
+     * looked up and if it matches adapter's adaptation, construct a local proxy and return it wrapped in an {@code Optional<>}.
+     * Otherwise it must return {@code Optional.empty()}.
+     * <p>Generated proxy intends calling other remote resources, it may use provided {@code remoteContext}, which
+     * refers to instance of {@link fish.payara.ejb.http.client.RemoteEJBContext RemoteEJBContext}. Note that provided
+     * instance still applies this ClientAdapter, so it is not possible to wrap a remote object with behavior.</p>
      *
      * @param jndiName jndi name requested for lookup
      * @param remoteContext naming context for remote EJB invocation
      * @return Optional.of(proxy) if adapter provides a proxy for given name, Optional.empty() otherwise
      * @throws NamingException if downstream lookup fails, or other validation doesn't pass
      */
-    Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException;
+    Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException;
 
 }

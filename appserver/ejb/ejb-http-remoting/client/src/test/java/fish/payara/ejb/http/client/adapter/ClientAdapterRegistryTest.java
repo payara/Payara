@@ -49,8 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 public class ClientAdapterRegistryTest {
     @Test
@@ -61,7 +59,7 @@ public class ClientAdapterRegistryTest {
 
         assertEquals("Additional adapter should not be considered in already built registry",
                 Optional.empty(),
-                registry.makeClientAdapter("any", null));
+                registry.makeLocalProxy("any", null));
     }
 
     @Test
@@ -69,14 +67,14 @@ public class ClientAdapterRegistryTest {
         ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder()
                 .register(ClientAdapterRegistryTest::returnEmpty, returnConstant("one"), returnConstant("two"))
                 .build();
-        assertEquals(Optional.of("one"), registry.makeClientAdapter("any", null));
+        assertEquals(Optional.of("one"), registry.makeLocalProxy("any", null));
     }
 
     @Test(expected = NamingException.class)
     public void namingExceptionStopsIterationAndPropagates() throws NamingException {
         ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder()
                 .register(ClientAdapterRegistryTest::throwNamingException, returnConstant("one")).build();
-        registry.makeClientAdapter("any", null);
+        registry.makeLocalProxy("any", null);
     }
 
     @Test
@@ -88,8 +86,8 @@ public class ClientAdapterRegistryTest {
         };
 
         ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder().register(adapterFactory).build();
-        assertEquals(Optional.of(1), registry.makeClientAdapter("any", null));
-        assertEquals(Optional.of(2), registry.makeClientAdapter("any", null));
+        assertEquals(Optional.of(1), registry.makeLocalProxy("any", null));
+        assertEquals(Optional.of(2), registry.makeLocalProxy("any", null));
     }
 
     @Test
@@ -98,7 +96,7 @@ public class ClientAdapterRegistryTest {
         ClientAdapterRegistry registry = ClientAdapterRegistry.newBuilder().register(InstantiatedClientAdapter.class).build();
 
         assertEquals(1, InstantiatedClientAdapter.instantiationCount);
-        assertEquals(Optional.empty(), registry.makeClientAdapter("any", null));
+        assertEquals(Optional.empty(), registry.makeLocalProxy("any", null));
 
         assertEquals(1, InstantiatedClientAdapter.instantiationCount);
     }
@@ -123,7 +121,7 @@ public class ClientAdapterRegistryTest {
         }
 
         @Override
-        public Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException {
+        public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
             return Optional.empty();
         }
     }

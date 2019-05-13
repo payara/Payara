@@ -57,8 +57,8 @@ public class ClientAdapterCustomizerTest {
                           customize(suffix).matchPrefix("prefix2"))
                 .build();
 
-        assertEquals(Optional.empty(), registry.makeClientAdapter("prefix/nothing", null));
-        assertEquals(Optional.of("test"), registry.makeClientAdapter("prefix1/test", null));
-        assertEquals(Optional.of("/test"), registry.makeClientAdapter("prefix2/test", null));
+        assertEquals(Optional.empty(), registry.makeLocalProxy("prefix/nothing", null));
+        assertEquals(Optional.of("test"), registry.makeLocalProxy("prefix1/test", null));
+        assertEquals(Optional.of("/test"), registry.makeLocalProxy("prefix2/test", null));
     }
 }

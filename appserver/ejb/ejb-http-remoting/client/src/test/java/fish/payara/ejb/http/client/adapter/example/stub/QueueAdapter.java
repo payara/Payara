@@ -48,7 +48,7 @@ import java.util.Optional;
 
 public class QueueAdapter implements ClientAdapter {
     @Override
-    public Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException {
+    public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
         return Optional.of(new ConnectionFactoryStub.QueueStub(jndiName));
     }
 }

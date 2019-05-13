@@ -42,15 +42,10 @@ package fish.payara.ejb.http.client.adapter.example.stub;
 
 import fish.payara.ejb.http.client.adapter.ClientAdapter;
 
-import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Optional;
 import java.util.function.Function;
-import fish.payara.ejb.http.client.adapter.example.stub.NoOpJmsStub.*;
 
 public class ConnectionFactoryAdapter implements ClientAdapter {
     private final Function<Context, RemoteCallAdapter> remoteCallFactory;
@@ -60,7 +55,7 @@ public class ConnectionFactoryAdapter implements ClientAdapter {
     }
 
     @Override
-    public Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException {
+    public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
         // let's assume name filtering have been taken care of at registration
         return Optional.of(new ConnectionFactoryStub(jndiName, remoteCallFactory.apply(remoteContext)));
     }

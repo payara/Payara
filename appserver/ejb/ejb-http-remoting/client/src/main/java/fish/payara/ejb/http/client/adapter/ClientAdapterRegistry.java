@@ -45,7 +45,6 @@ import javax.naming.NamingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -62,7 +61,7 @@ public final class ClientAdapterRegistry implements ClientAdapter {
 
     /**
      * Find a client adapter for handling specific {@code jndiName}. The registry will attempt invoking
-     * {@link ClientAdapter#makeClientAdapter(String, Context)} for all registered adapters in order they were
+     * {@link ClientAdapter#makeLocalProxy(String, Context)} for all registered adapters in order they were
      * registered. The iteration ends when
      * <ol>
      *     <li>A registered adapter returns non-empty value; or</li>
@@ -76,7 +75,7 @@ public final class ClientAdapterRegistry implements ClientAdapter {
      * @throws NamingException if any of attempted client adapters throws one
      */
     @Override
-    public Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException {
+    public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
         Optional<ResolutionResult> resolutionResult = adapterSuppliers.stream()
                 .map(Supplier::get)
                 .map(adapter -> resolve(adapter, jndiName, remoteContext))
@@ -105,7 +104,7 @@ public final class ClientAdapterRegistry implements ClientAdapter {
 
     private Optional<ResolutionResult> resolve(ClientAdapter adapter, String jndiName, Context remoteContext) {
         try {
-            return adapter.makeClientAdapter(jndiName, remoteContext).map(ResolutionResult::result);
+            return adapter.makeLocalProxy(jndiName, remoteContext).map(ResolutionResult::result);
         } catch (NamingException e) {
             return Optional.of(ResolutionResult.exception(e));
         }

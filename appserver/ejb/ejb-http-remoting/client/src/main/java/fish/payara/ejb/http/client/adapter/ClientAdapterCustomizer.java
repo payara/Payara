@@ -91,9 +91,9 @@ public final class ClientAdapterCustomizer implements ClientAdapter {
      * @throws NamingException when downstream adapter throws one
      */
     @Override
-    public Optional<Object> makeClientAdapter(String jndiName, Context remoteContext) throws NamingException {
+    public Optional<Object> makeLocalProxy(String jndiName, Context remoteContext) throws NamingException {
         if (namePredicate == null || namePredicate.test(jndiName)) {
-            return downstreamAdapter.get().makeClientAdapter(nameTransformation.apply(jndiName), remoteContext);
+            return downstreamAdapter.get().makeLocalProxy(nameTransformation.apply(jndiName), remoteContext);
         } else {
             return Optional.empty();
         }
