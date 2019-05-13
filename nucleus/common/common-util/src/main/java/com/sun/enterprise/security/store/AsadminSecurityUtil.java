@@ -44,10 +44,6 @@ package com.sun.enterprise.security.store;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
-
 import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -56,6 +52,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 /**
  * Various utility methods related to certificate-based security.
@@ -173,12 +173,14 @@ public class AsadminSecurityUtil {
     private char[] promptForPassword() {
         LineReader lineReader = null;
         try {
-            char echoCharacter = 0;
-            lineReader = LineReaderBuilder.builder()
-                    .terminal(new DumbTerminal(System.in, System.out))
+            char mask = 0;
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
                     .build();
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal).build();
 
-            String line = lineReader.readLine(strmgr.get("certificateDbPrompt"), echoCharacter);
+            String line = lineReader.readLine(strmgr.get("certificateDbPrompt"), mask);
             return line.toCharArray();
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);

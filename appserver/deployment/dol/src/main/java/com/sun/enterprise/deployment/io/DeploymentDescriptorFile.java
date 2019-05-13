@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.io;
 
@@ -133,23 +133,14 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
             if(!validating) {
                 spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             }
-	    // this feature is needed for backward compat with old DDs 
-	    // constructed by J2EE1.2 which used Java encoding names
-	    // such as ISO8859_1 etc.
             
-            // this is a hack for a few days so people can continue runnning
-            // with crimson
-            if (spf.getClass().getName().indexOf("xerces")!=-1) {
-                spf.setFeature(
-                    "http://apache.org/xml/features/allow-java-encodings", true);
-            } else {
-                DOLUtils.getDefaultLogger().log(Level.WARNING, "modify your java command line to include the -Djava.endorsed.dirs option");
-            }
+	    //support for older charset names used in java.io and java.lang
+            spf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
 	    
 	    try {
                 if (!validating) {
                     // if we are not validating, let's not load the DTD
-                    if (getDeploymentDescriptorPath().indexOf(DescriptorConstants.WLS) != -1) {
+                    if (getDeploymentDescriptorPath().contains(DescriptorConstants.WLS)) {
                         // and let's only turn it off for weblogic*.xml for now
                         spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                     }

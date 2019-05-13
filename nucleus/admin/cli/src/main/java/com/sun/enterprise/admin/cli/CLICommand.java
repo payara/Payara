@@ -50,6 +50,14 @@ import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Scope;
+import javax.inject.Singleton;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel;
@@ -64,21 +72,14 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.InjectionManager;
 import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.UnsatisfiedDependencyException;
-
-import javax.inject.Inject;
-import javax.inject.Scope;
-import javax.inject.Singleton;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -1200,17 +1201,18 @@ public abstract class CLICommand implements PostConstruct {
      * @param prompt
      * @return 
      */
-    protected char[] readPassword(String prompt) {
-        char[] pc = null;
-
-        char echoCharacter = 0;
+    protected char[] readPassword(String prompt) {   
         LineReader lineReader = null;
         try {
+            char mask = 0;
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
             lineReader = LineReaderBuilder.builder()
-                    .terminal(new DumbTerminal(System.in, System.out)).build();
+                    .terminal(terminal).build();
 
-            String line = lineReader.readLine(prompt, echoCharacter);
-            pc = line.toCharArray();
+            String line = lineReader.readLine(prompt, mask);
+            return line.toCharArray();
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "IOException reading password.", ioe);
         } finally {
@@ -1223,7 +1225,7 @@ public abstract class CLICommand implements PostConstruct {
             }
         }
 
-        return pc;
+        return null;
     }
 
     /**

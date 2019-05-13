@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.glassfish.bootstrap;
 
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.bootstrap.Which;
+import com.sun.enterprise.util.JDK;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -67,8 +69,8 @@ public class MainHelper {
     /*protected*/
 
     static void checkJdkVersion() {
-        int major = getMajorJdkVersion();
-        int minor = getMinorJdkVersion();
+        int major = JDK.getMajor();
+        int minor = JDK.getMinor();
         //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
         //JDK9 the major verion would be the real major version e.g in case
         // of JDK9 major version is 9.So in that case checking the major version only
@@ -77,33 +79,6 @@ public class MainHelper {
             logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{8, minor});
             System.exit(1);
           }
-        }
-    }
-
-    private static int getMajorJdkVersion() {
-      String jv = System.getProperty("java.version");
-      String[] split = jv.split("[\\._\\-]+");
-      if (split.length > 0) {
-        return Integer.parseInt(split[0]);
-      }
-      return -1;
-    }
-
-    private static int getMinorJdkVersion() {
-        // this is a subset of the code in com.sun.enterprise.util.JDK
-        // this module has no dependencies on util code so it was dragged in here.
-
-        try {
-            String jv = System.getProperty("java.version");
-            String[] ss = jv.split("\\.");
-
-            if (ss == null || ss.length < 3 || !ss[0].equals("1"))
-                return 1;
-
-            return Integer.parseInt(ss[1]);
-        }
-        catch (Exception e) {
-            return 1;
         }
     }
 
@@ -562,7 +537,9 @@ public class MainHelper {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, delegate);
             clb.addFrameworkJars();
             clb.addBootstrapApiJar(); // simple-glassfish-api.jar
-            clb.addJDKToolsJar();
+            if (JDK.getMajor() < 9) {
+                clb.addJDKToolsJar();
+            }
             return clb.build();
         } catch (IOException e) {
             throw new Error(e);

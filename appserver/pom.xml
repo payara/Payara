@@ -94,6 +94,9 @@
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.14</tyrus.version>
 
+        <!-- JAX-B -->
+        <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
+
         <!-- JSON-B -->
         <json.bind-api.version>1.0</json.bind-api.version>
         <yasson.version>1.0.2</yasson.version>
@@ -113,6 +116,7 @@
         <javax.interceptor-api.version>1.2.1</javax.interceptor-api.version>
 
         <!-- CDI -->
+        <javax.inject.version>1</javax.inject.version>
         <cdi-api.version>2.0.SP1</cdi-api.version>
         <weld.version>3.1.0.Final</weld.version>
         <weld-bundle.version>3.1.0.Final</weld-bundle.version>
@@ -145,9 +149,12 @@
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
 
         <!-- JAX-WS -->
+        <jaxws-api.version>2.3.1</jaxws-api.version>
+
+        <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
 
         <!-- Metro Webservices is the JAX-WS impl -->
-        <webservices.version>2.4.3.payara-p1</webservices.version>
+        <webservices.version>2.4.3.payara-p2</webservices.version>
         <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
         <woodstox.version>5.1.0</woodstox.version>
         <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
@@ -163,6 +170,12 @@
 
         <!-- Management API (JRS 77) -->
         <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+
+        <!-- JAF -->
+        <jakarta.activation-api.version>1.2.1</jakarta.activation-api.version>
+        <jakarta.activation-impl.version>1.2.1</jakarta.activation-impl.version>
+
+        <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
 
         <!-- Application Server / Implementation -->
         <product.name>Payara Server</product.name>
@@ -202,7 +215,7 @@
         <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
 
          <!-- Microprofile version properties -->
-         <microprofile-fault-tolerance.version>1.1.1</microprofile-fault-tolerance.version>
+         <microprofile-fault-tolerance.version>2.0</microprofile-fault-tolerance.version>
          <microprofile-jwt-auth.version>1.1.payara-p1</microprofile-jwt-auth.version>
          <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
          <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
@@ -272,7 +285,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>jakarta.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
                     <specs>
 
                         <!-- JavaMail -->
@@ -653,9 +666,9 @@
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>jakarta.inject</artifactId>
-                <version>${hk2.version}</version>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
             </dependency>
     	    <dependency>
                 <groupId>javax.resource</groupId>
@@ -780,17 +793,17 @@
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-osgi</artifactId>
-                <version>${jaxb.version}</version>
+                <version>${jaxb-impl.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${jaxb-api.version}</version>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-extra-osgi</artifactId>
+                <version>${jaxb-extra-osgi.version}</version>
             </dependency>
-	        <dependency>
-                	<groupId>javax.xml.registry</groupId>
-    	            <artifactId>javax.xml.registry-api</artifactId>
-    		        <version>${javax.xml.registry-api.version}</version>
+            <dependency>
+                <groupId>javax.xml.registry</groupId>
+                <artifactId>javax.xml.registry-api</artifactId>
+                <version>${javax.xml.registry-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
@@ -1126,6 +1139,32 @@
                 <artifactId>jboss-logging</artifactId>
                 <version>${jboss.logging.version}</version>
                 <optional>true</optional>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.xml.ws</groupId>
+                <artifactId>jaxws-api</artifactId>
+                <version>${jaxws-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.istack</groupId>
+                <artifactId>istack-commons-runtime</artifactId>
+                <version>${istack-commons-runtime.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${jakarta.activation-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>jakarta.activation</artifactId>
+                <version>${jakarta.activation-impl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>${jakarta.jws-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
