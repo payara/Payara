@@ -111,6 +111,18 @@
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
         </dependency>
+
+       <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <scope>test</scope>
+       </dependency>
+
+       <dependency>
+           <groupId>javax.jms</groupId>
+           <artifactId>javax.jms-api</artifactId>
+           <scope>test</scope>
+       </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>

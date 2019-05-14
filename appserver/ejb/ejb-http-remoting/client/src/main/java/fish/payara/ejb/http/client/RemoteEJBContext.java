@@ -39,26 +39,7 @@
  */
 package fish.payara.ejb.http.client;
 
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_CONNECT_TIMEOUT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_EXECUTOR_SERVICE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_HOSTNAME_VERIFIER;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_KEY_STORE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_READ_TIMEOUT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_TRUST_STORE;
-import static fish.payara.ejb.http.client.RemoteEJBContextFactory.FISH_PAYARA_WITH_CONFIG;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
-import java.net.URI;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
+import fish.payara.ejb.http.client.adapter.ClientAdapter;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -72,6 +53,19 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Configuration;
+import java.net.URI;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -104,12 +98,19 @@ import javax.ws.rs.core.Configuration;
  *
  */
 class RemoteEJBContext implements Context {
-    
+
+    private ClientAdapter clientAdapter;
     private Hashtable<String, Object> environment;
     
     @SuppressWarnings("unchecked")
     public RemoteEJBContext(Hashtable<?, ?> environment) {
         this.environment = (Hashtable<String, Object>) environment;
+        if (environment.containsKey(RemoteEJBContextFactory.CLIENT_ADAPTER)) {
+            Object adapter =  environment.get(RemoteEJBContextFactory.CLIENT_ADAPTER);
+            if (adapter instanceof ClientAdapter) {
+                this.clientAdapter = (ClientAdapter)adapter;
+            }
+        }
     }
 
     @Override
@@ -119,9 +120,18 @@ class RemoteEJBContext implements Context {
 
     @Override
     public Object lookup(String name) throws NamingException {
+        if (name == null) {
+            throw new NullPointerException("Lookup name cannot be null");
+        }
         String url = (String) environment.get(PROVIDER_URL);
         
         try {
+            if (clientAdapter != null) {
+                Optional<Object> resolvedAdapter = clientAdapter.makeLocalProxy(name, this);
+                if (resolvedAdapter.isPresent()) {
+                    return resolvedAdapter.get();
+                }
+            }
             // Get client build with all optional config applied
             ClientBuilder clientBuilder = getClientBuilder();
             
@@ -167,40 +177,40 @@ class RemoteEJBContext implements Context {
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
         
-        if (environment.containsKey(FISH_PAYARA_CONNECT_TIMEOUT)) {
-            clientBuilder.connectTimeout(getLong(environment.get(FISH_PAYARA_CONNECT_TIMEOUT)).longValue(), MICROSECONDS);
+        if (environment.containsKey(JAXRS_CLIENT_CONNECT_TIMEOUT)) {
+            clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)).longValue(), MICROSECONDS);
         }
         
-        if (environment.contains(FISH_PAYARA_EXECUTOR_SERVICE)) {
-            clientBuilder.executorService(getInstance(environment.get(FISH_PAYARA_EXECUTOR_SERVICE), ExecutorService.class));
+        if (environment.contains(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
+            clientBuilder.executorService(getInstance(environment.get(JAXRS_CLIENT_EXECUTOR_SERVICE), ExecutorService.class));
         }
         
-        if (environment.contains(FISH_PAYARA_HOSTNAME_VERIFIER)) {
-            clientBuilder.hostnameVerifier(getInstance(environment.get(FISH_PAYARA_HOSTNAME_VERIFIER), HostnameVerifier.class));
+        if (environment.contains(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
+            clientBuilder.hostnameVerifier(getInstance(environment.get(JAXRS_CLIENT_HOSTNAME_VERIFIER), HostnameVerifier.class));
         }
         
-        if (environment.contains(FISH_PAYARA_KEY_STORE)) {
-            clientBuilder.keyStore(getInstance(environment.get(FISH_PAYARA_KEY_STORE), KeyStore.class), getPassword(environment.get("keyStorePassword")));
+        if (environment.contains(JAXRS_CLIENT_KEY_STORE)) {
+            clientBuilder.keyStore(getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class), getPassword(environment.get("keyStorePassword")));
         }
         
-        if (environment.containsKey(FISH_PAYARA_READ_TIMEOUT)) {
-            clientBuilder.readTimeout(getLong(environment.get(FISH_PAYARA_READ_TIMEOUT)).longValue(), MICROSECONDS);
+        if (environment.containsKey(JAXRS_CLIENT_READ_TIMEOUT)) {
+            clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)).longValue(), MICROSECONDS);
         }
         
-        if (environment.contains(FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE)) {
-            clientBuilder.scheduledExecutorService(getInstance(environment.get(FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE), ScheduledExecutorService.class));
+        if (environment.contains(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
+            clientBuilder.scheduledExecutorService(getInstance(environment.get(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE), ScheduledExecutorService.class));
         }
         
-        if (environment.contains(FISH_PAYARA_SSL_CONTEXT)) {
-            clientBuilder.sslContext(getInstance(environment.get(FISH_PAYARA_SSL_CONTEXT), SSLContext.class));
+        if (environment.contains(JAXRS_CLIENT_SSL_CONTEXT)) {
+            clientBuilder.sslContext(getInstance(environment.get(JAXRS_CLIENT_SSL_CONTEXT), SSLContext.class));
         }
         
-        if (environment.contains(FISH_PAYARA_TRUST_STORE)) {
-            clientBuilder.trustStore(getInstance(environment.get(FISH_PAYARA_TRUST_STORE), KeyStore.class));
+        if (environment.contains(JAXRS_CLIENT_TRUST_STORE)) {
+            clientBuilder.trustStore(getInstance(environment.get(JAXRS_CLIENT_TRUST_STORE), KeyStore.class));
         }
         
-        if (environment.contains(FISH_PAYARA_WITH_CONFIG)) {
-            clientBuilder.withConfig(getInstance(environment.get(FISH_PAYARA_WITH_CONFIG), Configuration.class));
+        if (environment.contains(JAXRS_CLIENT_CONFIG)) {
+            clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
         }
         
         return clientBuilder;
