@@ -177,7 +177,7 @@ public class PropertiesBagResource extends AbstractResource {
                 Property existingProp = existing.get(property.get("name"));
 
                 String unescapedName = Object.class.cast(property.get("name")).toString();
-                String escapedName = getEscapedPropertyName(unescapedName);
+                //String escapedName = getEscapedPropertyName(unescapedName);
 
                 String value = Object.class.cast(property.get("value")).toString();
                 String unescapedValue = value.replaceAll("\\\\", "");
@@ -189,21 +189,30 @@ public class PropertiesBagResource extends AbstractResource {
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-                boolean canSaveDesc = !((Object)property.get("name")).toString().contains(".");
+                boolean isDottedName = ((Object)property.get("name")).toString().contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
-                    data.put(escapedName, ((Object)property.get("value")).toString());
-                    if (canSaveDesc && (description != null)) {
-                        data.put(escapedName + ".description", ((Object) description).toString());
+//                    data.put(escapedName, ((Object)property.get("value")).toString());
+//                    if (canSaveDesc && (description != null)) {
+//                        data.put(escapedName + ".description", ((Object) description).toString());
+//                    }
+                    if (isDottedName) {
+                        data.put(unescapedName + ".name", ((Object)property.get("name")).toString());
+                        data.put(unescapedName + ".value", ((Object)property.get("value")).toString());
+                    } else {
+                        data.put(unescapedName, ((Object)property.get("value")).toString());
                     }
+                    
+                    if (description != null) {
+                        data.put(unescapedName + ".description", ((Object) description).toString());
+                    }
+
                 }
 
                 //update the description only if not null/blank
                 if ((description != null) && (existingProp != null)) {
                      if (!"".equals(description) && (!description.equals(existingProp.getDescription()))) {
-                        if (canSaveDesc) {
-                            data.put(escapedName + ".description", description);
-                        }
+                        data.put(unescapedName + ".description", description);
                     }
                 }
             }
