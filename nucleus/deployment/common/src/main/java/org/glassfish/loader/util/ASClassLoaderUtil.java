@@ -251,7 +251,7 @@ public class ASClassLoaderUtil {
                 if (mr != null) {
                     for (Module module : mr.getModules()) {
                         for (URI uri : module.getModuleDefinition().getLocations()) {
-                            tmpString.append(uri.getPath());
+                            tmpString.append(Paths.get(uri).toString());
                             tmpString.append(File.pathSeparator);
                         }
                     }

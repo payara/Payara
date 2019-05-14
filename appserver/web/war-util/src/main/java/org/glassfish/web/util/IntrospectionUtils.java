@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.util;
 
@@ -603,31 +604,6 @@ public final class IntrospectionUtils {
         }
     }
 
-    public static void addToolsJar(Vector<URL> v) {
-        try {
-            // Add tools.jar in any case
-            File f = new File(System.getProperty("java.home")
-                    + "/../lib/tools.jar");
-
-            if (!f.exists()) {
-                // On some systems java.home gets set to the root of jdk.
-                // That's a bug, but we can work around and be nice.
-                f = new File(System.getProperty("java.home") + "/lib/tools.jar");
-                if (f.exists()) {
-                    if (log.isLoggable(Level.FINE))
-                        log.fine("Detected strange java.home value "
-                            + System.getProperty("java.home")
-                            + ", it should point to jre");
-                }
-            }
-            URL url = new URL("file", "", f.getAbsolutePath());
-
-            v.addElement(url);
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     /**
      * Return all files with a given extension in a dir
      */
@@ -708,36 +684,6 @@ public final class IntrospectionUtils {
             urls[i] = v.elementAt(i);
         }
         return urls;
-    }
-
-    /**
-     * Construct a URL classpath from files in a directory, a cpath property,
-     * and tools.jar.
-     */
-    public static URL[] getClassPath(String dir, String cpath,
-            String cpathProp, boolean addTools) throws IOException,
-            MalformedURLException {
-        Vector<URL> jarsV = new Vector<URL>();
-        if (dir != null) {
-            // Add dir/classes first, if it exists
-            URL url = getURL(dir, "classes");
-            if (url != null)
-                jarsV.addElement(url);
-            addToClassPath(jarsV, dir);
-        }
-
-        if (cpath != null)
-            addJarsFromClassPath(jarsV, cpath);
-
-        if (cpathProp != null) {
-            String cpath1 = System.getProperty(cpathProp);
-            addJarsFromClassPath(jarsV, cpath1);
-        }
-
-        if (addTools)
-            addToolsJar(jarsV);
-
-        return getClassPath(jarsV);
     }
 
     // -------------------- other utils --------------------

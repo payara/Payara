@@ -64,6 +64,7 @@ import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -116,11 +117,11 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
         try {
             // add the module dir
-            classpath.append(ctx.getSourceDir().toURI().getPath());
+            classpath.append(ctx.getSourceDir().toPath().toString());
             classpath.append(File.pathSeparator);
 
             // add the stubs dir
-            classpath.append(ctx.getScratchDir("ejb").toURI().getPath());
+            classpath.append(ctx.getScratchDir("ejb").toPath().toString());
             classpath.append(File.pathSeparator);
 
             // add the ear lib libraries if it's ear
@@ -138,7 +139,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
                         compatProp);
 
                 for (URL url : earLibURLs) {
-                    classpath.append(url.toURI().getPath());
+                    classpath.append(Paths.get(url.toURI()).toString());
                     classpath.append(File.pathSeparator);
                 }
             }

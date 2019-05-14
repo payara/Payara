@@ -70,7 +70,6 @@ import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.appclient.server.core.AppClientDeployer;
 import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.ExtensionFileManager.Extension;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
@@ -281,21 +280,6 @@ public class JWSAdapterManager implements PostConstruct {
             }
         }
 
-        /*
-         * Add the endorsed JARs to the system content.
-         */
-        final File endorsedDir = new File(modulesDir(), "endorsed");
-        for (File endorsedJar : endorsedDir.listFiles(new FileFilter(){
-
-                    @Override
-                    public boolean accept(File pathname) {
-                        return (pathname.isFile() && pathname.getName().endsWith(".jar"));
-                    }
-            })) {
-            result.put(systemPath(endorsedJar.toURI()),
-                    systemJarSignedContent(endorsedJar, signingAlias));
-            systemJARRelativeURIs.add(relativeSystemPath(endorsedJar.toURI()));
-        }
         return result;
     }
 
@@ -317,24 +301,6 @@ public class JWSAdapterManager implements PostConstruct {
 
     private synchronized File libDir() {
         return new File(new File(installRootURI), "lib");
-    }
-
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
-    static String publicExtensionHref(final Extension ext) {
-        return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
-    }
-
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
-    static String publicExtensionLookupURIText(final Extension ext) {
-        return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
-                ext.getExtDirectoryNumber() + "/" +
-                ext.getFile().getName();
     }
 
     private AutoSignedContent systemJarSignedContent (

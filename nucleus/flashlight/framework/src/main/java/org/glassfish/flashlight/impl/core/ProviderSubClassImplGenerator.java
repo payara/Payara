@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.flashlight.impl.core;
 
 /**
@@ -48,7 +47,7 @@ package org.glassfish.flashlight.impl.core;
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.flashlight.FlashlightLoggerInfo;
-import org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.security.*;
 
@@ -162,7 +161,7 @@ public class ProviderSubClassImplGenerator {
         String id;
 
         ProbeProviderSubClassGenerator(ClassVisitor cv, String token, String id) {
-            super(Opcodes.ASM7, cv);
+            super(Opcodes.ASM5, cv);
             this.id = id;
             this.token = token;
         }
@@ -210,7 +209,7 @@ public class ProviderSubClassImplGenerator {
         private String token;
 
         ProbeProviderAnnotationVisitor(AnnotationVisitor delegate, String token) {
-            super(Opcodes.ASM7);
+            super(Opcodes.ASM5);
             this.delegate = delegate;
             this.token = token;
         }
