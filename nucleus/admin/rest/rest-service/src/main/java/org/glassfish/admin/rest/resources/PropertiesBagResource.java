@@ -161,7 +161,7 @@ public class PropertiesBagResource extends AbstractResource {
      * so this routine replaces . with \.
      */
     private String getEscapedPropertyName(String propName){
-        return propName.replaceAll("\\.","\\\\.");
+        return propName.replaceAll("\\.","\\\\\\.");
     }
 
     protected ActionReportResult clearThenSaveProperties(List<Map<String, String>> properties) {
@@ -177,7 +177,7 @@ public class PropertiesBagResource extends AbstractResource {
                 Property existingProp = existing.get(property.get("name"));
 
                 String unescapedName = Object.class.cast(property.get("name")).toString();
-                //String escapedName = getEscapedPropertyName(unescapedName);
+                String escapedName = getEscapedPropertyName(unescapedName);
 
                 String value = Object.class.cast(property.get("value")).toString();
                 String unescapedValue = value.replaceAll("\\\\", "");
@@ -192,19 +192,9 @@ public class PropertiesBagResource extends AbstractResource {
                 boolean isDottedName = ((Object)property.get("name")).toString().contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
-//                    data.put(escapedName, ((Object)property.get("value")).toString());
-//                    if (canSaveDesc && (description != null)) {
-//                        data.put(escapedName + ".description", ((Object) description).toString());
-//                    }
-                    if (isDottedName) {
-                        data.put(unescapedName + ".name", ((Object)property.get("name")).toString());
-                        data.put(unescapedName + ".value", ((Object)property.get("value")).toString());
-                    } else {
-                        data.put(unescapedName, ((Object)property.get("value")).toString());
-                    }
-                    
-                    if (description != null) {
-                        data.put(unescapedName + ".description", ((Object) description).toString());
+                    data.put(escapedName, ((Object)property.get("value")).toString());
+                    if (!isDottedName && (description != null)) {
+                        data.put(escapedName + ".description", ((Object) description).toString());
                     }
 
                 }
