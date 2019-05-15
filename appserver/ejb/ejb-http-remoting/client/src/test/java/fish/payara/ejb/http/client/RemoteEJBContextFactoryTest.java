@@ -57,8 +57,8 @@ import org.junit.Test;
  */
 public class RemoteEJBContextFactoryTest {
 
-    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_PROVIDER_URL = "fish.payara.ejb.http.client.provider.url";
-    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT = "fish.payara.ejb.http.client.sslContext";
+    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_PROVIDER_URL = Context.PROVIDER_URL;
+    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT = RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT;
 
     @After
     public void clean() {
