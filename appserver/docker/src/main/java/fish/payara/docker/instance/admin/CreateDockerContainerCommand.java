@@ -282,24 +282,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
         defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, false);
         defaultsOverridden.put(DockerConstants.DOCKER_NETWORK_MODE_KEY, false);
 
-        for (String property : hostConfigProperties) {
-            if (processedProperties.contains(property)) {
-                continue;
-            }
-            // Check if property overrides any of our defaults
-            switch (property) {
-                case DockerConstants.DOCKER_HOST_CONFIG_KEY + "." + DockerConstants.DOCKER_MOUNTS_KEY:
-                    defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, true);
-                    break;
-                case DockerConstants.DOCKER_HOST_CONFIG_KEY + "." + DockerConstants.DOCKER_NETWORK_MODE_KEY:
-                    defaultsOverridden.put(DockerConstants.DOCKER_NETWORK_MODE_KEY, true);
-                    break;
-            }
-
-            Map<String, JsonObjectBuilder> propertyComponentObjectBuilders = new HashMap<>();
-            propertyComponentObjectBuilders.put(DockerConstants.DOCKER_HOST_CONFIG_KEY, hostConfigObjectBuilder);
-            recurseOverNested(rootObjectBuilder, hostConfigProperties, property, propertyComponentObjectBuilders, null);
-        }
+        loopOverNestedProperties(rootObjectBuilder, hostConfigObjectBuilder, hostConfigProperties, defaultsOverridden);
 
         // Add any remaining defaults
         if (!defaultsOverridden.get(DockerConstants.DOCKER_MOUNTS_KEY)) {
@@ -317,6 +300,77 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
         // Finally, add host config object to final Json request object
         rootObjectBuilder.add(DockerConstants.DOCKER_HOST_CONFIG_KEY, hostConfigObjectBuilder);
+    }
+
+    private void addNestedProperties(JsonObjectBuilder rootObjectBuilder, String originalProperty) {
+        JsonObjectBuilder topLevelObjectBuilder = Json.createObjectBuilder();
+        List<String> nestedProperties = new ArrayList<>();
+        String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf("."));
+        for (String property : containerConfig.stringPropertyNames()) {
+            if (property.startsWith(topLevelProperty)) {
+                nestedProperties.add(property);
+            }
+        }
+
+        // Sort them into alphabetical order to group them all related properties together
+        nestedProperties.sort(Comparator.comparing(String::toString));
+
+        // Loop over nested properties and add to Json
+        loopOverNestedProperties(rootObjectBuilder, topLevelObjectBuilder, nestedProperties, null);
+
+        // Finally, add top level object builder to root Json request object builder
+        rootObjectBuilder.add(topLevelProperty, topLevelObjectBuilder);
+    }
+
+    private void addEnvProperties(JsonObjectBuilder jsonObjectBuilder, String dasHost, String dasPort) {
+        String envConfigString = containerConfig.getProperty(DockerConstants.DOCKER_CONTAINER_ENV);
+
+        if (!envConfigString.contains(DockerConstants.PAYARA_DAS_HOST)) {
+            envConfigString += "|" + DockerConstants.PAYARA_DAS_HOST + "=" + dasHost;
+        }
+
+        if (envConfigString.contains(DockerConstants.PAYARA_DAS_PORT)) {
+            envConfigString += "|" + DockerConstants.PAYARA_DAS_PORT + "=" + dasPort;
+        }
+
+        if (envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
+            envConfigString += "|" + DockerConstants.PAYARA_NODE_NAME + "=" + nodeName;
+        }
+
+        if (envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
+            envConfigString += "|" + DockerConstants.INSTANCE_NAME + "=" + instanceName;
+        }
+
+        // We can't currently have '=' in a system property value, so for this special case substitute ':' as we
+        // add to Json
+        envConfigString = envConfigString.replaceAll(":", "=");
+
+        addPropertyToJson(jsonObjectBuilder, DockerConstants.DOCKER_CONTAINER_ENV, envConfigString);
+    }
+
+    private void loopOverNestedProperties(JsonObjectBuilder rootObjectBuilder, JsonObjectBuilder topLevelObjectBuilder,
+            List<String> sortedNestedProperties, Map<String, Boolean> defaultsOverridden) {
+        for (String property : sortedNestedProperties) {
+            if (processedProperties.contains(property)) {
+                continue;
+            }
+
+            if (defaultsOverridden != null) {
+                // Check if property overrides any of our defaults
+                switch (property) {
+                    case DockerConstants.DOCKER_HOST_CONFIG_KEY + "." + DockerConstants.DOCKER_MOUNTS_KEY:
+                        defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, true);
+                        break;
+                    case DockerConstants.DOCKER_HOST_CONFIG_KEY + "." + DockerConstants.DOCKER_NETWORK_MODE_KEY:
+                        defaultsOverridden.put(DockerConstants.DOCKER_NETWORK_MODE_KEY, true);
+                        break;
+                }
+            }
+
+            Map<String, JsonObjectBuilder> propertyComponentObjectBuilders = new HashMap<>();
+            propertyComponentObjectBuilders.put(DockerConstants.DOCKER_HOST_CONFIG_KEY, topLevelObjectBuilder);
+            recurseOverNested(rootObjectBuilder, sortedNestedProperties, property, propertyComponentObjectBuilders, null);
+        }
     }
 
     private void recurseOverNested(JsonObjectBuilder jsonObjectBuilder, List<String> sortedProperties,
@@ -387,28 +441,6 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
     }
 
-    private void addEnvProperties(JsonObjectBuilder jsonObjectBuilder, String dasHost, String dasPort) {
-        String envConfigString = containerConfig.getProperty(DockerConstants.DOCKER_CONTAINER_ENV);
-
-        if (!envConfigString.contains(DockerConstants.PAYARA_DAS_HOST)) {
-            envConfigString += "|" + DockerConstants.PAYARA_DAS_HOST + "=" + dasHost;
-        }
-
-        if (envConfigString.contains(DockerConstants.PAYARA_DAS_PORT)) {
-            envConfigString += "|" + DockerConstants.PAYARA_DAS_PORT + "=" + dasPort;
-        }
-
-        if (envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
-            envConfigString += "|" + DockerConstants.PAYARA_NODE_NAME + "=" + nodeName;
-        }
-
-        if (envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
-            envConfigString += "|" + DockerConstants.INSTANCE_NAME + "=" + instanceName;
-        }
-
-        addPropertyToJson(jsonObjectBuilder, DockerConstants.DOCKER_CONTAINER_ENV, envConfigString);
-    }
-
     private void addPropertyToJson(JsonObjectBuilder jsonObjectBuilder, String property, String propertyValue) {
         if (propertyValue.startsWith("[") && propertyValue.endsWith("]")) {
             propertyValue = propertyValue.replaceAll("\\[", "").replaceAll("\\]", "");
@@ -440,34 +472,6 @@ public class CreateDockerContainerCommand implements AdminCommand {
             jsonObjectBuilder.add(property, propertyValue);
         }
     }
-
-    private void addNestedProperties(JsonObjectBuilder rootObjectBuilder, String originalProperty) {
-        JsonObjectBuilder nestedObjectBuilder = Json.createObjectBuilder();
-        List<String> nestedProperties = new ArrayList<>();
-        String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf("."));
-        for (String property : containerConfig.stringPropertyNames()) {
-            if (property.startsWith(topLevelProperty)) {
-                nestedProperties.add(property);
-            }
-        }
-
-        // Sort them into alphabetical order to group them all related properties together
-        nestedProperties.sort(Comparator.comparing(String::toString));
-
-        for (String property : nestedProperties) {
-            if (processedProperties.contains(property)) {
-                continue;
-            }
-
-            Map<String, JsonObjectBuilder> propertyComponentObjectBuilders = new HashMap<>();
-            propertyComponentObjectBuilders.put(topLevelProperty, nestedObjectBuilder);
-            recurseOverNested(rootObjectBuilder, nestedProperties,
-                    property, propertyComponentObjectBuilders, null);
-        }
-
-        rootObjectBuilder.add(topLevelProperty, nestedObjectBuilder);
-    }
-
 
     private void unregisterInstance(AdminCommandContext adminCommandContext, ActionReport actionReport) {
         if (commandRunner != null) {
