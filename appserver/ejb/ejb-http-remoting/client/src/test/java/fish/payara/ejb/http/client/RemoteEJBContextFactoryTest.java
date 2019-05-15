@@ -39,11 +39,14 @@
  */
 package fish.payara.ejb.http.client;
 
+import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_CONNECT_TIMEOUT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Hashtable;
 
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.junit.After;
@@ -64,6 +67,7 @@ public class RemoteEJBContextFactoryTest {
     public void clean() {
         System.clearProperty(FISH_PAYARA_EJB_HTTP_CLIENT_PROVIDER_URL);
         System.clearProperty(FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT);
+        System.clearProperty(JAXRS_CLIENT_CONNECT_TIMEOUT);
     }
 
     @Test
@@ -90,5 +94,26 @@ public class RemoteEJBContextFactoryTest {
         Context context = new RemoteEJBContextFactory().getInitialContext(environment);
         assertEquals("http://existing.url", context.getEnvironment().get(Context.PROVIDER_URL));
         assertEquals("existing-SSL-context", context.getEnvironment().get(RemoteEJBContextFactory.JAXRS_CLIENT_SSL_CONTEXT));
+    }
+
+    @Test
+    public void systemPropertiesWorkWithJNDI() throws NamingException {
+        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, RemoteEJBContextFactory.FACTORY_CLASS);
+        System.setProperty(Context.PROVIDER_URL, "http://localhost:8080");
+        System.setProperty(JAXRS_CLIENT_CONNECT_TIMEOUT, "90");
+        ExposingInitialContext context = new ExposingInitialContext();
+        assertTrue("RemoteEJBContext was created", context.getDefaultInitCtx() instanceof RemoteEJBContext);
+        assertEquals("90", context.getEnvironment().get(JAXRS_CLIENT_CONNECT_TIMEOUT));
+    }
+
+    static class ExposingInitialContext extends InitialContext {
+
+        public ExposingInitialContext() throws NamingException {
+        }
+
+        @Override
+        protected Context getDefaultInitCtx() throws NamingException {
+            return super.getDefaultInitCtx();
+        }
     }
 }
