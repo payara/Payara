@@ -895,6 +895,7 @@ public class RestUtil {
         WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
