@@ -58,7 +58,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>payara-3314-server-full</repository>
+                    <repository>payaraserver-node</repository>
                     <dockerfile>src/main/resources/Server-Full/Dockerfile</dockerfile>
                     <buildArgs>
                         <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>

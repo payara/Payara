@@ -369,16 +369,17 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
             Map<String, JsonObjectBuilder> propertyComponentObjectBuilders = new HashMap<>();
             propertyComponentObjectBuilders.put(DockerConstants.DOCKER_HOST_CONFIG_KEY, topLevelObjectBuilder);
-            recurseOverNested(rootObjectBuilder, sortedNestedProperties, property, propertyComponentObjectBuilders, null);
+            recurseOverNested(rootObjectBuilder, sortedNestedProperties, property, propertyComponentObjectBuilders,
+                    null);
         }
     }
 
     private void recurseOverNested(JsonObjectBuilder jsonObjectBuilder, List<String> sortedProperties,
-                                                String property, Map<String, JsonObjectBuilder> propertyComponentObjectBuilders, String parent) {
+            String property, Map<String, JsonObjectBuilder> propertyComponentObjectBuilders, String parent) {
         List<String> propertyComponents = Arrays.asList(property.split("\\."));
 
         for (String propertyComponent : propertyComponents) {
-            // We don't need to make a builder for the last component, as it isn't an object
+            // We don't need to make a builder for the last component, as it isn't an object, it's a value
             if (propertyComponents.indexOf(propertyComponent) != propertyComponents.size() - 1) {
                 propertyComponentObjectBuilders.putIfAbsent(propertyComponent, Json.createObjectBuilder());
             }
@@ -398,8 +399,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
         addPropertyToJson(immediateParentObjectBuilder, propertyComponentKey, propertyValue);
         processedProperties.add(property);
 
-        // If there are more properties, check if the immediate parent has any extra children by checking the next property,
-        // moving up the list until we reach the root property component
+        // If there are more properties, check if each parent has any extra children
         if (sortedProperties.indexOf(property) + 1 != sortedProperties.size()) {
             String nextProperty = sortedProperties.get(sortedProperties.indexOf(property) + 1);
             for (int i = propertyComponents.size() - 2; i > -1; i--) {
@@ -424,9 +424,12 @@ public class CreateDockerContainerCommand implements AdminCommand {
                     break;
                 } else {
                     if (i != 0) {
-                        // If we haven't found another property in the same namespace, add the current object builder to its parent
-                        JsonObjectBuilder parentObjectBuilder = propertyComponentObjectBuilders.get(propertyComponents.get(i - 1));
-                        parentObjectBuilder.add(propertyComponents.get(i), propertyComponentObjectBuilders.get(propertyComponents.get(i)));
+                        // If we haven't found another property in the same namespace, add the current object builder
+                        // to its parent
+                        JsonObjectBuilder parentObjectBuilder = propertyComponentObjectBuilders.get(
+                                propertyComponents.get(i - 1));
+                        parentObjectBuilder.add(propertyComponents.get(i),
+                                propertyComponentObjectBuilders.get(propertyComponents.get(i)));
                         propertyComponentObjectBuilders.remove(propertyComponents.get(i));
                     }
                 }
@@ -435,7 +438,8 @@ public class CreateDockerContainerCommand implements AdminCommand {
             // If there are no more properties, make sure to add the last object builder to its parent
             // Only do so if it's more than two levels deep though, as otherwise we've already added it
             if (propertyComponents.size() > 2) {
-                propertyComponentObjectBuilders.get(propertyComponents.get(0)).add(propertyComponents.get(1), propertyComponentObjectBuilders.get(propertyComponents.get(1)));
+                propertyComponentObjectBuilders.get(propertyComponents.get(0)).add(propertyComponents.get(1),
+                        propertyComponentObjectBuilders.get(propertyComponents.get(1)));
                 propertyComponentObjectBuilders.remove(propertyComponents.get(1));
             }
         }
