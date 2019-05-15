@@ -290,26 +290,14 @@ public class CreateDockerContainerCommand implements AdminCommand {
     private void addHostConfigProperties(JsonObjectBuilder rootObjectBuilder) {
         JsonObjectBuilder hostConfigObjectBuilder = Json.createObjectBuilder();
 
-        // Gather all properties in the 'HostConfig' namespace
-        List<String> hostConfigProperties = new ArrayList<>();
-        for (String property : containerConfig.stringPropertyNames()) {
-            if (property.startsWith(DockerConstants.DOCKER_HOST_CONFIG_KEY)) {
-                hostConfigProperties.add(property);
-            }
-        }
-
-        // Sort them into alphabetical order to group all related properties together (so foo.baa and
-        // foo.bar are next to each other in the list)
-        hostConfigProperties.sort(Comparator.comparing(String::toString));
-
         // Populate HostConfig defaults map so we can check if any get overridden
         Map<String, Boolean> defaultsOverridden = new HashMap<>();
         defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, false);
         defaultsOverridden.put(DockerConstants.DOCKER_NETWORK_MODE_KEY, false);
 
         // Loop over all properties and add to HostConfig Json builder
-        loopOverNestedProperties(rootObjectBuilder, DockerConstants.DOCKER_HOST_CONFIG_KEY, hostConfigObjectBuilder,
-                hostConfigProperties, defaultsOverridden);
+        loopOverNestedProperties(rootObjectBuilder, DockerConstants.DOCKER_HOST_CONFIG_KEY,
+                hostConfigObjectBuilder, defaultsOverridden);
 
         // Add any remaining defaults
         if (!defaultsOverridden.get(DockerConstants.DOCKER_MOUNTS_KEY)) {
@@ -336,21 +324,10 @@ public class CreateDockerContainerCommand implements AdminCommand {
      */
     private void addNestedProperties(JsonObjectBuilder rootObjectBuilder, String originalProperty) {
         JsonObjectBuilder topLevelObjectBuilder = Json.createObjectBuilder();
-
-        // Gather all properties in the same namespace as the original property
-        List<String> nestedProperties = new ArrayList<>();
         String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf("."));
-        for (String property : containerConfig.stringPropertyNames()) {
-            if (property.startsWith(topLevelProperty)) {
-                nestedProperties.add(property);
-            }
-        }
-
-        // Sort them into alphabetical order to group them all related properties together
-        nestedProperties.sort(Comparator.comparing(String::toString));
 
         // Loop over nested properties and add to Json
-        loopOverNestedProperties(rootObjectBuilder, topLevelProperty, topLevelObjectBuilder, nestedProperties, null);
+        loopOverNestedProperties(rootObjectBuilder, topLevelProperty, topLevelObjectBuilder, null);
 
         // Finally, add top level object builder to root Json request object builder
         rootObjectBuilder.add(topLevelProperty, topLevelObjectBuilder);
@@ -389,15 +366,25 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
     /**
      * Loops over all nested properties in a given namespace and adds them to the top-level builder of said namespace
-     * @param rootObjectBuilder
-     * @param topLevelObjectBuilder
-     * @param sortedNestedProperties
-     * @param defaultsOverridden
+     *
+     * @param rootObjectBuilder The top level object builder
+     * @param topLevelObjectBuilder The object builder of the top level component of the property
+     * @param defaultsOverridden The map of booleans for if a default has been overridden
      */
     private void loopOverNestedProperties(JsonObjectBuilder rootObjectBuilder, String topLevelProperty,
-            JsonObjectBuilder topLevelObjectBuilder, List<String> sortedNestedProperties,
-            Map<String, Boolean> defaultsOverridden) {
-        for (String property : sortedNestedProperties) {
+            JsonObjectBuilder topLevelObjectBuilder, Map<String, Boolean> defaultsOverridden) {
+        // Gather all properties in the same namespace as the top level property
+        List<String> nestedProperties = new ArrayList<>();
+        for (String property : containerConfig.stringPropertyNames()) {
+            if (property.startsWith(topLevelProperty)) {
+                nestedProperties.add(property);
+            }
+        }
+
+        // Sort them into alphabetical order to group them all related properties together
+        nestedProperties.sort(Comparator.comparing(String::toString));
+
+        for (String property : nestedProperties) {
             // Only process if we haven't already
             if (processedProperties.contains(property)) {
                 continue;
@@ -420,7 +407,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
             propertyComponentObjectBuilders.put(topLevelProperty, topLevelObjectBuilder);
 
             // Recurse over the namespace and add all of them to the Json builders
-            recurseOverNested(rootObjectBuilder, sortedNestedProperties, property, propertyComponentObjectBuilders,
+            recurseOverNested(rootObjectBuilder, nestedProperties, property, propertyComponentObjectBuilders,
                     null);
         }
     }
