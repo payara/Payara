@@ -182,12 +182,22 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
     }
 
+    /**
+     * Builds the Json Object from all supplied configuration to send to Docker.
+     *
+     * @param node The Payara Server node
+     * @param dasHost The IP address of the DAS
+     * @param dasPort The admin port of the DAS
+     * @return Json Object representing all supplied and default Docker container configuration.
+     */
     private JsonObject constructJsonRequest(Node node, String dasHost, String dasPort) {
         JsonObjectBuilder rootObjectBuilder = Json.createObjectBuilder();
 
+        // Add the image straight away - this is never overridden
         rootObjectBuilder.add(DockerConstants.DOCKER_IMAGE_KEY, node.getDockerImage());
 
-        // If no user properties specified, go with defaults
+        // If no user properties specified, go with defaults, otherwise go over the system properties and add them to
+        // the Json object
         if (containerConfig.isEmpty()) {
             rootObjectBuilder.add(DockerConstants.DOCKER_HOST_CONFIG_KEY, Json.createObjectBuilder()
                     .add(DockerConstants.DOCKER_MOUNTS_KEY, Json.createArrayBuilder()
@@ -209,18 +219,28 @@ public class CreateDockerContainerCommand implements AdminCommand {
         return rootObjectBuilder.build();
     }
 
-    private JsonObjectBuilder translatePropertyValuesToJson(JsonObjectBuilder rootObjectBuilder, String dasHost,
-                                                            String dasPort) {
+    /**
+     * Go over all system properties and add them to the Json object.
+     *
+     * @param rootObjectBuilder The top-level object builder that will contain all Docker configuration
+     * @param dasHost The IP address that the DAS is running on
+     * @param dasPort The admin port of the DAS
+     */
+    private void translatePropertyValuesToJson(JsonObjectBuilder rootObjectBuilder, String dasHost,
+            String dasPort) {
         processedProperties = new ArrayList<>();
         boolean hostConfigAdded = false;
         boolean envConfigAdded = false;
 
+
         for (String property : containerConfig.stringPropertyNames()) {
+            // As we recurse over nested properties, we add the processed ones to this list, so check that we're
+            // not going to process the same property twice
             if (processedProperties.contains(property)) {
                 continue;
             }
 
-            // Check if any of the properties are in the same namespace as our defaults
+            // If the property is in the same namespace as our defaults, handle them here
             if (property.startsWith(DockerConstants.DOCKER_HOST_CONFIG_KEY)) {
                 hostConfigAdded = true;
                 addHostConfigProperties(rootObjectBuilder);
@@ -236,13 +256,14 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 // Recurse through the properties and add any other properties that fall under the same namespace
                 addNestedProperties(rootObjectBuilder, property);
             } else {
-                // Not a nested property, add it as is
+                // Not a nested property, add it as a plain key:value
                 String propertyValue = containerConfig.getProperty(property);
                 addPropertyToJson(rootObjectBuilder, property, propertyValue);
                 processedProperties.add(property);
             }
         }
 
+        // If we haven't added any HostConfig or Env settings, add the defaults here
         if (!hostConfigAdded) {
             rootObjectBuilder.add(DockerConstants.DOCKER_HOST_CONFIG_KEY, Json.createObjectBuilder()
                     .add(DockerConstants.DOCKER_MOUNTS_KEY, Json.createArrayBuilder()
@@ -253,7 +274,6 @@ public class CreateDockerContainerCommand implements AdminCommand {
                                     .add(DockerConstants.DOCKER_MOUNTS_READONLY_KEY, true)))
                     .add(DockerConstants.DOCKER_NETWORK_MODE_KEY, "host"));
         }
-
         if (!envConfigAdded) {
             rootObjectBuilder.add(DockerConstants.DOCKER_CONTAINER_ENV, Json.createArrayBuilder()
                     .add(DockerConstants.PAYARA_DAS_HOST + "=" + dasHost)
@@ -261,12 +281,16 @@ public class CreateDockerContainerCommand implements AdminCommand {
                     .add(DockerConstants.PAYARA_NODE_NAME + "=" + nodeName)
                     .add(DockerConstants.INSTANCE_NAME + "=" + instanceName));
         }
-
-        return rootObjectBuilder;
     }
 
+    /**
+     * Loops over nested properties in the 'HostConfig' namespace and adds them to the Json builder.
+     * @param rootObjectBuilder The top-level Json builder
+     */
     private void addHostConfigProperties(JsonObjectBuilder rootObjectBuilder) {
         JsonObjectBuilder hostConfigObjectBuilder = Json.createObjectBuilder();
+
+        // Gather all properties in the 'HostConfig' namespace
         List<String> hostConfigProperties = new ArrayList<>();
         for (String property : containerConfig.stringPropertyNames()) {
             if (property.startsWith(DockerConstants.DOCKER_HOST_CONFIG_KEY)) {
@@ -274,7 +298,8 @@ public class CreateDockerContainerCommand implements AdminCommand {
             }
         }
 
-        // Sort them into alphabetical order to group them all related properties together
+        // Sort them into alphabetical order to group all related properties together (so foo.baa and
+        // foo.bar are next to each other in the list)
         hostConfigProperties.sort(Comparator.comparing(String::toString));
 
         // Populate HostConfig defaults map so we can check if any get overridden
@@ -282,7 +307,9 @@ public class CreateDockerContainerCommand implements AdminCommand {
         defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, false);
         defaultsOverridden.put(DockerConstants.DOCKER_NETWORK_MODE_KEY, false);
 
-        loopOverNestedProperties(rootObjectBuilder, hostConfigObjectBuilder, hostConfigProperties, defaultsOverridden);
+        // Loop over all properties and add to HostConfig Json builder
+        loopOverNestedProperties(rootObjectBuilder, DockerConstants.DOCKER_HOST_CONFIG_KEY, hostConfigObjectBuilder,
+                hostConfigProperties, defaultsOverridden);
 
         // Add any remaining defaults
         if (!defaultsOverridden.get(DockerConstants.DOCKER_MOUNTS_KEY)) {
@@ -293,7 +320,6 @@ public class CreateDockerContainerCommand implements AdminCommand {
                             .add(DockerConstants.DOCKER_MOUNTS_TARGET_KEY, DockerConstants.PAYARA_PASSWORD_FILE)
                             .add(DockerConstants.DOCKER_MOUNTS_READONLY_KEY, true)));
         }
-
         if (!defaultsOverridden.get(DockerConstants.DOCKER_NETWORK_MODE_KEY)) {
             hostConfigObjectBuilder.add(DockerConstants.DOCKER_NETWORK_MODE_KEY, "host");
         }
@@ -302,8 +328,16 @@ public class CreateDockerContainerCommand implements AdminCommand {
         rootObjectBuilder.add(DockerConstants.DOCKER_HOST_CONFIG_KEY, hostConfigObjectBuilder);
     }
 
+    /**
+     * Generic version of addHostConfigProperties, that loops over nested properties namespace and adds them to
+     * the Json builder.
+     * @param rootObjectBuilder The top-level Json builder
+     * @param originalProperty The first property that we found in this namespace
+     */
     private void addNestedProperties(JsonObjectBuilder rootObjectBuilder, String originalProperty) {
         JsonObjectBuilder topLevelObjectBuilder = Json.createObjectBuilder();
+
+        // Gather all properties in the same namespace as the original property
         List<String> nestedProperties = new ArrayList<>();
         String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf("."));
         for (String property : containerConfig.stringPropertyNames()) {
@@ -316,27 +350,31 @@ public class CreateDockerContainerCommand implements AdminCommand {
         nestedProperties.sort(Comparator.comparing(String::toString));
 
         // Loop over nested properties and add to Json
-        loopOverNestedProperties(rootObjectBuilder, topLevelObjectBuilder, nestedProperties, null);
+        loopOverNestedProperties(rootObjectBuilder, topLevelProperty, topLevelObjectBuilder, nestedProperties, null);
 
         // Finally, add top level object builder to root Json request object builder
         rootObjectBuilder.add(topLevelProperty, topLevelObjectBuilder);
     }
 
-    private void addEnvProperties(JsonObjectBuilder jsonObjectBuilder, String dasHost, String dasPort) {
+    /**
+     * Adds the Env array properties to the root Json builder
+     * @param rootObjectBuilder The top-level Json builder
+     * @param dasHost The IP address that the DAS is situated on
+     * @param dasPort The admin port of the DAS
+     */
+    private void addEnvProperties(JsonObjectBuilder rootObjectBuilder, String dasHost, String dasPort) {
         String envConfigString = containerConfig.getProperty(DockerConstants.DOCKER_CONTAINER_ENV);
 
+        // Check if we need to add any of our defaults
         if (!envConfigString.contains(DockerConstants.PAYARA_DAS_HOST)) {
             envConfigString += "|" + DockerConstants.PAYARA_DAS_HOST + "=" + dasHost;
         }
-
         if (envConfigString.contains(DockerConstants.PAYARA_DAS_PORT)) {
             envConfigString += "|" + DockerConstants.PAYARA_DAS_PORT + "=" + dasPort;
         }
-
         if (envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
             envConfigString += "|" + DockerConstants.PAYARA_NODE_NAME + "=" + nodeName;
         }
-
         if (envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
             envConfigString += "|" + DockerConstants.INSTANCE_NAME + "=" + instanceName;
         }
@@ -345,18 +383,28 @@ public class CreateDockerContainerCommand implements AdminCommand {
         // add to Json
         envConfigString = envConfigString.replaceAll(":", "=");
 
-        addPropertyToJson(jsonObjectBuilder, DockerConstants.DOCKER_CONTAINER_ENV, envConfigString);
+        // Finally, add to top-level Json builder
+        addPropertyToJson(rootObjectBuilder, DockerConstants.DOCKER_CONTAINER_ENV, envConfigString);
     }
 
-    private void loopOverNestedProperties(JsonObjectBuilder rootObjectBuilder, JsonObjectBuilder topLevelObjectBuilder,
-            List<String> sortedNestedProperties, Map<String, Boolean> defaultsOverridden) {
+    /**
+     * Loops over all nested properties in a given namespace and adds them to the top-level builder of said namespace
+     * @param rootObjectBuilder
+     * @param topLevelObjectBuilder
+     * @param sortedNestedProperties
+     * @param defaultsOverridden
+     */
+    private void loopOverNestedProperties(JsonObjectBuilder rootObjectBuilder, String topLevelProperty,
+            JsonObjectBuilder topLevelObjectBuilder, List<String> sortedNestedProperties,
+            Map<String, Boolean> defaultsOverridden) {
         for (String property : sortedNestedProperties) {
+            // Only process if we haven't already
             if (processedProperties.contains(property)) {
                 continue;
             }
 
+            // Check if property overrides any of our defaults
             if (defaultsOverridden != null) {
-                // Check if property overrides any of our defaults
                 switch (property) {
                     case DockerConstants.DOCKER_HOST_CONFIG_KEY + "." + DockerConstants.DOCKER_MOUNTS_KEY:
                         defaultsOverridden.put(DockerConstants.DOCKER_MOUNTS_KEY, true);
@@ -367,17 +415,29 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 }
             }
 
+            // Create a Map of Json builders for each level of the property
             Map<String, JsonObjectBuilder> propertyComponentObjectBuilders = new HashMap<>();
-            propertyComponentObjectBuilders.put(DockerConstants.DOCKER_HOST_CONFIG_KEY, topLevelObjectBuilder);
+            propertyComponentObjectBuilders.put(topLevelProperty, topLevelObjectBuilder);
+
+            // Recurse over the namespace and add all of them to the Json builders
             recurseOverNested(rootObjectBuilder, sortedNestedProperties, property, propertyComponentObjectBuilders,
                     null);
         }
     }
 
-    private void recurseOverNested(JsonObjectBuilder jsonObjectBuilder, List<String> sortedProperties,
+    /**
+     * Recurses over all properties in a given namespace, and adds them all to their Json builders
+     * @param parentObjectBuilder The Json object builder of the parent property
+     * @param sortedProperties The list of sorted properties to recurse over
+     * @param property The property to add to Json
+     * @param propertyComponentObjectBuilders The map of Json builders still under construction
+     * @param parent The parent component property
+     */
+    private void recurseOverNested(JsonObjectBuilder parentObjectBuilder, List<String> sortedProperties,
             String property, Map<String, JsonObjectBuilder> propertyComponentObjectBuilders, String parent) {
         List<String> propertyComponents = Arrays.asList(property.split("\\."));
 
+        // Check if we need to create any more Object Builders
         for (String propertyComponent : propertyComponents) {
             // We don't need to make a builder for the last component, as it isn't an object, it's a value
             if (propertyComponents.indexOf(propertyComponent) != propertyComponents.size() - 1) {
@@ -388,12 +448,15 @@ public class CreateDockerContainerCommand implements AdminCommand {
         // Add lowest level property component to immediate parent builder (second last in list)
         String immediateParent = propertyComponents.get(propertyComponents.size() - 2);
 
+        // Use the passed in object builder if the immediate parent is the same as the previous property
         JsonObjectBuilder immediateParentObjectBuilder;
         if (parent != null && immediateParent.equals(parent)) {
-            immediateParentObjectBuilder = jsonObjectBuilder;
+            immediateParentObjectBuilder = parentObjectBuilder;
         } else {
             immediateParentObjectBuilder = propertyComponentObjectBuilders.get(immediateParent);
         }
+
+        // Add the property to the Json builder
         String propertyComponentKey = propertyComponents.get(propertyComponents.size() - 1);
         String propertyValue = containerConfig.getProperty(property);
         addPropertyToJson(immediateParentObjectBuilder, propertyComponentKey, propertyValue);
@@ -401,34 +464,40 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
         // If there are more properties, check if each parent has any extra children
         if (sortedProperties.indexOf(property) + 1 != sortedProperties.size()) {
+            // Get the next property in the list
             String nextProperty = sortedProperties.get(sortedProperties.indexOf(property) + 1);
+
+            // For each parent component in the property (e.g. fee & fih & foh for the property fee.fih.foh.fum)
             for (int i = propertyComponents.size() - 2; i > -1; i--) {
-                String remainingParents = "";
+                // Build a string of all remaining parents (so 1st run would be fee.fih.foh, 2nd would be fee.fih etc.)
+                String parents = "";
                 for (int j = 0; j < i + 1; j++) {
-                    remainingParents += propertyComponents.get(j);
+                    parents += propertyComponents.get(j);
 
                     if (j != i) {
-                        remainingParents += ".";
+                        parents += ".";
                     }
                 }
 
-                if (nextProperty.startsWith(remainingParents)) {
-                    // We've found a property in the same namespace, recurse into this method to add this next property
-                    // to the object builder
+                // Check if the next property is at the same level in the namespace,
+                // or if we need to go further up the namespace
+                if (nextProperty.startsWith(parents)) {
+                    // We've found a property at the same level in the namespace,
+                    // recurse into this method to add this next property to the same object builder
                     recurseOverNested(
                             propertyComponentObjectBuilders.get(propertyComponents.get(i)),
                             sortedProperties,
                             nextProperty, propertyComponentObjectBuilders, immediateParent);
-                    // We don't want to keep looping as we'll end up adding stuff added in the recursed method call
+                    // We don't want to keep looping as we'll end up adding stuff added in the recursive method call
                     // above
                     break;
                 } else {
                     if (i != 0) {
                         // If we haven't found another property in the same namespace, add the current object builder
                         // to its parent
-                        JsonObjectBuilder parentObjectBuilder = propertyComponentObjectBuilders.get(
+                        JsonObjectBuilder parentPropertyComponentObjectBuilder = propertyComponentObjectBuilders.get(
                                 propertyComponents.get(i - 1));
-                        parentObjectBuilder.add(propertyComponents.get(i),
+                        parentPropertyComponentObjectBuilder.add(propertyComponents.get(i),
                                 propertyComponentObjectBuilders.get(propertyComponents.get(i)));
                         propertyComponentObjectBuilders.remove(propertyComponents.get(i));
                     }
@@ -445,13 +514,21 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
     }
 
+    /**
+     * Adds the given property and property value to the provided JsonObjectBuilder
+     *
+     * @param jsonObjectBuilder The object builder to add the property to
+     * @param property The name of the property to add
+     * @param propertyValue The value of the property to add
+     */
     private void addPropertyToJson(JsonObjectBuilder jsonObjectBuilder, String property, String propertyValue) {
+        // Check for array
         if (propertyValue.startsWith("[") && propertyValue.endsWith("]")) {
             propertyValue = propertyValue.replaceAll("\\[", "").replaceAll("\\]", "");
             // If it is an array, check if there are objects in this array that we need to deal with
             if (propertyValue.contains(",")) {
-                // We have the split operator for an array and an object, the Docker Rest API does not currently have
-                // any Arrays of Objects with in turn contain arrays or further objects
+                // We have the split operator for an array and an object, so assume it is an array of objects as
+                // objects with arrays are added differently
                 JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
                 for (String arrayElement : propertyValue.split("\\|")) {
                     JsonObjectBuilder arrayObjectBuilder = Json.createObjectBuilder();
@@ -477,6 +554,13 @@ public class CreateDockerContainerCommand implements AdminCommand {
         }
     }
 
+    /**
+     * Lifecycle helper method that attempts to remove an instance registry if we failed to create the corresponding
+     * Docker container
+     *
+     * @param adminCommandContext
+     * @param actionReport
+     */
     private void unregisterInstance(AdminCommandContext adminCommandContext, ActionReport actionReport) {
         if (commandRunner != null) {
             actionReport.appendMessage("\n\nWill attempt to unregister instance...");
