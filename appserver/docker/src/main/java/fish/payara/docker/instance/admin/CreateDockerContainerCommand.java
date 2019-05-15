@@ -319,7 +319,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
     /**
      * Generic version of addHostConfigProperties, that loops over nested properties namespace and adds them to
      * the Json builder.
-     * @param rootObjectBuilder The top-level Json builder
+     * @param rootObjectBuilder The root-level Json builder
      * @param originalProperty The first property that we found in this namespace
      */
     private void addNestedProperties(JsonObjectBuilder rootObjectBuilder, String originalProperty) {
@@ -340,19 +340,21 @@ public class CreateDockerContainerCommand implements AdminCommand {
      * @param dasPort The admin port of the DAS
      */
     private void addEnvProperties(JsonObjectBuilder rootObjectBuilder, String dasHost, String dasPort) {
-        String envConfigString = containerConfig.getProperty(DockerConstants.DOCKER_CONTAINER_ENV);
+        String envConfigString = containerConfig.getProperty(DockerConstants.DOCKER_CONTAINER_ENV)
+                .replaceAll("\\[", "")
+                .replaceAll("\\]", "");
 
         // Check if we need to add any of our defaults
         if (!envConfigString.contains(DockerConstants.PAYARA_DAS_HOST)) {
             envConfigString += "|" + DockerConstants.PAYARA_DAS_HOST + "=" + dasHost;
         }
-        if (envConfigString.contains(DockerConstants.PAYARA_DAS_PORT)) {
+        if (!envConfigString.contains(DockerConstants.PAYARA_DAS_PORT)) {
             envConfigString += "|" + DockerConstants.PAYARA_DAS_PORT + "=" + dasPort;
         }
-        if (envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
+        if (!envConfigString.contains(DockerConstants.PAYARA_NODE_NAME)) {
             envConfigString += "|" + DockerConstants.PAYARA_NODE_NAME + "=" + nodeName;
         }
-        if (envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
+        if (!envConfigString.contains(DockerConstants.INSTANCE_NAME)) {
             envConfigString += "|" + DockerConstants.INSTANCE_NAME + "=" + instanceName;
         }
 
@@ -455,7 +457,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
             String nextProperty = sortedProperties.get(sortedProperties.indexOf(property) + 1);
 
             // For each parent component in the property (e.g. fee & fih & foh for the property fee.fih.foh.fum)
-            for (int i = propertyComponents.size() - 2; i > -1; i--) {
+            for (int i = propertyComponents.size() - 2; i > 0; i--) {
                 // Build a string of all remaining parents (so 1st run would be fee.fih.foh, 2nd would be fee.fih etc.)
                 String parents = "";
                 for (int j = 0; j < i + 1; j++) {
@@ -491,12 +493,16 @@ public class CreateDockerContainerCommand implements AdminCommand {
                 }
             }
         } else {
-            // If there are no more properties, make sure to add the last object builder to its parent
+            // If there are no more properties, make sure to add the remaining object builders to their parents
             // Only do so if it's more than two levels deep though, as otherwise we've already added it
             if (propertyComponents.size() > 2) {
-                propertyComponentObjectBuilders.get(propertyComponents.get(0)).add(propertyComponents.get(1),
-                        propertyComponentObjectBuilders.get(propertyComponents.get(1)));
-                propertyComponentObjectBuilders.remove(propertyComponents.get(1));
+                for (int i = propertyComponents.size() - 2; i > 0; i--) {
+                    propertyComponentObjectBuilders.get(propertyComponents.get(i - 1))
+                            .add(propertyComponents.get(i),
+                                    propertyComponentObjectBuilders.get(propertyComponents.get(i)));
+                    propertyComponentObjectBuilders.remove(
+                            propertyComponents.get(propertyComponents.indexOf(immediateParent)));
+                }
             }
         }
     }
