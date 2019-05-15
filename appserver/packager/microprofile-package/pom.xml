@@ -225,7 +225,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>mp-rest-client</artifactId>
+            <artifactId>jersey-mp-rest-client</artifactId>
         </dependency>
             
         <!-- OpenTracing -->
