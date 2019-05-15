@@ -203,8 +203,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>jakarta.inject</artifactId>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

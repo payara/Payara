@@ -400,10 +400,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
             nConfig.setPublicAddress(nodeConfig.getPublicAddress());
         }
 
-        MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
-        memberAddressProviderConfig.setEnabled(enabled);
-        memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
-
         if (!configuration.getInterface().isEmpty()) {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
@@ -411,6 +407,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 nConfig.getInterfaces().addInterface(interfaceName);
             }
             nConfig.getInterfaces().setEnabled(true);
+        } else {
+            MemberAddressProviderConfig memberAddressProviderConfig = nConfig.getMemberAddressProviderConfig();
+            memberAddressProviderConfig.setEnabled(enabled);
+            memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
         }
         
         String discoveryMode = configuration.getDiscoveryMode();

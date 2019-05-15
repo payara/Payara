@@ -58,7 +58,7 @@ import org.junit.Test;
 public class RemoteEJBContextFactoryTest {
 
     private static final String FISH_PAYARA_EJB_HTTP_CLIENT_PROVIDER_URL = Context.PROVIDER_URL;
-    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT = RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT;
+    private static final String FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT = RemoteEJBContextFactory.JAXRS_CLIENT_SSL_CONTEXT;
 
     @After
     public void clean() {
@@ -77,7 +77,7 @@ public class RemoteEJBContextFactoryTest {
     public void whenNamingEnvironmentVariableIsSetThePrefixIsReplaced() throws NamingException {
         System.setProperty(FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT, "custom-SSL-context");
         Context context = new RemoteEJBContextFactory().getInitialContext(new Hashtable<>());
-        assertEquals("custom-SSL-context", context.getEnvironment().get(RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT));
+        assertEquals("custom-SSL-context", context.getEnvironment().get(RemoteEJBContextFactory.JAXRS_CLIENT_SSL_CONTEXT));
     }
 
     @Test
@@ -86,9 +86,9 @@ public class RemoteEJBContextFactoryTest {
         System.setProperty(FISH_PAYARA_EJB_HTTP_CLIENT_SSLCONTEXT, "custom-SSL-context");
         Hashtable<String, Object> environment = new Hashtable<>();
         environment.put(Context.PROVIDER_URL, "http://existing.url");
-        environment.put(RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT, "existing-SSL-context");
+        environment.put(RemoteEJBContextFactory.JAXRS_CLIENT_SSL_CONTEXT, "existing-SSL-context");
         Context context = new RemoteEJBContextFactory().getInitialContext(environment);
         assertEquals("http://existing.url", context.getEnvironment().get(Context.PROVIDER_URL));
-        assertEquals("existing-SSL-context", context.getEnvironment().get(RemoteEJBContextFactory.FISH_PAYARA_SSL_CONTEXT));
+        assertEquals("existing-SSL-context", context.getEnvironment().get(RemoteEJBContextFactory.JAXRS_CLIENT_SSL_CONTEXT));
     }
 }

@@ -86,8 +86,8 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-			                <classpathLayoutType>custom</classpathLayoutType>
-			                <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
+                            <classpathLayoutType>custom</classpathLayoutType>
+                            <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
                             <mainClass>com.sun.enterprise.glassfish.bootstrap.ASMain</mainClass>
                         </manifest>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

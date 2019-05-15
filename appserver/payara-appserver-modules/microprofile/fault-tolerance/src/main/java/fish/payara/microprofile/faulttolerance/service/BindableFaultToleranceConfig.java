@@ -41,8 +41,6 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,11 +72,12 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     private static final Logger logger = Logger.getLogger(BindableFaultToleranceConfig.class.getName());
 
     /**
-     * These tree properties should only be read once at the start of the application, therefore they are cached in
-     * static field.
+     * These tree properties should only be read once at the start of the application, therefore they are initialised
+     * once.
      */
     private final AtomicReference<Boolean> nonFallbackEnabled;
     private final AtomicReference<Boolean> metricsEnabled;
+    private final AtomicReference<Class<? extends Annotation>[]> alternativeAsynchronousAnnotations;
     private final Config config;
     private final Stereotypes sterotypes;
     private final InvocationContext context;
@@ -88,20 +87,18 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     }
 
     public BindableFaultToleranceConfig(Config config, Stereotypes sterotypes) {
-        this.config = config;
-        this.sterotypes = sterotypes;
-        this.nonFallbackEnabled = new AtomicReference<>();
-        this.metricsEnabled = new AtomicReference<>();
-        this.context = null; // factory is unbound
+        this(null, config, sterotypes, new AtomicReference<>(), new AtomicReference<>(), new AtomicReference<>());
     }
 
-    private BindableFaultToleranceConfig(InvocationContext context, Stereotypes sterotypes, Config config,
-            AtomicReference<Boolean> nonFallbackEnabled, AtomicReference<Boolean> metricsEnabled) {
+    private BindableFaultToleranceConfig(InvocationContext context, Config config, Stereotypes sterotypes,
+            AtomicReference<Boolean> nonFallbackEnabled, AtomicReference<Boolean> metricsEnabled,
+            AtomicReference<Class<? extends Annotation>[]> alternativeAsynchronousAnnotations) {
         this.context = context;
         this.sterotypes = sterotypes;
         this.config = config;
         this.nonFallbackEnabled = nonFallbackEnabled;
         this.metricsEnabled = metricsEnabled;
+        this.alternativeAsynchronousAnnotations = alternativeAsynchronousAnnotations;
     }
 
     private static Config resolveConfig() {
@@ -131,7 +128,8 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
     public FaultToleranceConfig bindTo(InvocationContext context) {
         return config == null
                 ? FaultToleranceConfig.asAnnotated(context.getTarget().getClass(), context.getMethod())
-                : new BindableFaultToleranceConfig(context, sterotypes, config, nonFallbackEnabled, metricsEnabled);
+                : new BindableFaultToleranceConfig(context, config, sterotypes, nonFallbackEnabled, metricsEnabled,
+                        alternativeAsynchronousAnnotations);
     }
 
     /*
@@ -166,6 +164,22 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
         return FaultToleranceUtils.getEnabledOverrideValue(config, annotationType, context,
                         annotationType == Fallback.class || isNonFallbackEnabled());
     }
+
+    @Override
+    public boolean isAlternativeAsynchronousAnnoationPresent() {
+        if (alternativeAsynchronousAnnotations.get() == null) {
+            alternativeAsynchronousAnnotations.compareAndSet(null, FaultToleranceUtils.toClassArray(
+                    config.getOptionalValue(ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, String.class).orElse(null),
+                    ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, NO_ALTERNATIVE_ANNOTATIONS));
+        }
+        for (Class<? extends Annotation> alterantiveAnnotation : alternativeAsynchronousAnnotations.get()) {
+            if (isAnnotationPresent(alterantiveAnnotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /*
      * Retry
@@ -336,21 +350,6 @@ final class BindableFaultToleranceConfig implements FaultToleranceConfig {
             String attributeName, Class<? extends Throwable>[] annotationValue) {
         String classNames = FaultToleranceUtils.getOverrideValue(config, annotationType, attributeName, context,
                 String.class, null);
-        if (classNames == null) {
-            return annotationValue;
-        }
-        try {
-            List<Class<?>> classList = new ArrayList<>();
-            // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
-            for (String className : classNames.replaceAll("[\\{\\[ \\]\\}]", "").replaceAll("\\.class", "")
-                    .split(",")) {
-                classList.add(Class.forName(className));
-            }
-            return classList.toArray(annotationValue);
-        } catch (ClassNotFoundException cnfe) {
-            logger.log(Level.INFO, "Could not find class from " + attributeName + " config, defaulting to annotation. "
-                    + "Make sure you give the full canonical class name.", cnfe);
-            return annotationValue;
-        }
+        return FaultToleranceUtils.toClassArray(classNames, attributeName, annotationValue);
     }
 }

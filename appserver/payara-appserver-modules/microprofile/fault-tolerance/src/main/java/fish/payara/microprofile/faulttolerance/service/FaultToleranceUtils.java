@@ -40,6 +40,8 @@
 package fish.payara.microprofile.faulttolerance.service;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -216,5 +218,25 @@ public class FaultToleranceUtils {
                 || element.isAnnotationPresent(Fallback.class)
                 || element.isAnnotationPresent(Retry.class)
                 || element.isAnnotationPresent(Timeout.class);
+    }
+
+    public static <T> Class<? extends T>[] toClassArray(String classNames, String attributeName,
+            Class<? extends T>[] defaultValue) {
+        if (classNames == null) {
+            return defaultValue;
+        }
+        try {
+            List<Class<?>> classList = new ArrayList<>();
+            // Remove any curly or square brackets from the string, as well as any spaces and ".class"es
+            for (String className : classNames.replaceAll("[\\{\\[ \\]\\}]", "").replaceAll("\\.class", "")
+                    .split(",")) {
+                classList.add(Class.forName(className));
+            }
+            return classList.toArray(defaultValue);
+        } catch (ClassNotFoundException cnfe) {
+            logger.log(Level.INFO, "Could not find class from " + attributeName + " config, defaulting to annotation. "
+                    + "Make sure you give the full canonical class name.", cnfe);
+            return defaultValue;
+        }
     }
 }

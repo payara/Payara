@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -97,11 +97,11 @@
         </dependency>
          <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
-            <artifactId>jakarta.inject</artifactId>
+            <artifactId>javax.inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-commons</artifactId>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>asm-repackaged</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
@@ -138,12 +138,6 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>${javassist.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jvnet</groupId>
-            <artifactId>tiger-types</artifactId>
-            <version>${tiger.types.version}</version>
         </dependency>
    </dependencies>
 </project>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.util.StringUtils;
@@ -89,7 +89,6 @@ class SummaryReporter {
     private String getVMInfo(final RuntimeMXBean rt) {
         final StringBuilderNewLineAppender sb = new StringBuilderNewLineAppender(new StringBuilder());
         sb.append(sm.getString("rt.info", rt.getName()));
-        sb.append(sm.getString("rt.bcp", rt.getBootClassPath()));
         sb.append(sm.getString("rt.cp", rt.getClassPath()));
         sb.append(sm.getString("rt.libpath", rt.getLibraryPath()));
         sb.append(sm.getString("rt.nvv", rt.getVmName(), rt.getVmVendor(), rt.getVmVersion()));

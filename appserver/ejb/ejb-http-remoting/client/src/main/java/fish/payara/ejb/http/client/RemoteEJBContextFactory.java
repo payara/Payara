@@ -67,15 +67,49 @@ import javax.naming.spi.InitialContextFactory;
  */
 public class RemoteEJBContextFactory implements InitialContextFactory {
 
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+    public static final String FACTORY_CLASS = RemoteEJBContextFactory.class.getName();
+    public static final String CLIENT_ADAPTER = "fish.payara.clientAdapter";
+
+    public static final String JAXRS_CLIENT_CONFIG = "fish.payara.withConfig";
+    public static final String JAXRS_CLIENT_TRUST_STORE = "fish.payara.trustStore";
+    public static final String JAXRS_CLIENT_SSL_CONTEXT = "fish.payara.sslContext";
+    public static final String JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
+    public static final String JAXRS_CLIENT_READ_TIMEOUT = "fish.payara.readTimeout";
+    public static final String JAXRS_CLIENT_KEY_STORE = "fish.payara.keyStore";
+    public static final String JAXRS_CLIENT_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
+    public static final String JAXRS_CLIENT_EXECUTOR_SERVICE = "fish.payara.executorService";
+    public static final String JAXRS_CLIENT_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+
+
+    @Deprecated
+    public static final String FISH_PAYARA_WITH_CONFIG = JAXRS_CLIENT_CONFIG;
+
+    @Deprecated
+    public static final String FISH_PAYARA_TRUST_STORE = JAXRS_CLIENT_TRUST_STORE;
+
+    @Deprecated
+    public static final String FISH_PAYARA_SSL_CONTEXT = JAXRS_CLIENT_SSL_CONTEXT;
+
+    @Deprecated
+    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE;
+
+    @Deprecated
+    public static final String FISH_PAYARA_READ_TIMEOUT = JAXRS_CLIENT_READ_TIMEOUT;
+
+    @Deprecated
+    public static final String FISH_PAYARA_KEY_STORE = JAXRS_CLIENT_KEY_STORE;
+
+    @Deprecated
+    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = JAXRS_CLIENT_HOSTNAME_VERIFIER;
+
+    @Deprecated
+    public static final String FISH_PAYARA_EXECUTOR_SERVICE = JAXRS_CLIENT_EXECUTOR_SERVICE;
+
+    @Deprecated
+    public static final String FISH_PAYARA_CONNECT_TIMEOUT = JAXRS_CLIENT_CONNECT_TIMEOUT;
+
+    @Deprecated
+    public static final String FISH_PAYARA_CLIENT_ADAPTER = CLIENT_ADAPTER;
 
     /**
      * The keys checked when creating a {@link Context} with {@link #getInitialContext(Hashtable)}. If these are not set
@@ -98,24 +132,24 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
             Context.SECURITY_PRINCIPAL,
             Context.SECURITY_CREDENTIALS,
             Context.LANGUAGE,
-            FISH_PAYARA_CONNECT_TIMEOUT,
-            FISH_PAYARA_EXECUTOR_SERVICE,
-            FISH_PAYARA_HOSTNAME_VERIFIER,
-            FISH_PAYARA_KEY_STORE,
-            FISH_PAYARA_READ_TIMEOUT,
-            FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE,
-            FISH_PAYARA_SSL_CONTEXT,
-            FISH_PAYARA_TRUST_STORE,
-            FISH_PAYARA_WITH_CONFIG };
+            JAXRS_CLIENT_CONFIG,
+            JAXRS_CLIENT_CONNECT_TIMEOUT,
+            JAXRS_CLIENT_EXECUTOR_SERVICE,
+            JAXRS_CLIENT_HOSTNAME_VERIFIER,
+            JAXRS_CLIENT_KEY_STORE,
+            JAXRS_CLIENT_READ_TIMEOUT,
+            JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE,
+            JAXRS_CLIENT_SSL_CONTEXT,
+            JAXRS_CLIENT_TRUST_STORE};
 
     @SuppressWarnings("unchecked")
     @Override
     public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
-        updateEnvironmentFromSystemProperties((Hashtable<String, Object>) environment);
+        applySystemPropertiesFallbacks((Hashtable<String, Object>) environment);
         return new RemoteEJBContext(environment);
     }
 
-    private void updateEnvironmentFromSystemProperties(Hashtable<String, Object> environment) {
+    private void applySystemPropertiesFallbacks(Hashtable<String, Object> environment) {
         for (String environmentVariable : SYSTEM_PROPERTY_KEYS) {
             if (!environment.containsKey(environmentVariable)) {
                 String value = System.getProperty(environmentVariable, null);

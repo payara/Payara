@@ -41,7 +41,7 @@
 
 -->
 
-<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     
@@ -81,7 +81,7 @@
                                 <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
-                                
+
                                 <echo message="compile classpath: ${compile_classpath}"/>
                                 <echo message="${line.separator} ###############################" />
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
@@ -261,7 +261,7 @@
                         <version>1</version>
                         <scope>system</scope>
                         <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                    </dependency>                     
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -270,14 +270,29 @@
     <profiles>
         <profile>
             <id>all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <test.gd>true</test.gd>
             </properties>
         </profile>
-    
+
+        <!-- <profile>
+            <id>tools_jar</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools-jar</artifactId>
+                    <version>1</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile> -->
+
         <profile>
             <id>report</id>
             <properties>
