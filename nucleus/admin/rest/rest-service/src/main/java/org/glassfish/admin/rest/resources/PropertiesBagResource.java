@@ -177,31 +177,31 @@ public class PropertiesBagResource extends AbstractResource {
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
 
-                String unescapedName = Object.class.cast(property.get("name")).toString();
+                String unescapedName = property.get("name");
                 String escapedName = getEscapedPropertyName(unescapedName);
 
-                String value = Object.class.cast(property.get("value")).toString();
+                String value = property.get("value");
                 String unescapedValue = value.replaceAll("\\\\", "");
                 
                 String description = null;
                 if (property.get("description") != null) {
-                    description = Object.class.cast(property.get("description")).toString();
+                    description = property.get("description");
                 }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-                boolean isDottedName = ((Object)property.get("name")).toString().contains(".");
+                boolean isDottedName = property.get("name").contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
                     
-                    data.put(escapedName, ((Object)property.get("value")).toString());
+                    data.put(escapedName, property.get("value"));
                     
                     if (isDottedName) {
                         data.put(unescapedName + ".name", unescapedName);
                     }
                     
-                    if ((description != null)) {
-                        descriptionData.put(unescapedName + ".description", ((Object) description).toString());
+                    if (description != null) {
+                        descriptionData.put(unescapedName + ".description", description);
                     }
 
                 }
@@ -214,7 +214,7 @@ public class PropertiesBagResource extends AbstractResource {
                 }
             }
 
-            if (!data.isEmpty()) {
+            if (!data.isEmpty() || !descriptionData.isEmpty()) {
                 Util.applyChanges(data, uriInfo, getSubject());
                 Util.applyChanges(descriptionData, uriInfo, getSubject());
             }
