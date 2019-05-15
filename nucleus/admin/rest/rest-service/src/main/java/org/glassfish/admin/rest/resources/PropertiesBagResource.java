@@ -172,6 +172,7 @@ public class PropertiesBagResource extends AbstractResource {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, properties);
             Map<String, String> data = new LinkedHashMap<String, String>();
+            Map<String, String> descriptionData = new LinkedHashMap<String, String>();
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
@@ -192,9 +193,15 @@ public class PropertiesBagResource extends AbstractResource {
                 boolean isDottedName = ((Object)property.get("name")).toString().contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
+                    
                     data.put(escapedName, ((Object)property.get("value")).toString());
-                    if (!isDottedName && (description != null)) {
-                        data.put(escapedName + ".description", ((Object) description).toString());
+                    
+                    if (isDottedName) {
+                        data.put(unescapedName + ".name", unescapedName);
+                    }
+                    
+                    if ((description != null)) {
+                        descriptionData.put(unescapedName + ".description", ((Object) description).toString());
                     }
 
                 }
@@ -202,13 +209,14 @@ public class PropertiesBagResource extends AbstractResource {
                 //update the description only if not null/blank
                 if ((description != null) && (existingProp != null)) {
                      if (!"".equals(description) && (!description.equals(existingProp.getDescription()))) {
-                        data.put(unescapedName + ".description", description);
+                        descriptionData.put(unescapedName + ".description", description);
                     }
                 }
             }
 
             if (!data.isEmpty()) {
                 Util.applyChanges(data, uriInfo, getSubject());
+                Util.applyChanges(descriptionData, uriInfo, getSubject());
             }
 
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
