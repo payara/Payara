@@ -188,7 +188,7 @@ public class InvokeEJBServlet extends HttpServlet {
                     // try further
                 }
             }
-            throw new NoSuchMethodException("No method matching "+methodName+"("+ Arrays.toString(argTypeClasses)+") found in business interface");
+            throw new NoSuchMethodException("No method matching " + methodName + "(" + Arrays.toString(argTypeClasses) + ") found in business interface");
         }
 
         void setArgs(JsonArray argValues) {
