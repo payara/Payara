@@ -79,15 +79,33 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
 
     /**
      * The keys checked when creating a {@link Context} with {@link #getInitialContext(Hashtable)}. If these are not set
-     * in the environment we they are initialised to a {@link System#getProperty(String)}. The name of the property is
-     * the same except {@code fish.parara.}/{@code java.naming.} is replaced with {@code fish.payara.ejb.http.client}
-     * effectively looking for properties with names like {@code fish.payara.ejb.http.client.sslContext} or
-     * {@code fish.payara.ejb.http.client.provider.url}.
+     * in the environment they are initialised to a {@link System#getProperty(String)} if present. 
+     * 
+     * The name of the property is the same as the environment variable name.
      */
-    private String[] SYSTEM_PROPERTY_KEYS = { Context.PROVIDER_URL, Context.SECURITY_CREDENTIALS,
-            Context.SECURITY_PRINCIPAL, FISH_PAYARA_CONNECT_TIMEOUT, FISH_PAYARA_EXECUTOR_SERVICE,
-            FISH_PAYARA_HOSTNAME_VERIFIER, FISH_PAYARA_KEY_STORE, FISH_PAYARA_READ_TIMEOUT,
-            FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE, FISH_PAYARA_SSL_CONTEXT, FISH_PAYARA_TRUST_STORE,
+    private String[] SYSTEM_PROPERTY_KEYS = {
+            Context.INITIAL_CONTEXT_FACTORY,
+            Context.OBJECT_FACTORIES,
+            Context.STATE_FACTORIES,
+            Context.URL_PKG_PREFIXES,
+            Context.PROVIDER_URL,
+            Context.DNS_URL,
+            Context.AUTHORITATIVE,
+            Context.BATCHSIZE,
+            Context.REFERRAL,
+            Context.SECURITY_PROTOCOL,
+            Context.SECURITY_AUTHENTICATION,
+            Context.SECURITY_PRINCIPAL,
+            Context.SECURITY_CREDENTIALS,
+            Context.LANGUAGE,
+            FISH_PAYARA_CONNECT_TIMEOUT,
+            FISH_PAYARA_EXECUTOR_SERVICE,
+            FISH_PAYARA_HOSTNAME_VERIFIER,
+            FISH_PAYARA_KEY_STORE,
+            FISH_PAYARA_READ_TIMEOUT,
+            FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE,
+            FISH_PAYARA_SSL_CONTEXT,
+            FISH_PAYARA_TRUST_STORE,
             FISH_PAYARA_WITH_CONFIG };
 
     @SuppressWarnings("unchecked")
@@ -98,13 +116,11 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     }
 
     private void updateEnvironmentFromSystemProperties(Hashtable<String, Object> environment) {
-        for (String key : SYSTEM_PROPERTY_KEYS) {
-            if (!environment.containsKey(key)) {
-                String systemPropertyName = key.replaceFirst("fish\\.payara\\.|java\\.naming\\.", "fish.payara.ejb.http.client.");
-                System.out.println("Checking "+systemPropertyName);
-                String value = System.getProperty(systemPropertyName, null);
+        for (String environmentVariable : SYSTEM_PROPERTY_KEYS) {
+            if (!environment.containsKey(environmentVariable)) {
+                String value = System.getProperty(environmentVariable, null);
                 if (value != null) {
-                    environment.put(key, value);
+                    environment.put(environmentVariable, value);
                 }
             }
         }
