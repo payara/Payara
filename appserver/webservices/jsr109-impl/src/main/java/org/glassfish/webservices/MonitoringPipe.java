@@ -40,26 +40,31 @@
 
 package org.glassfish.webservices;
 
-import org.glassfish.webservices.monitoring.*;
+import static javax.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static javax.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
+import static org.glassfish.webservices.monitoring.EndpointImpl.MESSAGE_ID;
 
-import javax.xml.namespace.QName;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.http.HTTPBinding;
 
-import com.sun.xml.ws.api.pipe.Pipe;
-import com.sun.xml.ws.api.message.Message;
-import com.sun.xml.ws.api.pipe.PipeCloner;
-import com.sun.xml.ws.api.message.Packet;
-import com.sun.xml.ws.api.model.SEIModel;
-import com.sun.xml.ws.api.model.JavaMethod;
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import com.sun.xml.ws.api.pipe.ServerPipeAssemblerContext;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.monitoring.HttpResponseInfoImpl;
+import org.glassfish.webservices.monitoring.JAXWSEndpointImpl;
+import org.glassfish.webservices.monitoring.MonitorContextImpl;
+import org.glassfish.webservices.monitoring.MonitorFilter;
+import org.glassfish.webservices.monitoring.ThreadLocalInfo;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-
+import com.sun.xml.ws.api.message.Packet;
+import com.sun.xml.ws.api.model.SEIModel;
+import com.sun.xml.ws.api.model.wsdl.WSDLPort;
+import com.sun.xml.ws.api.pipe.Pipe;
+import com.sun.xml.ws.api.pipe.PipeCloner;
+import com.sun.xml.ws.api.pipe.ServerPipeAssemblerContext;
 import com.sun.xml.ws.api.pipe.helper.AbstractFilterPipeImpl;
+import com.sun.xml.ws.api.server.WSEndpoint;
+import com.sun.xml.ws.model.SOAPSEIModel;
 
 /**
  * This pipe is used to do app server monitoring
@@ -68,96 +73,143 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
 
     private final SEIModel seiModel;
     private final WSDLPort wsdlModel;
-    private final WSEndpoint owner;
+    private final WSEndpoint<?> ownerEndpoint;
     private final WebServiceEndpoint endpoint;
-    private final WebServiceEngineImpl wsEngine;
+    private final WebServiceEngineImpl wsMonitor;
 
-    public MonitoringPipe(ServerPipeAssemblerContext ctxt, Pipe tail,
-                          WebServiceEndpoint ep) {
+    public MonitoringPipe(ServerPipeAssemblerContext assemblerContext, Pipe tail, WebServiceEndpoint endpoint) {
         super(tail);
-        this.endpoint = ep;
-        this.seiModel = ctxt.getSEIModel();
-        this.wsdlModel = ctxt.getWsdlModel();
-        this.owner = ctxt.getEndpoint();
-        wsEngine = WebServiceEngineImpl.getInstance();
+        
+        this.endpoint = endpoint;
+        
+        seiModel = assemblerContext.getSEIModel();
+        wsdlModel = assemblerContext.getWsdlModel();
+        ownerEndpoint = assemblerContext.getEndpoint();
+        wsMonitor = WebServiceEngineImpl.getInstance();
     }
 
     public MonitoringPipe(MonitoringPipe that, PipeCloner cloner) {
         super(that, cloner);
+        
         this.endpoint = that.endpoint;
         this.seiModel = that.seiModel;
         this.wsdlModel = that.wsdlModel;
-        this.owner = that.owner;
-        wsEngine = WebServiceEngineImpl.getInstance();
+        this.ownerEndpoint = that.ownerEndpoint;
+        
+        wsMonitor = WebServiceEngineImpl.getInstance();
     }
 
+    @Override
+    public Packet process(Packet pipeRequest) {
+        
+        // If it is a JBI request then skip the monitoring logic. This is done
+        // as HTTPServletRequest/Response is not available when the invocation
+        // is from JavaEE service engine.
+
+        String delegateClassName = pipeRequest.webServiceContextDelegate.getClass().getName();
+        if (delegateClassName.equals("com.sun.enterprise.jbi.serviceengine." + "bridge.transport.NMRServerConnection")) {
+            return next.process(pipeRequest);
+        }
+
+        // No monitoring available for restful services
+        if ("http://www.w3.org/2004/08/wsdl/http".equals(endpoint.getProtocolBinding())) {
+            return next.process(pipeRequest);
+        }
+       
+        HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
+        HttpServletResponse httpResponse = (HttpServletResponse) pipeRequest.get(SERVLET_RESPONSE);
+
+        JAXWSEndpointImpl endpointTracer = getEndpointTracer(httpRequest);
+        SOAPMessageContextImpl soapMessageContext = new SOAPMessageContextImpl(pipeRequest);
+
+        firePreInvocation(httpRequest, pipeRequest, endpointTracer, soapMessageContext);
+
+        Packet pipeResponse = next.process(pipeRequest);
+
+        firePostInvocation(httpResponse, pipeResponse, pipeRequest, endpointTracer, soapMessageContext);
+        
+        return pipeResponse;
+    }
+    
+    @Override
     public final Pipe copy(PipeCloner cloner) {
         return new MonitoringPipe(this, cloner);
     }
-
-    public Packet process(Packet request) {
-        // if it is a JBI request then skip the monitoring logic. This is done 
-        // as HTTPServletRequest/Response is not available when the invocation 
-        // is from JavaEE service engine.
-
-        String delegateClassName = request.webServiceContextDelegate.getClass().getName();
-        if (delegateClassName.equals("com.sun.enterprise.jbi.serviceengine." +
-                "bridge.transport.NMRServerConnection")) {
-            return next.process(request);
+    
+    private JAXWSEndpointImpl getEndpointTracer(HttpServletRequest httpRequest) {
+        if (endpoint.implementedByWebComponent()) {
+            return getJAXWSEndpointImpl(httpRequest.getServletPath());
         }
-  
-        // No monitoring available for restful services
-        if("http://www.w3.org/2004/08/wsdl/http".equals(endpoint.getProtocolBinding())) {
-            return next.process(request);
+        
+        return getJAXWSEndpointImpl(httpRequest.getRequestURI());
+    }
+    
+    private JAXWSEndpointImpl getJAXWSEndpointImpl(String uri) {
+        return (JAXWSEndpointImpl) wsMonitor.getEndpoint(uri);
+    }
+    
+    private void firePreInvocation(HttpServletRequest httpRequest, Packet pipeRequest, JAXWSEndpointImpl endpointTracer, SOAPMessageContextImpl soapMessageContext) {
+        
+        if (seiModel instanceof SOAPSEIModel) {
+            
+            SOAPSEIModel soapSEIModel = (SOAPSEIModel) seiModel;
+            
+            Globals.get(MonitorFilter.class)
+                   .filterRequest(
+                       pipeRequest, 
+                       new MonitorContextImpl(
+                           soapSEIModel.getDatabinding().deserializeRequest(pipeRequest.copy(true)), 
+                           soapSEIModel, wsdlModel, ownerEndpoint, endpoint));
+            
         }
-        SOAPMessageContext ctxt = new SOAPMessageContextImpl(request);
-        HttpServletRequest httpRequest =
-                (HttpServletRequest) request.get(javax.xml.ws.handler.MessageContext.SERVLET_REQUEST);
-        HttpServletResponse httpResponse =
-                (HttpServletResponse) request.get(javax.xml.ws.handler.MessageContext.SERVLET_RESPONSE);
-
-        String messageId=null;
-
-        JAXWSEndpointImpl endpt1;
-        if(endpoint.implementedByWebComponent()) {
-            endpt1 = (JAXWSEndpointImpl)wsEngine.getEndpoint(httpRequest.getServletPath());
-        } else {
-            endpt1 = (JAXWSEndpointImpl)wsEngine.getEndpoint(httpRequest.getRequestURI());
+        
+        // Invoke preProcessRequest on global listeners. If there's a global listener we get
+        // a trace ID back to trace this message
+        String messageTraceId = wsMonitor.preProcessRequest(endpointTracer);
+        if (messageTraceId != null) {
+            soapMessageContext.put(MESSAGE_ID, messageTraceId);
+            wsMonitor.getThreadLocal().set(new ThreadLocalInfo(messageTraceId, httpRequest));
         }
-        messageId = wsEngine.preProcessRequest(endpt1);
-        if (messageId!=null) {
-            ctxt.put(EndpointImpl.MESSAGE_ID, messageId);
-            ThreadLocalInfo config = new ThreadLocalInfo(messageId, httpRequest);
-            wsEngine.getThreadLocal().set(config);
-        }
-
+        
         try {
-
-            endpt1.processRequest(ctxt);
-
+            // Invoke processRequest on global listeners
+            endpointTracer.processRequest(soapMessageContext);
         } catch (Exception e) {
             // temporary - need to send back SOAP fault message
         }
-
-        Packet pipeResponse = next.process(request);
-
-        //Make the response packet available in the MessageContext
-        ((SOAPMessageContextImpl)ctxt).setPacket(pipeResponse);
-
-
+    }
+    
+    private void firePostInvocation(HttpServletResponse httpResponse, Packet pipeResponse, Packet pipeRequest, JAXWSEndpointImpl endpointTracer, SOAPMessageContextImpl soapMessageContext) {
+        
+        if (seiModel instanceof SOAPSEIModel) {
+            
+            SOAPSEIModel soapSEIModel = (SOAPSEIModel) seiModel;
+            
+            Globals.get(MonitorFilter.class)
+                   .filterResponse(
+                       pipeRequest,
+                       pipeResponse, 
+                       new MonitorContextImpl(
+                           soapSEIModel.getDatabinding().deserializeRequest(pipeRequest), 
+                           soapSEIModel, wsdlModel, ownerEndpoint, endpoint));
+            
+        }
+        
+        
+        // Make the response packet available in the MessageContext
+        soapMessageContext.setPacket(pipeResponse);
+        
         try {
-            if (endpt1 != null) {
-                endpt1.processResponse(ctxt);
-            }
-
+            // Invoke processRequest on global and local listeners
+            endpointTracer.processResponse(soapMessageContext);
         } catch (Exception e) {
             // temporary - need to send back SOAP fault message
         }
-
-        if (messageId!=null) {
-            HttpResponseInfoImpl info = new HttpResponseInfoImpl(httpResponse);
-            wsEngine.postProcessResponse(messageId, info);
+        
+        String messageTraceId = (String) soapMessageContext.get(MESSAGE_ID);
+        
+        if (messageTraceId != null) {
+            wsMonitor.postProcessResponse(messageTraceId, new HttpResponseInfoImpl(httpResponse));
         }
-        return pipeResponse;
     }
 }

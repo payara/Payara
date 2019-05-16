@@ -40,87 +40,88 @@
 
 package org.glassfish.webservices.monitoring;
 
-import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
+import static javax.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static org.glassfish.webservices.LogUtils.EXCEPTION_TRACING_REQUEST;
+import static org.glassfish.webservices.LogUtils.EXCEPTION_TRACING_RESPONSE;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.ws.handler.MessageContext;
 
 import org.glassfish.webservices.SOAPMessageContext;
-
-import org.glassfish.webservices.LogUtils;
-
 
 public class JAXWSEndpointImpl extends EndpointImpl {
 
     JAXWSEndpointImpl(String endpointSelector, EndpointType type) {
         super(endpointSelector, type);
     }
-    
-    public boolean processRequest(SOAPMessageContext messageContext)
-                    throws Exception {
 
-	boolean status = true;
+    public boolean processRequest(SOAPMessageContext messageContext) throws Exception {
 
-        // let's get our thread local context
-        WebServiceEngineImpl wsEngine = WebServiceEngineImpl.getInstance();
-        try {            
-            if (!listeners.isEmpty() || wsEngine.hasGlobalMessageListener()) {
+        boolean status = true;
 
-                String messageID = (String) messageContext.get(EndpointImpl.MESSAGE_ID);
-                
-                // someone is listening ?
-                if (messageID!=null) {
-                    HttpServletRequest httpReq = (HttpServletRequest) messageContext.get(MessageContext.SERVLET_REQUEST);
-                    HttpRequestInfoImpl info = new HttpRequestInfoImpl(httpReq);
-                    wsEngine.processRequest(messageID, messageContext, info);
-                } 
-                
-                // any local listeners ?
+        // Let's get our static context
+        WebServiceEngineImpl wsMonitor = WebServiceEngineImpl.getInstance();
+        try {
+            if (!listeners.isEmpty() || wsMonitor.hasGlobalMessageListener()) {
+
+                String messageID = (String) messageContext.get(MESSAGE_ID);
+
+                // Someone is listening?
+                if (messageID != null) {
+                    HttpServletRequest httpReq = (HttpServletRequest) messageContext.get(SERVLET_REQUEST);
+                    wsMonitor.processRequest(messageID, messageContext, new HttpRequestInfoImpl(httpReq));
+                }
+
+                // Any local listeners ?
                 if (!listeners.isEmpty()) {
-                    // create the message trace and save it to our message context
-                    MessageTraceImpl request = new MessageTraceImpl();
-                    request.setEndpoint(this);
-                    request.setMessageContext(messageContext);       
-                    HttpServletRequest httpReq = (HttpServletRequest) messageContext.get(MessageContext.SERVLET_REQUEST);
-                    request.setTransportInfo(new HttpRequestInfoImpl(httpReq));
-                    messageContext.put(EndpointImpl.REQUEST_TRACE, request);                    
+                    // Create the message trace and save it to our message context
+                    MessageTraceImpl requestTrace = new MessageTraceImpl();
+                    requestTrace.setEndpoint(this);
+                    requestTrace.setMessageContext(messageContext);
+                    HttpServletRequest httpReq = (HttpServletRequest) messageContext.get(SERVLET_REQUEST);
+                    requestTrace.setTransportInfo(new HttpRequestInfoImpl(httpReq));
+                    
+                    messageContext.put(REQUEST_TRACE, requestTrace);
                 }
             }
-        } catch(Exception e) {
-            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_REQUEST, e.getMessage());
-	    throw e;
+        } catch (Exception e) {
+            WebServiceEngineImpl.sLogger.log(WARNING, EXCEPTION_TRACING_REQUEST, e.getMessage());
+            throw e;
         }
         return status;
     }
 
-    public void processResponse(SOAPMessageContext messageContext) throws Exception {   
-        
-        // let's get our thread local context
+    public void processResponse(SOAPMessageContext messageContext) throws Exception {
+
+        // let's get our static context
         WebServiceEngineImpl wsEngine = WebServiceEngineImpl.getInstance();
         try {
-            
+
             if (wsEngine.hasGlobalMessageListener() || !listeners.isEmpty()) {
+
+                String messageID = (String) messageContext.get(MESSAGE_ID);
                 
-                String messageID = (String) messageContext.get(EndpointImpl.MESSAGE_ID);
-                // do we have a global listener ?
-                if (messageID!=null) {
-                    wsEngine.processResponse(messageID,  messageContext);
+                // Do we have a global listener?
+                if (messageID != null) {
+                    wsEngine.processResponse(messageID, messageContext);
                 }
-                
-                // local listeners
+
+                // Local listeners
                 if (!listeners.isEmpty()) {
-                    MessageTraceImpl response = new MessageTraceImpl();
-                    response.setEndpoint(this);
-                    response.setMessageContext(messageContext);
-                    //TODO BM check regarding this method
-                    for (org.glassfish.webservices.monitoring.MessageListener listener : listeners) {
-                        listener.invocationProcessed((MessageTrace) messageContext.get(REQUEST_TRACE), response);
+                    MessageTraceImpl responseTrace = new MessageTraceImpl();
+                    responseTrace.setEndpoint(this);
+                    responseTrace.setMessageContext(messageContext);
+                    
+                    // TODO BM check regarding this method
+                    for (MessageListener listener : listeners) {
+                        listener.invocationProcessed((MessageTrace) messageContext.get(REQUEST_TRACE), responseTrace);
                     }
                 }
             }
-        } catch(Exception e) {
-            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_RESPONSE, e.getMessage());
-	    throw e;
-        } 
+        } catch (Exception e) {
+            WebServiceEngineImpl.sLogger.log(WARNING, EXCEPTION_TRACING_RESPONSE, e.getMessage());
+            throw e;
+        }
     }
-   
+
 }
