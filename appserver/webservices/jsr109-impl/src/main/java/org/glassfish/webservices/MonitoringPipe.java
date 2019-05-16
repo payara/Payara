@@ -118,15 +118,19 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
        
         HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
         HttpServletResponse httpResponse = (HttpServletResponse) pipeRequest.get(SERVLET_RESPONSE);
+        
 
         JAXWSEndpointImpl endpointTracer = getEndpointTracer(httpRequest);
         SOAPMessageContextImpl soapMessageContext = new SOAPMessageContextImpl(pipeRequest);
 
         firePreInvocation(httpRequest, pipeRequest, endpointTracer, soapMessageContext);
+        
+        // Copy pipe request, since when the endpoint is NOT an EJB, it's body will be emptied after the service invocation
+        Packet originalPipeRequest = pipeRequest.copy(true);
 
         Packet pipeResponse = next.process(pipeRequest);
 
-        firePostInvocation(httpResponse, pipeResponse, pipeRequest, endpointTracer, soapMessageContext);
+        firePostInvocation(httpResponse, pipeResponse, originalPipeRequest, endpointTracer, soapMessageContext);
         
         return pipeResponse;
     }
