@@ -65,7 +65,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>fish.payara.ejb.http.client.*;version=${project.version}</Export-Package>
+                        <Export-Package>fish.payara.ejb.http.client.*;version=${project.version},fish.payara.ejb.rest.client.*;version=${project.version}</Export-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
                 </configuration>
