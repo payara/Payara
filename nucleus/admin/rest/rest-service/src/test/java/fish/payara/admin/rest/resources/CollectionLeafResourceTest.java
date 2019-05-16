@@ -122,4 +122,29 @@ public class CollectionLeafResourceTest {
         data8.put("-client", null);
         assertEquals(wrapper.getProcessedData(data8).get("id"), "-client");
     } 
+    
+    @Test
+    public void when_property_is_Xproperty_with_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
+        Map<String, String> data9 = new HashMap<>();
+        data9.put("-XX:NewRatio=", "2");
+        assertEquals(wrapper.getProcessedData(data9).get("id"), "-XX:NewRatio=2");
+    }
+    
+    @Test
+    public void when_property_is_Xproperty_with_null_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
+        Map<String, String> data9 = new HashMap<>();
+        data9.put("-XX:NewRatio=", null);
+        assertEquals(wrapper.getProcessedData(data9).get("id"), "-XX:NewRatio=");
+    }
+    
+    @Test
+    public void when_property_is_Xproperty_with_empty_value_expect_add_to_map(){
+        Wrapper wrapper = new Wrapper();
+        Map<String, String> data9 = new HashMap<>();
+        data9.put("-XX:NewRatio=", "");
+        assertEquals(wrapper.getProcessedData(data9).get("id"), "-XX:NewRatio=");
+    }
+    
 }
