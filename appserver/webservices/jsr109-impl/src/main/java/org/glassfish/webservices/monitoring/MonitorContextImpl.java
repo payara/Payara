@@ -67,6 +67,8 @@ public class MonitorContextImpl implements MonitorContext {
         
         if (endpoint.getEjbComponentImpl() != null) {
            className = endpoint.getEjbComponentImpl().getEjbClassName();
+        } else if (endpoint.hasServletImplClass()) {
+            className = endpoint.getServletImplClass();
         } else {
             className = endpoint.getWebComponentImpl().getWebComponentImplementation();
         }
@@ -76,7 +78,7 @@ public class MonitorContextImpl implements MonitorContext {
                          .getContextClassLoader()
                          .loadClass(className);
         } catch (Exception e) {
-            
+            // Ignore, calling code will have to handle null
         }
         
         return null;
