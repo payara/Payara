@@ -17,7 +17,10 @@
 
 package fish.payara.micro.boot.loader;
 
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
@@ -69,6 +72,7 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
+		FileSystems.newFileSystem(this.archive.getUrl().toURI(), Collections.emptyMap());
 		List<Archive> archives = new ArrayList<Archive>(
 				this.archive.getNestedArchives(new EntryFilter() {
 
