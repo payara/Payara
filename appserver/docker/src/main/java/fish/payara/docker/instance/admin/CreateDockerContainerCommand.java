@@ -101,7 +101,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
             }
         }
 
-        if (dasHost == null || dasHost.equals("") || dasPort == null || dasPort.equals("")) {
+        if (dasHost == null || dasHost.equals("") || dasPort.equals("")) {
             actionReport.failure(logger, "Could not retrieve DAS host address or port");
             return;
         }
@@ -439,7 +439,7 @@ public class CreateDockerContainerCommand implements AdminCommand {
 
         // Use the passed in object builder if the immediate parent is the same as the previous property
         JsonObjectBuilder immediateParentObjectBuilder;
-        if (parent != null && immediateParent.equals(parent)) {
+        if (immediateParent.equals(parent)) {
             immediateParentObjectBuilder = parentObjectBuilder;
         } else {
             immediateParentObjectBuilder = propertyComponentObjectBuilders.get(immediateParent);
@@ -459,18 +459,18 @@ public class CreateDockerContainerCommand implements AdminCommand {
             // For each parent component in the property (e.g. fee & fih & foh for the property fee.fih.foh.fum)
             for (int i = propertyComponents.size() - 2; i > 0; i--) {
                 // Build a string of all remaining parents (so 1st run would be fee.fih.foh, 2nd would be fee.fih etc.)
-                String parents = "";
+                StringBuffer parents = new StringBuffer();
                 for (int j = 0; j < i + 1; j++) {
-                    parents += propertyComponents.get(j);
+                    parents.append(propertyComponents.get(j));
 
                     if (j != i) {
-                        parents += ".";
+                        parents.append(".");
                     }
                 }
 
                 // Check if the next property is at the same level in the namespace,
                 // or if we need to go further up the namespace
-                if (nextProperty.startsWith(parents)) {
+                if (nextProperty.startsWith(parents.toString())) {
                     // We've found a property at the same level in the namespace,
                     // recurse into this method to add this next property to the same object builder
                     recurseOverNested(
