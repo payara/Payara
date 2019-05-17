@@ -893,11 +893,21 @@ public class RestUtil {
 
     public static RestResponse post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        // Map formData = buildMultivalueMap(payload); Commented for sakes of reference in future rather that removal
-        Response cr = target
+        Response cr;
+        
+        if(address.contains("system-properties")) {
+        cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(payload, MediaType.APPLICATION_JSON), Response.class);
+        } else {
+            MultivaluedMap formData = buildMultivalueMap(payload);
+            cr = target
+                .request(RESPONSE_TYPE)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        }
+        
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
