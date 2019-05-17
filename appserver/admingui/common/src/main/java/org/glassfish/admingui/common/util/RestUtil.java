@@ -893,23 +893,18 @@ public class RestUtil {
 
     public static RestResponse post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        Response cr;
-        
-        if(address.endsWith("system-properties")) {
-        cr = target
+        Response cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .post(Entity.entity(payload, MediaType.APPLICATION_JSON), Response.class);
-        } else {
-            MultivaluedMap formData = buildMultivalueMap(payload);
-            cr = target
-                .request(RESPONSE_TYPE)
-                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
-        }
+                .post(getEntityForAddress(address, payload), Response.class);
         
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
+    }
+    
+    private static Entity getEntityForAddress(String address, Map<String, Object> payload) {
+        return address.endsWith("system-properties") ? Entity.entity(payload, MediaType.APPLICATION_JSON)
+                : Entity.entity(buildMultivalueMap(payload), MediaType.APPLICATION_FORM_URLENCODED);
     }
 
     public static RestResponse put(String address, Object payload, String contentType) {
