@@ -21,7 +21,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>docker</artifactId>
             <version>${project.version}</version>
         </dependency>

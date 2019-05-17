@@ -50,7 +50,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.POST,
                 path = "_create-docker-container",
-                description = "Create a Docker Container and Instance on the specified nodeName")
+                description = "Create a Docker Container for the defined Instance on the specified nodeName")
 })
 public class CreateDockerContainerCommand implements AdminCommand {
 

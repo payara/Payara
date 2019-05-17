@@ -56,13 +56,25 @@ public class StartDockerContainerCommand implements AdminCommand {
         Node node = nodes.getNode(nodeName);
 
         Client client = ClientBuilder.newClient();
-        WebTarget webTarget = client.target("http://"
-                + node.getNodeHost()
-                + ":"
-                + node.getDockerPort()
-                + "/containers/"
-                + instanceName
-                + "/start");
+
+        WebTarget webTarget;
+        if (Boolean.valueOf(node.getUseTls())) {
+            webTarget = client.target("https://"
+                    + node.getNodeHost()
+                    + ":"
+                    + node.getDockerPort()
+                    + "/containers/"
+                    + instanceName
+                    + "/start");
+        } else {
+            webTarget = client.target("http://"
+                    + node.getNodeHost()
+                    + ":"
+                    + node.getDockerPort()
+                    + "/containers/"
+                    + instanceName
+                    + "/start");
+        }
 
         // Send the POST request
         Response response = webTarget.request(MediaType.APPLICATION_JSON).post(

@@ -58,10 +58,10 @@
                 </executions>
                 <configuration>
                     <repository>payaraserver-node</repository>
-                    <dockerfile>src/main/resources/Server-Full/Dockerfile</dockerfile>
+                    <dockerfile>src/main/resources/payaraserver-node/Dockerfile</dockerfile>
                     <buildArgs>
                         <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>
-                        <ENTRYPOINT_SCRIPT>src/main/resources/Server-Full/entrypoint.sh</ENTRYPOINT_SCRIPT>
+                        <ENTRYPOINT_SCRIPT>src/main/resources/payaraserver-node/entrypoint.sh</ENTRYPOINT_SCRIPT>
                     </buildArgs>
                     <skipDockerInfo>true</skipDockerInfo>
                 </configuration>
