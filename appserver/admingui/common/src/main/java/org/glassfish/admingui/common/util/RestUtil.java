@@ -895,7 +895,7 @@ public class RestUtil {
         WebTarget target = getJerseyClient().target(address);
         Response cr;
         
-        if(address.contains("system-properties")) {
+        if(address.endsWith("system-properties")) {
         cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
