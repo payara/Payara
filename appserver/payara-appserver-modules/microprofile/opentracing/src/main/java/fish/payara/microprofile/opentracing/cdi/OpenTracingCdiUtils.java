@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,33 @@
  */
 package fish.payara.microprofile.opentracing.cdi;
 
+import static java.util.Arrays.asList;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.enterprise.inject.spi.BeanManager;
 import javax.interceptor.InvocationContext;
 import javax.ws.rs.container.ResourceInfo;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.glassfish.webservices.monitoring.MonitorContext;
 import org.jboss.weld.interceptor.WeldInvocationContext;
 
 /**
  * Utilities class for various CDI-based operations used by the OpenTracing Service classes.
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * @author Arjan Tijms <arjan.tijms@payara.fish>
  */
 public class OpenTracingCdiUtils {
 
@@ -76,48 +84,12 @@ public class OpenTracingCdiUtils {
         A annotation = getInterceptedAnnotation(annotationClass, invocationContext);
         
         if (annotation == null) {
-
-            logger.log(Level.FINER, "Attempting to get annotation {0} from {1}",
-                    new String[]{annotationClass.getSimpleName(), invocationContext.getMethod().getName()});
-            // Try to get the annotation from the method, otherwise attempt to get it from the class
-            if (invocationContext.getMethod().isAnnotationPresent(annotationClass)) {
-                logger.log(Level.FINER, "Annotation was directly present on the method");
-                annotation = invocationContext.getMethod().getAnnotation(annotationClass);
-            } else {
-                Class<?> annotatedClass = invocationContext.getMethod().getDeclaringClass();
-                if (annotatedClass.isAnnotationPresent(annotationClass)) {
-                    logger.log(Level.FINER, "Annotation was directly present on the class");
-                    annotation = annotatedClass.getAnnotation(annotationClass);
-                } else {
-                    logger.log(Level.FINER, "Annotation wasn't directly present on the method or class, "
-                            + "checking stereotypes");
-                    // Account for Stereotypes
-                    Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
-
-                    // Loop over each individual annotation
-                    while (!annotations.isEmpty()) {
-                        Annotation a = annotations.remove();
-
-                        // Check if this is the annotation we're looking for
-                        if (a.annotationType().equals(annotationClass)) {
-                            logger.log(Level.FINER, "Annotation was found in a stereotype");
-                            annotation = annotationClass.cast(a);
-                            break;
-                        }
-
-                        // If the found annotation is a stereotype, get the individual annotations and add them to the list
-                        // to be iterated over
-                        if (beanManager.isStereotype(a.annotationType())) {
-                            annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
-                        }
-                    }
-                }
-            }
+            annotation = getAnnotation(beanManager, annotationClass, invocationContext.getMethod().getDeclaringClass(), invocationContext.getMethod());
         }
 
         return annotation;
     }
-
+    
     /**
      * Gets the annotation from the method that triggered the interceptor.
      *
@@ -128,48 +100,72 @@ public class OpenTracingCdiUtils {
      * @return The annotation that triggered the interceptor.
      */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, ResourceInfo resourceInfo) {
-        A annotation = null;
-        Class<?> annotatedClass = resourceInfo.getResourceClass();
+        return getAnnotation(
+            beanManager, annotationClass, 
+            resourceInfo.getResourceClass(), 
+            resourceInfo.getResourceMethod());
+    }
 
-        logger.log(Level.FINER, "Attempting to get annotation {0} from {1}",
-                new String[]{annotationClass.getSimpleName(), resourceInfo.getResourceMethod().getName()});
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     *
+     * @param <A> The annotation type to return
+     * @param beanManager The invoking interceptor's BeanManager
+     * @param annotationClass The class of the annotation to get
+     * @param javaCallInfo The targeted jaxrs resource
+     * @return The annotation that triggered the interceptor.
+     */
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, MonitorContext monitorContext) {
+        return getAnnotation(
+            beanManager, annotationClass, 
+            monitorContext.getImplementationClass(), 
+            monitorContext.getCallInfo().getMethod());
+    }
+    
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
+        logGetAnnotation(annotationClass, method);
+        
         // Try to get the annotation from the method, otherwise attempt to get it from the class
-        if (resourceInfo.getResourceMethod().isAnnotationPresent(annotationClass)) {
-            logger.log(Level.FINER, "Annotation was directly present on the method");
-            annotation = resourceInfo.getResourceMethod().getAnnotation(annotationClass);
-        } else {
-            if (annotatedClass.isAnnotationPresent(annotationClass)) {
-                logger.log(Level.FINER, "Annotation was directly present on the class");
-                annotation = annotatedClass.getAnnotation(annotationClass);
-            } else {
-                logger.log(Level.FINER, "Annotation wasn't directly present on the method or class, "
-                        + "checking stereotypes");
-                // Account for Stereotypes
-                Queue<Annotation> annotations = new LinkedList<>(Arrays.asList(annotatedClass.getAnnotations()));
+        if (method.isAnnotationPresent(annotationClass)) {
+            logger.log(FINER, "Annotation was directly present on the method");
+            
+            return method.getAnnotation(annotationClass);
+        }
+        
+        if (annotatedClass.isAnnotationPresent(annotationClass)) {
+            logger.log(FINER, "Annotation was directly present on the class");
+            
+            return annotatedClass.getAnnotation(annotationClass);
+        }
+        
+        logger.log(FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
 
-                // Loop over each individual annotation
-                while (!annotations.isEmpty()) {
-                    Annotation a = annotations.remove();
+        // Account for Stereotypes
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
 
-                    // Check if this is the annotation we're looking for
-                    if (a.annotationType().equals(annotationClass)) {
-                        logger.log(Level.FINER, "Annotation was found in a stereotype");
-                        annotation = annotationClass.cast(a);
-                        break;
-                    }
+        A annotation = null;
+        
+        // Loop over each individual annotation
+        while (!annotations.isEmpty()) {
+            Annotation a = annotations.remove();
 
-                    // If the found annotation is a stereotype, get the individual annotations and add them to the list
-                    // to be iterated over
-                    if (beanManager.isStereotype(a.annotationType())) {
-                        annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
-                    }
-                }
+            // Check if this is the annotation we're looking for
+            if (a.annotationType().equals(annotationClass)) {
+                logger.log(FINER, "Annotation was found in a stereotype");
+                annotation = annotationClass.cast(a);
+                break;
+            }
+
+            // If the found annotation is a stereotype, get the individual annotations and add them to the list
+            // to be iterated over
+            if (beanManager.isStereotype(a.annotationType())) {
+                annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
             }
         }
 
         return annotation;
     }
-
+    
     /**
      * Gets overriding config parameter values if they're present from an invocation context.
      *
@@ -180,60 +176,84 @@ public class OpenTracingCdiUtils {
      * @param parameterType The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
-    public static <A extends Annotation> Optional getConfigOverrideValue(Class<A> annotationClass,
-            String parameterName, InvocationContext invocationContext, Class parameterType) {
-        Optional value = Optional.empty();
+    @SuppressWarnings("unchecked")
+    public static <A extends Annotation> Optional<Object> getConfigOverrideValue(Class<A> annotationClass, String parameterName, InvocationContext invocationContext, Class<?> parameterType) {
+        return  (Optional<Object>) getConfigOverrideValue(annotationClass, parameterName, invocationContext.getMethod(), parameterType);
+    }
+    
+    /**
+     * Gets overriding config parameter values if they're present from an invocation context.
+     *
+     * @param <A> The annotation type
+     * @param annotationClass The annotation class
+     * @param parameterName The name of the parameter to get the override value of
+     * @param monitorContext The context of the invoking request
+     * @param parameterType The type of the parameter to get the override value of
+     * @return An Optional containing the override value from the config if there is one
+     */
+    @SuppressWarnings("unchecked")
+    public static <A extends Annotation> Optional<Object> getConfigOverrideValue(Class<A> annotationClass, String parameterName, MonitorContext monitorContext, Class<?> parameterType) {
+        return (Optional<Object>) getConfigOverrideValue(annotationClass, parameterName, monitorContext.getCallInfo().getMethod(), parameterType);
+    }
 
-        Config config = null;
+    /**
+     * Gets overriding config parameter values if they're present from an invocation context.
+     *
+     * @param <A> The annotation type
+     * @param annotationClass The annotation class
+     * @param parameterName The name of the parameter to get the override value of
+     * @param method The method to be invoked
+     * @param parameterType The type of the parameter to get the override value of
+     * @return An Optional containing the override value from the config if there is one
+     */
+    public static <A extends Annotation> Optional<?> getConfigOverrideValue(Class<A> annotationClass, String parameterName, Method method, Class<?> parameterType) {
+        Optional<?> value = Optional.empty();
 
-        try {
-            config = ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(Level.INFO, "No config could be found", ex);
+        Config config = getConfig();
+        if (config == null) {
+            logger.log(FINE, "No config to get override parameters from.");
+            return value;
         }
 
         // Get the annotation, method, and class names
         String annotationName = annotationClass.getSimpleName();
-        String annotatedMethodName = invocationContext.getMethod().getName();
-        String annotatedClassCanonicalName = invocationContext.getMethod().getDeclaringClass().getCanonicalName();
+        String annotatedMethodName = method.getName();
+        String annotatedClassCanonicalName = method.getDeclaringClass().getCanonicalName();
 
         // Check if there's a config override for the method
-        if (config != null) {
-            logger.log(Level.FINER, "Getting config override for annotated method...");
-            value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName
-                    + "/" + annotationName + "/" + parameterName, parameterType);
+        logger.log(FINER, "Getting config override for annotated method...");
+       
+        value = config.getOptionalValue(
+                    annotatedClassCanonicalName + "/" + 
+                    annotatedMethodName + "/" + 
+                    annotationName + "/" + parameterName, 
+                    parameterType);
 
-            // If there wasn't a config override for the method, check if the method has the annotation
+        // If there wasn't a config override for the method, check if the method has the annotation
+        if (!value.isPresent()) {
+            logger.log(FINER, "No config override for annotated method, checking if the method is " + "annotated directly...");
+            
+            // If the method is annotated directly, simply return
+            if (method.getAnnotation(annotationClass) != null) {
+                logger.log(FINER, "Method is annotated directly, returning.");
+                return value;
+            }
+
+            // If there wasn't a config override for the method, check if there's one for the class
             if (!value.isPresent()) {
-                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
-                        + "annotated directly...");
-                // If the method is annotated directly, simply return
-                if (invocationContext.getMethod().getAnnotation(annotationClass) != null) {
-                    logger.log(Level.FINER, "Method is annotated directly, returning.");
-                    return value;
-                }
+                logger.log(FINER, "No config override for annotated method, getting config override for the " + "annotated class...");
+                value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, parameterType);
 
-                // If there wasn't a config override for the method, check if there's one for the class
+                // If there wasn't a config override for the class either, check if there's a global one
                 if (!value.isPresent()) {
-                    logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
-                            + "annotated class...");
-                    value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName
-                            + "/" + parameterName, parameterType);
+                    logger.log(FINER, "No config override for the annotated class, getting application wide " + "config override...");
+                    value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
 
-                    // If there wasn't a config override for the class either, check if there's a global one
                     if (!value.isPresent()) {
-                        logger.log(Level.FINER, "No config override for the annotated class, getting application wide "
-                                + "config override...");
-                        value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
-
-                        if (!value.isPresent()) {
-                            logger.log(Level.FINER, "No config overrides");
-                        }
+                        logger.log(FINER, "No config overrides");
                     }
                 }
             }
-        } else {
-            logger.log(Level.FINE, "No config to get override parameters from.");
         }
 
         return value;
@@ -253,7 +273,7 @@ public class OpenTracingCdiUtils {
             String parameterName, ResourceInfo resourceInfo, Class parameterType) {
         Optional value = Optional.empty();
 
-        Config config = null;
+        Config config = getConfig();
 
         try {
             config = ConfigProvider.getConfig();
@@ -268,41 +288,41 @@ public class OpenTracingCdiUtils {
 
         // Check if there's a config override for the method
         if (config != null) {
-            logger.log(Level.FINER, "Getting config override for annotated method...");
+            logger.log(FINER, "Getting config override for annotated method...");
             value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotatedMethodName
                     + "/" + annotationName + "/" + parameterName, parameterType);
 
             // If there wasn't a config override for the method, check if the method has the annotation
             if (!value.isPresent()) {
-                logger.log(Level.FINER, "No config override for annotated method, checking if the method is "
+                logger.log(FINER, "No config override for annotated method, checking if the method is "
                         + "annotated directly...");
                 // If the method is annotated directly, simply return
                 if (resourceInfo.getResourceMethod().getAnnotation(annotationClass) != null) {
-                    logger.log(Level.FINER, "Method is annotated directly, returning.");
+                    logger.log(FINER, "Method is annotated directly, returning.");
                     return value;
                 }
 
                 // If there wasn't a config override for the method, check if there's one for the class
                 if (!value.isPresent()) {
-                    logger.log(Level.FINER, "No config override for annotated method, getting config override for the "
+                    logger.log(FINER, "No config override for annotated method, getting config override for the "
                             + "annotated class...");
                     value = config.getOptionalValue(annotatedClassCanonicalName + "/" + annotationName
                             + "/" + parameterName, parameterType);
 
                     // If there wasn't a config override for the class either, check if there's a global one
                     if (!value.isPresent()) {
-                        logger.log(Level.FINER, "No config override for the annotated class, getting application wide "
+                        logger.log(FINER, "No config override for the annotated class, getting application wide "
                                 + "config override...");
                         value = config.getOptionalValue(annotationName + "/" + parameterName, parameterType);
 
                         if (!value.isPresent()) {
-                            logger.log(Level.FINER, "No config overrides");
+                            logger.log(FINER, "No config overrides");
                         }
                     }
                 }
             }
         } else {
-            logger.log(Level.FINE, "No config to get override parameters from.");
+            logger.log(FINE, "No config to get override parameters from.");
         }
 
         return value;
@@ -325,6 +345,21 @@ public class OpenTracingCdiUtils {
             }
         }
         return null;
+    }
+    
+    private static Config getConfig() {
+        try {
+            return ConfigProvider.getConfig();
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.INFO, "No config could be found", ex);
+        }
+        
+        return null;
+    }
+    
+    private static void logGetAnnotation(Class<?> annotatedClass, Method method) {
+        logger.log(FINER, "Attempting to get annotation {0} from {1}",
+                new String[]{annotatedClass.getSimpleName(), method.getName()});
     }
 
 }

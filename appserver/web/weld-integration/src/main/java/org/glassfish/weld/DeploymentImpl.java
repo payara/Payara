@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -468,19 +468,19 @@ public class DeploymentImpl implements CDI11Deployment {
 
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<>();
-        
+
         // Track classloaders to ensure we don't scan the same classloader twice
         HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
-        
+
         // ensure we don't add the same extension twice
         HashMap<Class,Metadata<Extension>> loadedExtensions = new HashMap<>();
-        
+
         for (BeanDeploymentArchive bda : bdas) {
             if (!(bda instanceof RootBeanDeploymentArchive)) {
                 ClassLoader moduleClassLoader = ((BeanDeploymentArchiveImpl)bda).getModuleClassLoaderForBDA();
                 if (!scannedClassLoaders.contains(moduleClassLoader)) {
                     scannedClassLoaders.add(moduleClassLoader);
-                    extensions = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, 
+                    extensions = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                                  WeldBootstrap.class).loadExtensions(moduleClassLoader);
                     if (extensions != null) {
                         for (Metadata<Extension> bdaExtn : extensions) {
@@ -566,7 +566,7 @@ public class DeploymentImpl implements CDI11Deployment {
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib)) {
+                            if (jarInLib != null && (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib))) {
                                 if (libJars == null) {
                                     libJars = new ArrayList<>();
                                 }

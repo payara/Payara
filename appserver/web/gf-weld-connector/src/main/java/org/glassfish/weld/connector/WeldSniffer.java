@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.weld.connector;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -129,8 +129,10 @@ public class WeldSniffer extends GenericSniffer {
           entryName.indexOf(WeldUtils.SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
           try {
             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-            entryPresent = isArchiveCDIEnabled(context, jarInLib, WeldUtils.META_INF_BEANS_XML);
-            jarInLib.close();
+            if (jarInLib != null) {
+              entryPresent = isArchiveCDIEnabled(context, jarInLib, WeldUtils.META_INF_BEANS_XML);
+              jarInLib.close();
+            }
           } catch (IOException e) {
           }
         }
@@ -152,21 +154,23 @@ public class WeldSniffer extends GenericSniffer {
 	protected boolean isArchiveCDIEnabled(DeploymentContext context, ReadableArchive archive, String relativeBeansXmlPath) {
 		String beanDiscoveryMode = null;
 		InputStream beansXmlInputStream = null;
-		
-		try {
-			beansXmlInputStream = archive.getEntry(relativeBeansXmlPath);
-			if (beansXmlInputStream != null) {
-				try {
-					beanDiscoveryMode = WeldUtils.getBeanDiscoveryMode(beansXmlInputStream);
-				} finally {
-					try {
-						beansXmlInputStream.close();
-					} catch (Exception ignore) {
-					}
-				}
-			}
-		} catch (IOException ignore) {
-		}
+
+		if (archive != null) {
+            try {
+                beansXmlInputStream = archive.getEntry(relativeBeansXmlPath);
+                if (beansXmlInputStream != null) {
+                    try {
+                        beanDiscoveryMode = WeldUtils.getBeanDiscoveryMode(beansXmlInputStream);
+                    } finally {
+                        try {
+                            beansXmlInputStream.close();
+                        } catch (Exception ignore) {
+                        }
+                    }
+                }
+            } catch (IOException ignore) {
+            }
+        }
 
 		if (beansXmlInputStream == null) {
 			// no beans.xml

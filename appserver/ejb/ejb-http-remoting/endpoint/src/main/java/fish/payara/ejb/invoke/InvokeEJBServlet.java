@@ -39,24 +39,17 @@
  */
 package fish.payara.ejb.invoke;
 
-import static javax.naming.Context.SECURITY_CREDENTIALS;
-import static javax.naming.Context.SECURITY_PRINCIPAL;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationRegistry;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.json.*;
-import javax.json.bind.Jsonb;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -65,11 +58,20 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationRegistry;
-
-import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
+import static javax.naming.Context.SECURITY_CREDENTIALS;
+import static javax.naming.Context.SECURITY_PRINCIPAL;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  */
@@ -107,9 +109,15 @@ public class InvokeEJBServlet extends HttpServlet {
             String principal = requestPayload.getString(SECURITY_PRINCIPAL, "");
             String credentials = requestPayload.getString(SECURITY_CREDENTIALS, "");
             try {
-                Object result = invokeBeanMethod(beanName, methodName, argTypeNames, argValuesJson, principal, credentials);
+                Invocation invocation = invokeBeanMethod(beanName, methodName, argTypeNames, argValuesJson, principal, credentials);
                 response.setContentType(APPLICATION_JSON);
-                response.getWriter().print(JsonbBuilder.create().toJson(result));
+                if (invocation.result == null) {
+                    // JSON-B cannot marshall null
+                    response.getWriter().print("null");
+                } else {
+                    Type resultType = invocation.method.getGenericReturnType();
+                    response.getWriter().print(JsonbBuilder.create().toJson(invocation.result, resultType));
+                }
             } catch (NamingException ex) {
                 response.sendError(SC_INTERNAL_SERVER_ERROR,
                         "Name " + beanName + " not found when invoking method " + methodName);
@@ -135,11 +143,12 @@ public class InvokeEJBServlet extends HttpServlet {
                 return beanName.substring(bangIndex + 1);
             }
             // there should only be one interface otherwise plain name would not be allowed (portable names at least)
+            // in fact, there can be some implementation-specific interfaces in the proxy as well
             return bean.getClass().getInterfaces()[0].getName();
         });
     }
 
-    private static Object invokeBeanMethod(String beanName, String methodName, JsonArray argTypeNames,
+    private static Invocation invokeBeanMethod(String beanName, String methodName, JsonArray argTypeNames,
             JsonArray argValuesJson, String principal, String credentials) throws Exception {
         return excuteInAppContext(beanName, bean -> {
             // Authenticates the caller and if successful sets the security context
@@ -149,10 +158,46 @@ public class InvokeEJBServlet extends HttpServlet {
                 new ProgrammaticLogin().login(base64Decode(principal), base64Decode(credentials), null, true);
             }
             // Actually invoke the target EJB
-            Class<?>[] argTypes = toClasses(argTypeNames);
-            Object[] argValues = toObjects(argTypes, argValuesJson);
-            return bean.getClass().getMethod(methodName, argTypes).invoke(bean, argValues);
+            Invocation invocation = new Invocation(bean, methodName, argTypeNames);
+            invocation.setArgs(argValuesJson);
+            invocation.invoke();
+            return invocation;
         });
+    }
+
+    static class Invocation {
+        private final Object bean;
+        private Type[] argTypes;
+        private Method method;
+        private Object[] argValues;
+        private Object result;
+
+        Invocation(Object bean, String methodName, JsonArray argTypes) throws NoSuchMethodException {
+            this.bean = bean;
+            Class<?>[] argTypeClasses = toClasses(argTypes);
+            // we look up the method in the interfaces, because proxy classes do not retain generic information
+            this.method = findBusinessMethodDeclaration(methodName, argTypeClasses);
+            this.argTypes = method.getGenericParameterTypes();
+        }
+
+        private Method findBusinessMethodDeclaration(String methodName, Class<?>[] argTypeClasses) throws NoSuchMethodException {
+            for (Class<?> intf : bean.getClass().getInterfaces()) {
+                try {
+                    return intf.getMethod(methodName, argTypeClasses);
+                } catch (NoSuchMethodException e) {
+                    // try further
+                }
+            }
+            throw new NoSuchMethodException("No method matching " + methodName + "(" + Arrays.toString(argTypeClasses) + ") found in business interface");
+        }
+
+        void setArgs(JsonArray argValues) {
+            this.argValues = toObjects(this.argTypes, argValues);
+        }
+
+        void invoke() throws InvocationTargetException, IllegalAccessException {
+            this.result = method.invoke(bean, argValues);
+        }
     }
 
     /**
@@ -167,7 +212,28 @@ public class InvokeEJBServlet extends HttpServlet {
             String className = classNameValue instanceof JsonString 
                     ? ((JsonString) classNameValue).getString() 
                     : classNameValue.toString().replace("\"", "");
-            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            switch (className) {
+                case "int":
+                    return int.class;
+                case "long":
+                    return long.class;
+                case "short":
+                    return short.class;
+                case "byte":
+                    return byte.class;
+                case "boolean":
+                    return boolean.class;
+                case "float":
+                    return float.class;
+                case "double":
+                    return double.class;
+                case "char":
+                    return char.class;
+                case "void":
+                    return void.class;
+                default:
+                    return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
@@ -176,7 +242,7 @@ public class InvokeEJBServlet extends HttpServlet {
     /**
      * Convert JSON encoded method parameter values to their object instances 
      */
-    private static Object[] toObjects(Class<?>[] argTypes, JsonArray jsonArgValues) {
+    private static Object[] toObjects(Type[] argTypes, JsonArray jsonArgValues) {
         Object[] argValues = new Object[argTypes.length];
         for (int i = 0; i < jsonArgValues.size(); i++) {
             argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
@@ -184,7 +250,7 @@ public class InvokeEJBServlet extends HttpServlet {
         return argValues;
     }
 
-    private static Object toObject(JsonValue objectValue, Class<?> type) {
+    private static Object toObject(JsonValue objectValue, Type type) {
         try (Jsonb jsonb = JsonbBuilder.create()) {
             return jsonb.fromJson(objectValue.toString(), type);
         } catch (Exception e) {

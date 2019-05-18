@@ -161,7 +161,7 @@ public class PropertiesBagResource extends AbstractResource {
      * so this routine replaces . with \.
      */
     private String getEscapedPropertyName(String propName){
-        return propName.replaceAll("\\.","\\\\.");
+        return propName.replaceAll("\\.","\\\\\\.");
     }
 
     protected ActionReportResult clearThenSaveProperties(List<Map<String, String>> properties) {
@@ -172,44 +172,51 @@ public class PropertiesBagResource extends AbstractResource {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, properties);
             Map<String, String> data = new LinkedHashMap<String, String>();
+            Map<String, String> descriptionData = new LinkedHashMap<String, String>();
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
 
-                String unescapedName = Object.class.cast(property.get("name")).toString();
+                String unescapedName = property.get("name");
                 String escapedName = getEscapedPropertyName(unescapedName);
 
-                String value = Object.class.cast(property.get("value")).toString();
+                String value = property.get("value");
                 String unescapedValue = value.replaceAll("\\\\", "");
                 
                 String description = null;
                 if (property.get("description") != null) {
-                    description = Object.class.cast(property.get("description")).toString();
+                    description = property.get("description");
                 }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-                boolean canSaveDesc = !((Object)property.get("name")).toString().contains(".");
+                boolean isDottedName = property.get("name").contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
-                    data.put(escapedName, ((Object)property.get("value")).toString());
-                    if (canSaveDesc && (description != null)) {
-                        data.put(escapedName + ".description", ((Object) description).toString());
+                    
+                    data.put(escapedName, property.get("value"));
+                    
+                    if (isDottedName) {
+                        data.put(unescapedName + ".name", unescapedName);
                     }
+                    
+                    if (description != null) {
+                        descriptionData.put(unescapedName + ".description", description);
+                    }
+
                 }
 
                 //update the description only if not null/blank
                 if ((description != null) && (existingProp != null)) {
                      if (!"".equals(description) && (!description.equals(existingProp.getDescription()))) {
-                        if (canSaveDesc) {
-                            data.put(escapedName + ".description", description);
-                        }
+                        descriptionData.put(unescapedName + ".description", description);
                     }
                 }
             }
 
-            if (!data.isEmpty()) {
+            if (!data.isEmpty() || !descriptionData.isEmpty()) {
                 Util.applyChanges(data, uriInfo, getSubject());
+                Util.applyChanges(descriptionData, uriInfo, getSubject());
             }
 
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
