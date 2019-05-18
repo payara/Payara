@@ -56,6 +56,9 @@ public class UpdateNodeDockerCommand implements AdminCommand {
     @Param(name = "dockerImage", optional = true, alias = "dockerimage")
     String dockerImage;
 
+    @Param(name = "dockerPasswordFile", optional = true, alias = "dockerpasswordfile")
+    String dockerPasswordFile;
+
     @Param(name = "dockerPort", optional = true, alias = "dockerport")
     Integer dockerPort;
 
@@ -71,7 +74,6 @@ public class UpdateNodeDockerCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext adminCommandContext) {
         ActionReport actionReport = adminCommandContext.getActionReport();
-
         Node node = nodes.getNode(name);
 
         if (node == null) {
@@ -109,6 +111,10 @@ public class UpdateNodeDockerCommand implements AdminCommand {
 
         if (dockerImage != null) {
             parameterMap.add("dockerImage", dockerImage);
+        }
+
+        if (dockerPasswordFile != null) {
+            parameterMap.add("dockerPasswordFile", dockerPasswordFile);
         }
 
         if (dockerPort != null) {

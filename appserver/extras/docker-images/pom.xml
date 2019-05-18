@@ -61,6 +61,7 @@
                     <dockerfile>src/main/resources/payaraserver-node/Dockerfile</dockerfile>
                     <buildArgs>
                         <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>
+                        <!-- Dockerfile currently requires this script to be called 'entrypoint.sh' -->
                         <ENTRYPOINT_SCRIPT>src/main/resources/payaraserver-node/entrypoint.sh</ENTRYPOINT_SCRIPT>
                     </buildArgs>
                     <skipDockerInfo>true</skipDockerInfo>
