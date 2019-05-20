@@ -39,16 +39,10 @@
  */
 package fish.payara.microprofile.opentracing.cdi;
 
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.log.Fields;
-import io.opentracing.tag.Tags;
-import org.eclipse.microprofile.opentracing.Traced;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.annotation.Priority;
 import javax.enterprise.inject.spi.BeanManager;
@@ -63,10 +57,18 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
+
+import org.eclipse.microprofile.opentracing.Traced;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.log.Fields;
+import io.opentracing.tag.Tags;
 
 /**
  * Interceptor for MicroProfile Traced annotation.
@@ -94,7 +96,7 @@ public class TracedInterceptor implements Serializable {
         Object proceed = null;
 
         // If Request Tracing is enabled, and this isn't a JaxRs method
-        if (openTracing != null && openTracing.isEnabled() && !isJaxRsMethod(invocationContext)) {
+        if (openTracing != null && openTracing.isEnabled() && !isJaxRsMethod(invocationContext) && !isWebServiceMethod(invocationContext, invocationManager)) {
             // Get the Traced annotation present on the method or class
             Traced traced = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, invocationContext);
 
@@ -149,7 +151,7 @@ public class TracedInterceptor implements Serializable {
     }
 
     /**
-     * Helper method that determines if the annotated method is a JaxRs method or not by inspected it for HTTP Method 
+     * Helper method that determines if the annotated method is a JaxRs method or not by inspecting it for HTTP Method 
      * annotations. JaxRs method tracing is handled by the Client/Container filters, so we don't process them using this
      * interceptor.
      * 
@@ -168,6 +170,20 @@ public class TracedInterceptor implements Serializable {
         }
 
         return false;
+    }
+    
+    /**
+     * Helper method that determines if the annotated method is the monitored JAX-WS method or not by inspecting the invocation manager. 
+     * <p>
+     * JaxWs method tracing is handled by the JAX-WS monitoring pipe/tube, so we don't process them using this
+     * interceptor.
+     * 
+     * @param invocationContext The invocation context from the AroundInvoke method.
+     * @param invocationManager The current invocation manager for this thread
+     * @return True if the method is a JaxRs method.
+     */
+    private boolean isWebServiceMethod(InvocationContext invocationContext, InvocationManager invocationManager) {
+        return invocationContext.getMethod().equals(invocationManager.peekWebServiceMethod());
     }
     
 }
