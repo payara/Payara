@@ -53,6 +53,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.client.Initializable;
@@ -158,9 +159,10 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
         try {
             ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
             if (serviceLocator != null) {
-                RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
-                OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-                return requestTracing != null && openTracing != null;
+                ServiceHandle<RequestTracingService> requestTracingHandle = serviceLocator.getServiceHandle(RequestTracingService.class);
+                ServiceHandle<OpenTracingService> openTracingHandle = serviceLocator.getServiceHandle(OpenTracingService.class);
+                return requestTracingHandle != null && openTracingHandle != null
+                        && requestTracingHandle.isActive() && openTracingHandle.isActive();
             }
         } catch (Exception e) {
             // means that we likely cannot do request tracing anyway
