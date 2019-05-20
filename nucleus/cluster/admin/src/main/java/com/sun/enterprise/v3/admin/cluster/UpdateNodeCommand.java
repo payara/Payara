@@ -126,10 +126,22 @@ public class UpdateNodeCommand implements AdminCommand {
      String sshkeypassphrase;
 
     @Param(name = "windowsdomain", optional = true)
-     String windowsdomain;
+    String windowsdomain;
+
+    @Param(name = "dockerImage", optional = true)
+    String dockerImage;
+
+    @Param(name = "dockerPasswordFile", optional = true)
+    String dockerPasswordFile;
+
+    @Param(name = "dockerPort", optional = true)
+    Integer dockerPort;
+
+    @Param(name = "useTls", optional = true)
+    String useTls;
 
     @Param(name = "type", optional=true)
-     String type;
+    String type;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -145,23 +157,24 @@ public class UpdateNodeCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
-        //validate installdir if passed and running on localhost
-        if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)){
-                TokenResolver resolver = null;
+        // Validate installdir if passed and running on localhost and not a Docker node
+        if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)
+                && !node.getType().equals("DOCKER")){
+            TokenResolver resolver = null;
 
-                // Create a resolver that can replace system properties in strings
-                Map<String, String> systemPropsMap =
-                        new HashMap<String, String>((Map)(System.getProperties()));
-                resolver = new TokenResolver(systemPropsMap);
-                String resolvedInstallDir = resolver.resolve(installdir);
-                File actualInstallDir = new File( resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
+            // Create a resolver that can replace system properties in strings
+            Map<String, String> systemPropsMap =
+                    new HashMap<String, String>((Map) (System.getProperties()));
+            resolver = new TokenResolver(systemPropsMap);
+            String resolvedInstallDir = resolver.resolve(installdir);
+            File actualInstallDir = new File(resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
 
 
-                if (!actualInstallDir.exists()){
-                    report.setMessage(Strings.get("invalid.installdir",installdir));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
+            if (!actualInstallDir.exists()) {
+                report.setMessage(Strings.get("invalid.installdir", installdir));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
         }
         // If the node is in use then we can't change certain attributes
         // like the install directory or node directory.
@@ -220,7 +233,7 @@ public class UpdateNodeCommand implements AdminCommand {
                         writeableNode.setInstallDir(installdir);
                     if (type != null)
                         writeableNode.setType(type);
-                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null){
+                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null) {
                         SshConnector sshC = writeableNode.getSshConnector();
                         if (sshC == null)  {
                             sshC =writeableNode.createChild(SshConnector.class);
@@ -253,6 +266,21 @@ public class UpdateNodeCommand implements AdminCommand {
 
                     }
 
+                    if (dockerImage != null) {
+                        writeableNode.setDockerImage(dockerImage);
+                    }
+
+                    if (dockerPasswordFile != null) {
+                        writeableNode.setDockerPasswordFile(dockerPasswordFile);
+                    }
+
+                    if (dockerPort != null) {
+                        writeableNode.setDockerPort(Integer.toString(dockerPort));
+                    }
+
+                    if (useTls != null) {
+                        writeableNode.setUseTls(useTls);
+                    }
                 }
                 return Boolean.TRUE;
             }

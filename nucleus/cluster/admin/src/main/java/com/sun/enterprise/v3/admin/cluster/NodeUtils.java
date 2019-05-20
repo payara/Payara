@@ -82,22 +82,21 @@ public class NodeUtils {
     public static final String NODE_DEFAULT_SSH_PORT = "22";
     public static final String NODE_DEFAULT_DCOM_PORT = "135";
     public static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
-    static final String NODE_DEFAULT_INSTALLDIR =
-            "${com.sun.aas.productRoot}";
+    public static final String NODE_DEFAULT_INSTALLDIR = "${com.sun.aas.productRoot}";
     // Command line option parameter names
-    static final String PARAM_NODEHOST = "nodehost";
-    static final String PARAM_INSTALLDIR = "installdir";
-    static final String PARAM_NODEDIR = "nodedir";
-    static final String PARAM_REMOTEPORT = "sshport";
+    public static final String PARAM_NODEHOST = "nodehost";
+    public static final String PARAM_INSTALLDIR = "installdir";
+    public static final String PARAM_NODEDIR = "nodedir";
+    public static final String PARAM_REMOTEPORT = "sshport";
     public static final String PARAM_REMOTEUSER = "sshuser";
-    static final String PARAM_SSHKEYFILE = "sshkeyfile";
-    static final String PARAM_REMOTEPASSWORD = "sshpassword";
-    static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
-    static final String PARAM_WINDOWSDOMAINNAME = "windowsdomain";
-    static final String PARAM_TYPE = "type";
-    static final String PARAM_INSTALL = "install";
+    public static final String PARAM_SSHKEYFILE = "sshkeyfile";
+    public static final String PARAM_REMOTEPASSWORD = "sshpassword";
+    public static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
+    public static final String PARAM_WINDOWSDOMAINNAME = "windowsdomain";
+    public static final String PARAM_TYPE = "type";
+    public static final String PARAM_INSTALL = "install";
     public static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";
-    static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";
+    public static final String LANDMARK_FILE = "glassfish/modules/admin-cli.jar";
     private static final String NL = System.getProperty("line.separator");
     private TokenResolver resolver = null;
     private Logger logger = null;

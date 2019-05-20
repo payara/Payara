@@ -348,6 +348,17 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         return dasprops;
     }
 
+    protected final Properties getNodeProperties(File propertyFile) throws CommandException {
+        Properties nodeProps = new Properties();
+        try (FileInputStream fis = new FileInputStream(propertyFile)) {
+            nodeProps.load(fis);
+        } catch (IOException ioe) {
+            throw new CommandException(Strings.get("Instance.cantReadNodeProperties", propertyFile.getPath()));
+        }
+
+        return nodeProps;
+    }
+
     protected final void whackFilesystem() throws CommandException {
         ServerDirs dirs = getServerDirs();
         File whackee = dirs.getServerDir();
