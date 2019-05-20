@@ -47,6 +47,7 @@ import static org.glassfish.webservices.monitoring.EndpointImpl.MESSAGE_ID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.webservices.monitoring.HttpResponseInfoImpl;
 import org.glassfish.webservices.monitoring.JAXWSEndpointImpl;
@@ -55,6 +56,7 @@ import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.glassfish.webservices.monitoring.ThreadLocalInfo;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 
+import com.oracle.webservices.api.databinding.JavaCallInfo;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.model.SEIModel;
@@ -122,17 +124,26 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
 
         JAXWSEndpointImpl endpointTracer = getEndpointTracer(httpRequest);
         SOAPMessageContextImpl soapMessageContext = new SOAPMessageContextImpl(pipeRequest);
-
-        firePreInvocation(httpRequest, pipeRequest, endpointTracer, soapMessageContext);
         
-        // Copy pipe request, since when the endpoint is NOT an EJB, it's body will be emptied after the service invocation
-        Packet originalPipeRequest = pipeRequest.copy(true);
-
-        Packet pipeResponse = next.process(pipeRequest);
-
-        firePostInvocation(httpResponse, pipeResponse, originalPipeRequest, endpointTracer, soapMessageContext);
+        InvocationManager invocationManager = Globals.get(InvocationManager.class);
+        JavaCallInfo javaCallInfo = getJavaCallInfo(pipeRequest);
         
-        return pipeResponse;
+        try {
+            pushWebServiceMethod(invocationManager, javaCallInfo);
+
+            firePreInvocation(httpRequest, pipeRequest, endpointTracer, soapMessageContext, javaCallInfo);
+            
+            // Copy pipe request, since when the endpoint is NOT an EJB, it's body will be emptied after the service invocation
+            Packet originalPipeRequest = pipeRequest.copy(true);
+    
+            Packet pipeResponse = next.process(pipeRequest);
+    
+            firePostInvocation(httpResponse, pipeResponse, originalPipeRequest, endpointTracer, soapMessageContext);
+            
+            return pipeResponse;
+        } finally {
+            popWebServiceMethod(invocationManager, javaCallInfo);
+        }
     }
     
     @Override
@@ -152,7 +163,7 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
         return (JAXWSEndpointImpl) wsMonitor.getEndpoint(uri);
     }
     
-    private void firePreInvocation(HttpServletRequest httpRequest, Packet pipeRequest, JAXWSEndpointImpl endpointTracer, SOAPMessageContextImpl soapMessageContext) {
+    private void firePreInvocation(HttpServletRequest httpRequest, Packet pipeRequest, JAXWSEndpointImpl endpointTracer, SOAPMessageContextImpl soapMessageContext, JavaCallInfo javaCallInfo) {
         
         if (seiModel instanceof SOAPSEIModel) {
             
@@ -162,7 +173,7 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
                    .filterRequest(
                        pipeRequest, 
                        new MonitorContextImpl(
-                           soapSEIModel.getDatabinding().deserializeRequest(pipeRequest.copy(true)), 
+                           javaCallInfo, 
                            soapSEIModel, wsdlModel, ownerEndpoint, endpoint));
             
         }
@@ -180,6 +191,30 @@ public class MonitoringPipe extends AbstractFilterPipeImpl {
             endpointTracer.processRequest(soapMessageContext);
         } catch (Exception e) {
             // temporary - need to send back SOAP fault message
+        }
+    }
+    
+    private JavaCallInfo getJavaCallInfo(Packet pipeRequest) {
+        
+        if (seiModel instanceof SOAPSEIModel) {
+            
+            SOAPSEIModel soapSEIModel = (SOAPSEIModel) seiModel;
+        
+            return soapSEIModel.getDatabinding().deserializeRequest(pipeRequest.copy(true));
+        }
+        
+        return null;
+    }
+    
+    private void pushWebServiceMethod(InvocationManager invocationManager, JavaCallInfo javaCallInfo) {
+        if (javaCallInfo != null) {
+            invocationManager.pushWebServiceMethod(javaCallInfo.getMethod());
+        }
+    }
+    
+    private void popWebServiceMethod(InvocationManager invocationManager, JavaCallInfo javaCallInfo) {
+        if (javaCallInfo != null) {
+            invocationManager.popWebServiceMethod();
         }
     }
     
