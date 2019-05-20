@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.192</version>
     </parent>
     
     <groupId>fish.payara.microprofile.config</groupId>
