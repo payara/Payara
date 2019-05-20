@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
@@ -140,5 +141,12 @@ public interface InvocationManager {
      *            may not be null. Information about the application environment
      */
     void popAppEnvironment();
+    
+    void pushWebServiceMethod(Method method);
+    
+    Method peekWebServiceMethod();
+    
+    void popWebServiceMethod();
+    
 
 }
