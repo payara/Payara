@@ -39,6 +39,8 @@
  */
 package fish.payara.requesttracing.jaxrs.client.decorators;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
 import fish.payara.requesttracing.jaxrs.client.JaxrsClientRequestTracingFilter;
 import java.security.KeyStore;
 import java.util.Map;
@@ -51,6 +53,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.client.Initializable;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 
@@ -129,6 +133,10 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
 
     @Override
     public Client build() {
+        if (!requestTracingPresent()) {
+            return clientBuilder.build();
+        }
+
         // Register the Request Tracing filter
         this.register(JaxrsClientRequestTracingFilter.class);
 
@@ -144,6 +152,20 @@ public class JaxrsClientBuilderDecorator extends ClientBuilder {
         }
 
         return new JaxrsClientDecorator(client);
+    }
+
+    private boolean requestTracingPresent() {
+        try {
+            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+            if (serviceLocator != null) {
+                RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
+                OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
+                return requestTracing != null && openTracing != null;
+            }
+        } catch (Exception e) {
+            // means that we likely cannot do request tracing anyway
+        }
+        return false;
     }
 
     @Override
