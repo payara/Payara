@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
+import org.glassfish.api.admin.RuntimeType;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-import static org.glassfish.api.admin.RuntimeType.ALL;
 import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
@@ -95,7 +95,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @Service(name = "update-file-user")
 @PerLookup
 @I18n("update.file.user")
-@ExecuteOn({ ALL })
+@ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
 @TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = POST, path = "update-user", description = "Update Users", 

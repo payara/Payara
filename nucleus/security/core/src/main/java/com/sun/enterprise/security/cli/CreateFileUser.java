@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -95,7 +95,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "create-file-user")
 @PerLookup
 @I18n("create.file.user")
-@ExecuteOn({ RuntimeType.ALL })
+@ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
 @TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.POST, path = "create-user", description = "Create", params = {
