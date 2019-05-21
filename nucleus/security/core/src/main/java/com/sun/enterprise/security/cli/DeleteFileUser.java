@@ -91,7 +91,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @PerLookup
 @I18n("delete.file.user")
 @ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.DELETE, path = "delete-user", description = "Delete", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })

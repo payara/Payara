@@ -81,6 +81,7 @@ import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.config.support.CommandTarget;
 
 /**
  * Update File User Command
@@ -96,7 +97,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @PerLookup
 @I18n("update.file.user")
 @ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = POST, path = "update-user", description = "Update Users", 
                 params = { @RestParam(name = "authrealmname", value = "$parent") }) })

@@ -76,6 +76,7 @@ import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -96,7 +97,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.file.user")
 @ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.POST, path = "create-user", description = "Create", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })
