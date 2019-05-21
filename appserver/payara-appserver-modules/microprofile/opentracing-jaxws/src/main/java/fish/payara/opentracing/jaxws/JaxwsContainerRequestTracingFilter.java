@@ -37,7 +37,45 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.jaxws;
+package fish.payara.opentracing.jaxws;
+
+import com.sun.xml.ws.api.message.Message;
+import com.sun.xml.ws.api.message.Packet;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.Tracer.SpanBuilder;
+import io.opentracing.propagation.TextMap;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.opentracing.Traced;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.webservices.monitoring.MonitorContext;
+import org.glassfish.webservices.monitoring.MonitorFilter;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.xml.soap.SOAPException;
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
 import static io.opentracing.tag.Tags.COMPONENT;
@@ -58,48 +96,6 @@ import static javax.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static javax.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
 import static javax.xml.ws.handler.MessageContext.SERVLET_REQUEST;
 import static javax.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
-
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.xml.soap.SOAPException;
-
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.opentracing.Traced;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.webservices.monitoring.MonitorContext;
-import org.glassfish.webservices.monitoring.MonitorFilter;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.xml.ws.api.message.Message;
-import com.sun.xml.ws.api.message.Packet;
-
-import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.TextMap;
 
 
 @Service(name = "jaxws-opentracing-filter")
@@ -226,8 +222,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
     /**
      * Helper method that determines what the operation name of the span.
-     * 
-     * @param requestContext The context of the request, obtained from the filter methods
+     *
      * @param tracedAnnotation The Traced annotation obtained from the target method
      * @return The name to use as the Span's operation name
      */
@@ -236,7 +231,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         
         if (tracedAnnotation != null) {
             String operationName = (String) 
-                OpenTracingCdiUtils
+                OpenTracingJaxwsCdiUtils
                     .getConfigOverrideValue(
                         Traced.class, "operationName", monitorContext, String.class)
                     .orElse(
@@ -289,7 +284,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
     private String createFallbackName(HttpServletRequest httpRequest, MonitorContext monitorContext) {
         return 
             httpRequest.getMethod() + ":" + 
-            monitorContext.getImplementationClass().getCanonicalName() + "." + 
+            monitorContext.getImplementationClass().getCanonicalName() + "." +
             monitorContext.getCallInfo().getMethod().getName();
     }
     
@@ -306,14 +301,14 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         }
         
         return (Boolean) 
-            OpenTracingCdiUtils
+            OpenTracingJaxwsCdiUtils
                 .getConfigOverrideValue(Traced.class, "value", monitorContext, boolean.class)
                 .orElse(tracedAnnotation.value());
     }
 
     /**
      * Helper method that checks if any specified skip patterns match this method name
-     * @param requestContext The context of the request to check if we should skip
+     *
      * @return
      */
     private boolean shouldTrace(String path) {
@@ -376,7 +371,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         // Get the Traced annotation from the target method if CDI is initialised
         if (beanManager != null) {
-            return OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, monitorContext);
+            return OpenTracingJaxwsCdiUtils.getAnnotation(beanManager, Traced.class, monitorContext);
         }
         
         return null;
