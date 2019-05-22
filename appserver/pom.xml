@@ -800,11 +800,7 @@
                 <artifactId>webservices-api-osgi</artifactId>
                 <version>${webservices.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-osgi</artifactId>
-                <version>${jaxb-impl.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-extra-osgi</artifactId>

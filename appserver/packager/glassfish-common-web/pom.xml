@@ -348,8 +348,12 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-osgi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.metro</groupId>
+            <artifactId>webservices-extra-jdk-packages</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.xml.ws</groupId>
