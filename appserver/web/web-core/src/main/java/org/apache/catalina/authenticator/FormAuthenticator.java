@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import static java.util.logging.Level.FINE;
@@ -80,9 +80,7 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -121,9 +119,6 @@ public class FormAuthenticator extends AuthenticatorBase {
      * Descriptive information about this implementation.
      */
     protected static final String info = "org.apache.catalina.authenticator.FormAuthenticator/1.0";
-
-    protected static final Logger log = LogFacade.getLogger();
-    protected static final ResourceBundle rb = log.getResourceBundle();
     
     // ---------------------------------------------------------- Properties
 
@@ -535,7 +530,7 @@ public class FormAuthenticator extends AuthenticatorBase {
         SavedRequest savedRequest = new SavedRequest();
         
         // Copy cookies
-        Cookie cookies[] = httpServletRequest.getCookies();
+        Cookie[] cookies = httpServletRequest.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 savedRequest.addCookie(cookie);
@@ -614,7 +609,7 @@ public class FormAuthenticator extends AuthenticatorBase {
         long ssoVersion = 0L;
         Long ssoVersionObj = (Long) request.getNote(REQ_SSO_VERSION_NOTE);
         if (ssoVersionObj != null) {
-            ssoVersion = ssoVersionObj.longValue();
+            ssoVersion = ssoVersionObj;
         }
         
         return ssoVersion;

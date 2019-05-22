@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import java.io.IOException;
@@ -63,7 +63,6 @@ import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 import javax.servlet.ServletException;
@@ -109,9 +108,6 @@ public class SingleSignOn extends ValveBase
 
     // ----------------------------------------------------- Static Variables
 
-    private static final java.util.logging.Logger log = LogFacade.getLogger();
-    private static final ResourceBundle rb = log.getResourceBundle();
-
     /**
      * Descriptive information about this Valve implementation.
      */
@@ -145,6 +141,7 @@ public class SingleSignOn extends ValveBase
     /**
      * Return the debugging detail level.
      */
+    @Override
     public int getDebug() {
         return (this.debug);
     }
@@ -154,6 +151,7 @@ public class SingleSignOn extends ValveBase
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         this.debug = debug;
     }
@@ -206,6 +204,7 @@ public class SingleSignOn extends ValveBase
      *
      * @exception LifecycleException if this component detects a fatal error that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // START CR 6411114
         if (started) // Ignore multiple starts
@@ -224,6 +223,7 @@ public class SingleSignOn extends ValveBase
      *
      * @exception LifecycleException if this component detects a fatal error that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
         // START CR 6411114
         if (!started) // Ignore stop if not started
@@ -245,6 +245,7 @@ public class SingleSignOn extends ValveBase
      *
      * @param event SessionEvent that has occurred
      */
+    @Override
     public void sessionEvent(SessionEvent event) {
 
         // We only care about session destroyed events
@@ -270,6 +271,7 @@ public class SingleSignOn extends ValveBase
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
 
         return (info);
@@ -285,6 +287,7 @@ public class SingleSignOn extends ValveBase
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
     public int invoke(Request request, Response response) throws IOException, ServletException {
 
         // If this is not an HTTP request and response, just pass them on
@@ -318,13 +321,12 @@ public class SingleSignOn extends ValveBase
         Cookie cookies[] = hreq.getCookies();
         if (cookies == null)
             cookies = new Cookie[0];
-        for (int i = 0; i < cookies.length; i++) {
-            if (Constants.SINGLE_SIGN_ON_COOKIE.equals(cookies[i].getName())) {
-                cookie = cookies[i];
-            } else if (Constants.SINGLE_SIGN_ON_VERSION_COOKIE.equals(cookies[i].getName())) {
-                versionCookie = cookies[i];
+        for (Cookie cookie1 : cookies) {
+            if (Constants.SINGLE_SIGN_ON_COOKIE.equals(cookie1.getName())) {
+                cookie = cookie1;
+            } else if (Constants.SINGLE_SIGN_ON_VERSION_COOKIE.equals(cookie1.getName())) {
+                versionCookie = cookie1;
             }
-
             if (cookie != null && versionCookie != null) {
                 break;
             }
@@ -375,6 +377,7 @@ public class SingleSignOn extends ValveBase
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SingleSignOn[");
