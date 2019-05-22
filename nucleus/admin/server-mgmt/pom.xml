@@ -151,8 +151,8 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
+            <groupId>org.glassfish.main.external</groupId>
+            <artifactId>jaxb-runtime-repackaged</artifactId>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

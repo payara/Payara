@@ -70,8 +70,9 @@
         <module>vboxjws</module>
         <module>trilead-ssh2</module>
         <module>j-interop</module>
-	<module>antlr</module>
+	    <module>antlr</module>
         <module>opentracing-repackaged</module>
+        <module>jaxb-runtime-repackaged</module>
     </modules>
     <build>
         <plugins>

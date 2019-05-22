@@ -170,8 +170,8 @@
             <artifactId>jline</artifactId>
         </dependency>
         <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
+            <groupId>org.glassfish.main.external</groupId>
+            <artifactId>jaxb-runtime-repackaged</artifactId>
         </dependency>
     </dependencies>
 </project>
