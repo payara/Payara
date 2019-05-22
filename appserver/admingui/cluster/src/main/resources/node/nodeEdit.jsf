@@ -46,7 +46,8 @@
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.EditPageTitle}"
-    guiOnLoad="showSection('#{pageSession.valueMap['type']}', '#{pageSession.sshConnectorSectionId}', '#{pageSession.dcomSectionId}', '#{pageSession.installdirSshId}', '#{pageSession.installdirConfigId}',
+    guiOnLoad="showSection('#{pageSession.valueMap['type']}', '#{pageSession.sshConnectorSectionId}', '#{pageSession.dcomSectionId}', '#{pageSession.dockerSectionId}',
+                            '#{pageSession.installdirSshId}', '#{pageSession.installdirConfigId}', '#{pageSession.installdirDockerId}',
                             '#{pageSession.installProp}', '#{pageSession.archProp}');
                showSshPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1PropId}',  '#{pageSession.pswdAliasPropId}');
                showPswdSection('#{pageSession.winPsSelected}', '#{pageSession.winPs1PropId}',  '#{pageSession.winPswdAliasPropId}'); " >
@@ -71,10 +72,12 @@
         setPageSessionAttribute(key="winPsSelected" value="2");
         if ("(#{pageSession.attrMap['type']}=SSH) || (#{pageSession.attrMap['type']}=DCOM)"){
             mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="#{pageSession.attrMap['installDir']}");
-            //for edit, we don't want to clear install dir when switching from ssh to config node. GLASSFISH-15605
+            //for edit, we don't want to clear install dir when switching from ssh to config or Docker node.
             mapPut(map="#{pageSession.valueMap}"  key="installdirConfig",  value="#{pageSession.attrMap['installDir']}");
+            mapPut(map="#{pageSession.valueMap}"  key="installdirDocker",  value="#{pageSession.attrMap['installDir']}");
             setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
             setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
+            setPageSessionAttribute(key="showInstalldirDocker" value="#{false}");
         }
         if ("#{pageSession.attrMap['type']}=CONFIG"){
             //for CONFIG Node convert to SSH node case,  if there is already installdir specified, keep the value specified instead of changing that to default. (GLASSFISH-15374)
@@ -83,8 +86,27 @@
                 mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="#{pageSession.attrMap['installDir']}");
             }
             mapPut(map="#{pageSession.valueMap}"  key="installdirConfig",  value="#{pageSession.attrMap['installDir']}");
+            mapPut(map="#{pageSession.valueMap}"  key="installdirDocker",  value="#{pageSession.attrMap['installDir']}");
             setPageSessionAttribute(key="showInstalldirSSH" value="#{false}");
             setPageSessionAttribute(key="showInstalldirConfig" value="#{true}");
+            setPageSessionAttribute(key="showInstalldirDocker" value="#{false}");
+        }
+        if ("#{pageSession.attrMap['type']}=DOCKER"){
+            mapPut(map="#{pageSession.valueMap}"  key="dockerimage"  value="#{pageSession.attrMap['dockerImage']}");
+            mapPut(map="#{pageSession.valueMap}"  key="dockerport"  value="#{pageSession.attrMap['dockerPort']}");
+            mapPut(map="#{pageSession.valueMap}"  key="dockerpasswordfile"  value="#{pageSession.attrMap['dockerPasswordFile']}");
+            mapPut(map="#{pageSession.valueMap}"  key="usetls"  value="#{pageSession.attrMap['useTls']}");
+
+            //if there is already installdir specified, keep the value specified instead of changing to default.
+            mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="\\${com.sun.aas.productRoot}");
+            if("#{pageSession.attrMap['installDir']}"){
+                mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="#{pageSession.attrMap['installDir']}");
+            }
+            mapPut(map="#{pageSession.valueMap}"  key="installdirConfig",  value="#{pageSession.attrMap['installDir']}");
+            mapPut(map="#{pageSession.valueMap}"  key="installdirDocker",  value="#{pageSession.attrMap['installDir']}");
+            setPageSessionAttribute(key="showInstalldirSSH" value="#{false}");
+            setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
+            setPageSessionAttribute(key="showInstalldirDocker" value="#{true}");
         }
         setPageSessionAttribute(key="psSelected" value="1");
         setPageSessionAttribute(key="winPsSelected" value="2");

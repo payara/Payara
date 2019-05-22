@@ -483,7 +483,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             entry.indexOf(SEPARATOR_CHAR, WEB_INF_LIB.length() + 1) == -1 &&
                             (app == null || DOLUtils.isScanningAllowed(app, entry))) {
                         ReadableArchive weblibJarArchive = archive.getSubArchive(entry);
-                        if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
+                        if (weblibJarArchive != null && weblibJarArchive.exists(META_INF_BEANS_XML)) {
                             // Parse the descriptor to determine if CDI is disabled
                             BeansXml beansXML = parseBeansXML(weblibJarArchive, META_INF_BEANS_XML);
                             BeanDiscoveryMode bdMode = beansXML.getBeanDiscoveryMode();
@@ -634,13 +634,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml)
             throws IOException, ClassNotFoundException {
-        if (logger.isLoggable(FINE)) {
-            logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
-        }
-        Enumeration<String> entries = archive.entries();
-        while (entries.hasMoreElements()) {
-            String entry = entries.nextElement();
-            handleEntry(archive, entry, isBeanArchive, hasBeansXml);
+        if (archive != null) {
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
+            }
+            Enumeration<String> entries = archive.entries();
+            while (entries.hasMoreElements()) {
+                String entry = entries.nextElement();
+                handleEntry(archive, entry, isBeanArchive, hasBeansXml);
+            }
         }
     }
 

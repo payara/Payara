@@ -163,7 +163,7 @@ public class SetHealthCheckServiceNotifierConfiguration implements AdminCommand 
             if (notifier == null) {
                 ConfigSupport.apply((SingleConfigCode<HealthCheckServiceConfiguration>) configProxy -> {
                     @SuppressWarnings("unchecked")
-                    Notifier newNotifier = configProxy.createChild(selectByType(Class.class,
+                    Notifier newNotifier = (Notifier) configProxy.createChild(selectByType(Class.class,
                             configModularityUtils.getInstalledExtensions(Notifier.class)));
                     configProxy.getNotifierList().add(newNotifier);
                     applyValues(newNotifier);

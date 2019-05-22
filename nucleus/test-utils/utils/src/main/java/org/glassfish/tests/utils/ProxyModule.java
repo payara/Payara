@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.tests.utils;
 
 import com.sun.enterprise.module.*;
-
+import com.sun.enterprise.module.Module;
 import java.util.List;
 import java.io.PrintStream;
 

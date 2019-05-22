@@ -37,8 +37,18 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 -exportcontents: \
 	com.sun.jdo.api.persistence.enhancer.generator; \
 	com.sun.jdo.api.persistence.enhancer.meta; version=${project.osgi.version}
 
+Import-Package: \
+       com.sun.jdo.api.persistence.model, \
+       com.sun.jdo.api.persistence.model.jdo, \
+       com.sun.jdo.spi.persistence.utility, \
+       com.sun.jdo.spi.persistence.utility.generator, \
+       com.sun.jdo.spi.persistence.utility.generator.io, \
+       com.sun.jdo.spi.persistence.utility.logging, \
+       org.glassfish.persistence.common, \
+       sun.security.tools
