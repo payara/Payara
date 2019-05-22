@@ -1401,8 +1401,8 @@ Parent is ${project.parent}</echo>
                 <version>${jaxb-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-osgi</artifactId>
                 <version>${jaxb-impl.version}</version>
             </dependency>
         </dependencies>
