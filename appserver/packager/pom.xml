@@ -181,6 +181,7 @@
         <module>cdi-auth-roles</module>
         <module>yubikey-authentication</module>
         <module>docker</module>
+        <module>opentracing-jaxws-package</module>
     </modules>
 
     <profiles>

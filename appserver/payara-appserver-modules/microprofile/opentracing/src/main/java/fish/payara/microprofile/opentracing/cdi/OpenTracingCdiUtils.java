@@ -58,7 +58,6 @@ import javax.ws.rs.container.ResourceInfo;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.webservices.monitoring.MonitorContext;
 import org.jboss.weld.interceptor.WeldInvocationContext;
 
 /**
@@ -104,22 +103,6 @@ public class OpenTracingCdiUtils {
             beanManager, annotationClass, 
             resourceInfo.getResourceClass(), 
             resourceInfo.getResourceMethod());
-    }
-
-    /**
-     * Gets the annotation from the method that triggered the interceptor.
-     *
-     * @param <A> The annotation type to return
-     * @param beanManager The invoking interceptor's BeanManager
-     * @param annotationClass The class of the annotation to get
-     * @param javaCallInfo The targeted jaxrs resource
-     * @return The annotation that triggered the interceptor.
-     */
-    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, MonitorContext monitorContext) {
-        return getAnnotation(
-            beanManager, annotationClass, 
-            monitorContext.getImplementationClass(), 
-            monitorContext.getCallInfo().getMethod());
     }
     
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
@@ -179,21 +162,6 @@ public class OpenTracingCdiUtils {
     @SuppressWarnings("unchecked")
     public static <A extends Annotation> Optional<Object> getConfigOverrideValue(Class<A> annotationClass, String parameterName, InvocationContext invocationContext, Class<?> parameterType) {
         return  (Optional<Object>) getConfigOverrideValue(annotationClass, parameterName, invocationContext.getMethod(), parameterType);
-    }
-    
-    /**
-     * Gets overriding config parameter values if they're present from an invocation context.
-     *
-     * @param <A> The annotation type
-     * @param annotationClass The annotation class
-     * @param parameterName The name of the parameter to get the override value of
-     * @param monitorContext The context of the invoking request
-     * @param parameterType The type of the parameter to get the override value of
-     * @return An Optional containing the override value from the config if there is one
-     */
-    @SuppressWarnings("unchecked")
-    public static <A extends Annotation> Optional<Object> getConfigOverrideValue(Class<A> annotationClass, String parameterName, MonitorContext monitorContext, Class<?> parameterType) {
-        return (Optional<Object>) getConfigOverrideValue(annotationClass, parameterName, monitorContext.getCallInfo().getMethod(), parameterType);
     }
 
     /**
