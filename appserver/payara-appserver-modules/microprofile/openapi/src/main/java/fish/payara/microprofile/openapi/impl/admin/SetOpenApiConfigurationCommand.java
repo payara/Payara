@@ -149,13 +149,6 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
             actionReport.failure(LOGGER, "Failed to update OpenAPI configuration", ex);
         }
 
-        // If security is enabled but secure admin isn't, prompt a warning
-        if (Boolean.parseBoolean(config.getSecurityEnabled())
-                && !SecureAdmin.Util.isEnabled(domain.getSecureAdmin())) {
-            actionReport.appendMessage("\n---WARNING---\nSecure Admin is not enabled! - it is highly "
-                    + "recommended that you do so to properly secure the OpenAPI endpoint.\n");
-        }
-
         // If everything has passed, scrap the subaction reports as we don't want to print them out
         if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
             actionReport.getSubActionsReport().clear();
