@@ -224,7 +224,7 @@
             <artifactId>jersey-proxy-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
+            <groupId>org.glassfish.jersey.ext.microprofile</groupId>
             <artifactId>jersey-mp-rest-client</artifactId>
             <!-- temporary add explicit version as bom artifact may be cached -->
             <version>${jersey.version}</version>
