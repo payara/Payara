@@ -201,6 +201,9 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
                     // Get the active scope and span from the application's tracer - this *should* never be null
                     try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
                         serviceLocator.getService(InvocationManager.class))).scopeManager().active()) {
+                        if (activeScope == null) {
+                            return;
+                        }
                         Span activeSpan = activeScope.span();
                         
                         // Get and add the response status to the active span
