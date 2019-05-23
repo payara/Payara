@@ -38,12 +38,13 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
+import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_REALM;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -61,8 +62,6 @@ import static org.glassfish.web.LogFacade.VS_DEFAULT_WEB_MODULE_NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -621,7 +620,8 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             WebBundleDescriptorImpl webBundleDescriptor = webArchivist.getDefaultWebXmlBundleDescriptor();
             webBundleDescriptor.setModuleID(DEFAULT_WEB_MODULE_NAME);
             webBundleDescriptor.setContextRoot("");
-            
+            webBundleDescriptor.getLoginConfiguration().setRealmName(DEFAULT_WEB_MODULE_REALM);
+
             webModuleConfig = new WebModuleConfig();
             webModuleConfig.setLocation(new File(docroot));
             webModuleConfig.setDescriptor(webBundleDescriptor);

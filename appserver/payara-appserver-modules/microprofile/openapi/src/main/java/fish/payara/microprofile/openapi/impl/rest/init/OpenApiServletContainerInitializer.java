@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.init;
 
+import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication;
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
@@ -46,10 +47,13 @@ import static java.util.Arrays.asList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
@@ -85,6 +89,12 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
 
         // Start the OpenAPI application
         new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(OpenApiApplication.class)), ctx);
+
+        ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistrations().get(OpenApiApplication.class.getName());
+        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+            ctx.declareRoles(DEFAULT_GROUP_NAME);
+        }
     }
 
 }

@@ -39,13 +39,20 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_USER_NAME;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 import org.glassfish.api.admin.RestEndpoints;
@@ -74,7 +81,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Sets the OpenAPI Configuration")
 })
 public class SetOpenApiConfigurationCommand implements AdminCommand {
-    
+
     private static final Logger LOGGER = Logger.getLogger(SetOpenApiConfigurationCommand.class.getName());
 
     @Inject
@@ -82,19 +89,29 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
 
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-    
+
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
     @Param(name = "corsHeaders", optional = true, defaultValue = "false")
     private Boolean corsHeaders;
-    
+
+    @Param(optional = true, alias = "securityenabled")
+    private Boolean securityEnabled;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
+
+    @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
+    private Domain domain;
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
+        Subject subject = context.getSubject();
         // Check for the existing config
         if (targetUtil.getConfig(target) == null) {
             actionReport.setMessage("No such config name: " + targetUtil);
@@ -104,6 +121,11 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
 
         OpenApiServiceConfiguration config = targetUtil.getConfig(target)
                 .getExtensionByType(OpenApiServiceConfiguration.class);
+
+        // Create the default user if it doesn't exist
+        if (!defaultMicroprofileUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultMicroprofileUser(actionReport.addSubActionsReport(), subject);
+        }
 
         try {
             ConfigSupport.apply(configProxy -> {
@@ -116,6 +138,9 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
                 if (corsHeaders != null) {
                     configProxy.setCorsHeaders(Boolean.toString(corsHeaders));
                 }
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
+                }
                 return configProxy;
             }, config);
 
@@ -123,6 +148,53 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             actionReport.failure(LOGGER, "Failed to update OpenAPI configuration", ex);
         }
+
+        // If security is enabled but secure admin isn't, prompt a warning
+        if (Boolean.parseBoolean(config.getSecurityEnabled())
+                && !SecureAdmin.Util.isEnabled(domain.getSecureAdmin())) {
+            actionReport.appendMessage("\n---WARNING---\nSecure Admin is not enabled! - it is highly "
+                    + "recommended that you do so to properly secure the OpenAPI endpoint.\n");
+        }
+
+        // If everything has passed, scrap the subaction reports as we don't want to print them out
+        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+            actionReport.getSubActionsReport().clear();
+        }
+    }
+
+    private boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
+        boolean exists = false;
+
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject,
+                false);
+
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("authrealmname", "file");
+
+        invocation.parameters(parameters).execute();
+
+        for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
+            if (message.getMessage().equals(DEFAULT_USER_NAME)) {
+                exists = true;
+                break;
+            }
+        }
+
+        return exists;
+    }
+
+    private void createDefaultMicroprofileUser(ActionReport subActionReport, Subject subject) {
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject,
+                false);
+
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("groups", DEFAULT_GROUP_NAME);
+        parameters.add("userpassword", "mp");
+        parameters.add("target", target);
+        parameters.add("authrealmname", "file");
+        parameters.add("DEFAULT", DEFAULT_USER_NAME);
+
+        invocation.parameters(parameters).execute();
     }
 
 }

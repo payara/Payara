@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,21 @@
 package fish.payara.microprofile.metrics.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import static fish.payara.microprofile.metrics.Constants.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.metrics.Constants.DEFAULT_USER_NAME;
 import fish.payara.microprofile.metrics.MetricsService;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 import org.glassfish.api.admin.RestEndpoints;
@@ -68,7 +75,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * AsAdmin command to set metrics configuration
- * 
+ *
  * @author Gaurav Gupta
  */
 @Service(name = "set-metrics-configuration")
@@ -82,18 +89,18 @@ import org.jvnet.hk2.config.TransactionFailure;
             description = "Sets the Metrics Configuration")
 })
 public class SetMetricsConfigurationCommand implements AdminCommand {
-    
+
     private static final Logger LOGGER = Logger.getLogger(SetMetricsConfigurationCommand.class.getName());
-    
+
     @Inject
     private Target targetUtil;
-    
+
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-    
+
     @Param(name = "secureMetrics", optional = true)
     private Boolean secure;
-    
+
     @Param(name = "dynamic", optional = true)
     private Boolean dynamic;
 
@@ -103,16 +110,31 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
+    @Param(optional = true, alias = "securityenabled")
+    private Boolean securityEnabled;
+
     @Param(optional = true, defaultValue = "server-config")
     private String target;
-    
+
+    @Inject
+    private CommandRunner commandRunner;
+
+    @Inject
+    private Domain domain;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
-
+        Subject subject = context.getSubject();
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+
+        // Create the default user if it doesn't exist
+        if (!defaultMicroprofileUserExists(actionReport.addSubActionsReport(), subject)) {
+            createDefaultMicroprofileUser(actionReport.addSubActionsReport(), subject);
+        }
+
         try {
             ConfigSupport.apply(configProxy -> {
                 boolean restart = false;
@@ -145,6 +167,10 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
                     configProxy.setVirtualServers(virtualServers);
                     restart = true;
                 }
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
+                    restart = true;
+                }
 
                 if (restart) {
                     actionReport.setMessage("Restart server for change to take effect");
@@ -154,6 +180,53 @@ public class SetMetricsConfigurationCommand implements AdminCommand {
         } catch (TransactionFailure ex) {
             actionReport.failure(LOGGER, "Failed to update Metrics configuration", ex);
         }
+
+        // If security is enabled but secure admin isn't, prompt a warning
+        if (Boolean.parseBoolean(metricsConfiguration.getSecurityEnabled())
+                && !SecureAdmin.Util.isEnabled(domain.getSecureAdmin())) {
+            actionReport.appendMessage("\n---WARNING---\nSecure Admin is not enabled! - it is highly "
+                    + "recommended that you do so to properly secure the Metrics endpoint.\n");
+        }
+
+        // If everything has passed, scrap the subaction reports as we don't want to print them out
+        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+            actionReport.getSubActionsReport().clear();
+        }
     }
-    
+
+    private boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
+        boolean exists = false;
+
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject,
+                false);
+
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("authrealmname", "file");
+
+        invocation.parameters(parameters).execute();
+
+        for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
+            if (message.getMessage().equals(DEFAULT_USER_NAME)) {
+                exists = true;
+                break;
+            }
+        }
+
+        return exists;
+    }
+
+    private void createDefaultMicroprofileUser(ActionReport subActionReport, Subject subject) {
+        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject,
+                false);
+
+        ParameterMap parameters = new ParameterMap();
+        parameters.add("groups", DEFAULT_GROUP_NAME);
+        parameters.add("userpassword", "mp");
+        parameters.add("target", target);
+        parameters.add("authrealmname", "file");
+        parameters.add("DEFAULT", DEFAULT_USER_NAME);
+
+        invocation.parameters(parameters).execute();
+    }
+
 }

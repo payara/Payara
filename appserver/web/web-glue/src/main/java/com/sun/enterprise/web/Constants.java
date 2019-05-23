@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -74,6 +75,12 @@ public final class Constants {
      * This has to be the same value as is in j2ee/WebModule.cpp.
      */
     public static final String DEFAULT_WEB_MODULE_NAME = "__default-web-module";
+
+    /**
+     * The system-assigned default web module's realm.
+     *
+     */
+    public static final String DEFAULT_WEB_MODULE_REALM = "file";
 
     /**
      * The separator character between an application name and the web

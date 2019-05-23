@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetMetricsConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers"};
+    private final String OUTPUT_HEADERS[] = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers", "Security Enabled"};
     
     @Inject
     private Target targetUtil;
@@ -109,7 +109,8 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
             metricsConfiguration.getSecureMetrics(),
             metricsConfiguration.getDynamic(),
             metricsConfiguration.getEndpoint(),
-            metricsConfiguration.getVirtualServers()
+            metricsConfiguration.getVirtualServers(),
+            metricsConfiguration.getSecurityEnabled()
         };        
         columnFormatter.addRow(outputValues);
         
@@ -121,6 +122,7 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
         extraPropertiesMap.put("dynamic", metricsConfiguration.getDynamic());
         extraPropertiesMap.put("endpoint", metricsConfiguration.getEndpoint());
         extraPropertiesMap.put("virtualServers", metricsConfiguration.getVirtualServers());
+        extraPropertiesMap.put("securityenabled", metricsConfiguration.getSecurityEnabled());
         
         Properties extraProperties = new Properties();
         extraProperties.put("metricsConfiguration", extraPropertiesMap);
