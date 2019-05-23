@@ -55,7 +55,7 @@ import io.opentracing.Span;
 public class ScopeManager implements io.opentracing.ScopeManager {
     
     private ThreadLocal<OpenTracingScope> activeScope;
-    
+
     public ScopeManager(){
         activeScope= new ThreadLocal<>();
     }
@@ -74,8 +74,8 @@ public class ScopeManager implements io.opentracing.ScopeManager {
 
     @Override
     public Scope active() {
-        return activeScope.get();
-       
+        OpenTracingScope currentScope = activeScope.get();
+        return currentScope != null && currentScope.span() != null ? currentScope : null;
     }
     
 }
