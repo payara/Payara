@@ -172,6 +172,9 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 // pattern and a traced annotation set to true (via annotation or config override)
                 if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
                     try (Scope activeScope = getTracer().scopeManager().active()) {
+                        if (activeScope == null) {
+                            return;
+                        }
                         
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeRequest);
