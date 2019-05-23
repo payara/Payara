@@ -226,6 +226,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.ext.microprofile</groupId>
             <artifactId>jersey-mp-rest-client</artifactId>
+            <version>${jersey.version}</version>
         </dependency>
             
         <!-- OpenTracing -->
