@@ -352,10 +352,10 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 results.put(key, entry.getValue());
             } else {
                 options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
-
+                
                 String value = entry.getValue();
                 
-                if (key != null && !key.trim().isEmpty() && key.startsWith("-D")) {    
+                if (key != null && !key.trim().isEmpty() && (key.startsWith("-D") || key.startsWith("-X"))) {    
                     if (value == null) {
                         value = "";
                     } else if(value.contains("=")) {

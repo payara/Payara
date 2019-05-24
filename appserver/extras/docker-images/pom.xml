@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.extras</groupId>
+        <artifactId>extras</artifactId>
+        <version>5.192-SNAPSHOT</version>
+    </parent>
+    <artifactId>docker-images</artifactId>
+    <packaging>pom</packaging>
+    <name>Payara Docker Images</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.distributions</groupId>
+            <artifactId>payara</artifactId>
+            <version>${project.version}</version>
+            <type>glassfish-distribution</type>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>fish.payara.distributions</groupId>
+                                    <artifactId>payara</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repository>payaraserver-node</repository>
+                    <dockerfile>src/main/resources/payaraserver-node/Dockerfile</dockerfile>
+                    <buildArgs>
+                        <PAYARA_INSTALL>target/dependency/payara5</PAYARA_INSTALL>
+                        <!-- Dockerfile currently requires this script to be called 'entrypoint.sh' -->
+                        <ENTRYPOINT_SCRIPT>src/main/resources/payaraserver-node/entrypoint.sh</ENTRYPOINT_SCRIPT>
+                    </buildArgs>
+                    <skipDockerInfo>true</skipDockerInfo>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

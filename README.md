@@ -26,7 +26,7 @@ In summary Payara Server provides:
 
 * Fully Supported Server derived from GlassFish 5.x Open Source Edition
 * Drop in Replacement for GlassFish Open Source Edition
-* Microprofile 2.0/1.4 api support
+* Microprofile 2.2/1.4 api support
 * Supports deployment of JavaEE 8 applications
 * Production Enhancements including JCache, JBatch, and Hazelcast session clustering
 * Payara Micro for cloud and microservice deployments
@@ -46,6 +46,10 @@ Payara Server 5 currently supports the following JDKs:
 * IBM J9 8 [Payara Blue Only]
 * OpenJDK 8
 * Oracle JDK 8
+
+Payara Server 5 currently is in technical preview for the following JDKs:
+
+ * Azul Zulu 11
 
 Payara Server 5 currently supports the following OSs:
 

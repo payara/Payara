@@ -75,6 +75,9 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     @Param(name = "instance_name", primary = true)
     private String instanceName0;
 
+    @Param(name = "dockerNode", defaultValue = "false", optional = true, alias = "dockernode")
+    private Boolean dockerNode;
+
     String DASHost;
     int DASPort = -1;
     String DASProtocol;
@@ -82,7 +85,9 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     private File agentConfigDir = null;
     private File dasPropsFile = null;
+    private File nodePropsFile = null;
     private Properties dasProperties;
+    private Properties nodeProperties;
     protected boolean setDasDefaultsOnly = false;
 
     @Override
@@ -100,6 +105,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
         String agentPath = "agent" + File.separator + "config";
         agentConfigDir = new File(nodeDirChild, agentPath);
         dasPropsFile = new File(agentConfigDir, "das.properties");
+        nodePropsFile = new File(agentConfigDir, "node.properties");
 
         if (dasPropsFile.isFile()) {
             //Issue GLASSFISH-15263
@@ -161,6 +167,11 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!dasPropsFile.isFile()) {
                 writeDasProperties();
             }
+
+            filename = nodePropsFile.getName();
+            if (!nodePropsFile.isFile()) {
+                writeNodeProperties();
+            }
         } catch (IOException ex) {
             throw new CommandException(Strings.get("Instance.cantWriteProperties", filename), ex);
         }
@@ -175,6 +186,16 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             dasProperties.setProperty(K_DAS_PROTOCOL, DASProtocol);
             try (FileOutputStream fos = new FileOutputStream(dasPropsFile)) {
                 dasProperties.store(fos, Strings.get("Instance.dasPropertyComment"));
+            }
+        }
+    }
+
+    private void writeNodeProperties() throws IOException {
+        if (nodePropsFile.createNewFile()) {
+            nodeProperties = new Properties();
+            nodeProperties.setProperty(K_DOCKER_NODE, dockerNode.toString());
+            try (FileOutputStream fos = new FileOutputStream(nodePropsFile)) {
+                nodeProperties.store(fos, Strings.get("Instance.nodePropertyComment"));
             }
         }
     }

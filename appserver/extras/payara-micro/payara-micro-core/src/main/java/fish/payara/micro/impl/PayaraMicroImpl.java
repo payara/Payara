@@ -1549,8 +1549,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 
                 boolean hasDefinedContextRoot = (contextRoot != null && !contextRoot.isEmpty());
                 
-                if (war.exists() && war.canRead()) {   
-                    String deployContext = war.getName().substring(0, war.getName().length() - 4);
+                if (war.exists() && war.canRead()) {
+                    String deployContext = war.isDirectory() ? war.getName() : war.getName().substring(0, war.getName().length() - 4);
                     if (contextRoots != null && contextRoots.containsKey(war.getName())) {
                         deployContext = contextRoots.getProperty(war.getName());
                     } else if (contextRoot != null) {
