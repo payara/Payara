@@ -53,15 +53,14 @@ import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * A base class for local commands that manage a local server instance.
@@ -501,14 +500,9 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                     Integer.toString(programOpts.getPort())));
             port = programOpts.getPort();
         } else {
-
-
-            LineReader lineReader = null;
             try {
-                lineReader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(System.in, System.out))
-                        .build();
-
+                buildTerminal();
+                buildLineReader();
                 if (lineReader != null) {
                     String line = lineReader.readLine(Strings.get("Instance.oldDasPropertiesPrompt",
                             propfile.toString(), Integer.toString(port),
@@ -516,8 +510,9 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                     while (line != null && line.length() > 0) {
                         try {
                             port = Integer.parseInt(line);
-                            if (port > 0 && port <= 65535)
+                            if (port > 0 && port <= 65535) {
                                 break;
+                            }
                         } catch (NumberFormatException nfex) {
                             //try again
                         }
@@ -529,23 +524,11 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                             Integer.toString(programOpts.getPort())));
                     port = programOpts.getPort();
                 }
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading input", ioe);
-                logger.info(Strings.get("Instance.oldDasPropertiesWrong",
-                        propfile.toString(), Integer.toString(port),
-                        Integer.toString(programOpts.getPort())));
-                port = programOpts.getPort();
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore  
+            } finally {
+                closeTerminal();
             }
-            finally {
-                if (lineReader != null && lineReader.getTerminal() != null) {
-                    try {
-                        lineReader.getTerminal().close();
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error closing terminal", ioe);
-                    }
-                }
-            }
-
         }
 
         dasprops.setProperty("agent.das.protocol", "http");

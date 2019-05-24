@@ -66,7 +66,6 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -92,8 +91,6 @@ public class MultimodeCommand extends CLICommand {
     private String encoding;
     private boolean echo;       // saved echo flag
     private static final LocalStringsImpl strings = new LocalStringsImpl(MultimodeCommand.class);
-    
-    private static final String ASADMIN = "asadmin";
 
     /**
      * The validate method validates that the type and quantity of parameters
@@ -144,16 +141,17 @@ public class MultimodeCommand extends CLICommand {
         try {
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                Terminal terminal = TerminalBuilder.builder()
+                Completer completer = getAllCommandsCompleter();
+                Terminal asadminTerminal = TerminalBuilder.builder()
                         .name(ASADMIN)
                         .system(true)
-                        .encoding(encoding != null ? Charset.forName(encoding) : null)
+                        .encoding(encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())
                         .build();
 
                 reader = LineReaderBuilder.builder()
                         .appName(ASADMIN)
-                        .terminal(terminal)
-                        .completer(getAllCommandsCompleter())
+                        .terminal(asadminTerminal)
+                        .completer(completer)
                         .build();
 
                 reader.unsetOpt(LineReader.Option.INSERT_TAB);
@@ -181,9 +179,15 @@ public class MultimodeCommand extends CLICommand {
                     }
                 };
 
+                Terminal asadminTerminal = TerminalBuilder.builder()
+                        .streams(new FileInputStream(file), out)
+                        .system(false)
+                        .encoding(encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())
+                        .name(ASADMIN)
+                        .build();
+                
                 reader = LineReaderBuilder.builder()
-                        .completer(getAllCommandsCompleter())
-                        .terminal(new DumbTerminal(Terminal.TYPE_DUMB, Terminal.TYPE_DUMB, new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : null))
+                        .terminal(asadminTerminal)
                         .appName(ASADMIN)
                         .build();
             }
@@ -192,16 +196,10 @@ public class MultimodeCommand extends CLICommand {
         } catch (IOException e) {
             throw new CommandException(e);
         } finally {
-            try {
-                if (file != null && reader != null && reader.getTerminal() != null) {
-                    reader.getTerminal().close();
-                }
-            } catch (Exception e) {
-                // ignore it
-            }
+            closeTerminal();
         }
     }
-
+    
     private static void atomicReplace(ServiceLocator locator, ProgramOptions options) {
         DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
@@ -291,9 +289,14 @@ public class MultimodeCommand extends CLICommand {
                 po.setCommandName(programOpts.getCommandName());
                 // remove the old one and replace it
                 atomicReplace(habitat, po);
-
+              
                 cmd = CLICommand.getCommand(habitat, command);
-                rc = cmd.execute(args);
+              
+                if (file == null) {
+                    rc = cmd.execute(reader.getTerminal(), args);
+                } else {
+                    rc = cmd.execute(args);
+                }
             }
             catch (CommandValidationException cve) {
                 logger.severe(cve.getMessage());

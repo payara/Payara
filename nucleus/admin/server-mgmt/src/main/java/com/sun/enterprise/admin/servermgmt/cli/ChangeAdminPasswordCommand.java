@@ -59,14 +59,12 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileRealmStorageManager;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * The change-admin-password command. The remote command implementation presents a different interface (set of options)
@@ -115,12 +113,9 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         if (programOpts.getUser() == null) {
 
             // prompt for it (if interactive)
-            LineReader lineReader = null;
             try {
-                lineReader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(System.in, System.out))
-                        .build();
-
+                buildTerminal();
+                buildLineReader();
                 if (lineReader != null && programOpts.isInteractive()) {
                     String val = lineReader.readLine(STRINGS.get("AdminUserDefaultPrompt",
                             SystemPropertyConstants.DEFAULT_ADMIN_USER));
@@ -132,17 +127,10 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
                 } else {
                     throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
                 }
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error instantiating console", ioe);
-            }
-            finally {
-                if (lineReader != null && lineReader.getTerminal() != null) {
-                    try {
-                        lineReader.getTerminal().close();
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error closing terminal", ioe);
-                    }
-                }
+            } catch (UserInterruptException | EndOfFileException e) {
+             // Ignore  
+            } finally {
+                closeTerminal();
             }
         }
 

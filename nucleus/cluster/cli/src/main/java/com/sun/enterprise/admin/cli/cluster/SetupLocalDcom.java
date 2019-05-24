@@ -50,9 +50,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.*;
@@ -61,6 +58,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /*
  * @author Byron Nevins
@@ -79,7 +78,6 @@ public final class SetupLocalDcom extends CLICommand {
     private static final String CPP_APP_FILENAME = "DcomConfigurator.exe";
     private static final File TMPDIR = new File(System.getProperty("java.io.tmpdir"));
     private static final File CPP_APP = new File(TMPDIR, CPP_APP_FILENAME);
-    private LineReader lineReader;
 
     @Override
     protected void validate() throws CommandException {
@@ -88,20 +86,16 @@ public final class SetupLocalDcom extends CLICommand {
         if (!OS.isWindowsForSure())
             throw new CommandException(Strings.get("vld.windows.only"));
 
-        // Instantiate console if null
-        if (lineReader == null) {
-            try {
-                lineReader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(System.in, System.out))
-                        .build();
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error instantiating reader", ioe);
-            }
-        }
+        try {
+            buildTerminal();
+            buildLineReader();
 
-        // Check if console is still null
-        if (lineReader == null) {
-            throw new CommandException(Strings.get("vld.noconsole"));
+            // Check if console is still null
+            if (lineReader == null) {
+                throw new CommandException(Strings.get("vld.noconsole"));
+            }
+        } finally {
+            closeTerminal();
         }
 
         if(!force)
@@ -238,14 +232,17 @@ public final class SetupLocalDcom extends CLICommand {
     }
 
     private void areYouSure() throws CommandException {
-        if (!programOpts.isInteractive())
+        if (!programOpts.isInteractive()) {
             throw new CommandException(Strings.get("vld.not.interactive"));
-
-        String msg = Strings.get("vld.areyousure");
-
-        String answer = lineReader.readLine(msg);
-
-        if (!"yes".equalsIgnoreCase(answer))
-            throw new CommandException(Strings.get("vld.no"));
+        }
+        
+        try {
+            String answer = lineReader.readLine(String.format("%s:  ",  Strings.get("vld.areyousure")));
+            if (!"yes".equalsIgnoreCase(answer)) {
+                throw new CommandException(Strings.get("vld.no"));
+            }
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore  
+        }
     }
 }

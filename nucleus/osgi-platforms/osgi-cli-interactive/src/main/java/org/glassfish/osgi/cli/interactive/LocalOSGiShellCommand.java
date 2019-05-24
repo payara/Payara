@@ -47,6 +47,7 @@ import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import javax.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -65,7 +66,6 @@ import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -216,7 +216,7 @@ public class LocalOSGiShellCommand extends CLICommand {
 
     @Override
     protected int executeCommand() throws CommandException {
-        LineReader reader;
+        LineReader reader = null;
 
         if(cmd == null) {
             throw new CommandException("Remote command 'osgi' is not available.");
@@ -235,8 +235,12 @@ public class LocalOSGiShellCommand extends CLICommand {
             shellType = cmd.executeAndReturnOutput(args).trim();
 
             if (file == null) {
+                if (terminal != null) {
+                    //Pause the asadmin terminal
+                    terminal.pause();
+                }
                 System.out.println(strings.get("multimodeIntro"));
-                Terminal terminal = TerminalBuilder.builder()
+                Terminal osgiShellTerminal = TerminalBuilder.builder()
                         .name(REMOTE_COMMAND)
                         .system(true)
                         .streams(new FileInputStream(FileDescriptor.in), System.out)
@@ -244,7 +248,7 @@ public class LocalOSGiShellCommand extends CLICommand {
 
                 reader = LineReaderBuilder.builder()
                         .appName(REMOTE_COMMAND)
-                        .terminal(terminal)
+                        .terminal(osgiShellTerminal)
                         .completer(getCommandCompleter())
                         .build();
 
@@ -275,8 +279,14 @@ public class LocalOSGiShellCommand extends CLICommand {
                     }
                 };
 
+                  Terminal osgiShellTerminal = TerminalBuilder.builder()
+                        .streams(new FileInputStream(file), out)
+                        .system(false)
+                        .name(ASADMIN)
+                        .build();
+                
                 reader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(new FileInputStream(file), out))
+                        .terminal(osgiShellTerminal)
                         .appName(REMOTE_COMMAND)
                         .build();
             }
@@ -284,6 +294,14 @@ public class LocalOSGiShellCommand extends CLICommand {
             return executeCommands(reader);
         } catch (IOException e) {
             throw new CommandException(e);
+        } finally {
+            if (reader != null && reader.getTerminal() != null) {
+                try {
+                    reader.getTerminal().close();
+                } catch (IOException ioe) {
+                     logger.log(Level.WARNING, "Error closing OSFI Shell terminal", ioe);
+                }
+            }
         }
     }
 
@@ -433,6 +451,9 @@ public class LocalOSGiShellCommand extends CLICommand {
                 // handle built-in exit and quit commands
                 // XXX - care about their arguments?
                 if (command.equals("exit") || command.equals("quit")) {
+                    if (terminal != null && terminal.paused()) {
+                        terminal.resume();
+                    }
                     break;
                 }
 

@@ -70,9 +70,6 @@ import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.component.MultiMap;
 
 import java.io.*;
@@ -82,6 +79,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -169,14 +168,10 @@ public class RemoteCLICommand extends CLICommand {
          * caller should try the request again).
          */
         @Override
-        protected boolean updateAuthentication() {
-
-
-            LineReader lineReader = null;
+        protected boolean updateAuthentication() {     
             try {
-                lineReader = LineReaderBuilder.builder()
-                        .terminal(new DumbTerminal(System.in, System.out))
-                        .build();
+                buildTerminal();
+                buildLineReader();
                 if (programOpts.isInteractive() && lineReader != null) {
                     // if appropriate, tell the user why authentication failed
                     PasswordLocation pwloc = programOpts.getPasswordLocation();
@@ -186,8 +181,7 @@ public class RemoteCLICommand extends CLICommand {
                         try {
                             LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
                             logger.log(Level.FINE, strings.get("BadPasswordFromLogin", store.getName()));
-                        }
-                        catch (StoreException ex) {
+                        } catch (StoreException ex) {
                             // ignore it
                         }
                     }
@@ -212,7 +206,7 @@ public class RemoteCLICommand extends CLICommand {
                     } else {
                         password = readPassword(strings.get("AdminPasswordPrompt"));
                     }
-                    if (password == null){
+                    if (password == null) {
                         return false;
                     }
                     if (ok(user)) {      // if none entered, don't change
@@ -223,20 +217,11 @@ public class RemoteCLICommand extends CLICommand {
                     this.password = password;
                     return true;
                 }
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading input", ioe);
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore  
+            } finally {
+                closeTerminal();
             }
-            finally {
-                if (lineReader != null && lineReader.getTerminal() != null) {
-                    try {
-                        lineReader.getTerminal().close();
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error closing terminal", ioe);
-                    }
-                }
-            }
-
-
             return false;
         }
 

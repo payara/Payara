@@ -61,15 +61,10 @@ import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileRealmStorageManager;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.*;
 import static com.sun.enterprise.config.util.PortConstants.*;
@@ -78,6 +73,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_ADMIN_USER
 import static com.sun.enterprise.util.net.NetUtils.checkPort;
 import static com.sun.enterprise.util.net.NetUtils.isPortValid;
 import static java.util.logging.Level.FINER;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * This is a local command that creates a domain.
@@ -199,12 +196,9 @@ public final class CreateDomainCommand extends CLICommand {
         if (programOpts.getUser() == null && !noPassword) {
             // prompt for it (if interactive)
 
-            LineReader lineReader = null;
             try {
-                lineReader = LineReaderBuilder.builder()
-                    .terminal(new DumbTerminal(System.in, System.out))
-                    .build();
-
+                buildTerminal();
+                buildLineReader();
                 if (lineReader != null && programOpts.isInteractive()) {
                     String val = lineReader.readLine(STRINGS.get("AdminUserRequiredPrompt", SystemPropertyConstants.DEFAULT_ADMIN_USER));
 
@@ -218,17 +212,10 @@ public final class CreateDomainCommand extends CLICommand {
                 } else {
                     throw new CommandValidationException(STRINGS.get("AdminUserRequired"));
                 }
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error reading input", ioe);
-            }
-            finally {
-                if (lineReader != null && lineReader.getTerminal() != null) {
-                    try {
-                        lineReader.getTerminal().close();
-                    } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error closing terminal", ioe);
-                    }
-                }
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore  
+            } finally {
+                closeTerminal();
             }
         }
         

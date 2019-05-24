@@ -59,6 +59,8 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  *  This is a local command that distributes the SSH public key to remote node(s)
@@ -174,19 +176,12 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        LineReader lineReader = null;
         try {
-            lineReader = LineReaderBuilder.builder()
-                    .terminal(new DumbTerminal(System.in, System.out))
-                    .build();
-
+            buildTerminal();
+            buildLineReader();
             if (lineReader != null) {
                 String val;
                 do {
-                    lineReader = LineReaderBuilder.builder()
-                            .terminal(new DumbTerminal(System.in, System.out))
-                            .build();
-
                     val = lineReader.readLine(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
                     if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
                         if (logger.isLoggable(Level.FINER)) {
@@ -198,17 +193,10 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                     }
                 } while (val != null && !isValidAnswer(val));
             }
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading input", ioe);
-        }
-        finally {
-            if (lineReader != null && lineReader.getTerminal() != null) {
-                try {
-                    lineReader.getTerminal().close();
-                } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error closing terminal", ioe);
-                }
-            }
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore  
+        } finally {
+            closeTerminal();
         }
 
         return false;

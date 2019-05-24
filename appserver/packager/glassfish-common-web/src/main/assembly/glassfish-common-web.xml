@@ -59,6 +59,7 @@
                 <exclude>modules/cli-optional.jar</exclude>
                 <exclude>modules/appserver-cli.jar</exclude>
                 <exclude>modules/jna.jar</exclude>
+                <exclude>modules/jline-terminal-jna.jar</exclude>
                 <exclude>bin/*</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>
@@ -84,6 +85,7 @@
             <includes>
                 <include>appserver-cli.jar</include>
                 <include>jna.jar</include>
+                <include>jline-terminal-jna.jar</include>
             </includes>
         </fileSet>
         <fileSet>

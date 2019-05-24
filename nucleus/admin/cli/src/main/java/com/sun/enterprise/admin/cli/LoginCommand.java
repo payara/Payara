@@ -50,13 +50,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
-import java.io.IOException;
-import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * The asadmin login command.
@@ -125,38 +122,26 @@ public class LoginCommand extends CLICommand {
      */
     private String getAdminUser() {
         String user = null;
-
-        String val;
-        LineReader lineReader = null;
         try {
-            lineReader = LineReaderBuilder.builder()
-                    .terminal(new DumbTerminal(System.in, System.out))
-                    .build();
-
+            buildTerminal();
+            buildLineReader();
+            
             String defuser = programOpts.getUser();
             if (defuser == null) {
                 defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
             }
 
-            val = lineReader.readLine(strings.get("AdminUserPrompt", defuser));
-            if (val != null && val.length() > 0){
+            String val = lineReader.readLine(strings.get("AdminUserPrompt", defuser));
+            if (val != null && val.length() > 0) {
                 user = val;
             } else {
                 user = defuser;
             }
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error reading input", ioe);
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore           
+        } finally {
+            closeTerminal();
         }
-        finally {
-            if (lineReader != null && lineReader.getTerminal() != null) {
-                try {
-                    lineReader.getTerminal().close();
-                } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error closing terminal", ioe);
-                }
-            }
-        }
-
         return user;
     }
 
