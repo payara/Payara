@@ -264,7 +264,7 @@ public class FlashlightProbe
 	}
 
     public String getModuleName() {
-        return moduleProviderName;
+        return moduleName;
     }
 
 	public String getProbeProviderName() {

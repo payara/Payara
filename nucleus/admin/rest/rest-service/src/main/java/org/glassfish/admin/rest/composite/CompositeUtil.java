@@ -637,50 +637,41 @@ public class CompositeUtil {
      *
      * @param similarClass
      */
-    private void loadModelExtensionMetadata(Class<?> similarClass) {
-        BufferedReader reader = null;
+    private static void loadModelExtensionMetadata(Class<?> similarClass) {
         try {
             Enumeration<URL> urls = similarClass.getClassLoader().getResources("META-INF/restmodelextensions");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                while (reader.ready()) {
-                    final String line = reader.readLine();
-                    if ((line == null) || line.isEmpty()) {
-                        continue;
-                    }
-                    if (line.charAt(0) != '#') {
-                        if (!line.contains(":")) {
-                            RestLogging.restLogger.log(Level.INFO,
-                                    RestLogging.INCORRECTLY_FORMATTED_ENTRY,
-                                    new String[]{
-                                        "META-INF/restmodelextensions",
-                                        line
-                                    });
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                    while (reader.ready()) {
+                        final String line = reader.readLine();
+                        if ((line == null) || line.isEmpty()) {
+                            continue;
                         }
-                        String[] entry = line.split(":");
-                        String base = entry[0];
-                        String ext = entry[1];
-                        List<String> list = modelExtensions.get(base);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            modelExtensions.put(base, list);
+                        if (line.charAt(0) != '#') {
+                            if (!line.contains(":")) {
+                                RestLogging.restLogger.log(Level.INFO,
+                                        RestLogging.INCORRECTLY_FORMATTED_ENTRY,
+                                        new String[]{
+                                                "META-INF/restmodelextensions",
+                                                line
+                                });
+                            }
+                            String[] entry = line.split(":");
+                            String base = entry[0];
+                            String ext = entry[1];
+                            List<String> list = modelExtensions.get(base);
+                            if (list == null) {
+                                list = new ArrayList<>();
+                                modelExtensions.put(base, list);
+                            }
+                            list.add(ext);
                         }
-                        list.add(ext);
                     }
                 }
-
             }
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
-                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
-                }
-            }
         }
     }
 

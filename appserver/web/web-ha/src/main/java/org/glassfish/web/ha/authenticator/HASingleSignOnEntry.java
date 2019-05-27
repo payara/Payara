@@ -159,50 +159,23 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
     /** convert a principal into byte array */
     private byte[] convertToByteArray(Principal obj) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BufferedOutputStream bos = null;
-        ObjectOutputStream oos = null;
-        try {
-            bos = new BufferedOutputStream(baos);
-            oos = ioUtils.createObjectOutputStream(bos, true);
+        try (ObjectOutputStream oos = ioUtils.createObjectOutputStream(new BufferedOutputStream(baos), true)) {
             oos.writeObject(obj);
             oos.flush();
             return baos.toByteArray();
         } catch(Exception ex) {
             throw new IllegalStateException("Could not convert principal to byte array", ex);
-        } finally {
-          closeSilently(baos);
-          closeSilently(bos);
-          closeSilently(oos);
         }
     }
 
     /** Parse a principal from metadata */
     private Principal parsePrincipal(HASingleSignOnEntryMetadata m) {
-      ByteArrayInputStream bais = null;
-      BufferedInputStream bis = null;
-      ObjectInputStream ois = null;
-      try {
-          bais = new ByteArrayInputStream(m.getPrincipalBytes());
-          bis = new BufferedInputStream(bais);
-          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader(), 0L);
-          return (Principal) ois.readObject();
+        try (ObjectInputStream ois = ioUtils.createObjectInputStream(
+                new BufferedInputStream(new ByteArrayInputStream(m.getPrincipalBytes())), true,
+                this.getClass().getClassLoader(), 0L)) {
+            return (Principal) ois.readObject();
       } catch (Exception ex) {
           throw new IllegalStateException("Could not parse principal from HA-SSO Metadata", ex);
-      } finally {
-        closeSilently(bais);
-        closeSilently(bis);
-        closeSilently(ois);
-      }
-    }
-
-    private void closeSilently(Closeable closeable) {
-      if (closeable == null) {
-        return;
-      }
-      try {
-        closeable.close();
-      } catch(Exception ex) {
-        // nothing
       }
     }
 }

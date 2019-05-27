@@ -94,7 +94,7 @@ public class WeightedSnapshot extends Snapshot {
 
         for (int i = 0; i < copy.length; i++) {
             this.values[i] = copy[i].value;
-            this.normWeights[i] = copy[i].weight / sumWeight;
+            this.normWeights[i] = sumWeight == 0d ? 0d : copy[i].weight / sumWeight;
         }
 
         for (int i = 1; i < copy.length; i++) {
