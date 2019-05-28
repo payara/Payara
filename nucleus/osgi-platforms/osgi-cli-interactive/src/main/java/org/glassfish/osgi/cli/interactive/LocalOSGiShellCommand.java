@@ -93,6 +93,27 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class LocalOSGiShellCommand extends CLICommand {
 
+    private final static class NullOutputStream extends OutputStream {
+        NullOutputStream() {
+            // make visible
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            return;
+        }
+    }
+
     protected static final String REMOTE_COMMAND = "osgi";
     protected static final String SESSIONID_OPTION = "--session-id";
     protected static final String SESSION_OPTION = "--session";
@@ -227,8 +248,6 @@ public class LocalOSGiShellCommand extends CLICommand {
     @Override
     protected int executeCommand()
             throws CommandException, CommandValidationException {
-        ConsoleReader reader = null;
-
         if(cmd == null) {
             throw new CommandException("Remote command 'osgi' is not available.");
         }
@@ -247,43 +266,23 @@ public class LocalOSGiShellCommand extends CLICommand {
 
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                reader = new ConsoleReader(REMOTE_COMMAND,
+                ConsoleReader reader = new ConsoleReader(REMOTE_COMMAND,
                         new FileInputStream(FileDescriptor.in), System.out,
                         null);
-            } else {
-                printPrompt = false;
-                if (!file.canRead()) {
-                    throw new CommandException("File: " + file
-                            + " can not be read");
-                }
-
-                OutputStream out = new OutputStream() {
-
-                    @Override
-                    public void write(int b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        return;
-                    }
-                };
-
-                reader = new ConsoleReader(REMOTE_COMMAND,
-                        new FileInputStream(file), out,
-                        null);
+                reader.setBellEnabled(false);
+                reader.addCompleter(getCommandCompleter());
+                return executeCommands(reader); // NB: wrapper on system.in/out does not need try-with-resource
             }
-
-            reader.setBellEnabled(false);
-            reader.addCompleter(getCommandCompleter());
-
-            return executeCommands(reader);
+            printPrompt = false;
+            if (!file.canRead()) {
+                throw new CommandException("File: " + file + " can not be read");
+            }
+            try (ConsoleReader reader = new ConsoleReader(REMOTE_COMMAND, new FileInputStream(file),
+                    new NullOutputStream(), null)) {
+                reader.setBellEnabled(false);
+                reader.addCompleter(getCommandCompleter());
+                return executeCommands(reader);
+            }
         } catch (IOException e) {
             throw new CommandException(e);
         }

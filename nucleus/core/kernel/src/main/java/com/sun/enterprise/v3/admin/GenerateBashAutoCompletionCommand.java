@@ -166,8 +166,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
      * @return true if written to file successfully, false otherwise
      */
     private boolean writeCommands(List<String> commands) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             //Write the opening to the list of commands
             writer.write(VARNAME);
             //Write all the commands to the list

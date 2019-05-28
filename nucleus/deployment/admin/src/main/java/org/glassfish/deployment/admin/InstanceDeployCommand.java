@@ -300,8 +300,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
         }
 
         final URI baseURI = baseDir.toURI();
-        final ZipFile zipFile = new ZipFile(generatedContentParam);
-        try {
+        try (ZipFile zipFile = new ZipFile(generatedContentParam)) {
             for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
                 final ZipEntry zipEntry = entries.nextElement();
                 final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
@@ -312,16 +311,11 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
                             "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
                     }
                 } else {
-                    final FileOutputStream os = new FileOutputStream(outputFile);
-                    try {
+                    try (FileOutputStream os = new FileOutputStream(outputFile)) {
                         FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
-                    } catch (IOException e) {
-                        os.close();
                     }
                 }
             }
-        } finally {
-            zipFile.close();
         }
     }
 
