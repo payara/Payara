@@ -379,9 +379,6 @@ public class RestrictedContentAdapter extends HttpHandler {
     }
 
     protected String dumpContent() {
-        if (content == null) {
-            return "  Static content: not initialized";
-        }
         if (content.isEmpty()) {
             return "  Static content: empty" + LINE_SEP;
         }

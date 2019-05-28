@@ -227,7 +227,9 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                     }
                 }
             }
-
+            if (extendedEntityManager == null) {
+                throw new IllegalStateException("No EntityManager available in current extended persistence context.");
+            }
             delegate = extendedEntityManager;
 
         }

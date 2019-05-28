@@ -213,7 +213,7 @@ public class JBatchJDBCPersistenceManager implements
 
         tryObtainTableLock();
 
-        CheckpointData checkpointData = queryCheckpointData(key.getCommaSeparatedKey());
+        CheckpointData checkpointData = key == null ? null : queryCheckpointData(key.getCommaSeparatedKey());
 
         logger.exiting(CLASSNAME, "getCheckpointData", checkpointData == null ? "<null>" : checkpointData);
         return checkpointData;

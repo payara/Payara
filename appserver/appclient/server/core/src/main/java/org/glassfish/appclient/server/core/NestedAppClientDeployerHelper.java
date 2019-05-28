@@ -352,14 +352,14 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
         URI appClientURIWithinEAR = URI.create(appClientDesc().getModuleDescriptor().getArchiveUri());
         final Artifact appClientJARArtifact = newArtifact(appClientURIWithinEAR);
-
-        /*
-         * Processing the client artifact will recursively process any artifacts
-         * on which it depends plus the transitive closure thereof.
-         */
-        appClientJARArtifact.processArtifact(dependencyURIsProcessed,
-                clientLevelDownloads(), earLevelDownloads());
-
+        if (appClientJARArtifact != null) {
+            /*
+             * Processing the client artifact will recursively process any artifacts
+             * on which it depends plus the transitive closure thereof.
+             */
+            appClientJARArtifact.processArtifact(dependencyURIsProcessed,
+                    clientLevelDownloads(), earLevelDownloads());
+        }
         /*
          * Now incorporate the library JARs and, if v2 compatibility is chosen,
          * EJB JARs and top level JARs.

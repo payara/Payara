@@ -293,7 +293,7 @@ public class JSONUtil {
 		    && ((method.getModifiers() & Modifier.PUBLIC) != 0)
 		    && (method.getParameterTypes().length == 0)
 		    && (!method.getName().equals("getClass"))
-		    && (!method.getReturnType().getName().equals("void"))) {
+		    && (method.getReturnType() != void.class)) {
 		result.add(method.getName());
 	    }
 	}

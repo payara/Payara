@@ -192,7 +192,7 @@ public class TagSupport implements Serializable{
 	byte tagData[] = prefs.getByteArray(TAG_DATA_KEY, null);
 	if (tagData == null) {
 	    // Initialize it...
-	    result = (Map<String, List<Tag>>[]) new Map[] {
+	    result = new Map[] {
 		    new HashMap<String, List<Tag>>(),	// By Tag Name
 		    new HashMap<String, List<Tag>>()	// By Page ID
 		};
@@ -305,7 +305,7 @@ public class TagSupport implements Serializable{
 	List<Tag> results = TagSupport.queryTags(tagName, tagViewId, user);
 
 	// Should be at most 1 match, however, there may be multiple users.
-	if (results.size() > 0) {
+	if (results != null && results.size() > 0) {
 	    // Remove the 1st (and only) Tag...
 	    Tag targetTag = results.get(0);
 	    targetTag.removeUser(user);

@@ -220,7 +220,7 @@ public class GadgetHandlers {
             handler.setInputValue(name, val);
         } else {
 		// Assume it's an output mapping...
-		handler.setOutputMapping(name, val.toString(), OutputTypeManager.EL_TYPE);
+		handler.setOutputMapping(name, String.valueOf(val), OutputTypeManager.EL_TYPE);
 		outputNames.add(name);
 	    }
 	}

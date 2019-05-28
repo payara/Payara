@@ -211,19 +211,15 @@ public class BatchRuntimeHelper
                         try {
                             // set TCCL to ensure loading of the Joboperator
                             Thread.currentThread().setContextClassLoader(BatchSPIManager.class.getClassLoader());
-                            
+
                             BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                            if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
+                            if (batchSPIManager.getBatchJobUtil() == null && tagNamesRequiringCleanup.contains(tagName)) {
+                                //Force initialization of BatchRuntime
+                                BatchRuntime.getJobOperator();
+                            }
+                            if (batchSPIManager.getBatchJobUtil() != null) {
                                 batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
                                 tagNamesRequiringCleanup.remove(tagName);
-                            } else if (tagNamesRequiringCleanup.contains(tagName)) {
-                                //Force initialization of BatchRuntime
-                                JobOperator jobOperator = BatchRuntime.getJobOperator();
-
-                                if (batchSPIManager.getBatchJobUtil() != null) {
-                                    batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
-                                    tagNamesRequiringCleanup.remove(tagName);
-                                }
                             }
                         } catch (Exception ex) {
                             logger.log(Level.FINE, "Error while purging jobs", ex);
