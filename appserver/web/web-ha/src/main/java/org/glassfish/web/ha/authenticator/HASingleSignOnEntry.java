@@ -158,8 +158,8 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
 
     /** convert a principal into byte array */
     private byte[] convertToByteArray(Principal obj) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ObjectOutputStream oos = ioUtils.createObjectOutputStream(new BufferedOutputStream(baos), true)) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = ioUtils.createObjectOutputStream(baos, true)) {
             oos.writeObject(obj);
             oos.flush();
             return baos.toByteArray();
