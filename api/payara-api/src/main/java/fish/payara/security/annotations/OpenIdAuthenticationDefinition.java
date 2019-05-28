@@ -340,7 +340,7 @@ public @interface OpenIdAuthenticationDefinition {
      * @return {@code true}, if Access and Refresh Token shall be refreshed
      * automatically when they are expired.
      */
-    boolean tokenAutoRefresh() default true;
+    boolean tokenAutoRefresh() default false;
 
     /**
      * Optional. Sets the minimum validity time in milliseconds the Access Token
