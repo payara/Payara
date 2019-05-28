@@ -44,9 +44,7 @@ package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import static fish.payara.microprofile.healthcheck.Constants.DEFAULT_GROUP_NAME;
-import static fish.payara.microprofile.healthcheck.Constants.DEFAULT_USER_NAME;
+import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -54,12 +52,9 @@ import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -89,7 +84,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             opType = RestEndpoint.OpType.POST,
             description = "Configures Microprofile HealthCheck")
 })
-public class SetMPHealthCheckConfiguration implements AdminCommand {
+public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigurationCommand {
 
     private static final Logger LOGGER = Logger.getLogger("MP-HealthCheck");
 
@@ -102,9 +97,6 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
-
     @Inject
     ServiceLocator habitat;
 
@@ -116,9 +108,6 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
 
     @Param(optional = true, alias = "securityenabled")
     private Boolean securityEnabled;
-
-    @Inject
-    private CommandRunner commandRunner;
 
     @Inject
     private Domain domain;
@@ -162,41 +151,6 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
         if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
             actionReport.getSubActionsReport().clear();
         }
-    }
-
-    private boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
-        boolean exists = false;
-
-        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject,
-                false);
-
-        ParameterMap parameters = new ParameterMap();
-        parameters.add("authrealmname", "file");
-
-        invocation.parameters(parameters).execute();
-
-        for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
-            if (message.getMessage().equals(DEFAULT_USER_NAME)) {
-                exists = true;
-                break;
-            }
-        }
-
-        return exists;
-    }
-
-    private void createDefaultMicroprofileUser(ActionReport subActionReport, Subject subject) {
-        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject,
-                false);
-
-        ParameterMap parameters = new ParameterMap();
-        parameters.add("groups", DEFAULT_GROUP_NAME);
-        parameters.add("userpassword", "mp");
-        parameters.add("target", target);
-        parameters.add("authrealmname", "file");
-        parameters.add("DEFAULT", DEFAULT_USER_NAME);
-
-        invocation.parameters(parameters).execute();
     }
 
 }

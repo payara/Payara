@@ -40,21 +40,17 @@
 
 package fish.payara.microprofile.metrics;
 
+import fish.payara.microprofile.Constants;
 import java.util.Arrays;
 import java.util.List;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
-public class Constants {
+public interface MetricsConstants extends Constants {
 
-    public static final String DEFAULT_GROUP_NAME = "microprofile";
-    public static final String DEFAULT_USER_NAME = "mp";
-
-    public static final String EMPTY_STRING = "";
-    
     // Registry Names
-    public static final List<String> REGISTRY_NAMES = Arrays.asList(
+    List<String> REGISTRY_NAMES = Arrays.asList(
             BASE.getName(), VENDOR.getName(), APPLICATION.getName()
     );
 

@@ -40,19 +40,14 @@
 package fish.payara.microprofile.openapi.impl.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_GROUP_NAME;
-import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_USER_NAME;
+import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 import org.glassfish.api.admin.RestEndpoints;
@@ -80,7 +75,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "set-openapi-configuration",
             description = "Sets the OpenAPI Configuration")
 })
-public class SetOpenApiConfigurationCommand implements AdminCommand {
+public class SetOpenApiConfigurationCommand extends SetSecureMicroprofileConfigurationCommand {
 
     private static final Logger LOGGER = Logger.getLogger(SetOpenApiConfigurationCommand.class.getName());
 
@@ -98,12 +93,6 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
 
     @Param(optional = true, alias = "securityenabled")
     private Boolean securityEnabled;
-
-    @Param(optional = true, defaultValue = "server-config")
-    private String target;
-
-    @Inject
-    private CommandRunner commandRunner;
 
     @Inject
     private Domain domain;
@@ -153,41 +142,6 @@ public class SetOpenApiConfigurationCommand implements AdminCommand {
         if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
             actionReport.getSubActionsReport().clear();
         }
-    }
-
-    private boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
-        boolean exists = false;
-
-        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-file-users", subActionReport, subject,
-                false);
-
-        ParameterMap parameters = new ParameterMap();
-        parameters.add("authrealmname", "file");
-
-        invocation.parameters(parameters).execute();
-
-        for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
-            if (message.getMessage().equals(DEFAULT_USER_NAME)) {
-                exists = true;
-                break;
-            }
-        }
-
-        return exists;
-    }
-
-    private void createDefaultMicroprofileUser(ActionReport subActionReport, Subject subject) {
-        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-file-user", subActionReport, subject,
-                false);
-
-        ParameterMap parameters = new ParameterMap();
-        parameters.add("groups", DEFAULT_GROUP_NAME);
-        parameters.add("userpassword", "mp");
-        parameters.add("target", target);
-        parameters.add("authrealmname", "file");
-        parameters.add("DEFAULT", DEFAULT_USER_NAME);
-
-        invocation.parameters(parameters).execute();
     }
 
 }

@@ -40,8 +40,8 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
-import static fish.payara.microprofile.metrics.Constants.REGISTRY_NAMES;
+import static fish.payara.microprofile.metrics.MetricsConstants.EMPTY_STRING;
+import static fish.payara.microprofile.metrics.MetricsConstants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;

@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.init;
 
-import static fish.payara.microprofile.openapi.api.Constants.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication;
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
@@ -91,7 +91,7 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
         new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(OpenApiApplication.class)), ctx);
 
         ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistrations().get(OpenApiApplication.class.getName());
-        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
             reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
             ctx.declareRoles(DEFAULT_GROUP_NAME);
         }

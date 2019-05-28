@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.metrics.MetricsConstants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import static java.util.Arrays.asList;
 import java.util.Map;
@@ -82,7 +82,7 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
         // Register a servlet with url patterns of metrics handlers
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
         reg.addMapping("/" + configuration.getEndpoint() + "/*");
-        if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
             reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
             ctx.declareRoles(DEFAULT_GROUP_NAME);
         }

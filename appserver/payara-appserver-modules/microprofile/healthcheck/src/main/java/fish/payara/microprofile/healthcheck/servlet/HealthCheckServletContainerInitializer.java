@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.healthcheck.servlet;
 
-import static fish.payara.microprofile.healthcheck.Constants.DEFAULT_GROUP_NAME;
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
@@ -99,7 +99,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // Register servlet
             ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
             reg.addMapping("/" + configuration.getEndpoint());
-            if (Boolean.valueOf(configuration.getSecurityEnabled())) {
+            if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
                 reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
                 ctx.declareRoles(DEFAULT_GROUP_NAME);
             }

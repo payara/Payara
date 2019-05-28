@@ -37,12 +37,13 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
+package fish.payara.microprofile;
 
-package fish.payara.microprofile.openapi.api;
+public interface Constants {
 
-public class Constants {
+    String DEFAULT_GROUP_NAME = "microprofile";
+    String DEFAULT_USER_NAME = "mp";
 
-    public static final String DEFAULT_GROUP_NAME = "microprofile";
-    public static final String DEFAULT_USER_NAME = "mp";
-
+    String EMPTY_STRING = "";
+    
 }
