@@ -62,8 +62,6 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
     protected CommandRunner commandRunner;
     
     protected boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
-        boolean exists = false;
-
         CommandRunner.CommandInvocation invocation
                 = commandRunner.getCommandInvocation(
                         "list-file-users",
@@ -79,12 +77,11 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
 
         for (ActionReport.MessagePart message : subActionReport.getTopMessagePart().getChildren()) {
             if (message.getMessage().equals(DEFAULT_USER_NAME)) {
-                exists = true;
-                break;
+                return true;
             }
         }
 
-        return exists;
+        return false;
     }
 
     protected void createDefaultMicroprofileUser(ActionReport subActionReport, Subject subject) {

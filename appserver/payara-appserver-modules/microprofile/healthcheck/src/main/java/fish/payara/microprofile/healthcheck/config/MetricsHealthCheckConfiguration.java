@@ -57,9 +57,8 @@ import org.jvnet.hk2.config.Configured;
 public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, ConfigExtension {
     
     /**
-     * Boolean value determining if the service is enabled or disabled.
-     *
-     * @return
+     * @return a Boolean value determining if the service is enabled or
+     * disabled.
      */
     @Attribute(dataType = Boolean.class, defaultValue = "true")
     String getEnabled();
@@ -67,9 +66,7 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * String value defines the endpoint of health service.
-     *
-     * @return
+     * @return a String value defines the endpoint of health service.
      */
     @Attribute(defaultValue = "health")
     String getEndpoint();
@@ -77,9 +74,7 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     void setEndpoint(String value) throws PropertyVetoException;
 
     /**
-     * String value defines the attached virtual servers.
-     *
-     * @return
+     * @return a String value defines the attached virtual servers.
      */
     @Attribute(dataType = String.class)
     String getVirtualServers();
@@ -87,9 +82,7 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
     void setVirtualServers(String value) throws PropertyVetoException;
     
     /**
-     * Boolean value determining if the security is enabled or not.
-     *
-     * @return
+     * @return a Boolean value determining if the security is enabled or not.
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getSecurityEnabled();

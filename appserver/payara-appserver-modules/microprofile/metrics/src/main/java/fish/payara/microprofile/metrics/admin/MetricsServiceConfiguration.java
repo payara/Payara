@@ -54,54 +54,44 @@ import org.jvnet.hk2.config.Configured;
 public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     /**
-     * Boolean value determining if the service is enabled or disabled.
-     *
-     * @return
+     * @return a Boolean value determining if the service is enabled or
+     * disabled.
      */
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * Boolean value determining if the metrics service is secure or not
-     *
-     * @return
+     * @return a Boolean value determining if the metrics service is secure or
+     * not.
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getSecureMetrics();
     void setSecureMetrics(String value) throws PropertyVetoException;
     
     /**
-     * Boolean value determining if the service is dynamic or not.
-     *
-     * @return
+     * @return a Boolean value determining if the service is dynamic or not.
      */
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getDynamic();
     void setDynamic(String value) throws PropertyVetoException;
 
     /**
-     * String value defines the endpoint of metrics service.
-     *
-     * @return
+     * @return a String value defines the endpoint of metrics service.
      */
     @Attribute(defaultValue = "metrics")
     String getEndpoint();
     void setEndpoint(String value) throws PropertyVetoException;
 
     /**
-     * String value defines the attached virtual servers.
-     *
-     * @return
+     * @return a String value defines the attached virtual servers.
      */
     @Attribute(dataType = String.class)
     String getVirtualServers();
     void setVirtualServers(String value) throws PropertyVetoException;
 
     /**
-     * Boolean value determining if the security is enabled or not.
-     *
-     * @return
+     * @return a Boolean value determining if the security is enabled or not.
      */
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getSecurityEnabled();
