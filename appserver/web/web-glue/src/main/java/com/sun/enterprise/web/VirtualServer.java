@@ -44,7 +44,6 @@ package com.sun.enterprise.web;
 
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_NAME;
-import static com.sun.enterprise.web.Constants.DEFAULT_WEB_MODULE_REALM;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -620,7 +619,9 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             WebBundleDescriptorImpl webBundleDescriptor = webArchivist.getDefaultWebXmlBundleDescriptor();
             webBundleDescriptor.setModuleID(DEFAULT_WEB_MODULE_NAME);
             webBundleDescriptor.setContextRoot("");
-            webBundleDescriptor.getLoginConfiguration().setRealmName(DEFAULT_WEB_MODULE_REALM);
+
+            SecurityService securityService = Globals.get(SecurityService.class);
+            webBundleDescriptor.getLoginConfiguration().setRealmName(securityService.getDefaultRealm());
 
             webModuleConfig = new WebModuleConfig();
             webModuleConfig.setLocation(new File(docroot));

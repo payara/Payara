@@ -77,12 +77,6 @@ public final class Constants {
     public static final String DEFAULT_WEB_MODULE_NAME = "__default-web-module";
 
     /**
-     * The system-assigned default web module's realm.
-     *
-     */
-    public static final String DEFAULT_WEB_MODULE_REALM = "file";
-
-    /**
      * The separator character between an application name and the web
      * module name within the application.
      */
