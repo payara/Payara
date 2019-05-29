@@ -192,7 +192,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @return
      */
     private static String getParsedKey(String key) throws ResourceException {
-        String property = key != null && key.startsWith("set") ? key.substring(3) : key;
+        String property = key != null && key.startsWith("set") ? key.substring(3).trim() : key;
         if (property == null || property.isEmpty()) {
             throw new ResourceException("Invalid driver properties string - " +
                     "Key cannot be an empty string");

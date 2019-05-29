@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 /*
  * CaptureSchema.java
  *
  * Created on March 15, 2002, 4:02 PM
  */
-
 package com.sun.jdo.api.persistence.mapping.ejb;
 
 import org.netbeans.modules.dbschema.*;
