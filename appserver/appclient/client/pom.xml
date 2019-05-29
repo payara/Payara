@@ -57,12 +57,12 @@
     <name>Payara App Client - Client-Side Modules</name>
 
     <modules>
-        <module>appclient-scripts</module>
-        <module>acc-config</module>
-        <module>acc</module>
-        <module>acc-l10n</module>
-        <module>acc-standalone</module>
-        <module>acc-standalone-l10n</module>
+        <module>payara-client-scripts</module>
+        <module>payara-client-config</module>
+        <module>payara-client-module</module>
+        <module>payara-client-module-l10n</module>
+        <module>payara-client</module>
+        <module>payara-client-l10n</module>
     </modules>
 
 </project>
