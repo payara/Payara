@@ -80,7 +80,7 @@ of COPY_LIB map constant.)
     <parent>
         <groupId>org.glassfish.main.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>5.192</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.tests</groupId>
