@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -891,16 +891,20 @@ public class RestUtil {
         return rr;
     }
 
-    public static RestResponse  post(String address, Map<String, Object> payload) {
+    public static RestResponse post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
-                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+                .post(getEntityForAddress(address, payload), Response.class);
+        
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
+    }
+    
+    private static Entity getEntityForAddress(String address, Map<String, Object> payload) {
+        return address.endsWith("system-properties") ? Entity.entity(payload, MediaType.APPLICATION_JSON)
+                : Entity.entity(buildMultivalueMap(payload), MediaType.APPLICATION_FORM_URLENCODED);
     }
 
     public static RestResponse put(String address, Object payload, String contentType) {

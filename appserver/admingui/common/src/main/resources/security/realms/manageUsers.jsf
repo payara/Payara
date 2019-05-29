@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -57,7 +58,7 @@
             method="get", result="#{requestScope.listUsersResult}");
         setPageSessionAttribute(key="listOfRows", value="#{requestScope.listUsersResult.data.extraProperties.users}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system.json", method="get", result="#{requestScope.result}");
-        setPageSessionAttribute(key="AuthRealmName" value="#{requestScope.result.entity['authRealmName']");
+        setPageSessionAttribute(key="AuthRealmName" value="#{requestScope.result.entity['authRealmName']}");
         if ("#{pageSession.Name}=#{pageSession.authRealm}"){
             setPageSessionAttribute(key="tableTitle", value="$resource{i18nc.manageAdminUsers.TableTitle}")
             setPageSessionAttribute(key="helpKey", value="$resource{help_common.manageAdminUsers}" )

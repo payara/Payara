@@ -8,6 +8,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -81,7 +82,7 @@ class EjbHttpProxyHandler implements InvocationHandler {
         Map<String, Object> payload = new HashMap<>();
         payload.put("lookup", lookup);
         payload.put("method", method.getName());
-        payload.put("argTypes", method.getParameterTypes());
+        payload.put("argTypes", Arrays.stream(method.getParameterTypes()).map(Class::getName).toArray());
         payload.put("argValues", argValues == null? new Object[0] : argValues);
         
         if (jndiOptions.containsKey(SECURITY_PRINCIPAL)) {

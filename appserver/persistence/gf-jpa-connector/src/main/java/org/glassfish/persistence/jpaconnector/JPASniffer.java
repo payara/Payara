@@ -37,21 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.persistence.jpaconnector;
 
 
-import org.glassfish.internal.deployment.GenericSniffer;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import javax.enterprise.deploy.shared.ModuleType;
 
-import java.util.Enumeration;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Enumeration;
 
 
 /**
@@ -88,7 +86,7 @@ public class JPASniffer  extends GenericSniffer {
      */
     @Override
     public boolean handles(ReadableArchive location) {
-            boolean isJPAArchive = false;
+            boolean isJPAArchive;
 
             // scan for persistence.xml in expected locations. If at least one is found, this is
             // a jpa archive
@@ -120,8 +118,10 @@ public class JPASniffer  extends GenericSniffer {
                         entryName.indexOf(SEPERATOR_CHAR, libLocation.length() + 1 ) == -1 ) { // && not WEB-INf/lib/foo/bar.jar
                     try {
                         ReadableArchive jarInLib = parentArchive.getSubArchive(entryName);
-                        puRootPresent = isEntryPresent(jarInLib, META_INF_PERSISTENCE_XML);
-                        jarInLib.close();
+                        if (jarInLib != null) {
+                            puRootPresent = isEntryPresent(jarInLib, META_INF_PERSISTENCE_XML);
+                            jarInLib.close();
+                        }
                     } catch (IOException e) {
                         // Something went wrong while reading the jar. Do not attempt to scan it
                     } // catch
@@ -134,7 +134,7 @@ public class JPASniffer  extends GenericSniffer {
     private boolean isEntryPresent(ReadableArchive location, String entry) {
             boolean entryPresent = false;
             try {
-                entryPresent = location.exists(entry);
+                entryPresent = location != null && location.exists(entry);
             } catch (IOException e) {
                 // ignore
             }
@@ -157,12 +157,9 @@ public class JPASniffer  extends GenericSniffer {
      *
      */
     public boolean supportsArchiveType(ArchiveType archiveType) {
-        if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
-            archiveType.toString().equals(ModuleType.EJB.toString()) ||
-            archiveType.toString().equals(ModuleType.CAR.toString())) {
-            return true;
-        }
-        return false;
+        return archiveType.toString().equals(ModuleType.WAR.toString()) ||
+                archiveType.toString().equals(ModuleType.EJB.toString()) ||
+                archiveType.toString().equals(ModuleType.CAR.toString());
     }
 }
 

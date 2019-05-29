@@ -42,8 +42,8 @@ package fish.payara.ejb.http.client;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.security.AccessController.doPrivileged;
 import static java.util.Collections.emptyList;
-import static org.glassfish.jersey.internal.util.ReflectionHelper.getClassLoaderPA;
 
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 
@@ -73,8 +73,8 @@ final class EjbHttpProxyFactory {
 
     @SuppressWarnings("unchecked")
     public static <C> C newProxy(Class<C> remoteBusinessInterface, WebTarget target, MultivaluedMap<String, Object> headers, List<Cookie> cookies, String lookup, Map<String, Object> jndiOptions) {
-        return (C) 
-            newProxyInstance(doPrivileged(getClassLoaderPA(remoteBusinessInterface)),
+        return (C)
+            newProxyInstance(doPrivileged((PrivilegedAction<ClassLoader>)() -> remoteBusinessInterface.getClassLoader()),
                 new Class[] { remoteBusinessInterface },
                 new EjbHttpProxyHandler(addPathFromClass(remoteBusinessInterface, target), headers, cookies, lookup, jndiOptions));
     }

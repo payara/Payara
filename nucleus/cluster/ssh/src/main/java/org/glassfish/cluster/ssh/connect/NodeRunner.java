@@ -169,11 +169,12 @@ public class NodeRunner {
         args.add(0, AsadminInput.CLI_INPUT_OPTION);
         args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
         List<String> fullcommand = new ArrayList<String>();
-        String installDir = node.getInstallDirUnixStyle() + "/"
-                + SystemPropertyConstants.getComponentName();
-        if (!StringUtils.ok(installDir)) {
+
+        if (!StringUtils.ok(node.getInstallDirUnixStyle())) {
             throw new IllegalArgumentException("Node does not have an installDir");
         }
+        String installDir = node.getInstallDirUnixStyle() + "/"
+                + SystemPropertyConstants.getComponentName();
 
         File asadmin = new File(SystemPropertyConstants.getAsAdminScriptLocation(installDir));
         fullcommand.add(asadmin.getAbsolutePath());
