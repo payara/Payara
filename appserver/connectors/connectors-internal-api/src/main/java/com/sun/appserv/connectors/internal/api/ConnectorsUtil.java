@@ -111,7 +111,7 @@ public class ConnectorsUtil {
 
     public static boolean getPingDuringPoolCreation(PoolInfo poolInfo, Resources allResources) {
         ResourcePool pool = getConnectionPoolConfig(poolInfo, allResources);
-        return Boolean.parseBoolean(pool.getPing());
+        return pool != null && Boolean.parseBoolean(pool.getPing());
     }
 
     /**
@@ -444,7 +444,7 @@ public class ConnectorsUtil {
             while (iter.hasNext()) {
                 EnvironmentProperty entry = (EnvironmentProperty) iter.next();
                 mergedProps.add(entry);
-                String propName = (String) entry.getName();
+                String propName = entry.getName();
                 runtimePropNames.add(propName);
             }
         }
@@ -454,7 +454,7 @@ public class ConnectorsUtil {
             Iterator iter = standardProps.iterator();
             while (iter.hasNext()) {
                 EnvironmentProperty entry = (EnvironmentProperty) iter.next();
-                String propName = (String) entry.getName();
+                String propName = entry.getName();
                 if (runtimePropNames.contains(propName))
                     continue;
                 mergedProps.add(entry);

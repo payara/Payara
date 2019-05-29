@@ -468,69 +468,64 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
             if (ejbRef.isLocal()) {
                 DOLUtils.getDefaultLogger().severe("Unresolved <ejb-link>: "+linkName);
                 throw new RuntimeException("Error: Unresolved <ejb-link>: "+linkName);
+            }
+            final ArchiveType moduleType = ejbRef.getReferringBundleDescriptor().getModuleType();
+            if(moduleType != null && moduleType.equals(DOLUtils.carType())) {
+                // Because no annotation processing is done within ACC runtime, this case typically
+                // arises for remote @EJB annotations, so don't log it as warning.
+                DOLUtils.getDefaultLogger().fine("Unresolved <ejb-link>: "+linkName);
             } else {
-                final ArchiveType moduleType = ejbRef.getReferringBundleDescriptor().getModuleType();
-                if(moduleType != null && moduleType.equals(DOLUtils.carType())) {
-                    // Because no annotation processing is done within ACC runtime, this case typically
-                    // arises for remote @EJB annotations, so don't log it as warning.
-                    DOLUtils.getDefaultLogger().fine("Unresolved <ejb-link>: "+linkName);
-                } else {
-                    DOLUtils.getDefaultLogger().warning("Unresolved <ejb-link>: "+linkName);
-                }
-                return;
+                DOLUtils.getDefaultLogger().warning("Unresolved <ejb-link>: "+linkName);
             }
-        } else {
-
-            if( ejbRef.isEJB30ClientView() ) {
-
-                BundleDescriptor referringBundle = 
-                    ejbRef.getReferringBundleDescriptor();
-
-                // If we can verify that the current ejb 3.0 reference is defined
-                // in any Application Client module or in a stand-alone web module
-                // it must be remote business.
-                if( ( (referringBundle == null) && (getEjbBundleDescriptor() == null) )
-                    ||
-                    ((referringBundle != null) && (referringBundle.getModuleType() == DOLUtils.carType()))
-                    ||
-                    ( (getApplication() == null) &&
-                      (referringBundle.getModuleType() != null && referringBundle.getModuleType().equals(DOLUtils.warType())) ) ) {
-
-                    ejbRef.setLocal(false);
-
-                    // Double-check that target has a remote business interface of this
-                    // type.  This will handle the common error case that the target 
-                    // EJB has intended to support a remote business interface but
-                    // has not used @Remote to specify it, in which case
-                    // the interface was assigned the default of local business.
-
-                    if( !ejbReferee.getRemoteBusinessClassNames().contains
-                        (intfClassName) ) {
-                        String msg = "Target ejb " + ejbReferee.getName() + " for " +
-                            " remote ejb 3.0 reference " + ejbRef.getName() + 
-                            " does not expose a remote business interface of type " +
-                            intfClassName;
-                        throw new RuntimeException(msg);
-                    }
-
-                } else if(ejbReferee.getLocalBusinessClassNames().contains(intfClassName)) {
-                    ejbRef.setLocal(true);
-                } else if(ejbReferee.getRemoteBusinessClassNames().contains(intfClassName)) {
-                    ejbRef.setLocal(false);
-                } else {
-                    if (ejbReferee.isLocalBean()) {
-                        ejbRef.setLocal(true);
-                    } else {
-                        String msg = "Warning : Unable to determine local " +
-                            " business vs. remote business designation for " +
-                            " EJB 3.0 ref " + ejbRef;
-                        throw new RuntimeException(msg);
-                    }
-                }
-            }
-
-            ejbRef.setEjbDescriptor(ejbReferee);
+            return;
         }
+        if( ejbRef.isEJB30ClientView() ) {
+
+            BundleDescriptor referringBundle = 
+                ejbRef.getReferringBundleDescriptor();
+
+            // If we can verify that the current ejb 3.0 reference is defined
+            // in any Application Client module or in a stand-alone web module
+            // it must be remote business.
+            if (((referringBundle == null) && (getEjbBundleDescriptor() == null))
+                    || ((referringBundle != null) && (referringBundle.getModuleType() == DOLUtils.carType()))
+                    || ((getApplication() == null) && (referringBundle != null)
+                            && referringBundle.getModuleType() != null
+                            && referringBundle.getModuleType().equals(DOLUtils.warType()))) {
+                ejbRef.setLocal(false);
+
+                // Double-check that target has a remote business interface of this
+                // type.  This will handle the common error case that the target 
+                // EJB has intended to support a remote business interface but
+                // has not used @Remote to specify it, in which case
+                // the interface was assigned the default of local business.
+
+                if( !ejbReferee.getRemoteBusinessClassNames().contains
+                    (intfClassName) ) {
+                    String msg = "Target ejb " + ejbReferee.getName() + " for " +
+                        " remote ejb 3.0 reference " + ejbRef.getName() + 
+                        " does not expose a remote business interface of type " +
+                        intfClassName;
+                    throw new RuntimeException(msg);
+                }
+
+            } else if(ejbReferee.getLocalBusinessClassNames().contains(intfClassName)) {
+                ejbRef.setLocal(true);
+            } else if(ejbReferee.getRemoteBusinessClassNames().contains(intfClassName)) {
+                ejbRef.setLocal(false);
+            } else {
+                if (ejbReferee.isLocalBean()) {
+                    ejbRef.setLocal(true);
+                } else {
+                    String msg = "Warning : Unable to determine local " +
+                        " business vs. remote business designation for " +
+                        " EJB 3.0 ref " + ejbRef;
+                    throw new RuntimeException(msg);
+                }
+            }
+        }
+
+        ejbRef.setEjbDescriptor(ejbReferee);
 
         // if we are here, we must have resolved the reference
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -915,7 +910,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                         Set<Principal> pset = fs.getPrincipals();
                         Principal prin = null;
                         if (pset.size() > 0) {
-                            prin = (Principal)pset.iterator().next();
+                            prin = pset.iterator().next();
                             DOLUtils.getDefaultLogger().log(Level.WARNING,
                             "enterprise.deployment.backend.computeRunAsPrincipal",
                             new Object[] { prin.getName() });

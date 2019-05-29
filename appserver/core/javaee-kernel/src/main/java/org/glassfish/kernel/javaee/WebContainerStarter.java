@@ -162,23 +162,17 @@ public class WebContainerStarter
      * that can be handled only by the web container, and if so, starts
      * the web container
      */ 
+    @Override
     public void postConstruct() {
         domainProvider.get();
         Config serverConfig = serverConfigProvider.get();
 
-        boolean isStartNeeded = false;
-        if (serverConfig != null) {
-            if (isStartNeeded(serverConfig.getHttpService())) {
-                isStartNeeded = true;
-            }
-            if (!isStartNeeded && isStartNeeded(serverConfig.getNetworkConfig())) {
-                isStartNeeded = true;
-            }
-        }
+        boolean isStartNeeded = serverConfig != null
+                && (isStartNeeded(serverConfig.getHttpService()) || isStartNeeded(serverConfig.getNetworkConfig()));
 
         if (isStartNeeded) {
             startWebContainer();
-        } else {
+        } else if (serverConfig != null){
             ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(serverConfig.getHttpService());
             bean.addListener(this);
             bean = (ObservableBean) ConfigSupport.getImpl(serverConfig.getNetworkConfig().getNetworkListeners());

@@ -150,14 +150,8 @@ public class DriverLoader implements ConnectorConstants {
     public static Properties loadFile(File mappingFile) {
         Properties fileProperties = new Properties();
         if (mappingFile != null && mappingFile.exists()) {
-            try {
-
-                FileInputStream fis = new FileInputStream(mappingFile);
-                try {
-                    fileProperties.load(fis);
-                } finally {
-                    fis.close();
-                }
+            try (FileInputStream fis = new FileInputStream(mappingFile)) {
+                fileProperties.load(fis);
             } catch (IOException ioe) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("IO Exception during properties load : "
@@ -166,14 +160,14 @@ public class DriverLoader implements ConnectorConstants {
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("File not found : " + mappingFile.getAbsolutePath());
+                logger.fine("File not found : " + (mappingFile == null ? "null" : mappingFile.getAbsolutePath()));
             }
         }
         return fileProperties;
     }
 
 
-    private String getImplClassNameFromMapping(String dbVendor, String resType) {
+    private static String getImplClassNameFromMapping(String dbVendor, String resType) {
         File mappingFile = getResourceTypeFile(resType);
         Properties fileProperties = loadFile(mappingFile);
         return fileProperties.getProperty(dbVendor.toUpperCase(Locale.getDefault()));
@@ -546,7 +540,7 @@ public class DriverLoader implements ConnectorConstants {
             }
         }
         if(isVendorSpecific) {
-            if(origDbVendor.endsWith(DATABASE_VENDOR_30)) {
+            if(origDbVendor != null && origDbVendor.endsWith(DATABASE_VENDOR_30)) {
                 if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30)) {
                     return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1;
                 }

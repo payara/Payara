@@ -44,10 +44,7 @@ import com.sun.logging.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Singleton;
 
 import java.io.*;
 import java.security.PrivilegedExceptionAction;
@@ -160,69 +157,30 @@ public class JavaEEObjectStreamFactory {
         return ois;
     }
 
-    public final byte[] serializeObject(Object obj, boolean replaceObject)
-            throws java.io.IOException
-    {
-        byte[] data = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = this.createObjectOutputStream(
-                    bos, replaceObject);
-
+    public final byte[] serializeObject(Object obj, boolean replaceObject) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = this.createObjectOutputStream(bos, replaceObject)) {
             oos.writeObject(obj);
             oos.flush();
-            data = bos.toByteArray();
-        } catch (java.io.NotSerializableException notSerEx) {
+            return bos.toByteArray();
+        } catch (NotSerializableException notSerEx) {
             throw notSerEx;
         } catch (Exception th) {
             IOException ioEx = new IOException(th.toString());
             ioEx.initCause(th);
             throw ioEx;
-        } finally {
-            if (oos != null) {
-                try {
-                    oos.close();
-                } catch (Exception ex) {
-                }
-            }
-            try {
-                bos.close();
-            } catch (Exception ex) {
-            }
         }
-
-        return data;
     }
 
-    public final Object deserializeObject(byte[] data, boolean resolveObject,
-                                          ClassLoader classLoader)
-            throws Exception
-    {
-        Object obj = null;
-        ByteArrayInputStream bis = null;
-        ObjectInputStream ois = null;
-        try {
-            bis = new ByteArrayInputStream(data);
-            ois = this.createObjectInputStream(bis, resolveObject,
-                    classLoader);
-            obj = ois.readObject();
+    public final Object deserializeObject(byte[] data, boolean resolveObject, ClassLoader classLoader)
+            throws Exception {
+        try (ObjectInputStream ois = createObjectInputStream(new ByteArrayInputStream(data), resolveObject,
+                classLoader)) {
+            return ois.readObject();
         } catch (Exception ex) {
             _logger.log(Level.FINE, "Error during deserialization", ex);
             throw ex;
-        } finally {
-            try {
-                ois.close();
-            } catch (Exception ex) {
-                _logger.log(Level.FINEST, "Error during ois.close()", ex);
-            }
-            try {
-                bis.close();
-            } catch (Exception ex) {
-                _logger.log(Level.FINEST, "Error during bis.close()", ex);
-            }
         }
-        return obj;
     }
 
 
