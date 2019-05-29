@@ -125,18 +125,18 @@
         
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.appclient.server</groupId>
+            <groupId>fish.payara.main.appclient.server</groupId>
             <artifactId>appclient-server-core-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>gf-client-module-l10n</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-module-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>gf-client-l10n</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

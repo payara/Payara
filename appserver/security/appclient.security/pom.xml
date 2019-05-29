@@ -111,8 +111,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>acc-config</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

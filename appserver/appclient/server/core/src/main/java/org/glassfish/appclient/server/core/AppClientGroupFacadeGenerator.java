@@ -85,7 +85,6 @@ public class AppClientGroupFacadeGenerator {
             "org.glassfish.appclient.client.AppClientGroupFacade";
     
     private static final Attributes.Name GLASSFISH_APPCLIENT_GROUP = new Attributes.Name("GlassFish-AppClient-Group");
-    private static final String GF_CLIENT_MODULE_NAME = "org.glassfish.main.appclient.gf-client-module";
 
     private static final String GROUP_FACADE_ALREADY_GENERATED = "groupFacadeAlreadyGenerated";
     private static final String PERMISSIONS_XML_PATH = "META-INF/permissions.xml";

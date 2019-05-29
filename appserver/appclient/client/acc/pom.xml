@@ -44,18 +44,18 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>org.glassfish.main.appclient</groupId>
+        <groupId>fish.payara.main.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.192-SNAPSHOT</version>
     </parent>
-    
-    
-    <artifactId>gf-client-module</artifactId>
+
+    <groupId>fish.payara.main.appclient.client</groupId>
+    <artifactId>payara-client-module</artifactId>
     <packaging>glassfish-jar</packaging>
-     <!-- the main artifact is the OSGi module JAR -->
-    <name>Client OSGi module (including ACC)</name>
+    
+    <name>Payara App Client - Client-Side Module (Including ACC)</name>
     
     <!--
         This module creates the app client container in three artifacts:
@@ -155,7 +155,7 @@
                             <archive>
 
                                 <manifest>
-                                    <mainClass>org.glassfish.main.appclient.client.acc.AppClientCommand</mainClass>
+                                    <mainClass>fish.payara.main.appclient.client.acc.AppClientCommand</mainClass>
                                 </manifest>
                                 <!--
                                     It's discouraging to have to specify the class path
@@ -311,8 +311,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>acc-config</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-config</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -390,10 +390,10 @@
      </dependency>
 
         <!--
-        This is needed because it provides the sniffer/detector/moduletype
+            This is needed because it provides the sniffer/detector/moduletype
         -->
         <dependency>
-            <groupId>org.glassfish.main.appclient.server</groupId>
+            <groupId>fish.payara.main.appclient.server</groupId>
             <artifactId>appclient-connector</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>

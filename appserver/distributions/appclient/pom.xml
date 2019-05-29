@@ -126,7 +126,7 @@
                         does in a fileSet.
                     -->
                     <execution>
-                        <id>extract-appclient-scripts</id>
+                        <id>extract-payara-client-scripts</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -134,8 +134,8 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                  <groupId>org.glassfish.main.appclient</groupId>
-                                  <artifactId>appclient-scripts</artifactId>
+                                  <groupId>fish.payara.main.appclient.client</groupId>
+                                  <artifactId>payara-client-scripts</artifactId>
                                   <version>${project.version}</version>
                                   <type>distribution-fragment</type>
                                   <includes>glassfish/bin/*</includes>
@@ -151,13 +151,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>gf-client</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>appclient-scripts</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-scripts</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
         </dependency>

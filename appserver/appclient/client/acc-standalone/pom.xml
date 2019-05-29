@@ -42,6 +42,19 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.main.appclient</groupId>
+        <artifactId>client</artifactId>
+        <version>5.192-SNAPSHOT</version>
+    </parent>
+
+    <groupId>fish.payara.main.appclient.client</groupId>
+    <artifactId>payara-client</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
+    <name>Payara App Client - Client-Side Library (Including ACC)</name>
 
     <!--
         This module builds the free-standing JAR file for the app client
@@ -58,16 +71,6 @@
         archiver but would augment the generated Class-Path with the extra JARs.
         Perhaps later.
     -->
-    <parent>
-        <groupId>org.glassfish.main.appclient</groupId>
-        <artifactId>client</artifactId>
-        <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>gf-client</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>Client library (including ACC)</name>
 
     <properties>
         <classpath.file>${project.build.directory}/tmp/classpath.txt</classpath.file>
@@ -188,8 +191,8 @@ this or the downstream JARs and so attempts to find things fail.
             accurate Class-Path for the manifest.
         -->
         <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>gf-client-module</artifactId>
+            <groupId>fish.payara.main.appclient.client</groupId>
+            <artifactId>payara-client-module</artifactId>
             <version>${project.version}</version>
         </dependency>
    </dependencies>

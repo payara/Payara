@@ -44,17 +44,19 @@
 <!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>org.glassfish.main.appclient</groupId>
+        <groupId>fish.payara.main.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.192-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>acc-config</artifactId>
+
+    <groupId>fish.payara.main.appclient.client</groupId>
+    <artifactId>payara-client-config</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>ACC Config Classes (JAXB)</name>
+    <name>Payara App Client - Client-Side Config</name>
     
     <!--
         This module contains classes for the app client configuration

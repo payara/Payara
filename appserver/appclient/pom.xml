@@ -49,12 +49,15 @@
         <version>5.192-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.glassfish.main</groupId>
+    <groupId>fish.payara.main</groupId>
     <artifactId>appclient</artifactId>
     <packaging>pom</packaging>
-    <name>App Client Modules</name>  
+
+    <name>Payara App Client - Modules</name>  
+
     <modules>
         <module>server</module>
         <module>client</module>
     </modules>
+
 </project>

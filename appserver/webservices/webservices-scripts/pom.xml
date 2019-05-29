@@ -53,7 +53,7 @@
     <name>GlassFish webservices scripts</name>
 
     <!--
-        The comments below were copied from the appclient-scripts module.  
+        The comments below were copied from the payara-client-scripts module.  
         They are very helpful so it seemed like a good idea to leave them here also.
     -->
     <!--
