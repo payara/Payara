@@ -92,7 +92,6 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
                 RestLogging.restLogger.log(Level.SEVERE, RestLogging.FILE_CREATION_FAILED, "codegeneration.properties");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             RestLogging.restLogger.log(Level.SEVERE, null, e);
         }
 

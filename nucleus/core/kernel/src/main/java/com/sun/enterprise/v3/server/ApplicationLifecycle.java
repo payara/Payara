@@ -571,8 +571,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
+    @SuppressWarnings("squid:S2095")
     public Types getDeployableTypes(DeploymentContext context) throws IOException {
-
         synchronized(context) {
             Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
             if (types!=null) {

@@ -271,7 +271,7 @@ public class LocalOSGiShellCommand extends CLICommand {
                         null);
                 reader.setBellEnabled(false);
                 reader.addCompleter(getCommandCompleter());
-                return executeCommands(reader); // NB: wrapper on system.in/out does not need try-with-resource
+                return executeCommands(reader); // NB: wrapper on general in/out stream does not need closing by try-with-resource
             }
             printPrompt = false;
             if (!file.canRead()) {
