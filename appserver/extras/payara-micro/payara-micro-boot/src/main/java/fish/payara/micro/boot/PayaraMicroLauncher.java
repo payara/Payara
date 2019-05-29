@@ -42,7 +42,6 @@ package fish.payara.micro.boot;
 import fish.payara.micro.boot.loader.ExecutableArchiveLauncher;
 import fish.payara.micro.boot.loader.archive.Archive;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.List;
@@ -81,8 +80,9 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
         // set system property for our jar file
         ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
         CodeSource codeSource = protectionDomain.getCodeSource();
-        URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-        System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+        if (codeSource != null) {
+            System.setProperty(MICRO_JAR_PROPERTY, codeSource.getLocation().toURI().toString());
+        }
         mainBoot = true;
         return (PayaraMicroBoot) launcher.launch(method, args);
     }
@@ -110,8 +110,9 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                 // set system property for our jar file
                 ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
                 CodeSource codeSource = protectionDomain.getCodeSource();
-                URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-                System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+                if (codeSource != null) {
+                    System.setProperty(MICRO_JAR_PROPERTY, codeSource.getLocation().toURI().toString());
+                }
 
                 ClassLoader loader = launcher.createClassLoader(launcher.getClassPathArchives());
                 fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();

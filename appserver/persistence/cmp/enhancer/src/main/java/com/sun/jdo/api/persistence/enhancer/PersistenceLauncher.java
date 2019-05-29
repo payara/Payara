@@ -192,8 +192,10 @@ public class PersistenceLauncher {
             out.println("    }");//NOI18N
             out.println("    targetClassname = " + targetClassname);//NOI18N
             out.print("    targetClassArgs = { ");//NOI18N
-            for (int i = 0; i < targetClassArgs.length; i++) {
-                out.print(targetClassArgs[i] + " ");//NOI18N
+            if (targetClassArgs != null) {
+                for (int i = 0; i < targetClassArgs.length; i++) {
+                    out.print(targetClassArgs[i] + " ");//NOI18N
+                }
             }
             out.println("}");//NOI18N
         }

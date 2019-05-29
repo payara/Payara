@@ -77,8 +77,8 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
             return factory;
         }
         factory = new PayaraCacheResolverFactory();
-        Class defaultClazz = javax.cache.annotation.CacheResolverFactory.class;
-        Class suggestedClazz = null;
+        Class<?> defaultClazz = javax.cache.annotation.CacheResolverFactory.class;
+        Class<?> suggestedClazz = null;
         if (annotation instanceof CachePut) {
             CachePut put = CachePut.class.cast(annotation);
             suggestedClazz = put.cacheResolverFactory();
@@ -93,11 +93,11 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
             suggestedClazz = put.cacheResolverFactory();
         }
 
-        if (suggestedClazz.equals(defaultClazz) && defaults != null) {
+        if (suggestedClazz == defaultClazz && defaults != null) {
             suggestedClazz = defaults.cacheResolverFactory();
         }
 
-        if (!defaultClazz.equals(suggestedClazz)) {
+        if (defaultClazz != suggestedClazz && suggestedClazz != null) {
             try {
                 factory = (CacheResolverFactory) suggestedClazz.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
@@ -112,8 +112,8 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
             return generator;
         }
         generator = new PayaraCacheKeyGenerator();
-        Class defaultClazz = javax.cache.annotation.CacheKeyGenerator.class;
-        Class suggestedClazz = null;
+        Class<?> defaultClazz = javax.cache.annotation.CacheKeyGenerator.class;
+        Class<?> suggestedClazz = null;
         if (annotation instanceof CachePut) {
             CachePut put = CachePut.class.cast(annotation);
             suggestedClazz = put.cacheKeyGenerator();
@@ -125,11 +125,11 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
             suggestedClazz = put.cacheKeyGenerator();
         }
 
-        if (suggestedClazz.equals(defaultClazz) && defaults != null) {
+        if (suggestedClazz == defaultClazz && defaults != null) {
             suggestedClazz = defaults.cacheKeyGenerator();
         }
 
-        if (!defaultClazz.equals(suggestedClazz)) {
+        if (defaultClazz != suggestedClazz && suggestedClazz != null) {
             try {
                 generator = (CacheKeyGenerator) suggestedClazz.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {

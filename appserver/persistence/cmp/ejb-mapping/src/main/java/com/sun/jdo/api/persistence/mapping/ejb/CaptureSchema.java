@@ -168,7 +168,7 @@ public class CaptureSchema {
             else 
                 se.setName(DBIdentifier.create("")); //NOI18N
             
-            if (dburl.indexOf(bundle.getString("STRING_ORACLE_JDBC_URL_PREFIX_NOI18N")) > -1 && //NOI18N
+            if (dburl != null && dburl.indexOf(bundle.getString("STRING_ORACLE_JDBC_URL_PREFIX_NOI18N")) > -1 && //NOI18N
             (null == dbschemaname || dbschemaname.length() == 0)) {
                 // this argument combo has problems. print an error message and exit
                 System.err.println(bundle.getString("ERR_ORACLE_ARGUMENTS")); //NOI18N

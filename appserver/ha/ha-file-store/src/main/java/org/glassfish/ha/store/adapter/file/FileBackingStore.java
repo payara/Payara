@@ -259,7 +259,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Entered save(" + sessionKey + ")");
         }
-        writetoFile(sessionKey, fileName, getSerializedState(sessionKey, value));
+        writetoFile(sessionKey, fileName, getSerializedState(value));
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Done save(" + sessionKey + ")");
         }
@@ -326,33 +326,16 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         return success;
     }
 
-    private byte[] getSerializedState(K key, V value)
+    private byte[] getSerializedState(V value)
             throws BackingStoreException {
-
-        byte[] data = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(bos);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(value);
             oos.flush();
-            data = bos.toByteArray();
+            return bos.toByteArray();
         } catch (IOException ioEx) {
             throw new BackingStoreException("Error during getSerializedState", ioEx);
-        } finally {
-            try {
-		if (oos != null) {
-                    oos.close();
-                }
-            } catch (IOException ioEx) {/* Noop */}
-            try {
-                if (bos != null) {
-                    bos.close();
-                }
-            } catch (IOException ioEx) {/* Noop */}
         }
-
-        return data;
     }
 
     private byte[] readFromfile(String fileName) {
@@ -366,11 +349,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (file.exists()) {
             int dataSize = (int) file.length();
             data = new byte[dataSize];
-            BufferedInputStream bis = null;
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(file);
-                bis = new BufferedInputStream(fis);
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
                 int offset = 0;
                 for (int toRead = dataSize; toRead > 0;) {
                     int count = bis.read(data, offset, toRead);
@@ -380,19 +359,6 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             } catch (Exception ex) {
                 logger.log(Level.WARNING,
                         "FileStore.readFromfile failed", ex);
-            } finally {
-                try {
-                    bis.close();
-                } catch (Exception ex) {
-                    logger.log(Level.FINE, debugStr + " Error while "
-                            + "closing buffered input stream", ex);
-                }
-                try {
-                    fis.close();
-                } catch (Exception ex) {
-                    logger.log(Level.FINE, debugStr + " Error while "
-                            + "closing file input stream", ex);
-                }
             }
         } else {
             if (logger.isLoggable(TRACE_LEVEL)) {
@@ -407,12 +373,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     private void writetoFile(K sessionKey, String fileName, byte[] data)
             throws BackingStoreException {
         File file = new File(baseDir, fileName);
-        BufferedOutputStream bos = null;
-        FileOutputStream fos = null;
-        try {
-
-            fos = new FileOutputStream(file);
-            bos = new BufferedOutputStream(fos);
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
             bos.write(data, 0, data.length);
             bos.flush();
             if (logger.isLoggable(TRACE_LEVEL)) {
@@ -427,17 +388,6 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             }
             String errMsg = "Could not save session: " + sessionKey;
             throw new BackingStoreException(errMsg, ex);
-        } finally {
-            try {
-                if (bos != null) bos.close();
-            } catch (Exception ex) {
-                logger.log(Level.FINE, "Error while closing buffered output stream", ex);
-            }
-            try {
-                if (fos != null) fos.close();
-            } catch (Exception ex) {
-                logger.log(Level.FINE, "Error while closing file output stream", ex);
-            }
         }
     }
 }
