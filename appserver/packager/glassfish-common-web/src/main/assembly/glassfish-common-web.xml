@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!--"Portions Copyright [2019] [Payara Foundation and/or its affiliates]" -->
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
@@ -55,8 +55,8 @@
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>modules/cli-optional.jar</exclude>
-                <exclude>modules/appserver-cli.jar</exclude>
+                <exclude>modules/cli-optional*.jar</exclude>
+                <exclude>modules/appserver-cli*.jar</exclude>
                 <exclude>bin/*</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>
@@ -73,14 +73,14 @@
             <directory>${temp.dir}/glassfish/modules</directory>
             <outputDirectory>${install.dir.name}/glassfish/lib/asadmin</outputDirectory>
             <includes>
-                <include>cli-optional.jar</include>
+                <include>cli-optional*.jar</include>
             </includes>
         </fileSet>
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
             <outputDirectory>${install.dir.name}/glassfish/lib/client</outputDirectory>
             <includes>
-                <include>appserver-cli.jar</include>
+                <include>appserver-cli*.jar</include>
             </includes>
         </fileSet>
         <fileSet>

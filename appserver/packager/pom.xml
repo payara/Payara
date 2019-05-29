@@ -42,13 +42,17 @@
 -->
 <!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
         <version>5.193-SNAPSHOT</version>
     </parent>
+    
+    <groupId>org.glassfish.main.packager</groupId>
+    <artifactId>packages</artifactId>
+    <packaging>pom</packaging>
+    <name>Glassfish packages</name>
 
     <developers>
         <developer>
@@ -70,21 +74,6 @@
         </developer>
     </developers>
 
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.packager</groupId>
-    <artifactId>packages</artifactId>
-    <name>Glassfish packages</name>
-    
-    <properties>
-        <stage.dir.name>stage</stage.dir.name>
-        <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
-        <temp.dir>${stage.dir}</temp.dir>        
-        <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
-        <findbugs.skip>true</findbugs.skip>
-        <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
-        <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
-    </properties>
-
     <modules>
         <module>external</module> 
         <module>legal</module>
@@ -105,7 +94,7 @@
         <module>glassfish-corba</module>
         <module>glassfish-jta</module>
         <module>glassfish-jsf</module>
-        <module>glassfish-web</module>	
+        <module>glassfish-web</module>
         <module>glassfish-jdbc</module>
         <module>glassfish-gui</module>
         <module>glassfish-ejb-lite</module>
@@ -176,172 +165,35 @@
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-	    <module>rest-monitoring</module>
-	    <module>payara-executor-service</module>
+        <module>rest-monitoring</module>
+        <module>payara-executor-service</module>
         <module>cdi-auth-roles</module>
         <module>yubikey-authentication</module>
         <module>docker</module>
+        <module>microprofile-package</module>
         <module>opentracing-jaxws-package</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>jdk8</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <modules>
-                <module>microprofile-package</module>
-            </modules>
-        </profile>
-    </profiles>
+    
+    <properties>
+        <stage.dir.name>stage</stage.dir.name>
+        <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
+        <temp.dir>${stage.dir}</temp.dir>        
+        <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
+        <findbugs.skip>true</findbugs.skip>
+        <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
+        <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
+    </properties>
     
     <build>
         <outputDirectory>${temp.dir}</outputDirectory>
+        
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>process-step1</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>copy-dependencies</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${temp.modules.dir}</outputDirectory>
-                                <useSubDirectoryPerType>false</useSubDirectoryPerType>
-                                <overWriteReleases>false</overWriteReleases>
-                                <overWriteSnapshots>true</overWriteSnapshots>
-                                <includeScope>compile</includeScope>
-                                <includeScope>runtime</includeScope>
-                                <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                                <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
-                                <excludeTransitive>true</excludeTransitive>
-                                <excludeTypes>zip,war</excludeTypes>
-                                <stripVersion>true</stripVersion>
-                                <silent>true</silent>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>process-step2</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>unpack-dependencies</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>${temp.dir}</outputDirectory>
-                                <includeTypes>zip</includeTypes>
-                                <excludes>${zip.excludes}</excludes>
-                                <overWriteReleases>false</overWriteReleases>
-                                <overWriteSnapshots>true</overWriteSnapshots>
-                                <excludeTransitive>true</excludeTransitive>
-                                <silent>true</silent>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>process-step3</id>
-                            <goals>
-                                <goal>single</goal>
-                            </goals>
-                            <phase>process-resources</phase>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <descriptors>
-                            <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
-                        </descriptors>
-                        <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-                        <finalName>${stage.dir.name}</finalName>
-                        <attach>false</attach>
-                        <appendAssemblyId>false</appendAssemblyId>
-                        <useProjectArtifact>false</useProjectArtifact>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.build</groupId>
-                    <artifactId>glassfishbuild-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>default-zip</id>
-                            <phase>package</phase>
-                            <configuration>
-                                <duplicate>preserve</duplicate>
-                                <filesets>
-                                    <fileset>
-                                        <dir>${stage.dir}/..</dir>
-                                        <fileMode>755</fileMode>
-                                        <includes>**/bin/*</includes>
-                                        <includes>**/bin/*.bat</includes>
-                                        <includes>**/lib/nadmin*</includes>
-                                        <excludes>**/pkg_proto.py</excludes>
-                                    </fileset>
-                                    <fileset>
-                                        <dir>${stage.dir}/..</dir>
-                                        <excludes>**/pkg_proto.py</excludes>
-                                    </fileset>
-                                </filesets>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>process-step5</id>
-                            <phase>process-resources</phase>
-                            <configuration>
-                                <executable>${python}</executable>
-                                <workingDir>${basedir}</workingDir>
-                                <commandlineArgs>${uc.toolkit.dir}/pkg/bin/makepkgs.py -s ${repo.url} -b ${stage.dir} ${pkg_proto.py}</commandlineArgs>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>process-step4</id>
-                            <phase>process-resources</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <target if="ips.compress">
-                                    <apply executable="pack200" dest="${stage.dir}/glassfish/modules" parallel="false">
-                                        <targetfile />
-                                        <srcfile />
-                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.jar" excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
-                                        <mapper type="glob" from="*.jar" to="*.pack.gz" />
-                                    </apply>
-                                    <apply executable="unpack200" dest="${stage.dir}/glassfish/modules" parallel="false">
-                                        <srcfile />
-                                        <targetfile />
-                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
-                                        <mapper type="glob" from="*.pack.gz" to="*.jar" />
-                                    </apply>
-                                    <!--remove *.pack.gz files-->
-                                    <delete>
-                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
-                                    </delete>
-                                </target>
-                            </configuration>                         
-                        </execution>
-                    </executions>
-                </plugin>
+                 
+                 <!-- 
+                    1. In each module, copy file "pkg_conf.py" to it. The src/main/resources/pkg_proto.py that modules may
+                    have imports this.
+                 -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -371,7 +223,299 @@
                         </execution>
                     </executions>
                 </plugin>
+            
+            
+                <!-- 
+                    4. The heart of the packager, in each packager module, copy the listed jar dependencies and unpack any of the listed .zip dependencies 
+                    of that module to e.g. target/stage/payara5/glassfish/modules/ 
+                 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        
+                        <!-- Copy bin/jar dependencies -->
+                        <execution>
+                            <id>process-step1</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${temp.modules.dir}</outputDirectory>
+                                <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <includeScope>compile</includeScope>
+                                <includeScope>runtime</includeScope>
+                                <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                                <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
+                                <excludeTransitive>true</excludeTransitive>
+                                <excludeTypes>zip,war</excludeTypes>
+                                <stripVersion>true</stripVersion>
+                                <silent>false</silent>
+                            </configuration>
+                        </execution>
+                        
+                        <!-- Copy source dependencies -->
+                        <execution>
+                            <id>process-step1a</id>
+                            <phase>does not exists</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <classifier>sources</classifier>
+                                <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+                                <outputDirectory>${temp.modules.dir}</outputDirectory>
+                                <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <includeScope>compile</includeScope>
+                                <includeScope>runtime</includeScope>
+                                <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                                <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
+                                <excludeTransitive>true</excludeTransitive>
+                                <excludeTypes>zip,war</excludeTypes>
+                                <stripVersion>true</stripVersion>
+                                <silent>false</silent>
+                            </configuration>
+                        </execution>
+                        
+                        <!-- Unpack zip dependencies -->
+                        <execution>
+                            <id>process-step2</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${temp.dir}</outputDirectory>
+                                <includeTypes>zip</includeTypes>
+                                <excludes>${zip.excludes}</excludes>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <excludeTransitive>true</excludeTransitive>
+                                <silent>false</silent>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+          
+        
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>ant-contrib</groupId>
+                            <artifactId>ant-contrib</artifactId>
+                            <version>1.0b3</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>ant</groupId>
+                                    <artifactId>ant</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                            
+                        <!-- 4. As an extra option for the IPS system, compress modules with pack200. Activated via the "ips" profile that every module has. -->
+                        <execution>
+                            <id>process-step4</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <configuration>
+                                <target if="ips.compress">
+                                    <apply executable="pack200" dest="${stage.dir}/glassfish/modules" parallel="false">
+                                        <targetfile />
+                                        <srcfile />
+                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.jar" excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
+                                        <mapper type="glob" from="*.jar" to="*.pack.gz" />
+                                    </apply>
+                                    <apply executable="unpack200" dest="${stage.dir}/glassfish/modules" parallel="false">
+                                        <srcfile />
+                                        <targetfile />
+                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
+                                        <mapper type="glob" from="*.pack.gz" to="*.jar" />
+                                    </apply>
+                                    <!--remove *.pack.gz files-->
+                                    <delete>
+                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
+                                    </delete>
+                                </target>
+                            </configuration>                         
+                        </execution>
+                        
+                        <execution>
+                            <id>process-step3a</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <configuration>
+                                <target>
+                                    <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
+                                    
+                                    <if> <available file="${stage.dir}/glassfish/modules/" type="dir" /> <then>
+        
+                                        <for param="file">
+                                            <path>
+                                                <fileset dir="${stage.dir}/glassfish/modules/">
+                                                    <include name="*.jar" />
+                                                    <exclude name="*-sources.jar"/>
+                                                </fileset>
+                                            </path>
+                                            <sequential>
+                                                <local name="filename" />
+                                                <basename property="filename" file="@{file}" suffix=".jar"/>
+                                                <echo message="${filename}" />
+                                                
+                                                <zip destfile="${stage.dir}/glassfish/modules/${filename}-aaaa.jar">
+                                                    <zipfileset src="${stage.dir}/glassfish/modules/${filename}-sources.jar" includes="**/*.java" erroronmissingarchive="false"/>
+                                                    <zipgroupfileset dir="${stage.dir}/glassfish/modules/" includes="${filename}.jar" />
+                                                </zip>
+            
+                                                <delete>
+                                                    <fileset dir="${stage.dir}/glassfish/modules/" includes="${filename}-sources.jar" />
+                                                    <fileset dir="${stage.dir}/glassfish/modules/" includes="${filename}.jar" />
+                                                </delete>
+                                            </sequential>
+                                        </for>
+        
+                                        <!-- 
+                                            Ant Move is not powerful enough to be able to move from *something.jar to *.jar, even though it should.
+                                            Therefor we move in two steps. 
+                                        -->
+                                        <move todir="${stage.dir}/glassfish/modules/">
+                                            <fileset dir="${stage.dir}/glassfish/modules/" includes="**/*.jar" />
+                                            <mapper type="glob" from="*.jar" to="*.zip" />
+                                        </move>
+                                        
+                                        <move todir="${stage.dir}/glassfish/modules/">
+                                            <fileset dir="${stage.dir}/glassfish/modules/" includes="*.zip" />
+                                            <globmapper from="*-aaaa.zip" to="*.jar"/>
+                                        </move>
+                                    </then> </if>
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                
+                
+                <!-- 4. Process any assembly directives in the module, if present -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>process-step3</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
+                        </descriptors>
+                        <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                        <finalName>${stage.dir.name}</finalName>
+                        <attach>false</attach>
+                        <appendAssemblyId>false</appendAssemblyId>
+                        <useProjectArtifact>false</useProjectArtifact>
+                    </configuration>
+                </plugin>
+                
+                
+                <!-- 4 & 17. Use our own build helper to execute Python (4) and create the zipped version of all dependencies (17) -->
+                <plugin>
+                    <groupId>org.glassfish.build</groupId>
+                    <artifactId>glassfishbuild-maven-plugin</artifactId>
+                    <executions>
+                         
+                         <!-- Run the pkg_proto.py scripts. Activated via the "ips" profile that every module has -->
+                         <execution>
+                            <id>process-step5</id>
+                            <phase>process-resources</phase>
+                            <configuration>
+                                <executable>${python}</executable>
+                                <workingDir>${basedir}</workingDir>
+                                <commandlineArgs>${uc.toolkit.dir}/pkg/bin/makepkgs.py -s ${repo.url} -b ${stage.dir} ${pkg_proto.py}</commandlineArgs>
+                            </configuration>
+                        </execution>
+                    
+                        <!-- The second core step of the packager: zip all dependencies into the final .zip file -->
+                        <execution>
+                            <id>default-zip</id>
+                            <phase>package</phase>
+                            <configuration>
+                                <duplicate>preserve</duplicate>
+                                <filesets>
+                                    <fileset>
+                                        <dir>${stage.dir}/..</dir>
+                                        <fileMode>755</fileMode>
+                                        <includes>**/bin/*</includes>
+                                        <includes>**/bin/*.bat</includes>
+                                        <includes>**/lib/nadmin*</includes>
+                                        <excludes>**/pkg_proto.py</excludes>
+                                    </fileset>
+                                    <fileset>
+                                        <dir>${stage.dir}/..</dir>
+                                        <excludes>**/pkg_proto.py</excludes>
+                                    </fileset>
+                                </filesets>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+    
+    <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
+    <profiles>
+        <profile>
+            <id>embed-source</id>
+            <activation><activeByDefault>false</activeByDefault></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step1a</id>
+                                <phase>process-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+        
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step3a</id>
+                                <phase>prepare-package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
 </project>
