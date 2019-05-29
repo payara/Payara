@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile;
 
+import com.sun.enterprise.config.serverbeans.SecurityService;
 import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import static fish.payara.microprofile.Constants.DEFAULT_USER_NAME;
 import javax.inject.Inject;
@@ -61,6 +62,9 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
     @Inject
     protected CommandRunner commandRunner;
     
+    @Inject
+    private SecurityService securityService;
+
     protected boolean defaultMicroprofileUserExists(ActionReport subActionReport, Subject subject) {
         CommandRunner.CommandInvocation invocation
                 = commandRunner.getCommandInvocation(
@@ -71,7 +75,7 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
                 );
 
         ParameterMap parameters = new ParameterMap();
-        parameters.add("authrealmname", "file");
+        parameters.add("authrealmname", securityService.getDefaultRealm());
 
         invocation.parameters(parameters).execute();
 
@@ -97,7 +101,7 @@ public abstract class SetSecureMicroprofileConfigurationCommand implements Admin
         parameters.add("groups", DEFAULT_GROUP_NAME);
         parameters.add("userpassword", "mp");
         parameters.add("target", target);
-        parameters.add("authrealmname", "file");
+        parameters.add("authrealmname", securityService.getDefaultRealm());
         parameters.add("DEFAULT", DEFAULT_USER_NAME);
 
         invocation.parameters(parameters).execute();
