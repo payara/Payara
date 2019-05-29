@@ -37,120 +37,82 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers.interceptors;
 
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
 
-
-/**
- */
 public class InterceptorUtil {
 
-    private static Map<Class, Set<Class>> compatiblePrimitiveWrapper = new HashMap<>();
+    private static final Map<Class<?>, Set<Class<?>>> compatiblePrimitiveWrapper = new ConcurrentHashMap<>();
 
-     static {
+    static {
+        compatiblePrimitiveWrapper.put(byte.class, asSet(Byte.class));
+        compatiblePrimitiveWrapper.put(boolean.class, asSet(Boolean.class));
+        compatiblePrimitiveWrapper.put(char.class, asSet(Character.class));
+        compatiblePrimitiveWrapper.put(double.class, asSet(Byte.class, Short.class, Integer.class, Float.class, Double.class));
+        compatiblePrimitiveWrapper.put(float.class, asSet(Byte.class, Short.class, Integer.class, Float.class));
+        compatiblePrimitiveWrapper.put(int.class, asSet(Byte.class, Short.class, Integer.class));
+        compatiblePrimitiveWrapper.put(long.class, asSet(Byte.class, Short.class, Integer.class, Long.class));
+        compatiblePrimitiveWrapper.put(short.class, asSet(Byte.class, Short.class));
+    }
 
-         Set<Class> smallerPrimitiveWrappers;
+    private static Set<Class<?>> asSet(Class<?>... classes) {
+        Set<Class<?>> set = ConcurrentHashMap.newKeySet(classes.length);
+        for (Class<?> c : classes) {
+            set.add(c);
+        }
+        return set;
+    }
 
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         compatiblePrimitiveWrapper.put(byte.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Boolean.class);
-         compatiblePrimitiveWrapper.put(boolean.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Character.class);
-         compatiblePrimitiveWrapper.put(char.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         smallerPrimitiveWrappers.add(Short.class);
-         smallerPrimitiveWrappers.add(Integer.class);
-         smallerPrimitiveWrappers.add(Float.class);
-         smallerPrimitiveWrappers.add(Double.class);
-         compatiblePrimitiveWrapper.put(double.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         smallerPrimitiveWrappers.add(Short.class);
-         smallerPrimitiveWrappers.add(Integer.class);
-         smallerPrimitiveWrappers.add(Float.class);
-         compatiblePrimitiveWrapper.put(float.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         smallerPrimitiveWrappers.add(Short.class);
-         smallerPrimitiveWrappers.add(Integer.class);
-         compatiblePrimitiveWrapper.put(int.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         smallerPrimitiveWrappers.add(Short.class);
-         smallerPrimitiveWrappers.add(Integer.class);
-         smallerPrimitiveWrappers.add(Long.class);
-         compatiblePrimitiveWrapper.put(long.class, smallerPrimitiveWrappers);
-
-         smallerPrimitiveWrappers = new HashSet<>();
-         smallerPrimitiveWrappers.add(Byte.class);
-         smallerPrimitiveWrappers.add(Short.class);
-         compatiblePrimitiveWrapper.put(short.class, smallerPrimitiveWrappers);
-     }
-
-    public static boolean hasCompatiblePrimitiveWrapper(Class type, Class typeTo) {
-        Set<Class> compatibles = compatiblePrimitiveWrapper.get(type);
-        return compatibles.contains(typeTo);
+    public static boolean hasCompatiblePrimitiveWrapper(Class<?> type, Class<?> typeTo) {
+        Set<Class<?>> compatibles = compatiblePrimitiveWrapper.get(type);
+        return compatibles != null && compatibles.contains(typeTo);
     }
 
     public static void checkSetParameters(Object[] params, Method method) {
-
-        if( method != null) {
-
-            Class[] paramTypes = method.getParameterTypes();
-            if ((params == null) && (paramTypes.length != 0)) {
+        if( method == null) {
+            throw new IllegalStateException("Internal Error: Got null method");
+        }
+        Class<?>[] paramTypes = method.getParameterTypes();
+        if (params == null) {
+            if (paramTypes.length != 0) {
                 throw new IllegalArgumentException("Wrong number of parameters for "
                         + " method: " + method);
             }
-            if (paramTypes.length != (params != null ? params.length : 0)) {
+        } else {
+            if (paramTypes.length != params.length) {
                 throw new IllegalArgumentException("Wrong number of parameters for "
                         + " method: " + method);
             }
             int index = 0 ;
-            for (Class type : paramTypes) {
+            for (Class<?> type : paramTypes) {
                 if (params[index] == null) {
                     if (type.isPrimitive()) {
                         throw new IllegalArgumentException("Parameter type mismatch for method "
                                 + method.getName() + ".  Attempt to set a null value for Arg["
-                            + index + "]. Expected a value of type: " + type.getName());
+                                + index + "]. Expected a value of type: " + type.getName());
                     }
                 } else if (type.isPrimitive()) {
-                    Set<Class> compatibles = compatiblePrimitiveWrapper.get(type);
+                    Set<Class<?>> compatibles = compatiblePrimitiveWrapper.get(type);
                     if (! compatibles.contains(params[index].getClass())) {
                         throw new IllegalArgumentException("Parameter type mismatch for method "
                                 + method.getName() + ".  Arg["
-                            + index + "] type: " + params[index].getClass().getName()
-                            + " is not compatible with the expected type: " + type.getName());
+                                + index + "] type: " + params[index].getClass().getName()
+                                + " is not compatible with the expected type: " + type.getName());
                     }
                 } else if (! type.isAssignableFrom(params[index].getClass())) {
                     throw new IllegalArgumentException("Parameter type mismatch for method "
                             + method.getName() + ".  Arg["
-                        + index + "] type: " + params[index].getClass().getName()
-                        + " does not match the expected type: " + type.getName());
+                            + index + "] type: " + params[index].getClass().getName()
+                            + " does not match the expected type: " + type.getName());
                 }
                 index++;
             }
-        } else {
-            throw new IllegalStateException("Internal Error: Got null method");
         }
-
     }
-
-
 
 }
