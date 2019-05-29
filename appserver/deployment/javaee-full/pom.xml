@@ -146,7 +146,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.main.appclient.server</groupId>
+            <groupId>fish.payara.appclient.server</groupId>
             <artifactId>appclient-connector</artifactId>
             <version>${project.version}</version>
         </dependency>

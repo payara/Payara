@@ -127,33 +127,33 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client-module</artifactId>
             <version>${project.version}</version>
         </dependency>
          <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client-scripts</artifactId>
 	    <version>${project.version}</version>
 	    <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>fish.payara.main.appclient.server</groupId>
+            <groupId>fish.payara.appclient.server</groupId>
             <artifactId>appclient-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.main.appclient.server</groupId>
+            <groupId>fish.payara.appclient.server</groupId>
             <artifactId>appclient-server-core</artifactId>
             <version>${project.version}</version>
         </dependency>

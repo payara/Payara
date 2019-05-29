@@ -49,7 +49,7 @@
         <version>5.192-SNAPSHOT</version>
     </parent>
     
-    <groupId>fish.payara.main</groupId>
+    <groupId>fish.payara</groupId>
     <artifactId>appclient</artifactId>
     <packaging>pom</packaging>
 

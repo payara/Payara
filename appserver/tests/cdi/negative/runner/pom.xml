@@ -90,7 +90,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client</artifactId>
             <version>${project.version}</version>
         </dependency>

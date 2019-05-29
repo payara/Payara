@@ -45,12 +45,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.main.appclient</groupId>
+        <groupId>fish.payara.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.192-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.main.appclient.client</groupId>
+    <groupId>fish.payara.appclient.client</groupId>
     <artifactId>payara-client</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -191,7 +191,7 @@ this or the downstream JARs and so attempts to find things fail.
             accurate Class-Path for the manifest.
         -->
         <dependency>
-            <groupId>fish.payara.main.appclient.client</groupId>
+            <groupId>fish.payara.appclient.client</groupId>
             <artifactId>payara-client-module</artifactId>
             <version>${project.version}</version>
         </dependency>

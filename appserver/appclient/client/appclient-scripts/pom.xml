@@ -44,12 +44,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.main.appclient</groupId>
+        <groupId>fish.payara.appclient</groupId>
         <artifactId>client</artifactId>
         <version>5.192-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.main.appclient.client</groupId>
+    <groupId>fish.payara.appclient.client</groupId>
     <artifactId>payara-client-scripts</artifactId>
     
     <name>Payara App Client - Client-Side Scripts</name>

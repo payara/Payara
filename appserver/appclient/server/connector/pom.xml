@@ -45,12 +45,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.main.appclient</groupId>
+        <groupId>fish.payara.appclient</groupId>
         <artifactId>server</artifactId>
         <version>5.192-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.main.appclient.server</groupId>
+    <groupId>fish.payara.appclient.server</groupId>
     <artifactId>appclient-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
