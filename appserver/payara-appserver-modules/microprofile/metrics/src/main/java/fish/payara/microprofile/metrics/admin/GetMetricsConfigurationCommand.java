@@ -82,7 +82,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetMetricsConfigurationCommand implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers", "Security Enabled"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers", "Security Enabled"};
     
     @Inject
     private Target targetUtil;
