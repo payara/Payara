@@ -113,7 +113,7 @@ public class ACCAgentClassLoader extends URLClassLoader {
 
     /**
      * system class loader must define the appendToClassPathForInstrumentation
-     * method to add gf-client.jar to system class path
+     * method to add payara-client.jar to system class path
      *
      * @param path
      */

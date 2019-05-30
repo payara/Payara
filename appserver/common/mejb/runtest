@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] Payara Foundation and/or affiliates
 
 export CONFIG_FILE=$V3_RUN/glassfish/lib/appclient/appclientlogin.conf
 echo Using config file of $CONFIG_FILE
@@ -47,6 +48,6 @@ echo ""
 export V3M=/v3/glassfish4/glassfish/modules
 export MAIN=org.glassfish.admin.mejb.test.MEJBTest
 
-java $OPTIONS -cp $V3M/gf-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar:target/test-classes $MAIN
+java $OPTIONS -cp $V3M/payara-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar:target/test-classes $MAIN
 
 

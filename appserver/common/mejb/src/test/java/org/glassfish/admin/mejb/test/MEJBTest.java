@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 /**
@@ -71,7 +73,7 @@ import org.junit.Ignore;
 
 export V3M=/v3/glassfish/modules
 export MAIN=org.glassfish.admin.mejb.test.MEJBTest
-java -cp $V3M/gf-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar $MAIN
+java -cp $V3M/payara-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar $MAIN
 
  */
 @Ignore

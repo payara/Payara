@@ -533,9 +533,9 @@ public class JavaWebStartInfo implements ConfigListener {
                     signingAlias);
         jwsAdapterManager.addContentIfAbsent(addedStaticContent, addedDynContent);
 
-        tHelper.setProperty("gf-client.jar", jwsAdapterManager.systemPathInClientJNLP(
+        tHelper.setProperty("payara-client.jar", jwsAdapterManager.systemPathInClientJNLP(
                 jwsAdapterManager.gfClientJAR().toURI(), signingAlias));
-        tHelper.setProperty("gf-client-module.jar", jwsAdapterManager.systemPathInClientJNLP(
+        tHelper.setProperty("payara-client-module.jar", jwsAdapterManager.systemPathInClientJNLP(
                 jwsAdapterManager.gfClientModuleJAR().toURI(), signingAlias));
     }
 

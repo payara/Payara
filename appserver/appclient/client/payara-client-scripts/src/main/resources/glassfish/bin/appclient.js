@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 var fso = WScript.CreateObject("Scripting.FileSystemObject");
@@ -63,7 +65,7 @@ var mainClassIdentRequired = 1;
 
 var appcPath = envVars("APPCPATH");
 
-var accJar=quoteStringIfNeeded(AS_INSTALL + "\\lib\\gf-client.jar");
+var accJar=quoteStringIfNeeded(AS_INSTALL + "\\lib\\payara-client.jar");
 
 var jvmArgs="-Dcom.sun.aas.installRoot=" + quoteStringIfNeeded(AS_INSTALL) +
     " -Djava.security.policy=" + quoteStringIfNeeded(AS_INSTALL + "\\lib\\appclient\\client.policy") +

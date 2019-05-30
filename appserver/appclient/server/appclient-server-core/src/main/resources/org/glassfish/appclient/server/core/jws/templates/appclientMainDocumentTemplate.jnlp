@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2019] Payara Foundation and/or affiliates
 -->
 
 <jnlp
@@ -62,7 +63,7 @@
     <resources>
         
 <!--        <java version="1.6+"
-             java-vm-args="-showversion -javaagent=${gf-client.jar}=mode=jws,${agent.args} ${request.vmargs}" /> -->
+             java-vm-args="-showversion -javaagent=${payara-client.jar}=mode=jws,${agent.args} ${request.vmargs}" /> -->
         <java version="1.6+" java-vm-args="-verbose ${request.vmargs}" />
         
         <!-- 
@@ -77,8 +78,8 @@
         -->
         ${group.facade.jar.element}
 
-        <jar href="${gf-client.jar}"/>
-        <jar href="${gf-client-module.jar}"/>
+        <jar href="${payara-client.jar}"/>
+        <jar href="${payara-client-module.jar}"/>
 
         <!--
             Refer to extension JNLP documents which list other resources - JARs and JNLPs.

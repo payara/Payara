@@ -286,13 +286,13 @@ public class JWSAdapterManager implements PostConstruct {
     File gfClientJAR() {
         return new File(
             libDir(),
-            "gf-client.jar");
+            "payara-client.jar");
     }
 
     File gfClientModuleJAR() {
         return new File(
             modulesDir(),
-            "gf-client-module.jar");
+            "payara-client-module.jar");
     }
 
     private synchronized File modulesDir() {

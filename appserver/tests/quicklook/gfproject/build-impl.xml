@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2019] Payara Foundation and/or affiliates
 -->
 
 <project name="common-impl" default="all" basedir=".">
@@ -73,7 +74,7 @@
             <include name="**/glassfish-api.jar"/>
             <include name="**/amx-core.jar"/>
             <include name="**/amx-javaee.jar"/>
-            <include name="**/gf-client.jar"/>
+            <include name="**/payara-client.jar"/>
         </fileset>
         <pathelement location="${class.output}"/>
         <pathelement location="${test.class.output}"/>

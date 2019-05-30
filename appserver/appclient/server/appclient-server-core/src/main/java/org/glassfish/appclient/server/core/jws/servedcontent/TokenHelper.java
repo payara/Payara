@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
@@ -58,7 +60,7 @@ import org.glassfish.appclient.server.core.jws.NamingConventions;
  */
 public abstract class TokenHelper {
 
-    private static final String AGENT_JAR = "gf-client.jar";
+    private static final String AGENT_JAR = "payara-client.jar";
     private static final String DYN_PREFIX = "___dyn/";
     private static final String GROUP_JAR_ELEMENT_PROPERTY_NAME = "group.facade.jar.element";
 

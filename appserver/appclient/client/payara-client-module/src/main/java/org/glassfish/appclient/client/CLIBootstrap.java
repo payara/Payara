@@ -78,7 +78,7 @@ import java.util.Arrays;
  * {@code
  * java \
  *   (user-specified JVM options except -jar) \
- *   -javaagent:(path-to-gf-client.jar)=(option string for our agent) \
+ *   -javaagent:(path-to-payara-client.jar)=(option string for our agent) \
  *   (main class setting: "-jar x.jar" or "a.b.Main" or "path-to-file.class")
  *   (arguments to be passed to the client)
  * }
@@ -1052,7 +1052,7 @@ public class CLIBootstrap {
         }
 
         String agentJarPath() {
-            return new File(lib, "gf-client.jar").getAbsolutePath();
+            return new File(lib, "payara-client.jar").getAbsolutePath();
         }
 
         File securityPolicy() {

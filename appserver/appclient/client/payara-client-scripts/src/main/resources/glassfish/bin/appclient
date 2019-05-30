@@ -38,6 +38,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] Payara Foundation and/or affiliates
 
 # 
 
@@ -99,4 +100,4 @@ esac
 
 chooseJava
 
-eval `"${ACCJava}" -Dorg.glassfish.appclient.shell $cygwinProp -classpath "${_AS_INSTALL}/lib/gf-client.jar" org.glassfish.appclient.client.CLIBootstrap "$@"`
+eval `"${ACCJava}" -Dorg.glassfish.appclient.shell $cygwinProp -classpath "${_AS_INSTALL}/lib/payara-client.jar" org.glassfish.appclient.client.CLIBootstrap "$@"`

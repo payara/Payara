@@ -38,6 +38,7 @@ REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
+REM  Portions Copyright [2019] Payara Foundation and/or affiliates
 
 setlocal
 goto :main
@@ -100,6 +101,6 @@ rem for /F statement below will work correctly.  Spaces cause
 rem it great troubles.
 rem
 for %%a in ("%JAVA%") do set ACCJava=%%~sa%
-for %%a in ("%_AS_INSTALL%/lib/gf-client.jar") do set XCLASSPATH=%%~sa
+for %%a in ("%_AS_INSTALL%/lib/payara-client.jar") do set XCLASSPATH=%%~sa
 for /F "usebackq tokens=*" %%a in (`%ACCJava% -classpath %XCLASSPATH% org.glassfish.appclient.client.CLIBootstrap`) do set javaCmd=%%a
 %javaCmd%

@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.appclient.server.core;
@@ -103,7 +105,7 @@ public abstract class AppClientDeployerHelper {
 
     private final static String PERSISTENCE_XML_PATH = "META-INF/persistence.xml";
     
-    final static String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
+    final static String GF_CLIENT_MODULE_PATH ="payara-client-module.jar";
     
     final static String[] CLIENT_POLICY_FILE_NAMES = {"javaee.client.policy","restrict.client.policy"};
     final static String CLIENT_POLICY_PATH_IN_JAR = "META-INF/";

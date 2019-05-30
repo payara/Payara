@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.glassfish.bootstrap;
@@ -70,7 +72,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     private static Logger logger = Util.getLogger();
     private static final String JAR_EXT = ".jar";
-    final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar", "gf-client-module.jar");
+    final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar", "payara-client-module.jar");
 
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         /* Step 1. Build the classloader. */

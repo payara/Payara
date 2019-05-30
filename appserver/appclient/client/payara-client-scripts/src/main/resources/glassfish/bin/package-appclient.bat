@@ -37,6 +37,8 @@ REM  its licensees as provided above.  However, if you add GPL Version 2 code
 REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
+REM 
+REM  Portions Copyright [2019] Payara Foundation and/or affiliates
 REM
 setlocal
 set _AS_INSTALL=%~dp0..
@@ -51,4 +53,4 @@ goto run
 set JAVA=java
 :run
 set _AS_INSTALL_LIB=%_AS_INSTALL%\lib
-%JAVA% -classpath "%_AS_INSTALL_LIB%\gf-client.jar" org.glassfish.appclient.client.packageappclient.PackageAppClient %*
+%JAVA% -classpath "%_AS_INSTALL_LIB%\payara-client.jar" org.glassfish.appclient.client.packageappclient.PackageAppClient %*

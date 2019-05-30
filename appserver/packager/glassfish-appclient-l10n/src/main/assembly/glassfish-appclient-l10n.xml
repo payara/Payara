@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2019] Payara Foundation and/or affiliates
 -->
 
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -55,14 +56,14 @@
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>modules/gf-client-l10n.jar</exclude>
+                <exclude>modules/payara-client-l10n.jar</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>            
         </fileSet>
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
             <includes>
-                <include>gf-client-l10n.jar</include>
+                <include>payara-client-l10n.jar</include>
             </includes>                
             <outputDirectory>${install.dir.name}/glassfish/lib</outputDirectory>
         </fileSet>

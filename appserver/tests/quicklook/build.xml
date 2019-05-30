@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 <project name="GlassFish-V3-QuickLook" default="all" basedir=".">
 	<property environment="env"/>
 
@@ -499,7 +499,7 @@
 				<include name="**/management-api.jar"/>
 			</fileset>
 			<fileset dir="${glassfish.home}/lib">
-				<include name="**/gf-client.jar"/>
+				<include name="**/payara-client.jar"/>
 			</fileset>
 			<pathelement path="${plugin_classpath}"/>
 			<pathelement location="${Java_SE}"/>

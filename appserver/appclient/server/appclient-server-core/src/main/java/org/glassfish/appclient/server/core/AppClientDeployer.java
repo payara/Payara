@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.appclient.server.core;
@@ -188,7 +190,7 @@ public class AppClientDeployer
 
 
 
-    /** the class loader which knows about the fish.payara.appclient.client.gf-client-module */
+    /** the class loader which knows about the fish.payara.appclient.client.payara-client-module */
     private ClassLoader gfClientModuleClassLoader;
 
     /*
