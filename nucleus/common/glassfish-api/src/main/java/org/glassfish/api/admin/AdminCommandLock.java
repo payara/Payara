@@ -77,7 +77,7 @@ public class AdminCommandLock {
      * and thus there being exactly one such lock object, shared by all
      * users of this class.
      */
-    private static ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private static final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     /**
      * A thread which can hold a Read/Write lock across command invocations.
@@ -96,7 +96,7 @@ public class AdminCommandLock {
                                 TIMEOUT,       // Failed - suspend timed out
                                 ILLEGALSTATE,  // Failed - already suspended
                                 ERROR          // Failed - other error
-                              };
+                              }
 
     /**
      * Return the appropriate Lock object for the specified LockType.
@@ -217,11 +217,10 @@ public class AdminCommandLock {
                             "timeout acquiring lock",
                             getLockTimeOfAcquisition(),
                             getLockOwner());
-                    else
-                        throw new AdminCommandLockException(
-                            getLockMessage(),
-                            getLockTimeOfAcquisition(),
-                            getLockOwner());
+                    throw new AdminCommandLockException(
+                        getLockMessage(),
+                        getLockTimeOfAcquisition(),
+                        getLockOwner());
                 }
             } catch (java.lang.InterruptedException e) {
                 logger.log(Level.FINE, "Interrupted acquiring command lock. ",
@@ -344,8 +343,7 @@ public class AdminCommandLock {
                   String lockOwner,
                   String message) {
 
-        BlockingQueue<AdminCommandLock.SuspendStatus> suspendStatusQ =
-                    new ArrayBlockingQueue<AdminCommandLock.SuspendStatus>(1);
+        BlockingQueue<AdminCommandLock.SuspendStatus> suspendStatusQ = new ArrayBlockingQueue<>(1);
 
         /*
          * If the suspendCommandsLockThread is alive then we are
@@ -507,55 +505,57 @@ public class AdminCommandLock {
                     else
                         suspendCommandsTimedOut = true;
                 } catch (java.lang.InterruptedException e) {
-                    logger.log(Level.FINE, 
-                               "Interrupted acquiring command lock. ",
-                               e); 
-               }
-            }
-
-            if (lockAcquired) {
-                setLockOwner(lockOwner);
-                setLockMessage(message);
-                setLockTimeOfAcquisition(new Date());
-
-                /*
-                 * A semaphore that is triggered to signal to the thread 
-                 * to release the lock.  This should only be created after
-                 * the lock has been acquired.
-                 */
-                resumeCommandsSemaphore = new Semaphore(0, true);
-            }
-
-            /*
-             * The suspendStatusQ is used to signal that we acquired 
-             * the lock.   A blocking queue is used to indicate whether we 
-             * timed out or ran into an error acquiring the lock.
-             */
-            if (suspendStatusQ != null) { 
-                if (suspendCommandsTimedOut == true) { 
-                    queuePut(suspendStatusQ, SuspendStatus.TIMEOUT);
-                } else {
-                    queuePut(suspendStatusQ, SuspendStatus.SUCCESS);
+                    logger.log(Level.FINE, "Interrupted acquiring command lock. ", e);
                 }
             }
+            try {
+                if (lockAcquired) {
+                    setLockOwner(lockOwner);
+                    setLockMessage(message);
+                    setLockTimeOfAcquisition(new Date());
 
-            /*
-             * If we timed out trying to get the lock then this thread 
-             * is finished.
-             */
-            if (suspendCommandsTimedOut)
-                return;
-               
-            /*
-             * We block here waiting to be told to resume.
-             */
-            semaphoreWait(resumeCommandsSemaphore, 
-                          "Interrupted waiting on resume semaphore");
+                    /*
+                     * A semaphore that is triggered to signal to the thread 
+                     * to release the lock.  This should only be created after
+                     * the lock has been acquired.
+                     */
+                    resumeCommandsSemaphore = new Semaphore(0, true);
+                }
 
-            /*
-             * Resume the domain by unlocking the EXCLUSIVE lock.
-             */
-            lock.unlock();
+                /*
+                 * The suspendStatusQ is used to signal that we acquired 
+                 * the lock.   A blocking queue is used to indicate whether we 
+                 * timed out or ran into an error acquiring the lock.
+                 */
+                if (suspendStatusQ != null) { 
+                    if (suspendCommandsTimedOut == true) { 
+                        queuePut(suspendStatusQ, SuspendStatus.TIMEOUT);
+                    } else {
+                        queuePut(suspendStatusQ, SuspendStatus.SUCCESS);
+                    }
+                }
+
+                /*
+                 * If we timed out trying to get the lock then this thread 
+                 * is finished.
+                 */
+                if (suspendCommandsTimedOut)
+                    return;
+
+                /*
+                 * We block here waiting to be told to resume.
+                 */
+                semaphoreWait(resumeCommandsSemaphore, 
+                        "Interrupted waiting on resume semaphore");
+
+            } finally {
+                if (lockAcquired) {
+                    /*
+                     * Resume the domain by unlocking the EXCLUSIVE lock.
+                     */
+                    lock.unlock();
+                }
+            }
         }
 
         /**
@@ -590,27 +590,23 @@ public class AdminCommandLock {
          * @param r A Runnable which will be invoked by the method after the lock is suspended
          */
         public static void runWithSuspendedLock(Runnable r) {
-           
-            Lock lock = null;
-
+            // We need to determine the type of lock this thread holds.
+            Lock lock = rwlock.isWriteLockedByCurrentThread()
+                ? rwlock.writeLock() 
+                : rwlock.getReadHoldCount() > 0 ? rwlock.readLock() : null;
+            if (lock == null) {
+                // Not locked, run plain:
+                r.run();
+                return;
+            }
             try {
-                // We need to determine the type of lock this thread holds.
-                if (rwlock.isWriteLockedByCurrentThread()) {
-                    lock = rwlock.writeLock();
-                } else if (rwlock.getReadHoldCount() > 0) {
-                    lock = rwlock.readLock();
-                }
-
-                if (lock != null)
-                    lock.unlock();
-
+                lock.unlock();
                 // Run the caller's commands without a lock in place.
                 r.run();
             } finally {
                 // Relock before returning.  This may block if someone else
                 // already grabbed the lock.
-                if (lock != null)
-                    lock.lock();
+                lock.lock();
             }
         }
 }
