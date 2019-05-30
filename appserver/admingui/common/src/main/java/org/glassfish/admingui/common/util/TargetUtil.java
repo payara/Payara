@@ -70,27 +70,27 @@ public class TargetUtil {
         }
         return getInstances().contains(name);
     }
-    
+
     public static boolean isDeploymentGroup(String name) {
         if (GuiUtil.isEmpty(name)){
             return false;
         }
-        return getDeploymentGroups().contains(name);        
+        return getDeploymentGroups().contains(name);
     }
 
-    public static List getStandaloneInstances(){
-        List<String> result = new ArrayList<String>();
+    public static List<String> getStandaloneInstances(){
+        List<String> result = new ArrayList<>();
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/list-instances" ;
-        Map attrsMap = new HashMap();
+        Map<String, Object> attrsMap = new HashMap<>();
         attrsMap.put("standaloneonly", "true");
         try{
-            Map responseMap = RestUtil.restRequest( endpoint , attrsMap, "get" , null, false);
-            Map  dataMap = (Map) responseMap.get("data");
+            Map<String, Object> responseMap = RestUtil.restRequest( endpoint , attrsMap, "get" , null, false);
+            Map<?, ?>  dataMap = (Map<?, ?>) responseMap.get("data");
             Map<String, Object>  extraProps = (Map<String, Object>) dataMap.get("extraProperties");
             if (extraProps == null){
                 return result;
             }
-            List<Map<String, String>> props = (List<Map<String, String>>) extraProps.get("instanceList");            
+            List<Map<String, String>> props = (List<Map<String, String>>) extraProps.get("instanceList");
             if (props == null){
                 return result;
             }
@@ -101,10 +101,9 @@ public class TargetUtil {
 
         return result;
     }
-    
-    public static List getDeploymentGroups() {
-        
-        List dgs = new ArrayList();
+
+    public static List<String> getDeploymentGroups() {
+        List<String> dgs = new ArrayList<>();
         try{
             dgs.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group").keySet());
         }catch (Exception ex){
@@ -116,8 +115,8 @@ public class TargetUtil {
         return dgs;
     }
 
-    public static List getClusters(){
-        List clusters = new ArrayList();
+    public static List<String> getClusters(){
+        List<String> clusters = new ArrayList<>();
         try{
             clusters.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster").keySet());
         }catch (Exception ex){
@@ -129,8 +128,8 @@ public class TargetUtil {
         return clusters;
     }
 
-    public static List getInstances(){
-        List instances = new ArrayList();
+    public static List<String> getInstances() {
+        List<String> instances = new ArrayList<>();
         try{
             instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server").keySet());
         }catch (Exception ex){
@@ -142,8 +141,8 @@ public class TargetUtil {
         return instances;
     }
 
-    public static List getConfigs(){
-        List config = new ArrayList();
+    public static List<String> getConfigs() {
+        List<String> config = new ArrayList<>();
         try{
             config.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/configs/config").keySet());
         }catch (Exception ex){
@@ -159,9 +158,9 @@ public class TargetUtil {
         }
         return config;
     }
-    
-    public static List getDGInstances(String dg) {
-        List instances = new ArrayList();
+
+    public static List<String> getDGInstances(String dg) {
+        List<String> instances = new ArrayList<>();
         try {
             instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/dg-server-ref").keySet());
         } catch (Exception ex) {
@@ -170,8 +169,8 @@ public class TargetUtil {
         return instances;
     }
 
-    public static List getClusteredInstances(String cluster) {
-        List instances = new ArrayList();
+    public static List<String> getClusteredInstances(String cluster) {
+        List<String> instances = new ArrayList<>();
         try {
             instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + cluster + "/server-ref").keySet());
         } catch (Exception ex) {
@@ -187,8 +186,8 @@ public class TargetUtil {
             if (target.equals("server")){
                 endpoint = endpoint + "/servers/server/server";
             }else{
-                List clusters = TargetUtil.getClusters();
-                List dgs = TargetUtil.getDeploymentGroups();
+                List<String> clusters = TargetUtil.getClusters();
+                List<String> dgs = TargetUtil.getDeploymentGroups();
                 if (clusters.contains(target)){
                     endpoint = endpoint + "/clusters/cluster/" + encodedName;
                 }else if (dgs.contains(target)) {
@@ -229,10 +228,10 @@ public class TargetUtil {
     }
 
     public static Collection<String> getHostNames(String target) {
-        Set<String> hostNames = new HashSet();
+        Set<String> hostNames = new HashSet<>();
         hostNames.toArray();
-        List clusters = TargetUtil.getClusters();
-        List<String> instances = new ArrayList();
+        List<String> clusters = TargetUtil.getClusters();
+        List<String> instances = new ArrayList<>();
         if (clusters.contains(target)){
              instances = getClusteredInstances(target);
         } else {

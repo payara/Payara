@@ -286,12 +286,12 @@ public class GuiUtil {
 
 
     public static void setSessionValue(String key, Object value){
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Map<String, Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         sessionMap.put(key, value);
     }
 
     public static Object getSessionValue(String key){
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Map<String, Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         if (sessionMap.get("_SESSION_INITIALIZED") == null){
             initSessionAttributes();
         }
@@ -454,7 +454,7 @@ public class GuiUtil {
     public static void prepareAlert(String type, String summary, String detail) {
 
         try {
-        Map attrMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        Map<String, Object> attrMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         if (isEmpty(type)) {
             attrMap.put("alertType", "information");
         } else if (!(type.equals("information") || type.equals("success") ||
@@ -535,8 +535,8 @@ public class GuiUtil {
      * @return     Returns the list containing the individual strings that
      *             the input string was split into.
      */
-    public static List parseStringList(String line, String sep) {
-         List tokens = new ArrayList();
+    public static List<String> parseStringList(String line, String sep) {
+         List<String> tokens = new ArrayList<>();
         if (line == null) {
             return tokens;
         }
@@ -653,11 +653,11 @@ public class GuiUtil {
     }
 
 
-    public static boolean isSelected(String name, List<Map> selectedList) {
+    public static boolean isSelected(String name, List<Map<String, ?>> selectedList) {
         if (selectedList == null || name == null) {
             return false;
         }
-        for (Map oneRow : selectedList) {
+        for (Map<String, ?> oneRow : selectedList) {
             if (name.equals(oneRow.get("name"))) {
                 return true;
             }
@@ -672,7 +672,7 @@ public class GuiUtil {
         return test;
     }
 
-    public static Boolean getBooleanValue(Map pMap, String name) {
+    public static Boolean getBooleanValue(Map<String, ?> pMap, String name) {
         if (pMap.get(name) == null) {
             return Boolean.FALSE;
         }
@@ -692,7 +692,7 @@ public class GuiUtil {
     }
 
     public static List<Map<String, Object>> convertArrayToListOfMap(Object[] values, String key) {
-        List<Map<String, Object>> list = new ArrayList();
+        List<Map<String, Object>> list = new ArrayList<>();
         if (values != null) {
             Map<String, Object> map = null;
             for (Object val : values) {
@@ -706,10 +706,10 @@ public class GuiUtil {
         return list;
     }
     public static List<Map<String, String>> convertMapToListOfMap(Map<String, String> values) {
-        List<Map<String, String>> list = new ArrayList();
+        List<Map<String, String>> list = new ArrayList<>();
         if (values != null) {
             for(Map.Entry<String,String> e : values.entrySet()){
-                HashMap oneRow = new HashMap();
+                HashMap<String, String> oneRow = new HashMap<>();
                 Object value = e.getValue();
                 String valString = (value == null) ? "" : value.toString();
                 oneRow.put("name", e.getKey());
@@ -730,11 +730,11 @@ public class GuiUtil {
      *
      * return value corresponding to the last key in mapKeys
      */
-    public static Object getMapValue(Map map, String mapKeys) {
+    public static Object getMapValue(Map<String, ?> map, String mapKeys) {
         String[] keys = mapKeys.split(",");
         int i = 0;
         for (; i < keys.length - 1; i++) {
-            map = (Map)map.get(keys[i]);
+            map = (Map<String, ?>)map.get(keys[i]);
             if (map == null)
                 return null;
         }
@@ -750,7 +750,7 @@ public class GuiUtil {
      */
     public static Throwable[] getCauses(final Throwable start)
     {
-        final ArrayList<Throwable> list = new ArrayList<Throwable>();
+        final ArrayList<Throwable> list = new ArrayList<>();
 
         boolean haveNonException = false;
 

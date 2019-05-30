@@ -59,14 +59,14 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 public class AppUtil {
 
     public static List<String> getSnifferListOfModule(String appName, String moduleName){
-        Map subMap = RestUtil.restRequest(
+        Map<String, Object> subMap = RestUtil.restRequest(
             GuiUtil.getSessionValue("REST_URL")+"/applications/application/" + appName + "/module/" + moduleName + "/engine", null, "GET", null, false);
-        final Map dataMap = (Map) subMap.get("data");
-        List sniffersList = new ArrayList();
+        final Map<String, ?> dataMap = (Map<String, ?>) subMap.get("data");
+        List<String> sniffersList = new ArrayList<>();
         if (dataMap != null){
-            final Map extraProperties = (Map)(dataMap).get("extraProperties");
+            final Map<String, ?> extraProperties = (Map<String, ?>)(dataMap).get("extraProperties");
             if (extraProperties != null){
-                final Map<String, Object> childResourcesMap = (Map) extraProperties.get("childResources");
+                final Map<String, Object> childResourcesMap = (Map<String, Object>) extraProperties.get("childResources");
                 if (childResourcesMap != null){
                     //List<String> sniffers =  new ArrayList( childResourcesMap.keySet());
                     for (String oneSniffer: childResourcesMap.keySet()){
@@ -84,11 +84,11 @@ public class AppUtil {
 
     public static boolean isApplicationEnabled(String appName,  String target){
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        List clusters = TargetUtil.getClusters();
-        List standalone = TargetUtil.getStandaloneInstances();
-        List dgs = TargetUtil.getDeploymentGroups();
+        List<String> clusters = TargetUtil.getClusters();
+        List<String> standalone = TargetUtil.getStandaloneInstances();
+        List<String> dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
-        Map attrs = null;
+        Map<String, Object> attrs = null;
         String endpoint="";
         if (clusters.contains(target)){
             endpoint = prefix + "/clusters/cluster/" + target + "/application-ref/" + appName;
@@ -103,20 +103,20 @@ public class AppUtil {
         return Boolean.parseBoolean((String) attrs.get("enabled"));
     }
 
-    static public Map getWsEndpointMap(String appName, String moduleName, List snifferList){
-        Map wsAppMap = new HashMap();
+    static public Map<?, ?> getWsEndpointMap(String appName, String moduleName, List<String> snifferList){
+        Map<? ,?> wsAppMap = new HashMap<>();
         try{
             String encodedAppName = URLEncoder.encode(appName, "UTF-8");
             String encodedModuleName = URLEncoder.encode(moduleName, "UTF-8");
             String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName;
             if (snifferList.contains("webservices")){
-                Map wsAttrMap = new HashMap();
+                Map<String, Object> wsAttrMap = new HashMap<>();
                 //wsAttrMap.put("applicationname", encodedAppName);
                 wsAttrMap.put("modulename", encodedModuleName);
-                Map wsMap = RestUtil.restRequest(prefix+"/list-webservices", wsAttrMap, "GET", null, false);
-                Map extraProps = (Map)((Map)wsMap.get("data")).get("extraProperties");
+                Map<String, Object> wsMap = RestUtil.restRequest(prefix+"/list-webservices", wsAttrMap, "GET", null, false);
+                Map<String, ?> extraProps = (Map<String, ?>)((Map<String, ?>)wsMap.get("data")).get("extraProperties");
                 if (extraProps != null){
-                    wsAppMap = (Map) extraProps.get(appName);
+                    wsAppMap = (Map<?, ?>) extraProps.get(appName);
                 }
             }
         }catch(Exception ex){
@@ -128,25 +128,25 @@ public class AppUtil {
         return wsAppMap;
     }
 
-    static public Map getEndpointDetails(Map wsEndpointMap, String moduleName, String componentName){
+    static public Map<?, ?> getEndpointDetails(Map<String, ?> wsEndpointMap, String moduleName, String componentName){
         if (wsEndpointMap == null){
             return null;
         }
-        Map modMap = (Map) wsEndpointMap.get(moduleName);
+        Map<?, ?> modMap = (Map<?, ?>) wsEndpointMap.get(moduleName);
         if (modMap == null){
             return null;
         }
-        return (Map) modMap.get(componentName);
+        return (Map<?,?>) modMap.get(componentName);
     }
 
-    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List clusterList, List standaloneList, List dgList, HandlerContext handlerCtx){
-        List clusters = (clusterList == null) ? TargetUtil.getClusters() : clusterList;
-        List dgs = (dgList == null) ? TargetUtil.getDeploymentGroups(): dgList;
+    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List<String> clusterList, List<?> standaloneList, List<String> dgList, HandlerContext handlerCtx){
+        List<String> clusters = (clusterList == null) ? TargetUtil.getClusters() : clusterList;
+        List<String> dgs = (dgList == null) ? TargetUtil.getDeploymentGroups(): dgList;
         String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
         String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
         String dgEndpoint = GuiUtil.getSessionValue("REST_URL")+"/deployment-groups/deployment-group/";
         String endpoint ;
-        Map attrs = new HashMap();
+        Map<String, Object> attrs = new HashMap<>();
 
         if (clusters.contains(targetName)){
             endpoint = clusterEndpoint + targetName + "/application-ref" ;
@@ -166,7 +166,7 @@ public class AppUtil {
         attrs.put("target", targetName);
         RestUtil.restRequest(endpoint, attrs, (add)? "POST" : "DELETE", handlerCtx, false);
     }
-    
+
     static public Boolean doesAppContainsResources(String appName, 
             List<String> moduleList) {
         boolean resourceFound = false;
@@ -181,12 +181,12 @@ public class AppUtil {
                     resourceFound = true;
                     break;
                 }
-            }           
+            }
         }
-        
+
         return resourceFound;
     }
-    
+
     static public String getAppScopedResType(String resName, String type){
         int index = appResTypes.indexOf(resName);
         if (index != -1){
@@ -199,11 +199,11 @@ public class AppUtil {
         return null;
     }
 
-    static final public List sniffersHide = new ArrayList();
+    static final public List<String> sniffersHide = new ArrayList<>();
     static {
         sniffersHide.add("security");
     }
-    static final public List<String> appResTypes = new ArrayList<String>();
+    static final public List<String> appResTypes = new ArrayList<>();
     static {
         appResTypes.add("<JdbcResource>");
         appResTypes.add("<ConnectorResource>");
@@ -216,7 +216,7 @@ public class AppUtil {
         appResTypes.add("<ResourceAdapterConfig>");
         appResTypes.add("<WorkSecurityMap>");
     }
-    static final public List<String> appResTypesToDisplay = new ArrayList<String>();
+    static final public List<String> appResTypesToDisplay = new ArrayList<>();
     static {
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.jdbcResources"));
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.connectorResources"));
@@ -229,7 +229,7 @@ public class AppUtil {
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.resourceAdapterConfigs"));
         appResTypesToDisplay.add(GuiUtil.getMessage("tree.workSecurityMaps"));
     }
-    static final public List<String> appResTypesEdit = new ArrayList<String>();
+    static final public List<String> appResTypesEdit = new ArrayList<>();
     static {
         appResTypesEdit.add("jdbc/jdbcResourceEdit.jsf?name=");
         appResTypesEdit.add("jca/connectorResourceEdit.jsf?name=");
