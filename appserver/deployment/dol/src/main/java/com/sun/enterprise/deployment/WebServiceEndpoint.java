@@ -38,8 +38,23 @@
  * holder.
  */
 // Portions Copyright [2019] Payara Foundation and/or affiliates
-
 package com.sun.enterprise.deployment;
+
+import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.api.Globals;
 
 /**
  * This class represents information about a web service
@@ -48,28 +63,18 @@ package com.sun.enterprise.deployment;
  * @author Rama Pulavarthi
  * @author Kenneth Saks
  */
-
-
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.internal.api.Globals;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.namespace.QName;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-
 
 /**
  * Represents a single port-component in a webservice in webservices.xml
  */
-public class WebServiceEndpoint extends Descriptor
-        implements HandlerChainContainer {
+public class WebServiceEndpoint extends Descriptor implements HandlerChainContainer {
+
+    private static final long serialVersionUID = -7236214748950843718L;
 
     public static final String TRANSPORT_NONE = "NONE";
     public static final String TRANSPORT_INTEGRAL = "INTEGRAL";
@@ -81,28 +86,26 @@ public class WebServiceEndpoint extends Descriptor
     public static final String SOAP12_MTOM_TOKEN = "##SOAP12_HTTP_MTOM";
     public static final String XML_TOKEN = "##XML_HTTP";
 
-
-    public static final String PUBLISHING_SUBCONTEXT =
-            "__container$publishing$subctx";
+    public static final String PUBLISHING_SUBCONTEXT = "__container$publishing$subctx";
 
     // Unique endpoint name within all the endpoints in the same module
     private String endpointName;
 
     private String serviceEndpointInterface;
 
-    private QName  wsdlPort;
+    private QName wsdlPort;
     private String wsdlPortNamespacePrefix;
 
     private QName wsdlService;
     private String wsdlServiceNamespacePrefix;
 
-    private String mtomEnabled = null;
-    private String mtomThreshold = null;
+    private String mtomEnabled;
+    private String mtomThreshold;
 
-    private String protocolBinding = null;
-    private boolean securePipeline = false;
+    private String protocolBinding;
+    private boolean securePipeline;
 
-    // Linkage to implementing component.  Must be either stateless session
+    // Linkage to implementing component. Must be either stateless session
     // ejb OR servlet.
     private String ejbLink;
     private EjbDescriptor ejbComponentImpl;
@@ -112,15 +115,15 @@ public class WebServiceEndpoint extends Descriptor
     // List of handlers associated with this endpoint.
     // Handler order is important and must be preserved.
     // This list hols the handlers specified for JAXRPC based service
-    private LinkedList handlers;
+    private LinkedList<WebServiceHandler> handlers;
 
     // This is the handlerchain defined for JAXWS based service
     private LinkedList<WebServiceHandlerChain> handlerChains;
 
-    //This is the addressing element in webservices.xml
+    // This is the addressing element in webservices.xml
     private Addressing addressing;
 
-    //This is the addressing element in webservices.xml
+    // This is the addressing element in webservices.xml
     private RespectBinding respectBinding;
 
     // The web service in which this endpoint lives
@@ -132,8 +135,8 @@ public class WebServiceEndpoint extends Descriptor
 
     //
     // Endpoint address uri is used to compose the endpoint address url
-    // through which the endpoint can be accessed.  It is required for
-    // ejb endpoints and optional for servlet endpoints.  This is because
+    // through which the endpoint can be accessed. It is required for
+    // ejb endpoints and optional for servlet endpoints. This is because
     // web application's have a standard way of mapping servlets to uris.
     //
     // For ejb endpoints, the uri is relative to root of the
@@ -143,12 +146,12 @@ public class WebServiceEndpoint extends Descriptor
     // an endpoint address URI of StockQuoteService/StockQuotePort would result
     // in an endpoint address of :
     //
-    //     http://localhost:8000/StockQuoteService/StockQuotePort
+    // http://localhost:8000/StockQuoteService/StockQuotePort
     //
     // The context root portion should not conflict with the context root
     // of any web application.
     //
-    // For servlet endpoints, the uri is optional.  If the uri is not specified,
+    // For servlet endpoints, the uri is optional. If the uri is not specified,
     // it will be derived from the url pattern for the servlet that is
     // implementing this endpoint. The syntax of the servlet
     // endpoint address uri is the same as the syntax for the url-pattern
@@ -187,51 +190,28 @@ public class WebServiceEndpoint extends Descriptor
     private String tieClassName;
 
     // message-security-binding
-    private MessageSecurityBindingDescriptor messageSecBindingDesc = null;
+    private MessageSecurityBindingDescriptor messageSecBindingDesc;
 
-    //reliability-config
-    private ReliabilityConfig reliabilityConfig = null;
+    // reliability-config
+    private ReliabilityConfig reliabilityConfig;
 
     // specified in WLS DD, currently has use only in RMFeature
-    private String httpResponseBufferSize = null;
+    private String httpResponseBufferSize;
 
     // should debugging be allowed on this endpoint
     private String debuggingEnabled = "true";
 
-    //jbi related properties
-    private List props = null;
+    // jbi related properties
+    private List props;
 
     /** Should the wsdl be published? */
-    private String wsdlExposed = null;
-
-    public String getWsdlExposed() {
-        return wsdlExposed;
-    }
-
-    public void setWsdlExposed(String wsdlExposed) {
-        this.wsdlExposed = wsdlExposed;
-    }
-
+    private String wsdlExposed;
+    
     /** Validate request messages? */
-    private String validateRequest = null;
-
-    public String getValidateRequest() {
-        return validateRequest;
-    }
-
-    public void setValidateRequest(String validateRequests) {
-        this.validateRequest = validateRequests;
-    }
-
+    private String validateRequest;
+    
     /** Is streaming attachments feature enabled? */
-    private String streamAttachments = null;
-    public String getStreamAttachments() {
-        return streamAttachments;
-    }
-
-    public void setStreamAttachments(String streamAttachments) {
-        this.streamAttachments = streamAttachments;
-    }
+    private String streamAttachments;
 
     // copy constructor
     public WebServiceEndpoint(WebServiceEndpoint other) {
@@ -255,16 +235,16 @@ public class WebServiceEndpoint extends Descriptor
         if (other.handlers != null) {
             handlers = new LinkedList();
             for (Iterator i = other.handlers.iterator(); i.hasNext();) {
-                WebServiceHandler wsh = (WebServiceHandler)i.next();
+                WebServiceHandler wsh = (WebServiceHandler) i.next();
                 handlers.addLast(new WebServiceHandler(wsh));
             }
         } else {
             handlers = null;
         }
-        if (other.handlerChains!= null) {
+        if (other.handlerChains != null) {
             handlerChains = new LinkedList();
             for (Iterator i = other.handlerChains.iterator(); i.hasNext();) {
-                WebServiceHandlerChain wsh = (WebServiceHandlerChain)i.next();
+                WebServiceHandlerChain wsh = (WebServiceHandlerChain) i.next();
                 handlerChains.addLast(new WebServiceHandlerChain(wsh));
             }
         } else {
@@ -288,10 +268,33 @@ public class WebServiceEndpoint extends Descriptor
         authMethod = null;
         wsdlPort = null;
     }
+    
+    public String getWsdlExposed() {
+        return wsdlExposed;
+    }
+
+    public void setWsdlExposed(String wsdlExposed) {
+        this.wsdlExposed = wsdlExposed;
+    }
+
+    public String getValidateRequest() {
+        return validateRequest;
+    }
+
+    public void setValidateRequest(String validateRequests) {
+        this.validateRequest = validateRequests;
+    }
+
+    public String getStreamAttachments() {
+        return streamAttachments;
+    }
+
+    public void setStreamAttachments(String streamAttachments) {
+        this.streamAttachments = streamAttachments;
+    }
 
     public void setWebService(WebService service) {
         webService = service;
-
     }
 
     public String getMtomThreshold() {
@@ -303,10 +306,8 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public WebService getWebService() {
-
         return webService;
     }
-
 
     public Addressing getAddressing() {
         return addressing;
@@ -352,31 +353,29 @@ public class WebServiceEndpoint extends Descriptor
 
     public void setProtocolBinding(String value) {
         WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
-        if (dolSupport!=null) {
+        if (dolSupport != null) {
             protocolBinding = dolSupport.getProtocolBinding(value);
         } else {
             protocolBinding = value;
         }
-
     }
 
     public String getProtocolBinding() {
         WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
-        if (protocolBinding==null) {
-            if (dolSupport!=null) {
-                protocolBinding =  dolSupport.getProtocolBinding(null);
+        if (protocolBinding == null) {
+            if (dolSupport != null) {
+                protocolBinding = dolSupport.getProtocolBinding(null);
             }
         }
         return protocolBinding;
     }
 
     public boolean hasUserSpecifiedProtocolBinding() {
-        return ((protocolBinding==null) ? false : true);
+        return protocolBinding != null;
     }
 
     public void setMtomEnabled(String value) {
-        mtomEnabled =value;
-
+        mtomEnabled = value;
     }
 
     public String getMtomEnabled() {
@@ -388,7 +387,6 @@ public class WebServiceEndpoint extends Descriptor
         wsdlServiceNamespacePrefix = prefix;
         serviceNamespaceUri = svc.getNamespaceURI();
         serviceLocalPart = svc.getLocalPart();
-
     }
 
     public void setWsdlService(QName service) {
@@ -396,7 +394,6 @@ public class WebServiceEndpoint extends Descriptor
         wsdlServiceNamespacePrefix = service.getPrefix();
         serviceNamespaceUri = service.getNamespaceURI();
         serviceLocalPart = service.getLocalPart();
-
     }
 
     public String getWsdlServiceNamespacePrefix() {
@@ -414,13 +411,11 @@ public class WebServiceEndpoint extends Descriptor
     public void setWsdlPort(QName port, String prefix) {
         wsdlPort = port;
         wsdlPortNamespacePrefix = prefix;
-
     }
 
     public void setWsdlPort(QName port) {
         wsdlPort = port;
         wsdlPortNamespacePrefix = port.getPrefix();
-
     }
 
     public String getWsdlPortNamespacePrefix() {
@@ -439,15 +434,13 @@ public class WebServiceEndpoint extends Descriptor
         return wsdlPort;
     }
 
-    public void setMessageSecurityBinding(
-            MessageSecurityBindingDescriptor messageSecBindingDesc) {
+    public void setMessageSecurityBinding(MessageSecurityBindingDescriptor messageSecBindingDesc) {
         this.messageSecBindingDesc = messageSecBindingDesc;
     }
 
     public MessageSecurityBindingDescriptor getMessageSecurityBinding() {
         return messageSecBindingDesc;
     }
-
 
     public ReliabilityConfig getReliabilityConfig() {
         return reliabilityConfig;
@@ -466,24 +459,21 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     /**
-     * Convert the contents of the ejb-link or servlet-link element to
-     * an object representing the implementation component.
+     * Convert the contents of the ejb-link or servlet-link element to an object representing the implementation component.
      */
     public boolean resolveComponentLink() {
         boolean resolved = false;
-        if( ejbLink != null ) {
+        if (ejbLink != null) {
             EjbBundleDescriptor ejbBundle = getEjbBundle();
-            if( ejbBundle.hasEjbByName(ejbLink) ) {
+            if (ejbBundle.hasEjbByName(ejbLink)) {
                 resolved = true;
                 EjbDescriptor ejb = ejbBundle.getEjbByName(ejbLink);
                 setEjbComponentImpl(ejb);
             }
-        } else if( webComponentLink != null ) {
+        } else if (webComponentLink != null) {
             WebBundleDescriptor webBundle = getWebBundle();
-            WebComponentDescriptor webComponent =
-                    (WebComponentDescriptor) webBundle.
-                            getWebComponentByCanonicalName(webComponentLink);
-            if( webComponent != null ) {
+            WebComponentDescriptor webComponent = webBundle.getWebComponentByCanonicalName(webComponentLink);
+            if (webComponent != null) {
                 resolved = true;
                 setWebComponentImpl(webComponent);
             }
@@ -505,47 +495,46 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     /**
-     *@return true if this endpoint is implemented by any ejb
+     * @return true if this endpoint is implemented by any ejb
      */
     public boolean implementedByEjbComponent() {
-        return (ejbLink != null);
+        return ejbLink != null;
     }
 
     /**
-     *@return true if this endpoint is implemented by a specific ejb
+     * @return true if this endpoint is implemented by a specific ejb
      */
     public boolean implementedByEjbComponent(EjbDescriptor ejb) {
-        return (ejbLink != null) && ejbLink.equals(ejb.getName());
+        return ejbLink != null && ejbLink.equals(ejb.getName());
     }
 
     /**
-     *@return true if this endpoint is implemented by any web component
+     * @return true if this endpoint is implemented by any web component
      */
     public boolean implementedByWebComponent() {
-        return (webComponentLink != null);
+        return webComponentLink != null;
     }
 
     /**
-     *@return true if this endpoint is implemented by a specific web component
+     * @return true if this endpoint is implemented by a specific web component
      */
     public boolean implementedByWebComponent(WebComponentDescriptor webComp) {
-        return ( (webComponentLink != null) &&
-                (webComponentLink.equals(webComp.getCanonicalName())) );
+        return webComponentLink != null && webComponentLink.equals(webComp.getCanonicalName());
     }
 
     public String getLinkName() {
         String linkName = null;
-        if( implementedByEjbComponent() ) {
+        if (implementedByEjbComponent()) {
             linkName = ejbLink;
-        } else if( implementedByWebComponent() ) {
+        } else if (implementedByWebComponent()) {
             linkName = webComponentLink;
         }
+        
         return linkName;
     }
 
     public void setEjbLink(String link) {
         ejbLink = link;
-
     }
 
     public String getEjbLink() {
@@ -558,7 +547,6 @@ public class WebServiceEndpoint extends Descriptor
 
         ejbLink = ejbComponent.getName();
         ejbComponentImpl = ejbComponent;
-
     }
 
     public EjbDescriptor getEjbComponentImpl() {
@@ -567,7 +555,6 @@ public class WebServiceEndpoint extends Descriptor
 
     public void setWebComponentLink(String link) {
         webComponentLink = link;
-
     }
 
     public String getWebComponentLink() {
@@ -579,7 +566,6 @@ public class WebServiceEndpoint extends Descriptor
         ejbLink = null;
         webComponentLink = webComponent.getCanonicalName();
         webComponentImpl = webComponent;
-
     }
 
     public WebComponentDescriptor getWebComponentImpl() {
@@ -587,11 +573,10 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     /**
-     *@return true if this endpoint has at least one handler in its
-     * handler chain.
+     * @return true if this endpoint has at least one handler in its handler chain.
      */
     public boolean hasHandlers() {
-        return ( handlers.size() > 0 );
+        return !handlers.isEmpty();
     }
 
     /**
@@ -608,9 +593,9 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public void removeHandlerByName(String handlerName) {
-        for(Iterator iter = handlers.iterator(); iter.hasNext();) {
+        for (Iterator iter = handlers.iterator(); iter.hasNext();) {
             WebServiceHandler next = (WebServiceHandler) iter.next();
-            if( next.getHandlerName().equals(handlerName) ) {
+            if (next.getHandlerName().equals(handlerName)) {
                 iter.remove();
 
                 break;
@@ -621,27 +606,30 @@ public class WebServiceEndpoint extends Descriptor
     /**
      * Get ordered list of WebServiceHandler handler for this endpoint.
      */
-    public LinkedList getHandlers() {
+    public LinkedList<WebServiceHandler> getHandlers() {
         return handlers;
     }
 
     /**
      * Get ordered list of WebServiceHandler handler chains for this endpoint.
      */
+    @Override
     public LinkedList<WebServiceHandlerChain> getHandlerChain() {
         return handlerChains;
     }
 
     /**
-     *@return true if this endpoint has at least one handler chain
+     * @return true if this endpoint has at least one handler chain
      */
+    @Override
     public boolean hasHandlerChain() {
-        return ( handlerChains.size() > 0 );
+        return (handlerChains.size() > 0);
     }
 
     /**
      * Append handlerchain to end of handlerchain for this endpoint.
      */
+    @Override
     public void addHandlerChain(WebServiceHandlerChain handlerChain) {
         handlerChains.addLast(handlerChain);
 
@@ -657,146 +645,123 @@ public class WebServiceEndpoint extends Descriptor
     //
 
     public boolean hasEndpointAddressUri() {
-        return (endpointAddressUri != null);
+        return endpointAddressUri != null;
     }
 
     public void setEndpointAddressUri(String uri) {
-        if(!uri.startsWith("/")) {
-            uri = "/"+uri;
+        if (!uri.startsWith("/")) {
+            uri = "/" + uri;
         }
         endpointAddressUri = uri;
-
     }
 
     public String getEndpointAddressUri() {
         if (implementedByEjbComponent() && !hasEndpointAddressUri()) {
             setEndpointAddressUri("/" + getWebService().getName() + "/" + getEndpointName());
         }
+        
         return endpointAddressUri;
     }
 
     public boolean isSecure() {
-        return ( hasTransportGuarantee() &&
-                (transportGuarantee.equals(TRANSPORT_INTEGRAL) ||
-                        transportGuarantee.equals(TRANSPORT_CONFIDENTIAL)) );
+        return (hasTransportGuarantee() && (transportGuarantee.equals(TRANSPORT_INTEGRAL) || transportGuarantee.equals(TRANSPORT_CONFIDENTIAL)));
     }
 
     /**
-     * Given the root portion of a URL representing the <protocol>:<host>:<port>
-     * of the webserver, return the endpoint address used to make web
-     * service invocations on this endpoint.
+     * Given the root portion of a URL representing the <protocol>:<host>:<port> of the webserver, return the endpoint
+     * address used to make web service invocations on this endpoint.
      */
-    public URL composeEndpointAddress(URL root)
-            throws MalformedURLException  {
-
+    public URL composeEndpointAddress(URL root) throws MalformedURLException {
         return composeEndpointAddress(root, null);
     }
 
-
-    public URL composeEndpointAddress(URL root, String contextRoot)
-            throws MalformedURLException  {
-
-        String uri = getEndpointAddressPath(contextRoot);
-        return new URL(root.getProtocol(), root.getHost(), root.getPort(), uri);
+    public URL composeEndpointAddress(URL root, String contextRoot) throws MalformedURLException {
+        return new URL(root.getProtocol(), root.getHost(), root.getPort(), getEndpointAddressPath(contextRoot));
     }
 
-    public String getEndpointAddressPath(){
+    public String getEndpointAddressPath() {
         return getEndpointAddressPath(null);
     }
 
     /**
-     * return the endpoint address path (without http://<host>:<port>)
-     * used to make web service invocations on this endpoint .
+     * return the endpoint address path (without http://<host>:<port>) used to make web service invocations on this endpoint
+     * .
      */
     private String getEndpointAddressPath(String cr) {
         String uri = null;
+        
         // Compose file portion of URL depending on endpoint type.
         // The file portion of the URL MUST have a single leading slash.
         // Note that the context root and the endpoint address uri strings
         // from the descriptors may or may not each have a leading slash.
-        if( implementedByWebComponent() ) {
+        if (implementedByWebComponent()) {
             if (endpointAddressUri == null) {
                 updateServletEndpointRuntime();
             }
 
-            // for servlets, endpoint address uri is relative to
+            // For servlets, endpoint address uri is relative to
             // web app context root.
-            WebBundleDescriptor webBundle =
-                    webComponentImpl.getWebBundleDescriptor();
-            String contextRoot = (cr == null)?webBundle.getContextRoot():cr;
+            WebBundleDescriptor webBundle = webComponentImpl.getWebBundleDescriptor();
+            String contextRoot = (cr == null) ? webBundle.getContextRoot() : cr;
 
-            if( contextRoot != null ) {
-                if( !contextRoot.startsWith("/") ) {
+            if (contextRoot != null) {
+                if (!contextRoot.startsWith("/")) {
                     contextRoot = "/" + contextRoot;
                 }
 
-                uri = contextRoot +
-                        (endpointAddressUri.startsWith("/") ?
-                                endpointAddressUri : ("/" + endpointAddressUri));
+                uri = contextRoot + (endpointAddressUri.startsWith("/") ? endpointAddressUri : ("/" + endpointAddressUri));
             }
         } else {
-            //If implemented by EJB Component, it will have a default standard endpointAddressUri
+            // If implemented by EJB Component, it will have a default standard endpointAddressUri
             return getEndpointAddressUri();
         }
         return uri;
     }
 
     /**
-     * Generate a URL pointing to the initial wsdl document for this
-     * endpoint's web service.
+     * Generate a URL pointing to the initial wsdl document for this endpoint's web service.
      */
     public URL composeFinalWsdlUrl(URL root) throws MalformedURLException {
 
         // WSDL for this webservice is published in a subcontext created
-        // under the endpoint address uri.  The hierarchy under there mirrors
+        // under the endpoint address uri. The hierarchy under there mirrors
         // the structure of the module file in which this endpoint's
-        // webservice is defined.  This allows easy retrieval of the wsdl
+        // webservice is defined. This allows easy retrieval of the wsdl
         // content using jar URLs.
         URL context = composeEndpointAddress(root);
-        String mainFile = context.getFile() + "/" +
-                PUBLISHING_SUBCONTEXT + "/" + webService.getWsdlFileUri();
-        URL finalWsdlUrl = new URL(context.getProtocol(), context.getHost(),
-                context.getPort(), mainFile);
+        String mainFile = context.getFile() + "/" + PUBLISHING_SUBCONTEXT + "/" + webService.getWsdlFileUri();
+        URL finalWsdlUrl = new URL(context.getProtocol(), context.getHost(), context.getPort(), mainFile);
+        
         return finalWsdlUrl;
     }
 
     /**
-     * This is the logical equivalent to endpoint address uri, but for
-     * url publishing.  Like endpoint address uri, it does not include the
-     * context root for servlet endpoints.
+     * This is the logical equivalent to endpoint address uri, but for url publishing. Like endpoint address uri, it does
+     * not include the context root for servlet endpoints.
      *
      * @return publishing uri without a leading or trailing slash.
      */
     public String getPublishingUri() {
-
-        String uri = endpointAddressUri.startsWith("/") ?
-                endpointAddressUri.substring(1) : endpointAddressUri;
+        String uri = endpointAddressUri.startsWith("/") ? endpointAddressUri.substring(1) : endpointAddressUri;
 
         return uri + "/" + PUBLISHING_SUBCONTEXT;
     }
 
     /**
-     * Checks an ejb request uri to see if it represents a legal request
-     * for the wsdl content associated with this endpoint's web service.
-     * Equivalent matching for servlets is performed automatically by the
-     * web server.  Should only be called for HTTP(S) GET.
+     * Checks an ejb request uri to see if it represents a legal request for the wsdl content associated with this
+     * endpoint's web service. Equivalent matching for servlets is performed automatically by the web server. Should only be
+     * called for HTTP(S) GET.
      */
-    public boolean matchesEjbPublishRequest(String requestUriRaw, String query)
-    {
+    public boolean matchesEjbPublishRequest(String requestUriRaw, String query) {
         // Strip off leading slash.
-        String requestUri = (requestUriRaw.charAt(0) == '/') ?
-                requestUriRaw.substring(1) : requestUriRaw;
+        String requestUri = (requestUriRaw.charAt(0) == '/') ? requestUriRaw.substring(1) : requestUriRaw;
 
         boolean matches = false;
 
         // If request of form http<s>://<host>:<port>/<endpoint-address>?WSDL
-        if( query != null ) {
-            String toMatch = (endpointAddressUri.charAt(0) == '/') ?
-                    endpointAddressUri.substring(1) : endpointAddressUri;
-            matches = requestUri.equals(toMatch) &&
-                    (query.equalsIgnoreCase("WSDL") ||
-                            query.startsWith("xsd=") ||
-                            query.startsWith("wsdl="));
+        if (query != null) {
+            String toMatch = (endpointAddressUri.charAt(0) == '/') ? endpointAddressUri.substring(1) : endpointAddressUri;
+            matches = requestUri.equals(toMatch) && (query.equalsIgnoreCase("WSDL") || query.startsWith("xsd=") || query.startsWith("wsdl="));
         } else {
             // Add trailing slash to make sure sub context is an exact match.
             String publishingUri = getPublishingUri() + "/";
@@ -807,39 +772,34 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     /**
-     *@return the portion of a request uri that represents the location
-     * of wsdl content within a module or null if this request is invalid.
-     * Returned value does not have leading slash.
+     * @return the portion of a request uri that represents the location of wsdl content within a module or null if this
+     * request is invalid. Returned value does not have leading slash.
      */
     public String getWsdlContentPath(String requestUri) {
 
         // Strip off leading slash.
-        String uri = (requestUri.charAt(0) == '/') ? requestUri.substring(1) :
-                requestUri;
+        String uri = (requestUri.charAt(0) == '/') ? requestUri.substring(1) : requestUri;
 
-        // get "raw" internal publishing uri.  this value
+        // get "raw" internal publishing uri. this value
         // does NOT have a leading slash.
         String publishingUriRaw = getPublishingUri();
 
-        // Construct the publishing root.  This should NOT have a
+        // Construct the publishing root. This should NOT have a
         // leading slash but SHOULD have a trailing slash.
         String publishingRoot = null;
 
-        if( implementedByWebComponent() ) {
-            WebBundleDescriptor webBundle =
-                    webComponentImpl.getWebBundleDescriptor();
+        if (implementedByWebComponent()) {
+            WebBundleDescriptor webBundle = webComponentImpl.getWebBundleDescriptor();
             String contextRoot = webBundle.getContextRoot();
-            if( contextRoot.startsWith("/") ) {
+            if (contextRoot.startsWith("/")) {
                 contextRoot = contextRoot.substring(1);
             }
-            publishingRoot = contextRoot + "/" +
-                    publishingUriRaw + "/";
+            publishingRoot = contextRoot + "/" + publishingUriRaw + "/";
         } else {
             publishingRoot = publishingUriRaw + "/";
         }
 
-        String wsdlPath = uri.startsWith(publishingRoot) ?
-                uri.substring(publishingRoot.length()) : null;
+        String wsdlPath = uri.startsWith(publishingRoot) ? uri.substring(publishingRoot.length()) : null;
 
         return wsdlPath;
     }
@@ -847,7 +807,6 @@ public class WebServiceEndpoint extends Descriptor
     // Set to null to indicate "no authentication"
     public void setAuthMethod(String authType) {
         authMethod = authType;
-
     }
 
     public String getAuthMethod() {
@@ -855,17 +814,15 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public boolean hasAuthMethod() {
-        return (authMethod != null);
+        return authMethod != null;
     }
 
     public boolean hasBasicAuth() {
-        return ( (authMethod != null) &&
-                (authMethod.equals(HttpServletRequest.BASIC_AUTH)) );
+        return authMethod != null && authMethod.equals(BASIC_AUTH);
     }
 
     public boolean hasClientCertAuth() {
-        return ( (authMethod != null) &&
-                (authMethod.equals(CLIENT_CERT)) );
+        return authMethod != null && authMethod.equals(CLIENT_CERT);
     }
 
     public void setRealm(String realm) {
@@ -879,7 +836,6 @@ public class WebServiceEndpoint extends Descriptor
     // Set to NONE or null to indicate no transport guarantee
     public void setTransportGuarantee(String guarantee) {
         transportGuarantee = guarantee;
-
     }
 
     public String getTransportGuarantee() {
@@ -887,21 +843,19 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public boolean hasTransportGuarantee() {
-        return (transportGuarantee != null);
+        return transportGuarantee != null;
     }
 
     public void setServiceNamespaceUri(String uri) {
         serviceNamespaceUri = uri;
-
     }
 
     public void setServiceLocalPart(String localpart) {
         serviceLocalPart = localpart;
-
     }
 
     public boolean hasServiceName() {
-        return ((serviceNamespaceUri != null) && (serviceLocalPart != null));
+        return serviceNamespaceUri != null && serviceLocalPart != null;
     }
 
     /**
@@ -910,21 +864,17 @@ public class WebServiceEndpoint extends Descriptor
     public QName getServiceName() {
         // NOTE : Here we do not return getWsdlService to maintain backward
         // compatibility with JAXRPC 1.X
-        return hasServiceName() ?
-                new QName(serviceNamespaceUri, serviceLocalPart) :
-                null;
+        return hasServiceName() ? new QName(serviceNamespaceUri, serviceLocalPart) : null;
     }
 
     /**
-     * Store current contents of servlet impl class in a runtime descriptor
-     * element. The standard deployment descriptor element will be replaced at
-     * deployment time with a container-provided servlet impl, so we need
-     * to make a copy of this value in the runtime information.
+     * Store current contents of servlet impl class in a runtime descriptor element. The standard deployment descriptor
+     * element will be replaced at deployment time with a container-provided servlet impl, so we need to make a copy of this
+     * value in the runtime information.
      */
     public void saveServletImplClass() {
-        if( implementedByWebComponent() ) {
-            servletImplClass = ((WebComponentDescriptor) webComponentImpl).
-                    getWebComponentImplementation();
+        if (implementedByWebComponent()) {
+            servletImplClass = webComponentImpl.getWebComponentImplementation();
         } else {
             throw new IllegalStateException("requires ejb");
         }
@@ -932,7 +882,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public boolean hasServletImplClass() {
-        return (servletImplClass != null);
+        return servletImplClass != null;
     }
 
     public void setServletImplClass(String implClass) {
@@ -945,7 +895,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public boolean hasTieClassName() {
-        return (tieClassName != null);
+        return tieClassName != null;
     }
 
     public void setTieClassName(String tieClass) {
@@ -965,7 +915,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public void addProperty(NameValuePairDescriptor newProp) {
-        if (props==null) {
+        if (props == null) {
             props = new ArrayList();
         }
         props.add(newProp);
@@ -980,14 +930,15 @@ public class WebServiceEndpoint extends Descriptor
 
     private void updateServletEndpointRuntime() {
 
-        //An endpoint might have been loaded off a jar file. In that case the WebFragmentDescriptor can be stale. So patch it
-        WebComponentDescriptor wc = ((WebBundleDescriptor)webService.getBundleDescriptor()).getWebComponentByCanonicalName(webComponentImpl.getCanonicalName());
-        if(!(wc == webComponentImpl)){
+        // An endpoint might have been loaded off a jar file. In that case the WebFragmentDescriptor can be stale. So patch it
+        WebComponentDescriptor wc = ((WebBundleDescriptor) webService.getBundleDescriptor())
+                .getWebComponentByCanonicalName(webComponentImpl.getCanonicalName());
+        if (!(wc == webComponentImpl)) {
             setWebComponentImpl(wc);
         }
 
         // Copy the value of the servlet impl bean class into
-        // the runtime information.  This way, we'll still
+        // the runtime information. This way, we'll still
         // remember it after the servlet-class element has been
         // replaced with the name of the container's servlet class.
         saveServletImplClass();
@@ -995,19 +946,16 @@ public class WebServiceEndpoint extends Descriptor
         WebBundleDescriptor bundle = webComponentImpl.getWebBundleDescriptor();
 
         WebServicesDescriptor webServices = bundle.getWebServices();
-        Collection endpoints =
-                webServices.getEndpointsImplementedBy(webComponentImpl);
+        Collection endpoints = webServices.getEndpointsImplementedBy(webComponentImpl);
 
-        if( endpoints.size() > 1 ) {
-            String msg = "Servlet " + getWebComponentLink() +
-                    " implements " + endpoints.size() + " web service endpoints " +
-                    " but must only implement 1";
+        if (endpoints.size() > 1) {
+            String msg = "Servlet " + getWebComponentLink() + " implements " + endpoints.size() + " web service endpoints " + " but must only implement 1";
             throw new IllegalStateException(msg);
         }
 
-        if( getEndpointAddressUri() == null ) {
+        if (getEndpointAddressUri() == null) {
             Set urlPatterns = webComponentImpl.getUrlPatternsSet();
-            if( urlPatterns.size() == 1 ) {
+            if (urlPatterns.size() == 1) {
 
                 // Set endpoint-address-uri runtime info to uri.
                 // Final endpoint address will still be relative to context root
@@ -1017,31 +965,22 @@ public class WebServiceEndpoint extends Descriptor
                 // Set transport guarantee in runtime info if transport
                 // guarantee is INTEGRAL or CONDIFIDENTIAL for any
                 // security constraint with this url-pattern.
-                Collection constraints =
-                        bundle.getSecurityConstraintsForUrlPattern(uri);
-                for(Iterator i = constraints.iterator(); i.hasNext();) {
+                Collection constraints = bundle.getSecurityConstraintsForUrlPattern(uri);
+                for (Iterator i = constraints.iterator(); i.hasNext();) {
                     SecurityConstraint next = (SecurityConstraint) i.next();
 
-                    UserDataConstraint dataConstraint =
-                            next.getUserDataConstraint();
-                    String guarantee = (dataConstraint != null) ?
-                            dataConstraint.getTransportGuarantee() : null;
+                    UserDataConstraint dataConstraint = next.getUserDataConstraint();
+                    String guarantee = (dataConstraint != null) ? dataConstraint.getTransportGuarantee() : null;
 
-                    if( (guarantee != null) &&
-                            ( guarantee.equals
-                                    (UserDataConstraint.INTEGRAL_TRANSPORT) ||
-                                    guarantee.equals
-                                            (UserDataConstraint.CONFIDENTIAL_TRANSPORT) ) ) {
+                    if ((guarantee != null)
+                            && (guarantee.equals(UserDataConstraint.INTEGRAL_TRANSPORT) || guarantee.equals(UserDataConstraint.CONFIDENTIAL_TRANSPORT))) {
                         setTransportGuarantee(guarantee);
                         break;
                     }
                 }
             } else {
-                String msg = "Endpoint " + getEndpointName() +
-                        " has not been assigned an endpoint address " +
-                        " and is associated with servlet " +
-                        webComponentImpl.getCanonicalName() + " , which has " +
-                        urlPatterns.size() + " url patterns";
+                String msg = "Endpoint " + getEndpointName() + " has not been assigned an endpoint address " + " and is associated with servlet "
+                        + webComponentImpl.getCanonicalName() + " , which has " + urlPatterns.size() + " url patterns";
                 throw new IllegalStateException(msg);
             }
         }
@@ -1049,22 +988,23 @@ public class WebServiceEndpoint extends Descriptor
 
     public String getSoapAddressPrefix() {
         WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
-        if (dolSupport!=null) {
+        if (dolSupport != null) {
             return dolSupport.getSoapAddressPrefix(protocolBinding);
         }
         // anything else should be soap11
         return "so`ap";
     }
 
+    @Override
     public void print(StringBuilder toStringBuilder) {
         super.print(toStringBuilder);
         toStringBuilder.append("\n endpoint name = ").append(endpointName);
-        toStringBuilder.append( "\n endpoint intf = ").append(serviceEndpointInterface);
-        toStringBuilder.append( "\n wsdl Port = ").append(wsdlPort);
-        toStringBuilder.append( "\n wsdl Addressing = ").append(addressing);
-        toStringBuilder.append( "\n wsdl RespectBinding = ").append(respectBinding);
-        toStringBuilder.append( "\n ejb Link = ").append(ejbLink);
-        toStringBuilder.append( "\n web Link = ").append(webComponentLink);
+        toStringBuilder.append("\n endpoint intf = ").append(serviceEndpointInterface);
+        toStringBuilder.append("\n wsdl Port = ").append(wsdlPort);
+        toStringBuilder.append("\n wsdl Addressing = ").append(addressing);
+        toStringBuilder.append("\n wsdl RespectBinding = ").append(respectBinding);
+        toStringBuilder.append("\n ejb Link = ").append(ejbLink);
+        toStringBuilder.append("\n web Link = ").append(webComponentLink);
     }
 
 }

@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.*;
 import java.net.ConnectException;
@@ -414,10 +415,26 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             File syncdir = new File(instanceDir, sr.dir);
             if (logger.isLoggable(Level.FINER))
                 logger.finer("Sync directory: " + syncdir);
-            // _synchronize-files takes a single operand of type File
+
+            // Determine if this is a docker node
+            boolean dockerNode = false;
+            File nodePropertiesFile = getServerDirs().getNodePropertiesFile();
+
+            if (nodePropertiesFile.exists()) {
+                Properties nodeProperties = getNodeProperties(nodePropertiesFile);
+                dockerNode = Boolean.valueOf(nodeProperties.getProperty(CLIConstants.K_DOCKER_NODE, "false"));
+            }
+
+            // _synchronize-files takes a single operand of type File, though when working with files a hidden
+            // "upload" parameter option gets added
             // Note: we throw the output away to avoid printing a blank line
-            syncCmd.executeAndReturnOutput("_synchronize-files",
-                tempFile.getPath());
+            if (dockerNode) {
+                syncCmd.executeAndReturnOutput("_synchronize-files", "--upload=true",
+                        tempFile.getPath());
+            } else {
+                syncCmd.executeAndReturnOutput("_synchronize-files",
+                        tempFile.getPath());
+            }
 
             // the returned files are automatically saved by the command
         } catch (IOException ex) {

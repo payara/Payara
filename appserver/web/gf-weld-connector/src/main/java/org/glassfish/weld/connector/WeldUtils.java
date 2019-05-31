@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -175,7 +175,7 @@ public class WeldUtils {
         boolean result = false;
 
         // Archives with extensions are not candidates for implicit bean discovery
-        if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
+        if (archive != null && !archive.exists(META_INF_SERVICES_EXTENSION)) {
           result = isImplicitBeanArchive(context, archive.getURI());
         }
 
@@ -477,7 +477,7 @@ public class WeldUtils {
 
         return types;
     }
-    
+
     public static int getPreLoaderThreads() {
         int result = 0;
         // Check the "global" configuration
@@ -490,9 +490,9 @@ public class WeldUtils {
         }
 
         return result;
-        
+
     }
-    
+
     public static boolean isConcurrentDeploymentEnabled() {
         boolean result = false;
         // Check the "global" configuration
@@ -505,7 +505,7 @@ public class WeldUtils {
         }
 
         return result;
-        
+
     }
 
 
@@ -523,7 +523,7 @@ public class WeldUtils {
 
         return result;
     }
-    
+
     public static boolean isImplicitBeanDiscoveryEnabled(DeploymentContext context) {
         boolean result = false;
 
@@ -547,11 +547,11 @@ public class WeldUtils {
         Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
         return propValue != null && Boolean.parseBoolean((String) propValue);
     }
-    
+
     public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
        context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
     }
-    
+
   public static InputStream getBeansXmlInputStream(DeploymentContext context) {
     return getBeansXmlInputStream( context.getSource() );
   }

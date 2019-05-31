@@ -39,20 +39,24 @@
   holder.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
-    
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>fish.payara.ejb.http</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-http-client</artifactId>
 
     <name>EJB - HTTP Client</name>
     <description>
-        Module providing support for the EJB HTTP Client. This contains an InitialContext based lookup mechanism that uses HTTP calls back
-        to Payara to lookup EJB beans, as well as a proxy mechanism to invoke methods on an EJB, which will be sent via HTTP all well
+        Module providing support for the EJB HTTP Client. This contains an InitialContext based lookup mechanism that
+        uses HTTP calls back
+        to Payara to lookup EJB beans, as well as a proxy mechanism to invoke methods on an EJB, which will be sent via
+        HTTP all well
         to Payara.
     </description>
 
@@ -61,13 +65,24 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <inherited>true</inherited>
-                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>manifest</id>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <instructions>
-                        <Export-Package>fish.payara.ejb.http.client.*;version=${project.version}</Export-Package>
-                    </instructions>
-                    <unpackBundle>true</unpackBundle>
+                    <archive>
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
@@ -98,7 +113,7 @@
         </plugins>
     </build>
 
-   <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
@@ -110,6 +125,18 @@
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
@@ -130,6 +157,11 @@
         <dependency>
             <groupId>javax.json.bind</groupId>
             <artifactId>javax.json.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 </project>

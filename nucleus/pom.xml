@@ -54,7 +54,7 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.192-SNAPSHOT</version>
+    <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.192-SNAPSHOT</tag>
+        <tag>payara-server-5.193-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -262,7 +262,7 @@
         <!-- JAX-RS -->
         <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.29.payara-p1</jersey.version>
+        <jersey.version>2.29.payara-p2</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -308,7 +308,7 @@
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.0.1.payara-p1</pfl.version>
+        <pfl.version>4.0.2.payara-p1</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
@@ -1402,8 +1402,8 @@ Parent is ${project.parent}</echo>
                 <version>${jaxb-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-osgi</artifactId>
                 <version>${jaxb-impl.version}</version>
             </dependency>
         </dependencies>

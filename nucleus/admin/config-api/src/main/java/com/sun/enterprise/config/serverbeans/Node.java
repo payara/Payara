@@ -202,6 +202,22 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
 
     void setSshConnector(SshConnector connector);
 
+    @Attribute
+    String getDockerPasswordFile();
+    void setDockerPasswordFile(String dockerPasswordFile);
+
+    @Attribute
+    String getDockerImage();
+    void setDockerImage(String dockerImage);
+
+    @Attribute(defaultValue = "2376", dataType = Integer.class)
+    String getDockerPort();
+    void setDockerPort(String dockerPort);
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getUseTls();
+    void setUseTls(String value);
+
     /**
      * Returns the install dir with separators as forward slashes.  This is needed to run commands
      * over SSH tools on Windows where the backslashes are interpruted as escape chars.
@@ -316,6 +332,10 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             if (nodeHost == null || nodeHost.length() == 0) {
                 return false;
             }
+            // Although the Docker container may be local to this machine, it's not truly "local"
+            if (node.getType().equals("DOCKER")) {
+                return false;
+            }
             return NetUtils.isThisHostLocal(nodeHost);
         }
 
@@ -365,6 +385,14 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
         String sshkeypassphrase;
         @Param(name = "windowsdomain", optional = true)
         String windowsdomain;
+        @Param(name = "dockerPasswordFile", alias = "dockerpasswordfile", optional = true)
+        String dockerPasswordFile;
+        @Param(name = "dockerImage", alias = "dockerimage", optional = true)
+        String dockerImage;
+        @Param(name = "dockerPort", alias = "dockerport", optional = true)
+        Integer dockerPort;
+        @Param(name = "useTls", alias = "usetls", optional = true)
+        Boolean useTls;
         @Inject
         ServiceLocator habitat;
         @Inject
@@ -418,6 +446,26 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
             if (type.equals("CONFIG"))
                 return;
 
+            if (type.equals("DOCKER")) {
+                if (StringUtils.ok(dockerPasswordFile)) {
+                    instance.setDockerPasswordFile(dockerPasswordFile);
+                }
+
+                if (StringUtils.ok(dockerImage)) {
+                    instance.setDockerImage(dockerImage);
+                }
+
+                if (dockerPort != null) {
+                    instance.setDockerPort(Integer.toString(dockerPort));
+                }
+
+                if (useTls != null) {
+                    instance.setUseTls(useTls.toString());
+                }
+
+                return;
+            }
+
             SshConnector sshC = instance.createChild(SshConnector.class);
 
             SshAuth sshA = sshC.createChild(SshAuth.class);
@@ -462,8 +510,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
         private ServerEnvironment env;
 
         @Override
-        public void decorate(AdminCommandContext context, Nodes parent, Node child) throws
-                PropertyVetoException, TransactionFailure {
+        public void decorate(AdminCommandContext context, Nodes parent, Node child) throws TransactionFailure {
             Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Node.class);
             String nodeName = child.getName();
