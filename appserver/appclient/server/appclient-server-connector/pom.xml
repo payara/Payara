@@ -52,7 +52,7 @@
     </parent>
 
     <groupId>fish.payara.appclient.server</groupId>
-    <artifactId>appclient-connector</artifactId>
+    <artifactId>appclient-server-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>Payara App Client - Server-Side Connector</name>

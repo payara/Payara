@@ -58,7 +58,7 @@
     <name>Payara App Client - Server-Side Modules</name>  
 
     <modules>
-       <module>appclient-connector</module>
+       <module>appclient-server-connector</module>
        <module>appclient-server-core</module>
        <module>appclient-server-core-l10n</module>
     </modules>

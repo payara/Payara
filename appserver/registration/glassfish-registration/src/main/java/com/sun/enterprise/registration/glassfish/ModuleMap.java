@@ -192,7 +192,7 @@ public class ModuleMap {
                 put("fish.payara.admingui.dataprovider", 133);
                 put("fish.payara.appclient.client.payara-client-config", 134);
                 put("fish.payara.appclient.client.payara-client-module", 135);
-                put("fish.payara.appclient.server.appclient-connector", 136);
+                put("fish.payara.appclient.server.appclient-server-connector", 136);
                 put("fish.payara.appclient.server.appclient-server-core", 137);
                 put("org.glassfish.main.cluster.admin", 138);
                 put("org.glassfish.main.cluster.cli", 139);

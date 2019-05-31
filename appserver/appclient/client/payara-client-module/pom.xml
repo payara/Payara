@@ -393,7 +393,7 @@
         -->
         <dependency>
             <groupId>fish.payara.appclient.server</groupId>
-            <artifactId>appclient-connector</artifactId>
+            <artifactId>appclient-server-connector</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
