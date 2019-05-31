@@ -46,6 +46,7 @@ import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import javax.inject.Inject;
@@ -66,6 +67,7 @@ import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.ExternalTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -279,12 +281,9 @@ public class LocalOSGiShellCommand extends CLICommand {
                     }
                 };
 
-                  Terminal osgiShellTerminal = TerminalBuilder.builder()
-                        .streams(new FileInputStream(file), out)
-                        .system(false)
-                        .name(ASADMIN)
-                        .build();
-                
+                Terminal osgiShellTerminal = new ExternalTerminal(REMOTE_COMMAND, "",
+                        new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
+
                 reader = LineReaderBuilder.builder()
                         .terminal(osgiShellTerminal)
                         .appName(REMOTE_COMMAND)

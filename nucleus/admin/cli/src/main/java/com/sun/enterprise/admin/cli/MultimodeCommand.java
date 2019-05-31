@@ -66,6 +66,7 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.ExternalTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -179,12 +180,8 @@ public class MultimodeCommand extends CLICommand {
                     }
                 };
 
-                Terminal asadminTerminal = TerminalBuilder.builder()
-                        .streams(new FileInputStream(file), out)
-                        .system(false)
-                        .encoding(encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())
-                        .name(ASADMIN)
-                        .build();
+                Terminal asadminTerminal = new ExternalTerminal(ASADMIN, "",
+                        new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
                 
                 reader = LineReaderBuilder.builder()
                         .terminal(asadminTerminal)
@@ -196,10 +193,16 @@ public class MultimodeCommand extends CLICommand {
         } catch (IOException e) {
             throw new CommandException(e);
         } finally {
-            closeTerminal();
+            try {
+                if (file != null && reader != null && reader.getTerminal() != null) {
+                    reader.getTerminal().close();
+                }
+            } catch (Exception e) {
+                // ignore it
+            }
         }
     }
-    
+
     private static void atomicReplace(ServiceLocator locator, ProgramOptions options) {
         DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
