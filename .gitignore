@@ -25,3 +25,4 @@ appserver/extras/arquillian-containers/payara-common/dependency-reduced-pom.xml
 appserver/tests/quicklook/quicklook_summary.txt
 **/nbproject
 .flattened-pom.xml
+temp/
