@@ -292,13 +292,13 @@
                         <spec>
                             <artifact>
                                 <groupId>com.sun.mail</groupId>
-                                <artifactId>javax.mail</artifactId>
+                                <artifactId>jakarta.mail</artifactId>
                                 <version>${mail.version}</version>
                             </artifact>
                             <jarType>impl</jarType>
                             <specVersion>1.6</specVersion>
                             <implVersion>${mail.version}</implVersion>
-                            <apiPackage>javax.mail</apiPackage>
+                            <apiPackage>jakarta.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>
 
