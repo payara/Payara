@@ -340,8 +340,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack 
-    //"There's nothing more permanent than a temporary solution" - Russian Proverb
     protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
         Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
