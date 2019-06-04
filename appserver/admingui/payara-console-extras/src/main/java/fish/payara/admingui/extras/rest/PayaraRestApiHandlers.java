@@ -220,7 +220,7 @@ public class PayaraRestApiHandlers {
             Map attrMap = new HashMap();
             attrMap.put("componentname", encodedComponentName);
             Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
-            Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+            Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
             if(payaraEndpointsExtraProps.get("endpoints") != null) {
@@ -270,7 +270,7 @@ public class PayaraRestApiHandlers {
                 Map attrMap = new HashMap();
                 attrMap.put("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
@@ -318,7 +318,7 @@ public class PayaraRestApiHandlers {
                 String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
                 Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
                 List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
                 for (Map property : properties) {
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
@@ -716,7 +716,7 @@ public class PayaraRestApiHandlers {
         String serverName = "";
        
         try {
-            List<Map> table = RestUtil.buildChildEntityList(
+            List<Map<String, Object>> table = RestUtil.buildChildEntityList(
                     (String)handlerCtx.getInputValue("parentEndpoint"),
                     (String)handlerCtx.getInputValue("childType"),
                     (List)handlerCtx.getInputValue("skipList"),

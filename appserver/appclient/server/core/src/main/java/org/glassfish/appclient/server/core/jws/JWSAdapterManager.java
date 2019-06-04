@@ -187,7 +187,10 @@ public class JWSAdapterManager implements PostConstruct {
      * @param content
      */
     void addStaticSystemContent(final String lookupURI, StaticContent newContent) throws IOException {
-        systemAdapter().addContentIfAbsent(lookupURI, newContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(lookupURI, newContent);
+        }
     }
 
     private static String chooseAlias(final DeploymentContext dc) {
@@ -230,9 +233,12 @@ public class JWSAdapterManager implements PostConstruct {
 
     void addContentIfAbsent(final Map<String,StaticContent> staticContent,
             final Map<String,DynamicContent> dynamicContent) throws IOException {
-        systemAdapter().addContentIfAbsent(staticContent, dynamicContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(staticContent, dynamicContent);
+        }
     }
-    
+
     /**
      * Records the need for signed copies of the GlassFish system JARs for the
      * specified signing alias.

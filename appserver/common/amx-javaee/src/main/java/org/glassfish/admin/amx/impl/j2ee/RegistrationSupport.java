@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.j2ee;
 
@@ -311,25 +312,27 @@ final class RegistrationSupport
         }
         else if (ejbType.equals("Session"))
         {
-            if (ejbSessionType.equals("Stateless"))
+            if ("Stateless".equals(ejbSessionType))
             {
                 intf = StatelessSessionBean.class;
                 impl = StatelessSessionBeanImpl.class;
             }
-            else if (ejbSessionType.equals("Stateful"))
+            else if ("Stateful".equals(ejbSessionType))
             {
                 intf = StatefulSessionBean.class;
                 impl = StatefulSessionBeanImpl.class;
             }
-            else if (ejbSessionType.equals("Singleton")) // EJB 3.1
+            else if ("Singleton".equals(ejbSessionType)) // EJB 3.1
             {
                 intf = SingletonSessionBean.class;
                 impl = SingletonSessionBeanImpl.class;
             }
             else
             {
-                throw new IllegalArgumentException( "Unknown ejbSessionType: " + ejbSessionType + ", expected Stateless or Stateful");
+                throw new IllegalArgumentException("Unknown ejbSessionType: " + ejbSessionType + ", expected Stateless or Stateful");
             }
+        } else {
+            throw new IllegalArgumentException("Unknown ejbType: " + ejbType + ", expected Entity, Message-driven or Session");
         }
 
         return registerJ2EEChild(parentMBean, meta, intf, impl, ejbName);
