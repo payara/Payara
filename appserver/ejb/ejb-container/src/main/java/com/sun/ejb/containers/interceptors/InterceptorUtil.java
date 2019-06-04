@@ -42,30 +42,34 @@ package com.sun.ejb.containers.interceptors;
 
 import java.lang.reflect.Method;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class InterceptorUtil {
 
-    private static final Map<Class<?>, Set<Class<?>>> compatiblePrimitiveWrapper = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Set<Class<?>>> compatiblePrimitiveWrapper = createMapping();
 
-    static {
-        compatiblePrimitiveWrapper.put(byte.class, asSet(Byte.class));
-        compatiblePrimitiveWrapper.put(boolean.class, asSet(Boolean.class));
-        compatiblePrimitiveWrapper.put(char.class, asSet(Character.class));
-        compatiblePrimitiveWrapper.put(double.class, asSet(Byte.class, Short.class, Integer.class, Float.class, Double.class));
-        compatiblePrimitiveWrapper.put(float.class, asSet(Byte.class, Short.class, Integer.class, Float.class));
-        compatiblePrimitiveWrapper.put(int.class, asSet(Byte.class, Short.class, Integer.class));
-        compatiblePrimitiveWrapper.put(long.class, asSet(Byte.class, Short.class, Integer.class, Long.class));
-        compatiblePrimitiveWrapper.put(short.class, asSet(Byte.class, Short.class));
+    static Map<Class<?>, Set<Class<?>>> createMapping() {
+        Map<Class<?>, Set<Class<?>>> mapping = new HashMap<>();
+        mapping.put(byte.class, asSet(Byte.class));
+        mapping.put(boolean.class, asSet(Boolean.class));
+        mapping.put(char.class, asSet(Character.class));
+        mapping.put(double.class, asSet(Byte.class, Short.class, Integer.class, Float.class, Double.class));
+        mapping.put(float.class, asSet(Byte.class, Short.class, Integer.class, Float.class));
+        mapping.put(int.class, asSet(Byte.class, Short.class, Integer.class));
+        mapping.put(long.class, asSet(Byte.class, Short.class, Integer.class, Long.class));
+        mapping.put(short.class, asSet(Byte.class, Short.class));
+        return Collections.unmodifiableMap(mapping);
     }
 
     private static Set<Class<?>> asSet(Class<?>... classes) {
-        Set<Class<?>> set = ConcurrentHashMap.newKeySet(classes.length);
+        Set<Class<?>> set = new HashSet<>(classes.length);
         for (Class<?> c : classes) {
             set.add(c);
         }
-        return set;
+        return Collections.unmodifiableSet(set);
     }
 
     public static boolean hasCompatiblePrimitiveWrapper(Class<?> type, Class<?> typeTo) {
