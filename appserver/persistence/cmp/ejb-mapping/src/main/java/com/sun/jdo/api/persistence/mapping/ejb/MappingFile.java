@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portion Copyright [2018] Payara Foundation and/or affiliates
+// Portion Copyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * MappingFile.java
@@ -85,7 +85,7 @@ public class MappingFile {
 
     private static final String JAVA_TYPE_SET = "java.util.Set"; //NOI18N
     private static final String JAVA_TYPE_COLLECTION = "java.util.Collection"; //NOI18N
-    private static final List types = new ArrayList();
+    private static final List<String> types = new ArrayList<>();
 
     /** Definitive location for a  mapping file in an ejb-jar file. */
     public static final String DEFAULT_LOCATION_IN_EJB_JAR;
@@ -916,7 +916,6 @@ public class MappingFile {
         }
         else {
             CheckVersionOfAccessedInstances versionIns =
-                (CheckVersionOfAccessedInstances)
                 c.getCheckVersionOfAccessedInstances();
 
             if (c.isCheckModifiedAtCommit())
