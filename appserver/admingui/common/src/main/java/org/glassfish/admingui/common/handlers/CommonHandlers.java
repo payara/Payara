@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * CommonHandlers.java
@@ -567,7 +568,7 @@ public class CommonHandlers {
     })
     public static void setValueExpression(HandlerContext handlerCtx) {
         MiscUtil.setValueExpression((String) handlerCtx.getHandler().getInputValue("expression"), 
-                (Object) handlerCtx.getInputValue("value"));
+                handlerCtx.getInputValue("value"));
     }
 
     
@@ -719,7 +720,7 @@ public class CommonHandlers {
 
         // Concurrent acces problems?
         for (Map child : table) {
-            if (value.equals(child.get(key))) {
+            if (value != null && value.equals(child.get(key))) {
                 if (keep) {
                     results.add(child);
                 } else {
@@ -850,7 +851,7 @@ public class CommonHandlers {
 	if (pageSession == null) {
 	    pageSession = PageSessionResolver.createPageSession(ctx, root);
 	}
-        String request = (String) ctx.getExternalContext().getRequestParameterMap().get("bare");
+        String request = ctx.getExternalContext().getRequestParameterMap().get("bare");
 	if (request != null) {
 	    // It was specified, use this.
 	    if (request.equalsIgnoreCase("true")) {

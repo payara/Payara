@@ -269,7 +269,7 @@ public class GuiUtil {
 
     public static void setTimeStamp() throws Exception {
         File f = getTimeStampFile();
-        if (!f.createNewFile()) {
+        if (f != null && !f.createNewFile()) {
             f.setLastModified(System.currentTimeMillis());
         }
 
