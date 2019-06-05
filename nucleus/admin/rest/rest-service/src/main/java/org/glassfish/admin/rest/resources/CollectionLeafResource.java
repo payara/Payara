@@ -323,27 +323,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack
     private Map<String, String> processData(Map<String, String> data) {
-        Map<String, String> results = new HashMap<String, String>();
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
-                results.put(key, entry.getValue());
-            } else {
-                options.append(sep).append(entry.getKey());
-
-                String value = entry.getValue();
-                if (value != null && !value.isEmpty() || key != null && key.startsWith("-D")) {
-                    options.append("=").append(entry.getValue());
-                }
-                sep = ":";
-            }
-        }
-
-        results.put("id", options.toString());
+        Map<String, String> results = ResourceUtil.processJvmOptions(data);
         if (results.get("target") == null) {
             results.put("target", target);
         }

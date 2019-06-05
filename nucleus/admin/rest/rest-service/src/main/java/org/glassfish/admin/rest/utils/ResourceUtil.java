@@ -451,10 +451,8 @@ public class ResourceUtil {
                     // can't be found via the method above.  For example: for
                     // Ssl.getSSLInactivityTimeout(), we calculate getSslInactivityTimeout,
                     // which doesn't match due to case.
-                    String booleanMethodName = getAttributeBooleanMethodName(attributeName);
                     for (Method m : configBeanProxy.getMethods()) {
-                        if (m.getName().equalsIgnoreCase(methodName)
-                                || m.getName().equalsIgnoreCase(booleanMethodName)) {
+                        if (m.getName().equalsIgnoreCase(methodName)) {
                             method = m;
                         }
                     }
@@ -813,10 +811,6 @@ public class ResourceUtil {
 
     public static String getAttributeMethodName(String attributeName) {
         return methodNameFromDtdName(attributeName, "get");
-    }
-    
-    public static String getAttributeBooleanMethodName(String attributeName) {
-        return methodNameFromDtdName(attributeName, "is");
     }
 
     private static String split(String lookback, String lookahead) {
@@ -1185,5 +1179,56 @@ public class ResourceUtil {
             AccessController.doPrivileged(
                     new PrivilegedLookup<AuthorizationService>(habitat, AuthorizationService.class));
         return authorizationSvc.isAuthorized(subject, new URI("admin", resource, null), action);
+    }
+
+    /**
+     * Creates a new rearranged map of JVM options. Options {@code target} and {@code profiler} are forwarded 1:1. All
+     * other options are joined in the result map for key {@code id} and are separated by semi-colon.
+     *
+     * An input key may include a value. In such case key and value are divided by an equals sign: {@code key=value}. In
+     * case of an empty value the key may end with an equals sign: {@code key=}. If the value is given as part of the
+     * key the input value should be empty or {@code null}. A value may itself contain equals signs.
+     *
+     * Keys ending with a backslash the backslash is stripped away. This is a backwards compatibility behaviour
+     * addressing remains of escaped equals sign that isn't properly unescaped prior to splitting in all path.
+     *
+     * The resulting option only uses an equals sign between key and value in case the value is non-empty. This is
+     * independent of whether the value was extracted from the input key or input value.
+     *
+     * @param jvmOptions       a set of jvm options given as key-value pairs, keys are allowed to contain values too
+     * @return a map where most options are joined into one expression for key {@code id}. If existing {@code target}
+     *         and {@code profiler} keys are kept same as in input map.
+     */
+    public static Map<String, String> processJvmOptions(Map<String, String> jvmOptions) {
+        Map<String, String> results = new HashMap<>();
+        StringBuilder options = new StringBuilder();
+        String sep = "";
+        for (Map.Entry<String, String> option : jvmOptions.entrySet()) {
+            String key = option.getKey();
+            if ("target".equals(key) || "profiler".equals(key)) {
+                results.put(key, option.getValue());
+            } else if (key != null && !key.trim().isEmpty()) {
+                int endOfKey = key.indexOf('=');
+                String value = null;
+                if (endOfKey > 0) {
+                    value = key.substring(endOfKey + 1);
+                    key = key.substring(0, endOfKey);
+                }
+                if (key.endsWith("\\")) {
+                    key = key.substring(0, key.length() - 1);
+                }
+                options.append(sep);
+                options.append(key);
+                if (value == null || value.trim().isEmpty()) {
+                    value = option.getValue();
+                }
+                if (value != null && !value.trim().isEmpty()) {
+                    options.append("=").append(value);
+                }
+                sep = ":";
+            }
+        }
+        results.put("id", options.toString());
+        return results;
     }
 }
