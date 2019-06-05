@@ -328,7 +328,7 @@
         javax.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
-        javax.mail.jar
+        jakarta.mail.jar
         javax.management.j2ee-api.jar
         javax.persistence.jar
         javax.resource-api.jar

@@ -281,7 +281,7 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.2</mail.version>
+        <mail.version>1.6.3</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
@@ -1029,13 +1029,13 @@ Parent is ${project.parent}</echo>
 
             <!-- JavaMail -->
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>${mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
-                <artifactId>javax.mail</artifactId>
+                <artifactId>jakarta.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
 
