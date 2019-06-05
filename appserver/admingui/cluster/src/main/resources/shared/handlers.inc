@@ -57,7 +57,7 @@
         gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
     }
     if ("!#{requestScope.exx}"){
-        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/depployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
+        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
     }
    if (#{requestScope.exx}){
         setAttribute(key="nameAlreadyExists" value="#{true}");
