@@ -92,7 +92,7 @@ public class AdministeredObjectFactory implements ObjectFactory {
         if (runtime.isACCRuntime() || runtime.isNonACCRuntime()) {
             ConnectorDescriptor connectorDescriptor = null;
             try {
-                Context ic = new InitialContext();
+                Context ic = new InitialContext(env);
                 String descriptorJNDIName = ConnectorAdminServiceUtils.
                         getReservePrefixedJNDINameForDescriptor(moduleName);
                 connectorDescriptor = (ConnectorDescriptor) ic.lookup(descriptorJNDIName);
