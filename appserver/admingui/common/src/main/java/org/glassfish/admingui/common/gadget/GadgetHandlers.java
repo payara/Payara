@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.gadget;
 
@@ -220,7 +220,7 @@ public class GadgetHandlers {
             handler.setInputValue(name, val);
         } else {
 		// Assume it's an output mapping...
-		handler.setOutputMapping(name, val.toString(), OutputTypeManager.EL_TYPE);
+		handler.setOutputMapping(name, String.valueOf(val), OutputTypeManager.EL_TYPE);
 		outputNames.add(name);
 	    }
 	}
