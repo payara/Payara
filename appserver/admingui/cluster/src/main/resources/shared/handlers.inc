@@ -49,26 +49,18 @@
 -->
 <handler id="gfj.checkNameExist">
     urlencode(value="#{requestScope.nameToCheck}" result="#{requestScope.encodedNameToCheck}");
-    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
-    if (#{requestScope.exx}){
-        setAttribute(key="nameAlreadyExists" value="#{true}");
+    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
+
+    if ("!#{requestScope.nameAlreadyExists}"){
+        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
     }
-    if ("!#{requestScope.exx}"){
-        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
+    if ("!#{requestScope.nameAlreadyExists}"){
+        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="##{requestScope.nameAlreadyExists}");
     }
-    if ("!#{requestScope.exx}"){
-        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
+    if ("!#{requestScope.nameAlreadyExists}"){
+        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
     }
-   if (#{requestScope.exx}){
-        setAttribute(key="nameAlreadyExists" value="#{true}");
-    }
-    if ("!#{requestScope.exx}"){
-        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{requestScope.encodedNameToCheck}", exists="#{requestScope.exx}");
-    }
-    if (#{requestScope.exx}){
-        setAttribute(key="nameAlreadyExists" value="#{true}");
-    }
-    if ("!#{requestScope.exx}"){
+    if ("!#{requestScope.nameAlreadyExists}"){
         gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/nodes/node/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
     }
 
