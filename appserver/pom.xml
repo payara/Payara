@@ -505,8 +505,8 @@
                         <!-- JAX-RS -->
                         <spec>
                             <artifact>
-                                <groupId>javax.ws.rs</groupId>
-                                <artifactId>javax.ws.rs-api</artifactId>
+                                <groupId>jakarta.ws.rs</groupId>
+                                <artifactId>jakarta.ws.rs-api</artifactId>
                                 <version>${jax-rs-api.impl.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
