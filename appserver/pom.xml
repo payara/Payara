@@ -321,7 +321,7 @@
                         <spec>
                             <artifact>
                                 <groupId>org.glassfish</groupId>
-                                <artifactId>javax.json</artifactId>
+                                <artifactId>jakarta.json</artifactId>
                                 <version>${jsonp.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
@@ -994,12 +994,12 @@
             <!-- JSON-P -->
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.json</artifactId>
+                <artifactId>jakarta.json</artifactId>
                 <version>${jsonp.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.json</groupId>
-                <artifactId>javax.json-api</artifactId>
+                <groupId>jakarta.json</groupId>
+                <artifactId>jakarta.json-api</artifactId>
                 <version>${jsonp.version}</version>
             </dependency>
             <dependency>
