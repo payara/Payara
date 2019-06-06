@@ -106,5 +106,11 @@
             <version>${hk2.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>rest-service</artifactId>
+            <version>5.1.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
