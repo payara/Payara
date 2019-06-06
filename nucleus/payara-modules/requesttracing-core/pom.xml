@@ -115,7 +115,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <version>${jsonp.version}</version>
             <scope>test</scope>
         </dependency>
