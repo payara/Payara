@@ -117,7 +117,7 @@ public class ResetMonitoringLevels implements AdminCommand {
         if (verbose) {
             actionReport.setMessage(getFormattedColumns(previouslyEnabledModules).toString());
         } else {
-            actionReport.setMessage("Reset " + previouslyEnabledModules.size() + " modules");
+            actionReport.setMessage("Restarted " + previouslyEnabledModules.size() + " modules");
         }
     }
 
