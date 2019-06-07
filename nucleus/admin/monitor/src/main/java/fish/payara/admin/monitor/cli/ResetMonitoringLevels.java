@@ -37,41 +37,41 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "reset-monitoring-levels")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-public class ResetMonitoringLevels  implements AdminCommand {
-    
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+public class ResetMonitoringLevels implements AdminCommand {
+
     @Param(name = "target", optional = true, defaultValue = "server-config")
     String target;
-    
+
     @Param(optional = true, shortName = "v")
     private boolean verbose;
 
     @Inject
     private Target targetUtil;
-    
+
     @Inject
     private Logger logger;
-    
+
     private MonitoringService monitoringService;
-    
+
     @Override
-    public void execute(AdminCommandContext context){
+    public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
-        
+
         List<String> validModuleList = Arrays.asList(Constants.validModuleNames);
         Config config = targetUtil.getConfig(target);
-        if(config != null){
+        if (config != null) {
             monitoringService = config.getMonitoringService();
-        }else{
+        } else {
             actionReport.setMessage("Cound not find target: " + target);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
+
         Map<String, String> enabledModules = getPreviouslyEnabledModules(validModuleList);
 
         //Setting all modules to "OFF"
-        for(String module : validModuleList){
+        for (String module : validModuleList) {
             try {
                 ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
                     monitoringServiceProxy.setMonitoringLevel(module, "OFF");
@@ -83,7 +83,7 @@ public class ResetMonitoringLevels  implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
-        
+
         //Setting modules back to what they were previously
         for (String module : enabledModules.keySet()) {
             String moduleLevel = enabledModules.get(module);
@@ -98,33 +98,33 @@ public class ResetMonitoringLevels  implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         }
-        
+
         if (verbose) {
             actionReport.setMessage(getFormattedColumns(enabledModules).toString());
-        }else{
+        } else {
             actionReport.setMessage("Reset " + enabledModules.size() + " modules");
         }
     }
-    
-    private Map<String, String> getPreviouslyEnabledModules(List<String> validModules){
+
+    private Map<String, String> getPreviouslyEnabledModules(List<String> validModules) {
         Map<String, String> enabledModules = new HashMap<>();
-        if(!validModules.isEmpty()){
+        if (!validModules.isEmpty()) {
             for (String module : validModules) {
                 String level = monitoringService.getMonitoringLevel(module);
-                if(!level.equals("OFF")){
+                if (!level.equals("OFF")) {
                     enabledModules.put(module, level);
                 }
             }
         }
         return enabledModules;
     }
-    
-    private ColumnFormatter getFormattedColumns(Map<String, String> enabledModules){
-        final String[] headers = {"Module", "Monitoring Level"};
-            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-            Map<String, Object> extraPropertiesMap = new HashMap<>();
 
-            if (!enabledModules.isEmpty()) {
+    private ColumnFormatter getFormattedColumns(Map<String, String> enabledModules) {
+        final String[] headers = {"Module", "Monitoring Level"};
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+        Map<String, Object> extraPropertiesMap = new HashMap<>();
+
+        if (!enabledModules.isEmpty()) {
             for (String module : enabledModules.keySet()) {
                 columnFormatter.addRow(new Object[]{module,
                     monitoringService.getMonitoringLevel(module)});
@@ -132,7 +132,7 @@ public class ResetMonitoringLevels  implements AdminCommand {
                         monitoringService.getMonitoringLevel(module));
             }
         }
-            
-            return columnFormatter;
+
+        return columnFormatter;
     }
 }
