@@ -113,7 +113,7 @@ public class ResetMonitoringLevels implements AdminCommand {
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while setting modules to 'OFF': {0}", ex.getCause().getMessage());
                 actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
         }
 
@@ -128,7 +128,7 @@ public class ResetMonitoringLevels implements AdminCommand {
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while setting modules to previous values: {0}", ex.getCause().getMessage());
                 actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
         }
 
