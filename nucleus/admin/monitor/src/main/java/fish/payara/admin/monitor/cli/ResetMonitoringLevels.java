@@ -8,7 +8,6 @@ package fish.payara.admin.monitor.cli;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.ColumnFormatter;
-import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +42,7 @@ public class ResetMonitoringLevels implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     String target;
 
-    @Param(optional = true, shortName = "v")
+    @Param(name = "verbose", optional = true, shortName = "v")
     private boolean verbose;
 
     @Inject
