@@ -100,17 +100,7 @@ public class ResetMonitoringLevels  implements AdminCommand {
         }
         
         if (verbose) {
-            final String[] headers = {"Module", "Monitoring Level"};
-            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-            Map<String, Object> extraPropertiesMap = new HashMap<>();
-
-            for (String module : enabledModules.keySet()) {
-                columnFormatter.addRow(new Object[]{module,
-                    monitoringService.getMonitoringLevel(module)});
-                extraPropertiesMap.put(module,
-                        monitoringService.getMonitoringLevel(module));
-                actionReport.setMessage(columnFormatter.toString());
-            }
+            actionReport.setMessage(getFormattedColumns(enabledModules).toString());
         }else{
             actionReport.setMessage("Reset " + enabledModules.size() + " modules");
         }
@@ -127,5 +117,22 @@ public class ResetMonitoringLevels  implements AdminCommand {
             }
         }
         return enabledModules;
+    }
+    
+    private ColumnFormatter getFormattedColumns(Map<String, String> enabledModules){
+        final String[] headers = {"Module", "Monitoring Level"};
+            ColumnFormatter columnFormatter = new ColumnFormatter(headers);
+            Map<String, Object> extraPropertiesMap = new HashMap<>();
+
+            if (!enabledModules.isEmpty()) {
+            for (String module : enabledModules.keySet()) {
+                columnFormatter.addRow(new Object[]{module,
+                    monitoringService.getMonitoringLevel(module)});
+                extraPropertiesMap.put(module,
+                        monitoringService.getMonitoringLevel(module));
+            }
+        }
+            
+            return columnFormatter;
     }
 }
