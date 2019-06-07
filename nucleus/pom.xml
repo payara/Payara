@@ -260,8 +260,8 @@
         <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
 
         <!-- JAX-RS -->
-        <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
+        <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
+        <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
         <jersey.version>2.29.payara-p2</jersey.version>
 
         <!-- Bean Validation -->
@@ -281,7 +281,7 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.2</mail.version>
+        <mail.version>1.6.3</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
@@ -316,11 +316,11 @@
         <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.8</jackson.version>
+        <jackson.version>2.9.9</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.24</snakeyaml.version>
 
-        <jsonp.version>1.1.4</jsonp.version>
+        <jsonp.version>1.1.5</jsonp.version>
 
         <mimepull.version>1.9.11</mimepull.version>
         
@@ -978,8 +978,8 @@ Parent is ${project.parent}</echo>
 
             <!-- JAX-RS -->
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jax-rs-api.impl.version}</version>
             </dependency>
             <dependency>
@@ -1029,13 +1029,13 @@ Parent is ${project.parent}</echo>
 
             <!-- JavaMail -->
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>${mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
-                <artifactId>javax.mail</artifactId>
+                <artifactId>jakarta.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
 

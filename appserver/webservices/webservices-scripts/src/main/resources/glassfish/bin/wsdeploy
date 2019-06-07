@@ -39,6 +39,9 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] Payara Foundationa and/or affiliates
+#
+
 
 AS_INSTALL=`dirname "$0"`/..
 
@@ -47,7 +50,7 @@ case "`uname`" in
 esac
 
 AS_INSTALL_LIB="$AS_INSTALL/modules"
-JAVAX_MAIL_JAR=$AS_INSTALL_LIB/javax.mail.jar
+JAVAX_MAIL_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
 . "${AS_INSTALL}/config/asenv.conf"
 JAVA=java
 

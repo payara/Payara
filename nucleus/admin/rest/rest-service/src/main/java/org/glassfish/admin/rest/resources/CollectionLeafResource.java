@@ -340,39 +340,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack 
-    //"There's nothing more permanent than a temporary solution" - Russian Proverb
     protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
-        Map<String, String> results = new HashMap<String, String>();
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
-                results.put(key, entry.getValue());
-            } else {
-                options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
-                
-                String value = entry.getValue();
-                
-                if (key != null && !key.trim().isEmpty() && (key.startsWith("-D") || key.startsWith("-X"))) {    
-                    if (value == null) {
-                        value = "";
-                    } else if(value.contains("=")) {
-                        value = value.replaceAll("=", "");
-                    }
-                 
-                    if (key.endsWith("=")) {                   
-                        options.append(value);
-                    } else if(!key.contains("=")) {
-                        options.append("=").append(value);
-                    }
-                }
-                sep = ":";
-            }
-        }
-
-        results.put("id", options.toString());
+        Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
         }
