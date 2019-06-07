@@ -113,7 +113,7 @@ public class RestartMonitoring implements AdminCommand {
         setModules(previouslyEnabledModules);
         
         if(actionReport.getActionExitCode().equals(actionReport.getActionExitCode().WARNING)){
-            actionReport.appendMessage("Reset completed with warnings");
+            actionReport.appendMessage("Restarted monitoring levels with warnings");
         }
         
         if (verbose) {
