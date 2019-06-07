@@ -119,9 +119,14 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
         Config targetConfig = targetUtil.getConfig(target);
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
 
-        // Create the default user if it doesn't exist
-        if (!defaultMicroprofileUserExists(actionReport.addSubActionsReport(), subject)) {
-            createDefaultMicroprofileUser(actionReport.addSubActionsReport(), subject);
+        ActionReport checkUserReport = actionReport.addSubActionsReport();
+        ActionReport createUserReport = actionReport.addSubActionsReport();
+        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+            createDefaultMicroprofileUser(createUserReport, subject);
+        }
+        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
 
         try {
@@ -148,7 +153,7 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
         }
 
         // If everything has passed, scrap the subaction reports as we don't want to print them out
-        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+        if (!actionReport.hasFailures() && !actionReport.hasWarnings()) {
             actionReport.getSubActionsReport().clear();
         }
     }

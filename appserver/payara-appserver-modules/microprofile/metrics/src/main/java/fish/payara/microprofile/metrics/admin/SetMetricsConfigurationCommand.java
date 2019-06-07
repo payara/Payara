@@ -121,8 +121,14 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
 
         // Create the default user if it doesn't exist
-        if (!defaultMicroprofileUserExists(actionReport.addSubActionsReport(), subject)) {
-            createDefaultMicroprofileUser(actionReport.addSubActionsReport(), subject);
+        ActionReport checkUserReport = actionReport.addSubActionsReport();
+        ActionReport createUserReport = actionReport.addSubActionsReport();
+        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+            createDefaultMicroprofileUser(createUserReport, subject);
+        }
+        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
 
         try {
@@ -173,7 +179,7 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
         }
 
         // If everything has passed, scrap the subaction reports as we don't want to print them out
-        if (!actionReport.hasFailures() || !actionReport.hasWarnings()) {
+        if (!actionReport.hasFailures() && !actionReport.hasWarnings()) {
             actionReport.getSubActionsReport().clear();
         }
     }
