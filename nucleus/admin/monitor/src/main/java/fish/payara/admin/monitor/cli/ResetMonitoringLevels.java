@@ -131,7 +131,11 @@ public class ResetMonitoringLevels implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
         }
-
+        
+        if(actionReport.getActionExitCode().equals(actionReport.getActionExitCode().WARNING)){
+            actionReport.appendMessage("Reset completed with warnings");
+        }
+        
         if (verbose) {
             actionReport.setMessage(getFormattedColumns(enabledModules).toString());
         } else {
