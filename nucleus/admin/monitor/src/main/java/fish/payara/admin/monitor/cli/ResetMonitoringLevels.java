@@ -78,7 +78,7 @@ public class ResetMonitoringLevels implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     String target;
 
-    @Param(name = "verbose", optional = true, shortName = "v")
+    @Param(name = "verbose", optional = true, shortName = "v", defaultValue = "false")
     private Boolean verbose;
 
     @Inject
