@@ -263,14 +263,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         else if (event.is(Deployment.APPLICATION_STARTED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                //Race condition double check
-                //if (me == null) {
-                //    synchronized (this) {
-                //        if (me == null) {
-                //            initialiseInstanceDescriptor();
-                //        }
-                //    }
-                //}
                 getMyInstanceDescriptor().addApplication(new ApplicationDescriptorImpl(applicationInfo));
                 logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
@@ -364,7 +356,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
         return result;
     }
 
-    private synchronized void initialiseInstanceDescriptor() {
+    private void initialiseInstanceDescriptor() {
         boolean liteMember = false;
         int hazelcastPort = 5900;
         InetAddress hostname = null;
