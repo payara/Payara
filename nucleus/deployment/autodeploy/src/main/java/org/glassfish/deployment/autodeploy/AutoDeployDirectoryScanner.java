@@ -184,7 +184,7 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
         }
         for (File dirFile : dirFiles) {
             String name = dirFile.getName();
-            String fileType = name.substring(name.lastIndexOf(".") + 1);
+            String fileType = name.substring(name.lastIndexOf('.') + 1);
             if ( ! dirFile.isDirectory()) {
                 if (fileType != null && !fileType.equals("") &&
                         ! typeIsMarkerType(fileType)) {
