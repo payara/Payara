@@ -44,6 +44,8 @@ package org.glassfish.api.admin;
 
 
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +53,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import org.jvnet.hk2.annotations.Service;
 
@@ -343,8 +344,6 @@ public class AdminCommandLock {
                   String lockOwner,
                   String message) {
 
-        BlockingQueue<AdminCommandLock.SuspendStatus> suspendStatusQ = new ArrayBlockingQueue<>(1);
-
         /*
          * If the suspendCommandsLockThread is alive then we are
          * already suspended or really close to it.
@@ -358,7 +357,7 @@ public class AdminCommandLock {
          * Start a thread to manage the RWLock.
          */
         suspendCommandsLockThread =
-            new SuspendCommandsLockThread(timeout, suspendStatusQ, lockOwner,
+            new SuspendCommandsLockThread(timeout, lockOwner,
                                           message);
         try {
             suspendCommandsLockThread.setName(
@@ -379,9 +378,15 @@ public class AdminCommandLock {
          * The commandLockThread puts the timeout status on the suspendStatusQ
          * once it has acquired the lock or timed out trying.
          */
-        SuspendStatus suspendStatus = queueTake(suspendStatusQ);
-
-        return suspendStatus;
+        while(true) {
+            try {
+                return suspendCommandsLockThread.suspendStatus.get();
+            } catch (InterruptedException e) {
+                // keep trying
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("Execution exception while waiting for suspend status", e);
+            }
+        }
     }
 
     /**
@@ -467,23 +472,18 @@ public class AdminCommandLock {
     private class SuspendCommandsLockThread extends Thread {
  
         private Semaphore resumeCommandsSemaphore;
-        private BlockingQueue<SuspendStatus> suspendStatusQ;
-        private boolean suspendCommandsTimedOut;
         private long timeout;
         private String lockOwner;
         private String message;
+        private final CompletableFuture<SuspendStatus> suspendStatus = new CompletableFuture<>();
  
         public SuspendCommandsLockThread(long timeout,
-                                   BlockingQueue<SuspendStatus> suspendStatusQ,
                                    String lockOwner,
                                    String message) {
-
-            this.suspendStatusQ = suspendStatusQ;
             this.timeout = timeout;
             this.lockOwner = lockOwner;
             this.message = message;
             resumeCommandsSemaphore = null;
-            suspendCommandsTimedOut = false;
         }
 
         @Override
@@ -497,86 +497,52 @@ public class AdminCommandLock {
              * potential for an InterruptedException.
              */
             Lock lock = getLock(CommandLock.LockType.EXCLUSIVE);
-            boolean lockAcquired = false;
-            while (!lockAcquired && !suspendCommandsTimedOut) {
+            while (true) {
                 try {
-                    if (lock.tryLock(timeout, TimeUnit.SECONDS))
-                        lockAcquired = true;
-                    else
-                        suspendCommandsTimedOut = true;
+                    if (lock.tryLock(timeout, TimeUnit.SECONDS)) {
+                        try {
+                            waitForReleaseSignal();
+                        } finally {
+                            /*
+                             * Resume the domain by unlocking the EXCLUSIVE lock.
+                             */
+                            lock.unlock();
+                        }
+                    } else {
+                        suspendStatus.complete(SuspendStatus.TIMEOUT);
+                    }
+                    return;
                 } catch (java.lang.InterruptedException e) {
                     logger.log(Level.FINE, "Interrupted acquiring command lock. ", e);
                 }
             }
-            try {
-                if (lockAcquired) {
-                    setLockOwner(lockOwner);
-                    setLockMessage(message);
-                    setLockTimeOfAcquisition(new Date());
-
-                    /*
-                     * A semaphore that is triggered to signal to the thread 
-                     * to release the lock.  This should only be created after
-                     * the lock has been acquired.
-                     */
-                    resumeCommandsSemaphore = new Semaphore(0, true);
-                }
-
-                /*
-                 * The suspendStatusQ is used to signal that we acquired 
-                 * the lock.   A blocking queue is used to indicate whether we 
-                 * timed out or ran into an error acquiring the lock.
-                 */
-                if (suspendStatusQ != null) { 
-                    if (suspendCommandsTimedOut == true) { 
-                        queuePut(suspendStatusQ, SuspendStatus.TIMEOUT);
-                    } else {
-                        queuePut(suspendStatusQ, SuspendStatus.SUCCESS);
-                    }
-                }
-
-                /*
-                 * If we timed out trying to get the lock then this thread 
-                 * is finished.
-                 */
-                if (suspendCommandsTimedOut)
-                    return;
-
-                /*
-                 * We block here waiting to be told to resume.
-                 */
-                semaphoreWait(resumeCommandsSemaphore, 
-                        "Interrupted waiting on resume semaphore");
-
-            } finally {
-                if (lockAcquired) {
-                    /*
-                     * Resume the domain by unlocking the EXCLUSIVE lock.
-                     */
-                    lock.unlock();
-                }
-            }
         }
 
-        /**
-         * Convenience method that waits on a semaphore to be
-         * released as well as deals with InterruptedExceptions.
-         *
-         * @param s semaphore to wait on
-         * @param logMsg a message to log if InterruptedException caught
-         */
-        private void semaphoreWait(Semaphore s, String logMsg) {
+        private void waitForReleaseSignal() {
+            setLockOwner(lockOwner);
+            setLockMessage(message);
+            setLockTimeOfAcquisition(new Date());
 
-            boolean semaphoreReleased = false;
+            /*
+             * A semaphore that is triggered to signal to the thread
+             * to release the lock.  This should only be created after
+             * the lock has been acquired.
+             */
+            resumeCommandsSemaphore = new Semaphore(0, true);
 
-            while (!semaphoreReleased) {
+            suspendStatus.complete(SuspendStatus.SUCCESS);
+
+            /*
+             * We block here waiting to be told to resume.
+             */
+            while (true) {
                 try {
-                    s.acquire();
-                    semaphoreReleased = true;
-                } catch (java.lang.InterruptedException e) {
-                    logger.log(Level.FINE, logMsg, e);
+                    resumeCommandsSemaphore.acquire();
+                    return;
+                } catch (InterruptedException e) {
+                    logger.log(Level.FINE, "Interrupted waiting on resume semaphore", e);
                 }
-            } 
+            }
         }
     }
 
