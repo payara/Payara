@@ -65,7 +65,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Asadmin command to restart Module Monitoring Level.
- * Sets monitoring module levels to OFF before reverting back to their previous values
+ * Sets monitoring module levels to OFF before reverting back to their previous values.
+ * 
+ * This was Feature request due to AMX metrics "breaking" sometimes, where restarting it manually was somewhat tedious and prone to error.
  * 
  * @author Alan Roth
  */
