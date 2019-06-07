@@ -124,7 +124,6 @@ public class RestartMonitoring implements AdminCommand {
     }
 
     private void setModulesToOff(Map<String, String> modules){
-         //Setting all modules to "OFF"
         for (String module : modules.keySet()) {
             try {
                 ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
@@ -140,7 +139,6 @@ public class RestartMonitoring implements AdminCommand {
     }
     
     private void setModules(Map<String, String> modules){
-        //Setting modules back to what they were previously
         for (String module : modules.keySet()) {
             String moduleLevel = modules.get(module);
             try {
