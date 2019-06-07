@@ -43,22 +43,19 @@
 package org.glassfish.api.admin;
 
 
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.BlockingQueue;
-
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Singleton;
-
-import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The implementation of the admin command lock.
@@ -420,51 +417,6 @@ public class AdminCommandLock {
     }
 
     /**
-     * Convenience method that puts an object on a BlockingQueue
-     * as well as deals with InterruptedExceptions.
-     *
-     * @param status Object to be put on the queue
-     * @param itmQ   The BlockingQueue
-     */
-    private void queuePut(BlockingQueue<SuspendStatus> itmQ,
-                          SuspendStatus status) { 
-
-        boolean itemPut = false;
-
-        while (!itemPut) {
-            try {
-                itmQ.put(status);
-                itemPut = true;
-            } catch (java.lang.InterruptedException e) {
-                logger.log(Level.FINE, 
-                           "Interrupted putting lock status on queue", e);
-            }
-        } 
-    }
-
-    /**
-     * Convenience method that takes an object from a BlockingQueue
-     * as well as deals with InterruptedExceptions.
-     *
-     * @param itmQ The BlockingQueue
-     */
-    private SuspendStatus queueTake(BlockingQueue<SuspendStatus> itmQ) {
-        SuspendStatus status = SuspendStatus.SUCCESS;
-        boolean       itemTake = false;
- 
-        while (!itemTake) {
-            try {
-                status = itmQ.take();
-                itemTake = true;
-            } catch (java.lang.InterruptedException e) {
-                logger.log(Level.FINE,
-                           "Interrupted getting status from a suspend queue", e);
-            }
-        }
-        return status;
-    }
-
-    /**
      * The SuspendCommandsLockThread represents a thread which will
      * hold a Read/Write lock across command invocations.  Once the
      * lock is released the thread will exit.
@@ -546,33 +498,4 @@ public class AdminCommandLock {
         }
     }
 
-        /**
-         * Use this method to temporarily suspend the command lock during
-         * which other operations may be performed.  When the method returns
-         * the lock will be reestablished.
-         * This method must be invoked from the same thread which acquired 
-         * the original lock.
-         * 
-         * @param r A Runnable which will be invoked by the method after the lock is suspended
-         */
-        public static void runWithSuspendedLock(Runnable r) {
-            // We need to determine the type of lock this thread holds.
-            Lock lock = rwlock.isWriteLockedByCurrentThread()
-                ? rwlock.writeLock() 
-                : rwlock.getReadHoldCount() > 0 ? rwlock.readLock() : null;
-            if (lock == null) {
-                // Not locked, run plain:
-                r.run();
-                return;
-            }
-            try {
-                lock.unlock();
-                // Run the caller's commands without a lock in place.
-                r.run();
-            } finally {
-                // Relock before returning.  This may block if someone else
-                // already grabbed the lock.
-                lock.lock();
-            }
-        }
 }
