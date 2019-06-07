@@ -82,7 +82,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetMetricsConfigurationCommand implements AdminCommand {
 
-    private final String[] OUTPUT_HEADERS = {"Enabled", "SecureMetrics", "Dynamic", "EndPoint", "VirtualServers", "Security Enabled"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "Dynamic", "EndPoint", "VirtualServers", "Security Enabled"};
     
     @Inject
     private Target targetUtil;
@@ -106,7 +106,6 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
         ColumnFormatter columnFormatter = new ColumnFormatter(OUTPUT_HEADERS);
         Object[] outputValues = {
             metricsConfiguration.getEnabled(),
-            metricsConfiguration.getSecureMetrics(),
             metricsConfiguration.getDynamic(),
             metricsConfiguration.getEndpoint(),
             metricsConfiguration.getVirtualServers(),
@@ -118,7 +117,6 @@ public class GetMetricsConfigurationCommand implements AdminCommand {
         
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", metricsConfiguration.getEnabled());
-        extraPropertiesMap.put("secureMetrics", metricsConfiguration.getSecureMetrics());
         extraPropertiesMap.put("dynamic", metricsConfiguration.getDynamic());
         extraPropertiesMap.put("endpoint", metricsConfiguration.getEndpoint());
         extraPropertiesMap.put("virtualServers", metricsConfiguration.getVirtualServers());

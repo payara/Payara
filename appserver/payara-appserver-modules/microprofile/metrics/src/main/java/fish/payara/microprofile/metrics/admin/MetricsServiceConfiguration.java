@@ -65,8 +65,10 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
      * @return a Boolean value determining if the metrics service is secure or
      * not.
      */
+    @Deprecated
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getSecureMetrics();
+    @Deprecated
     void setSecureMetrics(String value) throws PropertyVetoException;
     
     /**
