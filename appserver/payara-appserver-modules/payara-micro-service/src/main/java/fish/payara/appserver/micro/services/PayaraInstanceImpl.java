@@ -150,6 +150,13 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
 
     @Inject
     private PayaraExecutorService executor;
+    
+    private synchronized InstanceDescriptorImpl getMyInstanceDescriptor() {
+        if(me == null) {
+            initialiseInstanceDescriptor();
+        }
+        return me;
+    }
 
     @Override
     public String getInstanceName() {
@@ -236,20 +243,20 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
-            initialiseInstanceDescriptor();
-            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
+            //initialiseInstanceDescriptor();
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, getMyInstanceDescriptor());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
 
             for (String appName : appRegistry.getAllApplicationNames()) {
-                me.addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
+                getMyInstanceDescriptor().addApplication(new ApplicationDescriptorImpl(appRegistry.get(appName)));
             }
 
-            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+            cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
             executor.scheduleAtFixedRate(() -> {
-                me.setLastHeartBeat(System.currentTimeMillis());
+                getMyInstanceDescriptor().setLastHeartBeat(System.currentTimeMillis());
                 if (myCurrentID != null) {
-                    cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+                    cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
                 }
             }, 0, 5, TimeUnit.SECONDS);
         } // Adds the application to the clustered register of deployed applications
@@ -257,28 +264,28 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
                 //Race condition double check
-                if (me == null) {
-                    synchronized (this) {
-                        if (me == null) {
-                            initialiseInstanceDescriptor();
-                        }
-                    }
-                }
-                me.addApplication(new ApplicationDescriptorImpl(applicationInfo));
+                //if (me == null) {
+                //    synchronized (this) {
+                //        if (me == null) {
+                //            initialiseInstanceDescriptor();
+                //        }
+                //    }
+                //}
+                getMyInstanceDescriptor().addApplication(new ApplicationDescriptorImpl(applicationInfo));
                 logger.log(Level.FINE, "App Loaded: {2}, Enabled: {0}, my ID: {1}", new Object[] { hazelcast.isEnabled(),
                     myCurrentID, applicationInfo.getName() });
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
             }
         }
         // removes the application from the clustered registry of applications
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                me.removeApplication(new ApplicationDescriptorImpl(applicationInfo));
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+                getMyInstanceDescriptor().removeApplication(new ApplicationDescriptorImpl(applicationInfo));
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, getMyInstanceDescriptor());
             }
         } else if (event.is(HazelcastEvents.HAZELCAST_SHUTDOWN_STARTED)) {
-            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, me);
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, getMyInstanceDescriptor());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
