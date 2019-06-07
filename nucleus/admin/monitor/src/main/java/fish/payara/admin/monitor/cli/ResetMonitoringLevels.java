@@ -72,7 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "restart-monitoring")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP, CommandTarget.CONFIG})
 public class ResetMonitoringLevels implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = "server-config")
