@@ -1216,7 +1216,8 @@ public abstract class CLICommand implements PostConstruct {
         try {
             buildTerminal();
             buildLineReader();
-            String line = lineReader.readLine(prompt, '*');
+            char echoCharacter = 0;
+            String line = lineReader.readLine(prompt, echoCharacter);
             return line.toCharArray();
         } catch (UserInterruptException | EndOfFileException e) {
             // Ignore           
