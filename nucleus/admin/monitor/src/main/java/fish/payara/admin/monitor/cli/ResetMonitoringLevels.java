@@ -64,10 +64,12 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- *
+ * Asadmin command to set Module Monitoring Level.
+ * Sets monitoring module levels to OFF before reverting back to their previous values
+ * 
  * @author Alan Roth
  */
-@Service(name = "reset-monitoring-levels")
+@Service(name = "restart-monitoring")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
@@ -77,7 +79,7 @@ public class ResetMonitoringLevels implements AdminCommand {
     String target;
 
     @Param(name = "verbose", optional = true, shortName = "v")
-    private boolean verbose;
+    private Boolean verbose;
 
     @Inject
     private Target targetUtil;
@@ -86,10 +88,12 @@ public class ResetMonitoringLevels implements AdminCommand {
     private Logger logger;
 
     private MonitoringService monitoringService;
+    
+    private ActionReport actionReport;
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
+        actionReport = context.getActionReport();
 
         List<String> validModuleList = Arrays.asList(Constants.validModuleNames);
         Config config = targetUtil.getConfig(target);
@@ -101,10 +105,25 @@ public class ResetMonitoringLevels implements AdminCommand {
             return;
         }
 
-        Map<String, String> enabledModules = getPreviouslyEnabledModules(validModuleList);
+        Map<String, String> previouslyEnabledModules = getEnabledModules(validModuleList);
+        
+        setModulesToOff(validModuleList);
+        setModules(previouslyEnabledModules);
+        
+        if(actionReport.getActionExitCode().equals(actionReport.getActionExitCode().WARNING)){
+            actionReport.appendMessage("Reset completed with warnings");
+        }
+        
+        if (verbose) {
+            actionReport.setMessage(getFormattedColumns(previouslyEnabledModules).toString());
+        } else {
+            actionReport.setMessage("Reset " + previouslyEnabledModules.size() + " modules");
+        }
+    }
 
-        //Setting all modules to "OFF"
-        for (String module : validModuleList) {
+    private void setModulesToOff(List<String> moduleList){
+         //Setting all modules to "OFF"
+        for (String module : moduleList) {
             try {
                 ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
                     monitoringServiceProxy.setMonitoringLevel(module, "OFF");
@@ -116,10 +135,12 @@ public class ResetMonitoringLevels implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
         }
-
+    }
+    
+    private void setModules(Map<String, String> modules){
         //Setting modules back to what they were previously
-        for (String module : enabledModules.keySet()) {
-            String moduleLevel = enabledModules.get(module);
+        for (String module : modules.keySet()) {
+            String moduleLevel = modules.get(module);
             try {
                 ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
                     monitoringServiceProxy.setMonitoringLevel(module, moduleLevel);
@@ -131,28 +152,16 @@ public class ResetMonitoringLevels implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
         }
-        
-        if(actionReport.getActionExitCode().equals(actionReport.getActionExitCode().WARNING)){
-            actionReport.appendMessage("Reset completed with warnings");
-        }
-        
-        if (verbose) {
-            actionReport.setMessage(getFormattedColumns(enabledModules).toString());
-        } else {
-            actionReport.setMessage("Reset " + enabledModules.size() + " modules");
-        }
     }
-
-    private Map<String, String> getPreviouslyEnabledModules(List<String> validModules) {
+    
+    private Map<String, String> getEnabledModules(List<String> validModules) {
         Map<String, String> enabledModules = new HashMap<>();
-        if (!validModules.isEmpty()) {
             for (String module : validModules) {
                 String level = monitoringService.getMonitoringLevel(module);
-                if (!level.equals("OFF")) {
+                if (!"OFF".equals(level)) {
                     enabledModules.put(module, level);
                 }
             }
-        }
         return enabledModules;
     }
 
