@@ -64,7 +64,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Asadmin command to set Module Monitoring Level.
+ * Asadmin command to restart Module Monitoring Level.
  * Sets monitoring module levels to OFF before reverting back to their previous values
  * 
  * @author Alan Roth
