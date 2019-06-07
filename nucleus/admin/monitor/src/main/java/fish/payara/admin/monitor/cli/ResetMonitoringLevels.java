@@ -132,7 +132,6 @@ public class ResetMonitoringLevels implements AdminCommand {
                         monitoringService.getMonitoringLevel(module));
             }
         }
-
         return columnFormatter;
     }
 }
