@@ -46,6 +46,8 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- This is for the sake of changes being registered -->
+
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
