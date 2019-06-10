@@ -709,12 +709,12 @@ public class ApplicationValidator extends ComponentValidator
         for (int j = 0; j < myVector.size(); j++) {
             String firstElement = (String) myVector.get(j);
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(0, firstElement.indexOf("#"));
+                firstElement = firstElement.substring(0, firstElement.indexOf('#'));
             }
             for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(0, otherElements.indexOf("#"));
+                    otherElements = otherElements.substring(0, otherElements.indexOf('#'));
                 }
                 if (firstElement.equals(otherElements)) {
                     boolean fail = !firstElement.startsWith(EJB_LEVEL);
@@ -744,18 +744,18 @@ public class ApplicationValidator extends ComponentValidator
         for (int j = 0; j < myVector.size(); j++) {
             String firstElement = (String) myVector.firstElement();
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.indexOf("#") + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.indexOf('#') + 1, firstElement.length());
             }
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(0, firstElement.indexOf("#"));
+                firstElement = firstElement.substring(0, firstElement.indexOf('#'));
             }
             for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.indexOf("#") + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.indexOf('#') + 1, otherElements.length());
                 }
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(0, otherElements.indexOf("#"));
+                    otherElements = otherElements.substring(0, otherElements.indexOf('#'));
                 }
                 if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;
@@ -781,18 +781,18 @@ public class ApplicationValidator extends ComponentValidator
         for (int j = 0; j < myVector.size(); j++) {
             String firstElement = (String) myVector.firstElement();
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.lastIndexOf("#") + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1, firstElement.length());
             }
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.lastIndexOf("#") + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1, firstElement.length());
             }
             for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1, otherElements.length());
                 }
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1, otherElements.length());
                 }
                 if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;

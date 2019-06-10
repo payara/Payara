@@ -884,14 +884,14 @@ public class CommonHandlers {
         String sep = "?";
         // If a query string exists (i.e., the url already has "?foo=bar", then we
         // want to append to that string rather than starting a new one
-        if (url.indexOf("?") > -1) {
+        if (url.indexOf('?') > -1) {
             sep = "&";
         }
         String insert = sep + name + "=" + value; // TODO: HTML encode this
 
         // Should the url have a hash in it, we need the query string (addition) to
         // be inserted before that.
-        int hash = url.indexOf("#");
+        int hash = url.indexOf('#');
         if (hash > -1) {
             url = url.substring(0, hash-1) + insert + url.substring(hash);
         } else {

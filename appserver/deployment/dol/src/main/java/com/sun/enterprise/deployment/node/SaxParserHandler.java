@@ -618,8 +618,8 @@ public class SaxParserHandler extends DefaultHandler {
         } catch (EmptyStackException ex) {
         }
         if (lastElement != null) {
-            if (lastElement.lastIndexOf("/") >= 0) {
-                lastElement = lastElement.substring(0, lastElement.lastIndexOf("/"));
+            if (lastElement.lastIndexOf('/') >= 0) {
+                lastElement = lastElement.substring(0, lastElement.lastIndexOf('/'));
                 elementStack.push(lastElement);
             }
         }

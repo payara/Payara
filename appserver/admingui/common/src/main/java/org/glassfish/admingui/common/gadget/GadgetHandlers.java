@@ -253,7 +253,7 @@ public class GadgetHandlers {
         for (String str : strs) {
             str = str.trim();
             int end = str.length();
-            int index = str.indexOf("=");
+            int index = str.indexOf('=');
             newMap.put(str.substring(0, index), str.substring(index+1, end));
         }
         return newMap;
