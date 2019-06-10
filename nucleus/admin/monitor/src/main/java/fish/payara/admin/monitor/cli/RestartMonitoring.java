@@ -107,37 +107,31 @@ public class RestartMonitoring implements AdminCommand {
             return;
         }
 
-        Map<String, String> previouslyEnabledModules = getEnabledModules(validModuleList);
+        Map<String, String> enabledModules = getEnabledModules(validModuleList);
+        Map<String, String> disabledModules = new HashMap<>();
         
-        setModulesToOff(previouslyEnabledModules);
-        setModules(previouslyEnabledModules);
+        for(String key : enabledModules.keySet()){
+            disabledModules.put(key, "OFF");
+        }
+        
+        setModules(disabledModules);
+        setModules(enabledModules);
         
         if(actionReport.getActionExitCode().equals(actionReport.getActionExitCode().WARNING)){
             actionReport.appendMessage("Restarted monitoring levels with warnings");
         }
         
         if (verbose) {
-            actionReport.setMessage(getFormattedColumns(previouslyEnabledModules).toString());
+            actionReport.setMessage(getFormattedColumns(enabledModules).toString());
         } else {
-            actionReport.setMessage("Restarted " + previouslyEnabledModules.size() + " modules");
+            actionReport.setMessage("Restarted " +  enabledModules.size() + " modules");
         }
     }
-
-    private void setModulesToOff(Map<String, String> modules){
-        for (String module : modules.keySet()) {
-            try {
-                ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
-                    monitoringServiceProxy.setMonitoringLevel(module, "OFF");
-                    return monitoringServiceProxy;
-                }, monitoringService);
-            } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while setting modules to 'OFF': {0}", ex.getCause().getMessage());
-                actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
-            }
-        }
-    }
-    
+   
+    /*
+    *The config is directly changed, using a supporting class (See ConfigSupport) which uses a transaction
+    *to change the value of the monitoring modules config. The changes take affect immedietly after a succesful transaction.
+    */
     private void setModules(Map<String, String> modules){
         for (String module : modules.keySet()) {
             String moduleLevel = modules.get(module);
@@ -147,7 +141,7 @@ public class RestartMonitoring implements AdminCommand {
                     return monitoringServiceProxy;
                 }, monitoringService);
             } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while setting modules to previous values: {0}", ex.getCause().getMessage());
+                logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while changing the module level: {0}", ex.getCause().getMessage());
                 actionReport.setMessage(ex.getCause().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
