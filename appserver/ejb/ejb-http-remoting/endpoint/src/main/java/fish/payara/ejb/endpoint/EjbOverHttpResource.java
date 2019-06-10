@@ -27,7 +27,7 @@ import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.LookupRequest;
 import fish.payara.ejb.http.protocol.LookupResponse;
 
-@Path("ejb")
+@Path("jndi")
 public class EjbOverHttpResource {
 
     @POST
@@ -37,7 +37,7 @@ public class EjbOverHttpResource {
             return Response
                     .status(Status.CREATED)
                     .type(request.getContentType())
-                    .location(new URI("/invoke"))
+                    .location(new URI("invoke"))
                     .entity(lookup(body))
                     .build();
         } catch (Exception e) {
@@ -54,9 +54,8 @@ public class EjbOverHttpResource {
     public Response invoke(InvokeMethodRequest body, @Context HttpServletRequest request) {
         try {
             return Response
-                    .status(Status.CREATED)
+                    .status(Status.OK)
                     .type(request.getContentType())
-                    .location(new URI("/invoke"))
                     .entity(invoke(body))
                     .build();
         } catch (Exception e) {
