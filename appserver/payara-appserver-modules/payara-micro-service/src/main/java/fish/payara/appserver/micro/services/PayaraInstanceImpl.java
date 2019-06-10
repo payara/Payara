@@ -152,7 +152,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     private PayaraExecutorService executor;
     
     private synchronized InstanceDescriptorImpl getMyInstanceDescriptor() {
-        if(me == null) {
+        if (me == null) {
             initialiseInstanceDescriptor();
         }
         return me;
@@ -243,7 +243,6 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
-            //initialiseInstanceDescriptor();
             PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, getMyInstanceDescriptor());
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
