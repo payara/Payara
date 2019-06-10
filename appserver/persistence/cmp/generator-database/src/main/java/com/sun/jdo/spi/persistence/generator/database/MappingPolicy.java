@@ -749,7 +749,7 @@ public class MappingPolicy implements Cloneable {
 
         // The name is in sqlInfo if it was loaded from one of our
         // vendor-specific properties files.
-        Object o = sqlInfo.get(new Integer(jdbcType));
+        Object o = sqlInfo.get(Integer.valueOf(jdbcType));
         if (null != o) {
             rc = (String) o;
         } else {
@@ -977,7 +977,7 @@ public class MappingPolicy implements Cloneable {
      */
     public static String getJdbcTypeName(int type) throws
             IllegalArgumentException {
-        String rc = (String) jdbcTypeNames.get(new Integer(type));
+        String rc = (String) jdbcTypeNames.get(Integer.valueOf(type));
         if (null == rc) {
             throw new IllegalArgumentException();
         }

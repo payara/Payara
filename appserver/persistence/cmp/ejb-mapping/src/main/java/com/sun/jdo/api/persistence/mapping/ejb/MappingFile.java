@@ -1762,7 +1762,7 @@ public class MappingFile {
 
             // Type numeric=2
             fakeKeyCol.setType(2);
-            fakeKeyCol.setPrecision(new Integer(MINIMUM_PRECISION));
+            fakeKeyCol.setPrecision(Integer.valueOf(MINIMUM_PRECISION));
             tkey.setPrimaryKey(true);
             tkey.addColumn(fakeKeyCol);
             retVal.addColumn(fakeKeyCol);
