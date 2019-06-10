@@ -44,19 +44,20 @@ package org.glassfish.connectors.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.enterprise.admin.cli.cluster.LocalInstanceCommand;
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.ResourceRef;
-import com.sun.enterprise.config.serverbeans.Resources;;
+import com.sun.enterprise.config.serverbeans.Resources;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -78,12 +79,25 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * The command to flush a connection pool.
+ * <p>
+ * This command from 5.193 will poke all known instances
+ * and tell them to flush the connection pool. This occurs
+ * by sending the {@code _flush-connection-pool} command
+ * to them. If that command fails on any instance (i.e.
+ * because the pool is not initialised/not in use on that
+ * instance) that this command will return with a
+ * {@link ActionReport.ExitCode.WARNING} status code.
+ * <p>
+ * Pre-5.193 functionality occurs in {@link FlushConnectionPoolLocal}
+ * which previously was only executed against the DAS.
  * @author jonathan coustick
  * @since 5.193
+ * @see FlushConnectionPoolLocal
  */
 @Service(name = "flush-connection-pool")
 @PerLookup
+@I18n("flush.connection.pool")
 @TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS})
 @ExecuteOn(value = {RuntimeType.DAS})
 @RestEndpoints({
@@ -92,7 +106,7 @@ import org.jvnet.hk2.annotations.Service;
         path="flush-connection-pool", 
         description="flush-connection-pool")
 })
-public class FlushRemoteConnectionPool implements AdminCommand {
+public class FlushInstancesConnectionPool implements AdminCommand {
     
     private static final Logger LOGGER = Logger.getLogger("org.glassfish.connectors.admin.cli");
 
@@ -129,6 +143,9 @@ public class FlushRemoteConnectionPool implements AdminCommand {
     
     @Inject
     private ServiceLocator habitat;
+    
+    @Inject
+    PayaraExecutorService executor;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -163,45 +180,60 @@ public class FlushRemoteConnectionPool implements AdminCommand {
             return;
         }
         
-        
+        List<Future> instanceFlushes = new ArrayList<>();
         for (Server server : domain.getServers().getServer()) {
 
-            ActionReport subReport = report.addSubActionsReport();
-            try {
-                //there is a ref to the resource
-                if (!server.isRunning()) {
-                    continue;//skip servers that are stopped
-                }
-                String host = server.getAdminHost();
-                int port = server.getAdminPort();
+            instanceFlushes.add(executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    ActionReport subReport = report.addSubActionsReport();
+                    try {
+                        if (!server.isRunning()) {
+                            return;//skip servers that are stopped
+                        }
+                        String host = server.getAdminHost();
+                        int port = server.getAdminPort();
 
-                ParameterMap map = new ParameterMap();
-                map.add("poolName", poolName);
-                if (applicationName == null) {
-                    map.add("appname", applicationName);
-                }
-                if (moduleName != null) {
-                    map.add("modulename", moduleName);
-                }
+                        ParameterMap map = new ParameterMap();
+                        map.add("poolName", poolName);
+                        if (applicationName == null) {
+                            map.add("appname", applicationName);
+                        }
+                        if (moduleName != null) {
+                            map.add("modulename", moduleName);
+                        }
 
-                if (server.isDas()) {
-                    CommandRunner runner = habitat.getService(CommandRunner.class);
-                    CommandRunner.CommandInvocation invocation = runner.getCommandInvocation("_flush-connection-pool", subReport, context.getSubject());
-                    invocation.parameters(map);
-                    invocation.execute();
-                } else {
-                    RemoteRestAdminCommand rac = new ServerRemoteRestAdminCommand(habitat, "_flush-connection-pool", host, port, false, "admin", null, LOGGER);
-                    rac.executeCommand(map);
-                    ActionReport result = rac.getActionReport();
-                    subReport.setActionExitCode(result.getActionExitCode());
-                    subReport.setMessage(result.getMessage());
+                        if (server.isDas()) {
+                            CommandRunner runner = habitat.getService(CommandRunner.class);
+                            CommandRunner.CommandInvocation invocation = runner.getCommandInvocation("_flush-connection-pool", subReport, context.getSubject());
+                            invocation.parameters(map);
+                            invocation.execute();
+                        } else {
+                            RemoteRestAdminCommand rac = new ServerRemoteRestAdminCommand(habitat, "_flush-connection-pool", host, port, false, "admin", null, LOGGER);
+                            rac.executeCommand(map);
+                            ActionReport result = rac.getActionReport();
+                            subReport.setActionExitCode(result.getActionExitCode());
+                            subReport.setMessage(result.getMessage());
+                        }
+                    } catch (CommandException ex) {
+                        subReport.failure(Logger.getLogger("CONNECTORS-ADMIN"), ex.getLocalizedMessage(), ex);
+                        subReport.appendMessage(server.getName());
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    }
                 }
-            } catch (CommandException ex) {
-                subReport.failure(Logger.getLogger("CONNECTORS-ADMIN"), ex.getLocalizedMessage(), ex);
-            }
+            }));
 
         }
-        
+        for (Future future: instanceFlushes) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        }
+        if (report.hasFailures()) {
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+        }
     }
     
     
