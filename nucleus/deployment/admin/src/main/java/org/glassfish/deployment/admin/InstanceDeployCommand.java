@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -300,8 +300,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
         }
 
         final URI baseURI = baseDir.toURI();
-        final ZipFile zipFile = new ZipFile(generatedContentParam);
-        try {
+        try (ZipFile zipFile = new ZipFile(generatedContentParam)) {
             for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
                 final ZipEntry zipEntry = entries.nextElement();
                 final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
@@ -312,16 +311,11 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
                             "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
                     }
                 } else {
-                    final FileOutputStream os = new FileOutputStream(outputFile);
-                    try {
+                    try (FileOutputStream os = new FileOutputStream(outputFile)) {
                         FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
-                    } catch (IOException e) {
-                        os.close();
                     }
                 }
             }
-        } finally {
-            zipFile.close();
         }
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.v3.services.impl;
 
@@ -470,7 +470,7 @@ public class ContainerMapper extends ADBAwareHttpHandler {
 
     public void register(final Endpoint endpoint) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER endpoint: {1}", endpoint);
+            LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER endpoint: {1}", new Object[] { this, endpoint });
         }
 
         mapMultipleAdapter = true;

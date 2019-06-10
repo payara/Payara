@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.flashlight.impl.provider;
 
@@ -63,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.MessageFormat;
 
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -307,7 +307,7 @@ public class FlashlightProbeProviderFactory
             try {
                 tClazz = (Class<T>) (providerClazz.getClassLoader()).loadClass(generatedClassName);
                 //System.out.println ("Reusing the Generated class");
-                T inst = (T) tClazz.newInstance();
+                T inst = tClazz.newInstance();
                 notifyListenersOnAdd(moduleProviderName, moduleName,
                         probeProviderName, invokerId, providerClazz, inst);
                 return inst;
@@ -328,7 +328,7 @@ public class FlashlightProbeProviderFactory
         ppRegistry.getInstance().registerProbeProvider(
                 provider, tClazz);
 
-        T inst = (T) tClazz.newInstance();
+        T inst = tClazz.newInstance();
         notifyListenersOnAdd(moduleProviderName, moduleName,
                 probeProviderName, invokerId, providerClazz, inst);
         return inst;
@@ -402,13 +402,7 @@ public class FlashlightProbeProviderFactory
     public void processXMLProbeProviders(ClassLoader cl, String xml, boolean inBundle) {
         if (logger.isLoggable(Level.FINE))
             logger.fine("processProbeProviderXML for " + xml);
-        try {
-            InputStream is;
-            if (inBundle) {
-                is = cl.getResourceAsStream(xml);
-            } else {
-                is = new FileInputStream(xml);
-            }
+        try (InputStream is = inBundle ? cl.getResourceAsStream(xml) : new FileInputStream(xml)) {
             if (logger.isLoggable(Level.FINE))
                 logger.fine("InputStream = " + is);
             ProbeProviderStaxParser providerXMLParser = new ProbeProviderStaxParser(is);
