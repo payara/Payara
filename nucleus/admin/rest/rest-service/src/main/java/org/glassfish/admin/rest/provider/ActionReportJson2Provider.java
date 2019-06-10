@@ -76,7 +76,7 @@ public class ActionReportJson2Provider extends ActionReportJsonProvider {
             }
         }
         if (ar.getFailureCause() != null) {
-            objectBuilder.add("failure_cause", ar.getFailureCause().getLocalizedMessage());
+            objectBuilder.add("failure_cause", ar.getFailureCause().getLocalizedMessage() != null ? ar.getFailureCause().getLocalizedMessage() : "");
         }
         return objectBuilder.build();
     }
