@@ -141,7 +141,7 @@ public class RestartMonitoring implements AdminCommand {
                     return monitoringServiceProxy;
                 }, monitoringService);
             } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Failed to execute the command reset-monitoring-level, while changing the module level: {0}", ex.getCause().getMessage());
+                logger.log(Level.WARNING, "Failed to execute the command restart-monitoring, while changing the module level: {0}", ex.getCause().getMessage());
                 actionReport.setMessage(ex.getCause().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
             }
