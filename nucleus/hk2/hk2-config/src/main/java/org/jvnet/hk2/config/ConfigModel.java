@@ -982,7 +982,7 @@ public final class ConfigModel {
         return ( dv );        
     }
     private static List<String> getMetadataFromDescription(Map<String, List<String>> map, String key) {
-        return map.get(key) == null ? Collections.emptyList() : map.get(key);
+        return map.getOrDefault(key, Collections.emptyList());
     }
     
     private static class SafeHk2Loader implements HK2Loader {
