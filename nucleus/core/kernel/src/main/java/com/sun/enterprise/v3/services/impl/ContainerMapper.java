@@ -284,9 +284,9 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             if (httpHandler == null || httpHandler instanceof ContainerMapper) {
                 String ext = decodedURI.toString();
                 String type = "";
-                if (ext.lastIndexOf(".") > 0) {
-                    ext = "*" + ext.substring(ext.lastIndexOf("."));
-                    type = ext.substring(ext.lastIndexOf(".") + 1);
+                if (ext.lastIndexOf('.') > 0) {
+                    ext = "*" + ext.substring(ext.lastIndexOf('.'));
+                    type = ext.substring(ext.lastIndexOf('.') + 1);
                 }
 
                 if (!MimeType.contains(type) && !"/".equals(ext)) {

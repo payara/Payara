@@ -173,7 +173,7 @@ public class Util {
         String name = getParentName(url);
         // Find the : to skip past the protocal part of the URL, as that is causing
         // problems with resources named 'http'.
-        int nameIndex = url.indexOf(name, url.indexOf(":") + 1);
+        int nameIndex = url.indexOf(name, url.indexOf(':') + 1);
         return getName(url.substring(0, nameIndex - 1), '/');
     }
 
