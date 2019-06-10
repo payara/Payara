@@ -418,7 +418,7 @@ public class CompositeUtil {
 
         Set<ConstraintViolation<T>> constraintViolations = beanValidator.validate(model);
         if (constraintViolations == null || constraintViolations.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         return constraintViolations;

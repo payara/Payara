@@ -690,7 +690,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      * @return persistence units that are referenced by this module
      */
     public Collection<? extends PersistenceUnitDescriptor> findReferencedPUs() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**
