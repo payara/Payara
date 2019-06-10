@@ -420,7 +420,7 @@
       <dependency>
         <scope>runtime</scope>
         <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
+        <artifactId>jakarta.json</artifactId>
       </dependency>
 
       <!-- CDI support -->

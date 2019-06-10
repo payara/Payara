@@ -705,8 +705,8 @@ public abstract class RealmBase implements Lifecycle, Realm {
                     String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
                     if (uri != null && pattern.startsWith("*.")) {
-                        int slash = uri.lastIndexOf("/");
-                        int dot = uri.lastIndexOf(".");
+                        int slash = uri.lastIndexOf('/');
+                        int dot = uri.lastIndexOf('.');
                         if (slash >= 0 && dot > slash && dot != uri.length() - 1 && uri.length() - dot == pattern.length() - 1) {
                             if (pattern.regionMatches(1, uri, dot, uri.length() - dot)) {
                                 matched = true;

@@ -254,8 +254,9 @@ public class JaxrsContainerRequestTracingFilter implements ContainerRequestFilte
             }
 
             // Determine if an operation name provider has been given
-            Optional<String> operationNameProviderOptional = config.getOptionalValue(
-                    "mp.opentracing.server.operation-name-provider", String.class);
+            Optional<String> operationNameProviderOptional = config == null 
+                    ? Optional.empty()
+                    : config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
             if (operationNameProviderOptional.isPresent()) {
                 String operationNameProvider = operationNameProviderOptional.get();
 

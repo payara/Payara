@@ -841,8 +841,8 @@ public class DynamicInterceptor implements MBeanServer
     }
 
     private String getName(String oName) {
-        if(oName.indexOf("[") != -1 ) {
-          return oName.substring(oName.indexOf("[") + 1, oName.indexOf("]"));
+        if(oName.indexOf('[') != -1 ) {
+          return oName.substring(oName.indexOf('[') + 1, oName.indexOf(']'));
         } else {
             return null;
         }

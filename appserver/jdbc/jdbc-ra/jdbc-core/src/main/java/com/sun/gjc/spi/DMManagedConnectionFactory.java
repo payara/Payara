@@ -124,11 +124,11 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
         //Get a set of normal case properties
         Hashtable properties = dsObjBuilder.parseDriverProperties(spec, false);
         Set<Map.Entry<String,Vector>> entries =
-                (Set<Map.Entry<String, Vector>>) properties.entrySet();
+                properties.entrySet();
         for(Map.Entry<String, Vector> entry : entries) {
             String value = "";
-            String key = (String) entry.getKey();
-            Vector values = (Vector) entry.getValue();
+            String key = entry.getKey();
+            Vector values = entry.getValue();
             if(!values.isEmpty() && values.size() == 1) {
                 value = (String) values.firstElement();
             } else if(values.size() > 1) {
@@ -191,34 +191,13 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @param key
      * @return
      */
-    private String getParsedKey(String key) throws ResourceException {
-        String parsedKey = null;
-        int indexOfSet = -1;
-        try {
-            indexOfSet = key.indexOf("set");
-        } catch (NullPointerException npe) {
-            if (debug) {
-                _logger.log(Level.FINE, "jdbc.exc_caught_ign", npe.getMessage());
-            }
-
+    private static String getParsedKey(String key) throws ResourceException {
+        String property = key != null && key.startsWith("set") ? key.substring(3).trim() : key;
+        if (property == null || property.isEmpty()) {
+            throw new ResourceException("Invalid driver properties string - " +
+                    "Key cannot be an empty string");
         }
-        if (indexOfSet == 0) {
-            //Find the key String
-
-            try {
-                parsedKey = key.substring(indexOfSet + 3, key.length()).trim();
-            } catch (IndexOutOfBoundsException iobe) {
-                if (debug) {
-                    _logger.log(Level.FINE, "jdbc.exc_caught_ign", iobe.getMessage());
-                }
-            }
-            if (parsedKey != null && parsedKey.equals("")) {
-                throw new ResourceException("Invalid driver properties string - " +
-                        "Key cannot be an empty string");
-            }
-        }
-        return parsedKey;
-        
+        return property;
     }
 
     /**

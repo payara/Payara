@@ -220,7 +220,7 @@ public class ConnectorsHandlers {
         List<String> inList = (List) handlerCtx.getInputValue("inList");
         List<String> convertedList = new ArrayList();
         for(String one: inList){
-            if( (one.indexOf("#") != -1) && one.endsWith(".rar")){
+            if( (one.indexOf('#') != -1) && one.endsWith(".rar")){
                 convertedList.add( one.substring(0, one.length() - 4));
             }else{
                 convertedList.add(one);

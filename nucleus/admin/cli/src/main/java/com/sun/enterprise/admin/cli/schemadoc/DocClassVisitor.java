@@ -111,7 +111,7 @@ public class DocClassVisitor extends ClassVisitor {
                 if (hasConfiguredAnnotation) {
                     if (signature != null) {
                         type = GenerateDomainSchema.toClassName(
-                            signature.substring(signature.indexOf("<") + 1, signature.lastIndexOf(">") - 1));
+                            signature.substring(signature.indexOf('<') + 1, signature.lastIndexOf('>') - 1));
                     } else {
                         type = GenerateDomainSchema.toClassName(desc);
                     }

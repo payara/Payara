@@ -369,7 +369,7 @@ public class DeploymentHandler {
                         if (GuiUtil.isEmpty(defWebModule)){
                             continue;
                         }
-                        int index = defWebModule.indexOf("#");
+                        int index = defWebModule.indexOf('#');
                         if (index != -1){
                             defWebModule = defWebModule.substring(0, index);
                         }

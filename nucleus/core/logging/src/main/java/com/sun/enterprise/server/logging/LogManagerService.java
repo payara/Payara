@@ -1077,7 +1077,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             synchronized (gfHandlers) {
                 rootLogger.addHandler(handler);
                 String handlerName = handler.toString();
-                gfHandlers.put(handlerName.substring(0, handlerName.indexOf("@")), handler);
+                gfHandlers.put(handlerName.substring(0, handlerName.indexOf('@')), handler);
             }
         }
     }

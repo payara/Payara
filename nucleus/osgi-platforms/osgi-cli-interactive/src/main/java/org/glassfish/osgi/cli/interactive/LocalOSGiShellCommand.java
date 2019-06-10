@@ -85,6 +85,27 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class LocalOSGiShellCommand extends CLICommand {
 
+    private final static class NullOutputStream extends OutputStream {
+        NullOutputStream() {
+            // make visible
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            return;
+        }
+    }
+
     protected static final String REMOTE_COMMAND = "osgi";
     protected static final String SESSIONID_OPTION = "--session-id";
     protected static final String SESSION_OPTION = "--session";
@@ -217,13 +238,15 @@ public class LocalOSGiShellCommand extends CLICommand {
     }
 
     @Override
-    protected int executeCommand() throws CommandException {
-        LineReader reader = null;
+    protected int executeCommand()
+            throws CommandException, CommandValidationException {
 
-        if(cmd == null) {
+        LineReader reader = null;
+        
+        if (cmd == null) {
             throw new CommandException("Remote command 'osgi' is not available.");
         }
-        
+
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
         try {
             if (encoding != null) {
@@ -231,7 +254,7 @@ public class LocalOSGiShellCommand extends CLICommand {
                 System.setProperty("input.encoding", encoding);
             }
 
-            String[] args = new String[] {REMOTE_COMMAND,
+            String[] args = new String[]{REMOTE_COMMAND,
                 "asadmin-osgi-shell"};
             args = enhanceForTarget(args);
             shellType = cmd.executeAndReturnOutput(args).trim();
@@ -248,49 +271,33 @@ public class LocalOSGiShellCommand extends CLICommand {
                         .streams(new FileInputStream(FileDescriptor.in), System.out)
                         .build();
 
-                reader = LineReaderBuilder.builder()
+                 reader = LineReaderBuilder.builder()
                         .appName(REMOTE_COMMAND)
                         .terminal(osgiShellTerminal)
                         .completer(getCommandCompleter())
                         .build();
 
                 reader.unsetOpt(LineReader.Option.INSERT_TAB);
-                
-            } else {
-                printPrompt = false;
-                if (!file.canRead()) {
-                    throw new CommandException("File: " + file
-                            + " can not be read");
-                }
+                return executeCommands(reader);
+            }
 
-                OutputStream out = new OutputStream() {
+            printPrompt = false;
+            if (!file.canRead()) {
+                throw new CommandException("File: " + file
+                        + " can not be read");
+            }
 
-                    @Override
-                    public void write(int b) throws IOException {
-                        return;
-                    }
+            try (Terminal osgiShellTerminal = new ExternalTerminal(REMOTE_COMMAND, "",
+                    new FileInputStream(file), new NullOutputStream(), encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())) {
 
-                    @Override
-                    public void write(byte[] b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        return;
-                    }
-                };
-
-                Terminal osgiShellTerminal = new ExternalTerminal(REMOTE_COMMAND, "",
-                        new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
-
-                reader = LineReaderBuilder.builder()
+                 reader = LineReaderBuilder.builder()
                         .terminal(osgiShellTerminal)
                         .appName(REMOTE_COMMAND)
                         .build();
+
+                return executeCommands(reader); // NB: wrapper on general in/out stream does not need closing by try-with-resource
             }
 
-            return executeCommands(reader);
         } catch (IOException e) {
             throw new CommandException(e);
         } finally {
@@ -298,7 +305,7 @@ public class LocalOSGiShellCommand extends CLICommand {
                 try {
                     reader.getTerminal().close();
                 } catch (IOException ioe) {
-                     logger.log(Level.WARNING, "Error closing OSFI Shell terminal", ioe);
+                    logger.log(Level.WARNING, "Error closing OSFI Shell terminal", ioe);
                 }
             }
         }

@@ -131,7 +131,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
     HazelcastRuntimeConfiguration configuration;
     
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastConfigSpecificConfiguration nodeConfig;
 
     @Inject
