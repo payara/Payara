@@ -2,9 +2,6 @@ package fish.payara.ejb.http.protocol;
 
 import java.io.Serializable;
 
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-
 public class LookupResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -14,9 +11,7 @@ public class LookupResponse implements Serializable {
 
     public LookupResponse(Class<?> ejbInterface) {
         this.typeName = ejbInterface.getName();
-        this.kind = ejbInterface.isAnnotationPresent(Stateful.class) 
-                ? Stateful.class.getSimpleName()
-                : Stateless.class.getSimpleName();
+        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
     }
 
 }

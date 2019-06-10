@@ -36,13 +36,18 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
                     throws IOException, WebApplicationException {
         try (JsonReader jsonReader = Json.createReader(entityStream)) {
             JsonObject json = jsonReader.readObject();
+            String[] argTypeNames = json.getJsonArray("argTypes").stream().map(name -> name.toString())
+                    .toArray(String[]::new);
+            JsonArray actualTypes = json.getJsonArray("argActualTypes");
+            String[] argActualTypeNames = actualTypes == null ? argTypeNames
+                    : actualTypes.stream().map(name -> name.toString()).toArray(String[]::new);
             return new InvokeMethodRequest(
                     json.getString("java.naming.security.principal"),
                     json.getString("java.naming.security.credentials"),
                     json.getString("lookup"),
                     json.getString("method"),
-                    json.getJsonArray("argTypes").stream().map(name -> name.toString()).toArray(String[]::new),
-                    json.getJsonArray("argActualTypes").stream().map(name -> name.toString()).toArray(String[]::new),
+                    argTypeNames,
+                    argActualTypeNames,
                     json.getJsonArray("argValues"),
                     (args, argTypes, classloader) -> toObjects(argTypes, (JsonArray) args));
         }
@@ -64,7 +69,7 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
             return jsonb.fromJson(objectValue.toString(), type);
         } catch (Exception e) {
             // cannot really happen. It is just from java.lang.AutoCloseable interface
-            throw new IllegalStateException("Problem closing Jsonb.", e);
+            throw new IllegalStateException("Failed to deserialize arguments.", e);
         }
     }
 
