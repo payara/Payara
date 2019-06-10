@@ -288,7 +288,7 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
         String uriText = appClientDesc().getModuleDescriptor().getArchiveUri();
         String uriRoot = "";
         String archiveName = uriText;
-        int lastIndex = uriText.lastIndexOf("/");
+        int lastIndex = uriText.lastIndexOf('/');
         if(lastIndex > -1) {
             uriRoot = uriText.substring(0, lastIndex);
             archiveName = uriText.substring(lastIndex);

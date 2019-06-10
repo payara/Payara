@@ -732,7 +732,7 @@ public class PayaraRestApiHandlers {
                 for (String instance : instances) {
                     String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
                     if (configRef.equals(configName)) {
-                        serverName = instance.substring(instance.lastIndexOf("/") + 1);
+                        serverName = instance.substring(instance.lastIndexOf('/') + 1);
                     }
                 }
                 String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
@@ -743,7 +743,7 @@ public class PayaraRestApiHandlers {
                 List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
 
                 for (String virtualServer : virtualServers) {         
-                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
+                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf('/') + 1);
 
                     for (int i = 0; i < deployedApplications.size(); i++) {
                         deployedApplications.set(i, deployedApplications.get(i)
@@ -753,7 +753,7 @@ public class PayaraRestApiHandlers {
                     String contextRoots = "";
 
                     for (String application : applications) {
-                        String applicationName = application.substring(application.lastIndexOf("/") + 1);
+                        String applicationName = application.substring(application.lastIndexOf('/') + 1);
                         String[] deployedVirtualServers; 
                         if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
                             String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(

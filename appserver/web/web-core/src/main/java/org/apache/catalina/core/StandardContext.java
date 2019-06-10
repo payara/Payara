@@ -6840,7 +6840,7 @@ public class StandardContext
             log.log(Level.SEVERE, LogFacade.MALFORMED_NAME, getName());
         }
         path=path.substring(2);
-        int delim=path.indexOf( "/" );
+        int delim=path.indexOf('/');
         hostName="localhost"; // Should be default...
         if( delim > 0 ) {
             hostName=path.substring(0, delim);
@@ -7094,7 +7094,7 @@ public class StandardContext
 
         if (file == null)
             return (null);
-        int period = file.lastIndexOf(".");
+        int period = file.lastIndexOf('.');
         if (period < 0)
             return (null);
         String extension = file.substring(period + 1);
