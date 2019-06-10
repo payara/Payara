@@ -1202,7 +1202,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
     
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
-        double threshold = Double.valueOf(seconds);
+        double threshold = Double.parseDouble(seconds);
         if (threshold > 0) {
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
@@ -1434,7 +1434,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         boolean poolProperty = false;
         String statementWrappingString = getStatementWrapping();
         if (statementWrappingString != null)
-            poolProperty = Boolean.valueOf(statementWrappingString);
+            poolProperty = Boolean.parseBoolean(statementWrappingString);
 
         if (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_ON ||
                 (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_NOT_SET && poolProperty)) {
@@ -1565,7 +1565,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String stmtLeakReclaim = getStatementLeakReclaim();
         if (stmtLeakTimeout != null) {
             statementLeakTimeout = Integer.parseInt(stmtLeakTimeout) * 1000L;
-            statementLeakReclaim = Boolean.valueOf(stmtLeakReclaim);
+            statementLeakReclaim = Boolean.parseBoolean(stmtLeakReclaim);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "StatementLeakTimeout in seconds: "
                         + statementLeakTimeout + " & StatementLeakReclaim: "
