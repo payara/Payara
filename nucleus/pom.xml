@@ -326,6 +326,7 @@
         
         <opentracing.version>0.31.0</opentracing.version>
 
+        <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
         <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
@@ -1356,9 +1357,9 @@ Parent is ${project.parent}</echo>
             </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
             <dependency>
-                <groupId>jline</groupId>
+                <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>2.14.6</version>
+                <version>${jline.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>

@@ -138,6 +138,10 @@
         <!-- JMS -->
         <jms-api.version>2.0.1</jms-api.version>
 
+        <jna.version>5.2.0</jna.version>
+        
+        <jline-terminal-jna>3.11.0</jline-terminal-jna>
+        
         <!-- 5.1.1-b02.payara-p1 -->
         <mq.version>5.1.1.final.payara-p4</mq.version>
 

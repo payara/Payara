@@ -177,6 +177,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jna.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-terminal-jna</artifactId>
+            <version>${jline-terminal-jna}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-core</artifactId>
             <version>${project.version}</version>
