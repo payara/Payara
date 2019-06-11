@@ -2,17 +2,18 @@ package fish.payara.ejb.endpoint;
 
 import static java.util.Arrays.asList;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Base64;
 
 import javax.naming.InitialContext;
-import javax.servlet.http.HttpServletRequest;
+import javax.naming.NamingException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -30,20 +31,56 @@ import fish.payara.ejb.http.protocol.LookupResponse;
 @Path("jndi")
 public class EjbOverHttpResource {
 
+    private final EjbOverHttpService service;
+
+    public EjbOverHttpResource() {
+        this(new EjbOverHttpService() {
+
+            @Override
+            public Object getBean(String jndiName) throws NamingException {
+                return new InitialContext().lookup(jndiName);
+            }
+
+            @Override
+            public ClassLoader getAppClassLoader(String applicationName) {
+                ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
+                return registry.get(applicationName).getAppClassLoader();
+            }
+        });
+    }
+
+    public EjbOverHttpResource(EjbOverHttpService backend) {
+        this.service = backend;
+    }
+
     @POST
     @Path("/lookup")
-    public Response lookup(LookupRequest body, @Context HttpServletRequest request) {
+    @Produces("application/x-java-object")
+    @Consumes("application/x-java-object")
+    public Response lookupJavaSerialization(LookupRequest body) {
+        return lookup(body, "application/x-java-object");
+    }
+
+    @POST
+    @Path("/lookup")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response lookupJsonb(LookupRequest body) {
+        return lookup(body, MediaType.APPLICATION_JSON);
+    }
+
+    private Response lookup(LookupRequest body, String mediaType) {
         try {
             return Response
                     .status(Status.CREATED)
-                    .type(request.getContentType())
-                    .location(new URI("invoke"))
-                    .entity(lookup(body))
+                    .type(mediaType)
+                    .location(new URI("jndi/invoke"))
+                    .entity(doLookup(body))
                     .build();
         } catch (Exception e) {
             return Response
                     .status(Status.BAD_REQUEST)
-                    .type(request.getContentType())
+                    .type(mediaType)
                     .entity(new ErrorResponse(e))
                     .build();
         }
@@ -51,23 +88,37 @@ public class EjbOverHttpResource {
 
     @POST
     @Path("/invoke")
-    public Response invoke(InvokeMethodRequest body, @Context HttpServletRequest request) {
+    @Produces("application/x-java-object")
+    @Consumes("application/x-java-object")
+    public Response invokeJavaSerilaization(InvokeMethodRequest body) {
+        return invoke(body, "application/x-java-object");
+    }
+
+    @POST
+    @Path("/invoke")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response invokeJsonb(InvokeMethodRequest body) {
+        return invoke(body, MediaType.APPLICATION_JSON);
+    }
+
+    private Response invoke(InvokeMethodRequest body, String mediaType) {
         try {
             return Response
                     .status(Status.OK)
-                    .type(request.getContentType())
-                    .entity(invoke(body))
+                    .type(mediaType)
+                    .entity(doInvoke(body))
                     .build();
         } catch (Exception e) {
             return Response
                     .status(Status.BAD_REQUEST)
-                    .type(request.getContentType())
+                    .type(mediaType)
                     .entity(new ErrorResponse(e))
                     .build();
         }
     }
 
-    private static LookupResponse lookup(LookupRequest request) throws Exception {
+    private LookupResponse doLookup(LookupRequest request) throws Exception {
         String jndiName = request.jndiName;
         return excuteInAppContext(jndiName, ejb -> {
             int bangIndex = jndiName.indexOf('!');
@@ -80,7 +131,7 @@ public class EjbOverHttpResource {
         });
     }
 
-    private static InvokeMethodResponse invoke(InvokeMethodRequest request) throws Exception {
+    private InvokeMethodResponse doInvoke(InvokeMethodRequest request) throws Exception {
         return excuteInAppContext(request.jndiName, ejb -> {
             // Authenticates the caller and if successful sets the security context
             // *for the outgoing EJB call*. In other words, the security context for this
@@ -91,7 +142,7 @@ public class EjbOverHttpResource {
             Class<?>[] argTypes = toClasses(request.argTypes);
             Class<?>[] argActualTypes = toClasses(request.argActualTypes);
             Method method = findBusinessMethodDeclaration(ejb, request.method, argTypes);
-            return new InvokeMethodResponse((Serializable) method.invoke(ejb,
+            return new InvokeMethodResponse(method.invoke(ejb,
                     request.argDeserializer.deserialise(request.argValues, argActualTypes,
                             Thread.currentThread().getContextClassLoader())));
         });
@@ -101,17 +152,20 @@ public class EjbOverHttpResource {
         return asList(classNames).stream().map(EjbOverHttpResource::toClass).toArray(Class[]::new);
     }
 
-    private static <T> T excuteInAppContext(String jndiName, EjbOperation<T> operation) throws Exception {
+    private <T> T excuteInAppContext(String jndiName, EjbOperation<T> operation) throws Exception {
         if (!jndiName.startsWith("java:global/")) {
-            throw new IllegalArgumentException("Only global names are supported but got: "+jndiName);
+            throw new IllegalArgumentException("Only global names are supported but got: " + jndiName);
         }
-        ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
+        if (jndiName.indexOf('/', 12) < 0) {
+            throw new IllegalArgumentException("Global name must contain application name but got: " + jndiName);
+        }
+
         Thread currentThread = Thread.currentThread();
         String applicationName = jndiName.substring(12, jndiName.indexOf('/', 12));
         ClassLoader existingContextClassLoader = currentThread.getContextClassLoader();
         try {
-            currentThread.setContextClassLoader(registry.get(applicationName).getAppClassLoader());
-            Object bean = new InitialContext().lookup(jndiName);
+            currentThread.setContextClassLoader(service.getAppClassLoader(applicationName));
+            Object bean = service.getBean(jndiName);
             return operation.execute(bean);
         } finally {
             if (existingContextClassLoader != null) {

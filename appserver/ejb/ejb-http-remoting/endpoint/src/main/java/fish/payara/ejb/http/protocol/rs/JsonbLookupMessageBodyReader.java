@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
@@ -30,7 +31,8 @@ public class JsonbLookupMessageBodyReader implements MessageBodyReader<LookupReq
             MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
         try (JsonReader jsonReader = Json.createReader(entityStream)) {
-            return new LookupRequest(jsonReader.readObject().getString("lookup"));
+            JsonObject request = jsonReader.readObject();
+            return new LookupRequest(request.getString("lookup"));
         }
     }
 

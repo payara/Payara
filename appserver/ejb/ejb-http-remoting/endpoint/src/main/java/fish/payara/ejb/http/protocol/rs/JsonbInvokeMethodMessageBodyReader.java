@@ -9,10 +9,12 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -36,14 +38,14 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
                     throws IOException, WebApplicationException {
         try (JsonReader jsonReader = Json.createReader(entityStream)) {
             JsonObject json = jsonReader.readObject();
-            String[] argTypeNames = json.getJsonArray("argTypes").stream().map(name -> name.toString())
+            String[] argTypeNames = json.getJsonArray("argTypes").stream().map(JsonbInvokeMethodMessageBodyReader::text)
                     .toArray(String[]::new);
             JsonArray actualTypes = json.getJsonArray("argActualTypes");
             String[] argActualTypeNames = actualTypes == null ? argTypeNames
-                    : actualTypes.stream().map(name -> name.toString()).toArray(String[]::new);
+                    : actualTypes.stream().map(JsonbInvokeMethodMessageBodyReader::text).toArray(String[]::new);
             return new InvokeMethodRequest(
-                    json.getString("java.naming.security.principal"),
-                    json.getString("java.naming.security.credentials"),
+                    json.getString("java.naming.security.principal", ""),
+                    json.getString("java.naming.security.credentials", ""),
                     json.getString("lookup"),
                     json.getString("method"),
                     argTypeNames,
@@ -51,6 +53,10 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
                     json.getJsonArray("argValues"),
                     (args, argTypes, classloader) -> toObjects(argTypes, (JsonArray) args));
         }
+    }
+
+    private static String text(JsonValue value) {
+        return value instanceof JsonString ? ((JsonString) value).getString() : value.toString();
     }
 
     /**
@@ -67,9 +73,9 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
     private static Object toObject(JsonValue objectValue, Type type) {
         try (Jsonb jsonb = JsonbBuilder.create()) {
             return jsonb.fromJson(objectValue.toString(), type);
-        } catch (Exception e) {
+        } catch (Exception ex) {
             // cannot really happen. It is just from java.lang.AutoCloseable interface
-            throw new IllegalStateException("Failed to deserialize arguments.", e);
+            throw new InternalServerErrorException("Failed to deserialize argument of type: " + type.toString(), ex);
         }
     }
 
