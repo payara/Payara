@@ -114,7 +114,7 @@ public class GetMPHealthCheckConfiguration implements AdminCommand {
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", healthCheckConfiguration.getEnabled());
-        extraPropertiesMap.put("secureHealth", healthCheckConfiguration.getSecureHealthCheck());
+        extraPropertiesMap.put("secureHealthCheck", healthCheckConfiguration.getSecureHealthCheck());
         extraPropertiesMap.put("endpoint", healthCheckConfiguration.getEndpoint());
         extraPropertiesMap.put("virtualServers", healthCheckConfiguration.getVirtualServers());
 

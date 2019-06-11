@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,10 +58,13 @@
         setPageSessionAttribute(key="valueMap", 
                 value="#{requestScope.resp.data.extraProperties.microprofileHealthCheckConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "secureHealthCheck"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        if (#{pageSession.valueMap['secureHealthCheck']}=true) {
+            setPageSessionAttribute(key="secureHealthSelected", value="true");
         }
     />
 </event>
@@ -81,6 +84,7 @@
                  <!command
                         prepareSuccessfulMsg();
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                        mapPut(map="#{pageSession.valueMap}" key="secureHealthCheck" value="#{pageSession.secureHealthSelected}");
                         convertArrayToCommaString(array="#{pageSession.virtualServersSelected}"  commaString="#{requestScope.virtualServersText}");
                         mapPut(map="#{pageSession.valueMap}" key="virtualServers" value="#{requestScope.virtualServersText}");
                         gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_HEALTHCHECK_URL}/set-microprofile-healthcheck-configuration" 
@@ -97,6 +101,12 @@
                       label="$resource{i18n_microprofile.healthCheck.configuration.enabled}"  
                       helpText="$resource{i18n_microprofile.healthCheck.configuration.enabledHelp}">
             <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="secureHealthCheckProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.healthCheck.configuration.secureHealthCheck}"  
+                      helpText="$resource{i18n_microprofile.healthCheck.configuration.secureHealthCheckHelp}">
+            <sun:checkbox id="secureHealthCheck" selected="#{pageSession.secureHealthSelected}" 
                           selectedValue="true" />
         </sun:property>
         <sun:property id="endPointProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 

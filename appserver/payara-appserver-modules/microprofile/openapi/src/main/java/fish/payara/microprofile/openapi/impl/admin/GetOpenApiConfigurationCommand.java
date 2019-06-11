@@ -111,7 +111,7 @@ public class GetOpenApiConfigurationCommand implements AdminCommand {
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
         extraPropertiesMap.put("enabled", openApiConfig.getEnabled());
-        extraPropertiesMap.put("SecureOpenAPI", openApiConfig.getSecureOpenAPI());
+        extraPropertiesMap.put("secureOpenAPI", openApiConfig.getSecureOpenAPI());
         extraPropertiesMap.put("virtualServers", openApiConfig.getVirtualServers());
         extraPropertiesMap.put("corsHeaders", openApiConfig.getCorsHeaders());
 

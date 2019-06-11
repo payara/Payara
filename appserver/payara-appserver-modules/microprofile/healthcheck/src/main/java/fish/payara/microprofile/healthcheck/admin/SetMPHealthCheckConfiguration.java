@@ -89,7 +89,7 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
     
-    @Param(name = "secureHealth", optional = true)
+    @Param(name = "secureHealthCheck", optional = true)
     private Boolean secure;
 
     @Param(name = "endpoint", optional = true)
