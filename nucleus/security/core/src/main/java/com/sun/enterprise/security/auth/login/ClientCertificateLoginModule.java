@@ -160,7 +160,7 @@ public class ClientCertificateLoginModule implements LoginModule {
             Enumeration<String> aliases = keyStore.aliases();
             for (int i = 0; i < keyStore.size(); i++) {
                 aliasNames[i] = aliases.nextElement();
-                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i])).getSubjectDN().getName();
+                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i])).getSubjectX500Principal().getName();
             }
 
             Callback[] callbacks = new Callback[] {createChoiceCallback(certificateNames)};

@@ -91,8 +91,8 @@ public final class X509CertificateStringifier implements Stringifier
 		final StringBuilder	buf	= new StringBuilder();
 		final String		NL	= "\n";
 
-		buf.append("Issuer: ").append(cert.getIssuerDN().getName()).append(NL);
-		buf.append("Issued to: ").append(cert.getSubjectDN().getName()).append(NL);
+		buf.append("Issuer: ").append(cert.getIssuerX500Principal().getName()).append(NL);
+		buf.append("Issued to: ").append(cert.getSubjectX500Principal().getName()).append(NL);
 		buf.append("Version: ").append(cert.getVersion()).append(NL);
 		buf.append("Not valid before: ").append(cert.getNotBefore()).append(NL);
 		buf.append("Not valid after: ").append(cert.getNotAfter()).append(NL);
