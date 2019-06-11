@@ -645,7 +645,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (Boolean.valueOf(skipScanExternalLibProp)) {
             // if we skip scanning external libraries, we should just
             // return an empty list here
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<URI> externalLibs = DeploymentUtils.getExternalLibraries(context.getSource());
@@ -699,7 +699,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (handler == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         if (sniffers==null) {

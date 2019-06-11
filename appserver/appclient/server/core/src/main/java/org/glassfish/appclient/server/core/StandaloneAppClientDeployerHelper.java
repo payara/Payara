@@ -330,7 +330,7 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
 
     @Override
     public Set<FullAndPartURIs> earLevelDownloads() throws IOException {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     @Override
