@@ -45,13 +45,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>5</version>
-        <relativePath />
-    </parent>
-
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
     <version>5.193-SNAPSHOT</version>
@@ -114,42 +107,6 @@
         </repository>
 
         <repository>
-            <id>jvnet-nexus-staging</id>
-            <name>Java.net Staging Repositories</name>
-            <url>https://maven.java.net/content/repositories/staging</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-promoted</id>
-            <name>Java.net Promoted Repositories</name>
-            <url>https://maven.java.net/content/repositories/promoted/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-1074</id>
-            <name>Java.net orgglassfish-1074 Repositories</name>
-            <url>https://maven.java.net/content/repositories/orgglassfish-1074/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
             <id>eclipse.microprofile</id>
             <name>Eclipse MicroProfile Repository</name>
             <url>https://repo.eclipse.org/content/groups/microprofile/</url>
@@ -162,49 +119,21 @@
             </snapshots>
         </repository>
 
-        <!--  
         <repository>
-           <id>payara-patched-externals-local</id>
-           <name>Payara Patched Externals local</name>
-           <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
+            <id>payara-patched-externals</id>
+	    <name>Payara Patched Externals</name>
+	    <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
             <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
+           	<enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
+               	<enabled>false</enabled>
             </snapshots>
-        </repository>
-        -->
-
-        <repository>
-           <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>false</enabled>
-            	</snapshots>
         </repository>
 
     </repositories>
 
     <pluginRepositories>
-        <pluginRepository>
-            <id>jvnet-nexus-promoted</id>
-            <name>Java.net Promoted Repositories</name>
-            <url>https://maven.java.net/content/repositories/promoted/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
         <pluginRepository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
