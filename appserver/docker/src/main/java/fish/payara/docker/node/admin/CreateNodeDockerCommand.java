@@ -52,7 +52,7 @@ public class CreateNodeDockerCommand implements AdminCommand {
     @Param(name = "dockerPasswordFile", alias = "dockerpasswordfile")
     String dockerPasswordFile;
 
-    @Param(name = "dockerImage", alias = "dockerimage", optional = true, defaultValue = "payara/server-node")
+    @Param(name = "dockerImage", alias = "dockerimage", optional = true, defaultValue = DockerConstants.DEFAULT_IMAGE_NAME)
     String dockerImage;
 
     @Param(name = "dockerPort", optional = true, alias = "dockerport")
@@ -99,14 +99,16 @@ public class CreateNodeDockerCommand implements AdminCommand {
         }
 
         if (StringUtils.ok(dockerImage)) {
-            // Check if docker image has version tag (can't add non-constant ass default parameter value)
-            if (dockerImage.equals("payara/server-node")) {
-                dockerImage = "payara/server-node:" + Version.getMajorVersion() + "." + Version.getMinorVersion();
+            // Check if docker image has version tag (can't add non-constant as default parameter value)
+            if (dockerImage.equals(DockerConstants.DEFAULT_IMAGE_NAME)) {
+                dockerImage = DockerConstants.DEFAULT_IMAGE_NAME + ":"
+                        + Version.getMajorVersion() + "." + Version.getMinorVersion();
             }
             map.add("dockerImage", dockerImage);
         } else {
-            // Can't be added to default of parameter or attribute due to not being a constant
-            dockerImage = "payara/server-node:" + Version.getMajorVersion() + "." + Version.getMinorVersion();
+            // Version can't be added to default of parameter or attribute due to not being a constant
+            dockerImage = DockerConstants.DEFAULT_IMAGE_NAME + ":"
+                    + Version.getMajorVersion() + "." + Version.getMinorVersion();
             map.add("dockerImage", dockerImage);
         }
 

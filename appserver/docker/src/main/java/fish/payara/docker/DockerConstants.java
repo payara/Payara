@@ -18,4 +18,5 @@ public class DockerConstants {
     public static final String PAYARA_PASSWORD_FILE = "/opt/payara/passwords/passwordfile.txt";
     public static final String INSTANCE_NAME = "PAYARA_INSTANCE_NAME";
     public static final String DOCKER_CONTAINER_ENV = "Env";
+    public static final String DEFAULT_IMAGE_NAME = "payara/server-node";
 }
