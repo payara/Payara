@@ -8,6 +8,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -42,7 +43,8 @@ public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyRea
             };
             return request;
         } catch (ClassNotFoundException ex) {
-           throw new IllegalStateException(ex);
+            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
+                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
         }
     }
 

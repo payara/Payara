@@ -2,13 +2,18 @@ package fish.payara.ejb.http.protocol;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class InvokeMethodRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @JsonProperty("java.naming.security.principal")
     public final String principal;
+    @JsonProperty("java.naming.security.credentials")
     public final String credentials;
 
+    @JsonProperty("lookup")
     public final String jndiName;
     public final String method;
     public final String[] argTypes;
