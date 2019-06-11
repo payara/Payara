@@ -363,7 +363,7 @@ public class ResultDesc {
         } catch (SQLException e) {
             if(logger.isLoggable(Logger.WARNING) ) {
                 Object items[] =
-                    { Integer.valueOf(index), Integer.valueOf(resultType), Integer.valueOf(columnType), e};
+                    { index, resultType, columnType, e};
                 logger.log(Logger.WARNING,"sqlstore.resultdesc.errorgettingvalefromresulset",items);
             }
             throw e;

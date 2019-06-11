@@ -119,7 +119,7 @@ public class Support
                                           int arg1,
                                           String arg2) {
         return I18NHelper.getMessage(MESSAGES, key,
-                                     new Object[]{Integer.valueOf(arg1), arg2});
+                                     new Object[]{arg1, arg2});
     }
 
     /**

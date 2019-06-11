@@ -211,7 +211,7 @@ public class DBStatement extends Object {
     {
         int sqlType = getSqlType(columnElement);
         if (logger.isLoggable(Logger.FINER)) {
-            Object[] items = {Integer.valueOf(index),val,Integer.valueOf(sqlType)};
+            Object[] items = {index, val, sqlType};
             logger.finer("sqlstore.sql.generator.dbstatement.bindinputcolumn", items); // NOI18N
         }
 

@@ -77,13 +77,13 @@ public class ErrorMsg
         EJBQLException ex = null;
         if (line > 1) {
             // include line and column info
-            Object args[] = {Integer.valueOf(line), Integer.valueOf(col), text};
+            Object args[] = {line, col, text};
             ex = new EJBQLException(I18NHelper.getMessage(
                 msgs, "EXC_PositionInfoMsgLineColumn", args)); //NOI18N
         }
         else if (col > 0) {
             // include column info
-            Object args[] = {Integer.valueOf(col), text};
+            Object args[] = {col, text};
             ex = new EJBQLException(I18NHelper.getMessage(
                 msgs, "EXC_PositionInfoMsgColumn", args)); //NOI18N
         }
@@ -133,13 +133,13 @@ public class ErrorMsg
         if (line > 1)
         {
             // include line and column info
-            Object args[] = {Integer.valueOf(line), Integer.valueOf(col), text};
+            Object args[] = {line, col, text};
             ex = new UnsupportedOperationException(I18NHelper.getMessage(
                 msgs, "EXC_PositionInfoMsgLineColumn", args)); //NOI18N
         }
         else if (col > 0) {
             // include column info
-            Object args[] = {Integer.valueOf(col), text};
+            Object args[] = {col, text};
             ex = new UnsupportedOperationException(I18NHelper.getMessage(
                 msgs, "EXC_PositionInfoMsgColumn", args)); //NOI18N
         }
