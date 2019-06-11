@@ -78,8 +78,8 @@ public class LBCommandsBase {
             String token = st.nextToken();
             String insName = null;
             String value = null;
-            insName = token.substring(0, token.indexOf("="));
-            value = token.substring(token.indexOf("=") + 1);
+            insName = token.substring(0, token.indexOf('='));
+            value = token.substring(token.indexOf('=') + 1);
             Integer weightInt;
             try
             {

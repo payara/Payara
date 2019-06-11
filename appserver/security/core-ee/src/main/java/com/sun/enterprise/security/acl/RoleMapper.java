@@ -352,7 +352,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         assert roleToGroup != null;
         Set<Group> s = roleToGroup.get(r.getName());
         if (s == null) {
-            return Collections.enumeration(Collections.EMPTY_SET);
+            return Collections.enumeration(Collections.emptySet());
         }
         return Collections.enumeration(s);
     }
@@ -367,7 +367,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         assert roleToPrincipal != null;
         Set<Principal> s = roleToPrincipal.get(r.getName());
         if (s == null) {
-            return Collections.enumeration(Collections.EMPTY_SET);
+            return Collections.enumeration(Collections.emptySet());
         }
         return Collections.enumeration(s);
     }

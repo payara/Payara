@@ -1162,7 +1162,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         if (result == null) {
             return null;
         }
-        int index = result.lastIndexOf("=");
+        int index = result.lastIndexOf('=');
         return result.substring(index+1);
     }
 

@@ -304,7 +304,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             String contextInfoEnabled,
             boolean cleanupTransaction) {
 
-        boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
+        boolean isContextInfoEnabled = Boolean.parseBoolean(contextInfoEnabled);
 
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes
                 = parseContextInfo(contextInfo, isContextInfoEnabled);

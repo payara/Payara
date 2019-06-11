@@ -602,7 +602,7 @@ public abstract class PayloadFilesManager {
             final Payload.Inbound inboundPayload) throws Exception {
 
         if (inboundPayload == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
 
         final Map<File,Properties> result = new LinkedHashMap<File,Properties>();

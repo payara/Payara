@@ -275,7 +275,7 @@ public class ASenvPropertyReader {
          *
          */
         private void setProperty(String line) {
-            int pos = line.indexOf("=");
+            int pos = line.indexOf('=');
 
             if (pos > 0) {
                 String lhs = (line.substring(0, pos)).trim();

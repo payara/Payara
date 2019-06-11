@@ -164,7 +164,7 @@ public class WoodstockHandler {
             if (lastIndex != -1) {
                 name = name.substring(lastIndex + 1, name.length());
             }
-            int index = name.indexOf(".");
+            int index = name.indexOf('.');
             if (index <= 0) {
                 logger.info("name=" + name + ",index=" + index);
                 String mesg = GuiUtil.getMessage("msg.deploy.nullArchiveError");

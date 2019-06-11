@@ -69,7 +69,7 @@ public final class Util {
     }
 
     public static String quoteIfNeeded(String name) {
-        if(name.indexOf(":") > 1) {
+        if(name.indexOf(':') > 1) {
            return ObjectName.quote(name);
         } else {
             return name;
@@ -458,12 +458,12 @@ public final class Util {
     Generate the default MBean type from a String, eg from a classname.
      */
     public static String typeFromName(final String s) {
-        if (s.indexOf("-") >= 0) {
+        if (s.indexOf('-') >= 0) {
             return s;   // if it already has dashes, leave unchanged
         }
 
         String simpleName = s;
-        final int idx = s.lastIndexOf(".");
+        final int idx = s.lastIndexOf('.');
         if (idx >= 0) {
             simpleName = s.substring(idx + 1);
         }

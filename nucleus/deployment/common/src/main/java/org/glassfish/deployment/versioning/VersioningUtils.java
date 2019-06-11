@@ -211,7 +211,7 @@ public class VersioningUtils {
             throws VersioningException {
 
         if (listVersion.size() == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         String expressionVersion = getExpression(appName);
 

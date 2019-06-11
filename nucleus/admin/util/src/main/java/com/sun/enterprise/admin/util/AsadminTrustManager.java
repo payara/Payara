@@ -43,6 +43,11 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.security.store.AsadminTruststore;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -51,8 +56,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.X509TrustManager;
-import jline.console.ConsoleReader;
 
 /**
  * An implementation of {@link X509TrustManager} that provides basic support
@@ -166,19 +169,30 @@ public class AsadminTrustManager implements X509TrustManager {
      * @return true if the user trusts the certificate
      */    
     private boolean isItOKToAddCertToTrustStore(X509Certificate c) {
+        if (!interactive) {
+            return true;
+        }
+
         String result = null;
+        LineReader lineReader = null;
+        try {
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(new DumbTerminal(System.in, System.out))
+                    .build();
 
-        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-            if (!interactive || console == null) {
-                return true;
-            }
-
-            console.setPrompt(c.toString());
-            result = console.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
+            result = lineReader.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error instantiating console", ioe);
         }
-
+        finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
+        }
         return result != null && result.equalsIgnoreCase("y");
     }
  
