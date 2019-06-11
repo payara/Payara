@@ -72,6 +72,9 @@ public class JwtTokenParser {
     private final boolean enableNamespacedClaims;
     private final Optional<String> customNamespace;
 
+    private String rawToken;
+    private SignedJWT signedJWT;
+    
     public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
         this.customNamespace = customNamespace;
@@ -81,9 +84,28 @@ public class JwtTokenParser {
         this(Optional.empty(), Optional.empty());
     }
     
-    public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey publicKey) throws Exception {
-        SignedJWT signedJWT = SignedJWT.parse(bearerToken);
-
+     public void parse(String bearerToken) throws Exception {
+        rawToken = bearerToken;
+        signedJWT = SignedJWT.parse(rawToken);
+        
+        // MP-JWT 1.0 4.1 typ
+        if (!checkIsJWT(signedJWT.getHeader())) {
+            throw new IllegalStateException("Not JWT");
+        }
+    }
+    
+     public JsonWebTokenImpl parse(String bearerToken, String issuer, PublicKey signedBy) throws Exception {
+         try{
+             parse(bearerToken);
+             return verify(issuer, signedBy);
+         }catch(Exception e){
+             throw new IllegalStateException("", e);
+         }
+     }
+     
+    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(rawToken);
+        
         // MP-JWT 1.0 4.1 typ
         if (!checkIsJWT(signedJWT.getHeader())) {
             throw new IllegalStateException("Not JWT");
@@ -127,7 +149,7 @@ public class JwtTokenParser {
 
             rawClaims.put(
                     raw_token.name(),
-                    createObjectBuilder().add("token", bearerToken).build().get("token"));
+                    createObjectBuilder().add("token", rawToken).build().get("token"));
 
             return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
