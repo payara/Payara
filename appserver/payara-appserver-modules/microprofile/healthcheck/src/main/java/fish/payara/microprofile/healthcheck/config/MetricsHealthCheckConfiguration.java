@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- *
+ * Configuration for the Microprofile HealthCheck service
  * @author jonathan coustick
  * @since 4.1.2.182
  */
@@ -66,6 +66,15 @@ public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, Config
 
     void setEnabled(String value) throws PropertyVetoException;
 
+    /**
+     * Boolean value determining if the health check service is secure or not
+     * @return
+     * @since 5.193
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getSecureHealthCheck();
+    void setSecureHealthCheck(String value) throws PropertyVetoException;
+    
     /**
      * String value defines the endpoint of health service.
      *

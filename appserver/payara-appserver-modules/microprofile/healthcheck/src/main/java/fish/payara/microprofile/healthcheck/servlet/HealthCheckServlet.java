@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,20 @@
 package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
  * Servlet that kicks off the HealthChecks when hit.
  * @author Andrew Pielage
+ * @since 4.1.2.181
  */
 public class HealthCheckServlet extends HttpServlet {
     
@@ -63,12 +67,17 @@ public class HealthCheckServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(
-                HealthCheckService.class);
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        HealthCheckService healthCheckService = serviceLocator.getService(HealthCheckService.class);
         
         // If we couldn't find the HealthCheckService, throw an exception
         if (healthCheckService == null) {
             throw new ServletException("Could not find Health Check Service");
+        }
+        MetricsHealthCheckConfiguration config = serviceLocator.getService(MetricsHealthCheckConfiguration.class);
+        if (!request.isSecure() && Boolean.parseBoolean(config.getSecureHealthCheck())) {
+            response.sendError(SC_FORBIDDEN, "MP Health security is enabled");
+            return;
         }
         
         healthCheckService.performHealthChecks(response);
