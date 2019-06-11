@@ -1625,7 +1625,7 @@ public class Connector
 
         String prop = getProperty("clientauth");
         if (prop != null) {
-            ret = Boolean.valueOf(prop).booleanValue();
+            ret = Boolean.parseBoolean(prop);
         } else {	
             ServerSocketFactory factory = this.getFactory();
             if (factory instanceof CoyoteServerSocketFactory) {

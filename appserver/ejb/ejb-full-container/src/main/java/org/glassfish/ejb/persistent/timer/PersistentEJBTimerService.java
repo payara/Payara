@@ -337,7 +337,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
         try{
             String str=System.getProperty( strDBReadBeforeTimeout );
             if( null != str) {
-                performDBReadBeforeTimeout = Boolean.valueOf(str).booleanValue();
+                performDBReadBeforeTimeout = Boolean.parseBoolean(str);
 
                 if( logger.isLoggable(Level.FINE) ) {
                     logger.log(Level.FINE, "EJB Timer Service property : " +

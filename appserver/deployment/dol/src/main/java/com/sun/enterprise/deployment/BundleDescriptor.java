@@ -1017,7 +1017,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      * @param value the full attribute
      */
     public void setFullAttribute(String value) {
-        fullAttribute = Boolean.valueOf(value);
+        fullAttribute = Boolean.parseBoolean(value);
     }
 
     /**
