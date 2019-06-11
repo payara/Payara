@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -68,11 +69,15 @@ public class OpenApiResource {
 
     @GET
     @Produces({ APPLICATION_YAML, APPLICATION_JSON })
-    public Response getResponse(@Context HttpServletResponse response) throws IOException {
+    public Response getResponse(@Context HttpServletResponse response, @Context HttpServletRequest request) throws IOException {
 
         // If the server is disabled, throw an error
         if (!OpenApiService.getInstance().isEnabled()) {
             response.sendError(FORBIDDEN.getStatusCode(), "OpenAPI Service is disabled.");
+            return Response.status(FORBIDDEN).build();
+        }
+        if (OpenApiService.getInstance().isSecure() && !request.isSecure()) {
+            response.sendError(FORBIDDEN.getStatusCode(), "OpenAPI Service security is enabled");
             return Response.status(FORBIDDEN).build();
         }
 

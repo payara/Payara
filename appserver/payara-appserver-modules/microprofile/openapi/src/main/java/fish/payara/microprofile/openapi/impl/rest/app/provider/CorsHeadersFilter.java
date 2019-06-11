@@ -48,7 +48,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
 /**
- * A respone filter to add CORS deaders to the OpenAPI response.
+ * A response filter to add CORS headers to the OpenAPI response.
  */
 @Provider
 public class CorsHeadersFilter implements ContainerResponseFilter {

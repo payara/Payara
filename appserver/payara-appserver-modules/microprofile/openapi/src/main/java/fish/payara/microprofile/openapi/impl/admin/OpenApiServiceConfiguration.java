@@ -57,6 +57,15 @@ public interface OpenApiServiceConfiguration extends ConfigExtension {
     String getEnabled();
 
     void setEnabled(String value) throws PropertyVetoException;
+    
+    /**
+     * Boolean value determining if the OpenAPI service is secure or not
+     * @return
+     * @since 5.193
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getSecureOpenAPI();
+    void setSecureOpenAPI(String value) throws PropertyVetoException;
 
     /**
      * Defines if CORS headers are set on the OpenApi response.
