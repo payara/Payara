@@ -9,6 +9,7 @@ import java.util.Base64;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -154,10 +155,10 @@ public class EjbOverHttpResource {
 
     private <T> T excuteInAppContext(String jndiName, EjbOperation<T> operation) throws Exception {
         if (!jndiName.startsWith("java:global/")) {
-            throw new IllegalArgumentException("Only global names are supported but got: " + jndiName);
+            throw new BadRequestException("Only global names are supported but got: " + jndiName);
         }
         if (jndiName.indexOf('/', 12) < 0) {
-            throw new IllegalArgumentException("Global name must contain application name but got: " + jndiName);
+            throw new BadRequestException("Global name must contain application name but got: " + jndiName);
         }
 
         Thread currentThread = Thread.currentThread();

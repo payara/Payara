@@ -56,6 +56,11 @@ import fish.payara.ejb.http.protocol.rs.ObjectStreamInvokeMethodMessageBodyReade
 import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyReader;
 import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyWriter;
 
+/**
+ * A component test for the {@link EjbOverHttpResource} that tests with both JSONB and java object serialisation.
+ * 
+ * @author Jan Bernitt 
+ */
 @RunWith(Parameterized.class)
 public class EjbOverHttpResourceTest {
 
@@ -66,6 +71,9 @@ public class EjbOverHttpResourceTest {
         return Arrays.asList("application/x-java-object", MediaType.APPLICATION_JSON);
     }
 
+    /**
+     * The {@link MediaType} currently tested
+     */
     @Parameter
     public String mediaType;
 
@@ -87,7 +95,7 @@ public class EjbOverHttpResourceTest {
 
         @Override
         public Object getBean(String jndiName) throws NamingException {
-            if (!jndiName.endsWith("/" + RemoteCalculator.class.getSimpleName())) {
+            if (!jndiName.endsWith(RemoteCalculator.class.getSimpleName())) {
                 throw new NamingException("No such bean: " + jndiName);
             }
             return new CalculatorBean();
@@ -157,31 +165,62 @@ public class EjbOverHttpResourceTest {
     }
 
     @Test
-    public void lookup_Success() {
+    public void lookup_SuccessInterfaceName() {
         LookupResponse response = lookupExpectSuccess(mediaType, EJB_NAME);
-        assertNotNull(response);
         assertEquals(RemoteCalculator.class.getName(), response.typeName);
         assertEquals("Stateless", response.kind);
     }
 
     @Test
+    public void lookup_SuccessFullName() {
+        LookupResponse response = lookupExpectSuccess(mediaType,
+                "java:global/myapp/CalculatorBean!" + RemoteCalculator.class.getName());
+        assertEquals(RemoteCalculator.class.getName(), response.typeName);
+        assertEquals("Stateless", response.kind);
+    }
+
+    @Test
+    public void lookup_ErrorFullNameWithoutPackage() {
+        ErrorResponse response = lookupExpectError(mediaType, "java:global/myapp/CalculatorBean!RemoteCalculator");
+        assertEquals("java.lang.ClassNotFoundException", response.exceptionType);
+        assertEquals("RemoteCalculator", response.message);
+        assertNull(response.cause);
+    }
+
+    @Test
+    public void lookup_ErrorNoGlobalJndiName() {
+        ErrorResponse response = lookupExpectError(mediaType, "java:app/myapp/" + RemoteCalculator.class.getName());
+        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("Only global names are supported but got: java:app/myapp/fish.payara.ejb.endpoint.EjbOverHttpResourceTest$RemoteCalculator", response.message);
+        assertNull(response.cause);
+    }
+
+    @Test
+    public void lookup_ErrorMalformedGlobalJndiName() {
+        ErrorResponse response = lookupExpectError(mediaType, "java:global/" + RemoteCalculator.class.getName());
+        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("Global name must contain application name but got: java:global/fish.payara.ejb.endpoint.EjbOverHttpResourceTest$RemoteCalculator", response.message);
+        assertNull(response.cause);
+    }
+
+    @Test
     public void invoke_SuccessWithArguments() {
         InvokeMethodResponse response = invokeExpectSuccess(mediaType, EJB_NAME, "add",
-                new String[] { int.class.getName(), int.class.getName() }, java2binary(1, 2));
+                new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
         assertEquals("Actual type should be wrapper of int", Integer.class.getName(), response.type);
         assertEquals(3, response.result);
     }
 
     @Test
     public void invoke_SuccessWithComplexResult() {
-        InvokeMethodResponse response = invokeExpectSuccess(mediaType, EJB_NAME, "getSettings", new String[0],
-                java2binary(new Object[0]));
-        assertNotNull(response.result);
+        InvokeMethodResponse response = invokeExpectSuccess(mediaType, EJB_NAME, "getSettings", 
+                new String[0], pack(new Object[0]));
         @SuppressWarnings("unchecked")
         Map<String, Object> settings = (Map<String, Object>) response.result;
-        if (mediaType.equals("application/x-java-object")) {
+        if (isJavaObjectSerialisation()) {
             assertSame(UUID.class, settings.get("uuid").getClass());
         } else {
+            // this shows that JSONB is not capable of preserving the UUID while java serialisation is
             assertSame(String.class, settings.get("uuid").getClass());
         }
         @SuppressWarnings("unchecked")
@@ -194,7 +233,7 @@ public class EjbOverHttpResourceTest {
     @Test
     public void invoke_ErrorClassNotFound() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "add",
-                new String[] { "undefined", "int" }, java2binary(1, 2));
+                new String[] { "undefined", "int" }, pack(1, 2));
         assertThat(response.message, CoreMatchers.endsWith("java.lang.ClassNotFoundException: undefined"));
         assertNotNull(response.cause);
     }
@@ -202,7 +241,7 @@ public class EjbOverHttpResourceTest {
     @Test
     public void invoke_ErrorNoSuchMethodWrongName() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "sub",
-                new String[] { int.class.getName(), int.class.getName() }, java2binary(1, 2));
+                new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
         assertEquals("java.lang.NoSuchMethodException", response.exceptionType);
         assertEquals("No method matching sub([int, int]) found in business interface", response.message);
         assertNull(response.cause);
@@ -211,7 +250,7 @@ public class EjbOverHttpResourceTest {
     @Test
     public void invoke_ErrorNoSuchMethodWrongArgumentType() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "add",
-                new String[] { float.class.getName(), int.class.getName() }, java2binary(1, 2));
+                new String[] { float.class.getName(), int.class.getName() }, pack(1, 2));
         assertEquals("java.lang.NoSuchMethodException", response.exceptionType);
         assertEquals("No method matching add([float, int]) found in business interface", response.message);
         assertNull(response.cause);
@@ -220,19 +259,10 @@ public class EjbOverHttpResourceTest {
     @Test
     public void invoke_ErrorNoSuchEjb() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME+"x", "add",
-                new String[] { int.class.getName(), int.class.getName() }, java2binary(1, 2));
+                new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
         assertEquals("javax.naming.NamingException", response.exceptionType);
         assertEquals("No such bean: java:global/myapp/RemoteCalculatorx", response.message);
         assertNull(response.cause);
-    }
-
-    private static ErrorResponse invokeExpectError(String mediaType, String jndiName, String method, String[] argTypes,
-            Object argValues) {
-        Entity<InvokeMethodRequest> entity = invokeBody(mediaType, jndiName, method, argTypes, argValues);
-        try (Response response = target.path("jndi/invoke").request(mediaType).buildPost(entity).invoke()) {
-            assertNotEquals(Status.OK.getStatusCode(), response.getStatus());
-            return response.readEntity(ErrorResponse.class);
-        }
     }
 
     private static InvokeMethodResponse invokeExpectSuccess(String mediaType, String jndiName, String method,
@@ -244,12 +274,29 @@ public class EjbOverHttpResourceTest {
         }
     }
 
+    private static ErrorResponse invokeExpectError(String mediaType, String jndiName, String method, String[] argTypes,
+            Object argValues) {
+        Entity<InvokeMethodRequest> entity = invokeBody(mediaType, jndiName, method, argTypes, argValues);
+        try (Response response = target.path("jndi/invoke").request(mediaType).buildPost(entity).invoke()) {
+            assertNotEquals(Status.OK.getStatusCode(), response.getStatus());
+            return response.readEntity(ErrorResponse.class);
+        }
+    }
+
     private static LookupResponse lookupExpectSuccess(String mediaType, String jndiName) {
         Entity<LookupRequest> entity = lookupBody(mediaType, jndiName);
         try (Response response = target.path("jndi/lookup").request(mediaType).buildPost(entity).invoke()) {
             assertNoError(response, Status.CREATED);
             assertEquals("/jndi/invoke", response.getLocation().getPath());
             return response.readEntity(LookupResponse.class);
+        }
+    }
+
+    private static ErrorResponse lookupExpectError(String mediaType, String jndiName) {
+        Entity<LookupRequest> entity = lookupBody(mediaType, jndiName);
+        try (Response response = target.path("jndi/lookup").request(mediaType).buildPost(entity).invoke()) {
+            assertNotEquals(Status.CREATED.getStatusCode(), response.getStatus());
+            return response.readEntity(ErrorResponse.class);
         }
     }
 
@@ -273,20 +320,24 @@ public class EjbOverHttpResourceTest {
         }
     }
 
+    private boolean isJavaObjectSerialisation() {
+        return mediaType.equals("application/x-java-object");
+    }
+
     /**
      * When using Java serialisation arguments have to be converted to a byte[] before the {@link InvokeMethodRequest}
      * is created since the objects cannot be de-serialised at the boundaries of the JAX-RS interface as the
      * application {@link ClassLoader} has to be used for that.
      */
-    private Object java2binary(Object... argValues) throws AssertionError {
-        if (!mediaType.equals("application/x-java-object")) {
+    private Object pack(Object... argValues) throws AssertionError {
+        if (!isJavaObjectSerialisation()) {
             return argValues;
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(argValues);
         } catch (IOException e) {
-            throw new AssertionError("Failed to encode arguments: ", e);
+            throw new AssertionError("Failed to pack arguments: ", e);
         }
         return bos.toByteArray();
     }
