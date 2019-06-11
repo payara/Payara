@@ -218,8 +218,8 @@ public final class WebAndEjbToJaasBridge {
                 // Should never happen
                 return;
             }
-            
-            user = x500principal.getName();
+
+            user = x500principal.getName(X500Principal.RFC2253, CertificateRealm.oidMap);
 
             // In the RI-inherited implementation this directly creates
             // some credentials and sets the security context. 

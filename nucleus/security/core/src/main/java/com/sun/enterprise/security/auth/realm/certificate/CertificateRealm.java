@@ -46,8 +46,10 @@ import static java.util.logging.Level.FINEST;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -101,7 +103,13 @@ public final class CertificateRealm extends BaseRealm {
 
     // Descriptive string of the authentication type of this realm.
     public static final String AUTH_TYPE = "certificate";
-    
+    public static final Map<String, String> oidMap;
+    static {
+        Map<String, String> oidMapInitialiser = new HashMap<>();
+        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAILADDRESS");
+        oidMap = Collections.unmodifiableMap(oidMapInitialiser);
+    }
+
     private List<String> defaultGroups = new LinkedList<>();
 
     /**
@@ -175,7 +183,7 @@ public final class CertificateRealm extends BaseRealm {
     public String authenticate(Subject subject, X500Principal callerPrincipal) {
         // It is important to use X500Principal.getName() as that will
         // return the LDAP name in RFC2253
-        String callerPrincipalName = callerPrincipal.getName();
+        String callerPrincipalName = callerPrincipal.getName(X500Principal.RFC2253, oidMap);
         
         // Checks if the property for using common name is set
         if (Boolean.valueOf(getProperty("useCommonName"))) {

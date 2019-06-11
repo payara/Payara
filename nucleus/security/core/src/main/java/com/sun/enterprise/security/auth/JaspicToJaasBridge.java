@@ -138,7 +138,7 @@ public class JaspicToJaasBridge {
 
         String callerPrincipalName = "";
         try {
-            callerPrincipalName = x500Principal.getName(X500Principal.RFC1779);
+            callerPrincipalName = x500Principal.getName(X500Principal.RFC2253, CertificateRealm.oidMap);
 
             privileged(() -> validSubject.getPublicCredentials().add(x500Principal));
 
