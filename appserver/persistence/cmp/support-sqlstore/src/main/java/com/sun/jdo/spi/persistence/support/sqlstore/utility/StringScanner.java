@@ -528,7 +528,7 @@ public class StringScanner
 		case 6:
 			return "                       "; // NOI18N
 		default:
-			str = new String("                       "); // NOI18N
+			str = "                       "; // NOI18N
 			for (i = 6; i < level; i++)
 				str = str.concat("    "); // NOI18N
 			return str;
