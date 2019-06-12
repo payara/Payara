@@ -70,6 +70,8 @@ import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
+import sun.security.pkcs.PKCS9Attribute;
+import sun.security.x509.X500Name;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -106,7 +108,26 @@ public final class CertificateRealm extends BaseRealm {
     public static final Map<String, String> oidMap;
     static {
         Map<String, String> oidMapInitialiser = new HashMap<>();
-        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAILADDRESS");
+        oidMapInitialiser.put(X500Name.commonName_oid.toString(), "CN");
+        oidMapInitialiser.put(X500Name.countryName_oid.toString(), "C");
+        oidMapInitialiser.put(X500Name.localityName_oid.toString(), "L");
+        oidMapInitialiser.put(X500Name.stateName_oid.toString(), "S");
+        oidMapInitialiser.put(X500Name.stateName_oid.toString(), "ST");
+        oidMapInitialiser.put(X500Name.orgName_oid.toString(), "O");
+        oidMapInitialiser.put(X500Name.orgUnitName_oid.toString(), "OU");
+        oidMapInitialiser.put(X500Name.title_oid.toString(), "T");
+        oidMapInitialiser.put(X500Name.ipAddress_oid.toString(), "IP");
+        oidMapInitialiser.put(X500Name.streetAddress_oid.toString(), "STREET");
+        oidMapInitialiser.put(X500Name.DOMAIN_COMPONENT_OID.toString(), "DC");
+        oidMapInitialiser.put(X500Name.DNQUALIFIER_OID.toString(), "DNQUALIFIER");
+        oidMapInitialiser.put(X500Name.SURNAME_OID.toString(), "SURNAME");
+        oidMapInitialiser.put(X500Name.GIVENNAME_OID.toString(), "GIVENNAME");
+        oidMapInitialiser.put(X500Name.INITIALS_OID.toString(), "INITIALS");
+        oidMapInitialiser.put(X500Name.GENERATIONQUALIFIER_OID.toString(), "GENERATION");
+        oidMapInitialiser.put(PKCS9Attribute.EMAIL_ADDRESS_OID.toString(), "EMAIL");
+        oidMapInitialiser.put(PKCS9Attribute.EMAIL_ADDRESS_OID.toString(), "EMAILADDRESS");
+        oidMapInitialiser.put(X500Name.userid_oid.toString(), "UID");
+        oidMapInitialiser.put(X500Name.SERIALNUMBER_OID.toString(), "SERIALNUMBER");
         oidMap = Collections.unmodifiableMap(oidMapInitialiser);
     }
 
@@ -184,7 +205,7 @@ public final class CertificateRealm extends BaseRealm {
         // It is important to use X500Principal.getName() as that will
         // return the LDAP name in RFC2253
         String callerPrincipalName = callerPrincipal.getName(X500Principal.RFC2253, oidMap);
-        
+
         // Checks if the property for using common name is set
         if (Boolean.valueOf(getProperty("useCommonName"))) {
             callerPrincipalName = extractCN(callerPrincipalName);

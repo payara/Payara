@@ -57,6 +57,7 @@ import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -87,6 +88,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
+import sun.security.x509.X500Name;
 
 /**
  * This class contains a collection of methods that are used by the Web and EJB containers
