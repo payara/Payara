@@ -304,6 +304,15 @@ public class EjbOverHttpResourceTest {
         assertNull(response.cause);
     }
 
+    @Test
+    public void invoke_ErrorMalformedArguments() {
+        Object argValues = isJavaObjectSerialisation() ? new byte[] { 42 } : Collections.singletonMap("foo", "bar");
+        ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "add",
+                new String[] { int.class.getName(), int.class.getName() }, argValues);
+        assertEquals("javax.ws.rs.InternalServerErrorException", response.exceptionType);
+        assertEquals("Failed to de-serialise method arguments from binary representation.", response.message);
+    }
+
     private static InvokeMethodResponse invokeExpectSuccess(String mediaType, String jndiName, String method,
             String[] argTypes, Object argValues) {
         Entity<InvokeMethodRequest> entity = invokeBody(mediaType, jndiName, method, argTypes, argValues);

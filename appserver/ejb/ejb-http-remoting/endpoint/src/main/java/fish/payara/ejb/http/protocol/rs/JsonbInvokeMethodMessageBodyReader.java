@@ -97,8 +97,8 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
                     json.getString("method"),
                     argTypeNames,
                     argActualTypeNames,
-                    json.getJsonArray("argValues"),
-                    (args, argTypes, classloader) -> toObjects(argTypes, (JsonArray) args));
+                    json.get("argValues"),
+                    (args, argTypes, classloader) -> toObjects(argTypes, args));
         }
     }
 
@@ -109,12 +109,20 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
     /**
      * Convert JSON encoded method parameter values to their object instances 
      */
-    private static Object[] toObjects(Type[] argTypes, JsonArray jsonArgValues) {
-        Object[] argValues = new Object[argTypes.length];
-        for (int i = 0; i < jsonArgValues.size(); i++) {
-            argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+    private static Object[] toObjects(Type[] argTypes, Object encodedArgValues) {
+        try {
+            JsonArray jsonArgValues = (JsonArray) encodedArgValues;
+            Object[] argValues = new Object[argTypes.length];
+            for (int i = 0; i < jsonArgValues.size(); i++) {
+                argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+            }
+            return argValues;
+        } catch (InternalServerErrorException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            throw new InternalServerErrorException(
+                    "Failed to de-serialise method arguments from binary representation.", ex);
         }
-        return argValues;
     }
 
     private static Object toObject(JsonValue objectValue, Type type) {

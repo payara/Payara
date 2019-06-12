@@ -84,7 +84,8 @@ public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyRea
                 try (ObjectInputStream ois = new ClassLoaderObjectInputStream(classloader, new ByteArrayInputStream((byte[])args))) {
                     return (Object[]) ois.readObject();
                 } catch (Exception ex) {
-                    throw new IllegalArgumentException(ex);
+                    throw new InternalServerErrorException(
+                            "Failed to de-serialise method arguments from binary representation.", ex);
                 }
             };
             return request;
