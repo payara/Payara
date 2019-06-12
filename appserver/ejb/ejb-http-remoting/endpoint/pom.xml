@@ -86,11 +86,7 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        
+
         <!-- Required to do component testing with grizzly HTTP server -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
