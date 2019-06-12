@@ -50,10 +50,12 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 class LookupV0 extends Lookup {
     private final WebTarget invokerRoot;
+    private final WebTarget lookup;
 
-    public LookupV0(Map<String, Object> environment, WebTarget invokerRoot) {
+    public LookupV0(Map<String, Object> environment, WebTarget invokerRoot, WebTarget v0lookup) {
         super(environment);
         this.invokerRoot = invokerRoot;
+        this.lookup = v0lookup;
     }
 
     @Override
@@ -67,9 +69,7 @@ class LookupV0 extends Lookup {
         Map<String, Object> payload = new HashMap<>();
         payload.put("lookup", name);
         String className =
-                invokerRoot
-                        .path("ejb")
-                        .path("lookup")
+                lookup
                         .request()
                         .post(Entity.entity(payload, APPLICATION_JSON))
                         .readEntity(String.class);

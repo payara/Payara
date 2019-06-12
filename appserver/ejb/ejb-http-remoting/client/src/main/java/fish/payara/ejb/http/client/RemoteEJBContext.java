@@ -166,8 +166,15 @@ class RemoteEJBContext implements Context {
         try {
             clientBuilder = getClientBuilder();
             Client client = clientBuilder.build();
-            WebTarget invokerRoot = client.target(root);
-            return new LookupV0(environment, invokerRoot);
+
+            LookupDiscovery discovery = new LookupDiscovery(environment, client, root);
+            discovery.discover();
+
+            if (discovery.isV0target()) {
+               return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
+            } else {
+                throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
+            }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw newNamingException("Cannot access lookup endpoint at "+root, e);
         }
