@@ -54,6 +54,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.io.input.ClassLoaderObjectInputStream;
+
 import fish.payara.ejb.http.protocol.InvokeMethodRequest;
 
 /**
@@ -81,7 +83,8 @@ public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyRea
         try {
             InvokeMethodRequest request = (InvokeMethodRequest) new ObjectInputStream(entityStream).readObject();
             request.argDeserializer = (args, types, classloader) -> {
-                try (ObjectInputStream ois = new ClassLoaderObjectInputStream(classloader, new ByteArrayInputStream((byte[])args))) {
+                try (ObjectInputStream ois = new ClassLoaderObjectInputStream(classloader,
+                        new ByteArrayInputStream((byte[]) args))) {
                     return (Object[]) ois.readObject();
                 } catch (Exception ex) {
                     throw new InternalServerErrorException(

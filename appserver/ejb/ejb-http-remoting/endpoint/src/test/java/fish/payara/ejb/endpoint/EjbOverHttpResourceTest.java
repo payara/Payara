@@ -357,7 +357,7 @@ public class EjbOverHttpResourceTest {
         assertEquals("javax.ws.rs.InternalServerErrorException", response.exceptionType);
         assertEquals("Failed to de-serialise method arguments from binary representation.", response.message);
     }
-    
+
     @Test
     public void invoke_CyclicResult() {
         if (isJavaObjectSerialisation()) {
@@ -388,7 +388,11 @@ public class EjbOverHttpResourceTest {
         Entity<InvokeMethodRequest> entity = invokeBody(mediaType, jndiName, method, argTypes, argValues);
         try (Response response = target.path("jndi/invoke").request(mediaType).buildPost(entity).invoke()) {
             assertNotEquals(Status.OK.getStatusCode(), response.getStatus());
-            return response.readEntity(ErrorResponse.class);
+            if (mediaType.equals(response.getMediaType().toString())) {
+                return response.readEntity(ErrorResponse.class);
+            }
+            fail("Unexpected error response: "+response.readEntity(String.class));
+            return null;
         }
     }
 
