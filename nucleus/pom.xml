@@ -57,10 +57,11 @@
     <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
+    <url>https://github.com/payara/Payara</url>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>scm:git:git@github.com:payara/payara.git</url>
+        <url>https://github.com/payara/Payara/tree/master</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
         <tag>payara-server-5.193-SNAPSHOT</tag>
     </scm>
@@ -79,6 +80,15 @@
       </license>
     </licenses>
 
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
 
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
