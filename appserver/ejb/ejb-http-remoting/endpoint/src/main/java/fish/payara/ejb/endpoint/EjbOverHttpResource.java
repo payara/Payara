@@ -59,6 +59,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
@@ -85,7 +86,8 @@ public class EjbOverHttpResource {
             @Override
             public ClassLoader getAppClassLoader(String applicationName) {
                 ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
-                return registry.get(applicationName).getAppClassLoader();
+                ApplicationInfo info = registry.get(applicationName);
+                return info == null ? null : info.getAppClassLoader();
             }
         });
     }
@@ -212,8 +214,12 @@ public class EjbOverHttpResource {
         Thread currentThread = Thread.currentThread();
         String applicationName = jndiName.substring(12, jndiName.indexOf('/', 12));
         ClassLoader existingContextClassLoader = currentThread.getContextClassLoader();
+        ClassLoader appClassLoader = service.getAppClassLoader(applicationName);
+        if (appClassLoader == null) {
+            throw new BadRequestException("Unknown application: " + applicationName);
+        }
         try {
-            currentThread.setContextClassLoader(service.getAppClassLoader(applicationName));
+            currentThread.setContextClassLoader(appClassLoader);
             Object bean = service.getBean(jndiName);
             return operation.execute(bean);
         } finally {
@@ -266,7 +272,7 @@ public class EjbOverHttpResource {
             }
         }
         throw new NoSuchMethodException("No method matching " + methodName + "(" + Arrays.toString(argTypeClasses)
-        + ") found in business interface");
+                + ") found in business interface");
     }
 
     /**

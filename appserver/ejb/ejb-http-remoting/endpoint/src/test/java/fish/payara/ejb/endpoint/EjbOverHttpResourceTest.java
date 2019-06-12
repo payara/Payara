@@ -39,6 +39,7 @@
  */
 package fish.payara.ejb.endpoint;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,7 +69,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -130,6 +131,9 @@ public class EjbOverHttpResourceTest {
 
         @Override
         public ClassLoader getAppClassLoader(String applicationName) {
+            if ("unknownapp".equals(applicationName)) {
+                return null;
+            }
             return RemoteCalculator.class.getClassLoader();
         }
 
@@ -145,6 +149,8 @@ public class EjbOverHttpResourceTest {
     public interface RemoteCalculator {
 
         int add(int a, int b);
+
+        List<Object> cyclic();
 
         Map<String, Object> getSettings();
     }
@@ -169,20 +175,32 @@ public class EjbOverHttpResourceTest {
             settings.put("list", Collections.singletonList(42));
             return settings;
         }
+
+        @Override
+        public List<Object> cyclic() {
+            List<Object> cyclicObject = new ArrayList<>();
+            cyclicObject.add(cyclicObject);
+            return cyclicObject;
+        }
     }
 
-    private static int port = 8080;
     private static HttpServer server;
     private static WebTarget target;
 
     @BeforeClass
-    public static void startServer() {
+    public static void setUp() {
+        int port = 8080;
         try(ServerSocket ss = new ServerSocket(0)) {
             port = ss.getLocalPort();
         } catch (Exception e) {
             // try with 8080
         }
         URI baseUri = UriBuilder.fromUri("http://localhost/").port(port).build();
+        initServer(baseUri);
+        initClient(baseUri);
+    }
+
+    private static void initServer(URI baseUri) {
         ResourceConfig config = ResourceConfig.forApplication(new EjbOverHttpResourceTestApplication())
                 .register(ObjectStreamMessageBodyReader.class)
                 .register(ObjectStreamMessageBodyWriter.class)
@@ -190,15 +208,19 @@ public class EjbOverHttpResourceTest {
                 .register(JsonbInvokeMethodMessageBodyReader.class)
                 .register(JsonbLookupMessageBodyReader.class);
         server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
+        assertNotNull(server);
+
+    }
+
+    private static void initClient(URI baseUri) {
         target = ClientBuilder.newClient()
                 .target(baseUri)
                 .register(ObjectStreamMessageBodyReader.class)
                 .register(ObjectStreamMessageBodyWriter.class);
-        assertNotNull(server);
     }
 
     @AfterClass
-    public static void stopServer() {
+    public static void tearDown() {
         if (server != null) {
             server.shutdown();
         }
@@ -209,6 +231,7 @@ public class EjbOverHttpResourceTest {
         try (Response response = target.path("/").request().build("HEAD").invoke()) {
             assertEquals(Status.OK.getStatusCode(), response.getStatus());
             assertEquals(2, response.getLinks().size());
+            int port = target.getUri().getPort();
             assertEquals("http://localhost:" + port + "/jndi/lookup",
                     response.getLink("https://payara.fish/ejb-http-invoker/v1").getUri().toString());
             assertEquals("http://localhost:" + port + "/ejb/lookup",
@@ -291,6 +314,15 @@ public class EjbOverHttpResourceTest {
     }
 
     @Test
+    public void invoke_ErrorNoSuchApplication() {
+        ErrorResponse response = invokeExpectError(mediaType, EJB_NAME.replace("/myapp/", "/unknownapp/"), "sub",
+                new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
+        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("Unknown application: unknownapp", response.message);
+        assertNull(response.cause);
+    }
+
+    @Test
     public void invoke_ErrorNoSuchMethodWrongName() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "sub",
                 new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
@@ -325,6 +357,22 @@ public class EjbOverHttpResourceTest {
         assertEquals("javax.ws.rs.InternalServerErrorException", response.exceptionType);
         assertEquals("Failed to de-serialise method arguments from binary representation.", response.message);
     }
+    
+    @Test
+    public void invoke_CyclicResult() {
+        if (isJavaObjectSerialisation()) {
+            InvokeMethodResponse response = invokeExpectSuccess(mediaType, EJB_NAME, "cyclic", new String[0],
+                    pack(new Object[0]));
+            @SuppressWarnings("unchecked")
+            List<Object> result = (List<Object>) response.result;
+            assertEquals(1, result.size());
+            assertSame(result, result.get(0));
+        } else {
+            ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "cyclic", new String[0],
+                    pack(new Object[0]));
+            System.out.println(response);
+        }
+    }
 
     private static InvokeMethodResponse invokeExpectSuccess(String mediaType, String jndiName, String method,
             String[] argTypes, Object argValues) {
@@ -348,7 +396,7 @@ public class EjbOverHttpResourceTest {
         Entity<LookupRequest> entity = lookupBody(mediaType, jndiName);
         try (Response response = target.path("jndi/lookup").request(mediaType).buildPost(entity).invoke()) {
             assertNoError(response, Status.CREATED);
-            assertEquals("/jndi/invoke", response.getLocation().getPath());
+            assertThat(response.getLocation().getPath(), endsWith("/jndi/invoke"));
             return response.readEntity(LookupResponse.class);
         }
     }
@@ -402,4 +450,5 @@ public class EjbOverHttpResourceTest {
         }
         return bos.toByteArray();
     }
+
 }

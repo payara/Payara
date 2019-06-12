@@ -39,31 +39,10 @@
  */
 package fish.payara.ejb.endpoint;
 
-import javax.naming.NamingException;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-/**
- * The main point of the {@link EjbOverHttpService} abstraction is to decouple application server specific logic and
- * dependencies from the non application server dependent endpoint so it can be used with a plain HTTP server during
- * testing.
- * 
- * @author Jan Bernitt
- */
-public interface EjbOverHttpService {
-
-    /**
-     * Resolve {@link ClassLoader} for an applciation.
-     * 
-     * @param applicationName never null or empty
-     * @return The {@link ClassLoader} to use for the given application name, or null if the application is unknown
-     */
-    ClassLoader getAppClassLoader(String applicationName);
-
-    /**
-     * Resolve a EJB for a given JNDI name.
-     * 
-     * @param jndiName never null or empty, only global names
-     * @return The EJB, or
-     * @throws NamingException in case no such EJB is known
-     */
-    Object getBean(String jndiName) throws NamingException;
+@ApplicationPath("/")
+public class EjbOverHttpApplication extends Application {
+    // required to trigger JAX-RS
 }
