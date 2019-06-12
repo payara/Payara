@@ -56,7 +56,8 @@
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>modules/gf-client*.jar</exclude>
+                <exclude>modules/gf-client.jar</exclude>
+                <exclude>modules/gf-client-sources.jar</exclude>
                 <exclude>modules/weld-se-shaded*.jar</exclude>
                 <exclude>modules/weld-environment-common*.jar</exclude>
                 <exclude>pkg_proto.py</exclude>
@@ -65,7 +66,8 @@
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
             <includes>
-                <include>gf-client.jar*</include>
+                <include>gf-client.jar</include>
+                <include>gf-client-sources.jar</include>
             </includes>
             <outputDirectory>${install.dir.name}/glassfish/lib</outputDirectory>
         </fileSet>
