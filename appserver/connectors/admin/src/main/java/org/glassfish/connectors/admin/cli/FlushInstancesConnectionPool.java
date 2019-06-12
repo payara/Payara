@@ -81,16 +81,13 @@ import org.jvnet.hk2.annotations.Service;
 /**
  * The command to flush a connection pool.
  * <p>
- * This command from 5.193 will poke all known instances
- * and tell them to flush the connection pool. This occurs
- * by sending the {@code _flush-connection-pool} command
- * to them. If that command fails on any instance (i.e.
- * because the pool is not initialised/not in use on that
- * instance) that this command will return with a
- * {@link ActionReport.ExitCode.WARNING} status code.
- * <p>
- * Pre-5.193 functionality occurs in {@link FlushConnectionPoolLocal}
- * which previously was only executed against the DAS.
+ * This command from 5.193 will poke all known instances and tell them to flush the connection pool. 
+ * This occurs by sending the {@code _flush-connection-pool} command to them. If that command fails
+ * on any instance (i.e. because the pool is not initialised/not in use on that instance) that this
+ * command will return with a {@link ActionReport.ExitCode.WARNING} status code.
+ * </p>
+ * Pre-5.193 functionality occurs in {@link FlushConnectionPoolLocal} which previously was only executed against the DAS.
+ *
  * @author jonathan coustick
  * @since 5.193
  * @see FlushConnectionPoolLocal
@@ -101,30 +98,23 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS})
 @ExecuteOn(value = {RuntimeType.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="flush-connection-pool", 
-        description="flush-connection-pool")
+    @RestEndpoint(configBean = Resources.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "flush-connection-pool",
+            description = "flush-connection-pool")
 })
 public class FlushInstancesConnectionPool implements AdminCommand {
-    
+
     private static final Logger LOGGER = Logger.getLogger("org.glassfish.connectors.admin.cli");
 
     @Param(name = "pool_name", primary = true)
     private String poolName;
 
-    @Param(name="appname", optional=true)
+    @Param(name = "appname", optional = true)
     private String applicationName;
 
-    @Param(name="modulename", optional=true)
+    @Param(name = "modulename", optional = true)
     private String moduleName;
-    
-    /**
-     * There is no default, if it is not specified it against all instances known
-     * if this is the DAS.
-     */
-    @Param(name="target", optional=true)
-    private String target;
 
     @Inject
     private Applications applications;
@@ -133,17 +123,14 @@ public class FlushInstancesConnectionPool implements AdminCommand {
     private ConnectionPoolUtil poolUtil;
 
     @Inject
-    private ConnectorRuntime _runtime;
-    
-    @Inject
     CommandRunner commandRunner;
-    
+
     @Inject
     private Domain domain;
-    
+
     @Inject
     private ServiceLocator habitat;
-    
+
     @Inject
     PayaraExecutorService executor;
 
@@ -153,8 +140,8 @@ public class FlushInstancesConnectionPool implements AdminCommand {
 
         Resources resources = domain.getResources();
         String scope = "";
-        if(moduleName != null){
-            if(!poolUtil.isValidModule(applicationName, moduleName, poolName, report)){
+        if (moduleName != null) {
+            if (!poolUtil.isValidModule(applicationName, moduleName, poolName, report)) {
                 report.setMessage("Modulename is not that of a valid module: " + moduleName);
                 report.setActionExitCode(ActionReport.ExitCode.WARNING);
                 return;
@@ -163,8 +150,8 @@ public class FlushInstancesConnectionPool implements AdminCommand {
             Module module = application.getModule(moduleName);
             resources = module.getResources();
             scope = ConnectorConstants.JAVA_MODULE_SCOPE_PREFIX;
-        }else if(applicationName != null){
-            if(!poolUtil.isValidApplication(applicationName, poolName, report)){
+        } else if (applicationName != null) {
+            if (!poolUtil.isValidApplication(applicationName, poolName, report)) {
                 report.setMessage("ApplicationName is not that of a valid module: " + applicationName);
                 report.setActionExitCode(ActionReport.ExitCode.WARNING);
                 return;
@@ -174,12 +161,12 @@ public class FlushInstancesConnectionPool implements AdminCommand {
             scope = ConnectorConstants.JAVA_APP_SCOPE_PREFIX;
         }
 
-        if(!poolUtil.isValidPool(resources, poolName, scope, report)){
+        if (!poolUtil.isValidPool(resources, poolName, scope, report)) {
             report.setMessage("Connection Pool is not valid");
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
             return;
         }
-        
+
         List<Future> instanceFlushes = new ArrayList<>();
         for (Server server : domain.getServers().getServer()) {
 
@@ -196,7 +183,7 @@ public class FlushInstancesConnectionPool implements AdminCommand {
 
                         ParameterMap map = new ParameterMap();
                         map.add("poolName", poolName);
-                        if (applicationName == null) {
+                        if (applicationName != null) {
                             map.add("appname", applicationName);
                         }
                         if (moduleName != null) {
@@ -224,7 +211,7 @@ public class FlushInstancesConnectionPool implements AdminCommand {
             }));
 
         }
-        for (Future future: instanceFlushes) {
+        for (Future future : instanceFlushes) {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException ex) {
@@ -235,6 +222,5 @@ public class FlushInstancesConnectionPool implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
         }
     }
-    
-    
+
 }
