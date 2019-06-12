@@ -70,8 +70,6 @@ import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
-import sun.security.pkcs.PKCS9Attribute;
-import sun.security.x509.X500Name;
 
 /**
  * Realm wrapper for supporting certificate authentication.
@@ -108,26 +106,26 @@ public final class CertificateRealm extends BaseRealm {
     public static final Map<String, String> oidMap;
     static {
         Map<String, String> oidMapInitialiser = new HashMap<>();
-        oidMapInitialiser.put(X500Name.commonName_oid.toString(), "CN");
-        oidMapInitialiser.put(X500Name.countryName_oid.toString(), "C");
-        oidMapInitialiser.put(X500Name.localityName_oid.toString(), "L");
-        oidMapInitialiser.put(X500Name.stateName_oid.toString(), "S");
-        oidMapInitialiser.put(X500Name.stateName_oid.toString(), "ST");
-        oidMapInitialiser.put(X500Name.orgName_oid.toString(), "O");
-        oidMapInitialiser.put(X500Name.orgUnitName_oid.toString(), "OU");
-        oidMapInitialiser.put(X500Name.title_oid.toString(), "T");
-        oidMapInitialiser.put(X500Name.ipAddress_oid.toString(), "IP");
-        oidMapInitialiser.put(X500Name.streetAddress_oid.toString(), "STREET");
-        oidMapInitialiser.put(X500Name.DOMAIN_COMPONENT_OID.toString(), "DC");
-        oidMapInitialiser.put(X500Name.DNQUALIFIER_OID.toString(), "DNQUALIFIER");
-        oidMapInitialiser.put(X500Name.SURNAME_OID.toString(), "SURNAME");
-        oidMapInitialiser.put(X500Name.GIVENNAME_OID.toString(), "GIVENNAME");
-        oidMapInitialiser.put(X500Name.INITIALS_OID.toString(), "INITIALS");
-        oidMapInitialiser.put(X500Name.GENERATIONQUALIFIER_OID.toString(), "GENERATION");
-        oidMapInitialiser.put(PKCS9Attribute.EMAIL_ADDRESS_OID.toString(), "EMAIL");
-        oidMapInitialiser.put(PKCS9Attribute.EMAIL_ADDRESS_OID.toString(), "EMAILADDRESS");
-        oidMapInitialiser.put(X500Name.userid_oid.toString(), "UID");
-        oidMapInitialiser.put(X500Name.SERIALNUMBER_OID.toString(), "SERIALNUMBER");
+        oidMapInitialiser.put("0.9.2342.19200300.100.1.1", "UID");
+        oidMapInitialiser.put("0.9.2342.19200300.100.1.25", "DC");
+        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAIL");
+        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAILADDRESS");
+        oidMapInitialiser.put("1.3.6.1.4.1.42.2.11.2.1", "IP");
+        oidMapInitialiser.put("2.5.4.3", "CN");
+        oidMapInitialiser.put("2.5.4.4", "SURNAME");
+        oidMapInitialiser.put("2.5.4.5", "SERIALNUMBER");
+        oidMapInitialiser.put("2.5.4.6", "C");
+        oidMapInitialiser.put("2.5.4.7", "L");
+        oidMapInitialiser.put("2.5.4.8", "S");
+        oidMapInitialiser.put("2.5.4.8", "ST");
+        oidMapInitialiser.put("2.5.4.9", "STREET");
+        oidMapInitialiser.put("2.5.4.10", "O");
+        oidMapInitialiser.put("2.5.4.11", "OU");
+        oidMapInitialiser.put("2.5.4.12", "T");
+        oidMapInitialiser.put("2.5.4.42", "GIVENNAME");
+        oidMapInitialiser.put("2.5.4.43", "INITIALS");
+        oidMapInitialiser.put("2.5.4.44", "GENERATION");
+        oidMapInitialiser.put("2.5.4.46", "DNQUALIFIER");
         oidMap = Collections.unmodifiableMap(oidMapInitialiser);
     }
 
