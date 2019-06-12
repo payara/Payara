@@ -67,6 +67,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -170,12 +171,12 @@ public class EjbOverHttpResourceTest {
         }
     }
 
+    private static int port = 8080;
     private static HttpServer server;
     private static WebTarget target;
 
     @BeforeClass
     public static void startServer() {
-        int port = 8080;
         try(ServerSocket ss = new ServerSocket(0)) {
             port = ss.getLocalPort();
         } catch (Exception e) {
@@ -200,6 +201,18 @@ public class EjbOverHttpResourceTest {
     public static void stopServer() {
         if (server != null) {
             server.shutdown();
+        }
+    }
+
+    @Test
+    public void discover() {
+        try (Response response = target.path("/").request().build("HEAD").invoke()) {
+            assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            assertEquals(2, response.getLinks().size());
+            assertEquals("http://localhost:" + port + "/jndi/lookup",
+                    response.getLink("https://payara.fish/ejb-http-invoker/v1").getUri().toString());
+            assertEquals("http://localhost:" + port + "/ejb/lookup",
+                    response.getLink("https://payara.fish/ejb-http-invoker/v0").getUri().toString());
         }
     }
 

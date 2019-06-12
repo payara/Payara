@@ -50,6 +50,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -68,7 +69,7 @@ import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.LookupRequest;
 import fish.payara.ejb.http.protocol.LookupResponse;
 
-@Path("jndi")
+@Path("/")
 public class EjbOverHttpResource {
 
     private final EjbOverHttpService service;
@@ -93,8 +94,16 @@ public class EjbOverHttpResource {
         this.service = backend;
     }
 
+    @HEAD
+    public Response discover() {
+        return Response.ok()
+                .link("jndi/lookup", "https://payara.fish/ejb-http-invoker/v1")
+                .link("ejb/lookup", "https://payara.fish/ejb-http-invoker/v0")
+                .build();
+    }
+
     @POST
-    @Path("/lookup")
+    @Path("jndi/lookup")
     @Produces("application/x-java-object")
     @Consumes("application/x-java-object")
     public Response lookupJavaSerialization(LookupRequest body) {
@@ -102,7 +111,7 @@ public class EjbOverHttpResource {
     }
 
     @POST
-    @Path("/lookup")
+    @Path("jndi/lookup")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response lookupJsonb(LookupRequest body) {
@@ -127,7 +136,7 @@ public class EjbOverHttpResource {
     }
 
     @POST
-    @Path("/invoke")
+    @Path("jndi/invoke")
     @Produces("application/x-java-object")
     @Consumes("application/x-java-object")
     public Response invokeJavaSerilaization(InvokeMethodRequest body) {
@@ -135,7 +144,7 @@ public class EjbOverHttpResource {
     }
 
     @POST
-    @Path("/invoke")
+    @Path("jndi/invoke")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response invokeJsonb(InvokeMethodRequest body) {
