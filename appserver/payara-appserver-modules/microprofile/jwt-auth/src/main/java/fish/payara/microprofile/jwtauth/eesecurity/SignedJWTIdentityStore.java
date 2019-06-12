@@ -113,12 +113,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
                 throw new IllegalStateException("No PublicKey found");
             }
 
-            JsonWebTokenImpl jsonWebToken
-                    = jwtTokenParser.parse(
-                            signedJWTCredential.getSignedJWT(),
-                            acceptedIssuer,
-                            publicKey.get()
-                    );
+            jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
+            JsonWebTokenImpl jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey.get());
 
             List<String> groups = new ArrayList<>(
                     jsonWebToken.getClaim("groups"));
