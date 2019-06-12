@@ -57,42 +57,35 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 
 class LookupDiscovery {
-    static final String INVOKER_V1_REL = "<https://payara.fish/ejb-http-invoker/v1>";
-    static final String INVOKER_V0_REL = "<https://payara.fish/ejb-http-invoker/v0>";
+    static final String INVOKER_V1_REL = "https://payara.fish/ejb-http-invoker/v1";
+    static final String INVOKER_V0_REL = "https://payara.fish/ejb-http-invoker/v0";
 
     private final Map<String, Object> environment;
     private final URI root;
     private final Client client;
-    private URI resolvedRoot;
-    private boolean v0target;
-    private WebTarget v0lookup;
-    private boolean v1target;
-    private WebTarget v1lookup;
 
     LookupDiscovery(Map<String, Object> environment, Client client, URI root) {
         this.environment = environment;
-        this.root = root;
-        this.resolvedRoot = root;
+        this.root = root;;
         this.client = client;
     }
 
-    void discover() throws NamingException {
-
+    Discovery discover() throws NamingException {
+        URI resolvedRoot = root;
         Response optionResponse = client.target(root).request().head();
         Response.Status.Family responseFamily = optionResponse.getStatusInfo().getFamily();
         String reasonPhrase = optionResponse.getStatusInfo().getReasonPhrase();
         if (responseFamily == REDIRECTION) {
             resolvedRoot = root.resolve(optionResponse.getLocation());
-            optionResponse = followRedirect();
+            optionResponse = followRedirect(resolvedRoot);
             responseFamily = optionResponse.getStatusInfo().getFamily();
         }
         if (responseFamily == SUCCESSFUL) {
-            discoverLinks(optionResponse);
+            return discoverLinks(resolvedRoot, optionResponse);
         } else if (responseFamily == CLIENT_ERROR) {
             if (optionResponse.getStatusInfo().toEnum() == NOT_FOUND) {
                 // 5.192 does not handle /, we may try the ejb endpoint
-                discoverV0();
-                return;
+                return discoverV0(resolvedRoot);
             }
             throw new NamingException("Invoker is not available at <" + root + ">: " + reasonPhrase);
         } else if (responseFamily == SERVER_ERROR) {
@@ -103,19 +96,21 @@ class LookupDiscovery {
 
     }
 
-    private void discoverV0() throws NamingException {
+    private Discovery discoverV0(URI resolvedRoot) throws NamingException {
         WebTarget invokerServletTarget = client.target(resolvedRoot).path("ejb/");
         Response v0response = invokerServletTarget.request().head();
         if (v0response.getStatusInfo().toEnum() == OK) {
-            v0target = true;
-            v0lookup = invokerServletTarget.path("lookup");
+            Discovery discovery = new Discovery(resolvedRoot);
+            discovery.v0target = true;
+            discovery.v0lookup = invokerServletTarget.path("lookup");
+            return discovery;
         } else {
             throw new NamingException("Invoker V0 not found at <" + invokerServletTarget.getUri()
                     + ">: " + v0response.getStatusInfo().getReasonPhrase());
         }
     }
 
-    private Response followRedirect() throws NamingException {
+    private Response followRedirect(URI resolvedRoot) throws NamingException {
         Response redirectedResponse = client.target(resolvedRoot).request().head();
         if (redirectedResponse.getStatusInfo().getFamily() == REDIRECTION) {
             throw new NamingException("Multiple redirects when finding root resource: <" + root + "> -> <" +
@@ -125,40 +120,56 @@ class LookupDiscovery {
         }
     }
 
-    private void discoverLinks(Response optionResponse) {
+    private Discovery discoverLinks(URI resolvedRoot, Response optionResponse) throws NamingException {
         Set<Link> links = optionResponse.getLinks();
         if (links.isEmpty()) {
-
+            return discoverV0(resolvedRoot);
         }
+        Discovery discovery = new Discovery(resolvedRoot);
         for (Link link : links) {
             if (INVOKER_V1_REL.equals(link.getRel())) {
-                v1target = true;
-                v1lookup = client.target(resolvedRoot.resolve(link.getUri()));
+                discovery.v1target = true;
+                discovery.v1lookup = client.target(resolvedRoot.resolve(link.getUri()));
             }
             if (INVOKER_V0_REL.equals(link.getRel())) {
-                v0target = true;
-                v0lookup = client.target(resolvedRoot.resolve(link.getUri()));
+                discovery.v0target = true;
+                discovery.v0lookup = client.target(resolvedRoot.resolve(link.getUri()));
             }
         }
+        return discovery;
     }
 
-    public URI getResolvedRoot() {
-        return resolvedRoot;
-    }
 
-    public boolean isV0target() {
-        return v0target;
-    }
+    static class Discovery {
+        private URI resolvedRoot;
+        private boolean v0target;
+        private WebTarget v0lookup;
+        private boolean v1target;
+        private WebTarget v1lookup;
 
-    public WebTarget getV0lookup() {
-        return v0lookup;
-    }
+        public Discovery(URI resolvedRoot) {
+            this.resolvedRoot = resolvedRoot;
+        }
 
-    public boolean isV1target() {
-        return v1target;
-    }
 
-    public WebTarget getV1lookup() {
-        return v1lookup;
+        public URI getResolvedRoot() {
+            return resolvedRoot;
+        }
+
+        public boolean isV0target() {
+            return v0target;
+        }
+
+        public WebTarget getV0lookup() {
+            return v0lookup;
+        }
+
+        public boolean isV1target() {
+            return v1target;
+        }
+
+        public WebTarget getV1lookup() {
+            return v1lookup;
+        }
     }
 }
