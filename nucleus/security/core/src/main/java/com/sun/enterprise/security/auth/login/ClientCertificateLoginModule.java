@@ -57,7 +57,9 @@ import javax.security.auth.callback.ChoiceCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import javax.security.auth.x500.X500Principal;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.PrincipalImpl;
 
@@ -160,7 +162,8 @@ public class ClientCertificateLoginModule implements LoginModule {
             Enumeration<String> aliases = keyStore.aliases();
             for (int i = 0; i < keyStore.size(); i++) {
                 aliasNames[i] = aliases.nextElement();
-                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i])).getSubjectX500Principal().getName();
+                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i]))
+                        .getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.oidMap);
             }
 
             Callback[] callbacks = new Callback[] {createChoiceCallback(certificateNames)};

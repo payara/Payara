@@ -41,8 +41,10 @@
 
 package org.glassfish.admin.amx.util.stringifier;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import org.glassfish.admin.amx.util.StringUtil;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -91,8 +93,10 @@ public final class X509CertificateStringifier implements Stringifier
 		final StringBuilder	buf	= new StringBuilder();
 		final String		NL	= "\n";
 
-		buf.append("Issuer: ").append(cert.getIssuerX500Principal().getName()).append(NL);
-		buf.append("Issued to: ").append(cert.getSubjectX500Principal().getName()).append(NL);
+		buf.append("Issuer: ").append(cert.getIssuerX500Principal()
+				.getName(X500Principal.RFC2253, CertificateRealm.oidMap)).append(NL);
+		buf.append("Issued to: ").append(cert.getSubjectX500Principal()
+				.getName(X500Principal.RFC2253, CertificateRealm.oidMap)).append(NL);
 		buf.append("Version: ").append(cert.getVersion()).append(NL);
 		buf.append("Not valid before: ").append(cert.getNotBefore()).append(NL);
 		buf.append("Not valid after: ").append(cert.getNotAfter()).append(NL);
