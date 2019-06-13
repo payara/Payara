@@ -50,12 +50,12 @@ public class ErrorResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public final String exceptionType;
-    public final String message;
-    public final ErrorResponse cause;
+    public String exceptionType;
+    public String message;
+    public ErrorResponse cause;
 
     public ErrorResponse() {
-        this(null, null, null); // for JSON
+
     }
 
     private ErrorResponse(String exceptionType, String message, ErrorResponse cause) {

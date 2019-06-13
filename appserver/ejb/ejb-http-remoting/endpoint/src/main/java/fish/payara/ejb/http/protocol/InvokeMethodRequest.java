@@ -39,10 +39,9 @@
  */
 package fish.payara.ejb.http.protocol;
 
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Invoke a EJB method.
@@ -53,12 +52,12 @@ public class InvokeMethodRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @JsonProperty("java.naming.security.principal")
+    @JsonbProperty("java.naming.security.principal")
     public final String principal;
-    @JsonProperty("java.naming.security.credentials")
+    @JsonbProperty("java.naming.security.credentials")
     public final String credentials;
 
-    @JsonProperty("lookup")
+    @JsonbProperty("lookup")
     public final String jndiName;
     public final String method;
     public final String[] argTypes;

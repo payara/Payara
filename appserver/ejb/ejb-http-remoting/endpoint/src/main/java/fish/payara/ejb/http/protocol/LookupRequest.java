@@ -39,9 +39,9 @@
  */
 package fish.payara.ejb.http.protocol;
 
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Lookup the fully qualified name of an EJB interface for a JNDI name.
@@ -52,7 +52,7 @@ public class LookupRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @JsonProperty("lookup")
+    @JsonbProperty("lookup")
     public final String jndiName;
 
     public LookupRequest(String jndiName) {

@@ -39,6 +39,8 @@
  */
 package fish.payara.ejb.http.protocol;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
 /**
@@ -53,16 +55,13 @@ public class LookupResponse implements Serializable {
     public final String typeName;
     public final String kind;
 
-    public LookupResponse() {
-        this(null, null); // for JSON
-    }
-
     public LookupResponse(Class<?> ejbInterface) {
         this.typeName = ejbInterface.getName();
         this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
     }
 
-    private LookupResponse(String typeName, String kind) {
+    @JsonbCreator
+    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
         this.typeName = typeName;
         this.kind = kind;
     }

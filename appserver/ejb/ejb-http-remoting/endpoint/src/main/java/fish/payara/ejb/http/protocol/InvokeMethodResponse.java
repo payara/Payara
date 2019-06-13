@@ -39,13 +39,22 @@
  */
 package fish.payara.ejb.http.protocol;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbPropertyOrder;
+import javax.json.bind.annotation.JsonbTypeDeserializer;
+import javax.json.bind.serializer.DeserializationContext;
+import javax.json.bind.serializer.JsonbDeserializer;
+import javax.json.stream.JsonParser;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 
 /**
  * Result of invoking an EJB method.
  * 
  * @author Jan Bernitt
  */
+@JsonbPropertyOrder({"type", "result"})
+@JsonbTypeDeserializer(InvokeMethodResponse.Deserializer.class)
 public class InvokeMethodResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -56,16 +65,45 @@ public class InvokeMethodResponse implements Serializable {
     public final String type;
     public final Object result;
 
-    public InvokeMethodResponse() {
-        this(null, null); // for JSON
-    }
-
     public InvokeMethodResponse(Object result) {
         this(result == null ? "" : result.getClass().getName(), result);
     }
 
-    private InvokeMethodResponse(String type, Object result) {
+    public InvokeMethodResponse(String type, Object result) {
         this.type = type;
         this.result = result;
+    }
+
+    // This deserializer is only fit for limited use cases. Client should employ different deserialization means,
+    // that make use of the expected return type as well (especially to support Optional returns)
+    static class Deserializer implements JsonbDeserializer<InvokeMethodResponse> {
+
+        @Override
+        public InvokeMethodResponse deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
+            String type = null;
+            Object result = null;
+            while (parser.hasNext()) {
+                JsonParser.Event event = parser.next();
+                if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("type")) {
+                    parser.next();
+                    type = parser.getString();
+                } else if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("result")) {
+                    Class<?> resultClass = determineClass(type);
+                    result = ctx.deserialize(resultClass, parser);
+                }
+            }
+            return new InvokeMethodResponse(result);
+        }
+
+        private Class<?> determineClass(String type) {
+            if (type == null) {
+                throw new IllegalArgumentException("Type was not specified");
+            }
+            try {
+                return Class.forName(type);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException("Could not find class for type "+type, e);
+            }
+        }
     }
 }
