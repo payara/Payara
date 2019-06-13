@@ -50,22 +50,20 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyStore;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * This is the context used for looking up and invoking remote EJBs via
@@ -101,6 +99,7 @@ class RemoteEJBContext implements Context {
 
     private ClientAdapter clientAdapter;
     private Hashtable<String, Object> environment;
+    private Lookup lookup;
     
     @SuppressWarnings("unchecked")
     public RemoteEJBContext(Hashtable<?, ?> environment) {
@@ -133,45 +132,53 @@ class RemoteEJBContext implements Context {
                 }
             }
             // Get client build with all optional config applied
-            ClientBuilder clientBuilder = getClientBuilder();
-            
-            // For the lookup do a call to the remote server first to obtain
-            // the remote business interface class name given a JNDI lookup name.
-            // The JNDI lookup name normally does not give us this interface name.
-            // This also allows us to check the JNDI name indeed resolves before
-            // we create a proxy and return it here.
-            
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("lookup", name);
-            
             URI remotePayaraURI = new URL(url).toURI();
-            
-            String className = 
-                clientBuilder
-                    .build()
-                    .target(remotePayaraURI)
-                    .path("ejb")
-                    .path("lookup")
-                    .request()
-                    .post(Entity.entity(payload, APPLICATION_JSON))
-                    .readEntity(String.class);
-            
-            // After we have obtained the class name of the remote interface, generate
-            // a proxy based on it.
-            
-            return EjbHttpProxyFactory.newProxy(
-                    Class.forName(className), 
-                    clientBuilder.build()
-                                 .target(remotePayaraURI)
-                                 .path("ejb")
-                                 .path("invoke"), 
-                    name,
-                    new HashMap<String, Object>(environment)
-                    );
-            
+
+            return lookup(remotePayaraURI).lookup(name);
+        } catch (NamingException ne) {
+            throw ne;
         } catch (Exception e) {
             throw newNamingException(name, e);
         }
+    }
+
+
+
+    /**
+     * Lazily initialize lookup strategy fit for required serialization and server-side supported protocol.
+     * @return
+     */
+    private synchronized Lookup lookup(URI root) throws NamingException {
+        if (lookup == null) {
+            lookup = determineLookup(root);
+        }
+        return lookup;
+    }
+
+    /**
+     * Determine supported protocol on server side and construct corresponding Lookup instance.
+     * @param root
+     * @return
+     * @throws NamingException
+     */
+    private Lookup determineLookup(URI root) throws NamingException {
+        ClientBuilder clientBuilder = null;
+        try {
+            clientBuilder = getClientBuilder();
+            Client client = clientBuilder.build();
+
+            LookupDiscovery lookupDiscovery = new LookupDiscovery(environment, client, root);
+            LookupDiscovery.Discovery discovery = lookupDiscovery.discover();
+
+            if (discovery.isV0target()) {
+               return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
+            } else {
+                throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            throw newNamingException("Cannot access lookup endpoint at "+root, e);
+        }
+
     }
     
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
