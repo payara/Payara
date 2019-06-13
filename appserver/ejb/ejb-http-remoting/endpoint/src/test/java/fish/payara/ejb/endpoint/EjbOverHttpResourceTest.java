@@ -299,12 +299,7 @@ public class EjbOverHttpResourceTest {
         List<Object> list = (List<Object>) settings.get("list");
         assertNotNull(list);
         assertEquals(1, list.size());
-        if (mediaType.equals(MediaType.APPLICATION_JSON)) {
-            // JSON will deserialize Number into bigdecimal
-            assertEquals(BigDecimal.valueOf(42), list.get(0));
-        } else {
-            assertEquals(42, list.get(0));
-        }
+        assertEquals(42, ((Number) list.get(0)).intValue());
     }
 
     @Test
@@ -372,7 +367,7 @@ public class EjbOverHttpResourceTest {
         } else {
             ErrorResponse response = invokeExpectError(mediaType, EJB_NAME, "cyclic", new String[0],
                     pack(new Object[0]));
-            System.out.println(response);
+            assertEquals("java.lang.StackOverflowError", response.exceptionType);
         }
     }
 
