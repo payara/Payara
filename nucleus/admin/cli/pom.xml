@@ -142,7 +142,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <version>${jsonp.version}</version>
         </dependency>
         <dependency>
@@ -166,7 +166,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jline</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
         </dependency>
         <dependency>

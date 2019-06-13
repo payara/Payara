@@ -2190,7 +2190,7 @@ public class Request
             // We can't use StandardContext.getJvmRoute() to determine whether
             // jvmRoute has been enabled, because this CoyoteRequest may not
             // have been associated with any context yet.
-            int index = id.indexOf(".");
+            int index = id.indexOf('.');
             if (index > 0) {
                 requestedSessionId = id.substring(0, index);
             }

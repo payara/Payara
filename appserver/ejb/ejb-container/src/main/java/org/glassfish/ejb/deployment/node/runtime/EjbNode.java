@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -126,8 +126,10 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      * @param value it's associated value
      */
     @Override
-    public void setElementValue(XMLElement element, String value) {        
-        if (RuntimeTagNames.EJB_NAME.equals(element.getQName())) {
+    public void setElementValue(XMLElement element, String value) {
+        String qName = element.getQName();
+        boolean isAvailabilityEnabled = RuntimeTagNames.AVAILABILITY_ENABLED.equals(qName);
+        if (RuntimeTagNames.EJB_NAME.equals(qName)) {
             Object parentDesc = getParentNode().getDescriptor();
             if (parentDesc != null) {
                 if (parentDesc instanceof EjbBundleDescriptorImpl) {
@@ -136,71 +138,72 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
             }
             if (descriptor==null) {
                 DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
-                            new Object[]{element , value}); 
+                        new Object[]{element , value}); 
             } else {
                 if (availEnabled != null) {
                     descriptor.getIASEjbExtraDescriptors().setAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED, availEnabled);
                 }
             }
             return;
-        } else if (descriptor==null && ! RuntimeTagNames.AVAILABILITY_ENABLED.equals(element.getQName())) {
+        } else if (descriptor==null && !isAvailabilityEnabled) {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
-                            new Object[] {element.getQName() , value });
+                    new Object[] {qName , value });
+            super.setElementValue(element, value);
+            return;
         }
         // if this is the availability-enabled attribute, save the value
         // and set it later
-	if (RuntimeTagNames.AVAILABILITY_ENABLED.equals(element.getQName())) {
+        if (isAvailabilityEnabled) {
             availEnabled = value;
-        } else if (RuntimeTagNames.NAME.equals(element.getQName())) {
-	    // principal
+        } else if (RuntimeTagNames.NAME.equals(qName)) {
+            // principal
             if (Boolean.FALSE.equals(descriptor.getUsesCallerIdentity())
-                && descriptor.getRunAsIdentity() != null) {
-                    descriptor.getRunAsIdentity().setPrincipal(value);
+                    && descriptor.getRunAsIdentity() != null) {
+                descriptor.getRunAsIdentity().setPrincipal(value);
             }
-        } else if (RuntimeTagNames.PASS_BY_REFERENCE.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setPassByReference(Boolean.valueOf(value));
-	} else if (RuntimeTagNames.JMS_MAX_MESSAGES_LOAD.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad(Integer.parseInt(value));
-	} else if (RuntimeTagNames.IS_READ_ONLY_BEAN.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setIsReadOnlyBean((Boolean.valueOf(value)).booleanValue());
-	} else if (RuntimeTagNames.REFRESH_PERIOD_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds(Integer.parseInt(value));
-	} else if (RuntimeTagNames.COMMIT_OPTION.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setCommitOption(value);
-	} else if (RuntimeTagNames.CMT_TIMEOUT_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
-	} else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
-	} else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(
-            element.getQName())) {
-            descriptor.getIASEjbExtraDescriptors().setCheckpointedMethods(
-                value);
-        } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(element.getQName())) {
+        } else if (RuntimeTagNames.PASS_BY_REFERENCE.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setPassByReference(Boolean.valueOf(value));
+        } else if (RuntimeTagNames.JMS_MAX_MESSAGES_LOAD.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad(Integer.parseInt(value));
+        } else if (RuntimeTagNames.IS_READ_ONLY_BEAN.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setIsReadOnlyBean((Boolean.valueOf(value)).booleanValue());
+        } else if (RuntimeTagNames.REFRESH_PERIOD_IN_SECONDS.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds(Integer.parseInt(value));
+        } else if (RuntimeTagNames.COMMIT_OPTION.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setCommitOption(value);
+        } else if (RuntimeTagNames.CMT_TIMEOUT_IN_SECONDS.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
+        } else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
+        } else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(qName)) {
+            descriptor.getIASEjbExtraDescriptors().setCheckpointedMethods(value);
+        } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(qName)) {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
-        } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(element.getQName())) {
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(qName)) {
             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClustered(Boolean.valueOf(value));
-        } else if(RuntimeTagNames.PAYARA_CLUSTERED_KEY_NAME.equals(element.getQName())) {
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_KEY_NAME.equals(qName)) {
             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setClusteredKeyValue(value);
-        } else if(RuntimeTagNames.PAYARA_CLUSTERED_LOCK_TYPE.equals(element.getQName())) {
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_LOCK_TYPE.equals(qName)) {
             org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor ejbDesc = (org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor;
             switch(value.toLowerCase()) {
-                case "inherit":
-                    ejbDesc.setClusteredLockType(DistributedLockType.INHERIT);
-                    break;
-                case "none":
-                    ejbDesc.setClusteredLockType(DistributedLockType.LOCK_NONE);
-                    break;
-                default:
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, "Invalid clustered lock type: {0}", value);
+            case "inherit":
+                ejbDesc.setClusteredLockType(DistributedLockType.INHERIT);
+                break;
+            case "none":
+                ejbDesc.setClusteredLockType(DistributedLockType.LOCK_NONE);
+                break;
+            default:
+                DOLUtils.getDefaultLogger().log(Level.WARNING, "Invalid clustered lock type: {0}", value);
             }
-        } else if(RuntimeTagNames.PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH.equals(element.getQName())) {
-             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPostConstructOnAttach(!Boolean.valueOf(value));
-        } else if(RuntimeTagNames.PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH.equals(element.getQName())) {
-             ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPreDestroyOnDetach(!Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH.equals(qName)) {
+            ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPostConstructOnAttach(!Boolean.valueOf(value));
+        } else if(RuntimeTagNames.PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH.equals(qName)) {
+            ((org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor)descriptor).setDontCallPreDestroyOnDetach(!Boolean.valueOf(value));
+        } else {
+            super.setElementValue(element, value);
         }
-        else super.setElementValue(element, value);
     }
-    
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
@@ -208,8 +211,8 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      * @return the map with the element name as a key, the setter method as a value
      */    
     @Override
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         
@@ -390,7 +393,7 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      * @param parent node for the information
      * @param descriptor the descriptor containing the generated info
      */
-    private void writeGenClasses(Node parent, EjbDescriptor ejbDescriptor) {
+    private static void writeGenClasses(Node parent, EjbDescriptor ejbDescriptor) {
         // common to all ejbs but mdb...
         Node genClasses = appendChild(parent, RuntimeTagNames.GEN_CLASSES);
         

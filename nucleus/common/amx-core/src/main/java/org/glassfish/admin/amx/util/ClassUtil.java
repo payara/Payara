@@ -164,7 +164,7 @@ public final class ClassUtil
      */
     public static String stripPackageName(String classname)
     {
-        final int lastDot = classname.lastIndexOf(".");
+        final int lastDot = classname.lastIndexOf('.');
         if (lastDot < 0)
         {
             return (classname);
@@ -1194,7 +1194,7 @@ public final class ClassUtil
             throw new IllegalArgumentException("not an array of Object");
         }
 
-        final int innerNameBegin = 1 + arrayClassname.indexOf("L");
+        final int innerNameBegin = 1 + arrayClassname.indexOf('L');
 
         final String newClassName = arrayClassname.substring(0, innerNameBegin) + newInnerType.getName() + ";";
 
@@ -1266,7 +1266,7 @@ public final class ClassUtil
 
     public static String stripPackagePrefix(final String classname)
     {
-        final int index = classname.lastIndexOf(".");
+        final int index = classname.lastIndexOf('.');
 
         String result = classname;
         if (index > 0)
@@ -1281,7 +1281,7 @@ public final class ClassUtil
 
     public static String getPackagePrefix(final String classname)
     {
-        final int index = classname.lastIndexOf(".");
+        final int index = classname.lastIndexOf('.');
 
         String result = classname;
         if (index > 0)

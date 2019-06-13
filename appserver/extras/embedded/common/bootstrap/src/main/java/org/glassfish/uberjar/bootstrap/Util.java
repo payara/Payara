@@ -110,7 +110,7 @@ public class Util {
 
     public static boolean isUber(URI uri) {
         String uriString = uri.toString();
-        String jarFileName = uriString.substring(uriString.lastIndexOf("/") + 1);
+        String jarFileName = uriString.substring(uriString.lastIndexOf('/') + 1);
         return jarFileName.indexOf("glassfish-embedded") != -1 ? true : false;
     }
 

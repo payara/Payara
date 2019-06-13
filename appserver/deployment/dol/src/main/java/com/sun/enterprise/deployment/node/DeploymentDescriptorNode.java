@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.*;
@@ -281,7 +281,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             return null;
         }
         
-        Class c = (Class) handlers.get(element.getQName());
+        Class c = handlers.get(element.getQName());
         if (c == null) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), "No handler registered" });
             return null;
@@ -311,7 +311,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         if (extNode == null) {
             return null;
         }
-        return (Class) extNode.getClass();
+        return extNode.getClass();
     }
 
     /**
@@ -449,7 +449,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
                 try {
                     Object descriptor = getDescriptor();
                     if (descriptor != null) {
-                        setDescriptorInfo(descriptor, (String) dispatchTable.get(element.getQName()), (String) value);
+                        setDescriptorInfo(descriptor, (String) dispatchTable.get(element.getQName()), value);
                     } else {
                         DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), value });
                     }
@@ -1120,7 +1120,6 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
         String elementValue = composeQNameValue(prefix, localPart);
         Element element = (Element) appendTextChild(parent, elementName, elementValue);
-
         // Always set prefix mapping on leaf node. If the DOL was
         // populated from an existing deployment descriptor it does
         // not preserve the original node structure of the XML document,
@@ -1128,7 +1127,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         // Alternatively, if we're writing out a descriptor that was created
         // by the deploytool, there is no prefix->namespace information in
         // the first place.
-        setAttributeNS(element, prefix, namespaceUri);
+        if (element != null) {
+            setAttributeNS(element, prefix, namespaceUri);
+        }
 
     }
 }

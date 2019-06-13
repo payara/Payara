@@ -247,7 +247,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>jline</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
             <optional>true</optional>
         </dependency>

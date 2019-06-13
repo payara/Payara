@@ -220,7 +220,7 @@ public class PayaraRestApiHandlers {
             Map attrMap = new HashMap();
             attrMap.put("componentname", encodedComponentName);
             Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
-            Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+            Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
             if(payaraEndpointsExtraProps.get("endpoints") != null) {
@@ -270,7 +270,7 @@ public class PayaraRestApiHandlers {
                 Map attrMap = new HashMap();
                 attrMap.put("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
@@ -318,7 +318,7 @@ public class PayaraRestApiHandlers {
                 String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
                 Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
                 List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
                 for (Map property : properties) {
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
@@ -716,7 +716,7 @@ public class PayaraRestApiHandlers {
         String serverName = "";
        
         try {
-            List<Map> table = RestUtil.buildChildEntityList(
+            List<Map<String, Object>> table = RestUtil.buildChildEntityList(
                     (String)handlerCtx.getInputValue("parentEndpoint"),
                     (String)handlerCtx.getInputValue("childType"),
                     (List)handlerCtx.getInputValue("skipList"),
@@ -732,7 +732,7 @@ public class PayaraRestApiHandlers {
                 for (String instance : instances) {
                     String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
                     if (configRef.equals(configName)) {
-                        serverName = instance.substring(instance.lastIndexOf("/") + 1);
+                        serverName = instance.substring(instance.lastIndexOf('/') + 1);
                     }
                 }
                 String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
@@ -743,7 +743,7 @@ public class PayaraRestApiHandlers {
                 List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
 
                 for (String virtualServer : virtualServers) {         
-                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
+                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf('/') + 1);
 
                     for (int i = 0; i < deployedApplications.size(); i++) {
                         deployedApplications.set(i, deployedApplications.get(i)
@@ -753,7 +753,7 @@ public class PayaraRestApiHandlers {
                     String contextRoots = "";
 
                     for (String application : applications) {
-                        String applicationName = application.substring(application.lastIndexOf("/") + 1);
+                        String applicationName = application.substring(application.lastIndexOf('/') + 1);
                         String[] deployedVirtualServers; 
                         if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
                             String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(

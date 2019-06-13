@@ -298,7 +298,7 @@ public class MappingClassElementImpl extends MappingElementImpl
 	public void setConsistencyLevel (int level)  throws ModelException
 	{
 		Integer old = new Integer(getConsistencyLevel());
-		Integer newLevel = new Integer(level);
+		Integer newLevel = Integer.valueOf(level);
 
 		try
 		{

@@ -149,7 +149,7 @@ public final class TestMain
 
         for (int i = 1; i < args.length; ++i) {
             final String pair = args[i];
-            final int delimIndex = pair.indexOf("=");
+            final int delimIndex = pair.indexOf('=');
             String name = null;
             String value = null;
             if (delimIndex < 0) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -213,7 +213,7 @@ public class JBatchJDBCPersistenceManager implements
 
         tryObtainTableLock();
 
-        CheckpointData checkpointData = queryCheckpointData(key.getCommaSeparatedKey());
+        CheckpointData checkpointData = key == null ? null : queryCheckpointData(key.getCommaSeparatedKey());
 
         logger.exiting(CLASSNAME, "getCheckpointData", checkpointData == null ? "<null>" : checkpointData);
         return checkpointData;

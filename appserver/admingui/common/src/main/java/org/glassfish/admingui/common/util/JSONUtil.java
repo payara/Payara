@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.util;
 
@@ -293,7 +293,7 @@ public class JSONUtil {
 		    && ((method.getModifiers() & Modifier.PUBLIC) != 0)
 		    && (method.getParameterTypes().length == 0)
 		    && (!method.getName().equals("getClass"))
-		    && (!method.getReturnType().getName().equals("void"))) {
+		    && (method.getReturnType() != void.class)) {
 		result.add(method.getName());
 	    }
 	}

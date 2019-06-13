@@ -663,7 +663,7 @@ public class AMXConfigImpl extends AMXImplBase
     public static String convertAttributeName(final String s )
     {
         // do not alter any name that is already all lower-case or that contains a "-" */
-        if ( s.equals( s.toLowerCase(Locale.getDefault()) ) || s.indexOf("-") >= 0 )
+        if ( s.equals( s.toLowerCase(Locale.getDefault()) ) || s.indexOf('-') >= 0 )
         {
             return(s);
         }

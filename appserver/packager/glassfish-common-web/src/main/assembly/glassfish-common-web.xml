@@ -40,7 +40,9 @@
     holder.
 
 -->
-<!--"Portions Copyright [2019] [Payara Foundation and/or its affiliates]" -->
+
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
@@ -57,6 +59,8 @@
             <excludes>
                 <exclude>modules/cli-optional*.jar</exclude>
                 <exclude>modules/appserver-cli*.jar</exclude>
+                <exclude>modules/jna*.jar</exclude>
+                <exclude>modules/jline-terminal-jna*.jar</exclude>
                 <exclude>bin/*</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>
@@ -81,6 +85,8 @@
             <outputDirectory>${install.dir.name}/glassfish/lib/client</outputDirectory>
             <includes>
                 <include>appserver-cli*.jar</include>
+                <include>jna*.jar</include>
+                <include>jline-terminal-jna*.jar</include>
             </includes>
         </fileSet>
         <fileSet>

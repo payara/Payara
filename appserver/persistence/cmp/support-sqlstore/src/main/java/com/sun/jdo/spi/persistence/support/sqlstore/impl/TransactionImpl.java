@@ -1363,7 +1363,7 @@ public class TransactionImpl
 
         if (debug) {
             Object[] items = new Object[] {_connection, Boolean.valueOf(optimistic),
-                new Integer(_connectionReferenceCount) , persistenceManager};
+                Integer.valueOf(_connectionReferenceCount) , persistenceManager};
             logger.finest("sqlstore.transactionimpl.getconnection",items); // NOI18N
         }
 
@@ -1420,7 +1420,7 @@ public class TransactionImpl
         if (debug) {
             Object[] items = new Object[] {Boolean.valueOf(optimistic),
                 Boolean.valueOf(startedCommit),
-                new Integer(_connectionReferenceCount) , persistenceManager};
+                Integer.valueOf(_connectionReferenceCount) , persistenceManager};
             logger.finest("sqlstore.transactionimpl.releaseconnection",items); // NOI18N
         }
 

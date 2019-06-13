@@ -153,8 +153,8 @@ class SolarisSystemEnvironment extends SystemEnvironment {
             String line = lines[i].trim();
             if (line.startsWith(token)) {
                 line = line.substring(line.indexOf(token) + token.length()).trim();
-                if (line.indexOf(" ") != -1) {
-                    return line.substring(0, line.indexOf(" ")).trim();
+                if (line.indexOf(' ') != -1) {
+                    return line.substring(0, line.indexOf(' ')).trim();
                 }
             }
         }

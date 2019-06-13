@@ -194,7 +194,7 @@ public class ACCAgentClassLoader extends URLClassLoader {
 
     private static List<URL> classPathToURLs(final String classPath) {
         if (classPath == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         final List<URL> result = new ArrayList<URL>();
         try {

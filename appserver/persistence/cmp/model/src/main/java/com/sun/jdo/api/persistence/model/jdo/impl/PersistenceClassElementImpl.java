@@ -189,7 +189,7 @@ public class PersistenceClassElementImpl extends PersistenceElementImpl
 	public void setObjectIdentityType (int type) throws ModelException
 	{
 		Integer old = new Integer(getObjectIdentityType());
-		Integer newType = new Integer(type);
+		Integer newType = Integer.valueOf(type);
 
 		try
 		{
