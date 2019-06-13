@@ -51,16 +51,10 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
@@ -74,8 +68,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import fish.payara.ejb.http.protocol.rs.ErrorResponseExceptionMapper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
@@ -126,7 +122,8 @@ public class EjbOverHttpResourceTest {
 
         @Override
         public Set<Object> getSingletons() {
-            return Collections.<Object>singleton(new EjbOverHttpResource(this));
+            return new HashSet<>(Arrays.asList(new EjbOverHttpResource(this),
+                    new ErrorResponseExceptionMapper()));
         }
 
         @Override
@@ -302,7 +299,12 @@ public class EjbOverHttpResourceTest {
         List<Object> list = (List<Object>) settings.get("list");
         assertNotNull(list);
         assertEquals(1, list.size());
-        assertEquals(42, list.get(0));
+        if (mediaType.equals(MediaType.APPLICATION_JSON)) {
+            // JSON will deserialize Number into bigdecimal
+            assertEquals(BigDecimal.valueOf(42), list.get(0));
+        } else {
+            assertEquals(42, list.get(0));
+        }
     }
 
     @Test
@@ -391,7 +393,7 @@ public class EjbOverHttpResourceTest {
             if (mediaType.equals(response.getMediaType().toString())) {
                 return response.readEntity(ErrorResponse.class);
             }
-            fail("Unexpected error response: "+response.readEntity(String.class));
+            fail("Unexpected error response in media type "+response.getMediaType()+": "+response.readEntity(String.class));
             return null;
         }
     }

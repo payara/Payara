@@ -39,6 +39,7 @@
  */
 package fish.payara.ejb.http.protocol;
 
+import javax.json.bind.annotation.JsonbPropertyOrder;
 import java.io.Serializable;
 
 /**
@@ -46,6 +47,7 @@ import java.io.Serializable;
  *
  * @author Jan Bernitt
  */
+@JsonbPropertyOrder({"exceptionType", "message", "cause"})
 public class ErrorResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;

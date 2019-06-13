@@ -76,7 +76,7 @@ public class InvokeMethodResponse implements Serializable {
 
     // This deserializer is only fit for limited use cases. Client should employ different deserialization means,
     // that make use of the expected return type as well (especially to support Optional returns)
-    static class Deserializer implements JsonbDeserializer<InvokeMethodResponse> {
+    public static class Deserializer implements JsonbDeserializer<InvokeMethodResponse> {
 
         @Override
         public InvokeMethodResponse deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {

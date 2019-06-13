@@ -49,7 +49,7 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 @Produces({MediaTypes.JAVA_OBJECT, MediaTypes.JSON})
-public class JsonExceptionMapper implements ExceptionMapper<Throwable> {
+public class ErrorResponseExceptionMapper implements ExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable exception) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
