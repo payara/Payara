@@ -257,7 +257,7 @@
                             </configuration>
                         </execution>
                         
-                        <!-- Copy source dependencies -->
+                        <!-- Copy source dependencies. This extra step is activated by the "embed-source" profile (see below). -->
                         <execution>
                             <id>process-step1a</id>
                             <phase>does not exists</phase>
@@ -350,6 +350,9 @@
                             </configuration>                         
                         </execution>
                         
+                        <!-- 
+                    		16. Merge sources into the main jars. This extra step is activated by the "embed-source" profile (see below).
+                 		-->
                         <execution>
                             <id>process-step3a</id>
                             <goals>

@@ -1484,7 +1484,7 @@ Parent is ${project.parent}</echo>
         </profile>
         
         <profile>
-            <id>add-source</id>
+            <id>embed-source</id>
             <build>
                 <plugins>
                     <plugin>
