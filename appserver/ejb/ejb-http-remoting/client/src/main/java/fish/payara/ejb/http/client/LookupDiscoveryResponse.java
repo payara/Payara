@@ -37,33 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.endpoint;
+package fish.payara.ejb.http.client;
 
-import javax.naming.NamingException;
+import java.net.URI;
 
-/**
- * The main point of the {@link EjbOverHttpService} abstraction is to decouple application server specific logic and
- * dependencies from the non application server dependent endpoint so it can be used with a plain HTTP server during
- * testing.
- * 
- * @author Jan Bernitt
- */
-public interface EjbOverHttpService {
+import javax.ws.rs.client.WebTarget;
 
-    /**
-     * Resolve {@link ClassLoader} for an application.
-     * 
-     * @param applicationName never null or empty
-     * @return The {@link ClassLoader} to use for the given application name, or null if the application is unknown
-     */
-    ClassLoader getAppClassLoader(String applicationName);
+class LookupDiscoveryResponse {
 
-    /**
-     * Resolve a EJB for a given JNDI name.
-     * 
-     * @param jndiName never null or empty, only global names
-     * @return The EJB, or
-     * @throws NamingException in case no such EJB is known
-     */
-    Object getBean(String jndiName) throws NamingException;
+    private URI resolvedRoot;
+    private WebTarget v0lookup;
+    private WebTarget v1lookup;
+
+    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup) {
+        this(resolvedRoot, v0lookup, null);
+    }
+
+    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup, WebTarget v1lookup) {
+        this.resolvedRoot = resolvedRoot;
+        this.v0lookup = v0lookup;
+        this.v1lookup = v1lookup;
+    }
+
+    public URI getResolvedRoot() {
+        return resolvedRoot;
+    }
+
+    public boolean isV0target() {
+        return v0lookup != null;
+    }
+
+    public WebTarget getV0lookup() {
+        return v0lookup;
+    }
+
+    public boolean isV1target() {
+        return v1lookup != null;
+    }
+
+    public WebTarget getV1lookup() {
+        return v1lookup;
+    }
 }

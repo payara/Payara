@@ -37,33 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.endpoint;
+package fish.payara.ejb.http.client;
+
+import java.net.URI;
 
 import javax.naming.NamingException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
 
 /**
- * The main point of the {@link EjbOverHttpService} abstraction is to decouple application server specific logic and
- * dependencies from the non application server dependent endpoint so it can be used with a plain HTTP server during
- * testing.
+ * Abstraction for the discovery strategy used to find possible endpoints that can be used to do the initial EJB lookup
+ * request.
  * 
  * @author Jan Bernitt
  */
-public interface EjbOverHttpService {
+interface LookupDiscoveryService {
 
     /**
-     * Resolve {@link ClassLoader} for an application.
+     * Discover potential endpoints for EJB over HTTP.
      * 
-     * @param applicationName never null or empty
-     * @return The {@link ClassLoader} to use for the given application name, or null if the application is unknown
+     * @param client the {@link Client} to use when discovering endpoints at the give root {@link URI}.
+     * @param root where the endpoints should be discovered
+     * @return The result of the discovery including usable {@link WebTarget}s
+     * @throws NamingException In an error occurred during discovery or no endpoints were discovered
      */
-    ClassLoader getAppClassLoader(String applicationName);
+    LookupDiscoveryResponse discover(Client client, URI root) throws NamingException;
 
-    /**
-     * Resolve a EJB for a given JNDI name.
-     * 
-     * @param jndiName never null or empty, only global names
-     * @return The EJB, or
-     * @throws NamingException in case no such EJB is known
-     */
-    Object getBean(String jndiName) throws NamingException;
 }

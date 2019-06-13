@@ -167,8 +167,8 @@ class RemoteEJBContext implements Context {
             clientBuilder = getClientBuilder();
             Client client = clientBuilder.build();
 
-            LookupDiscovery lookupDiscovery = new LookupDiscovery(environment, client, root);
-            LookupDiscovery.Discovery discovery = lookupDiscovery.discover();
+            LookupDiscoveryServiceImpl lookupDiscovery = new LookupDiscoveryServiceImpl();
+            LookupDiscoveryResponse discovery = lookupDiscovery.discover(client, root);
 
             if (discovery.isV0target()) {
                return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());

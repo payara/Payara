@@ -72,6 +72,9 @@ import fish.payara.ejb.http.protocol.LookupResponse;
 @Path("/")
 public class EjbOverHttpResource {
 
+    private static final String INVOKER_V1_REL = "https://payara.fish/ejb-http-invoker/v1";
+    private static final String INVOKER_V0_REL = "https://payara.fish/ejb-http-invoker/v0";
+
     private final EjbOverHttpService service;
 
     public EjbOverHttpResource() {
@@ -98,8 +101,8 @@ public class EjbOverHttpResource {
     @HEAD
     public Response discover() {
         return Response.ok()
-                .link("jndi/lookup", "https://payara.fish/ejb-http-invoker/v1")
-                .link("ejb/lookup", "https://payara.fish/ejb-http-invoker/v0")
+                .link("jndi/lookup", INVOKER_V1_REL)
+                .link("ejb/lookup", INVOKER_V0_REL)
                 .build();
     }
 

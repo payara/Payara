@@ -41,7 +41,6 @@
 package fish.payara.ejb.http.client;
 
 import javax.naming.NamingException;
-import javax.ws.rs.client.WebTarget;
 import java.util.Map;
 
 abstract class Lookup {
