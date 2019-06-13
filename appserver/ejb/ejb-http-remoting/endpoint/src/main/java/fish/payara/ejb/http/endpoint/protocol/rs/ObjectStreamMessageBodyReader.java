@@ -37,47 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb.http.endpoint.protocol.rs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.LookupRequest;
+import fish.payara.ejb.http.endpoint.MediaTypes;
+import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
 
 /**
- * Reads the {@link LookupRequest} in case of JSONB serialisation.
- *
+ * Reads the {@link LookupRequest} in case of java serialisation.
+ *  
  * @author Jan Bernitt
  */
 @Provider
-@Consumes(MediaTypes.JSON)
-public class JsonbLookupMessageBodyReader implements MessageBodyReader<LookupRequest> {
+@Consumes(MediaTypes.JAVA_OBJECT)
+public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return LookupRequest.class.isAssignableFrom(type);
+        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
     @Override
-    public LookupRequest readFrom(Class<LookupRequest> type, Type genericType, Annotation[] annotations,
+    public Serializable readFrom(Class<Serializable> type, Type genericType, Annotation[] annotations,
             MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
-        try (JsonReader jsonReader = Json.createReader(entityStream)) {
-            JsonObject request = jsonReader.readObject();
-            return new LookupRequest(request.getString("lookup"));
+        try {
+            return (Serializable) new ObjectInputStream(entityStream).readObject();
+        } catch (ClassNotFoundException ex) {
+            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
+                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
         }
     }
 

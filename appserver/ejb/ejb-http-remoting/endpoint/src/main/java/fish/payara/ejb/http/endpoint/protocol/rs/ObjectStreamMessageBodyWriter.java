@@ -37,66 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb.http.endpoint.protocol.rs;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.commons.io.input.ClassLoaderObjectInputStream;
-
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.endpoint.MediaTypes;
+import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
 
 /**
- * Reads the {@link InvokeMethodRequest} in case of java serialisation.
+ * Writes the {@link LookupResponse}, {@link InvokeMethodResponse} and {@link ErrorResponse} in case of Java
+ * serialisation.
  * 
- * In that case the {@link InvokeMethodRequest#argValues} are java serialised {@code byte[]} representation of the
- * original {@code Object[]} for the method arguments so that the argument {@link Object} are not attempted to be
- * de-serialised already during {@link #readFrom(Class, Type, Annotation[], MediaType, MultivaluedMap, InputStream)}.
- *
  * @author Jan Bernitt
  */
 @Provider
-@Consumes(MediaTypes.JAVA_OBJECT)
-public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyReader<InvokeMethodRequest> {
+@Produces(MediaTypes.JAVA_OBJECT)
+public class ObjectStreamMessageBodyWriter implements MessageBodyWriter<Serializable> {
 
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return InvokeMethodRequest.class.isAssignableFrom(type);
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
     @Override
-    public InvokeMethodRequest readFrom(Class<InvokeMethodRequest> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+    public void writeTo(Serializable response, Class<?> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
             throws IOException, WebApplicationException {
-        try {
-            InvokeMethodRequest request = (InvokeMethodRequest) new ObjectInputStream(entityStream).readObject();
-            request.argDeserializer = (args, types, classloader) -> {
-                try (ObjectInputStream ois = new ClassLoaderObjectInputStream(classloader,
-                        new ByteArrayInputStream((byte[]) args))) {
-                    return (Object[]) ois.readObject();
-                } catch (Exception ex) {
-                    throw new InternalServerErrorException(
-                            "Failed to de-serialise method arguments from binary representation.", ex);
-                }
-            };
-            return request;
-        } catch (ClassNotFoundException ex) {
-            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
-                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
-        }
+        new ObjectOutputStream(entityStream).writeObject(response);
     }
 
 }

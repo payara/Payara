@@ -37,67 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol;
+package fish.payara.ejb.http.client.protocol;
 
-import javax.json.bind.annotation.JsonbPropertyOrder;
-import javax.naming.NamingException;
-
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
+
 /**
- * Response in case of an error.
+ * Lookup the fully qualified name of an EJB interface for a JNDI name.
  *
  * @author Jan Bernitt
  */
-@JsonbPropertyOrder({"exceptionType", "message", "cause"})
-public class ErrorResponse implements Serializable {
+public class LookupRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public String exceptionType;
-    public String message;
-    public ErrorResponse cause;
+    @JsonbProperty("lookup")
+    public final String jndiName;
 
-    public ErrorResponse() {
-        // needed for JSONB de-serialisation
-    }
-
-    private ErrorResponse(String exceptionType, String message, ErrorResponse cause) {
-        this.exceptionType = exceptionType;
-        this.message = message;
-        this.cause = cause;
-    }
-
-    public ErrorResponse(Throwable ex) {
-        this(ex.getClass().getName(), ex.getMessage(), cause(ex));
-    }
-
-    private static ErrorResponse cause(Throwable ex) {
-        Throwable cause = ex.getCause();
-        if (cause != null) {
-            return new ErrorResponse(cause);
-        }
-        if (ex instanceof NamingException) {
-            Throwable rootCause = ((NamingException) ex).getRootCause();
-            if (rootCause != null) {
-                return new ErrorResponse(rootCause);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder();
-        toString(str);
-        return str.toString();
-    }
-
-    private void toString(StringBuilder str) {
-        str.append(exceptionType).append(": ").append(message);
-        if (cause != null) {
-            str.append("\ncaused by:\n");
-            cause.toString(str);
-        }
+    public LookupRequest(String jndiName) {
+        this.jndiName = jndiName;
     }
 }

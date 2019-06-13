@@ -67,7 +67,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import fish.payara.ejb.http.protocol.rs.ErrorResponseExceptionMapper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -80,16 +79,19 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import fish.payara.ejb.http.protocol.ErrorResponse;
-import fish.payara.ejb.http.protocol.InvokeMethodRequest;
-import fish.payara.ejb.http.protocol.InvokeMethodResponse;
-import fish.payara.ejb.http.protocol.LookupRequest;
-import fish.payara.ejb.http.protocol.LookupResponse;
-import fish.payara.ejb.http.protocol.rs.JsonbInvokeMethodMessageBodyReader;
-import fish.payara.ejb.http.protocol.rs.JsonbLookupMessageBodyReader;
-import fish.payara.ejb.http.protocol.rs.ObjectStreamInvokeMethodMessageBodyReader;
-import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyReader;
-import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyWriter;
+import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
+import fish.payara.ejb.http.endpoint.EjbOverHttpService;
+import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
+import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
+import fish.payara.ejb.http.endpoint.protocol.rs.ErrorResponseExceptionMapper;
+import fish.payara.ejb.http.endpoint.protocol.rs.JsonbInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.endpoint.protocol.rs.JsonbLookupMessageBodyReader;
+import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamMessageBodyReader;
+import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamMessageBodyWriter;
 
 /**
  * A component test for the {@link EjbOverHttpResource} that tests with both JSONB and java object serialisation.

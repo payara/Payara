@@ -38,56 +38,11 @@
  *    holder.
  */
 
-package fish.payara.ejb.http.client;
+package fish.payara.ejb.http.endpoint;
 
-import javax.naming.NamingException;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import java.util.HashMap;
-import java.util.Map;
+import javax.ws.rs.core.MediaType;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
-class LookupV0 extends Lookup {
-    private final WebTarget invokerRoot;
-    private final WebTarget lookup;
-
-    LookupV0(Map<String, Object> environment, WebTarget invokerRoot, WebTarget v0lookup) {
-        super(environment);
-        this.invokerRoot = invokerRoot;
-        this.lookup = v0lookup;
-    }
-
-    @Override
-    public Object lookup(String jndiName) throws NamingException {
-        // For the lookup do a call to the remote server first to obtain
-        // the remote business interface class name given a JNDI lookup name.
-        // The JNDI lookup name normally does not give us this interface name.
-        // This also allows us to check the JNDI name indeed resolves before
-        // we create a proxy and return it here.
-
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("lookup", jndiName);
-        String className =
-                lookup
-                        .request()
-                        .post(Entity.entity(payload, APPLICATION_JSON))
-                        .readEntity(String.class);
-
-        // After we have obtained the class name of the remote interface, generate
-        // a proxy based on it.
-
-        try {
-            return EjbHttpProxyFactory.newProxy(
-                    Class.forName(className),
-                    invokerRoot
-                            .path("ejb")
-                            .path("invoke"),
-                    jndiName,
-                    new HashMap<>(environment)
-            );
-        } catch (ClassNotFoundException e) {
-            throw wrap("Local class does not exist for JNDI name "+jndiName, e);
-        }
-    }
+public interface MediaTypes {
+    String JSON = MediaType.APPLICATION_JSON;
+    String JAVA_OBJECT = "application/x-java-object";
 }

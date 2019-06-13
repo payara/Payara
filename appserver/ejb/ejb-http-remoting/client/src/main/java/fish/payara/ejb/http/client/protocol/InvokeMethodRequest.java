@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol;
+package fish.payara.ejb.http.client.protocol;
 
 import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 
 /**
  * Invoke a EJB method.
@@ -67,13 +66,9 @@ public class InvokeMethodRequest implements Serializable {
      * not attempted to be de-serialised into {@link Object}s by receiving JAX-RS endpoint.
      */
     public final Object argValues;
-    /**
-     * De-serialises the {@link #argValues} into an {@code Object[]} again.
-     */
-    public transient ArgumentDeserializer argDeserializer;
 
     public InvokeMethodRequest(String principal, String credentials, String jndiName, String method, String[] argTypes,
-            String[] argActualTypes, Object argValues, ArgumentDeserializer argDeserializer) {
+            String[] argActualTypes, Object argValues) {
         this.principal = principal;
         this.credentials = credentials;
         this.jndiName = jndiName;
@@ -81,22 +76,5 @@ public class InvokeMethodRequest implements Serializable {
         this.argTypes = argTypes;
         this.argActualTypes = argActualTypes;
         this.argValues = argValues;
-        this.argDeserializer = argDeserializer;
-    }
-
-    @FunctionalInterface
-    public interface ArgumentDeserializer {
-
-        /**
-         * Converts the method arguments form a {@link Class} and {@link Object} independent format to the actual method
-         * argument {@link Object}s. This step is deferred since it has to take place within the right
-         * {@link ClassLoader} context in order to not fail looking up application specific classes.
-         * 
-         * @param args           the argument as send in {@link InvokeMethodRequest}
-         * @param argActualTypes the actual {@link Class} types of the arguments as send in {@link InvokeMethodRequest}
-         * @param classLoader    the {@link ClassLoader} to use to load further classes if needed.
-         * @return The arguments as they should be passed to the {@link Method} invoked
-         */
-        Object[] deserialise(Object args, Class<?>[] argActualTypes, ClassLoader classLoader);
     }
 }

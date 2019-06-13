@@ -37,33 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.endpoint;
+package fish.payara.ejb.http.client.protocol;
 
-import javax.naming.NamingException;
+import javax.json.bind.annotation.JsonbPropertyOrder;
+
+import java.io.Serializable;
 
 /**
- * The main point of the {@link EjbOverHttpService} abstraction is to decouple application server specific logic and
- * dependencies from the non application server dependent endpoint so it can be used with a plain HTTP server during
- * testing.
- * 
+ * Response in case of an error.
+ *
  * @author Jan Bernitt
  */
-public interface EjbOverHttpService {
+@JsonbPropertyOrder({"exceptionType", "message", "cause"})
+public class ErrorResponse implements Serializable {
 
-    /**
-     * Resolve {@link ClassLoader} for an application.
-     * 
-     * @param applicationName never null or empty
-     * @return The {@link ClassLoader} to use for the given application name, or null if the application is unknown
-     */
-    ClassLoader getAppClassLoader(String applicationName);
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * Resolve a EJB for a given JNDI name.
-     * 
-     * @param jndiName never null or empty, only global names
-     * @return The EJB, or
-     * @throws NamingException in case no such EJB is known
-     */
-    Object getBean(String jndiName) throws NamingException;
+    public String exceptionType;
+    public String message;
+    public ErrorResponse cause;
+
+    public ErrorResponse() {
+        // needed for JSONB de-serialisation
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str);
+        return str.toString();
+    }
+
+    private void toString(StringBuilder str) {
+        str.append(exceptionType).append(": ").append(message);
+        if (cause != null) {
+            str.append("\ncaused by:\n");
+            cause.toString(str);
+        }
+    }
 }

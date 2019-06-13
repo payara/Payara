@@ -37,25 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol;
+package fish.payara.ejb.http.endpoint;
 
-import javax.json.bind.annotation.JsonbProperty;
-import java.io.Serializable;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
-
-/**
- * Lookup the fully qualified name of an EJB interface for a JNDI name.
- *
- * @author Jan Bernitt
- */
-public class LookupRequest implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @JsonbProperty("lookup")
-    public final String jndiName;
-
-    public LookupRequest(String jndiName) {
-        this.jndiName = jndiName;
-    }
+@ApplicationPath("/")
+public class EjbOverHttpApplication extends Application {
+    // required to trigger JAX-RS
 }

@@ -41,7 +41,7 @@ package fish.payara.ejb.invoke;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
 
-import fish.payara.ejb.endpoint.EjbOverHttpResource;
+import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;

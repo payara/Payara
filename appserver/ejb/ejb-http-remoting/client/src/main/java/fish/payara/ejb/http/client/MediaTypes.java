@@ -38,7 +38,7 @@
  *    holder.
  */
 
-package fish.payara.ejb;
+package fish.payara.ejb.http.client;
 
 import javax.ws.rs.core.MediaType;
 

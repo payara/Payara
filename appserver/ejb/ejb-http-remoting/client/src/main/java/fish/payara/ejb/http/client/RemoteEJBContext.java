@@ -52,7 +52,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import java.net.URI;
 import java.net.URL;
@@ -157,9 +156,6 @@ class RemoteEJBContext implements Context {
 
     /**
      * Determine supported protocol on server side and construct corresponding Lookup instance.
-     * @param root
-     * @return
-     * @throws NamingException
      */
     private Lookup determineLookup(URI root) throws NamingException {
         ClientBuilder clientBuilder = null;
@@ -170,11 +166,13 @@ class RemoteEJBContext implements Context {
             LookupDiscoveryServiceImpl lookupDiscovery = new LookupDiscoveryServiceImpl();
             LookupDiscoveryResponse discovery = lookupDiscovery.discover(client, root);
 
+            if (discovery.isV1target()) {
+                return new LookupV1(environment, discovery.getV1lookup());
+            }
             if (discovery.isV0target()) {
                return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
-            } else {
-                throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
             }
+            throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw newNamingException("Cannot access lookup endpoint at "+root, e);
         }

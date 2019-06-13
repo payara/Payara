@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.endpoint;
+package fish.payara.ejb.http.endpoint;
 
 import static java.util.Arrays.asList;
 
@@ -62,12 +62,11 @@ import org.glassfish.internal.data.ApplicationRegistry;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
 
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.ErrorResponse;
-import fish.payara.ejb.http.protocol.InvokeMethodRequest;
-import fish.payara.ejb.http.protocol.InvokeMethodResponse;
-import fish.payara.ejb.http.protocol.LookupRequest;
-import fish.payara.ejb.http.protocol.LookupResponse;
+import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
+import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
 
 @Path("/")
 public class EjbOverHttpResource {
@@ -181,7 +180,7 @@ public class EjbOverHttpResource {
                     return new LookupResponse(Class.forName(className));
                 } catch (ClassNotFoundException ex) {
                     NamingException nex = new NamingException("Unknown class: "+className);
-                    nex.setRootCause(ex);
+                    nex.initCause(ex);
                     throw nex;
                 }
             }

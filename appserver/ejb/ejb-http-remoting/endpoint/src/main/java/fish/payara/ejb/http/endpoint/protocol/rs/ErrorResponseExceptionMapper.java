@@ -38,10 +38,10 @@
  *    holder.
  */
 
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb.http.endpoint.protocol.rs;
 
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.ErrorResponse;
+import fish.payara.ejb.http.endpoint.MediaTypes;
+import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;

@@ -37,50 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb.http.client.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
-
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.LookupRequest;
 
 /**
- * Reads the {@link LookupRequest} in case of java serialisation.
- *  
+ * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
+ *
  * @author Jan Bernitt
  */
-@Provider
-@Consumes(MediaTypes.JAVA_OBJECT)
-public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
+public class LookupResponse implements Serializable {
 
-    @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
-    }
+    private static final long serialVersionUID = 1L;
 
-    @Override
-    public Serializable readFrom(Class<Serializable> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
-            throws IOException, WebApplicationException {
-        try {
-            return (Serializable) new ObjectInputStream(entityStream).readObject();
-        } catch (ClassNotFoundException ex) {
-            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
-                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
-        }
+    public final String typeName;
+    public final String kind;
+
+    @JsonbCreator
+    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
+        this.typeName = typeName;
+        this.kind = kind;
     }
 
 }

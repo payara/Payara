@@ -37,33 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol;
+package fish.payara.ejb.http.endpoint;
 
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
-import java.io.Serializable;
+import javax.naming.NamingException;
 
 /**
- * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
- *
+ * The main point of the {@link EjbOverHttpService} abstraction is to decouple application server specific logic and
+ * dependencies from the non application server dependent endpoint so it can be used with a plain HTTP server during
+ * testing.
+ * 
  * @author Jan Bernitt
  */
-public class LookupResponse implements Serializable {
+public interface EjbOverHttpService {
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * Resolve {@link ClassLoader} for an application.
+     * 
+     * @param applicationName never null or empty
+     * @return The {@link ClassLoader} to use for the given application name, or null if the application is unknown
+     */
+    ClassLoader getAppClassLoader(String applicationName);
 
-    public final String typeName;
-    public final String kind;
-
-    public LookupResponse(Class<?> ejbInterface) {
-        this.typeName = ejbInterface.getName();
-        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
-    }
-
-    @JsonbCreator
-    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
-        this.typeName = typeName;
-        this.kind = kind;
-    }
-
+    /**
+     * Resolve a EJB for a given JNDI name.
+     * 
+     * @param jndiName never null or empty, only global names
+     * @return The EJB, or
+     * @throws NamingException in case no such EJB is known
+     */
+    Object getBean(String jndiName) throws NamingException;
 }

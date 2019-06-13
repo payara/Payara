@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb.http.endpoint.protocol.rs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,8 +60,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import fish.payara.ejb.MediaTypes;
-import fish.payara.ejb.http.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.endpoint.MediaTypes;
+import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
 
 /**
  * Reads the {@link InvokeMethodRequest} in case of JSONB serialisation.
