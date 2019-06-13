@@ -51,7 +51,6 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.util.*;
@@ -71,7 +70,6 @@ import javax.ws.rs.core.UriBuilder;
 import fish.payara.ejb.http.protocol.rs.ErrorResponseExceptionMapper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
@@ -254,15 +252,16 @@ public class EjbOverHttpResourceTest {
     @Test
     public void lookup_ErrorFullNameWithoutPackage() {
         ErrorResponse response = lookupExpectError(mediaType, "java:global/myapp/CalculatorBean!RemoteCalculator");
-        assertEquals("java.lang.ClassNotFoundException", response.exceptionType);
-        assertEquals("RemoteCalculator", response.message);
-        assertNull(response.cause);
+        assertEquals("javax.naming.NamingException", response.exceptionType);
+        assertNotNull(response.cause);
+        assertEquals("java.lang.ClassNotFoundException", response.cause.exceptionType);
+        assertEquals("RemoteCalculator", response.cause.message);
     }
 
     @Test
     public void lookup_ErrorNoGlobalJndiName() {
         ErrorResponse response = lookupExpectError(mediaType, "java:app/myapp/" + RemoteCalculator.class.getName());
-        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("javax.naming.NamingException", response.exceptionType);
         assertEquals("Only global names are supported but got: java:app/myapp/fish.payara.ejb.endpoint.EjbOverHttpResourceTest$RemoteCalculator", response.message);
         assertNull(response.cause);
     }
@@ -270,7 +269,7 @@ public class EjbOverHttpResourceTest {
     @Test
     public void lookup_ErrorMalformedGlobalJndiName() {
         ErrorResponse response = lookupExpectError(mediaType, "java:global/" + RemoteCalculator.class.getName());
-        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("javax.naming.NamingException", response.exceptionType);
         assertEquals("Global name must contain application name but got: java:global/fish.payara.ejb.endpoint.EjbOverHttpResourceTest$RemoteCalculator", response.message);
         assertNull(response.cause);
     }
@@ -314,7 +313,7 @@ public class EjbOverHttpResourceTest {
     public void invoke_ErrorNoSuchApplication() {
         ErrorResponse response = invokeExpectError(mediaType, EJB_NAME.replace("/myapp/", "/unknownapp/"), "sub",
                 new String[] { int.class.getName(), int.class.getName() }, pack(1, 2));
-        assertEquals("javax.ws.rs.BadRequestException", response.exceptionType);
+        assertEquals("javax.naming.NamingException", response.exceptionType);
         assertEquals("Unknown application: unknownapp", response.message);
         assertNull(response.cause);
     }

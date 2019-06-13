@@ -38,11 +38,11 @@
  *    holder.
  */
 
-package fish.payara.ejb.http.protocol.rs;
+package fish.payara.ejb;
 
 import javax.ws.rs.core.MediaType;
 
-interface MediaTypes {
+public interface MediaTypes {
     String JSON = MediaType.APPLICATION_JSON;
     String JAVA_OBJECT = "application/x-java-object";
 }

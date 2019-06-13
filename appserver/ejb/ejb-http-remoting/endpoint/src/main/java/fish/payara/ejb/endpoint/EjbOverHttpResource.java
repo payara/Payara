@@ -48,13 +48,11 @@ import java.util.Base64;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -64,6 +62,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
 
+import fish.payara.ejb.MediaTypes;
 import fish.payara.ejb.http.protocol.ErrorResponse;
 import fish.payara.ejb.http.protocol.InvokeMethodRequest;
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
@@ -106,18 +105,18 @@ public class EjbOverHttpResource {
 
     @POST
     @Path("jndi/lookup")
-    @Produces("application/x-java-object")
-    @Consumes("application/x-java-object")
+    @Produces(MediaTypes.JAVA_OBJECT)
+    @Consumes(MediaTypes.JAVA_OBJECT)
     public Response lookupJavaSerialization(LookupRequest body) {
-        return lookup(body, "application/x-java-object");
+        return lookup(body, MediaTypes.JAVA_OBJECT);
     }
 
     @POST
     @Path("jndi/lookup")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaTypes.JSON)
+    @Consumes(MediaTypes.JSON)
     public Response lookupJsonb(LookupRequest body) {
-        return lookup(body, MediaType.APPLICATION_JSON);
+        return lookup(body, MediaTypes.JSON);
     }
 
     private Response lookup(LookupRequest body, String mediaType) {
@@ -139,18 +138,18 @@ public class EjbOverHttpResource {
 
     @POST
     @Path("jndi/invoke")
-    @Produces("application/x-java-object")
-    @Consumes("application/x-java-object")
+    @Produces(MediaTypes.JAVA_OBJECT)
+    @Consumes(MediaTypes.JAVA_OBJECT)
     public Response invokeJavaSerilaization(InvokeMethodRequest body) {
-        return invoke(body, "application/x-java-object");
+        return invoke(body, MediaTypes.JAVA_OBJECT);
     }
 
     @POST
     @Path("jndi/invoke")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaTypes.JSON)
+    @Consumes(MediaTypes.JSON)
     public Response invokeJsonb(InvokeMethodRequest body) {
-        return invoke(body, MediaType.APPLICATION_JSON);
+        return invoke(body, MediaTypes.JSON);
     }
 
     private Response invoke(InvokeMethodRequest body, String mediaType) {
@@ -174,7 +173,14 @@ public class EjbOverHttpResource {
         return excuteInAppContext(jndiName, ejb -> {
             int bangIndex = jndiName.indexOf('!');
             if (bangIndex > 0) {
-                return new LookupResponse(Class.forName(jndiName.substring(bangIndex + 1)));
+                String className = jndiName.substring(bangIndex + 1);
+                try {
+                    return new LookupResponse(Class.forName(className));
+                } catch (ClassNotFoundException ex) {
+                    NamingException nex = new NamingException("Unknown class: "+className);
+                    nex.setRootCause(ex);
+                    throw nex;
+                }
             }
             // there should only be one interface otherwise plain name would not be allowed (portable names at least)
             // in fact, there can be some implementation-specific interfaces in the proxy as well
@@ -205,10 +211,10 @@ public class EjbOverHttpResource {
 
     private <T> T excuteInAppContext(String jndiName, EjbOperation<T> operation) throws Exception {
         if (!jndiName.startsWith("java:global/")) {
-            throw new BadRequestException("Only global names are supported but got: " + jndiName);
+            throw new NamingException("Only global names are supported but got: " + jndiName);
         }
         if (jndiName.indexOf('/', 12) < 0) {
-            throw new BadRequestException("Global name must contain application name but got: " + jndiName);
+            throw new NamingException("Global name must contain application name but got: " + jndiName);
         }
 
         Thread currentThread = Thread.currentThread();
@@ -216,7 +222,7 @@ public class EjbOverHttpResource {
         ClassLoader existingContextClassLoader = currentThread.getContextClassLoader();
         ClassLoader appClassLoader = service.getAppClassLoader(applicationName);
         if (appClassLoader == null) {
-            throw new BadRequestException("Unknown application: " + applicationName);
+            throw new NamingException("Unknown application: " + applicationName);
         }
         try {
             currentThread.setContextClassLoader(appClassLoader);

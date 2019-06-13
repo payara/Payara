@@ -56,6 +56,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.io.input.ClassLoaderObjectInputStream;
 
+import fish.payara.ejb.MediaTypes;
 import fish.payara.ejb.http.protocol.InvokeMethodRequest;
 
 /**
@@ -68,7 +69,7 @@ import fish.payara.ejb.http.protocol.InvokeMethodRequest;
  * @author Jan Bernitt
  */
 @Provider
-@Consumes("application/x-java-object")
+@Consumes(MediaTypes.JAVA_OBJECT)
 public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyReader<InvokeMethodRequest> {
 
     @Override

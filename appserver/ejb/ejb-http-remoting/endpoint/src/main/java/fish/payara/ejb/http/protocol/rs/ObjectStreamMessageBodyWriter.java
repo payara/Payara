@@ -53,6 +53,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import fish.payara.ejb.MediaTypes;
 import fish.payara.ejb.http.protocol.ErrorResponse;
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.LookupResponse;
@@ -64,12 +65,12 @@ import fish.payara.ejb.http.protocol.LookupResponse;
  * @author Jan Bernitt
  */
 @Provider
-@Produces("application/x-java-object")
+@Produces(MediaTypes.JAVA_OBJECT)
 public class ObjectStreamMessageBodyWriter implements MessageBodyWriter<Serializable> {
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.getType().equals("application") && mediaType.getSubtype().equals("x-java-object");
+        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
     @Override

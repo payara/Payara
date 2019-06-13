@@ -40,6 +40,7 @@
 
 package fish.payara.ejb.http.protocol.rs;
 
+import fish.payara.ejb.MediaTypes;
 import fish.payara.ejb.http.protocol.ErrorResponse;
 
 import javax.ws.rs.Produces;

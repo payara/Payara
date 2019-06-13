@@ -39,7 +39,6 @@
  */
 package fish.payara.ejb.http.protocol;
 
-import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbPropertyOrder;
 import javax.json.bind.annotation.JsonbTypeDeserializer;
 import javax.json.bind.serializer.DeserializationContext;
@@ -95,7 +94,7 @@ public class InvokeMethodResponse implements Serializable {
             return new InvokeMethodResponse(result);
         }
 
-        private Class<?> determineClass(String type) {
+        private static Class<?> determineClass(String type) {
             if (type == null) {
                 throw new IllegalArgumentException("Type was not specified");
             }

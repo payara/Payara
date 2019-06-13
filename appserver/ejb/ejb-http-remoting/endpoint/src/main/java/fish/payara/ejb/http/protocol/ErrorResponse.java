@@ -40,6 +40,8 @@
 package fish.payara.ejb.http.protocol;
 
 import javax.json.bind.annotation.JsonbPropertyOrder;
+import javax.naming.NamingException;
+
 import java.io.Serializable;
 
 /**
@@ -57,7 +59,7 @@ public class ErrorResponse implements Serializable {
     public ErrorResponse cause;
 
     public ErrorResponse() {
-
+        // needed for JSONB de-serialisation
     }
 
     private ErrorResponse(String exceptionType, String message, ErrorResponse cause) {
@@ -67,7 +69,21 @@ public class ErrorResponse implements Serializable {
     }
 
     public ErrorResponse(Throwable ex) {
-        this(ex.getClass().getName(), ex.getMessage(), ex.getCause() == null ? null : new ErrorResponse(ex.getCause()));
+        this(ex.getClass().getName(), ex.getMessage(), cause(ex));
+    }
+
+    private static ErrorResponse cause(Throwable ex) {
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            return new ErrorResponse(cause);
+        }
+        if (ex instanceof NamingException) {
+            Throwable rootCause = ((NamingException) ex).getRootCause();
+            if (rootCause != null) {
+                return new ErrorResponse(rootCause);
+            }
+        }
+        return null;
     }
 
     @Override

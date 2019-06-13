@@ -54,6 +54,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
+import fish.payara.ejb.MediaTypes;
 import fish.payara.ejb.http.protocol.LookupRequest;
 
 /**
@@ -62,12 +63,12 @@ import fish.payara.ejb.http.protocol.LookupRequest;
  * @author Jan Bernitt
  */
 @Provider
-@Consumes("application/x-java-object")
+@Consumes(MediaTypes.JAVA_OBJECT)
 public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.getType().equals("application") && mediaType.getSubtype().equals("x-java-object");
+        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
     @Override
