@@ -106,26 +106,24 @@ public final class CertificateRealm extends BaseRealm {
     public static final Map<String, String> oidMap;
     static {
         Map<String, String> oidMapInitialiser = new HashMap<>();
-        oidMapInitialiser.put("0.9.2342.19200300.100.1.1", "UID");
-        oidMapInitialiser.put("0.9.2342.19200300.100.1.25", "DC");
-        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAIL");
-        oidMapInitialiser.put("1.2.840.113549.1.9.1", "EMAILADDRESS");
-        oidMapInitialiser.put("1.3.6.1.4.1.42.2.11.2.1", "IP");
-        oidMapInitialiser.put("2.5.4.3", "CN");
-        oidMapInitialiser.put("2.5.4.4", "SURNAME");
-        oidMapInitialiser.put("2.5.4.5", "SERIALNUMBER");
-        oidMapInitialiser.put("2.5.4.6", "C");
-        oidMapInitialiser.put("2.5.4.7", "L");
-        oidMapInitialiser.put("2.5.4.8", "S");
-        oidMapInitialiser.put("2.5.4.8", "ST");
-        oidMapInitialiser.put("2.5.4.9", "STREET");
-        oidMapInitialiser.put("2.5.4.10", "O");
-        oidMapInitialiser.put("2.5.4.11", "OU");
-        oidMapInitialiser.put("2.5.4.12", "T");
-        oidMapInitialiser.put("2.5.4.42", "GIVENNAME");
-        oidMapInitialiser.put("2.5.4.43", "INITIALS");
-        oidMapInitialiser.put("2.5.4.44", "GENERATION");
-        oidMapInitialiser.put("2.5.4.46", "DNQUALIFIER");
+        oidMapInitialiser.put(OIDs.UID, "UID");
+        oidMapInitialiser.put(OIDs.DC, "DC");
+        oidMapInitialiser.put(OIDs.EMAILADDRESS, "EMAILADDRESS");
+        oidMapInitialiser.put(OIDs.IP, "IP");
+        oidMapInitialiser.put(OIDs.CN, "CN");
+        oidMapInitialiser.put(OIDs.SURNAME, "SURNAME");
+        oidMapInitialiser.put(OIDs.SERIALNUMBER, "SERIALNUMBER");
+        oidMapInitialiser.put(OIDs.C, "C");
+        oidMapInitialiser.put(OIDs.L, "L");
+        oidMapInitialiser.put(OIDs.S, "S");
+        oidMapInitialiser.put(OIDs.STREET, "STREET");
+        oidMapInitialiser.put(OIDs.O, "O");
+        oidMapInitialiser.put(OIDs.OU, "OU");
+        oidMapInitialiser.put(OIDs.T, "T");
+        oidMapInitialiser.put(OIDs.GIVENNAME, "GIVENNAME");
+        oidMapInitialiser.put(OIDs.INITIALS, "INITIALS");
+        oidMapInitialiser.put(OIDs.GENERATION, "GENERATION");
+        oidMapInitialiser.put(OIDs.DNQUALIFIER, "DNQUALIFIER");
         oidMap = Collections.unmodifiableMap(oidMapInitialiser);
     }
 
