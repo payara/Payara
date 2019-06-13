@@ -54,7 +54,7 @@ public class OIDs {
     public static final String SERIALNUMBER = "2.5.4.5";
     public static final String C = "2.5.4.6";   // Country
     public static final String L = "2.5.4.7";   // Locality
-    public static final String S = "2.5.4.8";   // State
+    public static final String ST = "2.5.4.8";   // State
     public static final String STREET = "2.5.4.9";
     public static final String O = "2.5.4.10";  // Organisation
     public static final String OU = "2.5.4.11"; // Organisation Unit

@@ -115,7 +115,7 @@ public final class CertificateRealm extends BaseRealm {
         oidMapInitialiser.put(OIDs.SERIALNUMBER, "SERIALNUMBER");
         oidMapInitialiser.put(OIDs.C, "C");
         oidMapInitialiser.put(OIDs.L, "L");
-        oidMapInitialiser.put(OIDs.S, "S");
+        oidMapInitialiser.put(OIDs.ST, "ST");
         oidMapInitialiser.put(OIDs.STREET, "STREET");
         oidMapInitialiser.put(OIDs.O, "O");
         oidMapInitialiser.put(OIDs.OU, "OU");
