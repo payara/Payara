@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -410,14 +411,15 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
             // Read application defined properties and add as transient metadata
-            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
-            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
         } catch (IOException ex) {
             Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private Properties getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+    private List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+        List<Properties> props = new ArrayList<>();
         // Read application defined properties and add as transient metadata
         Enumeration<URL> resources = appClassLoader.getResources(fileName);
         while (resources.hasMoreElements()) {
@@ -426,9 +428,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             try (InputStream is = url.openStream()) {
                 p.load(url.openStream());
             }
-            return p;
+            props.add(p);
         }
-        return new Properties();
+        return props;
     }
 
 }
