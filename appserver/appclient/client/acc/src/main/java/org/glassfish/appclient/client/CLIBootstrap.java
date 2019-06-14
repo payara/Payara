@@ -1077,6 +1077,12 @@ public class CLIBootstrap {
             return configXMLFile;
         }
 
+        String[] endorsedPaths() {
+            return new String[] {
+                    new File(lib, "endorsed").getAbsolutePath(),
+                    new File(modules, "endorsed").getAbsolutePath()};
+        }
+
         String extPaths() {
             return new File(lib, "ext").getAbsolutePath();
         }
@@ -1136,6 +1142,10 @@ public class CLIBootstrap {
 
         File ext() {
             return new File(lib(), "ext");
+        }
+
+        File endorsed() {
+            return new File(lib(), "endorsed");
         }
 
         File lib() {
