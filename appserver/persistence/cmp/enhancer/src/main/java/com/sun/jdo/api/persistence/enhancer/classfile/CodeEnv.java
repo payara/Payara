@@ -58,7 +58,7 @@ class CodeEnv {
   }
 
   final InsnTarget getTarget(int offset) {
-    Integer off = new Integer(offset);
+    Integer off = Integer.valueOf(offset);
     InsnTarget targ = (InsnTarget)targets.get(off);
     if (targ == null) {
       targ = new InsnTarget(offset);
@@ -68,7 +68,7 @@ class CodeEnv {
   }
 
   final InsnTarget findTarget(int offset) {
-    Integer off = new Integer(offset);
+    Integer off = Integer.valueOf(offset);
     return (InsnTarget)targets.get(off);
   }
 

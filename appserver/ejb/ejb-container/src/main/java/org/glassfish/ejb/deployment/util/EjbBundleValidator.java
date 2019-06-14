@@ -591,7 +591,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
                     if( fullyQualified ) {
 
-                        int indexOfHash = next.indexOf("#");
+                        int indexOfHash = next.indexOf('#');
                         String ejbName = next.substring(indexOfHash+1);
                         String relativeJarPath = next.substring(0, indexOfHash);
 

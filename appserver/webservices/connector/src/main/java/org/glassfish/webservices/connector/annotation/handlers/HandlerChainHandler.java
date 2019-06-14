@@ -379,7 +379,7 @@ public class HandlerChainHandler extends AbstractHandler {
     
     private String getAsQName(Node n) {
         String nodeValue = n.getTextContent();
-        int index = nodeValue.indexOf(":");
+        int index = nodeValue.indexOf(':');
         if(index <= 0) {
             return nodeValue;
         }

@@ -168,7 +168,7 @@ public class SaxParserHandlerBundled extends SaxParserHandler {
     }
 
     private InputSource openInputSource(final String localRoot, final String systemID) {
-        String targetID = localRoot + "/" + systemID.substring(systemID.lastIndexOf("/") + 1);
+        String targetID = localRoot + "/" + systemID.substring(systemID.lastIndexOf('/') + 1);
         URL url = this.getClass().getResource(targetID);
         InputStream stream;
         try {

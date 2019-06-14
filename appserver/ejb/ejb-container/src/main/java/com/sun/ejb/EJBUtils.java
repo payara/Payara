@@ -297,7 +297,7 @@ public class EJBUtils {
                 // Separate <jndi-name> portion from "corbaname:iiop:...#<jndi-name>
                 // We need to do this since we also use "#" in some glassfish-specific
                 // JNDI names
-                int indexOfCorbaNameSep = jndiName.indexOf("#");
+                int indexOfCorbaNameSep = jndiName.indexOf('#');
                 String jndiNameMinusCorbaNamePortion = jndiName.substring(indexOfCorbaNameSep + 1);
 
                 // Make sure any of the resulting jndi names still have corbaname: prefix intact

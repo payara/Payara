@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,15 @@
 package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
@@ -82,7 +84,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             opType = RestEndpoint.OpType.POST,
             description = "Configures Microprofile HealthCheck")
 })
-public class SetMPHealthCheckConfiguration implements AdminCommand {
+public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigurationCommand {
 
     private static final Logger LOGGER = Logger.getLogger("MP-HealthCheck");
 
@@ -95,9 +97,6 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
-
     @Inject
     ServiceLocator habitat;
 
@@ -107,12 +106,28 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
     @Inject
     UnprocessedConfigListener unprocessedListener;
 
+    @Param(optional = true, alias = "securityenabled")
+    private Boolean securityEnabled;
+
+    @Inject
+    private Domain domain;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
-
+        Subject subject = context.getSubject();
         Config targetConfig = targetUtil.getConfig(target);
         MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
+
+        ActionReport checkUserReport = actionReport.addSubActionsReport();
+        ActionReport createUserReport = actionReport.addSubActionsReport();
+        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+            createDefaultMicroprofileUser(createUserReport, subject);
+        }
+        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
         try {
             ConfigSupport.apply(configProxy -> {
@@ -125,6 +140,9 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
                 if (virtualServers != null) {
                     configProxy.setVirtualServers(virtualServers);
                 }
+                if (securityEnabled != null) {
+                    configProxy.setSecurityEnabled(securityEnabled.toString());
+                }
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;
             }, config);
@@ -132,6 +150,11 @@ public class SetMPHealthCheckConfiguration implements AdminCommand {
             actionReport.setMessage("Restart server for change to take effect");
         } catch (TransactionFailure ex) {
             actionReport.failure(LOGGER, "Failed to update HealthCheck configuration", ex);
+        }
+
+        // If everything has passed, scrap the subaction reports as we don't want to print them out
+        if (!actionReport.hasFailures() && !actionReport.hasWarnings()) {
+            actionReport.getSubActionsReport().clear();
         }
     }
 

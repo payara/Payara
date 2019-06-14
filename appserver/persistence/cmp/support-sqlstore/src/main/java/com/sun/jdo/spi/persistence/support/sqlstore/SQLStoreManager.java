@@ -238,7 +238,7 @@ public class SQLStoreManager implements PersistenceStore {
 
         if (debug) {
             logger.fine("sqlstore.sqlstoremanager.executeupdate.exit", // NOI18N
-                    new Integer(affectedRows));
+                    Integer.valueOf(affectedRows));
         }
     }
 

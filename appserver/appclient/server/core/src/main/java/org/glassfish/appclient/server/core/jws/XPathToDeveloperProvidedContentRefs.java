@@ -221,12 +221,14 @@ abstract class XPathToDeveloperProvidedContentRefs<T extends Content> {
                         new Object[] {referringDocument, pathToContent});
             } else {
                 final ApplicationSignedJARManager signedJARManager = helper.signedJARManager();
-                if (signedJARManager == null && helper instanceof NestedAppClientDeployerHelper) {
-                    /*
-                     * The signed JAR manager should not be null when we deploy
-                     * an app client nested inside an EAR.  This is a system error.
-                     */
-                    logger.log(Level.SEVERE, SIGNED_JAR_MGR_NULL);
+                if (signedJARManager == null) {
+                    if (helper instanceof NestedAppClientDeployerHelper) {
+                        /*
+                         * The signed JAR manager should not be null when we deploy
+                         * an app client nested inside an EAR.  This is a system error.
+                         */
+                        logger.log(Level.SEVERE, SIGNED_JAR_MGR_NULL);
+                    }
                 } else if (helper instanceof StandaloneAppClientDeployerHelper) {
                     logger.log(Level.WARNING, USER_REFERENCED_JAR,
                             new Object[] {referringDocument, pathToContent});

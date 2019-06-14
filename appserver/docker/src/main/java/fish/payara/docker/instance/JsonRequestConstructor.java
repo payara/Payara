@@ -165,7 +165,7 @@ public class JsonRequestConstructor {
     private static void addNestedProperties(JsonObjectBuilder rootObjectBuilder, Properties containerConfig,
             List<String> processedProperties, String originalProperty) {
         JsonObjectBuilder topLevelObjectBuilder = Json.createObjectBuilder();
-        String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf("."));
+        String topLevelProperty = originalProperty.substring(0, originalProperty.indexOf('.'));
 
         // Loop over nested properties and add to Json
         loopOverNestedProperties(rootObjectBuilder, containerConfig, processedProperties, topLevelProperty,

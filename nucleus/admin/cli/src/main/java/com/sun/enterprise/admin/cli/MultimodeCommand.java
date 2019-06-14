@@ -37,33 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
-import static com.sun.enterprise.admin.cli.CLICommand.ERROR;
-import java.io.*;
-import java.util.*;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
-
-import com.sun.enterprise.admin.util.*;
+import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.logging.Level;
-
 import javax.inject.Inject;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.InvalidCommandException;
+import org.glassfish.hk2.api.*;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.ExternalTerminal;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * A scaled-down implementation of multi-mode command.
@@ -88,8 +92,6 @@ public class MultimodeCommand extends CLICommand {
     private String encoding;
     private boolean echo;       // saved echo flag
     private static final LocalStringsImpl strings = new LocalStringsImpl(MultimodeCommand.class);
-    
-    private static final String ASADMIN = "asadmin";
 
     /**
      * The validate method validates that the type and quantity of parameters
@@ -135,13 +137,27 @@ public class MultimodeCommand extends CLICommand {
 
     @Override
     protected int executeCommand() throws CommandException, CommandValidationException {
-        ConsoleReader reader = null;
+        LineReader reader = null;
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
-        try {            
+        try {
             if (file == null) {
                 System.out.println(strings.get("multimodeIntro"));
-                reader = new ConsoleReader(ASADMIN, System.in, System.out, null, encoding);
+                Completer completer = getAllCommandsCompleter();
+                Terminal asadminTerminal = TerminalBuilder.builder()
+                        .name(ASADMIN)
+                        .system(true)
+                        .encoding(encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())
+                        .build();
+
+                reader = LineReaderBuilder.builder()
+                        .appName(ASADMIN)
+                        .terminal(asadminTerminal)
+                        .completer(completer)
+                        .build();
+
+                reader.unsetOpt(LineReader.Option.INSERT_TAB);
             } else {
+
                 printPrompt = false;
                 if (!file.canRead()) {
                     throw new CommandException("File: " + file + " can not be read");
@@ -162,24 +178,26 @@ public class MultimodeCommand extends CLICommand {
                     public void write(byte[] b, int off, int len) throws IOException {
                         return;
                     }
-                };                
-                reader = new ConsoleReader(ASADMIN, new FileInputStream(file), out, null, encoding);
+                };
+
+                Terminal asadminTerminal = new ExternalTerminal(ASADMIN, "",
+                        new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
+                
+                reader = LineReaderBuilder.builder()
+                        .terminal(asadminTerminal)
+                        .appName(ASADMIN)
+                        .build();
             }
-            
-            reader.setBellEnabled(false);
-            reader.addCompleter(getAllCommandsCompleter());
-            
+
             return executeCommands(reader);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new CommandException(e);
-        }
-        finally {
+        } finally {
             try {
-                if (file != null && reader != null)
-                    reader.close();
-            }
-            catch (Exception e) {
+                if (file != null && reader != null && reader.getTerminal() != null) {
+                    reader.getTerminal().close();
+                }
+            } catch (Exception e) {
                 // ignore it
             }
         }
@@ -202,7 +220,7 @@ public class MultimodeCommand extends CLICommand {
      *
      * @return the exit code of the last command executed
      */
-    private int executeCommands(ConsoleReader reader) throws CommandException, CommandValidationException, IOException {
+    private int executeCommands(LineReader reader) throws IOException {
         String line = null;
         int rc = 0;
 
@@ -214,14 +232,20 @@ public class MultimodeCommand extends CLICommand {
         programOpts.toEnvironment(env);
         String prompt = programOpts.getCommandName() + "> ";
         for (;;) {
-            if (printPrompt) {
-                line = reader.readLine(prompt);
-            } else {
-                line = reader.readLine();
-            }
-            if (line == null) {
-                if (printPrompt)
-                    System.out.println();
+            try {
+                if (printPrompt) {
+                    line = reader.readLine(prompt);
+                } else {
+                    line = reader.readLine();
+                }
+                if (line == null) {
+                    if (printPrompt) {
+                        System.out.println();
+                    }
+                    break;
+                }
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore
                 break;
             }
 
@@ -268,9 +292,14 @@ public class MultimodeCommand extends CLICommand {
                 po.setCommandName(programOpts.getCommandName());
                 // remove the old one and replace it
                 atomicReplace(habitat, po);
-
+              
                 cmd = CLICommand.getCommand(habitat, command);
-                rc = cmd.execute(args);
+              
+                if (file == null) {
+                    rc = cmd.execute(reader.getTerminal(), args);
+                } else {
+                    rc = cmd.execute(args);
+                }
             }
             catch (CommandValidationException cve) {
                 logger.severe(cve.getMessage());
@@ -347,5 +376,5 @@ public class MultimodeCommand extends CLICommand {
     private Completer getAllCommandsCompleter(){
         return new StringsCompleter(CLIUtil.getAllCommands(container, programOpts, env));
         
-    }
+    }    
 }

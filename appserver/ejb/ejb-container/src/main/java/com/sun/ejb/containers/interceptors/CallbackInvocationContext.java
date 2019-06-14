@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.interceptors;
 
@@ -61,7 +61,7 @@ import java.util.HashMap;
 public class CallbackInvocationContext implements InvocationContext {
 
 
-    private Map contextData;
+    private Map<String, Object> contextData;
     private int callbackIndex = 0;
     private CallbackChainImpl callbackChain;
     private Object[] interceptorInstances;
@@ -70,9 +70,9 @@ public class CallbackInvocationContext implements InvocationContext {
     Method method;
 
     // For AroundConstruct callback
-    private Class targetObjectClass;
+    private Class<?> targetObjectClass;
     private Constructor<?> ctor = null;
-    private Class[] ctorParamTypes = null;
+    private Class<?>[] ctorParamTypes = null;
     private Object[] ctorParams = null;
     private BaseContainer container = null;
     private EJBContextImpl ctx = null;
@@ -98,7 +98,7 @@ public class CallbackInvocationContext implements InvocationContext {
     /**
      * AroundConstruct
      */
-    public CallbackInvocationContext(Class targetObjectClass,
+    public CallbackInvocationContext(Class<?> targetObjectClass,
                                      Object[] interceptorInstances,
                                      CallbackChainImpl chain,
                                      CallbackType eventType,
@@ -125,7 +125,7 @@ public class CallbackInvocationContext implements InvocationContext {
     /**
      * AroundConstruct
      */
-    public CallbackInvocationContext(Class targetObjectClass,
+    public CallbackInvocationContext(Class<?> targetObjectClass,
                                      Object[] interceptorInstances,
                                      CallbackChainImpl chain,
                                      CallbackType eventType,
@@ -174,9 +174,8 @@ public class CallbackInvocationContext implements InvocationContext {
     public Object[] getParameters() {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
             return ctorParams;
-        } else {
-            throw new IllegalStateException("not applicable to Callback methods");
         }
+        throw new IllegalStateException("not applicable to Callback methods");
     }
 
     @Override
@@ -193,9 +192,8 @@ public class CallbackInvocationContext implements InvocationContext {
     @Override
     public Map<String, Object> getContextData() {
         if( contextData == null ) {
-            contextData = new HashMap();
+            contextData = new HashMap<>();
         }
-
         return contextData;
     }
 
@@ -227,42 +225,43 @@ public class CallbackInvocationContext implements InvocationContext {
     }
 
     private void checkSetParameters(Object[] params) {
-       if( ctor != null) {
-
-            if ((params == null) && (ctorParamTypes.length != 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " constructor: " + ctor);
-            }
-            if (ctorParamTypes.length != (params != null ? params.length : 0)) {
-                throw new IllegalArgumentException("Wrong number of parameters for "
-                        + " constructor: " + ctor);
-            }
-            int index = 0 ;
-            for (Class type : ctorParamTypes) {
-                if (params[index] == null) {
-                    if (type.isPrimitive()) {
-                        throw new IllegalArgumentException("Parameter type mismatch for constructor "
-                                + ctor + ".  Attempt to set a null value for Arg["
-                            + index + "]. Expected a value of type: " + type.getName());
-                    }
-                } else if (type.isPrimitive()) {
-                    if (! InterceptorUtil.hasCompatiblePrimitiveWrapper(type, params[index].getClass())) {
-                        throw new IllegalArgumentException("Parameter type mismatch for constructor "
-                                + ctor + ".  Arg["
-                            + index + "] type: " + params[index].getClass().getName()
-                            + " is not compatible with the expected type: " + type.getName());
-                    }
-                } else if (! type.isAssignableFrom(params[index].getClass())) {
-                    throw new IllegalArgumentException("Parameter type mismatch for constructor "
-                            + ctor + ".  Arg["
-                        + index + "] type: " + params[index].getClass().getName()
-                        + " does not match the expected type: " + type.getName());
-                }
-                index++;
-            }
-        } else {
-            throw new IllegalStateException("Internal Error: Got null constructor");
-        }
+       if( ctor == null) {
+           throw new IllegalStateException("Internal Error: Got null constructor");
+       }
+       if (params == null) {
+           if (ctorParamTypes.length != 0) {
+               throw new IllegalArgumentException("Wrong number of parameters for "
+                       + " constructor: " + ctor);
+           }
+       } else {
+           if (ctorParamTypes.length != params.length) {
+               throw new IllegalArgumentException("Wrong number of parameters for "
+                       + " constructor: " + ctor);
+           }
+           int index = 0 ;
+           for (Class<?> type : ctorParamTypes) {
+               if (params[index] == null) {
+                   if (type.isPrimitive()) {
+                       throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                               + ctor + ".  Attempt to set a null value for Arg["
+                               + index + "]. Expected a value of type: " + type.getName());
+                   }
+               } else if (type.isPrimitive()) {
+                   if (! InterceptorUtil.hasCompatiblePrimitiveWrapper(type, params[index].getClass())) {
+                       throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                               + ctor + ".  Arg["
+                               + index + "] type: " + params[index].getClass().getName()
+                               + " is not compatible with the expected type: " + type.getName());
+                   }
+               } else if (! type.isAssignableFrom(params[index].getClass())) {
+                   throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                           + ctor + ".  Arg["
+                           + index + "] type: " + params[index].getClass().getName()
+                           + " does not match the expected type: " + type.getName());
+               }
+               index++;
+           }
+       }
     }
 }
 

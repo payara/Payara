@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.microprofile</groupId>
@@ -61,5 +61,6 @@ holder.
         <module>opentracing</module>
         <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
         <module>opentracing-jaxws</module>
+        <module>microprofile-common</module>
     </modules>
 </project>

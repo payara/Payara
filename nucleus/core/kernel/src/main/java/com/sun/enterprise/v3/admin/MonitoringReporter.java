@@ -218,9 +218,9 @@ public class MonitoringReporter extends V2DottedNameSupport {
         String key = null;
         String value = null;
         if (str != null) {
-            key = str.substring(0, str.lastIndexOf("="));
+            key = str.substring(0, str.lastIndexOf('='));
             key = (key.substring(instanceName.length() + 1)).trim();
-            value = (str.substring(str.lastIndexOf("=") + 1, str.length())).trim();
+            value = (str.substring(str.lastIndexOf('=') + 1, str.length())).trim();
         }
         list.add(0, key);
         list.add(1, value);

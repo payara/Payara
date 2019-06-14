@@ -277,14 +277,14 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         Long timeInterval = new Long(period);
         String s = input.toLowerCase(Locale.US);
         long milliseconds = 86400000;
-        if (s.indexOf("s") > 0 ) {
+        if (s.indexOf('s') > 0 ) {
             milliseconds = timeInterval*1000;
         }
-        else if (s.indexOf("h") > 0 ) {
+        else if (s.indexOf('h') > 0 ) {
             milliseconds = timeInterval*3600*1000;
 
         }
-        else if (s.indexOf("m") > 0 ) {
+        else if (s.indexOf('m') > 0 ) {
             milliseconds = timeInterval*60*1000;
         }
         return milliseconds;

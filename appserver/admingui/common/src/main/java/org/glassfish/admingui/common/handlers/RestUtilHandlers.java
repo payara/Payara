@@ -169,7 +169,7 @@ public class RestUtilHandlers {
                 //Once fixed, this condition will be removed.
                 if (oneProp.get(id).contains("=")) {
                     String key = oneProp.get(id);
-                    propsMap.put(key.substring(0, key.indexOf("=")), key.substring(key.indexOf("=") + 1));
+                    propsMap.put(key.substring(0, key.indexOf('=')), key.substring(key.indexOf('=') + 1));
                 } else {
                     propsMap.put(oneProp.get(id), oneProp.get("value"));
                 }
@@ -209,7 +209,7 @@ public class RestUtilHandlers {
                 //Once fixed, this condition will be removed.
                 if (oneProp.get(id).contains("=")) {
                     String key = oneProp.get(id);
-                    propsMap.put(key.substring(0, key.indexOf("=")), key.substring(key.indexOf("=") + 1));
+                    propsMap.put(key.substring(0, key.indexOf('=')), key.substring(key.indexOf('=') + 1));
                 } else {
                     propsMap.put(oneProp.get(id), oneProp.get("value"));
                 }

@@ -317,7 +317,7 @@ public final class RuntimeRootImpl extends AMXImplBase
                 {
                     final String value = opt.substring( prefix.length() ).toLowerCase(Locale.ENGLISH);
                     //System.out.println( "RuntimeRootImpl.isRunningInDebugMode(): found: " + prefix + value );
-                    inDebugMode = Boolean.valueOf(value );
+                    inDebugMode = Boolean.parseBoolean(value);
                     break;
                 }
             }

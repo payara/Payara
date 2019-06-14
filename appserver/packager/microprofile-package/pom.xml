@@ -43,7 +43,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <artifactId>microprofile-package</artifactId>
@@ -124,6 +124,13 @@
     </profiles>
     
     <dependencies>
+
+        <!-- Microprofile Common -->
+        <dependency>
+            <groupId>fish.payara.microprofile.common</groupId>
+            <artifactId>microprofile-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     
         <!-- Config -->
         <dependency>
@@ -224,8 +231,10 @@
             <artifactId>jersey-proxy-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
+            <groupId>org.glassfish.jersey.ext.microprofile</groupId>
             <artifactId>jersey-mp-rest-client</artifactId>
+            <!-- temporary add explicit version as bom artifact may be cached -->
+            <version>${jersey.version}</version>
         </dependency>
             
         <!-- OpenTracing -->

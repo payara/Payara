@@ -74,7 +74,7 @@ public class RuntimeMBeanCageBuilder implements CageBuilder {
         }
         try {
             String className = o.getClass().getName();
-            String serName = className.substring(className.lastIndexOf(".") + 1);
+            String serName = className.substring(className.lastIndexOf('.') + 1);
             if (dbg) {
                 System.out.println("RuntimeMBeanCageBuilder: createMBean: " + 
                     " className = " + className +

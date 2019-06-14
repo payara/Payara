@@ -250,7 +250,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
 
                 if (defnProperties.length > 0) {
                     for (String property : defnProperties) {
-                        int index = property.indexOf("=");
+                        int index = property.indexOf('=');
                         // found "=" and not at start or end of string
                         if (index > 0 && index < property.length() - 1) {
                             String name = property.substring(0, index);
@@ -290,7 +290,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
             String[] defnProperties = defn.properties();
             if (defnProperties.length > 0) {
                 for (String property : defnProperties) {
-                    int index = property.indexOf("=");
+                    int index = property.indexOf('=');
                     // found "=" and not at start or end of string
                     if (index > 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);

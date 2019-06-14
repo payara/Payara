@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,25 +37,30 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-
 package fish.payara.microprofile.metrics.rest;
 
+import static fish.payara.microprofile.metrics.MetricsConstants.DEFAULT_GROUP_NAME;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import static java.util.Arrays.asList;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsServletContainerInitializer implements ServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {  
-        
+    public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+
+        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
+                .getService(MetricsServiceConfiguration.class);
         if (!"".equals(ctx.getContextPath())) {
             return;
         }
@@ -68,9 +73,6 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
             }
         }
 
-        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
-                .getService(MetricsServiceConfiguration.class);
-
         String virtualServers = configuration.getVirtualServers();
         if (!isEmpty(virtualServers)
                 && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
@@ -80,5 +82,9 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
         // Register a servlet with url patterns of metrics handlers
         ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-metrics-resource", MetricsResource.class);
         reg.addMapping("/" + configuration.getEndpoint() + "/*");
+        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, DEFAULT_GROUP_NAME)));
+            ctx.declareRoles(DEFAULT_GROUP_NAME);
+        }
     }
 }
