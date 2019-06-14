@@ -323,25 +323,13 @@ public class PrometheusExporter {
         } else {
             switch (unit) {
                 case NANOSECONDS:
-                    conversionFactor = NANOSECOND_CONVERSION;
-                    break;
                 case MICROSECONDS:
-                    conversionFactor = MICROSECOND_CONVERSION;
-                    break;
                 case MILLISECONDS:
-                    conversionFactor = MILLISECOND_CONVERSION;
-                    break;
                 case SECONDS:
-                    conversionFactor = SECOND_CONVERSION;
-                    break;
                 case MINUTES:
-                    conversionFactor = MINUTE_CONVERSION;
-                    break;
                 case HOURS:
-                    conversionFactor = HOUR_CONVERSION;
-                    break;
                 case DAYS:
-                    conversionFactor = DAY_CONVERSION;
+                    conversionFactor = NANOSECOND_CONVERSION;
                     break;
                 case PERCENT:
                     conversionFactor = Double.NaN;
