@@ -37,66 +37,21 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.metrics.admin;
 
-import java.beans.PropertyVetoException;
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+package fish.payara.microprofile.metrics;
 
-/**
- * Configuration for the Metrics Service.
- *
- * @author Gaurav Gupta
- */
-@Configured(name = "microprofile-metrics-configuration")
-public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+import fish.payara.microprofile.Constants;
+import java.util.Arrays;
+import java.util.List;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
-    /**
-     * @return a Boolean value determining if the service is enabled or
-     * disabled.
-     */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getEnabled();
-    void setEnabled(String value) throws PropertyVetoException;
+public interface MetricsConstants extends Constants {
 
-    /**
-     * @return a Boolean value determining if the metrics service is secure or
-     * not.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecureMetrics();
-    @Deprecated
-    void setSecureMetrics(String value) throws PropertyVetoException;
-    
-    /**
-     * @return a Boolean value determining if the service is dynamic or not.
-     */
-    @Attribute(defaultValue = "true", dataType = Boolean.class)
-    String getDynamic();
-    void setDynamic(String value) throws PropertyVetoException;
-
-    /**
-     * @return a String value defines the endpoint of metrics service.
-     */
-    @Attribute(defaultValue = "metrics")
-    String getEndpoint();
-    void setEndpoint(String value) throws PropertyVetoException;
-
-    /**
-     * @return a String value defines the attached virtual servers.
-     */
-    @Attribute(dataType = String.class)
-    String getVirtualServers();
-    void setVirtualServers(String value) throws PropertyVetoException;
-
-    /**
-     * @return a Boolean value determining if the security is enabled or not.
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecurityEnabled();
-    void setSecurityEnabled(String value) throws PropertyVetoException;
+    // Registry Names
+    List<String> REGISTRY_NAMES = Arrays.asList(
+            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
+    );
 
 }

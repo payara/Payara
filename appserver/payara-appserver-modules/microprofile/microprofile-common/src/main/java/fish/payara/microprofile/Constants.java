@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,13 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
+package fish.payara.microprofile;
 
-package fish.payara.microprofile.metrics;
+public interface Constants {
 
-import java.util.Arrays;
-import java.util.List;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+    String DEFAULT_GROUP_NAME = "microprofile";
+    String DEFAULT_USER_NAME = "mp";
 
-public class Constants {
+    String EMPTY_STRING = "";
     
-    public static final String EMPTY_STRING = "";
-    
-    // Registry Names
-    public static final List<String> REGISTRY_NAMES = Arrays.asList(
-            BASE.getName(), VENDOR.getName(), APPLICATION.getName()
-    );
-
 }

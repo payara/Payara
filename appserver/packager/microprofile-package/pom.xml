@@ -124,6 +124,13 @@
     </profiles>
     
     <dependencies>
+
+        <!-- Microprofile Common -->
+        <dependency>
+            <groupId>fish.payara.microprofile.common</groupId>
+            <artifactId>microprofile-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     
         <!-- Config -->
         <dependency>
