@@ -37,45 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
+import com.sun.enterprise.admin.util.LineTokenReplacer;
+import com.sun.enterprise.admin.util.TokenValue;
+import com.sun.enterprise.admin.util.TokenValueSet;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
-import java.util.*;
 import java.lang.annotation.Annotation;
-import java.util.logging.*;
-
-import jline.console.ConsoleReader;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Scope;
+import javax.inject.Singleton;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.common.util.admin.MapInjectionResolver;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.InjectionManager;
 import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.UnsatisfiedDependencyException;
-
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
-import org.glassfish.common.util.admin.CommandModelImpl;
-import org.glassfish.common.util.admin.MapInjectionResolver;
-import org.glassfish.common.util.admin.ManPageFinder;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
-import com.sun.enterprise.admin.util.LineTokenReplacer;
-import com.sun.enterprise.admin.util.TokenValue;
-import com.sun.enterprise.admin.util.TokenValueSet;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
-
-import javax.inject.Inject;
-import javax.inject.Scope;
-import javax.inject.Singleton;
 
 
 /**
@@ -105,6 +110,10 @@ public abstract class CLICommand implements PostConstruct {
     public static final int INVALID_COMMAND_ERROR = 3;
     public static final int SUCCESS = CLIConstants.SUCCESS;
     public static final int WARNING = CLIConstants.WARNING;
+    
+    protected Terminal terminal;
+    protected LineReader lineReader;
+    protected static final String ASADMIN = "asadmin";
 
     private static final Set<String> unsupported;
     private static final String UNSUPPORTED_CMD_FILE_NAME = "unsupported-legacy-command-names";
@@ -132,10 +141,6 @@ public abstract class CLICommand implements PostConstruct {
         "product---name",   // the product name
     };
     private String manpageTokenValues[] = new String[manpageTokens.length];
-
-    static{
-        checkToDisableJLineLogging();
-    }
     
     /**
      * The name of the command.
@@ -284,6 +289,12 @@ public abstract class CLICommand implements PostConstruct {
         initializeLogger();
     }
 
+    public int execute(Terminal terminal, String... argv) throws CommandException {
+        if (terminal != null) {
+            this.terminal = terminal;
+        }
+        return execute(argv);
+    }
     /**
      * Execute this command with the given arguemnts.
      * The implementation in this class saves the passed arguments in
@@ -297,7 +308,7 @@ public abstract class CLICommand implements PostConstruct {
      * @throws CommandException if execution of the command fails
      * @throws CommandValidationException if there's something wrong
      *          with the options or arguments
-     */
+     */    
     public int execute(String... argv) throws CommandException {
         this.argv = argv;
         initializePasswords();
@@ -915,90 +926,82 @@ public abstract class CLICommand implements PostConstruct {
         /*
          * Check for missing options and operands.
          */
-        ConsoleReader cons = null;
+      
         if (programOpts.isInteractive()) {
             try {
-                cons = new ConsoleReader(System.in, System.out, null);
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Error instantiating console", ioe);
-            }
-        }
-
-        boolean missingOption = false;
-        for (ParamModel opt : commandModel.getParameters()) {
-            if (opt.getParam().password())
-                continue;       // passwords are handled later
-            if (opt.getParam().obsolete() && getOption(opt.getName()) != null) {
-                logger.info(strings.get("ObsoleteOption", opt.getName()));
-            }
-            if (opt.getParam().optional()) {
-                continue;
-            }
-            if (opt.getParam().primary()) {
-                continue;
-            }
-            // if option isn't set, prompt for it (if interactive)
-            if (getOption(opt.getName()) == null && cons != null && !missingOption) {
-                cons.setPrompt(strings.get("optionPrompt", lc(opt.getName())));
-                try {
-                    String val = cons.readLine();
-                    if (ok(val)) {
-                        options.set(opt.getName(), val);
+                buildTerminal();   
+                buildLineReader();
+                boolean missingOption = false;
+                for (ParamModel opt : commandModel.getParameters()) {
+                    if (opt.getParam().password()) {
+                        continue;       // passwords are handled later
                     }
-                } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error reading input", ioe);
+                    if (opt.getParam().obsolete() && getOption(opt.getName()) != null) {
+                        logger.info(strings.get("ObsoleteOption", opt.getName()));
+                    }
+                    if (opt.getParam().optional()) {
+                        continue;
+                    }
+                    if (opt.getParam().primary()) {
+                        continue;
+                    }
+                    // if option isn't set, prompt for it (if interactive)
+                    if (getOption(opt.getName()) == null && lineReader != null && !missingOption) {
+                        String val = lineReader.readLine(strings.get("optionPrompt", lc(opt.getName())));
+                        if (ok(val)) {
+                            options.set(opt.getName(), val);
+                        }
+                    }
+                    // if it's still not set, that's an error
+                    if (getOption(opt.getName()) == null) {
+                        missingOption = true;
+                        logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
+                    }
+                    if (opt.getParam().obsolete()) {    // a required obsolete option?
+                        logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
+                    }
                 }
-            }
-            // if it's still not set, that's an error
-            if (getOption(opt.getName()) == null) {
-                missingOption = true;
-                logger.log(Level.INFO, strings.get("missingOption", "--" + opt.getName()));
-            }
-            if (opt.getParam().obsolete()) {    // a required obsolete option?
-                logger.log(Level.INFO, strings.get("ObsoleteOption", opt.getName()));
-            }
-        }
-        if (missingOption) {
-            throw new CommandValidationException(strings.get("missingOptions", name));
-        }
-
-        int operandMin = 0;
-        int operandMax = 0;
-        ParamModel operandParam = getOperandModel();
-        if (operandParam != null) {
-            operandMin = operandParam.getParam().optional() ? 0 : 1;
-            operandMax = operandParam.getParam().multiple() ? Integer.MAX_VALUE : 1;
-        }
-
-        if (operands.size() < operandMin && cons != null) {
-            cons.setPrompt(strings.get("operandPrompt", operandParam.getName()));
-            try {
-                String val = cons.readLine();
-                if (ok(val)) {
-                    operands = new ArrayList<String>();
-                    operands.add(val);
+                if (missingOption) {
+                    throw new CommandValidationException(strings.get("missingOptions", name));
                 }
-            } catch (IOException ioe) {
-                throw new CommandValidationException("Error reading input", ioe);
-            }
-        }
-        if (operands.size() < operandMin) {
-            throw new CommandValidationException(strings.get("notEnoughOperands", name, operandParam.getType()));
-        }
-        if (operands.size() > operandMax) {
-            switch (operandMax) {
-                case 0:
-                    throw new CommandValidationException(
-                            strings.get("noOperandsAllowed", name));
-                case 1:
-                    throw new CommandValidationException(
-                            strings.get("tooManyOperands1", name));
-                default:
-                    throw new CommandValidationException(
-                            strings.get("tooManyOperands", name, operandMax));
-            }
-        }
 
+                int operandMin = 0;
+                int operandMax = 0;
+                ParamModel operandParam = getOperandModel();
+                if (operandParam != null) {
+                    operandMin = operandParam.getParam().optional() ? 0 : 1;
+                    operandMax = operandParam.getParam().multiple() ? Integer.MAX_VALUE : 1;
+                }
+
+                if (operands.size() < operandMin && lineReader != null) {
+                    String val = lineReader.readLine(strings.get("operandPrompt", operandParam.getName()));
+                    if (ok(val)) {
+                        operands = new ArrayList<>();
+                        operands.add(val);
+                    }
+                }
+                if (operands.size() < operandMin) {
+                    throw new CommandValidationException(strings.get("notEnoughOperands", name, operandParam.getType()));
+                }
+                if (operands.size() > operandMax) {
+                    switch (operandMax) {
+                        case 0:
+                            throw new CommandValidationException(
+                                    strings.get("noOperandsAllowed", name));
+                        case 1:
+                            throw new CommandValidationException(
+                                    strings.get("tooManyOperands1", name));
+                        default:
+                            throw new CommandValidationException(
+                                    strings.get("tooManyOperands", name, operandMax));
+                    }
+                }
+            } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore           
+            } finally {
+                closeTerminal();
+            }
+        }
         initializeCommandPassword();
     }
 
@@ -1210,20 +1213,18 @@ public abstract class CLICommand implements PostConstruct {
      * @return 
      */
     protected char[] readPassword(String prompt) {
-        char[] pc = null;
-
-        try (ConsoleReader consoleReader = new ConsoleReader(System.in, System.out, null)) {
-            // Don't echo anything when reading
+        try {
+            buildTerminal();
+            buildLineReader();
             char echoCharacter = 0;
-            consoleReader.setEchoCharacter(echoCharacter);
-
-            String line = consoleReader.readLine(prompt);
-            pc = line.toCharArray();
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "IOException reading password.", ioe);
+            String line = lineReader.readLine(prompt, echoCharacter);
+            return line.toCharArray();
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore           
+        } finally {
+            closeTerminal();
         }
-
-        return pc;
+        return null;
     }
 
     /**
@@ -1392,16 +1393,37 @@ public abstract class CLICommand implements PostConstruct {
         }
     }
     
-    private static void checkToDisableJLineLogging(){
-        if (Boolean.getBoolean("fish.payara.admin.command.jline.log.disable")) {
-            System.setProperty("jline.log.jul", "false");
-            final OutputStream noOpOutputStream = new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    //NO-OP
+    protected void buildTerminal() {
+        try {
+            if (terminal == null) {
+            terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
+            }
+        } catch (IOException ioe) {
+             logger.log(Level.WARNING, "Error building a Terminal", ioe);
+        }
+    }
+    
+    protected void buildLineReader() {
+        if (lineReader == null) {
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .build();
+        }
+    }
+    
+    protected void closeTerminal() {
+        try {
+            if (terminal != null) {
+                if (!terminal.getName().equals(ASADMIN)) {
+                    terminal.close();
+                    terminal = null;
                 }
-            };
-            jline.internal.Log.setOutput(new PrintStream(noOpOutputStream));
+            }
+            lineReader = null;
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error closing terminal", ioe);
         }
     }
 }

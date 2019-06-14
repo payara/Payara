@@ -318,7 +318,7 @@ public abstract class AppClientDeployerHelper {
             throws IOException;
     
     public Map<String,Map<URI,StaticContent>> signingAliasToJar() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     public final DeploymentContext dc() {

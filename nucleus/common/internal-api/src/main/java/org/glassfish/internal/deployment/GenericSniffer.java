@@ -338,7 +338,7 @@ public abstract class GenericSniffer implements Sniffer {
      * archive entries might exist
      */
     protected List<String> getDeploymentConfigurationPaths() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**

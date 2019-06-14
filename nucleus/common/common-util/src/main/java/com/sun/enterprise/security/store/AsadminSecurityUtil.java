@@ -38,14 +38,13 @@
  * holder.
  */
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.store;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.CULoggerInfo;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -53,12 +52,12 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jline.console.ConsoleReader;
-
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.util.CULoggerInfo;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 /**
  * Various utility methods related to certificate-based security.
@@ -173,18 +172,30 @@ public class AsadminSecurityUtil {
      * the password by calling this method.
      * @return the password to the client side truststore
      */
-    private char[] promptForPassword() throws IOException {
-        try (ConsoleReader console = new ConsoleReader(System.in, System.out, null)) {
-            if (console != null) {
-                // Don't echo anything when reading
-                char echoCharacter = 0;
-                console.setEchoCharacter(echoCharacter);
+    private char[] promptForPassword() {
+        LineReader lineReader = null;
+        try {
+            char mask = 0;
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal).build();
 
-                String line = console.readLine(strmgr.get("certificateDbPrompt"));
-                return line.toCharArray();
-            }
+            String line = lineReader.readLine(strmgr.get("certificateDbPrompt"), mask);
+            return line.toCharArray();
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading input", ioe);
+        } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore           
+        }finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
         }
 
         return null;

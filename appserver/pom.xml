@@ -58,15 +58,6 @@
     <packaging>pom</packaging>
     <name>Payara Appserver Parent Project</name>
 
-
-    <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
-        <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-        <tag>payara-server-5.193-SNAPSHOT</tag>
-    </scm>
-
-
     <properties>
 
         <!-- Java EE -->
@@ -138,6 +129,10 @@
         <!-- JMS -->
         <jms-api.version>2.0.1</jms-api.version>
 
+        <jna.version>5.2.0</jna.version>
+        
+        <jline-terminal-jna>3.11.0</jline-terminal-jna>
+        
         <!-- 5.1.1-b02.payara-p1 -->
         <mq.version>5.1.1.final.payara-p4</mq.version>
 
@@ -187,7 +182,7 @@
 
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>192</minor_version>
+        <minor_version>193-SNAPSHOT</minor_version>
         <update_version></update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
 

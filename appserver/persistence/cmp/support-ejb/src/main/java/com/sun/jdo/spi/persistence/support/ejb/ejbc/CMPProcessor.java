@@ -100,7 +100,7 @@ public class CMPProcessor {
 
         if (logger.isLoggable(logger.FINE)) {                
             logger.fine("ejb.CMPProcessor.createanddroptables", //NOI18N
-                new Object[] {new Boolean(createTables), new Boolean(userDropTables)});
+                new Object[] {createTables, userDropTables});
         }
 
         if (!createTables && !userDropTables) {

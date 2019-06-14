@@ -123,7 +123,7 @@ public class ResourceUtil {
      */
     public String computeEnabledValueForResourceBasedOnTarget(String enabledValue, String target) {
         String result = enabledValue;
-        boolean enabled = Boolean.valueOf(enabledValue);
+        boolean enabled = Boolean.parseBoolean(enabledValue);
         if(!isNonResourceRefTarget(target) && !enabled ){
             result = Boolean.toString(!enabled);
         }
