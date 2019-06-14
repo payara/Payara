@@ -45,6 +45,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
+
 import java.net.URI;
 
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;

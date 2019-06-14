@@ -37,42 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.client.protocol;
+package fish.payara.ejb.http.protocol;
 
-import javax.json.bind.annotation.JsonbPropertyOrder;
-
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
 /**
- * Response in case of an error.
+ * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
  *
  * @author Jan Bernitt
  */
-@JsonbPropertyOrder({"exceptionType", "message", "cause"})
-public class ErrorResponse implements Serializable {
+public class LookupResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public String exceptionType;
-    public String message;
-    public ErrorResponse cause;
+    public final String typeName;
+    public final String kind;
 
-    public ErrorResponse() {
-        // needed for JSONB de-serialisation
+    public LookupResponse(Class<?> ejbInterface) {
+        this.typeName = ejbInterface.getName();
+        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
     }
 
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder();
-        toString(str);
-        return str.toString();
+    @JsonbCreator
+    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
+        this.typeName = typeName;
+        this.kind = kind;
     }
 
-    private void toString(StringBuilder str) {
-        str.append(exceptionType).append(": ").append(message);
-        if (cause != null) {
-            str.append("\ncaused by:\n");
-            cause.toString(str);
-        }
-    }
 }

@@ -37,49 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.client.protocol.rs;
+package fish.payara.ejb.http.protocol.rs;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import fish.payara.ejb.http.client.MediaTypes;
+import fish.payara.ejb.http.protocol.ErrorResponse;
+import fish.payara.ejb.http.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.protocol.LookupResponse;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
 /**
- * Reads the {@link LookupRequest} in case of java serialisation.
- *  
+ * Writes the {@link LookupResponse}, {@link InvokeMethodResponse} and {@link ErrorResponse} in case of Java
+ * serialisation.
+ * 
  * @author Jan Bernitt
  */
 @Provider
-@Consumes(MediaTypes.JAVA_OBJECT)
-public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
+@Produces(MediaTypes.JAVA_OBJECT)
+public class ObjectStreamMessageBodyWriter implements MessageBodyWriter<Serializable> {
 
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
     @Override
-    public Serializable readFrom(Class<Serializable> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+    public void writeTo(Serializable response, Class<?> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
             throws IOException, WebApplicationException {
-        try {
-            return (Serializable) new ObjectInputStream(entityStream).readObject();
-        } catch (ClassNotFoundException ex) {
-            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
-                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
-        }
+        new ObjectOutputStream(entityStream).writeObject(response);
     }
 
 }

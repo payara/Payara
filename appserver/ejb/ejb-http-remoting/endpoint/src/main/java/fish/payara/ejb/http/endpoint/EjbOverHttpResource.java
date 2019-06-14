@@ -62,11 +62,12 @@ import org.glassfish.internal.data.ApplicationRegistry;
 
 import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
 
-import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
-import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
-import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
+import fish.payara.ejb.http.protocol.ErrorResponse; 
+import fish.payara.ejb.http.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.protocol.LookupRequest;
+import fish.payara.ejb.http.protocol.LookupResponse;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
 @Path("/")
 public class EjbOverHttpResource {

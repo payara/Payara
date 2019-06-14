@@ -37,29 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.protocol.rs;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Provider;
+
+import fish.payara.ejb.http.protocol.LookupRequest;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
 /**
- * This is the context factory that creates the context used for looking up and invoking
- * remote EJBs.
- * 
- * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
+ * Reads the {@link LookupRequest} in case of JSONB serialisation.
  *
- * @deprecated in favor of package {@code fish.payara.ejb.http.client}
- * @author Arjan Tijms
- * @since Payara 5.191
+ * @author Jan Bernitt
  */
-@Deprecated
-public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
-    
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+@Provider
+@Consumes(MediaTypes.JSON)
+public class JsonbLookupMessageBodyReader implements MessageBodyReader<LookupRequest> {
+
+    @Override
+    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return LookupRequest.class.isAssignableFrom(type);
+    }
+
+    @Override
+    public LookupRequest readFrom(Class<LookupRequest> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+            throws IOException, WebApplicationException {
+        try (JsonReader jsonReader = Json.createReader(entityStream)) {
+            JsonObject request = jsonReader.readObject();
+            return new LookupRequest(request.getString("lookup"));
+        }
+    }
 
 }

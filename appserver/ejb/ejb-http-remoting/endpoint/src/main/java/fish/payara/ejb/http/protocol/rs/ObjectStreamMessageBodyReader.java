@@ -37,33 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol;
+package fish.payara.ejb.http.protocol.rs;
 
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Provider;
+
+import fish.payara.ejb.http.protocol.LookupRequest;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
 /**
- * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
- *
+ * Reads the {@link LookupRequest} in case of java serialisation.
+ *  
  * @author Jan Bernitt
  */
-public class LookupResponse implements Serializable {
+@Provider
+@Consumes(MediaTypes.JAVA_OBJECT)
+public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
 
-    private static final long serialVersionUID = 1L;
-
-    public final String typeName;
-    public final String kind;
-
-    public LookupResponse(Class<?> ejbInterface) {
-        this.typeName = ejbInterface.getName();
-        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
+    @Override
+    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
     }
 
-    @JsonbCreator
-    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
-        this.typeName = typeName;
-        this.kind = kind;
+    @Override
+    public Serializable readFrom(Class<Serializable> type, Type genericType, Annotation[] annotations,
+            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+            throws IOException, WebApplicationException {
+        try {
+            return (Serializable) new ObjectInputStream(entityStream).readObject();
+        } catch (ClassNotFoundException ex) {
+            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
+                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
+        }
     }
 
 }

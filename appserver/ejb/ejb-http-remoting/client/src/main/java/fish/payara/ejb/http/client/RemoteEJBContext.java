@@ -60,6 +60,7 @@ import java.util.Hashtable;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Logger;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.*;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -96,13 +97,14 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
  */
 class RemoteEJBContext implements Context {
 
+    private static final Logger logger = Logger.getLogger(LookupV0.class.getName());
+
     private ClientAdapter clientAdapter;
     private Hashtable<String, Object> environment;
     private Lookup lookup;
-    
-    @SuppressWarnings("unchecked")
-    public RemoteEJBContext(Hashtable<?, ?> environment) {
-        this.environment = (Hashtable<String, Object>) environment;
+
+    public RemoteEJBContext(Hashtable<String, Object> environment) {
+        this.environment = environment;
         if (environment.containsKey(RemoteEJBContextFactory.CLIENT_ADAPTER)) {
             Object adapter =  environment.get(RemoteEJBContextFactory.CLIENT_ADAPTER);
             if (adapter instanceof ClientAdapter) {
@@ -122,7 +124,6 @@ class RemoteEJBContext implements Context {
             throw new NullPointerException("Lookup name cannot be null");
         }
         String url = (String) environment.get(PROVIDER_URL);
-        
         try {
             if (clientAdapter != null) {
                 Optional<Object> resolvedAdapter = clientAdapter.makeLocalProxy(name, this);
@@ -167,10 +168,12 @@ class RemoteEJBContext implements Context {
             LookupDiscoveryResponse discovery = lookupDiscovery.discover(client, root);
 
             if (discovery.isV1target()) {
-                return new LookupV1(environment, discovery.getV1lookup());
+                logger.info("Discovered v1 at " + discovery.getV1lookup().getUri());
+                return new LookupV1(environment, client, discovery.getV1lookup());
             }
             if (discovery.isV0target()) {
-               return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
+                logger.info("Discovered v0 at " + discovery.getV0lookup().getUri());
+                return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
             }
             throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
@@ -178,90 +181,90 @@ class RemoteEJBContext implements Context {
         }
 
     }
-    
+
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-        
+
         if (environment.containsKey(JAXRS_CLIENT_CONNECT_TIMEOUT)) {
             clientBuilder.connectTimeout(getLong(environment.get(JAXRS_CLIENT_CONNECT_TIMEOUT)).longValue(), MICROSECONDS);
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_EXECUTOR_SERVICE)) {
             clientBuilder.executorService(getInstance(environment.get(JAXRS_CLIENT_EXECUTOR_SERVICE), ExecutorService.class));
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_HOSTNAME_VERIFIER)) {
             clientBuilder.hostnameVerifier(getInstance(environment.get(JAXRS_CLIENT_HOSTNAME_VERIFIER), HostnameVerifier.class));
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_KEY_STORE)) {
             clientBuilder.keyStore(getInstance(environment.get(JAXRS_CLIENT_KEY_STORE), KeyStore.class), getPassword(environment.get("keyStorePassword")));
         }
-        
+
         if (environment.containsKey(JAXRS_CLIENT_READ_TIMEOUT)) {
             clientBuilder.readTimeout(getLong(environment.get(JAXRS_CLIENT_READ_TIMEOUT)).longValue(), MICROSECONDS);
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE)) {
             clientBuilder.scheduledExecutorService(getInstance(environment.get(JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE), ScheduledExecutorService.class));
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_SSL_CONTEXT)) {
             clientBuilder.sslContext(getInstance(environment.get(JAXRS_CLIENT_SSL_CONTEXT), SSLContext.class));
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_TRUST_STORE)) {
             clientBuilder.trustStore(getInstance(environment.get(JAXRS_CLIENT_TRUST_STORE), KeyStore.class));
         }
-        
+
         if (environment.contains(JAXRS_CLIENT_CONFIG)) {
             clientBuilder.withConfig(getInstance(environment.get(JAXRS_CLIENT_CONFIG), Configuration.class));
         }
-        
+
         return clientBuilder;
     }
-    
+
     private NamingException newNamingException(String name, Exception cause) {
         NamingException namingException = new NamingException("Could not lookup :" + name);
         namingException.initCause(cause);
-        
+
         return namingException;
     }
-    
+
     private <T> T getInstance(Object value, Class<T> clazz) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
         }
-        
+
         if (value instanceof String) {
             return clazz.cast(Class.forName((String)value).newInstance());
         }
-        
+
         throw new IllegalStateException("Value " + value + " has to be of type String or " + clazz);
     }
-    
+
     private Long getLong(Object value) {
         if (value instanceof Number) {
             return ((Number) value).longValue();
         }
-        
+
         if (value instanceof String) {
             return Long.valueOf((String) value);
         }
-        
+
         throw new IllegalStateException("Value " + value + " has to be of type String or Number");
     }
-    
+
     private char[] getPassword(Object value) {
         if (value instanceof String) {
             return ((String) value).toCharArray();
         }
-        
+
         if (value instanceof char[]) {
             return (char[]) value;
         } 
-            throw new IllegalArgumentException("No password provided");
-        
+        throw new IllegalArgumentException("No password provided");
+
     }
 
     @Override

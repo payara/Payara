@@ -37,47 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol.rs;
+package fish.payara.ejb.http.protocol;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
-
-import fish.payara.ejb.http.endpoint.MediaTypes;
-import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
-import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
 
 /**
- * Writes the {@link LookupResponse}, {@link InvokeMethodResponse} and {@link ErrorResponse} in case of Java
- * serialisation.
- * 
+ * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
+ *
  * @author Jan Bernitt
  */
-@Provider
-@Produces(MediaTypes.JAVA_OBJECT)
-public class ObjectStreamMessageBodyWriter implements MessageBodyWriter<Serializable> {
+public class LookupResponse implements Serializable {
 
-    @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
+    private static final long serialVersionUID = 1L;
+
+    public final String typeName;
+    public final String kind;
+
+    public LookupResponse(Class<?> ejbInterface) {
+        this.typeName = ejbInterface.getName();
+        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
     }
 
-    @Override
-    public void writeTo(Serializable response, Class<?> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-            throws IOException, WebApplicationException {
-        new ObjectOutputStream(entityStream).writeObject(response);
+    @JsonbCreator
+    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
+        this.typeName = typeName;
+        this.kind = kind;
     }
 
 }

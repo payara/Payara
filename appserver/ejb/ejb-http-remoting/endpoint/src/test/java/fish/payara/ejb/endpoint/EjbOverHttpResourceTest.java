@@ -81,17 +81,18 @@ import org.junit.runners.Parameterized.Parameters;
 
 import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
 import fish.payara.ejb.http.endpoint.EjbOverHttpService;
-import fish.payara.ejb.http.endpoint.protocol.ErrorResponse;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodResponse;
-import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
-import fish.payara.ejb.http.endpoint.protocol.LookupResponse;
-import fish.payara.ejb.http.endpoint.protocol.rs.ErrorResponseExceptionMapper;
-import fish.payara.ejb.http.endpoint.protocol.rs.JsonbInvokeMethodMessageBodyReader;
-import fish.payara.ejb.http.endpoint.protocol.rs.JsonbLookupMessageBodyReader;
-import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamInvokeMethodMessageBodyReader;
-import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamMessageBodyReader;
-import fish.payara.ejb.http.endpoint.protocol.rs.ObjectStreamMessageBodyWriter;
+import fish.payara.ejb.http.protocol.ErrorResponse;
+import fish.payara.ejb.http.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.protocol.InvokeMethodResponse;
+import fish.payara.ejb.http.protocol.LookupRequest;
+import fish.payara.ejb.http.protocol.LookupResponse;
+import fish.payara.ejb.http.protocol.MediaTypes;
+import fish.payara.ejb.http.protocol.rs.ErrorResponseExceptionMapper;
+import fish.payara.ejb.http.protocol.rs.JsonbInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.JsonbLookupMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyWriter;
 
 /**
  * A component test for the {@link EjbOverHttpResource} that tests with both JSONB and java object serialisation.
@@ -105,7 +106,7 @@ public class EjbOverHttpResourceTest {
 
     @Parameters(name = "{0}")
     public static Iterable<String> mediaTypes() {
-        return Arrays.asList("application/x-java-object", MediaType.APPLICATION_JSON);
+        return Arrays.asList(MediaTypes.JAVA_OBJECT, MediaTypes.JSON);
     }
 
     /**
@@ -186,34 +187,9 @@ public class EjbOverHttpResourceTest {
 
     @BeforeClass
     public static void setUp() {
-        int port = 8080;
-        try(ServerSocket ss = new ServerSocket(0)) {
-            port = ss.getLocalPort();
-        } catch (Exception e) {
-            // try with 8080
-        }
-        URI baseUri = UriBuilder.fromUri("http://localhost/").port(port).build();
-        initServer(baseUri);
-        initClient(baseUri);
-    }
-
-    private static void initServer(URI baseUri) {
-        ResourceConfig config = ResourceConfig.forApplication(new EjbOverHttpResourceTestApplication())
-                .register(ObjectStreamMessageBodyReader.class)
-                .register(ObjectStreamMessageBodyWriter.class)
-                .register(ObjectStreamInvokeMethodMessageBodyReader.class)
-                .register(JsonbInvokeMethodMessageBodyReader.class)
-                .register(JsonbLookupMessageBodyReader.class);
-        server = GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
-        assertNotNull(server);
-
-    }
-
-    private static void initClient(URI baseUri) {
-        target = ClientBuilder.newClient()
-                .target(baseUri)
-                .register(ObjectStreamMessageBodyReader.class)
-                .register(ObjectStreamMessageBodyWriter.class);
+        URI baseUri = localhostWithFreePort();
+        server = spawnServer(baseUri, new EjbOverHttpResourceTestApplication());
+        target = createClient(baseUri);
     }
 
     @AfterClass
@@ -221,6 +197,34 @@ public class EjbOverHttpResourceTest {
         if (server != null) {
             server.shutdown();
         }
+    }
+
+    private static URI localhostWithFreePort() {
+        int port = 8080;
+        try(ServerSocket ss = new ServerSocket(0)) {
+            port = ss.getLocalPort();
+        } catch (Exception e) {
+            // try with 8080
+        }
+        URI baseUri = UriBuilder.fromUri("http://localhost/").port(port).build();
+        return baseUri;
+    }
+
+    private static HttpServer spawnServer(URI baseUri, Application app) {
+        ResourceConfig config = ResourceConfig.forApplication(app)
+                .register(ObjectStreamMessageBodyReader.class)
+                .register(ObjectStreamMessageBodyWriter.class)
+                .register(ObjectStreamInvokeMethodMessageBodyReader.class)
+                .register(JsonbInvokeMethodMessageBodyReader.class)
+                .register(JsonbLookupMessageBodyReader.class);
+        return GrizzlyHttpServerFactory.createHttpServer(baseUri, config);
+    }
+
+    private static WebTarget createClient(URI baseUri) {
+        return ClientBuilder.newClient()
+                .target(baseUri)
+                .register(ObjectStreamMessageBodyReader.class)
+                .register(ObjectStreamMessageBodyWriter.class);
     }
 
     @Test

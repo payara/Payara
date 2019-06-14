@@ -38,11 +38,23 @@
  *    holder.
  */
 
-package fish.payara.ejb.http.endpoint;
+package fish.payara.ejb.http.protocol.rs;
 
-import javax.ws.rs.core.MediaType;
+import fish.payara.ejb.http.protocol.ErrorResponse;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
-public interface MediaTypes {
-    String JSON = MediaType.APPLICATION_JSON;
-    String JAVA_OBJECT = "application/x-java-object";
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
+@Provider
+@Produces({MediaTypes.JAVA_OBJECT, MediaTypes.JSON})
+public class ErrorResponseExceptionMapper implements ExceptionMapper<Throwable> {
+    @Override
+    public Response toResponse(Throwable exception) {
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(new ErrorResponse(exception))
+                .build();
+    }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol.rs;
+package fish.payara.ejb.http.protocol.rs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,8 +60,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import fish.payara.ejb.http.endpoint.MediaTypes;
-import fish.payara.ejb.http.endpoint.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.protocol.InvokeMethodRequest;
+import fish.payara.ejb.http.protocol.MediaTypes;
 
 /**
  * Reads the {@link InvokeMethodRequest} in case of JSONB serialisation.
@@ -112,10 +112,12 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
      */
     private static Object[] toObjects(Type[] argTypes, Object encodedArgValues) {
         try {
-            JsonArray jsonArgValues = (JsonArray) encodedArgValues;
             Object[] argValues = new Object[argTypes.length];
-            for (int i = 0; i < jsonArgValues.size(); i++) {
-                argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+            if (argValues.length > 0) {
+                JsonArray jsonArgValues = (JsonArray) encodedArgValues;
+                for (int i = 0; i < jsonArgValues.size(); i++) {
+                    argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+                }
             }
             return argValues;
         } catch (InternalServerErrorException ex) {

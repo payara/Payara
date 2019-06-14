@@ -37,25 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol;
-
-import javax.json.bind.annotation.JsonbProperty;
-import java.io.Serializable;
-
+package fish.payara.ejb.http.protocol;
 
 /**
- * Lookup the fully qualified name of an EJB interface for a JNDI name.
+ * Serialisation mechanisms supported by the client.
  *
  * @author Jan Bernitt
  */
-public class LookupRequest implements Serializable {
+public enum SerializationType {
 
-    private static final long serialVersionUID = 1L;
+    JSON(MediaTypes.JSON),
+    JAVA(MediaTypes.JAVA_OBJECT);
 
-    @JsonbProperty("lookup")
-    public final String jndiName;
+    private final String mediaType;
 
-    public LookupRequest(String jndiName) {
-        this.jndiName = jndiName;
+    private SerializationType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaType() {
+        return mediaType;
     }
 }

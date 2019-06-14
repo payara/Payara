@@ -49,6 +49,7 @@ import java.util.Map;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 class LookupV0 extends Lookup {
+
     private final WebTarget invokerRoot;
     private final WebTarget lookup;
 

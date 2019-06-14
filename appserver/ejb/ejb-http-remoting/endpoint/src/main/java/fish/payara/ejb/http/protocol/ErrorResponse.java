@@ -37,48 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol.rs;
+package fish.payara.ejb.http.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import javax.json.bind.annotation.JsonbPropertyOrder;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
-
-import fish.payara.ejb.http.endpoint.MediaTypes;
-import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
+import java.io.Serializable;
 
 /**
- * Reads the {@link LookupRequest} in case of JSONB serialisation.
+ * Response in case of an error.
  *
  * @author Jan Bernitt
  */
-@Provider
-@Consumes(MediaTypes.JSON)
-public class JsonbLookupMessageBodyReader implements MessageBodyReader<LookupRequest> {
+@JsonbPropertyOrder({"exceptionType", "message", "cause"})
+public class ErrorResponse implements Serializable {
 
-    @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return LookupRequest.class.isAssignableFrom(type);
+    private static final long serialVersionUID = 1L;
+
+    public String exceptionType;
+    public String message;
+    public ErrorResponse cause;
+
+    public ErrorResponse() {
+        // needed for JSONB de-serialisation
+    }
+
+    private ErrorResponse(String exceptionType, String message, ErrorResponse cause) {
+        this.exceptionType = exceptionType;
+        this.message = message;
+        this.cause = cause;
+    }
+
+    public ErrorResponse(Throwable ex) {
+        this(ex.getClass().getName(), ex.getMessage(), ex.getCause() != null ? new ErrorResponse(ex.getCause()) : null);
     }
 
     @Override
-    public LookupRequest readFrom(Class<LookupRequest> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
-            throws IOException, WebApplicationException {
-        try (JsonReader jsonReader = Json.createReader(entityStream)) {
-            JsonObject request = jsonReader.readObject();
-            return new LookupRequest(request.getString("lookup"));
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str);
+        return str.toString();
+    }
+
+    private void toString(StringBuilder str) {
+        str.append(exceptionType).append(": ").append(message);
+        if (cause != null) {
+            str.append("\ncaused by:\n");
+            cause.toString(str);
         }
     }
-
 }

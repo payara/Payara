@@ -37,50 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.endpoint.protocol.rs;
+package fish.payara.ejb.http.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import javax.json.bind.annotation.JsonbPropertyOrder;
+
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
-
-import fish.payara.ejb.http.endpoint.MediaTypes;
-import fish.payara.ejb.http.endpoint.protocol.LookupRequest;
 
 /**
- * Reads the {@link LookupRequest} in case of java serialisation.
- *  
+ * Response in case of an error.
+ *
  * @author Jan Bernitt
  */
-@Provider
-@Consumes(MediaTypes.JAVA_OBJECT)
-public class ObjectStreamMessageBodyReader implements MessageBodyReader<Serializable> {
+@JsonbPropertyOrder({"exceptionType", "message", "cause"})
+public class ErrorResponse implements Serializable {
 
-    @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.toString().equals(MediaTypes.JAVA_OBJECT);
+    private static final long serialVersionUID = 1L;
+
+    public String exceptionType;
+    public String message;
+    public ErrorResponse cause;
+
+    public ErrorResponse() {
+        // needed for JSONB de-serialisation
+    }
+
+    private ErrorResponse(String exceptionType, String message, ErrorResponse cause) {
+        this.exceptionType = exceptionType;
+        this.message = message;
+        this.cause = cause;
+    }
+
+    public ErrorResponse(Throwable ex) {
+        this(ex.getClass().getName(), ex.getMessage(), ex.getCause() != null ? new ErrorResponse(ex.getCause()) : null);
     }
 
     @Override
-    public Serializable readFrom(Class<Serializable> type, Type genericType, Annotation[] annotations,
-            MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
-            throws IOException, WebApplicationException {
-        try {
-            return (Serializable) new ObjectInputStream(entityStream).readObject();
-        } catch (ClassNotFoundException ex) {
-            throw new InternalServerErrorException("Class not found while de-serialising object stream as "
-                    + type.getSimpleName() + " : " + ex.getMessage(), ex);
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        toString(str);
+        return str.toString();
+    }
+
+    private void toString(StringBuilder str) {
+        str.append(exceptionType).append(": ").append(message);
+        if (cause != null) {
+            str.append("\ncaused by:\n");
+            cause.toString(str);
         }
     }
-
 }

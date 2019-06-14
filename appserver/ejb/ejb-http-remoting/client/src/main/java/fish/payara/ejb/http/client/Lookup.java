@@ -41,6 +41,8 @@
 package fish.payara.ejb.http.client;
 
 import javax.naming.NamingException;
+
+import java.util.Base64;
 import java.util.Map;
 
 abstract class Lookup {
@@ -52,9 +54,13 @@ abstract class Lookup {
 
     abstract Object lookup(String jndiName) throws NamingException;
 
-    protected NamingException wrap(String message, Throwable cause) {
+    public static NamingException wrap(String message, Throwable cause) {
         NamingException namingException = new NamingException(message);
         namingException.initCause(cause);
         return namingException;
+    }
+
+    public static String base64Encode(Object input) {
+        return Base64.getEncoder().encodeToString(input.toString().getBytes());
     }
 }

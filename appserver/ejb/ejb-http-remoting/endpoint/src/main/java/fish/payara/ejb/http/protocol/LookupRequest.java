@@ -37,28 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.http.client.protocol;
+package fish.payara.ejb.http.protocol;
 
-import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 
+
 /**
- * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
+ * Lookup the fully qualified name of an EJB interface for a JNDI name.
  *
  * @author Jan Bernitt
  */
-public class LookupResponse implements Serializable {
+public class LookupRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public final String typeName;
-    public final String kind;
+    @JsonbProperty("lookup")
+    public final String jndiName;
 
-    @JsonbCreator
-    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
-        this.typeName = typeName;
-        this.kind = kind;
+    public LookupRequest(String jndiName) {
+        this.jndiName = jndiName;
     }
-
 }
