@@ -236,7 +236,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
         
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && handle.getSpanContextMap() != null) {
             startConcurrentContextSpan(invocation, handle);
         }
         
