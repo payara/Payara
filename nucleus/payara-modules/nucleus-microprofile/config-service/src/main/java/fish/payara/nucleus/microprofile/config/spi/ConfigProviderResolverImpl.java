@@ -426,7 +426,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             URL url = resources.nextElement();
             Properties p = new Properties();
             try (InputStream is = url.openStream()) {
-                p.load(url.openStream());
+                p.load(is);
             }
             props.add(p);
         }
