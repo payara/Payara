@@ -42,15 +42,7 @@ package fish.payara.ejb.http.client;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_SERIALIZATION;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.security.AccessController.doPrivileged;
-import static java.util.Arrays.asList;
-import static javax.naming.Context.SECURITY_CREDENTIALS;
-import static javax.naming.Context.SECURITY_PRINCIPAL;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -63,8 +55,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import fish.payara.ejb.http.protocol.ErrorResponse;
-import fish.payara.ejb.http.protocol.InvokeMethodRequest;
-import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.LookupRequest;
 import fish.payara.ejb.http.protocol.LookupResponse;
 import fish.payara.ejb.http.protocol.MediaTypes;
@@ -134,85 +124,7 @@ public class LookupV1 extends Lookup {
             Map<String, Object> jndiOptions) {
         return (C) newProxyInstance(doPrivileged((PrivilegedAction<ClassLoader>) remoteBusinessInterface::getClassLoader),
                 new Class[] { remoteBusinessInterface },
-                new RemoteEjbOverHttpInvocationHandler(mediaType, invoke, jndiName, jndiOptions));
+                new EjbHttpProxyHandlerV1(mediaType, invoke, jndiName, jndiOptions));
     }
 
-    static final class RemoteEjbOverHttpInvocationHandler implements InvocationHandler {
-
-        private final String mediaType;
-        private final WebTarget invoke;
-        private final String jndiName;
-        private final Map<String, Object> jndiOptions;
-
-        public RemoteEjbOverHttpInvocationHandler(String mediaType, WebTarget invoke, String jndiName, Map<String, Object> jndiOptions) {
-            this.jndiName = jndiName;
-            this.jndiOptions = jndiOptions;
-            this.invoke = invoke;
-            this.mediaType = mediaType;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            // Check for methods we should not proxy first
-            if (args == null && method.getName().equals("toString")) {
-                return toString();
-            }
-            if (args == null && method.getName().equals("hashCode")) {
-                // unique instance in the JVM, and no need to override
-                return hashCode();
-            }
-            if (args != null && args.length == 1 && method.getName().equals("equals")) {
-                // unique instance in the JVM, and no need to override
-                return equals(args[0]);
-            }
-            return invokeRemote(method, args);
-        }
-
-        private Object invokeRemote(Method method, Object[] args) throws Exception {
-            InvokeMethodRequest request = createRequest(method, args);
-            try (Response response = invoke.request(mediaType).buildPost(Entity.entity(request, mediaType)).invoke()) {
-                if (response.getStatus() == Status.OK.getStatusCode()) {
-                    return response.readEntity(InvokeMethodResponse.class).result;
-                }
-                ErrorResponse error = response.readEntity(ErrorResponse.class);
-                throw deserialise(error);
-            }
-        }
-
-        private InvokeMethodRequest createRequest(Method method, Object[] args) {
-            String principal = jndiOptions.containsKey(SECURITY_PRINCIPAL)
-                    ? base64Encode(jndiOptions.get(SECURITY_PRINCIPAL))
-                    : "";
-            String credentials = jndiOptions.containsKey(SECURITY_CREDENTIALS)
-                    ? base64Encode(jndiOptions.get(SECURITY_CREDENTIALS))
-                    : "";
-            String[] argTypes = asList(method.getParameterTypes()).stream()
-                    .map(type -> type.getName())
-                    .toArray(String[]::new);
-            String[] argActualTypes = args == null ? new String[0] : asList(args).stream()
-                    .map(arg -> arg == null ? null : arg.getClass().getName())
-                    .toArray(String[]::new);
-            for (int i = 0; i < argTypes.length; i++) {
-                if (argActualTypes[i] == null) {
-                    argActualTypes[i] = argTypes[i];
-                }
-            }
-            return new InvokeMethodRequest(principal, credentials, jndiName, method.getName(), argTypes, argActualTypes,
-                    packArguments(args), null);
-        }
-
-        private Object packArguments(Object[] args) {
-            Object argValues = args;
-            if (MediaTypes.JAVA_OBJECT.equals(mediaType)) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-                    oos.writeObject(argValues);
-                } catch (IOException ex) {
-                    throw new UndeclaredThrowableException(ex);
-                }
-                argValues = bos.toByteArray();
-            }
-            return argValues;
-        }
-    }
 }
