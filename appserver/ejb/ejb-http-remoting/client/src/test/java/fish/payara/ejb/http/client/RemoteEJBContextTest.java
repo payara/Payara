@@ -46,6 +46,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.NotSerializableException;
@@ -53,15 +54,7 @@ import java.io.Serializable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.json.bind.annotation.JsonbCreator;
@@ -75,6 +68,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -187,6 +181,8 @@ public class RemoteEJBContextTest {
         CustomNonSerializableType failJavaReturnType();
         
         boolean failJavaArgumentType(CustomNonSerializableType arg1);
+
+        List<CustomSerializableType> nonPrimitiveList();
     }
 
     public static class RemoteBeanImpl implements RemoteBean {
@@ -229,6 +225,11 @@ public class RemoteEJBContextTest {
         public List<? extends List<String>> genericResultType() {
             return new ArrayList<List<String>>(asList(new LinkedList<>(asList("a", "b", "c"))));
         }
+
+        @Override
+        public List<CustomSerializableType> nonPrimitiveList() {
+            return Arrays.asList(new CustomSerializableType("a"), new CustomSerializableType("b"));
+        }
     }
 
     public static class CustomSerializableType implements Serializable {
@@ -240,6 +241,18 @@ public class RemoteEJBContextTest {
             this.value = value;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CustomSerializableType that = (CustomSerializableType) o;
+            return Objects.equals(value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
+        }
     }
 
     public static class CustomNonSerializableType {
@@ -383,5 +396,14 @@ public class RemoteEJBContextTest {
         } catch (NamingException ex) {
             assertEquals(expectedErrorMessage, ex.getMessage());
         }
+    }
+
+    @Test
+    public void remoteBeanMethodCall_SuccessPojoList() throws NamingException {
+        RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
+        List<CustomSerializableType> result = bean.nonPrimitiveList();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertThat(result, CoreMatchers.hasItems(new CustomSerializableType("a"), new CustomSerializableType("b")));
     }
 }
