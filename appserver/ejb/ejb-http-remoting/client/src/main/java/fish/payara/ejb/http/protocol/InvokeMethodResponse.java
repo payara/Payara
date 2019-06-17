@@ -40,12 +40,12 @@
 package fish.payara.ejb.http.protocol;
 
 import javax.json.bind.annotation.JsonbPropertyOrder;
-import javax.json.bind.annotation.JsonbTypeDeserializer;
-import javax.json.bind.serializer.DeserializationContext;
-import javax.json.bind.serializer.JsonbDeserializer;
-import javax.json.stream.JsonParser;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Result of invoking an EJB method.
@@ -53,7 +53,6 @@ import java.lang.reflect.Type;
  * @author Jan Bernitt
  */
 @JsonbPropertyOrder({"type", "result"})
-@JsonbTypeDeserializer(InvokeMethodResponse.Deserializer.class)
 public class InvokeMethodResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -73,36 +72,32 @@ public class InvokeMethodResponse implements Serializable {
         this.result = result;
     }
 
-    // This deserializer is only fit for limited use cases. Client should employ different deserialization means,
-    // that make use of the expected return type as well (especially to support Optional returns)
-    public static class Deserializer implements JsonbDeserializer<InvokeMethodResponse> {
+    public static class ResultType implements Annotation {
+        public final Type type;
 
         @Override
-        public InvokeMethodResponse deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
-            String type = null;
-            Object result = null;
-            while (parser.hasNext()) {
-                JsonParser.Event event = parser.next();
-                if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("type")) {
-                    parser.next();
-                    type = parser.getString();
-                } else if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("result")) {
-                    Class<?> resultClass = determineClass(type);
-                    result = ctx.deserialize(resultClass, parser);
-                }
-            }
-            return new InvokeMethodResponse(result);
+        public Class<? extends Annotation> annotationType() {
+            return ResultType.class;
         }
 
-        private static Class<?> determineClass(String type) {
-            if (type == null) {
-                throw new IllegalArgumentException("Type was not specified");
+        public ResultType(Method method) {
+            this.type = method.getGenericReturnType();
+        }
+
+        public static Annotation[] of(Method method) {
+            return new Annotation[] { new ResultType(method) };
+        }
+
+        public static boolean isPresent(Annotation[] annotations) {
+            return annotations != null && Stream.of(annotations).anyMatch(ResultType.class::isInstance);
+        }
+
+        public static ResultType find(Annotation[] annotations) {
+            Optional<ResultType> found = Optional.empty();
+            if (annotations != null) {
+                found = Stream.of(annotations).filter(ResultType.class::isInstance).map(ResultType.class::cast).findAny();
             }
-            try {
-                return Class.forName(type);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("Could not find class for type "+type, e);
-            }
+            return found.orElseThrow(() -> new IllegalArgumentException("ResultType annotation is not present") );
         }
     }
 }

@@ -44,6 +44,7 @@ import fish.payara.ejb.http.protocol.ErrorResponse;
 import fish.payara.ejb.http.protocol.InvokeMethodRequest;
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.MediaTypes;
+import fish.payara.ejb.http.protocol.rs.InvokeMethodResponseJsonBodyReader;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -51,6 +52,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -70,7 +72,7 @@ final class EjbHttpProxyHandlerV1 implements InvocationHandler {
     public EjbHttpProxyHandlerV1(String mediaType, WebTarget invoke, String jndiName, Map<String, Object> jndiOptions) {
         this.jndiName = jndiName;
         this.jndiOptions = jndiOptions;
-        this.invoke = invoke;
+        this.invoke = mediaType.equals(MediaTypes.JSON) ? invoke.register(InvokeMethodResponseJsonBodyReader.class) : invoke;
         this.mediaType = mediaType;
     }
 
@@ -93,9 +95,12 @@ final class EjbHttpProxyHandlerV1 implements InvocationHandler {
 
     private Object invokeRemote(Method method, Object[] args) throws Exception {
         InvokeMethodRequest request = createRequest(method, args);
-        try (Response response = invoke.request(mediaType).buildPost(Entity.entity(request, mediaType)).invoke()) {
+        try (Response response = invoke
+                .request(mediaType)
+                .buildPost(Entity.entity(request, mediaType)).invoke()) {
             if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-                return response.readEntity(InvokeMethodResponse.class).result;
+                return response
+                        .readEntity(InvokeMethodResponse.class, InvokeMethodResponse.ResultType.of(method)).result;
             }
             ErrorResponse error = response.readEntity(ErrorResponse.class);
             throw LookupV1.deserialise(error);
