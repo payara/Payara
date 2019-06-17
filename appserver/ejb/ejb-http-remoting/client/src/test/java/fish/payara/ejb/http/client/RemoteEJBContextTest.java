@@ -5,8 +5,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
@@ -22,12 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbPropertyOrder;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.ws.rs.core.Application;
@@ -94,6 +94,9 @@ public class RemoteEJBContextTest {
 
         @Override
         public ClassLoader getAppClassLoader(String applicationName) {
+            if (!applicationName.equals("myapp")) {
+                return null;
+            }
             return RemoteEJBContextTestApplication.class.getClassLoader();
         }
 
@@ -143,7 +146,9 @@ public class RemoteEJBContextTest {
 
         CustomSerializableType join(String... parts);
 
-        CustomNonSerializableType failJava();
+        CustomNonSerializableType failJavaReturnType();
+        
+        boolean failJavaArgumentType(CustomNonSerializableType arg1);
     }
 
     public static class RemoteBeanImpl implements RemoteBean {
@@ -171,10 +176,15 @@ public class RemoteEJBContextTest {
         }
 
         @Override
-        public CustomNonSerializableType failJava() {
+        public CustomNonSerializableType failJavaReturnType() {
             CustomNonSerializableType res = new CustomNonSerializableType();
             res.setValue("Only works in JSONB");
             return res;
+        }
+
+        @Override
+        public boolean failJavaArgumentType(CustomNonSerializableType arg1) {
+            return true;
         }
 
         @Override
@@ -257,11 +267,14 @@ public class RemoteEJBContextTest {
         assertEquals("x.y", result.value.toString());
     }
 
+    /**
+     * Illustrates how using Java serialisation forces types use in methods requires them to be {@link Serializable}. 
+     */
     @Test
-    public void remoteBeanMethodCall_ErrorNotSerializable() throws NamingException {
+    public void remoteBeanMethodCall_ErrorResultNotSerializable() throws NamingException {
         RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
         try {
-            CustomNonSerializableType result = bean.failJava();
+            CustomNonSerializableType result = bean.failJavaReturnType();
             assertEquals(SerializationType.JSON.toString(), serializationType);
             assertNotNull(result);
             assertEquals("Only works in JSONB", result.value);
@@ -273,6 +286,24 @@ public class RemoteEJBContextTest {
     }
 
     @Test
+    public void remoteBeanMethodCall_ErrorArgumentNotSerializable() throws NamingException {
+        RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
+        try {
+            boolean result = bean.failJavaArgumentType(new CustomNonSerializableType());
+            assertEquals(SerializationType.JSON.toString(), serializationType);
+            assertTrue(result);
+        } catch (UndeclaredThrowableException ex) {
+            assertEquals(SerializationType.JAVA.toString(), serializationType);
+            assertSame(NotSerializableException.class, ex.getUndeclaredThrowable().getClass());
+            assertEquals("fish.payara.ejb.http.client.RemoteEJBContextTest$CustomNonSerializableType", ex.getUndeclaredThrowable().getMessage());
+        }
+    }
+
+    /**
+     * Illustrates the effect on generics in the return type and the difference between using Java serialisation and
+     * JSONB
+     */
+    @Test
     public void remoteBeanMethodCall_SuccessGenerics() throws NamingException {
         RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
         List<? extends List<String>> result = bean.genericResultType();
@@ -282,10 +313,37 @@ public class RemoteEJBContextTest {
         assertEquals(asList("a", "b", "c"), result.get(0));
         assertEquals(ArrayList.class, result.getClass());
         if (serializationType.equalsIgnoreCase(SerializationType.JAVA.toString())) {
+            // java serialisation preserves the exact types
             assertSame(LinkedList.class, result.get(0).getClass());
         }
         if (serializationType.equalsIgnoreCase(SerializationType.JSON.toString())) {
+            // while JSONB only can reconstruct what is in the type signatures
+            // we do preserve the exact non generic type of the result (ArrayList) but not the type of the element
             assertNotSame(LinkedList.class, result.get(0).getClass());
+        }
+    }
+
+    @Test
+    public void remoteBeanLookup_ErrorUnknownBean() {
+        assertLookupError("java:global/myapp/RemoteBeanXyz", "No such bean: java:global/myapp/RemoteBeanXyz");
+    }
+
+    @Test
+    public void remoteBeanLookup_ErrorUnknownApplication() {
+        assertLookupError("java:global/anotherapp/RemoteBean", "Unknown application: anotherapp");
+    }
+
+    @Test
+    public void remoteBeanLookup_ErrorNonGlobalName() {
+        assertLookupError("java:app/myapp/RemoteBean", "Only global names are supported but got: java:app/myapp/RemoteBean");
+    }
+
+    private void assertLookupError(String jndiName, String expectedErrorMessage) {
+        try {
+            RemoteBean bean = (RemoteBean) context.lookup(jndiName);
+            assertNull("Should have failed", bean);
+        } catch (NamingException ex) {
+            assertEquals(expectedErrorMessage, ex.getMessage());
         }
     }
 }

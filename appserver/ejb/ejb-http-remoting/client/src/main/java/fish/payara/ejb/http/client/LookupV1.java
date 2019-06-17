@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
@@ -167,8 +168,8 @@ public class LookupV1 extends Lookup {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
                     oos.writeObject(argValues);
-                } catch (IOException e) {
-                    throw new IllegalArgumentException("Failed to serailise method arguments for remote invocation");
+                } catch (IOException ex) {
+                    throw new UndeclaredThrowableException(ex);
                 }
                 argValues = bos.toByteArray();
             }
