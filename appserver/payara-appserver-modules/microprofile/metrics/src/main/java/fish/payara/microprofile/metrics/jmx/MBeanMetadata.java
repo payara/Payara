@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,13 +56,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.eclipse.microprofile.metrics.DefaultMetadata;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MBeanMetadata extends DefaultMetadata {
+public class MBeanMetadata implements Metadata {
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadata.class.getName());
 
@@ -71,12 +70,29 @@ public class MBeanMetadata extends DefaultMetadata {
 
     @XmlElement
     private boolean dynamic = true;
+    
+    @XmlElement
+    private String name;
+    
+    @XmlElement
+    private String displayName;
+    
+    @XmlElement
+    private Optional<String> description;
+    
+    @XmlElement
+    private Optional<String> unit;
+    
+    @XmlElement
+    private String type;
+    
+    @XmlElement
+    private boolean reusable;
 
     @XmlTransient
     private Boolean valid;
     
-    @XmlTransient
-    private MetricType type;
+    
 
     private static final Set<String> SUPPORTED_UNITS
             = new HashSet<>(asList(
@@ -103,9 +119,7 @@ public class MBeanMetadata extends DefaultMetadata {
                     MetricUnits.PER_SECOND
             ));
 
-    public MBeanMetadata() {
-        super(null, null, null, null, null, true);
-        
+    public MBeanMetadata() {        
     }
     
     public MBeanMetadata(Metadata metadata) {
@@ -114,8 +128,12 @@ public class MBeanMetadata extends DefaultMetadata {
     }
 
     public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
-        super(name, displayName, description, typeRaw, unit, true);
         this.mBean = mBean;
+        this.name = name;
+        this.displayName = displayName;
+        this.description = Optional.ofNullable(description);
+        this.type = typeRaw.toString();
+        this.unit = Optional.ofNullable(unit);
     }
 
     public String getMBean() {
@@ -140,6 +158,31 @@ public class MBeanMetadata extends DefaultMetadata {
         }
         return valid;
     }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    @Override
+    public Optional<String> getUnit() {
+        return unit;
+    }
+    
+    @Override
+    public Optional<String> getDescription() {
+        return description;
+    }
+    
+    @Override
+    public String getType() {
+        return type;
+    }
 
     private boolean validateMetadata() {
         boolean validationResult = true;
@@ -155,6 +198,12 @@ public class MBeanMetadata extends DefaultMetadata {
         }
         if (isNull(metadata.getType())) {
             LOGGER.log(WARNING, "'type' property not defined in {0} metadata", metadata.getName());
+            validationResult = false;
+        }
+        try {
+            MetricType.from(type);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(WARNING, "'type' property is not valid in {0} metadata", metadata.getName());
             validationResult = false;
         }
         if (nonNull(metadata.getName()) && nonNull(metadata.getMBean())) {
@@ -177,6 +226,16 @@ public class MBeanMetadata extends DefaultMetadata {
             }
         }
         return validationResult;
+    }
+
+    @Override
+    public MetricType getTypeRaw() {
+        return MetricType.from(type);
+    }
+
+    @Override
+    public boolean isReusable() {
+        return reusable;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -86,7 +86,7 @@ public class MBeanMetadataHelper {
      * @return the list of unresolved MBean Metadata
      */
     public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
-            List<MBeanMetadata> metadataList, Map<String, String> globalTags, boolean isRetry) {
+            List<MBeanMetadata> metadataList, boolean isRetry) {
 
         if (!metricRegistry.getMetadata().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
@@ -310,13 +310,13 @@ public class MBeanMetadataHelper {
                         subAttribute
                 ),
                 formatMetadata(
-                        nonNull(metadata.getDescription().isPresent()) ? metadata.getDescription().get() : metadata.getName(),
+                        metadata.getDescription().isPresent() ? metadata.getDescription().get() : metadata.getName(),
                         key,
                         attribute,
                         subAttribute
                 ),
                 metadata.getTypeRaw(),
-                metadata.getUnit().get()
+                metadata.getUnit().orElse(null)
         );
     }
 

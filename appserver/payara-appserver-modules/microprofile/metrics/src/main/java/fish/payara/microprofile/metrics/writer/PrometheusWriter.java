@@ -162,7 +162,7 @@ public class PrometheusWriter implements MetricsWriter {
                 
             String name = registryName + ":" + metricId.toString();
             Metric metric = entry.getValue();
-            Metadata metricMetadata = metricMetadataMap.get(metricId.toString());
+            Metadata metricMetadata = metricMetadataMap.get(metricId.getName());
 
             String description = metricMetadata.getDescription().orElse(EMPTY_STRING);
             

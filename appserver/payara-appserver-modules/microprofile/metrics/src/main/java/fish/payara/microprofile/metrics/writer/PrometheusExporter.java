@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,7 @@
 
 package fish.payara.microprofile.metrics.writer;
 
-import fish.payara.microprofile.metrics.Tag;
+//import fish.payara.microprofile.metrics.Tag;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.Counter;
@@ -62,6 +62,7 @@ import org.eclipse.microprofile.metrics.Metered;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 import static org.eclipse.microprofile.metrics.MetricUnits.BITS;
 import static org.eclipse.microprofile.metrics.MetricUnits.BYTES;
 import static org.eclipse.microprofile.metrics.MetricUnits.DAYS;
@@ -262,7 +263,7 @@ public class PrometheusExporter {
     }
 
     private void writeValueLine(String name, Number value, String tags, Tag quantile, String appendUnit) {
-        String qunatileKeyValue = quantile.getKey() + "=\"" + quantile.getValue() + "\"";
+        String qunatileKeyValue = quantile.getTagName() + "=\"" + quantile.getTagValue() + "\"";
         tags = tags == null || tags.isEmpty() ? qunatileKeyValue : tags + COMMA + qunatileKeyValue;
         writeValueLine(name, value, tags, appendUnit);
     }

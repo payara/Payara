@@ -37,103 +37,95 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.metrics;
-
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map;
-import java.util.Objects;
-
-public class Tag {
-
-    private String key;
-
-    private String value;
-
-    public Tag() {
-    }
-
-    public Tag(String kvString) {
-        Map.Entry<String, String> entry = of(kvString);
-        key = entry.getKey();
-        value = entry.getValue();
-    }
-
-    public Tag(String key, String value) {
-        this.key = key.trim();
-        this.value = value.trim();
-    }
-
-    public static Map.Entry<String, String> of(String kvString) {
-        if (kvString == null || kvString.isEmpty() || !kvString.contains("=")) {
-            throw new IllegalArgumentException("Not a key=value pair: " + kvString);
-        }
-        String[] kvArray = kvString.split("=");
-        if (kvArray.length != 2) {
-            throw new IllegalArgumentException("Not a key=value pair: " + kvString);
-        }
-        return new SimpleEntry<>(kvArray[0].trim(), kvArray[1].trim());
-    }
-
-    /**
-     * @return the key
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * @param key the key to set
-     */
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    /**
-     * @return the value
-     */
-    public String getValue() {
-        return value;
-    }
-
-    /**
-     * @param value the value to set
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Tag other = (Tag) obj;
-        if (!Objects.equals(this.key, other.key)) {
-            return false;
-        }
-        return Objects.equals(this.value, other.value);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 17 * hash + Objects.hashCode(this.key);
-        hash = 17 * hash + Objects.hashCode(this.value);
-        return hash;
-    }
-
-    public String toKVString() {
-        return new StringBuilder(key).append('=').append(value).toString();
-    }
-
-    @Override
-    public String toString() {
-        return new StringBuilder("Tag{").append(toKVString()).append('}').toString();
-    }
-}
+//package fish.payara.microprofile.metrics;
+//
+//import java.util.AbstractMap.SimpleEntry;
+//import java.util.Map;
+//import java.util.Objects;
+//
+//public class Tag extends org.eclipse.microprofile.metrics.Tag {
+//
+//    private String key;
+//
+//    private String value;
+//
+//    public Tag(String key, String value) {
+//        super(key, value);
+//        this.key = key.trim();
+//        this.value = value.trim();
+//    }
+//
+//    public static Map.Entry<String, String> of(String kvString) {
+//        if (kvString == null || kvString.isEmpty() || !kvString.contains("=")) {
+//            throw new IllegalArgumentException("Not a key=value pair: " + kvString);
+//        }
+//        String[] kvArray = kvString.split("=");
+//        if (kvArray.length != 2) {
+//            throw new IllegalArgumentException("Not a key=value pair: " + kvString);
+//        }
+//        return new SimpleEntry<>(kvArray[0].trim(), kvArray[1].trim());
+//    }
+//
+//    /**
+//     * @return the key
+//     */
+//    public String getKey() {
+//        return key;
+//    }
+//
+//    /**
+//     * @param key the key to set
+//     */
+//    public void setKey(String key) {
+//        this.key = key;
+//    }
+//
+//    /**
+//     * @return the value
+//     */
+//    public String getValue() {
+//        return value;
+//    }
+//
+//    /**
+//     * @param value the value to set
+//     */
+//    public void setValue(String value) {
+//        this.value = value;
+//    }
+//
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (this == obj) {
+//            return true;
+//        }
+//        if (obj == null) {
+//            return false;
+//        }
+//        if (getClass() != obj.getClass()) {
+//            return false;
+//        }
+//        final Tag other = (Tag) obj;
+//        if (!Objects.equals(this.key, other.key)) {
+//            return false;
+//        }
+//        return Objects.equals(this.value, other.value);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        int hash = 7;
+//        hash = 17 * hash + Objects.hashCode(this.key);
+//        hash = 17 * hash + Objects.hashCode(this.value);
+//        return hash;
+//    }
+//
+//    public String toKVString() {
+//        return new StringBuilder(key).append('=').append(value).toString();
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return new StringBuilder("Tag{").append(toKVString()).append('}').toString();
+//    }
+//}

@@ -54,17 +54,12 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-import fish.payara.microprofile.metrics.Tag;
+//import fish.payara.microprofile.metrics.Tag;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
@@ -76,7 +71,9 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
@@ -93,29 +90,11 @@ public class MetricsHelper {
         return convertToTags(getGlobalTagsString());
     }
 
-    public static Map<String, String> getGlobalTagsMap() {
-        return convertToMap(getGlobalTagsString());
-    }
-
     private static List<Tag> convertToTags(String tagsString) {
         List<Tag> tags = Collections.emptyList();
         if (tagsString != null) {
             String[] singleTags = tagsString.split(",");
-            tags = Stream.of(singleTags)
-                    .map(tag -> tag.trim())
-                    .map(tag -> new Tag(tag))
-                    .collect(toList());
-        }
-        return tags;
-    }
-
-    private static Map<String, String> convertToMap(String tagsString) {
-        Map<String, String> tags = Collections.EMPTY_MAP;
-        if (tagsString != null) {
-            String[] singleTags = tagsString.split(",");
-            tags = Arrays.stream(singleTags)
-                    .map(Tag::of)
-                    .collect(toMap(Entry::getKey, Entry::getValue));
+            tags = Arrays.asList(tagsFromString(singleTags));
         }
         return tags;
     }
@@ -204,6 +183,27 @@ public class MetricsHelper {
             metadataBuilder.withUnit(metric.unit());
         }
         return metadataBuilder.build();
+    }
+    
+    public MetricID tagsOf(AnnotatedMember<?> member) {
+        if (member.isAnnotationPresent(Metric.class)) {
+            Metric metric = member.getAnnotation(Metric.class);
+            return new MetricID(metric.name(), tagsFromString(metric.tags()));
+        }        
+        return null;
+    }
+    
+    private static Tag[] tagsFromString(String[] stringtags) {
+        Tag[] tags = new Tag[stringtags.length];
+        for (int i = 0; i < stringtags.length; i++) {
+            int splitIndex = stringtags[i].indexOf('=');
+            if (splitIndex == -1) {
+                throw new IllegalArgumentException("invalid tag: " + stringtags[i] + ", tags must be in the form key=value");
+            } else {
+                tags[i] = new Tag(stringtags[i].substring(0, splitIndex), stringtags[i].substring(splitIndex + 1));
+            }
+        }
+        return tags;
     }
 
 }

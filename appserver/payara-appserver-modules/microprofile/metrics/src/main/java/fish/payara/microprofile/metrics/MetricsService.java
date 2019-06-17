@@ -163,18 +163,17 @@ public class MetricsService implements EventListener {
      * @param metadataConfig
      */
     private void initMetadataConfig(List<MBeanMetadata> baseMetadataList, List<MBeanMetadata> vendorMetadataList, boolean isRetry) {
-        Map<String, String> globalTags = MetricsHelper.getGlobalTagsMap();
         if (!baseMetadataList.isEmpty()) {
             unresolvedBaseMetadataList = helper.registerMetadata(
                     getOrAddRegistry(BASE.getName()),
                     baseMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
         if (!vendorMetadataList.isEmpty()) {
             unresolvedVendorMetadataList = helper.registerMetadata(
                     getOrAddRegistry(VENDOR.getName()),
                     vendorMetadataList,
-                    globalTags, isRetry);
+                    isRetry);
         }
     }
 
