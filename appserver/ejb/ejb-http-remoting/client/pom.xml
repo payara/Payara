@@ -179,6 +179,7 @@
             <groupId>fish.payara.ejb.http</groupId>
             <artifactId>ejb-http-endpoint</artifactId>
             <version>${project.version}</version>
+            <classifier>tester</classifier>
             <scope>test</scope>
         </dependency>
     </dependencies>

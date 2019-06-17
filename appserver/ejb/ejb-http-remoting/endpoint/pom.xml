@@ -118,4 +118,24 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+              <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                      <id>test-jar</id> 
+                      <phase>package</phase> 
+                      <goals>
+                        <goal>jar</goal> 
+                      </goals>
+                      <configuration>
+                        <classifier>tester</classifier>
+                      </configuration>
+                    </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
