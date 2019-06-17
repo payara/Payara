@@ -163,7 +163,7 @@ public class ClientCertificateLoginModule implements LoginModule {
             for (int i = 0; i < keyStore.size(); i++) {
                 aliasNames[i] = aliases.nextElement();
                 certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i]))
-                        .getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.oidMap);
+                        .getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
             }
 
             Callback[] callbacks = new Callback[] {createChoiceCallback(certificateNames)};

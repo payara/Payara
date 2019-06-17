@@ -344,7 +344,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
                 certchain[i] = new X509CertImpl(derval[i]);
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE, "    " + certchain[i].getSubjectX500Principal()
-                            .getName(X500Principal.RFC2253, CertificateRealm.oidMap));
+                            .getName(X500Principal.RFC2253, CertificateRealm.OID_MAP));
                 }
             }
             if (logger.isLoggable(FINE)) {
@@ -356,7 +356,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
              * 
              */
             X509CertificateCredential cred = new X509CertificateCredential(certchain,
-                    certchain[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.oidMap),
+                    certchain[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.OID_MAP),
                     "default");
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding X509CertificateCredential to subject's PublicCredentials");

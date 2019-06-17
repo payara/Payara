@@ -53,7 +53,6 @@ import static java.util.Collections.list;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,8 +68,6 @@ import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-
-import sun.security.x509.X500Name;
 
 /**
  * This class contains a collection of methods used by the JASPIC implementation to interact
@@ -139,7 +136,7 @@ public class JaspicToJaasBridge {
 
         String callerPrincipalName = "";
         try {
-            callerPrincipalName = x500Principal.getName(X500Principal.RFC2253, CertificateRealm.oidMap);
+            callerPrincipalName = x500Principal.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
 
             privileged(() -> validSubject.getPublicCredentials().add(x500Principal));
 

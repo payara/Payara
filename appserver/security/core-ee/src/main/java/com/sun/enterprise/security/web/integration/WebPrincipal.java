@@ -176,7 +176,7 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
         // Use the full DN name from the certificates. This should normally be the same as 
         // context.getCallerPrincipal(), but a realm could have decided to map the name in which
         // case they will be different.
-        return certificates[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.oidMap);
+        return certificates[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
     }
 
 }
