@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.connectors.admin.cli;
 
@@ -48,8 +48,9 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -67,23 +68,28 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
-@Service(name = "flush-connection-pool")
+/**
+ * The actual command to flush a connection pool.
+ * This will flush a specified connection pool on
+ * this instance.
+ * @see FlushInstancesConnectionPool
+ */
+@Service(name = "_flush-connection-pool")
 @PerLookup
-@I18n("flush.connection.pool")
 @TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP,
     CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(value = {RuntimeType.ALL})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.POST, 
-        path="flush-connection-pool", 
+        path="_flush-connection-pool", 
         description="flush-connection-pool")
 })
-public class FlushConnectionPool implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(FlushConnectionPool.class);
+public class FlushConnectionPoolLocal implements AdminCommand {
+    
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(FlushConnectionPoolLocal.class);
 
-    @Param(name = "pool_name", primary = true)
+    @Param(name = "poolName")
     private String poolName;
 
     @Inject
@@ -153,6 +159,8 @@ public class FlushConnectionPool implements AdminCommand {
             PoolInfo poolInfo = new PoolInfo(poolName, applicationName, moduleName);
             _runtime.flushConnectionPool(poolInfo);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            
+            Logger.getLogger("org.glassfish.connectors.admin.cli").log(Level.FINE, "Flush connection pool for {0} succeeded", poolName);
         } catch (ConnectorRuntimeException e) {
             report.setMessage(localStrings.getLocalString("flush.connection.pool.fail", "Flush connection pool for {0} failed", poolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
