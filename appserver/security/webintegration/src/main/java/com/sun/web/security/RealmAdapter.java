@@ -1372,7 +1372,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     private Subject createSubjectWithCerts(X509Certificate[] certificates) {
         Subject subject = new Subject();
-
+        // Specifically not using getName() as we aren't interested with the name here, we're interested in the X500Principal itself
         subject.getPublicCredentials().add(certificates[0].getSubjectX500Principal());
         subject.getPublicCredentials().add(asList(certificates));
 
