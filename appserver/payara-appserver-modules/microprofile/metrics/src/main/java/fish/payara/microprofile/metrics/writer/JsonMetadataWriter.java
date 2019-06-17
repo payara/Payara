@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -68,7 +69,6 @@ public class JsonMetadataWriter extends JsonWriter {
     private static final String DESCRIPTION = "description";
     private static final String TYPE = "type";
     private static final String UNIT = "unit";
-    private static final String TAGS = "tags";
 
     public JsonMetadataWriter(Writer writer) {
         super(writer);
@@ -99,7 +99,6 @@ public class JsonMetadataWriter extends JsonWriter {
         payloadBuilder.add(DESCRIPTION, sanitizeMetadata(metadata.getDescription()));
         payloadBuilder.add(TYPE, sanitizeMetadata(metadata.getType()));
         payloadBuilder.add(UNIT, sanitizeMetadata(metadata.getUnit()));
-        payloadBuilder.add(TAGS, getPairFromMap(metadata.getTags()));
         return payloadBuilder.build();
     }
 
@@ -110,5 +109,14 @@ public class JsonMetadataWriter extends JsonWriter {
             return s;
         }
     }
+    
+    private String sanitizeMetadata(Optional<String> string) {
+        String held = string.orElse(EMPTY_STRING);
+        if (held.trim().isEmpty()) {
+            held = EMPTY_STRING;
+        }
+        return held;
+    }
+    
 
 }

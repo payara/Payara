@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,7 @@ import java.lang.reflect.Method;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
@@ -168,34 +169,56 @@ public class MetricsResolver {
     }
 
   public <T extends Annotation> Metadata getMetadata(String name, T annotation) {
-        Metadata metadata;
+        MetadataBuilder metadataBuilder = Metadata.builder();
+        metadataBuilder.withName(name);
         String[] tags;
         if (Counted.class.isInstance(annotation)) {
             Counted counted = (Counted) annotation;
-            metadata = new Metadata(name, counted.displayName(), counted.description(), COUNTER, counted.unit());
-            metadata.setReusable(counted.reusable());
+            metadataBuilder.withDisplayName(counted.displayName());
+            metadataBuilder.withDescription(counted.description());
+            metadataBuilder.withType(COUNTER);
+            metadataBuilder.withUnit(counted.unit());
+            if (counted.reusable()) {
+                metadataBuilder.reusable();
+            } else {
+                metadataBuilder.notReusable();
+            }
             tags = counted.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;
-            metadata = new Metadata(name, gauge.displayName(), gauge.description(), GAUGE, gauge.unit());
+            metadataBuilder.withDisplayName(gauge.displayName());
+            metadataBuilder.withDescription(gauge.description());
+            metadataBuilder.withType(GAUGE);
+            metadataBuilder.withUnit(gauge.unit());
             tags = gauge.tags();
         } else if (Metered.class.isInstance(annotation)) {
             Metered metered = (Metered) annotation;
-            metadata = new Metadata(name, metered.displayName(), metered.description(), METERED, metered.unit());
-            metadata.setReusable(metered.reusable());
+            metadataBuilder.withDisplayName(metered.displayName());
+            metadataBuilder.withDescription(metered.description());
+            metadataBuilder.withType(METERED);
+            metadataBuilder.withUnit(metered.unit());
+            if (metered.reusable()) {
+                metadataBuilder.reusable();
+            } else {
+                metadataBuilder.notReusable();
+            }
             tags = metered.tags();
         } else if (Timed.class.isInstance(annotation)) {
             Timed timed = (Timed) annotation;
-            metadata = new Metadata(name, timed.displayName(), timed.description(), TIMER, timed.unit());
-            metadata.setReusable(timed.reusable());
+            metadataBuilder.withDisplayName(timed.displayName());
+            metadataBuilder.withDescription(timed.description());
+            metadataBuilder.withType(TIMER);
+            metadataBuilder.withUnit(timed.unit());
+            if (timed.reusable()) {
+                metadataBuilder.reusable();
+            } else {
+                metadataBuilder.notReusable();
+            }
             tags = timed.tags();
         } else {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotation.getClass().getName() + "]");
         }
-        for (String tag : tags) {
-            metadata.addTag(tag);
-        }
-        return metadata;
+        return metadataBuilder.build();
     }
 
     @Vetoed

@@ -48,6 +48,7 @@ import static java.util.Arrays.asList;
 import java.util.HashSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import java.util.Optional;
 import java.util.Set;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
@@ -55,12 +56,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.eclipse.microprofile.metrics.DefaultMetadata;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MBeanMetadata extends Metadata {
+public class MBeanMetadata extends DefaultMetadata {
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadata.class.getName());
 
@@ -72,6 +74,9 @@ public class MBeanMetadata extends Metadata {
 
     @XmlTransient
     private Boolean valid;
+    
+    @XmlTransient
+    private MetricType type;
 
     private static final Set<String> SUPPORTED_UNITS
             = new HashSet<>(asList(
@@ -99,11 +104,17 @@ public class MBeanMetadata extends Metadata {
             ));
 
     public MBeanMetadata() {
-        super(null, MetricType.INVALID);
+        super(null, null, null, null, null, true);
+        
+    }
+    
+    public MBeanMetadata(Metadata metadata) {
+        this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().get(), metadata.getTypeRaw(), metadata.getUnit().get());
+        
     }
 
     public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
-        super(name, displayName, description, typeRaw, unit);
+        super(name, displayName, description, typeRaw, unit, true);
         this.mBean = mBean;
     }
 
@@ -123,20 +134,6 @@ public class MBeanMetadata extends Metadata {
         this.dynamic = dynamic;
     }
 
-    @Override
-    public String getUnit() {
-        if (isNull(super.getUnit())) {
-            setUnit(MetricUnits.NONE);
-        }
-        return super.getUnit();
-    }
-
-    public void setUnit(String unit) {
-        if (SUPPORTED_UNITS.contains(unit)) {
-            super.setUnit(unit);
-        }
-    }
-
     public boolean isValid() {
         if (valid == null) {
             valid = validateMetadata();
@@ -149,7 +146,7 @@ public class MBeanMetadata extends Metadata {
         MBeanMetadata metadata = this;
 
         if (isNull(metadata.getName())) {
-            LOGGER.log(WARNING, "'name' property not defined in {0} mbean metadata", metadata.getMBean());
+            LOGGER.log(WARNING, "'name' property not defined in " + metadata.getMBean() + " mbean metadata", new Exception());
             validationResult = false;
         }
         if (isNull(metadata.getMBean())) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -74,15 +74,16 @@ import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
-import static org.eclipse.microprofile.metrics.Metadata.GLOBAL_TAGS_VARIABLE;
+import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @ApplicationScoped
 public class MetricsHelper {
+    
+    private static final String GLOBAL_TAGS_VARIABLE = "MP_METRICS_TAGS";
 
     public static String getGlobalTagsString() {
         return System.getenv(GLOBAL_TAGS_VARIABLE);
@@ -195,20 +196,14 @@ public class MetricsHelper {
     }
 
     private Metadata metadataOf(Annotated annotated, Class<?> type, String name) {
-        Metadata metadata = new Metadata(name, MetricType.from(type));
+        MetadataBuilder metadataBuilder = Metadata.builder();
         if (annotated.isAnnotationPresent(Metric.class)) {
             Metric metric = annotated.getAnnotation(Metric.class);
-            metadata.setDescription(metric.description() == null || metric.description().trim().isEmpty() ? null
-                    : metric.description());
-            metadata.setDisplayName(metric.displayName() == null || metric.displayName().trim().isEmpty() ? null
-                    : metric.displayName());
-            metadata.setUnit(metric.unit() == null || metric.unit().trim().isEmpty() ? null
-                    : metric.unit());
-            for (String tag : metric.tags()) {
-                metadata.addTag(tag);
-            }
+            metadataBuilder.withDescription(metric.description());
+            metadataBuilder.withDisplayName(metric.displayName());
+            metadataBuilder.withUnit(metric.unit());
         }
-        return metadata;
+        return metadataBuilder.build();
     }
 
 }

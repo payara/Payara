@@ -74,6 +74,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import org.eclipse.microprofile.metrics.MetricID;
 
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
@@ -231,7 +232,7 @@ public class MetricsService implements EventListener {
         metricsSecure = null;
     }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName) throws NoSuchRegistryException {
         MetricRegistry registry = getRegistry(registryName);
         return registry.getMetrics();
     }
@@ -241,13 +242,13 @@ public class MetricsService implements EventListener {
         return registry.getMetadata();
     }
 
-    public Map<String, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName, MetricID metricName) throws NoSuchRegistryException, NoSuchMetricException {
         MetricRegistry registry = getRegistry(registryName);
-        Map<String, Metric> metricMap = registry.getMetrics();
+        Map<MetricID, Metric> metricMap = registry.getMetrics();
         if (metricMap.containsKey(metricName)) {
             return Collections.singletonMap(metricName, metricMap.get(metricName));
         } else {
-            throw new NoSuchMetricException(metricName);
+            throw new NoSuchMetricException(metricName.toString());
         }
     }
         

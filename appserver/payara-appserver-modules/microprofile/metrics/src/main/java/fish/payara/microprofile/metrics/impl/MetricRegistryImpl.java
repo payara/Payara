@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import static java.util.stream.Collectors.toMap;
 import javax.enterprise.inject.Vetoed;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -59,6 +60,7 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
 import static org.eclipse.microprofile.metrics.MetricFilter.ALL;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
@@ -66,6 +68,7 @@ import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.HISTOGRAM;
 import static org.eclipse.microprofile.metrics.MetricType.METERED;
 import static org.eclipse.microprofile.metrics.MetricType.TIMER;
+import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 
 /**
@@ -74,7 +77,7 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
 
-    private final Map<String, Metric> metricMap;
+    private final Map<MetricID, Metric> metricMap;
     private final Map<String, Metadata> metadataMap;
 
     public MetricRegistryImpl() {
@@ -84,105 +87,117 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Counter counter(String name) {
-        return addMetric(new Metadata(name, COUNTER));
+        return addMetric(Metadata.builder().withName(name).withType(COUNTER).build());
     }
 
     @Override
     public Counter counter(Metadata metadata) {
-        metadata.setType(COUNTER);
-        return addMetric(metadata);
+        return addMetric(Metadata.builder(metadata).withType(COUNTER).build());
+    }
+    
+    @Override
+    public Counter counter(String string, Tag... tags) {
+        Metadata.builder().withName(string).build();
+        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Counter counter(Metadata mtdt, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Histogram histogram(String name) {
-        return addMetric(new Metadata(name, HISTOGRAM));
+        return addMetric(Metadata.builder().withName(name).withType(HISTOGRAM).build());
     }
 
     @Override
     public Histogram histogram(Metadata metadata) {
-        metadata.setType(HISTOGRAM);
-        return addMetric(metadata);
+        return addMetric(Metadata.builder(metadata).withType(HISTOGRAM).build());
     }
 
     @Override
     public Meter meter(String name) {
-        return addMetric(new Metadata(name, METERED));
+        return addMetric(Metadata.builder().withName(name).withType(METERED).build());
     }
 
     @Override
     public Meter meter(Metadata metadata) {
-        metadata.setType(METERED);
-        return addMetric(metadata);
+        return addMetric(Metadata.builder(metadata).withType(METERED).build());
     }
 
     @Override
     public Timer timer(String name) {
-        return addMetric(new Metadata(name, TIMER));
+        return addMetric(Metadata.builder().withName(name).withType(TIMER).build());
     }
 
     @Override
     public Timer timer(Metadata metadata) {
-        metadata.setType(TIMER);
-        return addMetric(metadata);
+        return addMetric(Metadata.builder(metadata).withType(TIMER).build());
     }
 
     @Override
     public SortedSet<String> getNames() {
-        return new TreeSet<>(metricMap.keySet());
+        TreeSet<String> names = new TreeSet<>();
+        for (MetricID metricID: metricMap.keySet()) {
+            names.add(metricID.getName());
+        }
+        return names;
     }
 
     @Override
-    public SortedMap<String, Gauge> getGauges() {
+    public SortedMap<MetricID, Gauge> getGauges() {
         return getGauges(ALL);
     }
 
     @Override
-    public SortedMap<String, Gauge> getGauges(MetricFilter metricFilter) {
+    public SortedMap<MetricID, Gauge> getGauges(MetricFilter metricFilter) {
         return findMetrics(Gauge.class, metricFilter);
     }
 
     @Override
-    public SortedMap<String, Counter> getCounters() {
+    public SortedMap<MetricID, Counter> getCounters() {
         return getCounters(ALL);
     }
 
     @Override
-    public SortedMap<String, Counter> getCounters(MetricFilter metricFilter) {
+    public SortedMap<MetricID, Counter> getCounters(MetricFilter metricFilter) {
         return findMetrics(Counter.class, metricFilter);
     }
 
     @Override
-    public SortedMap<String, Histogram> getHistograms() {
+    public SortedMap<MetricID, Histogram> getHistograms() {
         return getHistograms(ALL);
     }
 
     @Override
-    public SortedMap<String, Histogram> getHistograms(MetricFilter metricFilter) {
+    public SortedMap<MetricID, Histogram> getHistograms(MetricFilter metricFilter) {
         return findMetrics(Histogram.class, metricFilter);
     }
 
     @Override
-    public SortedMap<String, Meter> getMeters() {
+    public SortedMap<MetricID, Meter> getMeters() {
         return getMeters(ALL);
     }
 
     @Override
-    public SortedMap<String, Meter> getMeters(MetricFilter metricFilter) {
+    public SortedMap<MetricID, Meter> getMeters(MetricFilter metricFilter) {
         return findMetrics(Meter.class, metricFilter);
     }
 
     @Override
-    public SortedMap<String, Timer> getTimers() {
+    public SortedMap<MetricID, Timer> getTimers() {
         return getTimers(ALL);
     }
 
     @Override
-    public SortedMap<String, Timer> getTimers(MetricFilter metricFilter) {
+    public SortedMap<MetricID, Timer> getTimers(MetricFilter metricFilter) {
         return findMetrics(Timer.class, metricFilter);
     }
 
     @Override
-    public Map<String, Metric> getMetrics() {
+    public Map<MetricID, Metric> getMetrics() {
         return new HashMap<>(metricMap);
     }
 
@@ -193,16 +208,16 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public boolean remove(String name) {
-        final Metric metric = metricMap.remove(name);
+        final Metric metric = metricMap.remove(new MetricID(name));
         metadataMap.remove(name);
         return metric != null;
     }
 
     @Override
     public void removeMatching(MetricFilter metricFilter) {
-        Iterator<Entry<String, Metric>> iterator = metricMap.entrySet().iterator();
+        Iterator<Entry<MetricID, Metric>> iterator = metricMap.entrySet().iterator();
         while (iterator.hasNext()) {
-            Entry<String, Metric> entry = iterator.next();
+            Entry<MetricID, Metric> entry = iterator.next();
             if (metricFilter.matches(entry.getKey(), entry.getValue())) {
                 remove(entry.getKey());
             }
@@ -211,18 +226,16 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
-        return register(new Metadata(name, MetricType.from(metric.getClass())), metric);
+        return register(Metadata.builder().withName(name).withType(MetricType.from(metric.getClass())).build(), metric);
     }
 
     @Deprecated
-    @Override
     public <T extends Metric> T register(String name, T metric, Metadata metadata) throws IllegalArgumentException {
-        metadata.setName(name);
-        return register(metadata, metric);
+        return register(Metadata.builder(metadata).withName(name).build(), metric);
     }
 
     @Override
-    public <T extends Metric> T register(Metadata newMetadata, T metric) throws IllegalArgumentException {
+    public <T extends Metric> T register(Metadata newMetadata, T metric, Tag... tags) throws IllegalArgumentException {
 
         String name = newMetadata.getName();
         if (name == null || name.trim().isEmpty()) {
@@ -232,8 +245,8 @@ public class MetricRegistryImpl extends MetricRegistry {
         Metadata existingMetadata = metadataMap.get(name);
 
         if (existingMetadata == null) {
-            metricMap.put(name, metric == null ? createMetricInstance(newMetadata) : metric);
-            metadataMap.put(name, metadataClone(newMetadata));
+            metricMap.put(new MetricID(name, tags), metric == null ? createMetricInstance(newMetadata) : metric);
+            metadataMap.put(name, Metadata.builder(newMetadata).build());
         } else if (existingMetadata.isReusable() || newMetadata.isReusable()) {
 
             //if existing metric declared not reusable
@@ -276,11 +289,14 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         return metric;
     }
+    
+    @Override
+    public <T extends Metric> T register(Metadata metadata, T t) throws IllegalArgumentException {
+        return register(metadata, t, new Tag[0]);
+    }
 
     private <T extends Metric> T addMetric(Metadata metadata) {
-        String name = metadata.getName();
-        register(metadata, null);
-        return (T) metricMap.get(name);
+        return register(metadata, null);
     }
 
     private <T extends Metric> T createMetricInstance(Metadata metadata) {
@@ -310,25 +326,87 @@ public class MetricRegistryImpl extends MetricRegistry {
         return (T)metric;
     }
     
+    @Deprecated
     private Metadata metadataClone(Metadata metadata) {
-        Metadata newMetadata = new Metadata(
-                metadata.getName(),
-                metadata.getDisplayName(),
-                metadata.getDescription(),
-                metadata.getTypeRaw(),
-                metadata.getUnit()
-        );
-        newMetadata.setTags(metadata.getTags());
-        newMetadata.setReusable(metadata.isReusable());
-        return newMetadata;
+        return Metadata.builder(metadata).build();
     }
 
-    private <T extends Metric> SortedMap<String, T> findMetrics(Class<T> metricClass, MetricFilter metricFilter) {
-        SortedMap<String, T> out = metricMap.entrySet().stream()
+    private <T extends Metric> SortedMap<MetricID, T> findMetrics(Class<T> metricClass, MetricFilter metricFilter) {
+        SortedMap<MetricID, T> out = metricMap.entrySet().stream()
                 .filter(e -> metricClass.isInstance(e.getValue()))
                 .filter(e -> metricFilter.matches(e.getKey(), e.getValue()))
                 .collect(toMap(Entry::getKey, e -> (T) e.getValue(), (e1, e2) -> e1, TreeMap::new));
         return Collections.unmodifiableSortedMap(out);
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(String string, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(Metadata mtdt) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ConcurrentGauge concurrentGauge(Metadata mtdt, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Histogram histogram(String string, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Histogram histogram(Metadata mtdt, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Meter meter(String string, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Meter meter(Metadata mtdt, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Timer timer(String string, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Timer timer(Metadata mtdt, Tag... tags) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean remove(MetricID mid) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SortedSet<MetricID> getMetricIDs() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter mf) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

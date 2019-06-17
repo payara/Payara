@@ -53,6 +53,7 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
@@ -97,7 +98,6 @@ public class MBeanMetadataHelper {
                 if (metricRegistry.getNames().contains(beanMetadata.getName())) {
                     continue;
                 }
-                beanMetadata.getTags().putAll(globalTags);
                 Metric type;
                 MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
                 switch (beanMetadata.getTypeRaw()) {
@@ -240,27 +240,29 @@ public class MBeanMetadataHelper {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
                 if (obj instanceof CompositeDataSupport) {
                     CompositeDataSupport compositeData = (CompositeDataSupport) obj;
+                    MetadataBuilder newMetadata = Metadata.builder(metadata);
                     for (String subAttrResolvedName : compositeData.getCompositeType().keySet()) {
                         subAttribute = subAttrResolvedName;
                         if ("description".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && metadata.getDescription() == null) {
-                            metadata.setDescription((String) compositeData.get(subAttribute));
+                            newMetadata.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && metadata.getDisplayName() == null) {
-                            metadata.setDisplayName((String) compositeData.get(subAttribute));
+                            newMetadata.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && MetricUnits.NONE.equals(metadata.getUnit())) {
-                            metadata.setUnit((String) compositeData.get(subAttribute));
+                            newMetadata.withUnit((String) compositeData.get(subAttribute));
                         }
                         if (compositeData.get(subAttribute) != null
                                 && !(compositeData.get(subAttribute) instanceof Number)) {
                             continue;
                         }
-                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
+                        //metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
                     }
+                    metadataList.add(createMetadata(new MBeanMetadata(newMetadata.build()), exp, key, attribute, subAttribute));
                 }
             } else if (isDynamicAttribute) {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
@@ -308,13 +310,13 @@ public class MBeanMetadataHelper {
                         subAttribute
                 ),
                 formatMetadata(
-                        nonNull(metadata.getDescription()) ? metadata.getDescription() : metadata.getName(),
+                        nonNull(metadata.getDescription().isPresent()) ? metadata.getDescription().get() : metadata.getName(),
                         key,
                         attribute,
                         subAttribute
                 ),
                 metadata.getTypeRaw(),
-                metadata.getUnit()
+                metadata.getUnit().get()
         );
     }
 

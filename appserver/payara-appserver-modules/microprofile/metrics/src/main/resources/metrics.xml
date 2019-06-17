@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,7 @@ holder.
         <metadata>
             <name>thread.count</name>
             <mbean>java.lang:type=Threading/ThreadCount</mbean>
-            <type>counter</type>
+            <type>gauge</type>
             <unit>none</unit>
             <displayName>Current Thread count</displayName>
             <description>Displays the current number of live threads including both daemon and non-daemon threads.</description>
@@ -75,7 +75,7 @@ holder.
         <metadata>
             <name>thread.daemon.count</name>
             <mbean>java.lang:type=Threading/DaemonThreadCount</mbean>
-            <type>counter</type>
+            <type>gauge</type>
             <unit>none</unit>
             <displayName>Daemon Thread Count</displayName>
             <description>Displays the current number of live daemon threads.</description>
@@ -83,21 +83,21 @@ holder.
         <metadata>
             <name>thread.max.count</name>
             <mbean>java.lang:type=Threading/PeakThreadCount</mbean>
-            <type>counter</type>
+            <type>gauge</type>
             <unit>none</unit>
             <displayName>Peak Thread Count</displayName>
             <description>Displays the peak live thread count since the Java virtual machine started or peak was reset. This includes daemon and non-daemon threads.</description>
         </metadata>
         <metadata>
-            <name>classloader.currentLoadedClass.count</name>
+            <name>classloader.loadedClasses.count</name>
             <mbean>java.lang:type=ClassLoading/LoadedClassCount</mbean>
-            <type>counter</type>
+            <type>gauge</type>
             <unit>none</unit>
             <displayName>Currently Loaded Class Count</displayName>
             <description>Displays the number of classes that are currently loaded in the JVM.</description>
         </metadata>
         <metadata>
-            <name>classloader.totalLoadedClass.count</name>
+            <name>classloader.loadedClasses.total.count</name>
             <mbean>java.lang:type=ClassLoading/TotalLoadedClassCount</mbean>
             <type>counter</type>
             <unit>none</unit>
@@ -105,7 +105,7 @@ holder.
             <description>Displays the total number of classes that have been loaded since the JVM has started execution.</description>
         </metadata>
         <metadata>
-            <name>classloader.totalUnloadedClass.count</name>
+            <name>classloader.unloadedClasses.total.count</name>
             <mbean>java.lang:type=ClassLoading/UnloadedClassCount</mbean>
             <type>counter</type>
             <unit>none</unit>
@@ -137,7 +137,7 @@ holder.
             <description>Displays the uptime of the JVM in milliseconds.</description>
         </metadata>
         <metadata>
-            <name>gc.%s.count</name>
+            <name>gc.%s.total</name>
             <mbean>java.lang:type=GarbageCollector,name=%s/CollectionCount</mbean>
             <dynamic>false</dynamic>
             <type>counter</type>

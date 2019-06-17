@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,9 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
 
-public class MBeanCounterImpl implements Counter {
-
-    private static final String ERROR_MESSAGE = "Unsupported method, Counter returns value using mbean expression %s";
+public class MBeanCounterImpl implements Gauge<Long> {
 
     private final MBeanExpression mBean;
 
@@ -53,28 +51,7 @@ public class MBeanCounterImpl implements Counter {
     }
 
     @Override
-    public void inc() {
-        throw new IllegalStateException(String.format(ERROR_MESSAGE, mBean));
-    }
-
-    @Override
-    public void inc(long n) {
-        throw new IllegalStateException(String.format(ERROR_MESSAGE, mBean));
-    }
-
-    @Override
-    public void dec() {
-        throw new IllegalStateException(String.format(ERROR_MESSAGE, mBean));
-    }
-
-    @Override
-    public void dec(long n) {
-        throw new IllegalStateException(String.format(ERROR_MESSAGE, mBean));
-    }
-
-    @Override
-    public long getCount() {      
-        return mBean.getNumberValue()
-                .longValue();
+    public Long getValue() {      
+        return mBean.getNumberValue().longValue();
     }
 }

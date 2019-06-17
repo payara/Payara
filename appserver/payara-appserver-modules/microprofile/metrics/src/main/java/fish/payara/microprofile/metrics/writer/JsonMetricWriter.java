@@ -64,6 +64,7 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
@@ -97,16 +98,16 @@ public class JsonMetricWriter extends JsonWriter {
 
     @Override
     protected JsonObjectBuilder getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
-        return getJsonFromMetrics(service.getMetricsAsMap(registryName, metricName));
+        return getJsonFromMetrics(service.getMetricsAsMap(registryName, new MetricID(metricName)));
     }
 
-    private JsonObjectBuilder getJsonFromMetrics(Map<String, Metric> metricMap) {
+    private JsonObjectBuilder getJsonFromMetrics(Map<MetricID, Metric> metricMap) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
-        for (Map.Entry<String, Metric> entry : metricMap.entrySet()) {
-            String metricName = entry.getKey();
+        for (Map.Entry<MetricID, Metric> entry : metricMap.entrySet()) {
+            String metricIDString = entry.getKey().toString();
             Metric metric = entry.getValue();
             if (Counter.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, ((Counter) metric).getCount());
+                payloadBuilder.add(metricIDString, ((Counter) metric).getCount());
             } else if (Gauge.class.isInstance(metric)) {
                 Number value;
                 Object gaugeValue;
@@ -117,19 +118,19 @@ public class JsonMetricWriter extends JsonWriter {
                     continue;
                 }
                 if (!Number.class.isInstance(gaugeValue)) {
-                    LOGGER.log(Level.FINER, "Skipping JSON output for Gauge: {0} of type {1}", new Object[]{metricName, gaugeValue.getClass()});
+                    LOGGER.log(Level.FINER, "Skipping JSON output for Gauge: {0} of type {1}", new Object[]{metricIDString, gaugeValue.getClass()});
                     continue;
                 }
                 value = (Number) gaugeValue;
-                addValueToJsonObject(payloadBuilder, metricName, value);
+                addValueToJsonObject(payloadBuilder, metricIDString, value);
             } else if (Histogram.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getHistogramNumbers((Histogram) metric)));
+                payloadBuilder.add(metricIDString, getJsonFromMap(getHistogramNumbers((Histogram) metric)));
             } else if (Meter.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getMeterNumbers((Meter) metric)));
+                payloadBuilder.add(metricIDString, getJsonFromMap(getMeterNumbers((Meter) metric)));
             } else if (Timer.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getTimerNumbers((Timer) metric)));
+                payloadBuilder.add(metricIDString, getJsonFromMap(getTimerNumbers((Timer) metric)));
             } else {
-                LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricName});
+                LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
             }
         }
         return payloadBuilder;
