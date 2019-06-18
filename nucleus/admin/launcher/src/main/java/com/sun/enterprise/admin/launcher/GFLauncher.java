@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
  */
 public abstract class GFLauncher {
 
-    private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile(".* version \"([^\"]+)\".*");
+    private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile(".* version \"([^\"\\-]+)(-.*)?\".*");
     private final List<String> commandLine = new ArrayList<String>();
     private final List<String> jvmOptionsList = new ArrayList<String>();
     private final GFLauncherInfo info;
