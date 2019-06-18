@@ -178,7 +178,8 @@ public class EjbOverHttpResource {
             if (bangIndex > 0) {
                 String className = jndiName.substring(bangIndex + 1);
                 try {
-                    return new LookupResponse(Class.forName(className));
+                    return new LookupResponse(
+                            Class.forName(className, false, Thread.currentThread().getContextClassLoader()));
                 } catch (ClassNotFoundException ex) {
                     NamingException nex = new NamingException("Unknown class: "+className);
                     nex.initCause(ex);

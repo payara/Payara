@@ -43,7 +43,6 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_S
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.security.AccessController.doPrivileged;
 
-import java.lang.reflect.UndeclaredThrowableException;
 import java.security.PrivilegedAction;
 import java.util.Map;
 

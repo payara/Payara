@@ -167,11 +167,12 @@ class RemoteEJBContext implements Context {
             LookupDiscoveryServiceImpl lookupDiscovery = new LookupDiscoveryServiceImpl();
             LookupDiscoveryResponse discovery = lookupDiscovery.discover(client, root);
 
-            if (discovery.isV1target()) {
+            Integer version = getVersion(discovery);
+            if (discovery.isV1target() && (version == null || version.intValue() == 1)) {
                 logger.info("Discovered v1 at " + discovery.getV1lookup().getUri());
                 return new LookupV1(environment, client, discovery.getV1lookup());
             }
-            if (discovery.isV0target()) {
+            if (discovery.isV0target() && (version == null || version.intValue() == 0)) {
                 logger.info("Discovered v0 at " + discovery.getV0lookup().getUri());
                 return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
             }
@@ -179,7 +180,18 @@ class RemoteEJBContext implements Context {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw newNamingException("Cannot access lookup endpoint at "+root, e);
         }
+    }
 
+    private Integer getVersion(LookupDiscoveryResponse discovery) {
+        Object versionSetting = environment.get(RemoteEJBContextFactory.JAXRS_CLIENT_VERSION);
+        if (versionSetting == null) {
+            return null;
+        }
+        int version = versionSetting instanceof String
+                ? Integer.parseInt(versionSetting.toString())
+                : ((Number) versionSetting).intValue();
+        return version == 1 && discovery.isV1target()
+                || version == 0 && discovery.isV0target() ?  version : null;
     }
 
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {

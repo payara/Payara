@@ -45,7 +45,6 @@ import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import javax.json.bind.serializer.DeserializationContext;
 import javax.json.bind.serializer.JsonbDeserializer;
 import javax.json.stream.JsonParser;
-import javax.ws.rs.core.GenericType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 

@@ -62,7 +62,6 @@ import javax.json.bind.annotation.JsonbProperty;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -268,13 +267,10 @@ public class RemoteEJBContextTest {
     private static URI serverLocation;
 
     @Parameters(name = "{0}")
-    public static Iterable<String> mediaTypes() {
+    public static Iterable<String> serializationTypes() {
         return Arrays.asList(SerializationType.values()).stream().map(item -> item.name()).collect(Collectors.toList());
     }
 
-    /**
-     * The {@link MediaType} currently tested
-     */
     @Parameter
     public String serializationType;
     public String mediaType;
