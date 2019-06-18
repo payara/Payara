@@ -42,9 +42,11 @@ package fish.payara.ejb.http.protocol.rs;
 
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 
+import javax.json.Json;
 import javax.json.bind.serializer.DeserializationContext;
 import javax.json.bind.serializer.JsonbDeserializer;
 import javax.json.stream.JsonParser;
+import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -59,6 +61,7 @@ public class InvokeMethodResponseDeserializer implements JsonbDeserializer<Invok
     public InvokeMethodResponse deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
         String type = null;
         Object result = null;
+        boolean resultPresent = false;
         while (parser.hasNext()) {
             JsonParser.Event event = parser.next();
             if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("type")) {
@@ -67,7 +70,12 @@ public class InvokeMethodResponseDeserializer implements JsonbDeserializer<Invok
             } else if (event == JsonParser.Event.KEY_NAME && parser.getString().equals("result")) {
                 Type resultClass = determineClass(type);
                 result = ctx.deserialize(resultClass, parser);
+                resultPresent = true;
             }
+        }
+        if (!resultPresent) {
+            JsonParser nullContent = Json.createParser(new StringReader("null"));
+            result = ctx.deserialize(determineClass(type), nullContent);
         }
         return new InvokeMethodResponse(result);
     }
