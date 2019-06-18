@@ -324,8 +324,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {
-        Response response = tokenController.getTokens(configuration, refreshToken);
-        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));//Json.createReader(new StringReader(tokensBody)).readObject();
+        Response response = tokenController.refreshTokens(configuration, refreshToken);
+        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
 
         if (response.getStatus() == Response.Status.OK.getStatusCode()) {
             // Successful Token Response
