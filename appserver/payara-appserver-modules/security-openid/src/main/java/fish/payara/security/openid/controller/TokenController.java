@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import static fish.payara.security.openid.OpenIdUtil.DEFAULT_JWT_SIGNED_ALGORITHM;
+import fish.payara.security.openid.api.IdentityToken;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_ID;
 import static fish.payara.security.openid.api.OpenIdConstant.CLIENT_SECRET;
@@ -173,6 +174,21 @@ public class TokenController {
             nonceController.remove(configuration, httpContext);
         }
 
+        return claimsSet.getClaims();
+    }
+
+    /**
+     * Validate Id Token received from Successful Refresh Response.
+     *
+     * @param previousIdToken
+     * @param newIdToken
+     * @param httpContext
+     * @param configuration
+     * @return JWT Claims
+     */
+    public Map<String, Object> validateRefreshedIdToken(IdentityToken previousIdToken, IdentityTokenImpl newIdToken, HttpMessageContext httpContext, OpenIdConfiguration configuration) {
+        JWTClaimsSetVerifier jwtVerifier = new RefreshedIdTokenClaimsSetVerifier(previousIdToken, configuration);
+        JWTClaimsSet claimsSet = validateBearerToken(newIdToken.getTokenJWT(), jwtVerifier, configuration);
         return claimsSet.getClaims();
     }
 

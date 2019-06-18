@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -39,70 +39,44 @@
  */
 package fish.payara.security.openid.api;
 
-import java.util.Map;
+import static java.util.Arrays.asList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import static java.util.Objects.isNull;
 
 /**
- * The Access Token is used by an application to access protected resources.
  *
- * @author jGauravGupta
+ * @author Gaurav Gupta
  */
-public interface AccessToken {
+public class Scope extends LinkedHashSet<String> {
 
-    /**
-     * The access token
-     *
-     * @return
-     */
-    public String getToken();
-
-    /**
-     * Gets the access token's claims that was received from the OpenId Connect
-     * provider
-     *
-     * @return
-     */
-    Map<String, Object> getClaims();
-
-    /**
-     * Gets the identity token's claim based on requested key type.
-     *
-     * @param key
-     * @return
-     */
-    Object getClaim(String key);
-
-    /**
-     * Optional. Expiration time of the Access Token in seconds since the
-     * response was generated.
-     *
-     * @return
-     */
-    Long getExpirationTime();
-
-    /**
-     * Checks if the Access Token is expired, taking into account the min
-     * validity time configured by the user.
-     *
-     * @return {@code true}, if access token is expired or it will be expired in
-     * the next X milliseconds configured by user.
-     */
-    boolean isExpired();
-
-    /**
-     * Optional. Scope of the Access Token.
-     *
-     * @return
-     */
-    Scope getScope();
-
-    /**
-     * Type of the Access Token.
-     * @return
-     */
-    public Type getType();
-
-    enum Type {
-        BEARER, // Json Web Token (JWT) format
-        MAC; // Message Authentication Code format
+    public Scope() {
     }
+
+    public Scope(final List<String> values) {
+        addAll(values);
+    }
+
+    public static Scope parse(final String scopeValue) {
+
+        if (isNull(scopeValue)) {
+            return null;
+        }
+
+        Scope scope = new Scope();
+
+        if (scopeValue.trim().isEmpty()) {
+            return scope;
+        }
+
+        // Multiple scope values may be used by creating a space delimited
+        scope.addAll(asList(scopeValue.split(" ")));
+        return scope;
+    }
+
+    @Override
+    public String toString() {
+        return String.join(" ", this);
+    }
+
 }

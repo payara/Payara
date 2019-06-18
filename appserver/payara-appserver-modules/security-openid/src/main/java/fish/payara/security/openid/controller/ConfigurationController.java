@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -70,6 +70,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_ENDPO
 import static fish.payara.security.openid.api.OpenIdConstant.HYBRID_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.IMPLICIT_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.JWKS_URI;
+import static fish.payara.security.openid.api.OpenIdConstant.OFFLINE_ACCESS_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.OPENID_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.USERINFO_ENDPOINT;

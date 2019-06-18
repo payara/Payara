@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -299,7 +299,7 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpServletResponse response,
             HttpMessageContext httpContext) throws AuthenticationException {
 
-        if (isAccessTokenExpired()) {
+        if (this.context.getAccessToken().isExpired()) {
             // Access Token expired
             LOGGER.fine("Access Token is expired. Request new Access Token with Refresh Token.");
 
@@ -321,20 +321,6 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
         return SUCCESS;
 
-    }
-
-    /**
-     * Checks if the Access Token is expired, taking into account the min
-     * validity time configured by the user.
-     *
-     * @see OpenIdAuthenticationDefinition2#tokenMinValidity()
-     * @see OpenIdAuthenticationDefinition2#OPENID_MP_TOKEN_MIN_VALIDITY
-     * @return {@code true}, if token is expired or it will be expired in the
-     * next X millisecondes configured by user.
-     */
-    private boolean isAccessTokenExpired() {
-        Date exp = (Date) this.context.getAccessToken().getClaim("exp");
-        return System.currentTimeMillis() + configuration.getTokenMinValidity() > exp.getTime();
     }
 
     private AuthenticationStatus refreshTokens(HttpMessageContext httpContext, RefreshToken refreshToken) {

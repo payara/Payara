@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -216,12 +216,12 @@ public class AzureOpenIdExtension extends OpenIdExtension {
 
             @Override
             public boolean tokenAutoRefresh() {
-                return false; // TODO check if "true" is working with Azure
+                return azureDefinition.tokenAutoRefresh();
             }
 
             @Override
             public int tokenMinValidity() {
-                return 0;
+                return azureDefinition.tokenMinValidity();
             }
         };
     }

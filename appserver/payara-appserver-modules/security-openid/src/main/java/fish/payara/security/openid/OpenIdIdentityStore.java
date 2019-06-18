@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -88,18 +88,17 @@ public class OpenIdIdentityStore implements IdentityStore {
         
         Algorithm idTokenAlgorithm = idToken.getTokenJWT().getHeader().getAlgorithm();
         
-        Principal userPrincipal = httpContext.getRequest().getUserPrincipal();
-
-        if (isNull(userPrincipal)) {
-            // Initial validation request (3)
-            // On re-authentication (refresh of tokens), the user principal is already set
-
-            Map<String, Object> idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
-            if (idToken.isEncrypted()) {
-                idToken.setClaims(idTokenClaims);
-            }
-            context.setIdentityToken(idToken);
+        Map<String, Object> idTokenClaims;
+        if (isNull(context.getIdentityToken())) {
+            idTokenClaims = tokenController.validateIdToken(idToken, httpContext, configuration);
+        } else {
+            // If an ID Token is returned as a result of a token refresh request
+            idTokenClaims = tokenController.validateRefreshedIdToken(context.getIdentityToken(), idToken, httpContext, configuration);
         }
+        if (idToken.isEncrypted()) {
+            idToken.setClaims(idTokenClaims);
+        }
+        context.setIdentityToken(idToken);
 
         AccessTokenImpl accessToken = (AccessTokenImpl) credential.getAccessToken();
         if (nonNull(accessToken)) {
