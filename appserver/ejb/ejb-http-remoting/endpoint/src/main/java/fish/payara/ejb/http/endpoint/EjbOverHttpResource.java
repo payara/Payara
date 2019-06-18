@@ -41,11 +41,21 @@ package fish.payara.ejb.http.endpoint;
 
 import static java.util.Arrays.asList;
 
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.bind.JsonbBuilder;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.ws.rs.Consumes;
@@ -144,7 +154,7 @@ public class EjbOverHttpResource {
     @Produces(MediaTypes.JAVA_OBJECT)
     @Consumes(MediaTypes.JAVA_OBJECT)
     public Response invokeJavaSerilaization(InvokeMethodRequest body) {
-        return invoke(body, MediaTypes.JAVA_OBJECT);
+        return invoke(body, MediaTypes.JAVA_OBJECT, (type, result) -> result);
     }
 
     @POST
@@ -152,15 +162,28 @@ public class EjbOverHttpResource {
     @Produces(MediaTypes.JSON)
     @Consumes(MediaTypes.JSON)
     public Response invokeJsonb(InvokeMethodRequest body) {
-        return invoke(body, MediaTypes.JSON);
+        return invoke(body, MediaTypes.JSON, this::serializeToJsonb);
     }
 
-    private Response invoke(InvokeMethodRequest body, String mediaType) {
+    private Reader serializeToJsonb(Type returnType, InvokeMethodResponse result) {
+        // this is on the edge of JSON-B capabilities, combined with the fact that JAX-RS serialization would run outside the classloaders
+        // that contain the class definitions.
+        StringWriter output = new StringWriter();
+        output.append("{\"type\":\"").append(result.type).append("\"");
+        if (result != null) {
+            output.append(",\"result\":");
+            JsonbBuilder.create().toJson(result.result, returnType, output);
+        }
+        output.append("}");
+        return new StringReader(output.toString());
+    }
+
+    private Response invoke(InvokeMethodRequest body, String mediaType, BiFunction<Type, InvokeMethodResponse, Object> resultSerializer) {
         try {
             return Response
                     .status(Status.OK)
                     .type(mediaType)
-                    .entity(doInvoke(body))
+                    .entity(doInvoke(body, resultSerializer))
                     .build();
         } catch (Exception e) {
             return Response
@@ -192,7 +215,7 @@ public class EjbOverHttpResource {
         });
     }
 
-    private InvokeMethodResponse doInvoke(InvokeMethodRequest request) throws Exception {
+    private Object doInvoke(InvokeMethodRequest request, BiFunction<Type,InvokeMethodResponse,Object> resultMapper) throws Exception {
         return excuteInAppContext(request.jndiName, ejb -> {
             // Authenticates the caller and if successful sets the security context
             // *for the outgoing EJB call*. In other words, the security context for this
@@ -203,9 +226,11 @@ public class EjbOverHttpResource {
             Class<?>[] argTypes = toClasses(request.argTypes);
             Class<?>[] argActualTypes = toClasses(request.argActualTypes);
             Method method = findBusinessMethodDeclaration(ejb, request.method, argTypes);
-            return new InvokeMethodResponse(method.invoke(ejb,
+            Object result = method.invoke(ejb,
                     request.argDeserializer.deserialise(request.argValues, method, argActualTypes,
-                            Thread.currentThread().getContextClassLoader())));
+                            Thread.currentThread().getContextClassLoader()));
+
+            return resultMapper.apply(method.getGenericReturnType(), new InvokeMethodResponse(result));
         });
     }
 
