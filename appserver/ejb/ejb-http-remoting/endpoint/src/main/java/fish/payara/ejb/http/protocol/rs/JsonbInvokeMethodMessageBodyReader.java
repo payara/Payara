@@ -42,6 +42,8 @@ package fish.payara.ejb.http.protocol.rs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import javax.json.Json;
@@ -99,7 +101,7 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
                     argTypeNames,
                     argActualTypeNames,
                     json.get("argValues"),
-                    (args, argTypes, classloader) -> toObjects(argTypes, args));
+                    (args, method, argActualTypes, classloader) -> toObjects(method, argActualTypes, args));
         }
     }
 
@@ -110,13 +112,16 @@ public class JsonbInvokeMethodMessageBodyReader implements MessageBodyReader<Inv
     /**
      * Convert JSON encoded method parameter values to their object instances 
      */
-    private static Object[] toObjects(Type[] argTypes, Object encodedArgValues) {
+    private static Object[] toObjects(Method invoked, Type[] argActualTypes, Object encodedArgValues) {
         try {
-            Object[] argValues = new Object[argTypes.length];
+            Object[] argValues = new Object[argActualTypes.length];
+            Type[] argFormalTypes = invoked.getGenericParameterTypes();
             if (argValues.length > 0) {
                 JsonArray jsonArgValues = (JsonArray) encodedArgValues;
                 for (int i = 0; i < jsonArgValues.size(); i++) {
-                    argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+                    Type argFormalType = argFormalTypes[i];
+                    Type argType = argFormalType instanceof ParameterizedType ? argFormalType : argActualTypes[i];
+                    argValues[i] =  toObject(jsonArgValues.get(i), argType);
                 }
             }
             return argValues;

@@ -204,7 +204,7 @@ public class EjbOverHttpResource {
             Class<?>[] argActualTypes = toClasses(request.argActualTypes);
             Method method = findBusinessMethodDeclaration(ejb, request.method, argTypes);
             return new InvokeMethodResponse(method.invoke(ejb,
-                    request.argDeserializer.deserialise(request.argValues, argActualTypes,
+                    request.argDeserializer.deserialise(request.argValues, method, argActualTypes,
                             Thread.currentThread().getContextClassLoader())));
         });
     }

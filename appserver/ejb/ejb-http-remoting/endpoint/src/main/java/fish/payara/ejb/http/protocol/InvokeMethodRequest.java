@@ -42,6 +42,7 @@ package fish.payara.ejb.http.protocol;
 import javax.json.bind.annotation.JsonbProperty;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * Invoke a EJB method.
@@ -94,9 +95,10 @@ public class InvokeMethodRequest implements Serializable {
          * 
          * @param args           the argument as send in {@link InvokeMethodRequest}
          * @param argActualTypes the actual {@link Class} types of the arguments as send in {@link InvokeMethodRequest}
+         * @param invoked        the {@link Method} that should be invoked with the arguments
          * @param classLoader    the {@link ClassLoader} to use to load further classes if needed.
          * @return The arguments as they should be passed to the {@link Method} invoked
          */
-        Object[] deserialise(Object args, Class<?>[] argActualTypes, ClassLoader classLoader);
+        Object[] deserialise(Object args, Method invoked, Type[] argActualTypes, ClassLoader classLoader);
     }
 }

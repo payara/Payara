@@ -83,7 +83,7 @@ public class ObjectStreamInvokeMethodMessageBodyReader implements MessageBodyRea
             throws IOException, WebApplicationException {
         try {
             InvokeMethodRequest request = (InvokeMethodRequest) new ObjectInputStream(entityStream).readObject();
-            request.argDeserializer = (args, types, classloader) -> {
+            request.argDeserializer = (args, method, types, classloader) -> {
                 try (ObjectInputStream ois = new ClassLoaderObjectInputStream(classloader,
                         new ByteArrayInputStream((byte[]) args))) {
                     return (Object[]) ois.readObject();
