@@ -55,7 +55,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
@@ -267,19 +266,19 @@ public class RemoteEJBContextTest {
     private static URI serverLocation;
 
     @Parameters(name = "{0}")
-    public static Iterable<String> serializationTypes() {
-        return Arrays.asList(SerializationType.values()).stream().map(item -> item.name()).collect(Collectors.toList());
+    public static Iterable<SerializationType> serializationTypes() {
+        return Arrays.asList(SerializationType.values());
     }
 
     @Parameter
-    public String serializationType;
+    public SerializationType serializationType;
     public String mediaType;
 
     private Context context;
 
     @Before
     public void setupContext() {
-        mediaType = SerializationType.valueOf(serializationType).getMediaType();
+        mediaType = serializationType.getMediaType();
         Hashtable<String, Object> environment = new Hashtable<>();
         environment.put(Context.PROVIDER_URL, serverLocation.toString());
         environment.put(RemoteEJBContextFactory.JAXRS_CLIENT_SERIALIZATION, serializationType);
@@ -322,11 +321,11 @@ public class RemoteEJBContextTest {
         RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
         try {
             CustomNonSerializableType result = bean.failJavaReturnType();
-            assertEquals(SerializationType.JSON.toString(), serializationType);
+            assertEquals(SerializationType.JSON, serializationType);
             assertNotNull(result);
             assertEquals("Only works in JSONB", result.value);
         } catch (UndeclaredThrowableException ex) {
-            assertEquals(SerializationType.JAVA.toString(), serializationType);
+            assertEquals(SerializationType.JAVA, serializationType);
             assertSame(NotSerializableException.class, ex.getUndeclaredThrowable().getClass());
             assertEquals("fish.payara.ejb.http.client.RemoteEJBContextTest$CustomNonSerializableType", ex.getUndeclaredThrowable().getMessage());
         }
@@ -337,10 +336,10 @@ public class RemoteEJBContextTest {
         RemoteBean bean = (RemoteBean) context.lookup("java:global/myapp/RemoteBean");
         try {
             boolean result = bean.failJavaArgumentType(new CustomNonSerializableType());
-            assertEquals(SerializationType.JSON.toString(), serializationType);
+            assertEquals(SerializationType.JSON, serializationType);
             assertTrue(result);
         } catch (UndeclaredThrowableException ex) {
-            assertEquals(SerializationType.JAVA.toString(), serializationType);
+            assertEquals(SerializationType.JAVA, serializationType);
             assertSame(NotSerializableException.class, ex.getUndeclaredThrowable().getClass());
             assertEquals("fish.payara.ejb.http.client.RemoteEJBContextTest$CustomNonSerializableType", ex.getUndeclaredThrowable().getMessage());
         }
@@ -359,11 +358,11 @@ public class RemoteEJBContextTest {
         assertEquals(3, result.get(0).size());
         assertEquals(asList("a", "b", "c"), result.get(0));
         assertEquals(ArrayList.class, result.getClass());
-        if (serializationType.equalsIgnoreCase(SerializationType.JAVA.toString())) {
+        if (serializationType == SerializationType.JAVA) {
             // java serialisation preserves the exact types
             assertSame(LinkedList.class, result.get(0).getClass());
         }
-        if (serializationType.equalsIgnoreCase(SerializationType.JSON.toString())) {
+        if (serializationType == SerializationType.JSON) {
             // while JSONB only can reconstruct what is in the type signatures
             // we do preserve the exact non generic type of the result (ArrayList) but not the type of the element
             assertNotSame(LinkedList.class, result.get(0).getClass());

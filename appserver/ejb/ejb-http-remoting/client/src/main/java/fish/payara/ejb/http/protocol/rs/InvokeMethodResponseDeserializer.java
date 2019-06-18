@@ -42,11 +42,10 @@ package fish.payara.ejb.http.protocol.rs;
 
 import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 
-import javax.json.Json;
+import javax.json.bind.JsonbBuilder;
 import javax.json.bind.serializer.DeserializationContext;
 import javax.json.bind.serializer.JsonbDeserializer;
 import javax.json.stream.JsonParser;
-import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -74,8 +73,8 @@ public class InvokeMethodResponseDeserializer implements JsonbDeserializer<Invok
             }
         }
         if (!resultPresent) {
-            JsonParser nullContent = Json.createParser(new StringReader("null"));
-            result = ctx.deserialize(determineClass(type), nullContent);
+            // no result means null. But there's no way to pass that to Yasson's ctx, as it only expects its own parser
+            result = JsonbBuilder.create().fromJson("null", determineClass(type));
         }
         return new InvokeMethodResponse(result);
     }
