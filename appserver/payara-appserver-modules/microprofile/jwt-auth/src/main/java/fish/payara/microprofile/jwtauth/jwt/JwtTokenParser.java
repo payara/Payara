@@ -95,7 +95,7 @@ public class JwtTokenParser {
     
     public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
         if(signedJWT == null){
-            signedJWT = parse(rawToken);
+            parse(rawToken);
         }
 
         // MP-JWT 1.0 4.1 typ
