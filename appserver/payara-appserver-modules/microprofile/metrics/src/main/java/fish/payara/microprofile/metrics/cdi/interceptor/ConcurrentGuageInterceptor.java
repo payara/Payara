@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,34 +40,34 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
+import fish.payara.microprofile.metrics.cdi.MetricsResolver;
+import fish.payara.microprofile.metrics.impl.ConcurrentGaugeImpl;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 
-@Timed
+@ConcurrentGauge
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public class TimedInterceptor extends AbstractInterceptor {
+public class ConcurrentGuageInterceptor extends AbstractInterceptor {
 
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        MetricID metricID = resolver.timed(bean.getBeanClass(), element).metricID();
-        Timer timer = (Timer) registry.getMetrics().get(metricID);
-        if (timer == null) {
-            throw new IllegalStateException("No timer with name [" + metricID.getName() + "] found in registry [" + registry + "]");
+        MetricsResolver.Of<ConcurrentGauge> counted = resolver.concurrentGauge(bean.getBeanClass(), element);
+        ConcurrentGaugeImpl counter = (ConcurrentGaugeImpl) registry.getMetrics().get(counted.metricID());
+        if (counter == null) {
+            throw new IllegalStateException("No concurrent gauge with name [" + counted.metricName() + "] found in registry [" + registry + "]");
         }
 
-        Timer.Context time = timer.time();
+        counter.inc();
         try {
             return context.proceed();
         } finally {
-            time.stop();
+            counter.dec();
         }
     }
 

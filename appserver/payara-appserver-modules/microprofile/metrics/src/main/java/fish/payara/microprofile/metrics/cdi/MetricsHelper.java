@@ -65,6 +65,7 @@ import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -150,14 +151,15 @@ public class MetricsHelper {
 
     public Metadata metadataOf(InjectionPoint ip, Class<?> type) {
         Annotated annotated = ip.getAnnotated();
-        String name = metricNameOf(ip);
-        return metadataOf(annotated, type, name);
+        return metadataOf(annotated, type, ip.getMember().getDeclaringClass());
     }
 
     public Metadata metadataOf(AnnotatedMember<?> member) {
         String typeName = member.getBaseType().getTypeName();
         if (typeName.startsWith(Gauge.class.getName())) {
             return metadataOf(member, Gauge.class);
+        } else if (typeName.startsWith(ConcurrentGauge.class.getName())) {
+            return metadataOf(member, ConcurrentGauge.class);
         } else if (typeName.startsWith(Counter.class.getName())) {
             return metadataOf(member, Counter.class);
         } else if (typeName.startsWith(Meter.class.getName())) {
@@ -171,29 +173,55 @@ public class MetricsHelper {
     }
 
     private Metadata metadataOf(AnnotatedMember<?> member, Class<?> type) {
-        return metadataOf(member, type, metricNameOf(member));
+        return metadataOf(member, type, member.getJavaMember().getDeclaringClass());
     }
 
-    private Metadata metadataOf(Annotated annotated, Class<?> type, String name) {
+    private Metadata metadataOf(Annotated annotated, Class<?> type, Class<?> baseClass) {
         MetadataBuilder metadataBuilder = Metadata.builder();
-        if (annotated.isAnnotationPresent(Metric.class)) {
-            Metric metric = annotated.getAnnotation(Metric.class);
-            metadataBuilder.withDescription(metric.description());
-            metadataBuilder.withDisplayName(metric.displayName());
-            metadataBuilder.withUnit(metric.unit());
+        Metric metric = annotated.getAnnotation(Metric.class);
+        metadataBuilder.withDescription(metric.description());
+        metadataBuilder.withDisplayName(metric.displayName());
+        metadataBuilder.withUnit(metric.unit());
+        if (metric.absolute()) {
+            metadataBuilder.withName(metric.name());
+        } else {
+            metadataBuilder.withName(baseClass.getCanonicalName() + "." + metric.name());
         }
         return metadataBuilder.build();
     }
     
-    public MetricID tagsOf(AnnotatedMember<?> member) {
+    public MetricID metricIDof(InjectionPoint ip) {
+        Annotated annotated = ip.getAnnotated();
+        if (annotated instanceof AnnotatedMember) {
+            return metricIDof((AnnotatedMember<?>) annotated, ip.getMember().getDeclaringClass());
+        } else if (annotated instanceof AnnotatedParameter) {
+            return metricIDof((AnnotatedParameter<?>) annotated, ip.getMember().getDeclaringClass());
+        } else {
+            throw new IllegalArgumentException("Unable to retrieve metric name for injection point [" + ip + "], only members and parameters are supported");
+        }
+    }
+    
+    public MetricID metricIDof(Annotated member, Class baseClass) {
+        if (member.isAnnotationPresent(Metric.class)) {
+            Metric metric = member.getAnnotation(Metric.class);
+            if (metric.absolute()) {
+                return new MetricID(metric.name(), tagsFromString(metric.tags()));
+            } else {
+                return new MetricID(baseClass + "." + metric.name(), tagsFromString(metric.tags()));
+            }
+        } 
+        return null;
+    }
+    
+   /*public MetricID metricIDof(AnnotatedMember<?> member) {
         if (member.isAnnotationPresent(Metric.class)) {
             Metric metric = member.getAnnotation(Metric.class);
             return new MetricID(metric.name(), tagsFromString(metric.tags()));
         }        
         return null;
-    }
+    }*/
     
-    private static Tag[] tagsFromString(String[] stringtags) {
+    public static Tag[] tagsFromString(String[] stringtags) {
         Tag[] tags = new Tag[stringtags.length];
         for (int i = 0; i < stringtags.length; i++) {
             int splitIndex = stringtags[i].indexOf('=');

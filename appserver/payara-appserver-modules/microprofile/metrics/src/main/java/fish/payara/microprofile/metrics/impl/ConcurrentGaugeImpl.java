@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -36,39 +36,69 @@
  *     and therefore, elected the GPL Version 2 license, then the option applies
  *     only if the new code is made subject to such option by the copyright
  *     holder.
+ *
+ * *****************************************************************************
+ * Copyright 2010-2013 Coda Hale and Yammer, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package fish.payara.microprofile.metrics.cdi.interceptor;
+package fish.payara.microprofile.metrics.impl;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import javax.annotation.Priority;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.Timer;
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import java.util.concurrent.atomic.LongAdder;
+import javax.enterprise.inject.Vetoed;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 
-@Timed
-@Interceptor
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public class TimedInterceptor extends AbstractInterceptor {
+/**
+ * @see ConcurrentGauge
+ * @since 5.193
+ */
+@Vetoed
+public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
+    private final LongAdder count = new LongAdder();
+
+    /**
+     * Increment the counter by one.
+     */
     @Override
-    protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
-            throws Exception {
-        MetricID metricID = resolver.timed(bean.getBeanClass(), element).metricID();
-        Timer timer = (Timer) registry.getMetrics().get(metricID);
-        if (timer == null) {
-            throw new IllegalStateException("No timer with name [" + metricID.getName() + "] found in registry [" + registry + "]");
-        }
-
-        Timer.Context time = timer.time();
-        try {
-            return context.proceed();
-        } finally {
-            time.stop();
-        }
+    public void inc() {
+        count.increment();
     }
 
+    /**
+     * Returns the counter's current value.
+     *
+     * @return the counter's current value
+     */
+    @Override
+    public long getCount() {
+        return count.sum();
+    }
+
+    @Override
+    public long getMax() {
+        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public long getMin() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void dec() {
+        count.decrement();
+    }
 }

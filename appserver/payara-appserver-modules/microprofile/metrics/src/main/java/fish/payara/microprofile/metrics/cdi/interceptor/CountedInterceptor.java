@@ -58,17 +58,13 @@ public class CountedInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricsResolver.Of<Counted> counted = resolver.counted(bean.getBeanClass(), element);
-        CounterImpl counter = (CounterImpl) registry.getMetrics().get(counted.metricName());
+        CounterImpl counter = (CounterImpl) registry.getMetrics().get(counted.metricID());
         if (counter == null) {
             throw new IllegalStateException("No counter with name [" + counted.metricName() + "] found in registry [" + registry + "]");
         }
 
         counter.inc();
-        try {
-            return context.proceed();
-        } finally {
-            counter.dec();
-        }
+        return context.proceed();
     }
 
 }

@@ -53,6 +53,7 @@ package fish.payara.microprofile.metrics.writer;
 //import fish.payara.microprofile.metrics.Tag;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -60,6 +61,7 @@ import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
+import static org.eclipse.microprofile.metrics.MetricType.CONCURRENT_GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
@@ -146,6 +148,10 @@ public class PrometheusExporter {
 
     public void exportCounter(Counter counter, String name, String description, String tags) {
         writeTypeHelpValueLine(name, COUNTER.toString(), description, counter.getCount(), tags);
+    }
+    
+    void exportConcurrentGuage(ConcurrentGauge concurrentGauge, String name, String description, String tags) {
+         writeTypeHelpValueLine(name, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getCount(), tags);
     }
 
     public void exportGauge(Gauge<?> gauge, String name, String description, String tags, String unit) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 
 @Metered
@@ -56,10 +57,10 @@ public class MeteredInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        String name = resolver.metered(bean.getBeanClass(), element).metricName();
-        Meter meter = (Meter) registry.getMetrics().get(name);
+        MetricID metricID = resolver.timed(bean.getBeanClass(), element).metricID();
+        Meter meter = (Meter) registry.getMetrics().get(metricID);
         if (meter == null) {
-            throw new IllegalStateException("No meter with name [" + name + "] found in registry [" + registry + "]");
+            throw new IllegalStateException("No meter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }
         try {
             return context.proceed();

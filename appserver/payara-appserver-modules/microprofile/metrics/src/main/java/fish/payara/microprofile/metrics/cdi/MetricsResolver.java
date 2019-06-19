@@ -64,11 +64,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetadataBuilder;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.METERED;
 import static org.eclipse.microprofile.metrics.MetricType.TIMER;
+import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
@@ -79,6 +83,14 @@ public class MetricsResolver {
 
     public <E extends Member & AnnotatedElement> Of<Counted> counted(Class<?> bean, E element) {
         return resolverOf(bean, element, Counted.class);
+    }
+    
+     public <E extends Member & AnnotatedElement> Of<ConcurrentGauge> concurrentGauge(Class<?> bean, E element) {
+        return resolverOf(bean, element, ConcurrentGauge.class);
+    }
+    
+    public Of<ConcurrentGauge> concurrentGauge(Class<?> bean, Method method) {
+        return resolverOf(bean, method, ConcurrentGauge.class);
     }
 
     public Of<Gauge> gauge(Class<?> bean, Method method) {
@@ -104,14 +116,17 @@ public class MetricsResolver {
     private <E extends Member & AnnotatedElement, T extends Annotation> Of<T> elementResolverOf(E element, Class<T> metric) {
         T annotation = element.getAnnotation(metric);
         String name = metricName(element, annotation);
-        return new ValidMetric<>(annotation, name, getMetadata(name, annotation));
+        String[] tags = tags(annotation);
+        return new ValidMetric<>(annotation, name, getMetadata(name, annotation), MetricsHelper.tagsFromString(tags));
     }
 
     private <E extends Member & AnnotatedElement, T extends Annotation> Of<T> beanResolverOf(Class<?> bean, E element, Class<T> metric) {
         if (bean.isAnnotationPresent(metric)) {
             T annotation = bean.getAnnotation(metric);
             String name = metricName(bean, element, annotation);
-            return new ValidMetric<>(annotation, name, getMetadata(name, annotation));
+            String[] tags = tags(annotation);
+            
+            return new ValidMetric<>(annotation, name, getMetadata(name, annotation), MetricsHelper.tagsFromString(tags));
         } else if (bean.getSuperclass() != null) {
             return beanResolverOf(bean.getSuperclass(), element, metric);
         }
@@ -143,6 +158,8 @@ public class MetricsResolver {
     private String metricName(Annotation annotation) {
         if (Counted.class.isInstance(annotation)) {
             return ((Counted) annotation).name();
+        } else if (ConcurrentGauge.class.isInstance(annotation)) {
+            return ((ConcurrentGauge) annotation).name();
         } else if (Gauge.class.isInstance(annotation)) {
             return ((Gauge) annotation).name();
         } else if (Metered.class.isInstance(annotation)) {
@@ -153,10 +170,28 @@ public class MetricsResolver {
             throw new IllegalArgumentException("Unsupported Metrics [" + annotation.getClass().getName() + "]");
         }
     }
+    
+    private String[] tags(Annotation annotation) {
+        if (Counted.class.isInstance(annotation)) {
+            return ((Counted) annotation).tags();
+        } else if (ConcurrentGauge.class.isInstance(annotation)) {
+            return ((ConcurrentGauge) annotation).tags();
+        } else if (Gauge.class.isInstance(annotation)) {
+            return ((Gauge) annotation).tags();
+        } else if (Metered.class.isInstance(annotation)) {
+            return ((Metered) annotation).tags();
+        } else if (Timed.class.isInstance(annotation)) {
+            return ((Timed) annotation).tags();
+        } else {
+            throw new IllegalArgumentException("Unsupported Metrics [" + annotation.getClass().getName() + "]");
+        }
+    }
 
     private boolean isMetricAbsolute(Annotation annotation) {
         if (Counted.class.isInstance(annotation)) {
             return ((Counted) annotation).absolute();
+        } else if (ConcurrentGauge.class.isInstance(annotation)) {
+            return ((ConcurrentGauge) annotation).absolute();
         } else if (Gauge.class.isInstance(annotation)) {
             return ((Gauge) annotation).absolute();
         } else if (Metered.class.isInstance(annotation)) {
@@ -184,6 +219,13 @@ public class MetricsResolver {
                 metadataBuilder.notReusable();
             }
             tags = counted.tags();
+        } else if (ConcurrentGauge.class.isInstance(annotation)) {
+            ConcurrentGauge gauge = (ConcurrentGauge) annotation;
+            metadataBuilder.withDisplayName(gauge.displayName());
+            metadataBuilder.withDescription(gauge.description());
+            metadataBuilder.withType(MetricType.CONCURRENT_GAUGE);
+            metadataBuilder.withUnit(gauge.unit());
+            tags = gauge.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;
             metadataBuilder.withDisplayName(gauge.displayName());
@@ -229,11 +271,14 @@ public class MetricsResolver {
         private final String name;
 
         private final Metadata metadata;
+        
+        private final Tag[] tags;
 
-        private ValidMetric(T annotation, String name, Metadata metadata) {
+        private ValidMetric(T annotation, String name, Metadata metadata, Tag[] tags) {
             this.annotation = annotation;
             this.name = name;
             this.metadata = metadata;
+            this.tags = tags;
         }
 
         @Override
@@ -255,6 +300,18 @@ public class MetricsResolver {
         public Metadata metadata() {
             return metadata;
         }
+        
+        @Override 
+        public Tag[] tags() {
+            return tags;
+        }
+
+        @Override
+        public MetricID metricID() {
+            return new MetricID(name, tags);
+        }
+        
+        
     }
 
     @Vetoed
@@ -282,6 +339,16 @@ public class MetricsResolver {
         public Metadata metadata() {
             return null;
         }
+        
+        @Override
+        public Tag[] tags() {
+            return new Tag[0];
+        }
+
+        @Override
+        public MetricID metricID() {
+            throw new UnsupportedOperationException();
+        }
 
     }
 
@@ -294,6 +361,10 @@ public class MetricsResolver {
         T metricAnnotation();
 
         Metadata metadata();
+        
+        Tag[] tags();
+        
+        MetricID metricID();
     }
 
 }

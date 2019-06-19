@@ -61,6 +61,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
@@ -171,7 +172,9 @@ public class PrometheusWriter implements MetricsWriter {
             PrometheusExporter exporter = new PrometheusExporter(builder);
 
             if (Counter.class.isInstance(metric)) {
-                exporter.exportCounter((Counter) metric, name, description, metricId.getTagsAsString());
+                exporter.exportCounter((Counter) metric, name, description, metricId.getTagsAsString()); 
+            } else if (ConcurrentGauge.class.isInstance(metric)) {
+                exporter.exportConcurrentGuage((ConcurrentGauge) metric, name, description, metricId.getTagsAsString());
             } else if (Gauge.class.isInstance(metric)) {
                 exporter.exportGauge((Gauge) metric, name, description, metricId.getTagsAsString(), unit);
             } else if (Histogram.class.isInstance(metric)) {

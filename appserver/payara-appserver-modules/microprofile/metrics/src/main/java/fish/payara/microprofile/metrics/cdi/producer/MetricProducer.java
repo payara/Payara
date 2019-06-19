@@ -47,6 +47,7 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import javax.interceptor.Interceptor;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -69,10 +70,15 @@ public class MetricProducer {
     private Counter counter(InjectionPoint ip) {
         return registry.counter(helper.metadataOf(ip, Counter.class));
     }
+    
+    @Produces
+    private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
+        return registry.concurrentGauge(helper.metadataOf(ip, Counter.class));
+    }
 
     @Produces
     private <T> Gauge<T> gauge(InjectionPoint ip) {
-        return () -> (T) registry.getGauges().get(helper.metricNameOf(ip)).getValue();
+        return () -> (T) registry.getGauges().get(helper.metricIDof(ip)).getValue();
     }
 
     @Produces
@@ -94,6 +100,12 @@ public class MetricProducer {
     @Metric
     private Counter counterMetric(InjectionPoint ip) {
         return counter(ip);
+    }
+    
+    @Produces
+    @Metric
+    private ConcurrentGauge concurrentGaugeMetric(InjectionPoint ip) {
+        return concurrentGauge(ip);
     }
 
     @Produces

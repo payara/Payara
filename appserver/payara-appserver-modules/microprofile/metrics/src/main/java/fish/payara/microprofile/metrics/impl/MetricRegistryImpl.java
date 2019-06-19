@@ -96,15 +96,15 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
     
     @Override
-    public Counter counter(String string, Tag... tags) {
-        Metadata.builder().withName(string).build();
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Counter counter(String name, Tag... tags) {
+        Metadata data = Metadata.builder().withName(name).withType(COUNTER).build();
+        metadataMap.put(name, data);
+        return register(data, null, tags);
     }
 
     @Override
     public Counter counter(Metadata mtdt, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return register(mtdt, null, tags);
     }
 
     @Override
@@ -154,6 +154,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public SortedMap<MetricID, Gauge> getGauges(MetricFilter metricFilter) {
         return findMetrics(Gauge.class, metricFilter);
+    }
+    
+    @Override
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges() {
+        return getConcurrentGauges(ALL);
+    }
+
+    @Override
+    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter metricFilter) {
+        return findMetrics(ConcurrentGauge.class, metricFilter);
     }
 
     @Override
@@ -245,7 +255,10 @@ public class MetricRegistryImpl extends MetricRegistry {
         Metadata existingMetadata = metadataMap.get(name);
 
         if (existingMetadata == null) {
-            metricMap.put(new MetricID(name, tags), metric == null ? createMetricInstance(newMetadata) : metric);
+            if (metric == null ){
+                metric = createMetricInstance(newMetadata);
+            }
+            metricMap.put(new MetricID(name, tags), metric);
             metadataMap.put(name, Metadata.builder(newMetadata).build());
         } else if (existingMetadata.isReusable() || newMetadata.isReusable()) {
 
@@ -279,6 +292,7 @@ public class MetricRegistryImpl extends MetricRegistry {
             }
 
             metadataMap.put(name, metadataClone(newMetadata));
+            metric = (T) metricMap.get(new MetricID(name, tags));
         } else if (existingMetadata.getTypeRaw() != newMetadata.getTypeRaw()) {
             if (!existingMetadata.getTypeRaw().equals(newMetadata.getTypeRaw())) {
                 throw new IllegalArgumentException(String.format(
@@ -305,6 +319,9 @@ public class MetricRegistryImpl extends MetricRegistry {
         switch (metadata.getTypeRaw()) {
             case COUNTER:
                 metric = new CounterImpl();
+                break;
+            case CONCURRENT_GAUGE:
+                metric = new ConcurrentGaugeImpl();
                 break;
             case GAUGE:
                 throw new IllegalArgumentException(String.format(
@@ -340,73 +357,81 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public ConcurrentGauge concurrentGauge(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ConcurrentGauge concurrentGauge(String name) {
+        return addMetric(Metadata.builder().withName(name).withType(MetricType.CONCURRENT_GAUGE).build());
     }
 
     @Override
-    public ConcurrentGauge concurrentGauge(String string, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ConcurrentGauge concurrentGauge(String name, Tag... tags) {
+        Metadata data = Metadata.builder().withName(name).withType(MetricType.CONCURRENT_GAUGE).build();
+        metadataMap.put(name, data);
+        return register(data, null, tags);
     }
 
     @Override
     public ConcurrentGauge concurrentGauge(Metadata mtdt) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Metadata data = Metadata.builder(mtdt).withType(MetricType.CONCURRENT_GAUGE).build();
+        return addMetric(data);
     }
 
     @Override
     public ConcurrentGauge concurrentGauge(Metadata mtdt, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Metadata data = Metadata.builder(mtdt).withType(MetricType.CONCURRENT_GAUGE).build();
+        return register(data, null, tags);
     }
 
     @Override
-    public Histogram histogram(String string, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Histogram histogram(String name, Tag... tags) {
+        Metadata data = Metadata.builder().withName(name).withType(MetricType.HISTOGRAM).build();
+        metadataMap.put(name, data);
+        return register(data, null, tags);
     }
 
     @Override
     public Histogram histogram(Metadata mtdt, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Metadata data = Metadata.builder(mtdt).withType(MetricType.HISTOGRAM).build();
+        return register(data, null, tags);
     }
 
     @Override
-    public Meter meter(String string, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Meter meter(String name, Tag... tags) {
+        Metadata data = Metadata.builder().withName(name).withType(METERED).build();
+        metadataMap.put(name, data);
+        return register(data, null, tags);
     }
 
     @Override
     public Meter meter(Metadata mtdt, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Metadata data = Metadata.builder(mtdt).withType(METERED).build();
+        return register(data, null, tags);
     }
 
     @Override
-    public Timer timer(String string, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Timer timer(String name, Tag... tags) {
+        Metadata data = Metadata.builder().withName(name).withType(TIMER).build();
+        metadataMap.put(name, data);
+        return register(data, null, tags);
     }
 
     @Override
     public Timer timer(Metadata mtdt, Tag... tags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Metadata data = Metadata.builder(mtdt).withType(TIMER).build();
+        return register(data, null, tags);
     }
 
     @Override
     public boolean remove(MetricID mid) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        metadataMap.remove(mid.getName());
+        return metricMap.remove(mid) != null;
     }
 
     @Override
     public SortedSet<MetricID> getMetricIDs() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public SortedMap<MetricID, ConcurrentGauge> getConcurrentGauges(MetricFilter mf) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TreeSet<MetricID> metricIDs = new TreeSet<>();
+        for (MetricID metricID: metricMap.keySet()) {
+            metricIDs.add(metricID);
+        }
+        return metricIDs;
     }
 
 }
