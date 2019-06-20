@@ -40,9 +40,11 @@
 package org.glassfish.internal.deployment.analysis;
 
 import org.glassfish.internal.deployment.DeploymentTracing;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
@@ -182,12 +184,33 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
         }
     }
 
+    public boolean isEnabled() {
+        return !disabled;
+    }
+
+    public DeploymentTracing register(ExtendedDeploymentContext deploymentContext) {
+        deploymentContext.addModuleMetaData(this);
+        if (isEnabled()) {
+            DeploymentTracing legacyTracing = new DeploymentTracing(this);
+            deploymentContext.addModuleMetaData(legacyTracing);
+            return legacyTracing;
+        }
+        return null;
+    }
+
     /**
      * Compatibility with {@link DeploymentTracing}. Finishes tracing and prints out tabular lists of spans
      */
     public void print(PrintWriter out) {
         close();
         spans.forEach(span -> out.println(span));
+    }
+
+    public void print(PrintStream out) {
+        // since this goes into log over System.out, let's create single log entry from it
+        StringWriter stringOut = new StringWriter();
+        print(new PrintWriter(stringOut));
+        out.println(stringOut.toString());
     }
 
     /**

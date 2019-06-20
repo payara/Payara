@@ -140,10 +140,7 @@ public class DeploymentTracing {
     }
 
     public void print(PrintStream ps) {
-        // since this goes into log over System.out, let's create single log entry from it
-        StringWriter stringOut = new StringWriter();
-        structured.print(new PrintWriter(stringOut));
-        ps.println(stringOut.toString());
+        structured.print(ps);
     }
 
     public static void printModuleStatus(ModulesRegistry registry, Level level, Logger logger)

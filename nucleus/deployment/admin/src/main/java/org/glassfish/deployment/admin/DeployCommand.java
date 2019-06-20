@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
@@ -168,7 +168,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private ExtendedDeploymentContext initialContext;
     private ExtendedDeploymentContext deploymentContext;
     private ArchiveHandler archiveHandler;
-    private DeploymentTracing tracing;
     private File expansionDir;
     private ReadableArchive archive;
     private ActionReport report;
@@ -207,9 +206,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 : StructuredDeploymentTracing.createDisabled(path.getName());
 
         timing = new DeploymentTracing(structuredTracing);
-        if (System.getProperty("org.glassfish.deployment.trace") != null) {
-            tracing = new DeploymentTracing(structuredTracing);
-        }
 
         report = context.getActionReport();
         logger = context.getLogger();
@@ -234,9 +230,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
         try {
             archive = archiveFactory.openArchive(path, this);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_OPENED);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.ARCHIVE_OPENED);
         } catch (IOException e) {
             final String msg = localStrings.getLocalString("deploy.errOpeningArtifact",
                     "deploy.errOpeningArtifact", path.getAbsolutePath());
@@ -265,9 +259,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             deployment.validateSpecifiedTarget(target);
 
             archiveHandler = deployment.getArchiveHandler(archive, type);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
+
             if (archiveHandler == null) {
                 report.failure(logger, localStrings.getLocalString("deploy.unknownarchivetype", "Archive type of {0} was not recognized", path));
                 return false;
@@ -277,10 +270,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
-            if (tracing != null) {
-                initialContext.addModuleMetaData(tracing);
-                tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
-            }
+            structuredTracing.register(initialContext);
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
             if (!forceName) {
@@ -316,9 +307,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             } else {
                 DeploymentUtils.validateApplicationName(name);
             }
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.APPNAME_DETERMINED);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.APPNAME_DETERMINED);
 
             boolean isUntagged = VersioningUtils.isUntagged(name);
             // no GlassFish versioning support for OSGi budles
@@ -405,9 +394,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
 
             deployment.validateDeploymentTarget(target, name, isredeploy);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.TARGET_VALIDATED);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.TARGET_VALIDATED);
 
             ActionReport.MessagePart part = report.getTopMessagePart();
             part.addProperty(DeploymentProperties.NAME, name);
@@ -476,10 +463,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
                             source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CONTEXT_CREATED);
-                deploymentContext.addModuleMetaData(tracing);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.CONTEXT_CREATED);
+            structuredTracing.register(deploymentContext);
 
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
@@ -539,9 +524,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);
 
             Transaction t = deployment.prepareAppConfigChanges(deploymentContext);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.DEPLOY);
-            }
+            structuredTracing.addApplicationMark(DeploymentTracing.Mark.DEPLOY);
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if(!loadOnly) {
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
@@ -576,9 +559,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     deploymentContext.getTransientAppMetaData("application", Application.class).setTimeDeployed(Long.toString(deploymentTimeMillis));
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
-                    if (tracing != null) {
-                        tracing.addMark(DeploymentTracing.Mark.REGISTRATION);
-                    }
+                    structuredTracing.addApplicationMark(DeploymentTracing.Mark.REGISTRATION);
                     if (retrieve != null) {
                         retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false, name);
                     }
@@ -623,9 +604,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         path.getAbsolutePath()), e);
             }
 
-            if (tracing != null) {
-                tracing.print(System.out);
-            }
+            structuredTracing.print(System.out);
 
             if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                 // Set the app name in the result so that embedded deployer can retrieve it.

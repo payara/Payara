@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -389,9 +389,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             ? StructuredDeploymentTracing.create(app.getName())
                             : StructuredDeploymentTracing.createDisabled(app.getName());
                     DeploymentTracing tracing = null;
-                    if (deploymentTracingEnabled != null) {
-                        tracing = new DeploymentTracing(structuredTracing);
-                    }
+
                     DeployCommandParameters deploymentParams =
                         app.getDeployParameters(appRef);
                     deploymentParams.target = server.getName();
@@ -409,9 +407,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
                     ActionReport report = new HTMLActionReporter();
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, deploymentParams, report).source(archive).build();
-                    if (tracing!=null) {
-                        depContext.addModuleMetaData(tracing);
-                    }
+                    tracing = structuredTracing.register(depContext);
 
                     depContext.getAppProps().putAll(app.getDeployProperties());
                     depContext.setModulePropsMap(app.getModulePropertiesMap());
