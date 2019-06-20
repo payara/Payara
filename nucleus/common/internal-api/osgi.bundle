@@ -37,12 +37,14 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright (c) 2019 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         org.glassfish.internal.api; \
                         org.glassfish.internal.data; \
                         org.glassfish.internal.config; \
                         org.glassfish.internal.deployment; \
+                        org.glassfish.internal.deployment.analysis; \
                         org.glassfish.transaction.api; \
                         org.glassfish.flashlight.datatree; \
                         org.glassfish.internal.grizzly; \

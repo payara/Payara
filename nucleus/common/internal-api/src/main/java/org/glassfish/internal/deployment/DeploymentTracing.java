@@ -37,16 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or its affiliates
 package org.glassfish.internal.deployment;
 
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.io.PrintWriter;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,7 +60,9 @@ import java.util.logging.Logger;
  */
 public class DeploymentTracing {
 
-    public static enum Mark {
+    private final StructuredDeploymentTracing structured;
+
+    public enum Mark {
         ARCHIVE_OPENED,
         ARCHIVE_HANDLER_OBTAINED,
         INITIAL_CONTEXT_CREATED,
@@ -83,7 +88,7 @@ public class DeploymentTracing {
 
     }
 
-    public static enum ModuleMark {
+    public enum ModuleMark {
         PREPARE,
         PREPARE_EVENTS,
         PREPARED,
@@ -94,7 +99,7 @@ public class DeploymentTracing {
 
     }
 
-    public static enum ContainerMark {
+    public enum ContainerMark {
         SNIFFER_DONE,
         BEFORE_CONTAINER_SETUP,
         AFTER_CONTAINER_SETUP,
@@ -108,77 +113,37 @@ public class DeploymentTracing {
         STARTED
     }
 
-    private abstract class Event {
-        final long inception = System.currentTimeMillis();
-
-        long elapsedInMs() {
-            return inception - DeploymentTracing.this.inception; 
-        }
-        abstract void print(PrintStream ps);
-    }
-
-    private final class GlobalEvent extends Event {
-        final Mark mark;
-
-        private GlobalEvent(Mark mark) {
-            this.mark = mark;
-        }
-
-        void print(PrintStream ps) {
-            ps.println("Mark " + mark.toString() + " at " + elapsedInMs());
-        }
-    }
-
-    private class ContainerEvent extends Event{
-        final ContainerMark mark;
-        final String name;
-
-        private ContainerEvent(ContainerMark mark, String name) {
-            this.mark = mark;
-            this.name = name;
-        }
-        void print(PrintStream ps) {
-            ps.println("Container : " + name + " Mark " + mark.toString() + " at " + elapsedInMs());
-        }
-    }
-
-    private class ModuleEvent extends Event {
-        final ModuleMark mark;
-        final String moduleName;
-
-        private ModuleEvent(ModuleMark mark, String moduleName) {
-            this.mark = mark;
-            this.moduleName = moduleName;
-        }
-        void print(PrintStream ps) {
-            ps.println("Module " +  moduleName + " Mark " + mark.toString() + " at " + elapsedInMs());
-        }
-    }
-
     final long inception = System.currentTimeMillis();
-    final List<Event> events = new ArrayList<Event>();
+
+    public DeploymentTracing(StructuredDeploymentTracing structured) {
+        this.structured = structured;
+    }
+
+    public void close() {
+        structured.close();
+    }
 
     public long elapsed() {
         return System.currentTimeMillis() - inception;
     }
 
     public void addMark(Mark mark) {
-        events.add(new GlobalEvent(mark));
+        structured.addApplicationMark(mark);
     }
 
     public void addContainerMark(ContainerMark mark, String name) {
-        events.add(new ContainerEvent(mark, name));
+        structured.addContainerMark(name, mark);
     }
 
     public void addModuleMark(ModuleMark mark, String moduleName) {
-        events.add(new ModuleEvent(mark, moduleName));
+        structured.addModuleMark(moduleName, mark);
     }
 
     public void print(PrintStream ps) {
-        for (int i=0;i<events.size(); i++) {
-            events.get(i).print(ps);
-        }
-
+        // since this goes into log over System.out, let's create single log entry from it
+        StringWriter stringOut = new StringWriter();
+        structured.print(new PrintWriter(stringOut));
+        ps.println(stringOut.toString());
     }
 
     public static void printModuleStatus(ModulesRegistry registry, Level level, Logger logger)

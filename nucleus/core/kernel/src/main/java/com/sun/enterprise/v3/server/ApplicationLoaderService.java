@@ -83,6 +83,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.*;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
 import org.jvnet.hk2.annotations.Optional;
@@ -384,10 +385,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             try {
                 ReadableArchive archive = null;
                 try {
-
+                    StructuredDeploymentTracing structuredTracing = deploymentTracingEnabled != null
+                            ? StructuredDeploymentTracing.create(app.getName())
+                            : StructuredDeploymentTracing.createDisabled(app.getName());
                     DeploymentTracing tracing = null;
                     if (deploymentTracingEnabled != null) {
-                        tracing = new DeploymentTracing();
+                        tracing = new DeploymentTracing(structuredTracing);
                     }
                     DeployCommandParameters deploymentParams =
                         app.getDeployParameters(appRef);

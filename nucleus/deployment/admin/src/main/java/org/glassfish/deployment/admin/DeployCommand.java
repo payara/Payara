@@ -67,6 +67,7 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.jvnet.hk2.annotations.Contract;
 import javax.inject.Inject;
 
@@ -186,7 +187,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
     private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
     private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
-    
+    private StructuredDeploymentTracing structuredTracing;
+
     public DeployCommand() {
         origin = Origin.deploy;
     }
@@ -200,10 +202,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         context.getActionReport().
                 setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
-        timing = new DeploymentTracing();
-        tracing = null;
+        structuredTracing = System.getProperty("org.glassfish.deployment.trace") != null
+                ? StructuredDeploymentTracing.create(path.getName())
+                : StructuredDeploymentTracing.createDisabled(path.getName());
+
+        timing = new DeploymentTracing(structuredTracing);
         if (System.getProperty("org.glassfish.deployment.trace") != null) {
-            tracing = new DeploymentTracing();
+            tracing = new DeploymentTracing(structuredTracing);
         }
 
         report = context.getActionReport();
