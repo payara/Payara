@@ -88,6 +88,17 @@ public class DeploymentTracing {
 
     }
 
+    public enum AppStage {
+        OPENING_ARCHIVE,
+        VALIDATE_TARGET,
+        INIT_ARCHIVE_HANDLER,
+        CREATE_DEPLOY_CONTEXT,
+        DETERMINE_APP_NAME,
+        PROVIDE_APPINFO,
+        READ_DESCRIPTORS, CLEANUP, SWITCH_VERSIONS, DEPLOY, PREPARE, INITIALIZE, REGISTRATION, CLASS_SCANNING;
+
+    }
+
     public enum ModuleMark {
         PREPARE,
         PREPARE_EVENTS,

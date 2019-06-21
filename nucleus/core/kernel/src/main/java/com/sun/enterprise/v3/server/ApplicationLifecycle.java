@@ -79,6 +79,9 @@ import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.SpanSequence;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Optional;
@@ -291,7 +294,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         };
 
-        try {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE)){
             if (commandParams.origin == OpsParams.Origin.deploy
                     && appRegistry.get(appName) != null) {
                 report.setMessage(localStrings.getLocalString("appnamenotunique", "Application name {0} is already in use. Please pick a different name.", appName));
@@ -321,6 +325,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.addTransientAppMetaData(ExtendedDeploymentContext.TRACKER, tracker);
             context.setPhase(DeploymentContextImpl.Phase.PREPARE);
 
+            span.start("archive handler");
             ArchiveHandler handler = context.getArchiveHandler();
             if (handler == null) {
                 handler = getArchiveHandler(context.getSource(),
@@ -334,19 +339,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
-            DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
+            span.start(DeploymentTracing.AppStage.CLASS_SCANNING);
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
-            }
 
             if (handler.requiresAnnotationScanning(context.getSource())) {
                 getDeployableTypes(context);
             }
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
-            }
+            span.finish();
 
             // containers that are started are not stopped even if
             // the deployment fail, the main reason
@@ -357,19 +357,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 }
             }
 
+            span.start(DeploymentTracing.AppStage.PREPARE, "sniffers");
+
             sniffers = getSniffers(handler, sniffers, context);
 
+            span.start(DeploymentTracing.AppStage.PREPARE, "Classloader hierarchy");
+
             ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
-            }
+
+            span.start(DeploymentTracing.AppStage.PREPARE, "Classloader");
 
             context.createDeploymentClassLoader(clh, handler);
             events.send(new Event<DeploymentContext>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
-
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-            }
 
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
 

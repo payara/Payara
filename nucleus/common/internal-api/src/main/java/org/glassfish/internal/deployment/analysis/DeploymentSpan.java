@@ -54,7 +54,7 @@ import java.time.format.DateTimeFormatter;
 public class DeploymentSpan implements AutoCloseable {
     static final DateTimeFormatter NS_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnnnnn").withZone(ZoneId.systemDefault());
     private final Clock clock;
-    private final TraceContext context;
+    final TraceContext context;
     private final String componentName;
     private final Enum<?> action;
     private final Instant start;
@@ -102,6 +102,10 @@ public class DeploymentSpan implements AutoCloseable {
         return finish == null;
     }
 
+    public Enum<?> getAction() {
+        return action;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -132,7 +136,7 @@ public class DeploymentSpan implements AutoCloseable {
      * @throws Exception
      */
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (this.clock == null) {
             throw new IllegalArgumentException("DeploymentSpan is already created closed");
         }

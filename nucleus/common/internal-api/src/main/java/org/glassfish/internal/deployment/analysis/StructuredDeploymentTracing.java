@@ -39,8 +39,8 @@
  */
 package org.glassfish.internal.deployment.analysis;
 
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTracing;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -105,6 +105,28 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
         startRootSpan(appName);
     }
 
+    public static StructuredDeploymentTracing load(DeploymentContext context) {
+        if (context == null) {
+            return StructuredDeploymentTracing.createDisabled("temp");
+        } else {
+            StructuredDeploymentTracing instance = context.getModuleMetaData(StructuredDeploymentTracing.class);
+            if (instance == null) {
+                return StructuredDeploymentTracing.createDisabled("temp");
+            } else {
+                return instance;
+            }
+        }
+    }
+
+    /**
+     * Start a new span that will be finished by invoking its {@link DeploymentSpan#close()} method
+     * @param action action being performed
+     * @return closeable span
+     */
+    public DeploymentSpan startSpan(Enum<?> action) {
+        return startSpan(action, null);
+    }
+
     /**
      * Start a new span that will be finished by invoking its {@link DeploymentSpan#close()} method
      * @param action action being performed
@@ -125,6 +147,19 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
      * @param level context level
      * @param contextName context name
      * @param action action being performed
+     * @return new span
+     * @see #switchToContext(TraceContext.Level, String)
+     * @see #startSpan(TraceContext.Level, String, Enum, String)
+     */
+    public DeploymentSpan startSpan(TraceContext.Level level, String contextName, Enum<?> action) {
+        return startSpan(level, contextName, action, null);
+    }
+
+    /**
+     * Switch to new context and start a span.
+     * @param level context level
+     * @param contextName context name
+     * @param action action being performed
      * @param componentName optional component on which the action is being performed
      * @return new span
      * @see #switchToContext(TraceContext.Level, String)
@@ -134,6 +169,15 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
         switchToContext(level, contextName);
         return startSpan(action, componentName);
     }
+
+    public SpanSequence startSequence(Enum<?> action) {
+        return startSequence(action, null);
+    }
+
+    public SpanSequence startSequence(Enum<?> action, String componentName) {
+        return new SpanSequence(this, startSpan(action, componentName));
+    }
+
 
     /**
      * Switch to new context.
@@ -188,7 +232,7 @@ public final class StructuredDeploymentTracing implements AutoCloseable {
         return !disabled;
     }
 
-    public DeploymentTracing register(ExtendedDeploymentContext deploymentContext) {
+    public DeploymentTracing register(DeploymentContext deploymentContext) {
         deploymentContext.addModuleMetaData(this);
         if (isEnabled()) {
             DeploymentTracing legacyTracing = new DeploymentTracing(this);
