@@ -64,6 +64,9 @@ import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -300,11 +303,8 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
         context.setPhase(ExtendedDeploymentContext.Phase.LOAD);
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(
-                DeploymentTracing.Mark.LOAD);
-        }
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.LOAD);
 
 
         super.load(context, tracker);
@@ -312,30 +312,20 @@ public class ApplicationInfo extends ModuleInfo {
         appClassLoader = context.getClassLoader();
 
         for (ModuleInfo module : modules) {
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.LOAD, module.getName());
-            }
             module.load(getSubContext(module,context), tracker);
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.LOADED, module.getName());
-            }
         }
         
         populateApplicationServiceLocator();
 
         isLoaded = true;
-
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOAD_EVENTS);
-        }
+        span.close();
 
         if (events!=null) {
+            span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.LOAD_EVENTS);
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_LOADED, this), false);
+            span.close();
         }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOADED);
-        }
-        
+
     }
 
 

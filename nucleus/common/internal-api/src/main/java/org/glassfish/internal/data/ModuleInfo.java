@@ -70,6 +70,9 @@ import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -180,10 +183,7 @@ public class ModuleInfo {
     public void load(ExtendedDeploymentContext context, ProgressTracker tracker) throws Exception {
         Logger logger = context.getLogger();
         context.setPhase(ExtendedDeploymentContext.Phase.LOAD);
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.LOAD);
-        }
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
 
         moduleClassLoader = context.getClassLoader();
 
@@ -191,21 +191,16 @@ public class ModuleInfo {
         LinkedList<EngineRef> filteredReversedEngines = new LinkedList<EngineRef>();
 
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
-        try {
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, name, DeploymentTracing.AppStage.LOAD)){
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             for (EngineRef engine : _getEngineRefs()) {
     
                 final EngineInfo engineInfo = engine.getContainerInfo();
 
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.LOAD,
-                        engineInfo.getSniffer().getModuleType());
-                }
-                
                 // get the container.
                 Deployer deployer = engineInfo.getDeployer();
 
-                try {
+                try (DeploymentSpan containerSpan = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD)){
                    ApplicationContainer appCtr = deployer.load(engineInfo.getContainer(), context);
                    if (appCtr==null) {
                        String msg = "Cannot load application in " + engineInfo.getContainer().getName() + " container";
@@ -220,23 +215,12 @@ public class ModuleInfo {
                     logger.log(Level.SEVERE, "Exception while invoking " + deployer.getClass() + " load method", e);
                     throw e;
                 }
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.LOADED,
-                        engineInfo.getSniffer().getModuleType());
-                }
-
             }
             engines = filteredEngines;
             reversedEngines = filteredReversedEngines;
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.LOAD_EVENTS);
-            }
 
             if (events!=null) {
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_LOADED, this), false);
-            }
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.LOADED);
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);
