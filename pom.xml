@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -44,8 +44,8 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main</groupId>
-    <artifactId>glassfish-main-aggregator</artifactId>
+    <groupId>fish.payara</groupId>
+    <artifactId>payara-main-aggregator</artifactId>
     <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     
@@ -65,6 +65,95 @@
         </snapshotRepository>
     </distributionManagement>
     
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/payara/Payara/issues</url>
+    </issueManagement>
+    
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
+    
+    <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        
+        <repository>
+            <id>jvnet-nexus-releases</id>
+            <name>Java.net Releases Repositories</name>
+            <url>https://maven.java.net/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>eclipse.microprofile</id>
+            <name>Eclipse MicroProfile Repository</name>
+            <url>https://repo.eclipse.org/content/groups/microprofile/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <!-- Enable this to allow downloading Eclipse MicroProfile Snapshot builds -->
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+    </repositories>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+    
+    
     <properties>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
         <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
@@ -73,13 +162,13 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
+    
     <modules>
         <module>nucleus</module>
         <module>appserver</module>
         <module>api</module>
     </modules>
-
+    
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -115,7 +204,7 @@
             </activation>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
-                <project>payara</project> 
+                <project>payara</project>
             </properties>
             <build>
                 <plugins>
@@ -140,8 +229,8 @@
                                     <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>payara-5.193-SNAPSHOT</finalName>    
-                                    <includePom>false</includePom>                            
+                                    <finalName>payara-5.193-SNAPSHOT</finalName>
+                                    <includePom>false</includePom>
                                 </configuration>
                             </execution>
                         </executions>
@@ -149,7 +238,7 @@
                 </plugins>
             </build>
         </profile>
-             
+        
         <profile>
             <id>javadoc</id>
             <activation>
@@ -205,7 +294,7 @@
                             <execution>
                                 <id>javadoc-jar</id>
                                 <goals>
-                                   <goal>jar</goal>
+                                    <goal>jar</goal>
                                 </goals>
                                 <phase>pre-site</phase>
                                 <configuration>
@@ -219,7 +308,7 @@
                 <finalName>payara-${project.version}</finalName>
             </build>
         </profile>
-
+        
         <profile>
             <id>gpgsign</id>
             <activation>
@@ -250,7 +339,7 @@
         </profile>
         
     </profiles>
-   
+    
     <build>
         <defaultGoal>install</defaultGoal>
         <pluginManagement>

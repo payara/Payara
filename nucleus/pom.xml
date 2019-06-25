@@ -44,109 +44,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>fish.payara</groupId>
+    <parent>
+        <groupId>fish.payara</groupId>
+        <artifactId>payara-main-aggregator</artifactId>
+        <version>5.193-SNAPSHOT</version>
+    </parent>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
     <url>https://github.com/payara/Payara</url>
-
-    <scm>
-        <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>https://github.com/payara/Payara/tree/master</url>
-        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.193-SNAPSHOT</tag>
-    </scm>
-
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/payara/Payara/issues</url>
-    </issueManagement>
-
-    <licenses>
-      <license>
-        <name>CDDL + GPLv2 with classpath exception</name>
-        <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-        <distribution>repo</distribution>
-        <comments>A business-friendly OSS license</comments>
-      </license>
-    </licenses>
-
-
-    <developers>
-        <developer>
-            <name>Payara Team</name>
-            <email>info@payara.fish</email>
-            <organization>Payara Foundation</organization>
-            <organizationUrl>http://www.payara.fish</organizationUrl>
-        </developer>
-    </developers>
-
-    <repositories>
-        <!-- Try Maven central first, not last, which happens when omitted here -->
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-
-        <repository>
-            <id>jvnet-nexus-releases</id>
-            <name>Java.net Releases Repositories</name>
-            <url>https://maven.java.net/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>eclipse.microprofile</id>
-            <name>Eclipse MicroProfile Repository</name>
-            <url>https://repo.eclipse.org/content/groups/microprofile/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <!-- Enable this to allow downloading Eclipse MicroProfile Snapshot builds -->
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>payara-patched-externals</id>
-	    <name>Payara Patched Externals</name>
-	    <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-           	<enabled>true</enabled>
-            </releases>
-            <snapshots>
-               	<enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-           <id>payara-patched-externals</id>
-	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
-           	<releases>
-           		<enabled>true</enabled>
-           	</releases>
-            	<snapshots>
-                	<enabled>true</enabled>
-            	</snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
