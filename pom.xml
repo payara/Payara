@@ -74,6 +74,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <modules>
+        <module>nucleus</module>
+        <module>appserver</module>
+        <module>api</module>
+    </modules>
+
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -84,11 +90,6 @@
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
         </profile>
         <profile>
             <!--
@@ -101,11 +102,6 @@
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
         </profile>
         
         <profile>
@@ -117,11 +113,6 @@
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
                 <project>payara</project> 
@@ -168,11 +159,6 @@
                     <value>true</value>
                 </property>
             </activation>
-            <modules>
-                <module>nucleus</module>
-                <module>appserver</module>
-                <module>api</module>
-            </modules>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
             </properties>
@@ -265,29 +251,10 @@
         
     </profiles>
    
-    <!--
-        Skip deploy and install as this is an aggregator POM
-    -->
     <build>
         <defaultGoal>install</defaultGoal>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <version>${maven.install.plugin.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
