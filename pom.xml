@@ -162,7 +162,7 @@
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- external dependencies' versions -->
+        <!-- Nucleus external dependencies' versions -->
         <!-- Java EE -->
         <javaee.api.version>8.0</javaee.api.version>
 
@@ -276,6 +276,149 @@
         <guava.version>19.0</guava.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
+
+        <!-- Appserver dependencies -->
+        <!-- EJB -->
+        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+
+        <!-- JSP -->
+        <jsp-api.version>2.3.3</jsp-api.version>
+        <jsp-impl.version>2.3.4</jsp-impl.version>
+
+        <!-- JSTL -->
+        <jstl-api.version>1.2.2</jstl-api.version>
+        <jstl-impl.version>1.2.5</jstl-impl.version>
+
+        <!-- JSF -->
+        <jakarta.faces-spec.version>2.3.1</jakarta.faces-spec.version>
+        <jakarta.faces-api.version>2.3.1</jakarta.faces-api.version>
+        <mojarra.version>2.3.9.payara-p2</mojarra.version>
+
+        <!-- WebSocket -->
+        <websocket-api.version>1.1</websocket-api.version>
+        <tyrus.version>1.14</tyrus.version>
+
+        <!-- JAX-B -->
+        <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
+
+        <!-- JSON-B -->
+        <json.bind-api.version>1.0</json.bind-api.version>
+        <yasson.version>1.0.4.payara-p1</yasson.version>
+
+        <!-- JPA -->
+        <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
+        <eclipselink.version>2.7.4.payara-p2</eclipselink.version>
+
+        <!-- JTA -->
+        <javax.transaction-api.version>1.3</javax.transaction-api.version>
+
+        <!-- Concurrency -->
+        <concurrent-api.version>1.0</concurrent-api.version>
+        <concurrent.version>1.0.payara-p2</concurrent.version>
+
+         <!-- Interceptor -->
+        <javax.interceptor-api.version>1.2.1</javax.interceptor-api.version>
+
+        <!-- CDI -->
+        <javax.inject.version>1</javax.inject.version>
+        <cdi-api.version>2.0.SP1</cdi-api.version>
+        <weld.version>3.1.1.Final</weld.version>
+        <weld-bundle.version>3.1.1.Final</weld-bundle.version>
+        <weld-api.version>3.1.Final</weld-api.version>
+        <jboss.classfilewriter.version>1.2.3.Final</jboss.classfilewriter.version>
+        <apache.bcel.version>6.2</apache.bcel.version>
+
+        <!-- Java EE Security API -->
+        <javax.security.enterprise-spec.version>1.0</javax.security.enterprise-spec.version>
+        <javax.security.enterprise-api.version>1.0</javax.security.enterprise-api.version>
+        <javax.security.enterprise.version>1.1-b01.payara-p3</javax.security.enterprise.version>
+
+        <!-- JACC -->
+        <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
+
+        <!-- JASPIC -->
+        <jakarta.security.auth.message-api.version>1.1.2</jakarta.security.auth.message-api.version>
+
+        <!-- JMS -->
+        <jms-api.version>2.0.1</jms-api.version>
+
+        <jna.version>5.2.0</jna.version>
+        
+        <jline-terminal-jna>3.11.0</jline-terminal-jna>
+        
+        <!-- 5.1.1-b02.payara-p1 -->
+        <mq.version>5.1.1.final.payara-p4</mq.version>
+
+        <!-- Batch -->
+        <javax.batch-api.version>1.0.1</javax.batch-api.version>
+        <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
+
+        <!-- JAX-WS -->
+        <jaxws-api.version>2.3.2</jaxws-api.version>
+
+        <jakarta.jws-api.version>1.1.1</jakarta.jws-api.version>
+
+        <!-- Metro Webservices is the JAX-WS impl -->
+        <webservices.version>2.4.3.payara-p3</webservices.version>
+        <!-- Woodstox is a high-performance XML processor that implements Stax (JSR-173) and SAX2 APIs -->
+        <woodstox.version>5.1.0</woodstox.version>
+        <!-- Woodstox Stax2 API is an extension to basic Stax 1.0 API that adds significant functionality -->
+        <stax2-api.version>4.1</stax2-api.version>
+
+        <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
+        <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
+
+        <javax.resource-api.version>1.7</javax.resource-api.version>
+
+        <!-- Deployment API (JSR 88) (deprecated/pruned) -->
+        <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
+
+        <!-- Management API (JRS 77) -->
+        <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+
+        <!-- JAF -->
+        <jakarta.activation-api.version>1.2.1</jakarta.activation-api.version>
+        <jakarta.activation-impl.version>1.2.1</jakarta.activation-impl.version>
+
+        <istack-commons-runtime.version>3.0.7</istack-commons-runtime.version>
+
+        <jsf-ext.version>0.2</jsf-ext.version>
+        <jsftemplating.version>2.1.3</jsftemplating.version>
+        <woodstock.version>4.0.2.10.payara-p15</woodstock.version>
+
+        <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
+        <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
+
+        <dbschema.version>3.1.1</dbschema.version>
+        <dbschema.osgi.version>6.0</dbschema.osgi.version>
+        <schema2beans.version>3.1.1</schema2beans.version>
+        <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
+
+        <javadb.version>10.13.1.1</javadb.version>
+        <h2db.version>1.4.196</h2db.version>
+        <!-- Java API for XML Registries Resource Adapter -->
+        <jaxr.version>JAXR_RA_20091012</jaxr.version>
+
+        <wsdl4j.version>1.6.3</wsdl4j.version>
+
+        <rest.monitoring.version>1.0.0-Beta</rest.monitoring.version>
+
+        <!-- Microprofile version properties -->
+        <microprofile-fault-tolerance.version>2.0</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>1.1.payara-p1</microprofile-jwt-auth.version>
+        <microprofile-healthcheck.version>1.0.payara-p1</microprofile-healthcheck.version>
+        <microprofile-metrics.version>1.1.payara-p1</microprofile-metrics.version>
+        <microprofile-rest-client.version>1.2.1.payara-p1</microprofile-rest-client.version>
+        <microprofile-openapi.version>1.1.2</microprofile-openapi.version>
+
+        <nimbus-jose-jwt.version>5.4</nimbus-jose-jwt.version>
+        <accessors-smart.version>1.2.payara-p2</accessors-smart.version>
+        <json-smart.version>2.3</json-smart.version>
+        <jcip-annotations.version>1.0-1</jcip-annotations.version>
+        <!-- Yubico client validation version property -->
+        <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
+
     </properties>
     
     <modules>
