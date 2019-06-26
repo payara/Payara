@@ -56,6 +56,62 @@
     
     <dependencyManagement>
         <dependencies>
+            <!-- Public Payara artifacts -->
+            <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <!-- TODO: Payara Blue ? -->
+            
+            <dependency>
+                <groupId>fish.payara.distributions</groupId>
+                <artifactId>payara</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.distributions</groupId>
+                <artifactId>payara-ml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.distributions</groupId>
+                <artifactId>payara-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.distributions</groupId>
+                <artifactId>payara-web-ml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>ejb-http-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>payara-embedded-all</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>payara-embedded-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>payara-micro</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             
             <!-- Servlet -->
             <dependency>
@@ -107,7 +163,6 @@
                 <artifactId>hibernate-validator-cdi</artifactId>
                 <version>${hibernate.validator-cdi.version}</version>
             </dependency>
-            
             
             <!-- Expression Language (EL) -->
             <dependency>
@@ -693,7 +748,7 @@
                 <groupId>jakarta.jws</groupId>
                 <artifactId>jakarta.jws-api</artifactId>
                 <version>${jakarta.jws-api.version}</version>
-            </dependency>            
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
