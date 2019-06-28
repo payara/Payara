@@ -200,7 +200,7 @@ public class ModuleInfo {
                 // get the container.
                 Deployer deployer = engineInfo.getDeployer();
 
-                try (DeploymentSpan containerSpan = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD)){
+                try (DeploymentSpan containerSpan = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD)) {
                    ApplicationContainer appCtr = deployer.load(engineInfo.getContainer(), context);
                    if (appCtr==null) {
                        String msg = "Cannot load application in " + engineInfo.getContainer().getName() + " container";
@@ -261,20 +261,16 @@ public class ModuleInfo {
         
         ClassLoader currentClassLoader  = 
             Thread.currentThread().getContextClassLoader();
-        try {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, getName(), DeploymentTracing.AppStage.START)) {
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             // registers all deployed items.
             for (EngineRef engine : _getEngineRefs()) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("starting " + engine.getContainerInfo().getSniffer().getModuleType());
                 }
-                DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.START,
-                        engine.getContainerInfo().getSniffer().getModuleType());
-                }
 
-                try {
+                try (DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.CONTAINER,  engine.getContainerInfo().getSniffer().getModuleType(), DeploymentTracing.AppStage.START)){
                     if (!engine.start( context, tracker)) {
                         logger.log(Level.SEVERE, "Module not started " +  engine.getApplicationContainer().toString());
                         throw new Exception( "Module not started " +  engine.getApplicationContainer().toString());
@@ -288,14 +284,12 @@ public class ModuleInfo {
                         throw e;
                     }
                 }
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.STARTED,
-                        engine.getContainerInfo().getSniffer().getModuleType());
-                }
             }
             started=true;
             if (events!=null) {
+                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.START_EVENTS, "Module");
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
+                innerSpan.close();
             }
         } finally {
             Thread.currentThread().setContextClassLoader(currentClassLoader);

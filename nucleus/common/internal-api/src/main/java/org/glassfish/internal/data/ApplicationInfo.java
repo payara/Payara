@@ -333,35 +333,23 @@ public class ApplicationInfo extends ModuleInfo {
         ExtendedDeploymentContext context,
         ProgressTracker tracker) throws Exception {
 
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.START);
-        }
-        
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.START);
+
         super.start(context, tracker);
         // registers all deployed items.
         for (ModuleInfo module : getModuleInfos()) {
-            if (tracing!=null) {
-                tracing.addModuleMark(DeploymentTracing.ModuleMark.START, module.getName());
-            }
-            module.start(getSubContext(module, context), tracker);
-            if (tracing!=null) {
-                tracing.addModuleMark(
-                    DeploymentTracing.ModuleMark.STARTED, module.getName());
-            }
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.MODULE, module.getName(), DeploymentTracing.AppStage.START);
 
-        }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.START_EVENTS);
+            module.start(getSubContext(module, context), tracker);
+            innerSpan.close();
         }
 
         if (events!=null) {
+            DeploymentSpan innerSpan = tracing.startSpan(TraceContext.Level.APPLICATION, getName(), DeploymentTracing.AppStage.START, "Send events");
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_STARTED, this), false);
+            innerSpan.close();
         }
-        if (tracing!=null) {
-            tracing.addMark(DeploymentTracing.Mark.STARTED);
-        }
-
     }
 
     public void initialize() {
