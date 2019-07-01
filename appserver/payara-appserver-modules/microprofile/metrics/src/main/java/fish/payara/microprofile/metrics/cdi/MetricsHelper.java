@@ -187,6 +187,7 @@ public class MetricsHelper {
         } else {
             metadataBuilder.withName(baseClass.getCanonicalName() + "." + metric.name());
         }
+        metadataBuilder.notReusable();
         return metadataBuilder.build();
     }
     

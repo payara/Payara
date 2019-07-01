@@ -225,6 +225,11 @@ public class MetricsResolver {
             metadataBuilder.withDescription(gauge.description());
             metadataBuilder.withType(MetricType.CONCURRENT_GAUGE);
             metadataBuilder.withUnit(gauge.unit());
+            if (gauge.reusable()) {
+                metadataBuilder.reusable();
+            } else {
+                metadataBuilder.notReusable();
+            }
             tags = gauge.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;

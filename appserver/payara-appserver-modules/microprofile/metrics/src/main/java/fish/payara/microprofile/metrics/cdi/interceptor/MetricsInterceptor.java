@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,7 @@ import javax.interceptor.AroundConstruct;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
@@ -123,17 +124,22 @@ public class MetricsInterceptor {
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target) {
         MetricsResolver.Of<Counted> counted = resolver.counted(bean, element);
         if (counted.isPresent()) {
-            registry.counter(counted.metadata());
+            registry.counter(counted.metadata(), counted.tags());
+        }
+        
+        MetricsResolver.Of<ConcurrentGauge> concurrent = resolver.concurrentGauge(bean, element);
+        if (concurrent.isPresent()) {
+            registry.concurrentGauge(concurrent.metadata(), concurrent.tags());
         }
 
         MetricsResolver.Of<Metered> metered = resolver.metered(bean, element);
         if (metered.isPresent()) {
-            registry.meter(metered.metadata());
+            registry.meter(metered.metadata(), metered.tags());
         }
 
         MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
         if (timed.isPresent()) {
-            registry.timer(timed.metadata());
+            registry.timer(timed.metadata(), timed.tags());
         }
 
         if (element instanceof Method

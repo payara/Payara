@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -68,12 +68,20 @@ public class MetricProducer {
 
     @Produces
     private Counter counter(InjectionPoint ip) {
-        return registry.counter(helper.metadataOf(ip, Counter.class));
+        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
+             return registry.counter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        } else {
+            return registry.counter(ip.toString());
+        }
     }
     
     @Produces
     private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
-        return registry.concurrentGauge(helper.metadataOf(ip, Counter.class));
+        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
+            return registry.concurrentGauge(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        } else {
+            return registry.concurrentGauge(ip.toString());
+        }
     }
 
     @Produces
@@ -83,17 +91,29 @@ public class MetricProducer {
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
-        return registry.histogram(helper.metadataOf(ip, Histogram.class));
+        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
+            return registry.histogram(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        } else {
+            return registry.histogram(ip.toString());
+        }
     }
 
     @Produces
     private Meter meter(InjectionPoint ip) {
-        return registry.meter(helper.metadataOf(ip, Meter.class));
+        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
+            return registry.meter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        } else {
+            return registry.meter(ip.toString());
+        }
     }
 
     @Produces
     private Timer timer(InjectionPoint ip) {
-        return registry.timer(helper.metadataOf(ip, Timer.class));
+        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
+            return registry.timer(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        } else {
+            return registry.timer(ip.toString());
+        }
     }
 
     @Produces

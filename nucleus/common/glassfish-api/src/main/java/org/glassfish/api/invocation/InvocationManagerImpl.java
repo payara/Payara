@@ -307,6 +307,8 @@ public class InvocationManagerImpl implements InvocationManager {
                 ComponentInvocation invocation = new ComponentInvocation();
                 invocation.setComponentInvocationType(parrentInvocation.getInvocationType());
                 invocation.setComponentId(parrentInvocation.getComponentId());
+                invocation.setAppName(parrentInvocation.getAppName());
+                invocation.setModuleName(parrentInvocation.getModuleName());
                 invocation.setContainer(parrentInvocation.getContainer());
                 invocation.setJndiEnvironment(parrentInvocation.getJndiEnvironment());
 

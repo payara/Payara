@@ -102,6 +102,7 @@ import javax.interceptor.InterceptorBinding;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
@@ -127,7 +128,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
     private void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
         addInterceptorBinding(Counted.class, manager, beforeBeanDiscovery);
-        addInterceptorBinding(org.eclipse.microprofile.metrics.annotation.ConcurrentGauge.class, manager, beforeBeanDiscovery);
+        addInterceptorBinding(ConcurrentGauge.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Metered.class, manager, beforeBeanDiscovery);
         addInterceptorBinding(Timed.class, manager, beforeBeanDiscovery);
 
@@ -144,11 +145,11 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         addAnnotatedType(MetricsHelper.class, manager, beforeBeanDiscovery);
     }
 
-    private <T> void metricsAnnotations(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
+    private <T> void metricsAnnotations(@Observes @WithAnnotations({Counted.class, ConcurrentGauge.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
         processAnnotatedType.configureAnnotatedType().add(METRICS_ANNOTATION_BINDING);
     }
 
-    private <T> void validateMetrics(@Observes @WithAnnotations({Counted.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
+    private <T> void validateMetrics(@Observes @WithAnnotations({Counted.class, ConcurrentGauge.class, Gauge.class, Metered.class, Timed.class}) ProcessAnnotatedType<T> processAnnotatedType) {
         AnnotatedType<?> annotatedType = processAnnotatedType.getAnnotatedType();
         List<AnnotatedCallable<?>> annotatedCallables = new ArrayList<>(annotatedType.getConstructors());
         annotatedCallables.addAll(annotatedType.getMethods());
@@ -198,6 +199,11 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
             MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
             if (timed.isPresent()) {
                 validate.accept(timed);
+            }
+            
+            MetricsResolver.Of<ConcurrentGauge> concurrent = resolver.concurrentGauge(bean, element);
+            if (concurrent.isPresent()) {
+                validate.accept(concurrent);
             }
 
             if (element instanceof Method
