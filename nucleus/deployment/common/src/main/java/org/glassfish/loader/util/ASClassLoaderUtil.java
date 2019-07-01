@@ -60,6 +60,7 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -251,8 +252,21 @@ public class ASClassLoaderUtil {
                 if (mr != null) {
                     for (Module module : mr.getModules()) {
                         for (URI uri : module.getModuleDefinition().getLocations()) {
-                            tmpString.append(Paths.get(uri).toString());
-                            tmpString.append(File.pathSeparator);
+                            if (uri.toString().startsWith("reference:")) {
+                                try {
+                                    // OSGi modules can have "reference:" prepended to them if they're exploded, except
+                                    // there doesn't appear to be an actual FileSystemProvider for this type
+                                    tmpString.append(new URI(uri.toString().substring("reference:".length())));
+                                    tmpString.append(File.pathSeparator);
+                                } catch (URISyntaxException use) {
+                                    deplLogger.log(Level.WARNING,
+                                            "Error truncating URI with prefix of \"reference:\"",
+                                            use);
+                                }
+                            } else {
+                                tmpString.append(Paths.get(uri).toString());
+                                tmpString.append(File.pathSeparator);
+                            }
                         }
                     }
                 }
