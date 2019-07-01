@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.mdb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
@@ -48,7 +48,9 @@ import javax.ejb.MessageDriven;
 
 import org.glassfish.ejb.deployment.annotation.handlers.AbstractEjbHandler;
 import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
+import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -57,6 +59,7 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -114,7 +117,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
      * Set Annotation information to Descriptor.
      * This method will also be invoked for an existing descriptor with
      * annotation as user may not specific a complete xml.
-     * @param ejbDesc
+     * @param ejbDescMaxWaitTimeInMillis
      * @param ainfo
      * @return HandlerProcessingResult
      */
@@ -142,6 +145,26 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
             // xml override
             if (acProp.propertyName().equals("resourceAdapter")) {
                 ejbMsgBeanDesc.setResourceAdapterMid(envProp.getValue());
+            } else if (acProp.propertyName().equals("MaxPoolSize")) {
+                initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
+                ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setMaxPoolSize(Integer.valueOf(envProp.getValue()));
+            } else if (acProp.propertyName().equals("PoolResizeQuantity")) {
+                initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
+                ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setPoolResizeQuantity(Integer.valueOf(envProp.getValue()));
+            } else if (acProp.propertyName().equals("SteadyPoolSize")) {
+                initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
+                ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setSteadyPoolSize(Integer.valueOf(envProp.getValue()));
+            } else if (acProp.propertyName().equals("MaxWaitTimeInMillis")) {
+                initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
+                ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setMaxWaitTimeInMillis(Integer.valueOf(envProp.getValue()));
+            } else if (acProp.propertyName().equals("PoolIdleTimeoutInSeconds")) {
+                initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
+                ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setPoolIdleTimeoutInSeconds(Integer.valueOf(envProp.getValue()));
+            }else if (acProp.propertyName().equals("SingletonBeanPool")) {
+                NameValuePairDescriptor singletonProperty = new NameValuePairDescriptor();
+                singletonProperty.setName("singleton-bean-pool");
+                singletonProperty.setValue(envProp.getValue());
+                ejbMsgBeanDesc.getEjbBundleDescriptor().addEnterpriseBeansProperty(singletonProperty);
             } else if (ejbMsgBeanDesc.getActivationConfigValue(envProp.getName()) == null) {
                 ejbMsgBeanDesc.putActivationConfigProperty(envProp);
             }
@@ -195,5 +218,13 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
         msgEjbDesc.setMessageListenerType(intfName);
 
         return getDefaultProcessedResult();
+    }
+
+    private void initialiseBeanPoolDescriptor(EjbMessageBeanDescriptor ejbMsgBeanDesc) {
+        BeanPoolDescriptor beanPoolDescriptor = ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool();
+        if (beanPoolDescriptor == null) {
+            beanPoolDescriptor = new BeanPoolDescriptor();
+            ejbMsgBeanDesc.getIASEjbExtraDescriptors().setBeanPool(beanPoolDescriptor);
+        }
     }
 }
