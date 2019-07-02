@@ -1,14 +1,14 @@
-#(Optional) : Deadline for Merge
+#Description
 
-Is there a deadline other than sprint end for the merge to happen?
+Brief description of the purpose of the change. Please provide some context
+
+#(Optional) : Deadlines
+
+Are there any special case deadlines?
 
 #(Optional) : Blocks
 
 Is this PR blocking other work? why?
-
-#Description
-
-Brief description of the purpose of the change. Please provide some context
 
 #Dependencies
 
