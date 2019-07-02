@@ -159,13 +159,10 @@ class RemoteEJBContext implements Context {
      * Determine supported protocol on server side and construct corresponding Lookup instance.
      */
     private Lookup determineLookup(URI root) throws NamingException {
-        ClientBuilder clientBuilder = null;
         try {
-            clientBuilder = getClientBuilder();
-            Client client = clientBuilder.build();
+            Client client = getClientBuilder().build();
 
-            LookupDiscoveryServiceImpl lookupDiscovery = new LookupDiscoveryServiceImpl();
-            LookupDiscoveryResponse discovery = lookupDiscovery.discover(client, root);
+            LookupDiscoveryResponse discovery = new LookupDiscoveryServiceImpl().discover(client, root);
 
             Integer version = getVersion(discovery);
             if (discovery.isV1target() && (version == null || version.intValue() == 1)) {
@@ -183,7 +180,7 @@ class RemoteEJBContext implements Context {
     }
 
     private Integer getVersion(LookupDiscoveryResponse discovery) {
-        Object versionSetting = environment.get(RemoteEJBContextFactory.JAXRS_CLIENT_VERSION);
+        Object versionSetting = environment.get(RemoteEJBContextFactory.JAXRS_CLIENT_PROTOCOL_VERSION);
         if (versionSetting == null) {
             return null;
         }
@@ -236,14 +233,14 @@ class RemoteEJBContext implements Context {
         return clientBuilder;
     }
 
-    private NamingException newNamingException(String name, Exception cause) {
+    private static NamingException newNamingException(String name, Exception cause) {
         NamingException namingException = new NamingException("Could not lookup :" + name);
         namingException.initCause(cause);
 
         return namingException;
     }
 
-    private <T> T getInstance(Object value, Class<T> clazz) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private static <T> T getInstance(Object value, Class<T> clazz) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
         }
@@ -255,7 +252,7 @@ class RemoteEJBContext implements Context {
         throw new IllegalStateException("Value " + value + " has to be of type String or " + clazz);
     }
 
-    private Long getLong(Object value) {
+    private static Long getLong(Object value) {
         if (value instanceof Number) {
             return ((Number) value).longValue();
         }
@@ -267,7 +264,7 @@ class RemoteEJBContext implements Context {
         throw new IllegalStateException("Value " + value + " has to be of type String or Number");
     }
 
-    private char[] getPassword(Object value) {
+    private static char[] getPassword(Object value) {
         if (value instanceof String) {
             return ((String) value).toCharArray();
         }

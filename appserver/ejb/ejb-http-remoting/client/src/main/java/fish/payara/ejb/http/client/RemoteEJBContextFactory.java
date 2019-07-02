@@ -79,8 +79,8 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String JAXRS_CLIENT_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
     public static final String JAXRS_CLIENT_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String JAXRS_CLIENT_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
-    public static final String JAXRS_CLIENT_SERIALIZATION = "fish.payara.serialization";
-    public static final String JAXRS_CLIENT_VERSION = "fish.payara.version";
+    public static final String JAXRS_CLIENT_SERIALIZATION = "fish.payara.ejb.http.serialization";
+    public static final String JAXRS_CLIENT_PROTOCOL_VERSION = "fish.payara.ejb.http.version";
 
     @Deprecated
     public static final String FISH_PAYARA_WITH_CONFIG = JAXRS_CLIENT_CONFIG;
@@ -143,7 +143,7 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
             JAXRS_CLIENT_SSL_CONTEXT,
             JAXRS_CLIENT_TRUST_STORE,
             JAXRS_CLIENT_SERIALIZATION,
-            JAXRS_CLIENT_VERSION,
+            JAXRS_CLIENT_PROTOCOL_VERSION,
     };
 
     @SuppressWarnings("unchecked")
