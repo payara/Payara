@@ -54,7 +54,7 @@ import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
  */
 public class MockTokenParser {
 
-    private final MockJwtTokenParser jwtTokenParser = new MockJwtTokenParser();
+    private final JwtTokenParser jwtTokenParser = new JwtTokenParser();
 
     public JsonWebToken parse(String bearerToken, String issuer, PublicKey signedBy) throws Exception {
         try {
