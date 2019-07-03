@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -87,6 +87,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     private EmbeddedSystemAdministrator embeddedSystemAdministrator;
 
     private boolean terse;
+    private boolean extraTerse;
 
     private Logger logger = Logger.getAnonymousLogger();
 
@@ -117,9 +118,11 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         ParameterMap options = parser.getOptions();
         operands = parser.getOperands();
         options.set("DEFAULT", operands);
-        // if command has a "terse" option, set it in options
+        // if command has a "terse" or "extraterse" option, set it in options
         if (commandModel.getModelFor("terse") != null)
             options.set("terse", Boolean.toString(terse));
+        if (commandModel.getModelFor("extraterse") != null)
+            options.set("extraterse", Boolean.toString(extraTerse));
 
         // Read the passwords from the password file and set it in command options.
         if (globalOptions.size() > 0) {
@@ -144,6 +147,11 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     @Override
     public void setTerse(boolean terse) {
         this.terse = terse;
+    }
+
+    @Override
+    public void setExtraTerse(boolean extraTerse) {
+        this.extraTerse = extraTerse;
     }
 
     /**

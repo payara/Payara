@@ -107,6 +107,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
 
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    private boolean dynamic;
+
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";

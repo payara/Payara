@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.embeddable;
 
 /**
@@ -101,4 +103,6 @@ public interface CommandRunner {
      * @param terse true to get concise output, false otherwise.
      */
     void setTerse(boolean terse);
+
+    void setExtraTerse(boolean extraTerse);
 }

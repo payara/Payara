@@ -38,7 +38,7 @@
  * holder.
 
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
  */
 
@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import org.glassfish.api.admin.*;
@@ -215,6 +216,10 @@ public final class ListClustersCommand implements AdminCommand {
         String output = sb.toString();
         //Fix for isue 12885
         report.setMessage(output.substring(0,output.length()-1 ));
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("clusterNames", clusterMap.keySet());
+        report.setExtraProperties(extraProperties);
     }
 
     /*

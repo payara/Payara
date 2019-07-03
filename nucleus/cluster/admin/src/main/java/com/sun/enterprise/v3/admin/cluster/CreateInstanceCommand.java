@@ -53,10 +53,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -133,7 +135,13 @@ public class CreateInstanceCommand implements AdminCommand {
     
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
-    
+
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    private boolean dynamic;
+
+    @Param(name = "extraterse", optional = true, defaultValue = "false")
+    private boolean extraTerse;
+
     @Param(name = "instance_name", primary = true)
     private String instance;
     
@@ -196,11 +204,16 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
-        if (theNode.isLocal()) {
-            validateInstanceDirUnique(report, context);
-            if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
-                // If we couldn't update domain.xml then stop!
-                return;
+        if (dynamic) {
+            List<String> namesInUse = getAllNamesInUse(context);
+            validateInstanceNameUnique(namesInUse);
+        } else {
+            if (theNode.isLocal()) {
+                validateInstanceDirUnique(report, context);
+                if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
+                    // If we couldn't update domain.xml then stop!
+                    return;
+                }
             }
         }
 
@@ -264,6 +277,10 @@ public class CreateInstanceCommand implements AdminCommand {
             // Then go create the instance filesystem on the node
             createInstanceFilesystem();
         }
+
+        if (extraTerse) {
+            report.setMessage(instance);
+        }
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
@@ -297,6 +314,107 @@ public class CreateInstanceCommand implements AdminCommand {
             }
         }
     }
+
+    private void validateInstanceNameUnique(List<String> namesInUse) {
+        if (!namesInUse.contains(instance)) {
+            return;
+        } else {
+            instance = instance + "-asd";
+
+            if (namesInUse.contains(instance)) {
+                validateInstanceNameUnique(namesInUse);
+            }
+        }
+    }
+
+    private List<String> getAllNamesInUse(AdminCommandContext context) {
+        List<String> namesInUse = new ArrayList<>();
+
+        namesInUse.addAll(getInstanceNames(new DoNothingActionReporter(), context));
+        namesInUse.addAll(getNodeNames(new DoNothingActionReporter(), context));
+        namesInUse.addAll(getClusterNames(new DoNothingActionReporter(), context));
+        namesInUse.addAll(getDeploymentGroupNames(new DoNothingActionReporter(), context));
+        namesInUse.addAll(getConfigNames(new DoNothingActionReporter(), context));
+
+        return namesInUse;
+    }
+
+    private List<String> getInstanceNames(ActionReport report, AdminCommandContext context) {
+        List<String> instanceNames = new ArrayList<>();
+
+        CommandInvocation listInstancesCommand = commandRunner.getCommandInvocation("list-instances", report,
+                context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("nostatus", "true");
+        listInstancesCommand.parameters(commandParameters);
+        listInstancesCommand.execute();
+        Properties extraProperties = listInstancesCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            List<Map<String, String>> instanceList = (List<Map<String, String>>) extraProperties.get("instanceList");
+            for (Map<String, String> instanceMap : instanceList) {
+                instanceNames.add(instanceMap.get("name"));
+            }
+        }
+
+        return instanceNames;
+    }
+
+    private List<String> getNodeNames(ActionReport report, AdminCommandContext context) {
+        List<String> nodeNames = new ArrayList<>();
+
+        CommandInvocation listNodesCommand = commandRunner.getCommandInvocation("list-nodes", report,
+                context.getSubject());
+        listNodesCommand.execute();
+        Properties extraProperties = listNodesCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            nodeNames.addAll((List<String>) extraProperties.get("nodeNames"));
+        }
+
+        return nodeNames;
+    }
+
+    private List<String> getClusterNames(ActionReport report, AdminCommandContext context) {
+        List<String> clusterNames = new ArrayList<>();
+
+        CommandInvocation listClustersCommand = commandRunner.getCommandInvocation("list-clusters", report,
+                context.getSubject());
+        listClustersCommand.execute();
+        Properties extraProperties = listClustersCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            clusterNames.addAll((Set<String>) extraProperties.get("clusterNames"));
+        }
+
+        return clusterNames;
+    }
+
+    private List<String> getDeploymentGroupNames(ActionReport report, AdminCommandContext context) {
+        List<String> deploymentGroupNames = new ArrayList<>();
+
+        CommandInvocation listDeploymentGroupsCommand = commandRunner.getCommandInvocation("list-deployment-groups",
+                report, context.getSubject());
+        listDeploymentGroupsCommand.execute();
+        Properties extraProperties = listDeploymentGroupsCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            deploymentGroupNames.addAll((List<String>) extraProperties.get("listOfDeploymentGroups"));
+        }
+
+        return deploymentGroupNames;
+    }
+
+    private List<String> getConfigNames(ActionReport report, AdminCommandContext context) {
+        List<String> configNames = new ArrayList<>();
+
+        CommandInvocation listConfigsCommand = commandRunner.getCommandInvocation("list-configs", report,
+                context.getSubject());
+        listConfigsCommand.execute();
+        Properties extraProperties = listConfigsCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            configNames.addAll((List<String>) extraProperties.get("configNames"));
+        }
+
+        return configNames;
+    }
+
 
     /**
      * Returns the directory for the selected instance that is on the local system.

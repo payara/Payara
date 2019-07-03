@@ -1018,9 +1018,12 @@ public abstract class CLICommand implements PostConstruct {
         // "DEFAULT"
         options.set("DEFAULT", operands);
 
-        // if command has a "terse" option, set it from ProgramOptions
+        // if command has a "terse" or "extraterse" option, set it from ProgramOptions
         if (commandModel.getModelFor("terse") != null){
             options.set("terse", Boolean.toString(programOpts.isTerse()));
+        }
+        if (commandModel.getModelFor("extraterse") != null){
+            options.set("terse", Boolean.toString(programOpts.isExtraTerse()));
         }
         // initialize the injector.
         InjectionResolver<Param> injector =
