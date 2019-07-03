@@ -57,7 +57,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
@@ -75,7 +74,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
@@ -471,8 +469,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             theInstance = Hazelcast.newHazelcastInstance(config);
             if (env.isMicro()) {
                 if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
-                    NameGenerator gen = new NameGenerator();
-                    memberName = gen.generateName();
+                    memberName = PayaraMicroNameGenerator.generateName();
                     Set<com.hazelcast.core.Member> clusterMembers = theInstance.getCluster().getMembers();
 
                     // If the instance name was generated, we need to compile a list of all the instance names in use within 
@@ -489,7 +486,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     // If our generated name is already in use within the instance group, either generate a new one or set the 
                     // name to this instance's UUID if there are no more unique generated options left
                     if (takenNames.contains(memberName)) {
-                        memberName = gen.generateUniqueName(takenNames,
+                        memberName = PayaraMicroNameGenerator.generateUniqueName(takenNames,
                                 theInstance.getCluster().getLocalMember().getUuid());
                         theInstance.getCluster().getLocalMember().setStringAttribute(
                                 HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
