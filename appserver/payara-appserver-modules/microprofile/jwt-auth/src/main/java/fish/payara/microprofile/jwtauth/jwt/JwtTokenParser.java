@@ -88,13 +88,13 @@ public class JwtTokenParser {
         rawToken = bearerToken;
         signedJWT = SignedJWT.parse(rawToken);
         
-        if(!checkIsJWT(signedJWT.getHeader())){
+        if (!checkIsJWT(signedJWT.getHeader())) {
             throw new IllegalStateException("Not JWT");
         }
     }
     
     public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
-        if(signedJWT == null){
+        if (signedJWT == null) {
             parse(rawToken);
         }
 
