@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -113,12 +113,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
                 throw new IllegalStateException("No PublicKey found");
             }
 
-            JsonWebTokenImpl jsonWebToken
-                    = jwtTokenParser.parse(
-                            signedJWTCredential.getSignedJWT(),
-                            acceptedIssuer,
-                            publicKey.get()
-                    );
+            jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
+            JsonWebTokenImpl jsonWebToken = jwtTokenParser.verify(acceptedIssuer, publicKey.get());
 
             List<String> groups = new ArrayList<>(
                     jsonWebToken.getClaim("groups"));
