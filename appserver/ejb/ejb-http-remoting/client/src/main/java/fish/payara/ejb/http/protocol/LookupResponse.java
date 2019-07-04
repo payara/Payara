@@ -37,29 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.protocol;
+
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
+import java.io.Serializable;
 
 /**
- * This is the context factory that creates the context used for looking up and invoking
- * remote EJBs.
- * 
- * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
+ * Response of looking up the fully qualified class name of a EJBs remote interface for a given JNDI name.
  *
- * @deprecated in favor of package {@code fish.payara.ejb.http.client}
- * @author Arjan Tijms
- * @since Payara 5.191
+ * @author Jan Bernitt
  */
-@Deprecated
-public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
-    
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+public class LookupResponse implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    public final String typeName;
+    public final String kind;
+
+    public LookupResponse(Class<?> ejbInterface) {
+        this.typeName = ejbInterface.getName();
+        this.kind = "Stateless"; // TODO hard coded for now until we support stateful as well
+    }
+
+    @JsonbCreator
+    public LookupResponse(@JsonbProperty("typeName") String typeName, @JsonbProperty("kind") String kind) {
+        this.typeName = typeName;
+        this.kind = kind;
+    }
 
 }

@@ -37,29 +37,67 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.protocol;
+
+import javax.json.bind.annotation.JsonbPropertyOrder;
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
- * This is the context factory that creates the context used for looking up and invoking
- * remote EJBs.
+ * Result of invoking an EJB method.
  * 
- * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
- *
- * @deprecated in favor of package {@code fish.payara.ejb.http.client}
- * @author Arjan Tijms
- * @since Payara 5.191
+ * @author Jan Bernitt
  */
-@Deprecated
-public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
-    
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+@JsonbPropertyOrder({"type", "result"})
+public class InvokeMethodResponse implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Actual type of the result
+     */
+    public final String type;
+    public final Object result;
+
+    public InvokeMethodResponse(Object result) {
+        this(result == null ? "" : result.getClass().getName(), result);
+    }
+
+    public InvokeMethodResponse(String type, Object result) {
+        this.type = type;
+        this.result = result;
+    }
+
+    public static class ResultType implements Annotation {
+        public final Type type;
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return ResultType.class;
+        }
+
+        public ResultType(Method method) {
+            this.type = method.getGenericReturnType();
+        }
+
+        public static Annotation[] of(Method method) {
+            return new Annotation[] { new ResultType(method) };
+        }
+
+        public static boolean isPresent(Annotation[] annotations) {
+            return annotations != null && Stream.of(annotations).anyMatch(ResultType.class::isInstance);
+        }
+
+        public static ResultType find(Annotation[] annotations) {
+            Optional<ResultType> found = Optional.empty();
+            if (annotations != null) {
+                found = Stream.of(annotations).filter(ResultType.class::isInstance).map(ResultType.class::cast).findAny();
+            }
+            return found.orElseThrow(() -> new IllegalArgumentException("ResultType annotation is not present") );
+        }
+    }
 }

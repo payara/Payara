@@ -37,29 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.client;
+
+import java.net.URI;
+
+import javax.naming.NamingException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
 
 /**
- * This is the context factory that creates the context used for looking up and invoking
- * remote EJBs.
+ * Abstraction for the discovery strategy used to find possible endpoints that can be used to do the initial EJB lookup
+ * request.
  * 
- * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
- *
- * @deprecated in favor of package {@code fish.payara.ejb.http.client}
- * @author Arjan Tijms
- * @since Payara 5.191
+ * @author Jan Bernitt
  */
-@Deprecated
-public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
-    
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+interface LookupDiscoveryService {
+
+    /**
+     * Discover potential endpoints for EJB over HTTP.
+     * 
+     * @param client the {@link Client} to use when discovering endpoints at the give root {@link URI}.
+     * @param root where the endpoints should be discovered
+     * @return The result of the discovery including usable {@link WebTarget}s
+     * @throws NamingException In an error occurred during discovery or no endpoints were discovered
+     */
+    LookupDiscoveryResponse discover(Client client, URI root) throws NamingException;
 
 }

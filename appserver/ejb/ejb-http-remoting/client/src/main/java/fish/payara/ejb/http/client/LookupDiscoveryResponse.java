@@ -37,29 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.rest.client;
+package fish.payara.ejb.http.client;
 
-/**
- * This is the context factory that creates the context used for looking up and invoking
- * remote EJBs.
- * 
- * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
- *
- * @deprecated in favor of package {@code fish.payara.ejb.http.client}
- * @author Arjan Tijms
- * @since Payara 5.191
- */
-@Deprecated
-public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
-    
-    public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
-    public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
-    public static final String FISH_PAYARA_SSL_CONTEXT = "fish.payara.sslContext";
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = "fish.payara.scheduledExecutorService";
-    public static final String FISH_PAYARA_READ_TIMEOUT = "fish.payara.readTimeout";
-    public static final String FISH_PAYARA_KEY_STORE = "fish.payara.keyStore";
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = "fish.payara.hostnameVerifier";
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
+import java.net.URI;
 
+import javax.ws.rs.client.WebTarget;
+
+class LookupDiscoveryResponse {
+
+    private URI resolvedRoot;
+    private WebTarget v0lookup;
+    private WebTarget v1lookup;
+
+    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup) {
+        this(resolvedRoot, v0lookup, null);
+    }
+
+    public LookupDiscoveryResponse(URI resolvedRoot, WebTarget v0lookup, WebTarget v1lookup) {
+        this.resolvedRoot = resolvedRoot;
+        this.v0lookup = v0lookup;
+        this.v1lookup = v1lookup;
+    }
+
+    public URI getResolvedRoot() {
+        return resolvedRoot;
+    }
+
+    public boolean isV0target() {
+        return v0lookup != null;
+    }
+
+    public WebTarget getV0lookup() {
+        return v0lookup;
+    }
+
+    public boolean isV1target() {
+        return v1lookup != null;
+    }
+
+    public WebTarget getV1lookup() {
+        return v1lookup;
+    }
 }
