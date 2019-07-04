@@ -44,7 +44,6 @@ import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import fish.payara.api.admin.config.NameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
@@ -55,7 +54,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
 
 /**
  * Class to generate random names for Payara Server instances.
@@ -75,15 +73,10 @@ public class PayaraServerNameGenerator extends NameGenerator {
             return instanceName;
         }
 
-        instanceName = instanceName + "-" + generateName();
-
-        // While this can recurse indefinitely, the odds of it doing so are essentially infinitesimal since it's
-        // constantly appending a new generated name (of which there are over 14k variations) rather than simply
-        // replacing the appended name
-        return validateInstanceNameUnique(instanceName, namesInUse);
+        return validateInstanceNameUnique(instanceName + "-" + generateNameNoHyphen(), namesInUse);
     }
 
-    public static String generateName() {
+    public static String generateNameNoHyphen() {
         int adjectivesIndex = ThreadLocalRandom.current().nextInt(0, adjectives.length);
         int fishIndex = ThreadLocalRandom.current().nextInt(0, fishes.length);
 

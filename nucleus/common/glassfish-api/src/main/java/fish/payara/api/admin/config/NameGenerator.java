@@ -2,7 +2,7 @@ package fish.payara.api.admin.config;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class NameGenerator {
+public class NameGenerator {
     // 161 different possible adjectives to describe a fish
     protected static final String[] adjectives = new String[]{"Adorable", "Adventurous", "Aggressive", "Alert", "Beautiful",
             "Blue-eyed", "Bloody", "Blushing", "Bright", "Clear", "Cloudy", "Colourful", "Crowded", "Cute", "Dark",

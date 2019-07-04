@@ -91,6 +91,7 @@ public class ProgramOptions {
     public static final String EXTRATERSE       = "extraterse";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
+    public static final String AUTONAME         = "autoname";
 
     private static final Logger logger = Logger.getLogger(ProgramOptions.class.getPackage().getName());
 
@@ -131,6 +132,7 @@ public class ProgramOptions {
         addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
         addMetaOption(opts, NOTIFY, '\0', Boolean.class, false, "false");
         addMetaOption(opts, EXTRATERSE, 'T', Boolean.class, false, "false");
+        addMetaOption(opts, AUTONAME, 'a', Boolean.class, false, "false");
         programOptions = Collections.unmodifiableSet(opts);
         addMetaOption(hopts, HELP, '?', Boolean.class, false, "false");
         helpOption = Collections.unmodifiableSet(hopts);
@@ -495,6 +497,22 @@ public class ProgramOptions {
 
         return extraTerse;
     }
+
+    public boolean isAutoName() {
+        boolean autoName;
+        if (options.containsKey(AUTONAME)) {
+            String value = options.getOne(AUTONAME);
+            if (ok(value)) {
+                autoName = Boolean.parseBoolean(value);
+            } else {
+                autoName = true;
+            }
+        } else {
+            autoName = env.getBooleanOption(AUTONAME);
+        }
+
+        return autoName;
+    }
     
     /**
      * @return detach option
@@ -533,6 +551,10 @@ public class ProgramOptions {
 
     public void setExtraTerse(boolean extraTerse) {
         options.set(EXTRATERSE, Boolean.toString(extraTerse));
+    }
+
+    public void setAutoName(boolean autoName) {
+        options.set(AUTONAME, Boolean.toString(autoName));
     }
 
     /**
@@ -659,6 +681,7 @@ public class ProgramOptions {
         args.add("--extraterse=" + isExtraTerse());
         args.add("--echo=" + isEcho());
         args.add("--interactive=" + isInteractive());
+        args.add("--autoname=" + isAutoName());
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
@@ -737,6 +760,7 @@ public class ProgramOptions {
         sb.append("--echo=").append(isEcho()).append(' ');
         sb.append("--terse=").append(isTerse()).append(' ');
         sb.append("--extraterse=").append(isExtraTerse()).append(' ');
+        sb.append("--autoname=").append(isAutoName()).append(' ');
         sb.setLength(sb.length() - 1);  // strip trailing space
         return sb.toString();
     }

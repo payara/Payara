@@ -53,12 +53,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import fish.payara.admin.cluster.PayaraServerNameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -137,10 +135,10 @@ public class CreateInstanceCommand implements AdminCommand {
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    private boolean dynamic;
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
 
-    @Param(name = "extraterse", optional = true, defaultValue = "false")
+    @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
     private boolean extraTerse;
 
     @Param(name = "instance_name", primary = true)
@@ -205,7 +203,7 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
-        if (dynamic) {
+        if (autoName) {
             instance = PayaraServerNameGenerator.validateInstanceNameUnique(instance, context);
         } else {
             if (theNode.isLocal()) {
