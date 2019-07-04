@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -60,6 +60,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.*;
 import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
 import com.sun.enterprise.util.JDK;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +72,8 @@ import java.util.stream.Collectors;
  * @author bnevins
  */
 public abstract class GFLauncher {
-    
+
+    private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile(".* version \"([^\"\\-]+)(-.*)?\".*");
     private final List<String> commandLine = new ArrayList<String>();
     private final List<String> jvmOptionsList = new ArrayList<String>();
     private final GFLauncherInfo info;
@@ -187,6 +190,14 @@ public abstract class GFLauncher {
         }
         info.setAdminAddresses(parser.getAdminAddresses());
         javaConfig = new JavaConfig(parser.getJavaConfig());
+        // Set the config java-home value as the Java home for the environment,
+        // unless it is empty or it is already refering to a substitution of
+        // the environment variable.
+        String jhome = javaConfig.getJavaHome();
+        if (GFLauncherUtils.ok(jhome) && !jhome.trim().equals("${" + JAVA_ROOT_PROPERTY + "}")) {
+            asenvProps.put(JAVA_ROOT_PROPERTY, jhome);
+        }
+        setJavaExecutable();
         setupProfilerAndJvmOptions(parser);
         setupUpgradeSecurity();
 
@@ -206,13 +217,6 @@ public abstract class GFLauncher {
         sysPropsFromXml = parser.getSystemProperties();
         asenvProps.put(INSTANCE_ROOT_PROPERTY, getInfo().getInstanceRootDir().getPath());
 
-        // Set the config java-home value as the Java home for the environment,
-        // unless it is empty or it is already refering to a substitution of
-        // the environment variable.
-        String jhome = javaConfig.getJavaHome();
-        if (GFLauncherUtils.ok(jhome) && !jhome.trim().equals("${" + JAVA_ROOT_PROPERTY + "}")) {
-            asenvProps.put(JAVA_ROOT_PROPERTY, jhome);
-        }
         debugOptions = getDebug();
         parseDebug();
         parser.setupConfigDir(getInfo().getConfigDir(), getInfo().getInstallDir());
@@ -220,7 +224,6 @@ public abstract class GFLauncher {
         resolveAllTokens();
         fixLogFilename();
         GFLauncherLogger.addLogFileHandler(logFilename);
-        setJavaExecutable();
         setClasspath();
         setCommandLine();
         setJvmOptions();
@@ -867,9 +870,10 @@ public abstract class GFLauncher {
                 parser.getProfilerJvmOptions(),
                 parser.getProfilerSystemProperties());
 
+        Optional<JDK.Version> jdkVersion = getConfiguredJdkVersion(javaExe);
         List<String> rawJvmOptions = parser.getJvmOptions()
                 .stream()
-                .filter(fullOption -> JDK.isCorrectJDK(fullOption.minVersion, fullOption.maxVersion))
+                .filter(fullOption -> JDK.isCorrectJDK(jdkVersion, fullOption.minVersion, fullOption.maxVersion))
                 .map(option -> option.option)
                 .collect(Collectors.toList());
         rawJvmOptions.addAll(getSpecialSystemProperties());
@@ -884,7 +888,35 @@ public abstract class GFLauncher {
         // PAYARA-1681 - Add default Payara JVM options if an override isn't in place
         addDefaultJvmOptions();
     }
-    
+
+    /**
+     * Get the Java version from the given path to a Java executable.
+     *
+     * @param javaExePath The full path to the executable java command.
+     * @return The Java version as a JDK.Version object, if successful.
+     * @throws GFLauncherException
+     */
+    private Optional<JDK.Version> getConfiguredJdkVersion(String javaExePath) throws GFLauncherException {
+        try {
+            Runtime r = Runtime.getRuntime();
+            Process p = r.exec(javaExePath + " -version");
+            p.waitFor();
+            try (BufferedReader b = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
+                String line = b.readLine();
+                if (line == null) {
+                    return Optional.empty();
+                }
+                Matcher m = JAVA_VERSION_PATTERN.matcher(line);
+                if (m.matches()) {
+                    return Optional.ofNullable(JDK.getVersion(m.group(1)));
+                }
+            }
+            return Optional.empty();
+        } catch (IOException | InterruptedException ex) {
+            throw new GFLauncherException("nojvm");
+        }
+    }
+
     private void addDefaultJvmOptions() {
         if (!jvmOptions.getCombinedMap().containsKey(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY)) {
             jvmOptions.sysProps.put(PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY, 
