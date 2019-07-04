@@ -75,9 +75,6 @@ public class JwtTokenParser {
     
     private String rawToken;
     private SignedJWT signedJWT;
-
-    private String rawToken;
-    private SignedJWT signedJWT;
     
     public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
@@ -91,15 +88,6 @@ public class JwtTokenParser {
     public void parse(String bearerToken) throws Exception {
         rawToken = bearerToken;
         signedJWT = SignedJWT.parse(rawToken);
-
-        // MP-JWT 1.0 4.1 typ
-        if (!checkIsJWT(signedJWT.getHeader())) {
-            throw new IllegalStateException("Not JWT");
-        }
-    }
-    
-    public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
-        checkState(signedJWT != null, "No parsed SignedJWT.");
 
         // MP-JWT 1.0 4.1 typ
         if (!checkIsJWT(signedJWT.getHeader())) {
