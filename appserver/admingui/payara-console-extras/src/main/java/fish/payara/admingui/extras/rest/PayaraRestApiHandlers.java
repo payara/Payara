@@ -1,5 +1,5 @@
 /* 
- *     Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -220,7 +220,7 @@ public class PayaraRestApiHandlers {
             Map attrMap = new HashMap();
             attrMap.put("componentname", encodedComponentName);
             Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, false, false);
-            Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+            Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
             // Check if the command returned any endpoints
             if(payaraEndpointsExtraProps.get("endpoints") != null) {
@@ -270,7 +270,7 @@ public class PayaraRestApiHandlers {
                 Map attrMap = new HashMap();
                 attrMap.put("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(prefix + "/list-rest-endpoints", attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
 
                 // Enter into the map the key of the component and whether it has endpoints or not
                 result.put(componentName, false);
@@ -318,7 +318,7 @@ public class PayaraRestApiHandlers {
                 String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
                 Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
                 Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = (Map) ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
+                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
                 List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
                 for (Map property : properties) {
                     if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
@@ -574,10 +574,12 @@ public class PayaraRestApiHandlers {
         boolean forRequestTracing = false;
         boolean forHealthCheck = false;
         boolean forMonitoring = false;
+        boolean forAdminAudit = false;
 
         for (String notifier : notifiers){
             String name = notifier.split("-")[1];
             String restEndpoint;
+            Map<String, Object> attributes = new HashMap<>();
             if (endpoint.contains("request-tracing-service-configuration")){
                 restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
                 forRequestTracing = true;
@@ -587,21 +589,29 @@ public class PayaraRestApiHandlers {
             } else if (endpoint.contains("monitoring-service-configuration")){
                 restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
                 forMonitoring = true;
+            } else if (endpoint.contains("admin-audit-configuration")) {
+                restEndpoint = endpoint + "/set-admin-audit-service-notifier-configuration";
+                attributes.put("notifier", name);
+                forAdminAudit = true;
             } else {
                 //Unknown service being configured
                 throw new UnknownConfigurationException();
             }
             
-            HashMap<String, Object> attrs = new HashMap<>();
+            
             if (enabledNotifiers.contains(notifier)){
-                attrs.put("enabled", "true");                
+                attributes.put("enabled", "true");                
             } else {
-                attrs.put("enabled", "false");
+                attributes.put("enabled", "false");
             }
-            //PAYARA-1616 go silent, bootstrap will take place after iteration.
-            attrs.put("dynamic", "false");
-            attrs.put("target", target);
-            RestUtil.restRequest(restEndpoint, attrs, "post", handlerCtx, quiet, throwException);
+            if (!forAdminAudit) {
+                //PAYARA-1616 go silent, bootstrap will take place after iteration.
+                attributes.put("dynamic", "false");
+            } else {
+                attributes.put("dynamic", "true");
+            }
+            attributes.put("target", target);
+            RestUtil.restRequest(restEndpoint, attributes, "post", handlerCtx, quiet, throwException);
         }
         // PAYARA-1616
         // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
@@ -706,7 +716,7 @@ public class PayaraRestApiHandlers {
         String serverName = "";
        
         try {
-            List<Map> table = RestUtil.buildChildEntityList(
+            List<Map<String, Object>> table = RestUtil.buildChildEntityList(
                     (String)handlerCtx.getInputValue("parentEndpoint"),
                     (String)handlerCtx.getInputValue("childType"),
                     (List)handlerCtx.getInputValue("skipList"),
@@ -722,7 +732,7 @@ public class PayaraRestApiHandlers {
                 for (String instance : instances) {
                     String configRef = (String) RestUtil.getAttributesMap(instance).get("configRef");
                     if (configRef.equals(configName)) {
-                        serverName = instance.substring(instance.lastIndexOf("/") + 1);
+                        serverName = instance.substring(instance.lastIndexOf('/') + 1);
                     }
                 }
                 String deployedApplicationsEndpoint = sessionScopeRestURL + "servers/server/" + serverName 
@@ -733,7 +743,7 @@ public class PayaraRestApiHandlers {
                 List<String> applications = RestUtil.getChildList(sessionScopeRestURL + "applications/application");
 
                 for (String virtualServer : virtualServers) {         
-                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf("/") + 1);
+                    String virtualServerName = virtualServer.substring(virtualServer.lastIndexOf('/') + 1);
 
                     for (int i = 0; i < deployedApplications.size(); i++) {
                         deployedApplications.set(i, deployedApplications.get(i)
@@ -743,7 +753,7 @@ public class PayaraRestApiHandlers {
                     String contextRoots = "";
 
                     for (String application : applications) {
-                        String applicationName = application.substring(application.lastIndexOf("/") + 1);
+                        String applicationName = application.substring(application.lastIndexOf('/') + 1);
                         String[] deployedVirtualServers; 
                         if (RestUtil.get(deployedApplicationsEndpoint + "/" + applicationName).isSuccess()) {
                             String deployedVirtualServersString = ((String) RestUtil.getAttributesMap(

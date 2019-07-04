@@ -37,25 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019[ Payara Foundation and/or affiliates
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import javax.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  *  This is a local command that distributes the SSH public key to remote node(s)
@@ -171,23 +176,29 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        Console cons = System.console();
-
-        if (cons != null) {
-            String val = null;
-            do {
-                cons.printf("%s", Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
-                val = cons.readLine();
-                if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.finer("Generate key!");
+        try {
+            buildTerminal();
+            buildLineReader();
+            if (lineReader != null) {
+                String val;
+                do {
+                    val = lineReader.readLine(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
+                    if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
+                        if (logger.isLoggable(Level.FINER)) {
+                            logger.finer("Generate key!");
+                        }
+                        return true;
+                    } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
+                        break;
                     }
-                    return true;
-                } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
-                    break;
-                }
-            } while (val != null && !isValidAnswer(val));
+                } while (val != null && !isValidAnswer(val));
+            }
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore  
+        } finally {
+            closeTerminal();
         }
+
         return false;
     }
 

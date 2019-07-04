@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <artifactId>glassfish</artifactId>
@@ -86,8 +86,8 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-			                <classpathLayoutType>custom</classpathLayoutType>
-			                <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
+                            <classpathLayoutType>custom</classpathLayoutType>
+                            <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
                             <mainClass>com.sun.enterprise.glassfish.bootstrap.ASMain</mainClass>
                         </manifest>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

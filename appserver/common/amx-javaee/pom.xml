@@ -41,11 +41,13 @@
 
 -->
 
+<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>amx-javaee</artifactId>
@@ -90,6 +92,10 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-omgapi</artifactId>
         </dependency>
     </dependencies>
 </project>

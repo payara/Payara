@@ -37,22 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
-import com.sun.enterprise.admin.cli.remote.*;
+import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.Console;
-import java.io.IOException;
-
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
+
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  * The asadmin login command.
@@ -120,20 +121,26 @@ public class LoginCommand extends CLICommand {
      * Prompt for the admin user name.
      */
     private String getAdminUser() {
-        Console cons = System.console();
         String user = null;
-        String defuser = programOpts.getUser();
-        if (defuser == null) {
-            defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
-        }
-        if (cons != null) {
-            cons.printf("%s", strings.get("AdminUserPrompt", defuser));
-            String val = cons.readLine();
-            if (val != null && val.length() > 0){
+        try {
+            buildTerminal();
+            buildLineReader();
+            
+            String defuser = programOpts.getUser();
+            if (defuser == null) {
+                defuser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
+            }
+
+            String val = lineReader.readLine(strings.get("AdminUserPrompt", defuser));
+            if (val != null && val.length() > 0) {
                 user = val;
             } else {
                 user = defuser;
             }
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore           
+        } finally {
+            closeTerminal();
         }
         return user;
     }

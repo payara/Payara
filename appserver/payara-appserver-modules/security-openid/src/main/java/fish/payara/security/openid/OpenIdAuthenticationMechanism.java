@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -58,11 +58,14 @@ import java.io.StringReader;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.logging.Level.WARNING;
+
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import javax.security.enterprise.authentication.mechanism.http.AutoApplySession;
@@ -183,18 +186,18 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             return authenticationController.authenticateUser(configuration, httpContext);
         }
 
-        String recievedState = request.getParameter(STATE);
+        Optional<OpenIdState> receivedState = OpenIdState.from(request.getParameter(STATE));
         String redirectURI = configuration.buildRedirectURI(request);
-        if (nonNull(recievedState)
+        if (receivedState.isPresent()
                 && request.getRequestURL().toString().equals(redirectURI)) {
 
-            OpenIdState expectedState = stateController.get(configuration, httpContext);
-            if (nonNull(expectedState)) {
-                if (expectedState.equals(recievedState)) {
+            Optional<OpenIdState> expectedState = stateController.get(configuration, httpContext);
+            if (expectedState.isPresent()) {
+                if (expectedState.equals(receivedState)) {
                     // (3) Successful Authentication Response : redirect_uri?code=abc&state=123
                     return validateAuthorizationCode(httpContext);
                 } else {
-                    LOGGER.fine("Inconsistent recieved state, value not matched");
+                    LOGGER.fine("Inconsistent received state, value not matched");
                     return httpContext.notifyContainerAboutLogin(NOT_VALIDATED_RESULT);
                 }
             } else {
@@ -209,9 +212,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
      * Authorization Code Flow must be validated and exchanged for an ID Token,
      * an Access Token and optionally a Refresh Token directly.
      *
-     * @param request
-     * @param context
-     * @return
+     * @param httpContext the {@link HttpMessageContext} to validate authorization code from
+     * @return the authentication status.
      */
     private AuthenticationStatus validateAuthorizationCode(HttpMessageContext httpContext) {
         HttpServletRequest request = httpContext.getRequest();
@@ -227,12 +229,10 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         LOGGER.finer("Authorization Code received, now fetching Access token & Id token");
 
         Response response = tokenController.getTokens(configuration, request);
-        String tokensBody = response.readEntity(String.class);
-        JsonObject tokensObject = Json.createReader(new StringReader(tokensBody)).readObject();
-
+        JsonObject tokensObject = readJsonObject(response.readEntity(String.class));
         if (response.getStatus() == Status.OK.getStatusCode()) {
             // Successful Token Response
-            updateContext(tokensObject, httpContext);
+            updateContext(tokensObject);
             OpenIdCredential credential = new OpenIdCredential(tokensObject, httpContext, configuration);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
             return httpContext.notifyContainerAboutLogin(validationResult);
@@ -245,7 +245,13 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
         }
     }
 
-    private void updateContext(JsonObject tokensObject, HttpMessageContext httpContext) {
+    private JsonObject readJsonObject(String tokensBody) {
+        try (JsonReader reader = Json.createReader(new StringReader(tokensBody))) {
+            return reader.readObject();
+        }
+    }
+
+    private void updateContext(JsonObject tokensObject) {
         context.setProviderMetadata(configuration.getProviderMetadata().getDocument());
         context.setTokenType(tokensObject.getString(TOKEN_TYPE, null));
 

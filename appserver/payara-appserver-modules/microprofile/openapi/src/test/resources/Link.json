@@ -1,0 +1,14 @@
+[
+{
+   "operationRef": "#/paths/~12.0~1repositories~1{username}/get",
+   "parameters": {
+      "username": "$response.body#/username"
+   }
+},
+{
+   "operationRef": "https://na2.gigantic-server.com/#/paths/~12.0~1repositories~1{username}/get",
+   "parameters": {
+      "username": "$response.body#/username"
+   }
+}
+]

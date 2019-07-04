@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import com.hazelcast.instance.EndpointQualifier;
 import com.hazelcast.spi.MemberAddressProvider;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -77,6 +78,16 @@ public class MemberAddressPicker implements MemberAddressProvider {
         
         // determine public address and bind address
         findAppropriateInterfaces();
+    }
+
+    @Override
+    public InetSocketAddress getBindAddress(EndpointQualifier endpointQualifier) {
+        return getBindAddress();
+    }
+
+    @Override
+    public InetSocketAddress getPublicAddress(EndpointQualifier endpointQualifier) {
+        return getPublicAddress();
     }
 
     @Override
@@ -155,39 +166,17 @@ public class MemberAddressPicker implements MemberAddressProvider {
         if (possibleInterfaces.size() >= 1) {
             
             InetAddress chosenAddress = null;
-            if (!config.getInterface().isEmpty()) {
-                List<String> interfaces = Arrays.asList(config.getInterface().split(","));
-                // first compare with the chosen interfaces in the config
-                for (NetworkInterface possibleInterface : possibleInterfaces) {
-                    // go through each interface and choose the first one that matches the interfaces definition
-                    for (InterfaceAddress interfaceAddress : possibleInterface.getInterfaceAddresses()) {
-                        if (interfaces.contains(interfaceAddress.getAddress().getHostAddress())) {
-                            chosenAddress = interfaceAddress.getAddress();
-                            break;
-                        }
-                    }
-                    if (chosenAddress != null) {
-                        break;
-                    }
-                }
-                
-                if (chosenAddress == null) {
-                    logger.warning("Interface(s) " + config.getInterface() + " specified in the configuration but there is no interface with that address. Will pick any valid interface");
-                }
-            }
-            
+
             // we haven't found an address
-            if (chosenAddress == null) {
-                // this is our interface
-                // get first address on the interface
-                NetworkInterface intf = possibleInterfaces.iterator().next();
-                Enumeration<InetAddress> addresses = intf.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    chosenAddress = addresses.nextElement();
-                    if (chosenAddress instanceof Inet4Address) {
-                        // prefer Inet4Address
-                        break;
-                    }   
+            // this is our interface
+            // get first address on the interface
+            NetworkInterface intf = possibleInterfaces.iterator().next();
+            Enumeration<InetAddress> addresses = intf.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                chosenAddress = addresses.nextElement();
+                if (chosenAddress instanceof Inet4Address) {
+                    // prefer Inet4Address
+                    break;
                 }
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);

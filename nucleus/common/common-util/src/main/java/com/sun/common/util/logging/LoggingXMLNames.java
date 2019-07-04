@@ -38,12 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +78,8 @@ public class LoggingXMLNames {
     public static final String logToConsole = "log-to-console";
 
     public static final String alarms = "alarms";
+    
+    public static final String logStandardStreams = "log-standard-streams";
 
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
     // logger names from DTD
@@ -118,7 +119,7 @@ public class LoggingXMLNames {
 //mapping of the names used in domain.xml to the names used in logging.properties
 
     public static final Map<String, String> xmltoPropsMap =
-            new HashMap<String, String>() {{
+            new HashMap<String, String>() {{            
                 put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
                 put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
@@ -127,6 +128,7 @@ public class LoggingXMLNames {
                 put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
                 put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
+                put(logStandardStreams, LoggingPropertyNames.logStandardStreams);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);

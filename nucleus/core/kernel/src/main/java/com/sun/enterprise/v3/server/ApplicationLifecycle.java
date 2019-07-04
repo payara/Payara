@@ -71,6 +71,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
+import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
@@ -143,6 +145,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     ConfigSupport configSupport;
+
+    @Inject
+    CommonClassLoaderServiceImpl commonClassLoaderService;
 
     @Inject
     PayaraExecutorService executorService;
@@ -566,41 +571,53 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
+    @SuppressWarnings("squid:S2095")
     public Types getDeployableTypes(DeploymentContext context) throws IOException {
-
         synchronized(context) {
             Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
             if (types!=null) {
                 return types;
-            } else {
-
-                try {
-                    // scan the jar and store the result in the deployment context.
-                    ParsingContext parsingContext = new ParsingContext.Builder().logger(context.getLogger()).executorService(executorService.getUnderlyingExecutorService()).build();
-                    Parser parser = new Parser(parsingContext);
-                    ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
-                    parser.parse(scannerAdapter, null);
-                    for (ReadableArchive externalLibArchive :
-                        getExternalLibraries(context)) {
-                        ReadableArchiveScannerAdapter libAdapter = null;
-                        try {
-                            libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
-                            parser.parse(libAdapter, null);
-                        } finally {
-                            if (libAdapter!=null) {
-                                libAdapter.close();
-                            }
+            }
+            try {
+                ResourceLocator locator = determineLocator();
+                // scan the jar and store the result in the deployment context.
+                ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder().logger(context.getLogger())
+                        .executorService(executorService.getUnderlyingExecutorService());
+                // workaround bug in Builder
+                parsingContextBuilder.locator(locator);
+                ParsingContext parsingContext = parsingContextBuilder.build();
+                Parser parser = new Parser(parsingContext);
+                ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
+                parser.parse(scannerAdapter, null);
+                for (ReadableArchive externalLibArchive :
+                    getExternalLibraries(context)) {
+                    ReadableArchiveScannerAdapter libAdapter = null;
+                    try {
+                        libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
+                        parser.parse(libAdapter, null);
+                    } finally {
+                        if (libAdapter!=null) {
+                            libAdapter.close();
                         }
                     }
-                    parser.awaitTermination();
-                    scannerAdapter.close();
-                    context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
-                    context.addTransientAppMetaData(Parser.class.getName(), parser);
-                    return parsingContext.getTypes();
-                } catch(InterruptedException e) {
-                    throw new IOException(e);
                 }
+                parser.awaitTermination();
+                scannerAdapter.close();
+                context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
+                context.addTransientAppMetaData(Parser.class.getName(), parser);
+                return parsingContext.getTypes();
+            } catch(InterruptedException e) {
+                throw new IOException(e);
             }
+        }
+    }
+
+    private ResourceLocator determineLocator() {
+        if (CommonModelRegistry.getInstance().canLoadResources()) {
+            // common model registry will handle our external class dependencies
+            return null;
+        } else {
+            return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
         }
     }
 
@@ -628,7 +645,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (Boolean.valueOf(skipScanExternalLibProp)) {
             // if we skip scanning external libraries, we should just
             // return an empty list here
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<URI> externalLibs = DeploymentUtils.getExternalLibraries(context.getSource());
@@ -682,7 +699,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (handler == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         if (sniffers==null) {

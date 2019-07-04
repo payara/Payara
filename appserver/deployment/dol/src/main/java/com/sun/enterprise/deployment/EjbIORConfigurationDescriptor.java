@@ -279,7 +279,7 @@ public class EjbIORConfigurationDescriptor implements Serializable {
      * @param val the value (true or false).
      */
     public void setAuthMethodRequired(String val) {
-	required = Boolean.valueOf(val).booleanValue();
+	required = Boolean.parseBoolean(val);
     }
 
     /**

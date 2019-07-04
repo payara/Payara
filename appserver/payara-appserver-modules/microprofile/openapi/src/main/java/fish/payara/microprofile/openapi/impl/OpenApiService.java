@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -58,7 +57,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -106,9 +104,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     private OpenApiServiceConfiguration config;
 
     @Inject
-    private PayaraExecutorService executor;
-
-    @Inject
     private ServerEnvironment environment;
 
     @Inject
@@ -127,6 +122,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     public boolean isEnabled() {
         return Boolean.parseBoolean(config.getEnabled());
+    }
+    
+    public boolean isSecurityEnabled() {
+        return Boolean.parseBoolean(config.getSecurityEnabled());
     }
 
     public boolean withCorsHeaders() {
@@ -189,7 +188,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
-        return (OpenAPI) mappings.peekLast().getDocument();
+        return mappings.peekLast().getDocument();
     }
 
     /**
@@ -224,7 +223,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      * @return a list of all loadable classes in the archive.
      */
     private static Set<Class<?>> getClassesFromArchive(ReadableArchive archive, ClassLoader appClassLoader) {
-        return Collections.list((Enumeration<String>) archive.entries()).stream()
+        return Collections.list(archive.entries()).stream()
                 // Only use the classes
                 .filter(x -> x.endsWith(".class"))
                 // Remove the WEB-INF/classes and return the proper class name format
@@ -262,12 +261,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         private final OpenApiConfiguration appConfig;
         private volatile OpenAPI document;
 
-        private OpenApiMapping(ApplicationInfo appInfo) {
+        OpenApiMapping(ApplicationInfo appInfo) {
             this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
         }
 
-        private ApplicationInfo getAppInfo() {
+        ApplicationInfo getAppInfo() {
             return appInfo;
         }
 
@@ -335,7 +334,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
                     // Check if this listener is using HTTP or HTTPS
                     boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
-                    List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
+                    List<Integer> ports = securityEnabled ? httpsPorts : httpPorts;
 
                     // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
                     if (!networkListener.getName().equals(adminListener)) {

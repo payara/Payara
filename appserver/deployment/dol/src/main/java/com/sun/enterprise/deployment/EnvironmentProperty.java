@@ -386,50 +386,49 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     }
 
     private Object getObjectFromString(String string, Class type) {
-        if (type == null && !this.isBoundsChecking()) {
+        if (type == null && !Descriptor.isBoundsChecking()) {
             Object obj = getValueObjectUsingAllowedTypes(string);
             if (obj != null) return obj;
         }
-	if (string == null || ("".equals(string) && !type.equals(String.class))) {
-	    return null;
-	}
-	try {
-            if (String.class.equals(type)) {
-		return string;
-            } else if (Boolean.class.equals(type)) {
-		return Boolean.valueOf(string);
-	    } else if (Integer.class.equals(type)) {
-		return Integer.valueOf(string);
-	    } else if (Double.class.equals(type)) {
-		return new Double(string);
-	    } else if (Float.class.equals(type)) {
-		return new Float(string);
-	    } else if (Short.class.equals(type)) {
-		return Short.valueOf(string);
-	    } else if (Byte.class.equals(type)) {
-		return Byte.valueOf(string);
-	    } else if (Long.class.equals(type)) {
-		return Long.valueOf(string);
-	    } else if (Character.class.equals(type)) {
+        if (string == null || ("".equals(string) && type != String.class)) {
+            return null;
+        }
+        try {
+            if (String.class == type) {
+                return string;
+            } else if (Boolean.class == type) {
+                return Boolean.valueOf(string);
+            } else if (Integer.class == type) {
+                return Integer.valueOf(string);
+            } else if (Double.class == type) {
+                return new Double(string);
+            } else if (Float.class == type) {
+                return new Float(string);
+            } else if (Short.class == type) {
+                return Short.valueOf(string);
+            } else if (Byte.class == type) {
+                return Byte.valueOf(string);
+            } else if (Long.class == type) {
+                return Long.valueOf(string);
+            } else if (Character.class == type) {
                 if (string.length() != 1) {
                     throw new IllegalArgumentException();
-                } else {
-                    return string.charAt(0);
                 }
-            } else if (Class.class.equals(type)) {
+                return string.charAt(0);
+            } else if (Class.class == type) {
                 return Class.forName(string, true,
-                    Thread.currentThread().getContextClassLoader());
+                        Thread.currentThread().getContextClassLoader());
             } else if (type != null && type.isEnum()) {
                 return Enum.valueOf(type, string);
             }
-	} catch (Throwable t) {
-	    throw new IllegalArgumentException(localStrings.getLocalString(
-									   "enterprise.deployment.exceptioncouldnotcreateinstancetype",
-									   "Could not create instance of {0} from {1}\n reason: {2}" + t, new Object[] {type, string, t}));
-	}
-	throw new IllegalArgumentException(localStrings.getLocalString(
-								       "enterprise.deployment.exceptionillegaltypeenvproperty",
-								       "Illegal type for environment properties: {0}", new Object[] {type}));
+        } catch (Throwable t) {
+            throw new IllegalArgumentException(localStrings.getLocalString(
+                    "enterprise.deployment.exceptioncouldnotcreateinstancetype",
+                    "Could not create instance of {0} from {1}\n reason: {2}" + t, new Object[] {type, string, t}));
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionillegaltypeenvproperty",
+                "Illegal type for environment properties: {0}", new Object[] {type}));
     }
 
 
@@ -452,9 +451,8 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         } else if (this.type.equals(char.class.getName())) {
             if (string.length() != 1) {
                 throw new IllegalArgumentException();
-            } else {
-                return string.charAt(0);
             }
+            return string.charAt(0);
         }
         return null;
     }

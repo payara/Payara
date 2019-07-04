@@ -180,7 +180,7 @@ public class PayaraClusteredCDIEventImpl implements PayaraClusteredCDIEvent {
             }
             return result;
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     } 
 

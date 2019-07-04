@@ -3,10 +3,10 @@
  *
  * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU 
+ * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You 
- * may not use this file except in compliance with the License.  You can 
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
@@ -28,7 +28,7 @@
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL 
+ * elects to include this software in this distribution under the [CDDL or GPL
  * Version 2] license."  If you don't indicate a single choice of license, a
  * recipient has the option to distribute your version of this file under
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
@@ -36,7 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
+ *
  */
 // Portions Copyright [2017-2018] Payara Foundation and/or affiliates
 
@@ -65,7 +65,7 @@ import org.glassfish.api.logging.LogHelper;
  * @see org.glassfish.admin.rest.utils.JsonUtil
  */
 public class Util {
-    
+
     /**
      * Converts a String of JSON data into a map
      * If there is an error then an empty Map will be returned.
@@ -74,16 +74,15 @@ public class Util {
      */
     public static Map processJsonMap(String json) {
         Map<String, Object> map;
-        try {
-            JsonParser parser = Json.createParser(new StringReader(json));
+        try (JsonParser parser = Json.createParser(new StringReader(json))) {
             if (parser.hasNext()){
                 parser.next();
-                 map = processJsonObject(parser.getObject());
+                map = processJsonObject(parser.getObject());
             } else {
-                map = new HashMap<String, Object>();
+                map = new HashMap<>();
             }
         } catch (JsonException e) {
-            map = new HashMap();
+            map = new HashMap<>();
         }
         return map;
     }
@@ -95,10 +94,10 @@ public class Util {
      * {@link Map}, {@link Number}, {@code null} and/or {@link String}.
      * </p>
      * @param jsonObject
-     * @return 
+     * @return
      */
-    public static Map processJsonObject(JsonObject jsonObject) {
-        Map<String, Object> map = new HashMap<String, Object>();
+    public static Map<String, Object> processJsonObject(JsonObject jsonObject) {
+        Map<String, Object> map = new HashMap<>();
         try {
             for (String key : jsonObject.keySet()) {
                  JsonValue value = jsonObject.get(key);
@@ -120,7 +119,7 @@ public class Util {
                     case TRUE:
                         map.put(key, Boolean.TRUE);
                         break;
-                    case FALSE: 
+                    case FALSE:
                         map.put(key, Boolean.FALSE);
                         break;
                     default:
@@ -142,11 +141,11 @@ public class Util {
      * {@link Map}, {@link Number} and/or {@link String}.
      * </p>
      * @param jsonArray
-     * @return 
+     * @return
      */
     public static List processJsonArray(JsonArray jsonArray) {
         List results = new ArrayList();
-        
+
         try {
             for (JsonValue entry: jsonArray) {
                 if (null == entry.getValueType()) {

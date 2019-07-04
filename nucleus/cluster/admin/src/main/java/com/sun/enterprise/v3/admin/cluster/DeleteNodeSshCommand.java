@@ -37,19 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import java.util.*;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.DELETE;
 
-import com.sun.enterprise.config.serverbeans.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
-
-
 import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Nodes;
 
 
 /**
@@ -61,48 +71,53 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "delete-node-ssh")
 @I18n("delete.node.ssh")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Nodes.class,
-        opType=RestEndpoint.OpType.DELETE,
-        path="delete-node-ssh",
-        description="Delete Node SSH")
+    @RestEndpoint(configBean = Nodes.class,
+        opType = DELETE,
+        path = "delete-node-ssh",
+        description = "Delete Node SSH")
 })
 public class DeleteNodeSshCommand extends DeleteNodeRemoteCommand {
+    
     @Override
     public final void execute(AdminCommandContext context) {
         executeInternal(context);
     }
+
     /**
      * Get list of password file entries
+     * 
      * @return List
      */
     @Override
     protected final List<String> getPasswords() {
-        List list = new ArrayList<String>();
-        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-        list.add("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotepassword));
+        List<String> passwords = new ArrayList<>();
+        NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
+        
+        passwords.add("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotepassword));
 
         if (sshkeypassphrase != null) {
-            list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
+            passwords.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
         }
-        return list;
+        
+        return passwords;
     }
 
     @Override
     protected String getUninstallCommandName() {
         return "uninstall-node-ssh";
     }
-    
+
     @Override
-    final protected void setTypeSpecificOperands(List<String> command, ParameterMap map) {
+    final protected void setTypeSpecificOperands(List<String> command, ParameterMap commandParameters) {
         command.add("--sshport");
-        command.add(map.getOne(NodeUtils.PARAM_REMOTEPORT));
+        command.add(commandParameters.getOne(PARAM_REMOTEPORT));
 
         command.add("--sshuser");
-        command.add(map.getOne(NodeUtils.PARAM_REMOTEUSER));
+        command.add(commandParameters.getOne(PARAM_REMOTEUSER));
 
-        String key = map.getOne(NodeUtils.PARAM_SSHKEYFILE);
+        String key = commandParameters.getOne(PARAM_SSHKEYFILE);
 
         if (key != null) {
             command.add("--sshkeyfile");

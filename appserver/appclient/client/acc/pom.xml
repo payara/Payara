@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     
@@ -357,15 +357,11 @@
          <version>${project.version}</version>
      </dependency>
 
-     <!-- explicit dependencies for endorsed JARs the ACC needs -->
-
-     <!-- endorsed: javax.annotation-api.jar -->
      <dependency>
          <groupId>javax.annotation</groupId>
          <artifactId>javax.annotation-api</artifactId>
      </dependency>
 
-     <!-- endorsed: jaxb-api.jar -->
      <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
@@ -376,13 +372,16 @@
          <artifactId>jaxb-osgi</artifactId>
      </dependency>
 
-     <!-- endorsed: webservices-api-osgi.jar -->
+     <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-extra-osgi</artifactId>
+         <scope>runtime</scope>
+     </dependency>
+
      <dependency>
         <groupId>org.glassfish.metro</groupId>
         <artifactId>webservices-api-osgi</artifactId>
      </dependency>
-
-     <!-- end of endorsed JAR dependencies -->
 
      <!-- JAXR -JSR-93 Support-->
      <dependency>
@@ -421,7 +420,7 @@
       <dependency>
         <scope>runtime</scope>
         <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
+        <artifactId>jakarta.json</artifactId>
       </dependency>
 
       <!-- CDI support -->

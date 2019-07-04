@@ -116,7 +116,7 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
             object.put("message", part.getMessage());
             object.put("properties", new XmlMap("properties", part.getProps()));
             List<MessagePart> children = part.getChildren();
-            if (children.size() > 0) {
+            if (!children.isEmpty()) {
                 object.put("children", processChildren(part.getChildren()));
             }
             array.put(object);

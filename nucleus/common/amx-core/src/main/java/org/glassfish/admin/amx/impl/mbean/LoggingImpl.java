@@ -55,9 +55,6 @@ import java.util.logging.Logger;
 import javax.management.*;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
-import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
-import static org.glassfish.admin.amx.logging.LogFileAccess.*;
-import static org.glassfish.admin.amx.logging.LogRecordEmitter.*;
 import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.util.*;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
@@ -65,7 +62,10 @@ import org.glassfish.admin.amx.util.jmx.NotificationBuilder;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Service;
+
+import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
+import static org.glassfish.admin.amx.logging.LogFileAccess.*;
+import static org.glassfish.admin.amx.logging.LogRecordEmitter.*;
 
 //import com.sun.enterprise.server.logging.LoggingImplHook;
 /**
@@ -260,6 +260,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             attributes.put(gfHandler + ".logtoFile", props.get(gfHandler + ".logtoFile"));
             attributes.put(gfHandler + ".logtoConsole", props.get(gfHandler + ".logtoConsole"));
             attributes.put(gfHandler + ".flushFrequency", props.get(gfHandler + ".flushFrequency"));
+            attributes.put(gfHandler + ".logStandardStreams", props.get(gfHandler + ".logStandardStreams"));
             attributes.put("handlers", props.get("handlers"));
             attributes.put(sysHandler + ".useSystemLogging", props.get(sysHandler + ".useSystemLogging"));
             return attributes;

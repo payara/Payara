@@ -327,7 +327,7 @@ public abstract class FieldDesc implements java.io.Serializable {
         if (absoluteID < 0) {
             // Hidden field nothing to convert
             if (debug)
-                logger.finest("sqlstore.model.fielddesc.convertvalue.hidden",new Integer(absoluteID)); // NOI18N
+                logger.finest("sqlstore.model.fielddesc.convertvalue.hidden",Integer.valueOf(absoluteID)); // NOI18N
             return value;
         }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -120,8 +121,7 @@ public class GetGroupNamesCommand implements AdminCommand {
     @Inject
     RealmsManager realmsManager;
 
-    private static final LocalStringManagerImpl _localStrings =
-	new LocalStringManagerImpl(GetGroupNamesCommand.class);
+    private static final LocalStringManagerImpl _localStrings = new LocalStringManagerImpl(GetGroupNamesCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -154,16 +154,7 @@ public class GetGroupNamesCommand implements AdminCommand {
             props.put("groups", ret);
             report.setExtraProperties(props);
             report.setMessage("" + ret);
-        } catch (NoSuchRealmException ex) {
-            report.setFailureCause(ex);
-            report.setActionExitCode(ExitCode.FAILURE);
-        } catch (BadRealmException ex) {
-            report.setFailureCause(ex);
-            report.setActionExitCode(ExitCode.FAILURE);
-        } catch (InvalidOperationException ex) {
-            report.setFailureCause(ex);
-            report.setActionExitCode(ExitCode.FAILURE);
-        } catch (NoSuchUserException ex) {
+        } catch (NoSuchRealmException | BadRealmException | InvalidOperationException | NoSuchUserException ex) {
             report.setFailureCause(ex);
             report.setActionExitCode(ExitCode.FAILURE);
         }
@@ -176,9 +167,9 @@ public class GetGroupNamesCommand implements AdminCommand {
         //account for updates to file-realm contents from outside this config 
         //which are sharing the same keyfile
         realmsManager.refreshRealm(config.getName(), realmName);
-        Realm r = realmsManager.getFromLoadedRealms(config.getName(), realmName);
-        if (r != null) {
-            return getGroupNames(r, userName);
+        Realm realm = realmsManager.getFromLoadedRealms(config.getName(), realmName);
+        if (realm != null) {
+            return getGroupNames(realm, userName);
         }
         List<AuthRealm> authRealmConfigs = config.getSecurityService().getAuthRealm();
         for (AuthRealm authRealm : authRealmConfigs) {
@@ -189,23 +180,20 @@ public class GetGroupNamesCommand implements AdminCommand {
                     String value = p.getValue();
                     props.setProperty(p.getName(), value);
                 }
-                r = Realm.instantiate(authRealm.getName(), authRealm.getClassname(), props, config.getName());
-                return getGroupNames(r, userName);
+                realm = Realm.instantiate(authRealm.getName(), authRealm.getClassname(), props, config.getName());
+                return getGroupNames(realm, userName);
             }
         }
-        throw new NoSuchRealmException(
-                _localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}",
-                new Object[] {realmName}));
+        throw new NoSuchRealmException(_localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}", realmName));
     }
 
-    private String[] getGroupNames(Realm r, String userName) 
-            throws InvalidOperationException, NoSuchUserException {
-        List<String> l = new ArrayList<String>();
+    private String[] getGroupNames(Realm r, String userName) throws InvalidOperationException, NoSuchUserException {
+        List<String> groupNamesList = new ArrayList<String>();
         Enumeration<String> groupNames = r.getGroupNames(userName);
         while (groupNames.hasMoreElements()) {
-            l.add(groupNames.nextElement());
+            groupNamesList.add(groupNames.nextElement());
         }
-        return (String[]) l.toArray(new String[l.size()]);
+        return groupNamesList.toArray(new String[groupNamesList.size()]);
 
     }
 

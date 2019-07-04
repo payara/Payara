@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
 import org.glassfish.admin.rest.utils.Util;
@@ -49,19 +51,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  *
  * @author jdlee
  */
 class PythonClientClassWriter implements ClientClassWriter {
-    private String className;
+    private final String className;
     private StringBuilder source;
-    private File packageDir;
-    private static String TMPL_CTOR = "from restclientbase import *\n\nclass CLASS(RestClientBase):\n"+
+    private final File packageDir;
+    private static final String TMPL_CTOR = "from restclientbase import *\n\nclass CLASS(RestClientBase):\n"+
             "    def __init__(self, connection, parent, name = None):\n" +
             "        self.name = name\n" +
             "        RestClientBase.__init__(self, connection, parent, name)\n" +
@@ -69,16 +69,16 @@ class PythonClientClassWriter implements ClientClassWriter {
             "        self.connection = connection\n\n" +
             "    def getRestUrl(self):\n" +
             "        return self.getParent().getRestUrl() + self.getSegment() + (('/' + self.name) if self.name else '')\n";
-    private String TMPL_GET_SEGMENT = "    def getSegment(self):\n" + 
+    private static final String TMPL_GET_SEGMENT = "    def getSegment(self):\n" + 
             "        return '/SEGMENT'\n";
-    private static String TMPL_COMMAND_METHOD = "\n    def COMMAND(self PARAMS, optional={}):\n" + 
+    private static final String TMPL_COMMAND_METHOD = "\n    def COMMAND(self PARAMS, optional={}):\n" + 
             "MERGE" +
             "        return self.execute('/PATH', 'METHOD', optional, MULTIPART)\n";
-    private static String TMPL_GETTER_AND_SETTER = "\n    def getMETHOD(self):\n" + 
+    private static final String TMPL_GETTER_AND_SETTER = "\n    def getMETHOD(self):\n" + 
             "        return self.getValue('FIELD')\n\n" +
             "    def setMETHOD(self, value):\n" + 
             "        self.setValue('FIELD', value)\n";
-    private static String TMPL_GET_CHILD_RESOURCE = "\n    def getELEMENT(self, name):\n" +
+    private static final String TMPL_GET_CHILD_RESOURCE = "\n    def getELEMENT(self, name):\n" +
             "        from IMPORT import CHILD\n" +
             "        child = CHILD(self.connection, self, name)\n" +
             "        return child if (child.status == 200) else None\n";

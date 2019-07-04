@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.results;
 
@@ -54,9 +55,9 @@ import org.jvnet.hk2.config.ConfigBean;
  * @author Ludovic Champenois
  */
 public class ActionReportResult extends Result {
-    private RestActionReporter __message;
-    private OptionsResult __metaData;
-    private ConfigBean __entity;
+    private RestActionReporter message;
+    private OptionsResult metaData;
+    private ConfigBean entity;
     private String commandDisplayName = null;
     private LeafResource.LeafContent leafContent = null;
 
@@ -83,7 +84,7 @@ public class ActionReportResult extends Result {
 
     public ActionReportResult(RestActionReporter r, ConfigBean entity,  OptionsResult metaData) {
         this(r, metaData);
-        __entity = entity;
+        this.entity = entity;
     }
 
     public ActionReportResult(String name, RestActionReporter r) {
@@ -91,22 +92,22 @@ public class ActionReportResult extends Result {
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData) {
-        __name = name;
-        __message = r;
-        __metaData = metaData;
+        this.name = name;
+        message = r;
+        this.metaData = metaData;
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData, String displayName) {
-        __name = name;
-        __message = r;
-        __metaData = metaData;
+        this.name = name;
+        message = r;
+        this.metaData = metaData;
         commandDisplayName = displayName;
     }
     /**
      * Returns the result string this object represents
      */
     public ActionReporter getActionReport() {
-        return __message;
+        return message;
     }
 
     /**
@@ -126,10 +127,10 @@ public class ActionReportResult extends Result {
      * Returns OptionsResult - the meta-data of this resource.
      */
     public OptionsResult getMetaData() {
-        return __metaData;
+        return metaData;
     }
 
     public ConfigBean getEntity() {
-        return __entity;
+        return entity;
     }
 }

@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.generator.client;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
@@ -66,7 +69,6 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -104,8 +106,7 @@ public class GenerateClientCommand implements AdminCommand {
     @Param(shortName="lang", optional=true, defaultValue="java")
     private String languages;
 
-    private final static LocalStringManager localStrings =
-            new LocalStringManagerImpl(GenerateClientCommand.class);
+    private static final LocalStringManager localStrings = new LocalStringManagerImpl(GenerateClientCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -136,8 +137,7 @@ public class GenerateClientCommand implements AdminCommand {
             for (ClientGenerator gen : generators) {
                 for (Map.Entry<String, URI> entry : gen.getArtifact().entrySet()) {
                     final URI artifact = entry.getValue();
-                    outboundPayload.attachFile("application/octet-stream",
-                            new URI(entry.getKey()), "files", props, new File(artifact));
+                    outboundPayload.attachFile("application/octet-stream", new URI(entry.getKey()), "files", props, new File(artifact));
                 }
                 List<String> messages = gen.getMessages();
                 if (!messages.isEmpty()) {
@@ -148,8 +148,7 @@ public class GenerateClientCommand implements AdminCommand {
                 }
             }
         } catch (Exception e) {
-            final String errorMsg = localStrings.getLocalString(
-                    "download.errDownloading", "Error while downloading generated files");
+            final String errorMsg = localStrings.getLocalString("download.errDownloading", "Error while downloading generated files");
             logger.log(Level.SEVERE, errorMsg, e);
             ActionReport report = context.getActionReport();
 

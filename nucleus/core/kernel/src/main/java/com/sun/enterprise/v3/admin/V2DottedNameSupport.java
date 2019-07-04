@@ -227,8 +227,8 @@ public class V2DottedNameSupport {
                 }
             } else {
                 String delim;
-                if (token.lastIndexOf("*")!=-1) {
-                    delim = token.substring(0, token.lastIndexOf("*"));
+                if (token.lastIndexOf('*')!=-1) {
+                    delim = token.substring(0, token.lastIndexOf('*'));
                 } else {
                     delim = token;
                 }
@@ -264,7 +264,7 @@ public class V2DottedNameSupport {
             return false;
         } else {
             // patter is exhausted, only elements one level down should be returned
-            return dottedName.indexOf(".")==-1;
+            return dottedName.indexOf('.')==-1;
         }
     }
 

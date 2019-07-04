@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 /*
  * CaptureSchema.java
  *
  * Created on March 15, 2002, 4:02 PM
  */
-
 package com.sun.jdo.api.persistence.mapping.ejb;
 
 import org.netbeans.modules.dbschema.*;
@@ -168,7 +168,7 @@ public class CaptureSchema {
             else 
                 se.setName(DBIdentifier.create("")); //NOI18N
             
-            if (dburl.indexOf(bundle.getString("STRING_ORACLE_JDBC_URL_PREFIX_NOI18N")) > -1 && //NOI18N
+            if (dburl != null && dburl.indexOf(bundle.getString("STRING_ORACLE_JDBC_URL_PREFIX_NOI18N")) > -1 && //NOI18N
             (null == dbschemaname || dbschemaname.length() == 0)) {
                 // this argument combo has problems. print an error message and exit
                 System.err.println(bundle.getString("ERR_ORACLE_ARGUMENTS")); //NOI18N

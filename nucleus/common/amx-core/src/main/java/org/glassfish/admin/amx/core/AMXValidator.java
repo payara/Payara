@@ -992,7 +992,7 @@ public final class AMXValidator
         private static boolean
     isLegalClassname( final String s )
     {
-        if ( s.length()== 0 || s.indexOf(" ") >= 0 )
+        if ( s.length()== 0 || s.indexOf(' ') >= 0 )
         {
             return false;   // detect totally bogus name
         }

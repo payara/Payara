@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2014-2017] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2014-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -55,6 +55,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <name>Payara Nucleus Modules</name>
     
     <modules>
+        <module>asadmin-audit</module>
         <module>hazelcast-bootstrap</module>
         <module>healthcheck-core</module>
         <module>healthcheck-cpool</module>
@@ -75,7 +76,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <profile>
             <id>jdk8</id>
             <activation>
-                <jdk>1.8</jdk>
+                <jdk>[1.8,)</jdk>
             </activation>
             <modules>
                 <module>nucleus-microprofile</module>

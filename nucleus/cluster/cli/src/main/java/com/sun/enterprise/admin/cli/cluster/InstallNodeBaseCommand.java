@@ -39,29 +39,25 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.util.logging.Level;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileListerRelative;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
-import java.io.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Service;
 
-import java.io.File;
-import java.io.IOException;
+import javax.inject.Inject;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * @author Rajiv Mordani
@@ -141,8 +137,8 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         String baseRootValue = getSystemProperty(SystemPropertyConstants.PRODUCT_ROOT_PROPERTY);
         File installRoot = new File(baseRootValue);
 
-        File zipFileLocation = null;
-        File glassFishZipFile = null;
+        File zipFileLocation;
+        File glassFishZipFile;
 
         if (archive != null) {
             archive = archive.replace('\\', '/');
@@ -172,27 +168,28 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
         FileListerRelative lister = new FileListerRelative(installRoot);
         lister.keepEmptyDirectories();
-        String[] files = lister.getFiles();
 
-        List<String> resultFiles1 = Arrays.asList(files);
-        ArrayList<String> resultFiles = new ArrayList<String>(resultFiles1);
+        List<String> files = Arrays.asList(lister.getFiles());
+        List<String> resultFiles = new ArrayList<>();
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("Number of files to be zipped = " + resultFiles.size());
+            logger.finer("Number of files to be zipped = " + files.size());
         }
 
-        for (String fileName: resultFiles) {
+        for (String fileName: files) {
             String fPath = fileName.substring(fileName.lastIndexOf('/') + 1);
             if (fPath.equals(glassFishZipFile.getName())) {
-                if (logger.isLoggable(Level.FINER))
+                if (logger.isLoggable(Level.FINER)) {
                     logger.finer("Removing file = " + fileName);
-                //iter.remove();
+                }
                 continue;
             }
-            if (fileName.contains("domains") || fileName.contains("nodes")) {
-                //iter.remove();
-            } else if (isFileWithinBinDirectory(fileName)) {
-                binDirFiles.add(fileName);
+            if (!fileName.contains("domains") && !fileName.contains("nodes")) {
+
+                resultFiles.add(fileName);
+                if (isFileWithinBinDirectory(fileName)) {
+                    binDirFiles.add(fileName);
+                }
             }
         }
 

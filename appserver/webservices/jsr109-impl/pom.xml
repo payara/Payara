@@ -46,45 +46,13 @@
     <parent>
         <groupId>org.glassfish.main.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jsr109-impl</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>JSR-109 implementation to deploy Metro</name>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.glassfish.metro</groupId>
-                                    <artifactId>webservices-api-osgi</artifactId>
-                                    <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-                                    <version>${webservices.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>jakarta.xml.bind</groupId>
-                                    <artifactId>jakarta.xml.bind-api</artifactId>
-                                    <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-                                    <version>${jaxb-api.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <developers>
         <developer>

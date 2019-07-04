@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.provider;
@@ -46,7 +46,6 @@ import org.glassfish.admin.rest.results.GetResultList;
 import org.jvnet.hk2.config.Dom;
 import javax.json.Json;
 import javax.json.JsonException;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -81,7 +80,7 @@ public class GetResultListJsonProvider extends BaseProvider<GetResultList> {
         try {
             objectBuilder.add(KEY_ENTITY, JsonValue.EMPTY_JSON_OBJECT);
             objectBuilder.add(KEY_METHODS, getJsonForMethodMetaData(proxy.getMetaData()));
-            if (proxy.getDomList().size() > 0) {
+            if (!proxy.getDomList().isEmpty()) {
                 objectBuilder.add(KEY_CHILD_RESOURCES, getResourcesLinks(proxy.getDomList()));
             }
             if (proxy.getCommandResourcesPaths().length > 0) {
@@ -96,7 +95,6 @@ public class GetResultListJsonProvider extends BaseProvider<GetResultList> {
 
     private JsonArray getResourcesLinks(List<Dom> proxyList) {
         JsonArrayBuilder array = Json.createArrayBuilder();
-        String elementName;
         for (Map.Entry<String, String> link : getResourceLinks(proxyList).entrySet()) {
              array.add(link.getValue());
         }

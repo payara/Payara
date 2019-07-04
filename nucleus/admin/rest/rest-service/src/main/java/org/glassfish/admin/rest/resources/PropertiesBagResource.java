@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -77,7 +77,7 @@ public class PropertiesBagResource extends AbstractResource {
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PropertiesBagResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PropertiesBagResource.class);
 
     static public class PropertyResource extends TemplateRestResource {
         @Override
@@ -146,8 +146,7 @@ public class PropertiesBagResource extends AbstractResource {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, null);
 
-            String successMessage = localStrings.getLocalString("rest.resource.delete.message",
-                        "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()});
+            String successMessage = localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.", uriInfo.getAbsolutePath());
             return ResourceUtil.getResponse(200, successMessage, requestHeaders, uriInfo);
         } catch (Exception ex) {
             if (ex.getCause() instanceof ValidationException) {
@@ -162,7 +161,7 @@ public class PropertiesBagResource extends AbstractResource {
      * so this routine replaces . with \.
      */
     private String getEscapedPropertyName(String propName){
-        return propName.replaceAll("\\.","\\\\.");
+        return propName.replaceAll("\\.","\\\\\\.");
     }
 
     protected ActionReportResult clearThenSaveProperties(List<Map<String, String>> properties) {
@@ -173,62 +172,66 @@ public class PropertiesBagResource extends AbstractResource {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, properties);
             Map<String, String> data = new LinkedHashMap<String, String>();
+            Map<String, String> descriptionData = new LinkedHashMap<String, String>();
 
             for (Map<String, String> property : properties) {
                 Property existingProp = existing.get(property.get("name"));
 
-                String unescapedName = Object.class.cast(property.get("name")).toString();
+                String unescapedName = property.get("name");
                 String escapedName = getEscapedPropertyName(unescapedName);
 
-                String value = Object.class.cast(property.get("value")).toString();
+                String value = property.get("value");
                 String unescapedValue = value.replaceAll("\\\\", "");
                 
                 String description = null;
-                if (property.get(description) != null) {
-                    description = Object.class.cast(property.get("description")).toString();
+                if (property.get("description") != null) {
+                    description = property.get("description");
                 }
 
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-                boolean canSaveDesc = !((Object)property.get("name")).toString().contains(".");
+                boolean isDottedName = property.get("name").contains(".");
 
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
-                    data.put(escapedName, ((Object)property.get("value")).toString());
-                    if (canSaveDesc && (description != null)) {
-                        data.put(escapedName + ".description", ((Object) description).toString());
+                    
+                    data.put(escapedName, property.get("value"));
+                    
+                    if (isDottedName) {
+                        data.put(unescapedName + ".name", unescapedName);
                     }
+                    
+                    if (description != null) {
+                        descriptionData.put(unescapedName + ".description", description);
+                    }
+
                 }
 
                 //update the description only if not null/blank
                 if ((description != null) && (existingProp != null)) {
                      if (!"".equals(description) && (!description.equals(existingProp.getDescription()))) {
-                        if (canSaveDesc) {
-                            data.put(escapedName + ".description", description);
-                        }
+                        descriptionData.put(unescapedName + ".description", description);
                     }
                 }
             }
 
-            if (!data.isEmpty()) {
+            if (!data.isEmpty() || !descriptionData.isEmpty()) {
                 Util.applyChanges(data, uriInfo, getSubject());
+                Util.applyChanges(descriptionData, uriInfo, getSubject());
             }
 
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
-                    "\"{0}\" updated successfully.", new Object[]{uriInfo.getAbsolutePath()});
+                    "\"{0}\" updated successfully.", uriInfo.getAbsolutePath());
 
             ar.setSuccess();
             ar.setMessage(successMessage);
+        } catch (ValidationException ex) {
+            ar.setFailure();
+            ar.setFailureCause(ex);
+            ar.setMessage(ex.getLocalizedMessage());
         } catch (Exception ex) {
-            if (ex.getCause() instanceof ValidationException) {
-                ar.setFailure();
-                ar.setFailureCause(ex);
-                ar.setMessage(ex.getLocalizedMessage());
-            } else {
                 logger.log(Level.FINE, "Error processing properties", ex);
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-            }
-        }
-        finally {
+        } finally {
             TranslatedConfigView.doSubstitution.set(Boolean.TRUE);
         }
 

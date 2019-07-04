@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package fish.payara.micro.boot;
 import fish.payara.micro.boot.loader.ExecutableArchiveLauncher;
 import fish.payara.micro.boot.loader.archive.Archive;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.List;
@@ -69,16 +68,25 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
      * @throws Exception 
      */
     public static void main(String args[]) throws Exception {
+        create("main", args);
+    }
+
+    public static PayaraMicroBoot create(String args[]) throws Exception {
+        return create("create", args);
+    }
+
+    private static PayaraMicroBoot create(String method, String args[]) throws Exception {
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
         // set system property for our jar file
         ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
         CodeSource codeSource = protectionDomain.getCodeSource();
-        URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-        System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+        if (codeSource != null) {
+            System.setProperty(MICRO_JAR_PROPERTY, codeSource.getLocation().toURI().toString());
+        }
         mainBoot = true;
-        launcher.launch(args);
+        return (PayaraMicroBoot) launcher.launch(method, args);
     }
-    
+
     /**
      * Boot method via Micro.getInstance()
      * @return
@@ -102,8 +110,9 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                 // set system property for our jar file
                 ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
                 CodeSource codeSource = protectionDomain.getCodeSource();
-                URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
-                System.setProperty(MICRO_JAR_PROPERTY, location.toString());
+                if (codeSource != null) {
+                    System.setProperty(MICRO_JAR_PROPERTY, codeSource.getLocation().toURI().toString());
+                }
 
                 ClassLoader loader = launcher.createClassLoader(launcher.getClassPathArchives());
                 fish.payara.micro.boot.loader.jar.JarFile.registerUrlProtocolHandler();

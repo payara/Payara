@@ -37,27 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.StringUtils;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
+
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.StringUtils;
 
 /**
  * Remote AdminCommand to delete an instance.  This command is run only on DAS.
@@ -80,12 +95,18 @@ import java.util.ArrayList;
 public class DeleteInstanceCommand implements AdminCommand {
 
     private static final String NL = System.lineSeparator();
+    
+    @Param(name = "instance_name", primary = true)
+    private String instanceName;
+
+    @Param(defaultValue = "false", optional = true)
+    private boolean terse;
 
     @Inject
-    private CommandRunner cr;
+    private CommandRunner commandRunner;
 
     @Inject
-    ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
 
     @Inject
     private Servers servers;
@@ -93,27 +114,20 @@ public class DeleteInstanceCommand implements AdminCommand {
     @Inject
     private Nodes nodes;
 
-    @Param(name = "instance_name", primary = true)
-    private String instanceName;
-
-    @Param(defaultValue = "false", optional=true)
-    private boolean terse;
-
     private Server instance;
     private String noderef;
     private String nodedir;
-    @SuppressWarnings("NonConstantLogger")
-    private Logger logger;    
+    private Logger logger;
     private String instanceHost;
-    private Node theNode = null;
+    private Node theNode;
 
     @Override
     public void execute(AdminCommandContext ctx) {
         ActionReport report = ctx.getActionReport();
         logger = ctx.getLogger();
         String msg = "";
-        boolean  fsfailure = false;
-        boolean  configfailure = false;
+        boolean fsfailure = false;
+        boolean configfailure = false;
 
         // We are going to delete a server instance. Get the instance
         instance = servers.getServer(instanceName);
@@ -121,18 +135,21 @@ public class DeleteInstanceCommand implements AdminCommand {
         if (instance == null) {
             msg = Strings.get("start.instance.noSuchInstance", instanceName);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
+            
             return;
         }
+        
         instanceHost = instance.getAdminHost();
 
         // make sure instance is not running.
-        if (instance.isRunning()){
+        if (instance.isRunning()) {
             msg = Strings.get("instance.shutdown", instanceName);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
+            
             return;
         }
 
@@ -142,7 +159,7 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         // Get the name of the node from the instance's node-ref field
         noderef = instance.getNodeRef();
-        if(!StringUtils.ok(noderef)) {
+        if (!StringUtils.ok(noderef)) {
             msg = Strings.get("missingNodeRef", instanceName);
             fsfailure = true;
         } else {
@@ -155,23 +172,28 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         if (!fsfailure) {
             nodedir = theNode.getNodeDirAbsolute();
-            deleteInstanceFilesystem(ctx);
+
+            if (theNode.getType().equals("DOCKER")) {
+                deleteDockerContainer(ctx);
+            } else {
+                deleteInstanceFilesystem(ctx);
+            }
+
             report = ctx.getActionReport();
-            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+            if (report.getActionExitCode() != SUCCESS) {
                 fsfailure = true;
             }
             msg = report.getMessage();
         }
 
         // Now remove the instance from domain.xml.
-        CommandInvocation ci = cr.getCommandInvocation("_unregister-instance", report, ctx.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", instanceName);
-        ci.parameters(map);
-        ci.execute();
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_unregister-instance", report, ctx.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", instanceName);
+        commandInvocation.parameters(commandParameters);
+        commandInvocation.execute();
 
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS &&
-            report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+        if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
             // Failed to delete from domain.xml
             configfailure = true;
             if (fsfailure) {
@@ -184,33 +206,29 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         // OK, try to give a helpful message depending on the failure
         if (configfailure && fsfailure) {
-            msg = msg + NL + NL + Strings.get("delete.instance.failed",
-                    instanceName, instanceHost);
+            msg = msg + NL + NL + Strings.get("delete.instance.failed", instanceName, instanceHost);
         } else if (configfailure && !fsfailure) {
-            msg = msg + NL + NL + Strings.get("delete.instance.config.failed",
-                    instanceName, instanceHost);
+            msg = msg + NL + NL + Strings.get("delete.instance.config.failed", instanceName, instanceHost);
         } else if (!configfailure && fsfailure) {
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);            
+            report.setActionExitCode(WARNING);
             // leave msg as is
         }
 
         if (configfailure) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
         }
     }
 
     private void deleteInstanceFilesystem(AdminCommandContext ctx) {
-
-        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-        ArrayList<String> command = new ArrayList<String>();
-        String humanCommand = null;
+        NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
+        ArrayList<String> command = new ArrayList<>();
 
         command.add("_delete-instance-filesystem");
 
         if (nodedir != null) {
             command.add("--nodedir");
-            command.add(nodedir); //XXX escape spaces?
+            command.add(nodedir); // XXX escape spaces?
         }
 
         command.add("--node");
@@ -218,49 +236,69 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         command.add(instanceName);
 
-        humanCommand = makeCommandHuman(command);
+        String humanCommand = makeCommandHuman(command);
 
         // First error message displayed if we fail
-        String firstErrorMessage = Strings.get("delete.instance.filesystem.failed",
-                        instanceName, noderef, theNode.getNodeHost() );
+        String firstErrorMessage = Strings.get("delete.instance.filesystem.failed", instanceName, noderef, theNode.getNodeHost());
 
         StringBuilder output = new StringBuilder();
 
         // Run the command on the node and handle errors.
-        nodeUtils.runAdminCommandOnNode(theNode, command, ctx, firstErrorMessage,
-                humanCommand, output);
+        nodeUtils.runAdminCommandOnNode(theNode, command, ctx, firstErrorMessage, humanCommand, output);
 
         ActionReport report = ctx.getActionReport();
 
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+        if (report.getActionExitCode() != SUCCESS) {
             return;
         }
 
         // If it was successful say so and display the command output
-        String msg = Strings.get("delete.instance.success",
-                    instanceName, theNode.getNodeHost());
+        String msg = Strings.get("delete.instance.success", instanceName, theNode.getNodeHost());
         if (!terse) {
             msg = StringUtils.cat(NL, output.toString().trim(), msg);
         }
+        
         report.setMessage(msg);
     }
 
-    private String makeCommandHuman(List<String> command) {
+    private void deleteDockerContainer(AdminCommandContext ctx) {
+        ActionReport actionReport = ctx.getActionReport();
+
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-docker-container",
+                actionReport, ctx.getSubject());
+
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("node", noderef);
+        commandParameters.add("DEFAULT", instanceName);
+        commandInvocation.parameters(commandParameters);
+        commandInvocation.execute();
+
+        if (actionReport.getActionExitCode() != SUCCESS) {
+            actionReport.setMessage(Strings.get("delete.docker.container.failure",
+                    instanceName, noderef, theNode.getNodeHost()));
+            return;
+        }
+
+        actionReport.setMessage(Strings.get("delete.docker.container.success",
+                instanceName, noderef, theNode.getNodeHost()));
+    }
+
+    private String makeCommandHuman(List<String> commands) {
         StringBuilder fullCommand = new StringBuilder();
 
         fullCommand.append("lib");
         fullCommand.append(System.getProperty("file.separator"));
         fullCommand.append("nadmin ");
 
-        for (String s : command) {
-            if (s.equals("_delete-instance-filesystem")) {
+        for (String command : commands) {
+            if (command.equals("_delete-instance-filesystem")) {
                 // We tell the user to run delete-local-instance, not the
                 // hidden command
                 fullCommand.append(" ");
                 fullCommand.append("delete-local-instance");
             } else {
                 fullCommand.append(" ");
-                fullCommand.append(s);
+                fullCommand.append(command);
             }
         }
 

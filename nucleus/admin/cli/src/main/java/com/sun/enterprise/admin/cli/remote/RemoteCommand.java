@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.remote;
 
@@ -45,27 +45,39 @@ import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
 import com.sun.appserv.management.client.prefs.StoreException;
-import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.admin.cli.DirectoryClassLoader;
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-import com.sun.enterprise.admin.util.*;
+import com.sun.enterprise.admin.util.CachedCommandModel;
+import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+
+import java.io.*;
+import java.net.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -134,50 +146,69 @@ public class RemoteCommand extends CLICommand {
          */
         @Override
         protected boolean updateAuthentication() {
-            Console cons;
-            if (programOpts.isInteractive() && (cons = System.console()) != null) {
-                // if appropriate, tell the user why authentication failed
-                PasswordLocation pwloc = programOpts.getPasswordLocation();
-                if (pwloc == PasswordLocation.PASSWORD_FILE) {
-                    logger.fine(strings.get("BadPasswordFromFile", programOpts.getPasswordFile()));
-                } else if (pwloc == PasswordLocation.LOGIN_FILE) {
+
+            LineReader lineReader = null;
+            try {
+                lineReader = LineReaderBuilder.builder()
+                        .terminal(new DumbTerminal(System.in, System.out))
+                        .build();
+
+                if (programOpts.isInteractive() && lineReader != null) {
+                    // if appropriate, tell the user why authentication failed
+                    PasswordLocation pwloc = programOpts.getPasswordLocation();
+                    if (pwloc == PasswordLocation.PASSWORD_FILE) {
+                        logger.fine(strings.get("BadPasswordFromFile", programOpts.getPasswordFile()));
+                    } else if (pwloc == PasswordLocation.LOGIN_FILE) {
+                        try {
+                            LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
+                            logger.fine(strings.get("BadPasswordFromLogin", store.getName()));
+                        } catch (StoreException ex) {
+                            // ignore it
+                        }
+                    }
+
+                    String user = null;
+                    // only prompt for a user name if the user name is set to
+                    // the default.  otherwise, assume the user specified the
+                    // correct username to begin with and all we need is the
+                    // password.
+                    if (programOpts.getUser() == null) {
+                        user = lineReader.readLine(strings.get("AdminUserPrompt"));
+
+                        if (user == null)
+                            return false;
+                    }
+                    char[] password;
+                    String puser = ok(user) ? user : programOpts.getUser();
+                    if (ok(puser)) {
+                        password = readPassword(strings.get("AdminUserPasswordPrompt", puser));
+                    } else {
+                        password = readPassword(strings.get("AdminPasswordPrompt"));
+                    }
+                    if (password == null) {
+                        return false;
+                    }
+                    if (ok(user)) {      // if none entered, don't change
+                        programOpts.setUser(user);
+                        this.user = user;
+                    }
+                    programOpts.setPassword(password, PasswordLocation.USER);
+                    this.password = password;
+                    return true;
+                }
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, "Error reading input", ioe);
+            }
+            finally {
+                if (lineReader != null && lineReader.getTerminal() != null) {
                     try {
-                        LoginInfoStore store = LoginInfoStoreFactory.getDefaultStore();
-                        logger.fine(strings.get("BadPasswordFromLogin", store.getName()));
-                    } catch (StoreException ex) {
-                        // ignore it
+                        lineReader.getTerminal().close();
+                    } catch (IOException ioe) {
+                        logger.log(Level.WARNING, "Error closing terminal", ioe);
                     }
                 }
-
-                String user = null;
-                // only prompt for a user name if the user name is set to
-                // the default.  otherwise, assume the user specified the
-                // correct username to begin with and all we need is the
-                // password.
-                if (programOpts.getUser() == null) {
-                    cons.printf("%s ", strings.get("AdminUserPrompt"));
-                    user = cons.readLine();
-                    if (user == null)
-                        return false;
-                }
-                char[] password;
-                String puser = ok(user) ? user : programOpts.getUser();
-                if (ok(puser)) {
-                    password = readPassword(strings.get("AdminUserPasswordPrompt", puser));
-                } else {
-                    password = readPassword(strings.get("AdminPasswordPrompt"));
-                }
-                if (password == null) {
-                    return false;
-                }
-                if (ok(user)) {      // if none entered, don't change
-                    programOpts.setUser(user);
-                    this.user = user;
-                }
-                programOpts.setPassword(password, PasswordLocation.USER);
-                this.password = password;
-                return true;
             }
+
             return false;
         }
 

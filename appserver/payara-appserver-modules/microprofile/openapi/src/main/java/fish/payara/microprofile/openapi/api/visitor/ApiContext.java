@@ -64,4 +64,10 @@ public interface ApiContext {
      * The created operation currently being worked on.
      */
     Operation getWorkingOperation();
+
+    /**
+     * @param type any class, not null
+     * @return true, if the give type is a known type in this context, else false
+     */
+    boolean isApplicationType(Class<?> type);
 }

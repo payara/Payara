@@ -1618,8 +1618,8 @@ public final class JMXUtil
         {
             final String patternProps = pattern.getCanonicalKeyPropertyListString();
             final String candidateProps = candidate.getCanonicalKeyPropertyListString();
-            assert (patternProps.indexOf("*") < 0);
-            assert (candidateProps.indexOf("*") < 0);
+            assert (patternProps.indexOf('*') < 0);
+            assert (candidateProps.indexOf('*') < 0);
 
             // Since we used canonical form any match means the pattern props String
             // must be a substring of candidateProps

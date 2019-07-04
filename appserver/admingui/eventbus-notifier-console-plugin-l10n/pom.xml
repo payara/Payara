@@ -44,7 +44,7 @@
     <parent>
         <artifactId>admingui</artifactId>
         <groupId>fish.payara.admingui</groupId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
  

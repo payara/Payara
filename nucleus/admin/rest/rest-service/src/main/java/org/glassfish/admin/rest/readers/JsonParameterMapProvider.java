@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -88,16 +89,16 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
             }
 
             ParameterMap map = new ParameterMap();
-            for (String k : obj.keySet()) {
-                Object value = obj.get(k);
+            for (Entry<String, JsonValue> entry : obj.entrySet()) {
+                JsonValue value = entry.getValue();
                 if (value instanceof JsonArray) {
                     JsonArray array = (JsonArray) value;
                     for (int i = 0; i < array.size(); i++) {
-                        map.add(k, "" + array.get(i));
+                        map.add(entry.getKey(), "" + array.get(i));
                     }
 
                 } else {
-                    map.add(k, "" + value);
+                    map.add(entry.getKey(), "" + value);
                 }
             }
             return map;
@@ -114,14 +115,14 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
+        StringBuilder sb;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
+            sb = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        br.close();
         return sb.toString();
     }
 }

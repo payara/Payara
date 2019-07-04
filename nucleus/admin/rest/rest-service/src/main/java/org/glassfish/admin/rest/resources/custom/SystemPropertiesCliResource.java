@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -90,12 +90,15 @@ import org.jvnet.hk2.config.Dom;
     CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 public class SystemPropertiesCliResource extends TemplateExecCommand {
     protected static final String TAG_SYSTEM_PROPERTY = "system-property";
+    private static final String VALUE = "value";
+    private static final String DEFAULT_VALUE = "defaultValue";
+    private static final String DESCRIPTION = "description";
 
+    
     @Context
     protected ServiceLocator injector;
 
     protected Dom entity;
-//    protected Dom parent;
 
     protected Domain domain;
 
@@ -128,27 +131,25 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         if (properties.isEmpty()) {
             actionReport.getTopMessagePart().setMessage("Nothing to list."); // i18n
         }
-        ActionReportResult results = new ActionReportResult(commandName, actionReport, new OptionsResult());
-
-        return results;
+        return new ActionReportResult(commandName, actionReport, new OptionsResult());
     }
 
     @POST
-    public Response create(HashMap<String, String> data) {
+    public Response create(Map<String, String> data) {
 	Response resp = deleteRemovedProperties(data);
         return (resp == null) ? saveProperties(data) : resp;
     }
 
     @PUT
-    public Response update(HashMap<String, String> data) {
+    public Response update(Map<String, String> data) {
         return saveProperties(data);
     }
 
     @Path("{Name}/")
     @POST
-    public Response getSystemPropertyResource(@PathParam("Name") String id, HashMap<String, String> data) {
-        data.put(id, data.get("value"));
-        data.remove("value");
+    public Response getSystemPropertyResource(@PathParam("Name") String id, Map<String, String> data) {
+        data.put(id, data.get(VALUE));
+        data.remove(VALUE);
         List<PathSegment> segments = uriInfo.getPathSegments(true);
         String grandParent = segments.get(segments.size() - 3).getPath();
 
@@ -167,7 +168,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     protected void getSystemProperties(Map<String, Map<String, String>> properties, Dom dom, boolean getDefaults) {
         List<Dom> sysprops;
         synchronized (dom) {
-            sysprops = dom.nodeElements("system-property");
+            sysprops = dom.nodeElements(TAG_SYSTEM_PROPERTY);
         }
         if ((sysprops != null) && (!sysprops.isEmpty())) {
             for (Dom sysprop : sysprops) {
@@ -176,16 +177,16 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
                 if (currValue == null) {
                     currValue = new HashMap<String, String>();
                     currValue.put("name", name);
-                    currValue.put(getDefaults ? "defaultValue" : "value", sysprop.attribute("value"));
+                    currValue.put(getDefaults ? DEFAULT_VALUE : VALUE, sysprop.attribute(VALUE));
 
-                    if (sysprop.attribute("description") != null) {
-                        currValue.put("description", sysprop.attribute("description"));
+                    if (sysprop.attribute(DESCRIPTION) != null) {
+                        currValue.put(DESCRIPTION, sysprop.attribute(DESCRIPTION));
                     }
                     properties.put(name, currValue);
                 } else {
                     // Only add a default value if there isn't one already
-                    if (currValue.get("defaultValue") == null) {
-                        currValue.put("defaultValue", sysprop.attribute("value"));
+                    if (currValue.get(DEFAULT_VALUE) == null) {
+                        currValue.put(DEFAULT_VALUE, sysprop.attribute(VALUE));
                     }
                 }
             }
@@ -193,7 +194,6 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
         // Figure out how to recurse
         if (dom.getProxyType().equals(Server.class)) {
-//            Server server = (Server) spb;
             // Clustered instance
             if (((Server)dom.createProxy()).getCluster() != null) {
                 getSystemProperties(properties, getCluster(dom.parent().parent(), ((Server)dom.createProxy()).getCluster().getName()), true);
@@ -240,7 +240,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return null;
     }
 
-    protected String convertPropertyMapToString(HashMap<String, String> data) {
+    protected String convertPropertyMapToString(Map<String, String> data) {
         StringBuilder options = new StringBuilder();
         String sep = "";
         for (Map.Entry<String, String> entry : data.entrySet()) {
@@ -257,11 +257,11 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return options.toString();
     }
 
-    protected Response saveProperties(HashMap<String, String> data) {
+    protected Response saveProperties(Map<String, String> data) {
         return saveProperties(null, data);
     }
 
-    protected Response saveProperties(String parent, HashMap<String, String> data) {
+    protected Response saveProperties(String parent, Map<String, String> data) {
         String propertiesString = convertPropertyMapToString(data);
 
         data = new HashMap<String, String>();

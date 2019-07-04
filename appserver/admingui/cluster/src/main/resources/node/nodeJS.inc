@@ -42,14 +42,17 @@
 
 <f:verbatim>
     <script type="text/javascript">
-    function showSection(type, sshSection, dcomSection, sshDirId, configDirId, installProp, archProp){
+    function showSection(type, sshSection, dcomSection, dockerSection, sshDirId, configDirId, dockerDirId, installProp, archProp){
          var sshSheet = document.getElementById(sshSection);
          var dcomSheet = document.getElementById(dcomSection);
+         var dockerSheet = document.getElementById((dockerSection));
          if (type == 'CONFIG'){
              sshSheet.style.display = 'none';
              dcomSheet.style.display = 'none';
+             dockerSheet.style.display = 'none';
              webui.suntheme.common.setVisible(sshDirId, false);
              webui.suntheme.common.setVisible(configDirId, true);
+             webui.suntheme.common.setVisible(dockerDirId, false)
 
              if (installProp != null){
                  webui.suntheme.common.setVisible(installProp, false);
@@ -59,8 +62,10 @@
          if (type == 'SSH'){
              sshSheet.style.display = 'block';
              dcomSheet.style.display = 'none';
+             dockerSheet.style.display = 'none';
              webui.suntheme.common.setVisible(sshDirId, true);
              webui.suntheme.common.setVisible(configDirId, false);
+             webui.suntheme.common.setVisible(dockerDirId, false)
              if(installProp != null){
                  webui.suntheme.common.setVisible(installProp, true);
                  webui.suntheme.common.setVisible(archProp, true);
@@ -69,13 +74,27 @@
          if (type == 'DCOM'){
              sshSheet.style.display = 'none';
              dcomSheet.style.display = 'block';
+             dockerSheet.style.display = 'none';
              webui.suntheme.common.setVisible(sshDirId, true);
              webui.suntheme.common.setVisible(configDirId, false);
+             webui.suntheme.common.setVisible(dockerDirId, false)
              if(installProp != null){
                  webui.suntheme.common.setVisible(installProp, true);
                  webui.suntheme.common.setVisible(archProp, true);
              }
          }
+        if (type == 'DOCKER'){
+            sshSheet.style.display = 'none';
+            dcomSheet.style.display = 'none';
+            dockerSheet.style.display = 'block';
+            webui.suntheme.common.setVisible(sshDirId, false);
+            webui.suntheme.common.setVisible(configDirId, false);
+            webui.suntheme.common.setVisible(dockerDirId, true)
+            if(installProp != null){
+                webui.suntheme.common.setVisible(installProp, false);
+                webui.suntheme.common.setVisible(archProp, false);
+            }
+        }
     }
 
     function showSshPswdSection(type, ps1Id, pswdAId){

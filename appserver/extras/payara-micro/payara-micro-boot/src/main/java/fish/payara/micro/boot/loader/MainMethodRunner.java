@@ -28,24 +28,26 @@ import java.lang.reflect.Method;
 public class MainMethodRunner {
 
 	private final String mainClassName;
-
+	private final String mainMethodName;
 	private final String[] args;
+
 
 	/**
 	 * Create a new {@link MainMethodRunner} instance.
 	 * @param mainClass the main class
 	 * @param args incoming arguments
 	 */
-	public MainMethodRunner(String mainClass, String[] args) {
+	public MainMethodRunner(String mainClass, String[] args, String mainMethodName) {
 		this.mainClassName = mainClass;
+        this.mainMethodName = mainMethodName;
 		this.args = (args == null ? null : args.clone());
 	}
 
-	public void run() throws Exception {
+	public Object run() throws Exception {
 		Class<?> mainClass = Thread.currentThread().getContextClassLoader()
 				.loadClass(this.mainClassName);
-		Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
-		mainMethod.invoke(null, new Object[] { this.args });
+		Method mainMethod = mainClass.getDeclaredMethod(mainMethodName, String[].class);
+		return mainMethod.invoke(null, new Object[] { this.args });
 	}
 
 }

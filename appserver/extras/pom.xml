@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.extras</groupId>
@@ -88,6 +88,18 @@
             </activation>
             <modules>
                 <module>embedded</module>
+            </modules>
+        </profile>
+        <!-- Profile to build Docker Images-->
+        <profile>
+            <id>BuildDockerImages</id>
+            <activation>
+                <property>
+                    <name>BuildDockerImages</name>
+                </property>
+            </activation>
+            <modules>
+                <module>docker-images</module>
             </modules>
         </profile>
     </profiles>

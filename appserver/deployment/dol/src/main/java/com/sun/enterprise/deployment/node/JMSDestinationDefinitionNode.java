@@ -92,7 +92,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
         // change the resource adapter name from internal format to standard format
         String resourceAdapter = desc.getResourceAdapter();
         if (resourceAdapter != null) {
-            int poundIndex = resourceAdapter.indexOf("#");
+            int poundIndex = resourceAdapter.indexOf('#');
             if (poundIndex > 0) {
                 // the internal format of resource adapter name is "appName#raName", remove the appName part
                 resourceAdapter =  resourceAdapter.substring(poundIndex);

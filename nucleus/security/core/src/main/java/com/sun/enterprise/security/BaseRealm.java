@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import java.util.*;
+import java.util.Enumeration;
 
-import com.sun.enterprise.security.auth.realm.*;
-
+import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.Realm;
+import com.sun.enterprise.security.auth.realm.User;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.i18n.StringManager;
 
@@ -59,9 +61,16 @@ import com.sun.enterprise.util.i18n.StringManager;
  * @author Harpreet Singh
  */
 public abstract class BaseRealm extends Realm {
-    public static final String JAAS_CONTEXT_PARAM = "jaas-context";
+    /**
+     * Recommended property for keeping JAAS Context of a realm.
+     *
+     * @deprecated Moved to parent class, which actually implements the behaviour
+     */
+    @Deprecated
+    public static final String JAAS_CONTEXT_PARAM = Realm.JAAS_CONTEXT_PARAM;
 
     protected static final StringManager sm = StringManager.getManager(Realm.class);
+    private static final String NOT_SUPPORTED = sm.getString("iasrealm.notsupported");
 
     /**
      * Returns names of all the users in this particular realm.
@@ -76,7 +85,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public Enumeration<String> getUserNames() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -94,7 +103,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public User getUser(String name) throws NoSuchUserException, BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -110,7 +119,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public Enumeration<String> getGroupNames() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -125,7 +134,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void refresh() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -139,7 +148,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void addUser(String name, char[] password, String[] groupList) throws BadRealmException, IASSecurityException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -160,7 +169,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void removeUser(String name) throws NoSuchUserException, BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -180,14 +189,14 @@ public abstract class BaseRealm extends Realm {
      * name which does not already exist as a user.
      * @param password Cleartext password for the user. If non-null the user password is changed to this value. If null, the
      * original password is retained.
-     * @param groupList List of groups to which user belongs.
+     * @param groups List of groups to which user belongs.
      * @throws BadRealmException If there are problems adding user.
      * @throws NoSuchUserException If user does not exist.
      *
      */
     @Override
     public void updateUser(String name, String newName, char[] password, String[] groups) throws NoSuchUserException, BadRealmException, IASSecurityException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**

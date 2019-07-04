@@ -100,12 +100,12 @@ public class IiopFolbGmsClient implements ClusterListener {
     private Map<String, ClusterInstanceInfo> currentMembers;
 
     private GroupInfoService gis;
-    
+
     private PayaraCluster cluster;
-    
+
     private static final String USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY = "useNodeHostForLocalNode";
-    
-    private static final String USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY = "fish.payara.iiop.gmsClient." 
+
+    private static final String USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY = "fish.payara.iiop.gmsClient."
             + USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY;
 
     private void fineLog( String fmt, Object... args ) {
@@ -195,13 +195,13 @@ public class IiopFolbGmsClient implements ClusterListener {
     //
     // Implementation
     //
-    
+
     private boolean isDeploymentGroupsActive() {
     	return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
     }
-    
+
     private boolean isTraditionalClusterActive() {
-    	return myServer.getCluster() != null;
+    	return myServer != null && myServer.getCluster() != null;
     }
 
     private void removeMember(final String signal)
@@ -247,7 +247,7 @@ public class IiopFolbGmsClient implements ClusterListener {
                     fineLog( "IiopFolbGmsClient.addMember: {0} already present: no action",
                             instanceName);
 		} else {
-		    ClusterInstanceInfo clusterInstanceInfo = 
+		    ClusterInstanceInfo clusterInstanceInfo =
                         getClusterInstanceInfo(instanceName) ;
 
 		    currentMembers.put( clusterInstanceInfo.name(),
@@ -261,7 +261,7 @@ public class IiopFolbGmsClient implements ClusterListener {
                     fineLog( "IiopFolbGmsClient.addMember: {0} - notification complete",
                         instanceName);
 		}
-	    }	
+	    }
 	} finally {
             fineLog( "IiopFolbGmsClient.addMember<-: {0}", instanceName);
 	}
@@ -305,15 +305,15 @@ public class IiopFolbGmsClient implements ClusterListener {
 
         final IiopService iservice = config.getExtensionByType(IiopService.class) ;
         fineLog( "getClusterInstanceInfo: iservice {0}", iservice ) ;
-        
+
         final String nodeName = server.getNodeRef() ;
         String hostName = nodeName ;
         if (nodes != null) {
             Node node = nodes.getNode( nodeName ) ;
             if (node != null) {
-                // If this is the local node, and the useNodeHostForLocalNode property has not been set at the ORB or 
+                // If this is the local node, and the useNodeHostForLocalNode property has not been set at the ORB or
                 // System level, use the local host name
-                if ((node.isLocal() && !Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY)) 
+                if ((node.isLocal() && !Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY))
                         && (node.isLocal() && !Boolean.parseBoolean(iservice.getOrb().getPropertyValue(
                                 USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY, "false")))) {
                     try {
@@ -452,7 +452,7 @@ public class IiopFolbGmsClient implements ClusterListener {
 
     class GroupInfoServiceGMSImpl extends GroupInfoServiceBase {
         @Override
-        public List<ClusterInstanceInfo> internalClusterInstanceInfo( 
+        public List<ClusterInstanceInfo> internalClusterInstanceInfo(
             List<String> endpoints) {
 
             fineLog( "internalClusterInstanceInfo: currentMembers {0}",

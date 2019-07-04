@@ -42,14 +42,13 @@
 package com.sun.enterprise.server.logging;
 
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

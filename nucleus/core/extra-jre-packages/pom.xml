@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.191-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-extra-jre-packages</artifactId>
@@ -68,89 +68,104 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
+                                <Bundle-Description>${project.description}</Bundle-Description>
+                                <Export-Package>
+                                    com.ibm.security.util,
+                                    com.ibm.security.x509,
+                                    com.sun.corba.se.impl.orbutil.threadpool,
+                                    com.sun.corba.se.spi.orbutil.threadpool,
+                                    com.sun.j3d.loaders,
+                                    com.sun.j3d.loaders.lw3d,
+                                    com.sun.j3d.loaders.objectfile,
+                                    com.sun.j3d.utils.behaviors.keyboard,
+                                    com.sun.j3d.utils.behaviors.mouse,
+                                    com.sun.j3d.utils.geometry,
+                                    com.sun.j3d.utils.image,
+                                    com.sun.j3d.utils.timer,
+                                    com.sun.java.swing.plaf.windows,
+                                    com.sun.jndi.cosnaming,
+                                    com.sun.jndi.ldap,
+                                    com.sun.mirror.apt,
+                                    com.sun.mirror.declaration,
+                                    com.sun.mirror.type,
+                                    com.sun.mirror.util,
+                                    com.sun.net.httpserver,
+                                    com.sun.org.apache.xalan.internal.res,
+                                    com.sun.org.apache.xalan.internal.xsltc.trax,
+                                    com.sun.org.apache.xerces.internal.dom,
+                                    com.sun.org.apache.xerces.internal.impl,
+                                    com.sun.org.apache.xerces.internal.impl.dv.util,
+                                    com.sun.org.apache.xerces.internal.jaxp,
+                                    com.sun.org.apache.xerces.internal.parsers,
+                                    com.sun.org.apache.xerces.internal.util,
+                                    com.sun.org.apache.xerces.internal.xni,
+                                    com.sun.org.apache.xerces.internal.xni.grammars,
+                                    com.sun.org.apache.xerces.internal.xni.parser,
+                                    com.sun.org.apache.xml.internal.dtm,
+                                    com.sun.org.apache.xml.internal.serialize,
+                                    com.sun.org.apache.xml.internal.utils,
+                                    com.sun.org.apache.xpath.internal,
+                                    com.sun.org.apache.xpath.internal.compiler,
+                                    com.sun.org.apache.xpath.internal.functions,
+                                    com.sun.org.apache.xpath.internal.jaxp,
+                                    com.sun.org.apache.xpath.internal.objects,
+                                    com.sun.security.auth,
+                                    com.sun.security.auth.login,
+                                    com.sun.security.auth.callback,
+                                    com.sun.tools.apt,
+                                    com.sun.tools.javac,
+                                    org.omg.stub.java.rmi,
+                                    org.w3c.dom.css,
+                                    org.w3c.dom.html,
+                                    org.w3c.dom.ranges,
+                                    org.w3c.dom.traversal,
+                                    org.w3c.dom.views,
+                                    sun.awt.shell,
+                                    sun.corba,
+                                    sun.misc,
+                                    sun.net.www,
+                                    sun.nio.cs,
+                                    sun.reflect,
+                                    sun.rmi.rmic,
+                                    sun.rmi.transport,
+                                    sun.security.action,
+                                    sun.security.jgss,
+                                    sun.security.jgss.spi,
+                                    sun.security.krb5,
+                                    sun.security.krb5.internal.crypto,
+                                    com.sun.security.jgss,
+                                    sun.security.provider,
+                                    sun.security.tools,
+                                    sun.security.util,
+                                    sun.security.x509,
+                                    sun.security.pkcs,
+                                    sun.tools.javac,
+                                    sunw.io,
+                                    sunw.util
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-                        <manifestEntries>
-                            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-                            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-                            <Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
-                            <Export-Package>
- com.ibm.security.util,
- com.ibm.security.x509,
- com.sun.corba.se.impl.orbutil.threadpool,
- com.sun.corba.se.spi.orbutil.threadpool,
- com.sun.j3d.loaders,
- com.sun.j3d.loaders.lw3d,
- com.sun.j3d.loaders.objectfile,
- com.sun.j3d.utils.behaviors.keyboard,
- com.sun.j3d.utils.behaviors.mouse,
- com.sun.j3d.utils.geometry,
- com.sun.j3d.utils.image,
- com.sun.j3d.utils.timer,
- com.sun.java.swing.plaf.windows,
- com.sun.jndi.cosnaming,
- com.sun.jndi.ldap,
- com.sun.mirror.apt,
- com.sun.mirror.declaration,
- com.sun.mirror.type,
- com.sun.mirror.util,
- com.sun.net.httpserver,
- com.sun.org.apache.xalan.internal.res,
- com.sun.org.apache.xalan.internal.xsltc.trax,
- com.sun.org.apache.xerces.internal.dom,
- com.sun.org.apache.xerces.internal.impl,
- com.sun.org.apache.xerces.internal.impl.dv.util,
- com.sun.org.apache.xerces.internal.jaxp,
- com.sun.org.apache.xerces.internal.parsers,
- com.sun.org.apache.xerces.internal.util,
- com.sun.org.apache.xerces.internal.xni,
- com.sun.org.apache.xerces.internal.xni.grammars,
- com.sun.org.apache.xerces.internal.xni.parser,
- com.sun.org.apache.xml.internal.dtm,
- com.sun.org.apache.xml.internal.serialize,
- com.sun.org.apache.xml.internal.utils,
- com.sun.org.apache.xpath.internal,
- com.sun.org.apache.xpath.internal.compiler,
- com.sun.org.apache.xpath.internal.functions,
- com.sun.org.apache.xpath.internal.jaxp,
- com.sun.org.apache.xpath.internal.objects,
- com.sun.security.auth,
- com.sun.security.auth.login,
- com.sun.security.auth.callback,
- com.sun.tools.apt,
- com.sun.tools.javac,
- org.omg.stub.java.rmi,
- org.w3c.dom.css,
- org.w3c.dom.html,
- org.w3c.dom.ranges,
- org.w3c.dom.traversal,
- org.w3c.dom.views,
- sun.awt.shell,
- sun.corba,
- sun.misc,
- sun.net.www,
- sun.nio.cs,
- sun.reflect,
- sun.rmi.rmic,
- sun.rmi.transport,
- sun.security.action,
- sun.security.jgss,
- sun.security.jgss.spi,
- sun.security.krb5,
- sun.security.krb5.internal.crypto,
- com.sun.security.jgss,
- sun.security.provider,
- sun.security.tools,
- sun.security.util,
- sun.security.x509,
- sun.security.pkcs,
- sun.tools.javac,
- sunw.io,
- sunw.util
-                            </Export-Package>
-                            <Bundle-Description>${project.description}</Bundle-Description> 
-                        </manifestEntries>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
             </plugin>
