@@ -66,14 +66,28 @@ public class JdbcConnectionPoolValidator
         this.poolFaults = constraint.value();
     }
 
+    public String getParsedVariable(String variableToRetrieve) {
+        
+        Properties systemProps = System.getProperties();
+        variableToRetrieve = variableToRetrieve.substring(2, variableToRetrieve.length() - 1);
+        
+        if (systemProps.getProperty(variableToRetrieve) == null || systemProps.getProperty(variableToRetrieve).isEmpty()) {
+            //System property doesn't exist so try environment variables
+            if (System.getenv(variableToRetrieve) == null || System.getenv(variableToRetrieve).isEmpty()) {
+                //Environment variable doesn't exist so return false and log reasoning as error extension
+                return null;
+            }
+            return System.getenv(variableToRetrieve);
+        } 
+        return systemProps.getProperty(variableToRetrieve);  
+    }
+    
     @Override
     public boolean isValid(final ResourcePool pool,
         final ConstraintValidatorContext constraintValidatorContext) {
 
         if(poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
             if(pool instanceof JdbcConnectionPool) {
-                
-                Properties systemProps = System.getProperties();
                 
                 JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
                 String maxPoolSize = jdbcPool.getMaxPoolSize();
@@ -85,37 +99,15 @@ public class JdbcConnectionPoolValidator
                 if (steadyPoolSize == null) {
                     steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
                 } else if(steadyPoolSize.startsWith("$")) {
-                    //Try to retrive system variable value
-                    steadyPoolSize = steadyPoolSize.substring(2, steadyPoolSize.length() - 1);
-                    
-                    if (systemProps.getProperty(steadyPoolSize) == null || systemProps.getProperty(steadyPoolSize).isEmpty()) {
-                        //System property doesn't exist so try environment variables
-                        if (System.getenv(steadyPoolSize) == null || System.getenv(steadyPoolSize).isEmpty()) {
-                            //Environment variable doesn't exist so return false and log reasoning as error extension
-                            return false;
-                        }
-                        steadyPoolSize = System.getenv(steadyPoolSize);
-                    } else {
-                        steadyPoolSize = systemProps.getProperty(steadyPoolSize);
-                    }
+                    steadyPoolSize = getParsedVariable(steadyPoolSize);
+                    if(steadyPoolSize == null) return false;
                 }
                 
                 if (maxPoolSize == null) {
                     maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
                 } else if(maxPoolSize.startsWith("$")) {
-                    //Try to retrive system variable value
-                    maxPoolSize = maxPoolSize.substring(2, maxPoolSize.length() - 1);
-                    
-                    if (systemProps.getProperty(maxPoolSize) == null || systemProps.getProperty(maxPoolSize).isEmpty()) {
-                        //System property doesn't exist so try environment variables
-                        if (System.getenv(maxPoolSize) == null || System.getenv(maxPoolSize).isEmpty()) {
-                            //Environment variable doesn't exist so return false and log reasoning as error extension
-                            return false;
-                        }
-                        maxPoolSize = System.getenv(maxPoolSize);
-                    } else {
-                        maxPoolSize = systemProps.getProperty(maxPoolSize);
-                    }
+                    maxPoolSize = getParsedVariable(maxPoolSize);
+                    if(maxPoolSize == null) return false;
                 }
                 
                 //By this point it should be the case that the value is always castable
