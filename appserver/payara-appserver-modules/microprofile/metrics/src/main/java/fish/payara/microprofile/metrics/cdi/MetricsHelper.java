@@ -74,6 +74,7 @@ import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
@@ -149,46 +150,55 @@ public class MetricsHelper {
         }
     }
 
-    public Metadata metadataOf(InjectionPoint ip, Class<?> type) {
-        Annotated annotated = ip.getAnnotated();
-        return metadataOf(annotated, type, ip.getMember().getDeclaringClass());
+    public Metadata metadataOf(InjectionPoint ip) {
+        Annotated annotated = ip.getAnnotated();ip.getMember().getDeclaringClass().getCanonicalName();
+        return metadataOf(annotated, ip.getMember().getDeclaringClass().getCanonicalName(), ip.getMember().getName());
     }
 
     public Metadata metadataOf(AnnotatedMember<?> member) {
-        String typeName = member.getBaseType().getTypeName();
-        if (typeName.startsWith(Gauge.class.getName())) {
-            return metadataOf(member, Gauge.class);
-        } else if (typeName.startsWith(ConcurrentGauge.class.getName())) {
-            return metadataOf(member, ConcurrentGauge.class);
-        } else if (typeName.startsWith(Counter.class.getName())) {
-            return metadataOf(member, Counter.class);
-        } else if (typeName.startsWith(Meter.class.getName())) {
-            return metadataOf(member, Meter.class);
-        } else if (typeName.startsWith(Histogram.class.getName())) {
-            return metadataOf(member, Histogram.class);
-        } else if (typeName.startsWith(Timer.class.getName())) {
-            return metadataOf(member, Timer.class);
-        }
-        return null;
+        return metadataOf(member, member.getJavaMember().getDeclaringClass().getCanonicalName(), member.getJavaMember().getName());
     }
 
-    private Metadata metadataOf(AnnotatedMember<?> member, Class<?> type) {
-        return metadataOf(member, type, member.getJavaMember().getDeclaringClass());
-    }
-
-    private Metadata metadataOf(Annotated annotated, Class<?> type, Class<?> baseClass) {
+    private Metadata metadataOf(Annotated annotated, String enclosingClass, String memberName) {
         MetadataBuilder metadataBuilder = Metadata.builder();
         Metric metric = annotated.getAnnotation(Metric.class);
         metadataBuilder.withDescription(metric.description());
         metadataBuilder.withDisplayName(metric.displayName());
         metadataBuilder.withUnit(metric.unit());
         if (metric.absolute()) {
-            metadataBuilder.withName(metric.name());
+            if (metric.name().isEmpty()) {
+                metadataBuilder.withName(memberName);
+            } else {
+                metadataBuilder.withName(metric.name());
+            }
         } else {
-            metadataBuilder.withName(baseClass.getCanonicalName() + "." + metric.name());
+            if (metric.name().isEmpty()) {
+                metadataBuilder.withName(enclosingClass + '.' + memberName);
+            } else {
+                metadataBuilder.withName(enclosingClass + '.' + metric.name());
+            }
         }
+        setMetricType(metadataBuilder, annotated);
         metadataBuilder.notReusable();
         return metadataBuilder.build();
+    }
+    
+    private MetadataBuilder setMetricType(MetadataBuilder builder, Annotated annotated) {
+        String typeName = annotated.getBaseType().getTypeName();
+        if (typeName.startsWith(Gauge.class.getName())) {
+            builder.withType(MetricType.GAUGE);
+        } else if (typeName.startsWith(ConcurrentGauge.class.getName())) {
+            builder.withType(MetricType.CONCURRENT_GAUGE);
+        } else if (typeName.startsWith(Counter.class.getName())) {
+            builder.withType(MetricType.COUNTER);
+        } else if (typeName.startsWith(Meter.class.getName())) {
+            builder.withType(MetricType.METERED);
+        } else if (typeName.startsWith(Histogram.class.getName())) {
+            builder.withType(MetricType.HISTOGRAM);
+        } else if (typeName.startsWith(Timer.class.getName())) {
+            builder.withType(MetricType.TIMER);
+        }
+        return builder;
     }
     
     public MetricID metricIDof(InjectionPoint ip) {

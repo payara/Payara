@@ -40,43 +40,23 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
 
 /**
- * Implementation of a counter based off an MBean.
- * As this is just a proxy for the MBean calling the
- * {@link #inc() } method will throw an {@link UnsupportedOperationException}.
- * Just use the {@link #getCount()} method to get the value of the MBean backing this.
+ * Implementation of a gauge based off an MBean.
+ * @author jonathan coustick
+ * @since 5.193
  */
-public class MBeanCounterImpl implements Counter {
+public class MBeanGuageImpl implements Gauge<Long> {
 
     private final MBeanExpression mBean;
 
-    public MBeanCounterImpl(MBeanExpression mBean) {
+    public MBeanGuageImpl(MBeanExpression mBean) {
         this.mBean = mBean;
     }
 
-    /**
-     * Throws {@link UnsupportedOperationException} - this is all dealt with
-     * by the backing MBean
-     */
     @Override
-    public void inc() {
-        throw new UnsupportedOperationException("Not supported - use getCount() to ge value from MBean directly.");
+    public Long getValue() {      
+        return mBean.getNumberValue().longValue();
     }
-
-    /**
-     * Throws {@link UnsupportedOperationException} - this is all dealt with
-     * by the backing MBean
-     */
-    @Override
-    public void inc(long n) {
-        throw new UnsupportedOperationException("Not supported - use getCount() to ge value from MBean directly.");
-    }
-
-    @Override
-    public long getCount() {
-        return (mBean.getNumberValue()).longValue();
-    }
-    
 }

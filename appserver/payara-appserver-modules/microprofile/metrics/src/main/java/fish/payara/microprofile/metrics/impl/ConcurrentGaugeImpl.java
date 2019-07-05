@@ -55,6 +55,11 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -67,13 +72,22 @@ import org.eclipse.microprofile.metrics.ConcurrentGauge;
 public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     private final LongAdder count = new LongAdder();
+    
+    /**
+     * A map containing all the values that the count of the gauge has been at in the last minute.
+     * The key is the time in seconds that the value changed, the value is the value of the count at the moment
+     * before it changed
+     */
+    private Map<Instant, Long> lastCounts = new ConcurrentHashMap<>();
 
     /**
      * Increment the counter by one.
      */
     @Override
     public void inc() {
+        lastCounts.put(Instant.now(), count.longValue());
         count.increment();
+        clearOld();
     }
 
     /**
@@ -88,17 +102,49 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     @Override
     public long getMax() {
-        
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        clearOld();
+        long max = 0;
+        for (Long value : lastCounts.values()) {
+            if (value > max) {
+                max = value;
+            }
+        }
+        if (count.sum() > max) {
+            max = count.sum();
+        }
+        return max;
     }
 
     @Override
     public long getMin() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        clearOld();
+        long min = Long.MAX_VALUE;
+        for (Long value : lastCounts.values()) {
+            if (value < min) {
+                min = value;
+            }
+        }
+        if (count.sum() < min) {
+            min = count.sum();
+        }
+        return min;
     }
 
     @Override
     public void dec() {
+        lastCounts.put(Instant.now(), count.longValue());
         count.decrement();
+        clearOld();
+    }
+    
+    private void clearOld() {
+        Instant currentTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+        Iterator<Instant> guages = lastCounts.keySet().iterator();
+        while (guages.hasNext()) {
+            Instant guageTime = guages.next();
+            if (guageTime.isBefore(currentTime)) {
+                lastCounts.remove(guageTime);
+            }
+        }
     }
 }

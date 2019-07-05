@@ -79,18 +79,10 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private final Map<MetricID, Metric> metricMap;
     private final Map<String, Metadata> metadataMap;
-    private final String name;
 
     public MetricRegistryImpl() {
         this.metricMap = new ConcurrentHashMap<>();
         this.metadataMap = new ConcurrentHashMap<>();
-        name = "UNNAMED";
-    }
-    
-    public MetricRegistryImpl(String name) {
-        this.metricMap = new ConcurrentHashMap<>();
-        this.metadataMap = new ConcurrentHashMap<>();
-        this.name = name;
     }
 
     @Override
@@ -224,6 +216,11 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public boolean remove(String name) {
+        for (MetricID metricID : metricMap.keySet()) {
+            if (metricID.getName().equals(name)) {
+                metricMap.remove(metricID);
+            }
+        }
         final Metric metric = metricMap.remove(new MetricID(name));
         metadataMap.remove(name);
         return metric != null;
@@ -241,10 +238,16 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
     
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag[] tags) {
-        Metric existing = metricMap.get(new MetricID(name, tags));
-        if (existing != null) {
-            if (metadataMap.get(name).getTypeRaw().equals(metricType)) {
-                return (T) existing;
+        //Metric existing = metricMap.get(new MetricID(name, tags));
+        Metadata existingMetadata = metadataMap.get(name);
+        if (existingMetadata != null) {
+            if (existingMetadata.getTypeRaw().equals(metricType)) {
+                Metric existingMetric = metricMap.get(new MetricID(name, tags));
+                if (existingMetric != null) {
+                    return (T) existingMetric;
+                } else {
+                    return register(existingMetadata, null, tags);
+                }
             } else {
                 throw new IllegalArgumentException(String.format("Tried to retrieve metric with conflicting MetricType, looking for %s, got %s",
                         metricType, metadataMap.get(name).getTypeRaw().equals(metricType)));
@@ -484,10 +487,5 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
         return metricIDs;
     }
-    
-    @Override
-    public String toString() {
-        return MetricRegistryImpl.class.getCanonicalName() + ":" + name;
-    }
-    
+
 }

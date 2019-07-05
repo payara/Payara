@@ -105,7 +105,7 @@ public class MBeanMetadataHelper {
                         type = new MBeanCounterImpl(mBeanExpression);
                         break;
                     case GAUGE:
-                        type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                        type = new MBeanGuageImpl(mBeanExpression);
                         break;
                     default:
                         throw new IllegalStateException("Unsupported type : " + beanMetadata);

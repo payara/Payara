@@ -78,10 +78,10 @@ public class MBeanMetadata implements Metadata {
     private String displayName;
     
     @XmlElement
-    private Optional<String> description;
+    private String description;
     
     @XmlElement
-    private Optional<String> unit;
+    private String unit;
     
     @XmlElement
     private String type;
@@ -131,9 +131,9 @@ public class MBeanMetadata implements Metadata {
         this.mBean = mBean;
         this.name = name;
         this.displayName = displayName;
-        this.description = Optional.ofNullable(description);
+        this.description = description;
         this.type = typeRaw.toString();
-        this.unit = Optional.ofNullable(unit);
+        this.unit = unit;
     }
 
     public String getMBean() {
@@ -171,12 +171,18 @@ public class MBeanMetadata implements Metadata {
     
     @Override
     public Optional<String> getUnit() {
-        return unit;
+        if (unit.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(unit);
     }
     
     @Override
     public Optional<String> getDescription() {
-        return description;
+        if (description.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(description);
     }
     
     @Override

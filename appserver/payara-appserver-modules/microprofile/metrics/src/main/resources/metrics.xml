@@ -97,7 +97,7 @@ holder.
             <description>Displays the number of classes that are currently loaded in the JVM.</description>
         </metadata>
         <metadata>
-            <name>classloader.loadedClasses.total.count</name>
+            <name>classloader.loadedClasses.total</name>
             <mbean>java.lang:type=ClassLoading/TotalLoadedClassCount</mbean>
             <type>counter</type>
             <unit>none</unit>
@@ -105,7 +105,7 @@ holder.
             <description>Displays the total number of classes that have been loaded since the JVM has started execution.</description>
         </metadata>
         <metadata>
-            <name>classloader.unloadedClasses.total.count</name>
+            <name>classloader.unloadedClasses.total</name>
             <mbean>java.lang:type=ClassLoading/UnloadedClassCount</mbean>
             <type>counter</type>
             <unit>none</unit>

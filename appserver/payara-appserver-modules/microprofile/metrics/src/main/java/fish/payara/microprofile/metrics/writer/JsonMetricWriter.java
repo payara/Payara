@@ -55,6 +55,8 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -105,7 +107,8 @@ public class JsonMetricWriter extends JsonWriter {
     private JsonObjectBuilder getJsonFromMetrics(Map<MetricID, Metric> metricMap) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         for (Map.Entry<MetricID, Metric> entry : metricMap.entrySet()) {
-            String metricIDString = entry.getKey().toString();
+            String metricIDString = metricIDTranslation(entry.getKey());
+            Set<Entry<String, String>> tagsSet = entry.getKey().getTags().entrySet();
             Metric metric = entry.getValue();
             if (Counter.class.isInstance(metric)) {
                 payloadBuilder.add(metricIDString, ((Counter) metric).getCount());
@@ -127,11 +130,11 @@ public class JsonMetricWriter extends JsonWriter {
                 value = (Number) gaugeValue;
                 addValueToJsonObject(payloadBuilder, metricIDString, value);
             } else if (Histogram.class.isInstance(metric)) {
-                payloadBuilder.add(metricIDString, getJsonFromMap(getHistogramNumbers((Histogram) metric)));
+                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getHistogramNumbers((Histogram) metric), tagsToStringSuffix(tagsSet)));
             } else if (Meter.class.isInstance(metric)) {
-                payloadBuilder.add(metricIDString, getJsonFromMap(getMeterNumbers((Meter) metric)));
+                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getMeterNumbers((Meter) metric), tagsToStringSuffix(tagsSet)));
             } else if (Timer.class.isInstance(metric)) {
-                payloadBuilder.add(metricIDString, getJsonFromMap(getTimerNumbers((Timer) metric)));
+                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getTimerNumbers((Timer) metric), tagsToStringSuffix(tagsSet)));
             } else {
                 LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
             }
@@ -182,6 +185,28 @@ public class JsonMetricWriter extends JsonWriter {
         results.put(PERCENTILE_99TH, snapshot.get99thPercentile());
         results.put(PERCENTILE_999TH, snapshot.get999thPercentile());
         return results;
+    }
+    
+    /**
+     * Converts a {@link MetricID} into the format required by spec
+     * @param metricID
+     * @return
+     * @see Section 3.1.1 of MP Metrics 2.0 Specification
+     */
+    private String metricIDTranslation(MetricID metricID) {
+        StringBuilder jsonKey = new StringBuilder(metricID.getName());
+        jsonKey.append(tagsToStringSuffix(metricID.getTags().entrySet()));
+        return jsonKey.toString();
+    }
+    
+    private String tagsToStringSuffix(Set<Entry<String, String>> tagsSet) {
+        StringBuilder tags = new StringBuilder();
+        for (Entry<String,String> tag: tagsSet) {
+            tags.append(';').append(tag.getKey());
+            tags.append('=').append(tag.getValue().replace(';', '_'));
+        }
+        
+        return tags.toString();
     }
 
 }

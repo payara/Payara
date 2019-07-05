@@ -56,6 +56,7 @@ import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -155,13 +156,13 @@ public class PrometheusWriter implements MetricsWriter {
             MetricID metricId = entry.getKey();
             //Translation rules :
             //Scope is always specified at the start of the metric name
-            //Scope and name are separated by colon (:)
+            //Scope and name are separated by underscore (_)
             if(!BASE.getName().equals(registryName) 
                     && !VENDOR.getName().equals(registryName)){
                 registryName = APPLICATION.getName();
             }
                 
-            String name = registryName + ":" + metricId.toString();
+            String name = registryName + "_" + metricId.getName();
             Metric metric = entry.getValue();
             Metadata metricMetadata = metricMetadataMap.get(metricId.getName());
 
@@ -169,7 +170,7 @@ public class PrometheusWriter implements MetricsWriter {
             
             String unit = metricMetadata.getUnit().orElse(EMPTY_STRING);
 
-            PrometheusExporter exporter = new PrometheusExporter(builder);
+            PrometheusExporter exporter = new PrometheusExporter(builder, metricId);
 
             if (Counter.class.isInstance(metric)) {
                 exporter.exportCounter((Counter) metric, name, description, metricId.getTagsAsString()); 

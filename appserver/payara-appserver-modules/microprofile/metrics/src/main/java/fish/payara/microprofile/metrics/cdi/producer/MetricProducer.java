@@ -41,6 +41,8 @@
 package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -53,6 +55,7 @@ import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
@@ -65,54 +68,86 @@ public class MetricProducer {
 
     @Inject
     private MetricsHelper helper;
+    
+    private static final Logger LOGGER = Logger.getLogger("MP-METRICS");
 
     @Produces
     private Counter counter(InjectionPoint ip) {
-        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
-             return registry.counter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) &&
+                    annotation.absolute() && annotation.description().isEmpty() && annotation.displayName().isEmpty())) {
+                return registry.counter(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.counter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
         } else {
-            return registry.counter(ip.toString());
+            return registry.counter(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
         }
     }
     
     @Produces
     private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
-        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
-            return registry.concurrentGauge(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.concurrentGauge(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.concurrentGauge(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
         } else {
-            return registry.concurrentGauge(ip.toString());
+            return registry.concurrentGauge(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
         }
     }
 
     @Produces
     private <T> Gauge<T> gauge(InjectionPoint ip) {
         return () -> (T) registry.getGauges().get(helper.metricIDof(ip)).getValue();
-    }
+        }
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
-        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
-            return registry.histogram(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) || annotation.description().isEmpty() || annotation.displayName().isEmpty())
+                    || annotation.absolute()) {
+                return registry.histogram(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.histogram(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
         } else {
-            return registry.histogram(ip.toString());
+            return registry.histogram(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
         }
     }
 
     @Produces
     private Meter meter(InjectionPoint ip) {
-        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
-            return registry.meter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.meter(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.meter(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
         } else {
-            return registry.meter(ip.toString());
+            return registry.meter(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
         }
     }
 
     @Produces
     private Timer timer(InjectionPoint ip) {
-        if (ip.getAnnotated().isAnnotationPresent(Metric.class)) {
-            return registry.timer(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+        Metric annotation = ip.getAnnotated().getAnnotation(Metric.class);
+        if (annotation != null) {
+            if (!(annotation.unit().equals(MetricUnits.NONE) ||
+                    annotation.absolute() || annotation.description().isEmpty() || annotation.displayName().isEmpty())) {
+                return registry.timer(helper.metadataOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            } else {
+                return registry.timer(helper.metricNameOf(ip), MetricsHelper.tagsFromString(ip.getAnnotated().getAnnotation(Metric.class).tags()));
+            }
         } else {
-            return registry.timer(ip.toString());
+            return registry.timer(ip.getMember().getDeclaringClass().getCanonicalName() + "." + ip.getMember().getName());
         }
     }
 

@@ -60,6 +60,7 @@ import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
+import org.eclipse.microprofile.metrics.MetricID;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.CONCURRENT_GAUGE;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
@@ -107,6 +108,7 @@ public class PrometheusExporter {
     private static final String MIN_SUFFIX = "_min";
     private static final String STDDEV_SUFFIX = "_stddev";
     private static final String TOTAL_SUFFIX = "_total";
+    private static final String CURRENT_SUFFIX = "_current";
 
     private static final String QUANTILE = "quantile";
     private static final String RATE = "_rate_";
@@ -141,17 +143,21 @@ public class PrometheusExporter {
     private static final Logger LOGGER = Logger.getLogger(PrometheusExporter.class.getName());
 
     private final StringBuilder builder;
+    private final MetricID metricID;
 
-    public PrometheusExporter(StringBuilder builder){
+    public PrometheusExporter(StringBuilder builder, MetricID metricID){
         this.builder = builder;
+        this.metricID = metricID;
     }
 
     public void exportCounter(Counter counter, String name, String description, String tags) {
-        writeTypeHelpValueLine(name, COUNTER.toString(), description, counter.getCount(), tags);
+        writeTypeHelpValueLine(name, COUNTER.toString(), description, counter.getCount(), tags, TOTAL_SUFFIX);
     }
     
     void exportConcurrentGuage(ConcurrentGauge concurrentGauge, String name, String description, String tags) {
-         writeTypeHelpValueLine(name, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getCount(), tags);
+         writeTypeHelpValueLine(name + CURRENT_SUFFIX, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getCount(), tags);
+         writeTypeHelpValueLine(name + MIN_SUFFIX, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getMin(), tags);
+         writeTypeHelpValueLine(name + MAX_SUFFIX, CONCURRENT_GAUGE.toString(), description, concurrentGauge.getMax(), tags);
     }
 
     public void exportGauge(Gauge<?> gauge, String name, String description, String tags, String unit) {
@@ -313,11 +319,9 @@ public class PrometheusExporter {
 
     private String sanitizeMetricName(String name) {
         //Translation rules :
-        //camelCase is translated to camel_case
-        String out = name.replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase();
-        //Dot (.), Space ( ), Dash (-), Slash (/) are translated to underscore (_)
+        //All characters not in the range a-z A-Z or 0-9 are translated to underscore (_)
         //Double underscore is translated to single underscore
-        out = out.replaceAll("[-_./\\s]+", "_");
+        String out = name.replaceAll("[^a-zA-Z0-9_]+", "_");
         //Colon-underscore (:_) is translated to single colon
         out = out.replaceAll(":_", ":");
         return out;

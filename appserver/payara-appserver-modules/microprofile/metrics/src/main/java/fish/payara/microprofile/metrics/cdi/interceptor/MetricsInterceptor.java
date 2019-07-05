@@ -146,7 +146,10 @@ public class MetricsInterceptor {
                 && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
             MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
             if (gauge.isPresent()) {
-                registry.register(gauge.metadata(), new GaugeImpl((Method) element, target));
+                org.eclipse.microprofile.metrics.Gauge existingGuage = registry.getGauges().get(gauge.metricID());
+                if (existingGuage == null) {
+                    registry.register(gauge.metadata(), new GaugeImpl((Method) element, target), gauge.tags());
+                }
             }
         }
     }
