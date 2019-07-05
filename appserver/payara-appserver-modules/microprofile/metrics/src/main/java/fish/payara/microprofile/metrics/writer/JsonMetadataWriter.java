@@ -54,13 +54,21 @@ import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.Tag;
 
 public class JsonMetadataWriter extends JsonWriter {
     
@@ -69,6 +77,7 @@ public class JsonMetadataWriter extends JsonWriter {
     private static final String DESCRIPTION = "description";
     private static final String TYPE = "type";
     private static final String UNIT = "unit";
+    private static final String TAGS = "tags";
 
     public JsonMetadataWriter(Writer writer) {
         super(writer);
@@ -76,29 +85,45 @@ public class JsonMetadataWriter extends JsonWriter {
 
     @Override
     protected JsonObjectBuilder getJsonData(String registryName) throws NoSuchRegistryException {
-        return getJsonFromMetadata(service.getMetadataAsMap(registryName));
+        return getJsonFromMetadata(service.getMetadataAsMap(registryName), registryName);
     }
 
     @Override
     protected JsonObjectBuilder getJsonData(String registryName, String metric) throws NoSuchRegistryException, NoSuchMetricException {
-        return getJsonFromMetadata(service.getMetadataAsMap(registryName, metric));
+        return getJsonFromMetadata(service.getMetadataAsMap(registryName, metric), registryName);
     }
 
-    private JsonObjectBuilder getJsonFromMetadata(Map<String, Metadata> metadataMap) {
+    private JsonObjectBuilder getJsonFromMetadata(Map<String, Metadata> metadataMap, String registryName) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         for (Entry<String, Metadata> entry : metadataMap.entrySet()) {
-            payloadBuilder.add(entry.getKey(), getJsonFromMetadata(entry.getValue()));
+            Set<MetricID> metricIDs = new HashSet<>();
+            try {
+                metricIDs.addAll(service.getMetricsIDs(registryName, entry.getKey()));
+            } catch (NoSuchRegistryException | NoSuchMetricException ex) {
+                //this should not be possible as checked earlier
+                throw new RuntimeException(ex);
+            }
+            payloadBuilder.add(entry.getKey(), getJsonFromMetadata(entry.getValue(), metricIDs));
         }
         return payloadBuilder;
     }  
     
-    private JsonObject getJsonFromMetadata(Metadata metadata) {
+    private JsonObject getJsonFromMetadata(Metadata metadata, Set<MetricID> metricIDs) {        
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         payloadBuilder.add(NAME, sanitizeMetadata(metadata.getName()));
         payloadBuilder.add(DISPLAY_NAME, sanitizeMetadata(metadata.getDisplayName()));
         payloadBuilder.add(DESCRIPTION, sanitizeMetadata(metadata.getDescription()));
         payloadBuilder.add(TYPE, sanitizeMetadata(metadata.getType()));
         payloadBuilder.add(UNIT, sanitizeMetadata(metadata.getUnit()));
+        JsonArrayBuilder allTagsBuilder = Json.createArrayBuilder();
+        for (MetricID id: metricIDs) {
+            JsonArrayBuilder tagBuilder = Json.createArrayBuilder();
+            for (Tag tag: id.getTagsAsList()) {
+                tagBuilder.add(tag.getTagName() + '=' + tag.getTagValue());
+            }
+            allTagsBuilder.add(tagBuilder.build());
+        }
+        payloadBuilder.add(TAGS, allTagsBuilder);
         return payloadBuilder.build();
     }
 

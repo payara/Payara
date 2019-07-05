@@ -146,7 +146,7 @@ public class PrometheusWriter implements MetricsWriter {
         writeMetricMap(
                 builder,
                 registryName,
-                service.getMetricsAsMap(registryName, new MetricID(metricName)),
+                service.getMetricsAsMap(registryName, metricName),
                 service.getMetadataAsMap(registryName, metricName)
         );
     }

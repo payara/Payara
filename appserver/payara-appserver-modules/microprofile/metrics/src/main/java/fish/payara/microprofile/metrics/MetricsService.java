@@ -241,14 +241,27 @@ public class MetricsService implements EventListener {
         return registry.getMetadata();
     }
 
-    public Map<MetricID, Metric> getMetricsAsMap(String registryName, MetricID metricName) throws NoSuchRegistryException, NoSuchMetricException {
+    public Set<MetricID> getMetricsIDs(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
         MetricRegistry registry = getRegistry(registryName);
         Map<MetricID, Metric> metricMap = registry.getMetrics();
-        if (metricMap.containsKey(metricName)) {
-            return Collections.singletonMap(metricName, metricMap.get(metricName));
-        } else {
-            throw new NoSuchMetricException(metricName.toString());
+        Set<MetricID> metricIDs = new HashSet<>();
+        for (MetricID id: metricMap.keySet()) {
+            if (id.getName().contains(metricName)) {
+                metricIDs.add(id);
+            }
         }
+        return metricIDs;
+    }
+    
+    public Map<MetricID, Metric> getMetricsAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
+        MetricRegistry registry = getRegistry(registryName);
+        Map<MetricID, Metric> metricMap = new HashMap<>();
+        for (Map.Entry<MetricID, Metric> metricPair: registry.getMetrics().entrySet()) {
+            if (metricPair.getKey().getName().equals(metricName)) {
+                metricMap.put(metricPair.getKey(), metricPair.getValue());
+            }
+        }
+        return metricMap;
     }
         
     public Map<String, Metadata> getMetadataAsMap(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {

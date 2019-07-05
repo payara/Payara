@@ -101,7 +101,7 @@ public class JsonMetricWriter extends JsonWriter {
 
     @Override
     protected JsonObjectBuilder getJsonData(String registryName, String metricName) throws NoSuchRegistryException, NoSuchMetricException {
-        return getJsonFromMetrics(service.getMetricsAsMap(registryName, new MetricID(metricName)));
+        return getJsonFromMetrics(service.getMetricsAsMap(registryName, metricName));
     }
 
     private JsonObjectBuilder getJsonFromMetrics(Map<MetricID, Metric> metricMap) {
@@ -113,7 +113,7 @@ public class JsonMetricWriter extends JsonWriter {
             if (Counter.class.isInstance(metric)) {
                 payloadBuilder.add(metricIDString, ((Counter) metric).getCount());
             } else if (ConcurrentGauge.class.isInstance(metric)) {
-                payloadBuilder.add(metricIDString, ((ConcurrentGauge) metric).getCount());
+                payloadBuilder.add(metricIDString,  getJsonFromMap(getConcurrentGaugeNumbers((ConcurrentGauge) metric), tagsToStringSuffix(tagsSet)));
             } else if (Gauge.class.isInstance(metric)) {
                 Number value;
                 Object gaugeValue;
@@ -140,6 +140,14 @@ public class JsonMetricWriter extends JsonWriter {
             }
         }
         return payloadBuilder;
+    }
+    
+    private Map<String, Number> getConcurrentGaugeNumbers(ConcurrentGauge gauge) {
+        Map<String, Number> results = new HashMap<>();
+        results.put(COUNT, gauge.getCount());
+        results.put(MIN, gauge.getMin());
+        results.put(MAX, gauge.getMax());
+        return results;
     }
     
     private Map<String, Number> getTimerNumbers(Timer timer) {
