@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
 import static javax.json.Json.createObjectBuilder;
@@ -71,7 +72,7 @@ public class JwtTokenParser {
     
     private final boolean enableNamespacedClaims;
     private final Optional<String> customNamespace;
-
+    
     private String rawToken;
     private SignedJWT signedJWT;
     
@@ -87,22 +88,16 @@ public class JwtTokenParser {
     public void parse(String bearerToken) throws Exception {
         rawToken = bearerToken;
         signedJWT = SignedJWT.parse(rawToken);
-        
+
+        // MP-JWT 1.0 4.1 typ
         if (!checkIsJWT(signedJWT.getHeader())) {
             throw new IllegalStateException("Not JWT");
         }
     }
     
     public JsonWebTokenImpl verify(String issuer, PublicKey publicKey) throws Exception {
-        if (signedJWT == null) {
-            parse(rawToken);
-        }
-
-        // MP-JWT 1.0 4.1 typ
-        if (!checkIsJWT(signedJWT.getHeader())) {
-            throw new IllegalStateException("Not JWT");
-        }
-
+        checkState(signedJWT != null, "No parsed SignedJWT.");
+        
         // 1.0 4.1 alg + MP-JWT 1.0 6.1 1
         if (!signedJWT.getHeader().getAlgorithm().equals(RS256)) {
             throw new IllegalStateException("Not RS256");
@@ -145,6 +140,11 @@ public class JwtTokenParser {
 
             return new JsonWebTokenImpl(callerPrincipalName, rawClaims);
         }
+    }
+    
+    public String getKeyID() {
+        checkState(signedJWT != null, "No parsed SignedJWT.");
+        return signedJWT.getHeader().getKeyID();
     }
     
     private Map<String, JsonValue> handleNamespacedClaims(Map<String, JsonValue> currentClaims){
