@@ -187,7 +187,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the maxPoolSize property.
      *
-     * Maximum number of conections that can be created
+     * Maximum number of connections that can be created
      * 
      * @return possible object is
      *         {@link String }
@@ -251,7 +251,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * maximum time in seconds, that a connection can remain idle in the pool.
      * After this time, the pool implementation can close this connection.
      * Note that this does not control connection timeouts enforced at the
-     * database server side. Adminsitrators are advised to keep this timeout
+     * database server side. Administrators are advised to keep this timeout
      * shorter than the database server side timeout (if such timeouts are
      * configured on the specific vendor's database), to prevent accumulation of
      * unusable connection in Application Server.
@@ -798,7 +798,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *
      * Init sql is executed whenever a connection created from the pool. 
      * This is mostly useful when the state of a
-     * connection is to be initialized
+     * connection is to be initialised
      * 
      * @return possible object is
      *         {@link String }

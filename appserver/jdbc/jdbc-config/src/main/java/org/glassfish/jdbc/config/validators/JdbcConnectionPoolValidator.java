@@ -118,7 +118,7 @@ public class JdbcConnectionPoolValidator
                     }
                 }
                 
-                //By this point is should be the case that the value is castable
+                //By this point it should be the case that the value is always castable
                 //to an integer
                 maxPoolSizeValue = Integer.parseInt(maxPoolSize);
                 steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
@@ -193,7 +193,7 @@ public class JdbcConnectionPoolValidator
                 String dsClassName = jdbcPool.getDatasourceClassname();
                 String driverClassName = jdbcPool.getDriverClassname();
                 if (resType == null) {
-                    //One of datasource/driver classnames must be provided.
+                    //One of each datasource/driver classnames must be provided.
                     if ((dsClassName == null || dsClassName.equals("")) &&
                             (driverClassName == null || driverClassName.equals(""))) {
                         return false;
