@@ -58,7 +58,6 @@ import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
@@ -175,8 +174,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="8")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getSteadyPoolSize();
 
     /**
@@ -196,8 +193,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="32")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxPoolSize();
 
     /**
@@ -218,8 +213,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="60000")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxWaitTimeInMillis();
 
     /**
@@ -242,8 +235,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="2")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getPoolResizeQuantity();
 
     /**
@@ -269,8 +260,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="300")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getIdleTimeoutInSeconds();
 
     /**
@@ -507,8 +496,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getValidateAtmostOncePeriodInSeconds();
 
     /**
@@ -535,8 +522,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionLeakTimeoutInSeconds();
 
     /**
@@ -577,8 +562,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryAttempts();
 
     /**
@@ -600,8 +583,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="10")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryIntervalInSeconds();
 
     /**
@@ -753,8 +734,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementCacheSize();
 
     /**
@@ -792,8 +771,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementLeakTimeoutInSeconds();
 
     /**
@@ -871,8 +848,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxConnectionUsageCount();
 
     /**

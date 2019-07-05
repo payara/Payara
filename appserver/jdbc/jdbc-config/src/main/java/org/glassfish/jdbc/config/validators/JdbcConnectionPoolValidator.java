@@ -41,6 +41,7 @@
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
+import java.util.Properties;
 import org.glassfish.config.support.Constants;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
@@ -71,17 +72,58 @@ public class JdbcConnectionPoolValidator
 
         if(poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
             if(pool instanceof JdbcConnectionPool) {
+                
+                Properties systemProps = System.getProperties();
+                
                 JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
                 String maxPoolSize = jdbcPool.getMaxPoolSize();
                 String steadyPoolSize = jdbcPool.getSteadyPoolSize();
-                if(steadyPoolSize == null) {
+                
+                int maxPoolSizeValue = 0;
+                int steadyPoolSizeValue = 0;
+                
+                if (steadyPoolSize == null) {
                     steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
+                } else if(steadyPoolSize.startsWith("$")) {
+                    //Try to retrive system variable value
+                    steadyPoolSize = steadyPoolSize.substring(2, steadyPoolSize.length() - 1);
+                    
+                    if (systemProps.getProperty(steadyPoolSize) == null || systemProps.getProperty(steadyPoolSize).isEmpty()) {
+                        //System property doesn't exist so try environment variables
+                        if (System.getenv(steadyPoolSize) == null || System.getenv(steadyPoolSize).isEmpty()) {
+                            //Environment variable doesn't exist so return false and log reasoning as error extension
+                            return false;
+                        }
+                        steadyPoolSize = System.getenv(steadyPoolSize);
+                    } else {
+                        steadyPoolSize = systemProps.getProperty(steadyPoolSize);
+                    }
                 }
+                
                 if (maxPoolSize == null) {
                     maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
+                } else if(maxPoolSize.startsWith("$")) {
+                    //Try to retrive system variable value
+                    maxPoolSize = maxPoolSize.substring(2, maxPoolSize.length() - 1);
+                    
+                    if (systemProps.getProperty(maxPoolSize) == null || systemProps.getProperty(maxPoolSize).isEmpty()) {
+                        //System property doesn't exist so try environment variables
+                        if (System.getenv(maxPoolSize) == null || System.getenv(maxPoolSize).isEmpty()) {
+                            //Environment variable doesn't exist so return false and log reasoning as error extension
+                            return false;
+                        }
+                        maxPoolSize = System.getenv(maxPoolSize);
+                    } else {
+                        maxPoolSize = systemProps.getProperty(maxPoolSize);
+                    }
                 }
-                if (Integer.parseInt(maxPoolSize) <
-                        (Integer.parseInt(steadyPoolSize))) {
+                
+                //By this point is should be the case that the value is castable
+                //to an integer
+                maxPoolSizeValue = Integer.parseInt(maxPoolSize);
+                steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
+                
+                if (maxPoolSizeValue < steadyPoolSizeValue) {
                     //max pool size fault
                     return false;
                 }
