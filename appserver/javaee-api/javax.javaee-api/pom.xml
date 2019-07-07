@@ -144,8 +144,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.security.jacc</groupId>
-            <artifactId>javax.security.jacc-api</artifactId>
+            <groupId>jakarta.security.jacc</groupId>
+            <artifactId>jakarta.security.jacc-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
