@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,13 @@
                 value="#{requestScope.resp.data.extraProperties.openApiConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "securityenabled"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+
+        if (#{pageSession.valueMap['securityenabled']}=true) {
+            setPageSessionAttribute(key="securityEnabled", value="true");
         }
     />
 </event>
@@ -77,7 +81,8 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
             <!command
-                mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");;
+                mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                mapPut(map="#{pageSession.valueMap}" key="securityenabled" value="#{pageSession.securityEnabled}");
                 convertArrayToCommaString(array="#{pageSession.virtualServersSelected}"  commaString="#{requestScope.virtualServersText}");
                 mapPut(map="#{pageSession.valueMap}" key="virtualServers" value="#{requestScope.virtualServersText}");
                 prepareSuccessfulMsg();
@@ -95,6 +100,12 @@
                       label="$resource{i18n_microprofile.openAPI.configuration.enabled}"  
                       helpText="$resource{i18n_microprofile.openAPI.configuration.enabledHelp}">
             <sun:checkbox id="enabled" selected="#{pageSession.enabledSelected}" 
+                          selectedValue="true" />
+        </sun:property>
+        <sun:property id="securityEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.openAPI.configuration.securityEnabled}"
+                      helpText="$resource{i18n_microprofile.openAPI.configuration.securityEnabledHelp}">
+            <sun:checkbox id="securityEnabled" selected="#{pageSession.securityEnabled}"
                           selectedValue="true" />
         </sun:property>
         <sun:property id="virtualServersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"

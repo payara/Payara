@@ -166,7 +166,7 @@ public class ConstantPool implements VMConstants {
    */
   public ConstInteger addInteger (int i) {
     hashConstants();
-    Integer io = new Integer(i);
+    Integer io = Integer.valueOf(i);
     ConstInteger ci = (ConstInteger) intTable.get(io);
     if (ci == null) {
       ci = new ConstInteger(i);
@@ -180,7 +180,7 @@ public class ConstantPool implements VMConstants {
    */
   public ConstFloat addFloat (float f) {
     hashConstants();
-    Float fo = new Float(f);
+    Float fo = Float.valueOf(f);
     ConstFloat cf = (ConstFloat) floatTable.get(fo);
     if (cf == null) {
       cf = new ConstFloat(f);
@@ -194,7 +194,7 @@ public class ConstantPool implements VMConstants {
    */
   public ConstLong addLong (long l) {
     hashConstants();
-    Long lo = new Long(l);
+    Long lo = Long.valueOf(l);
     ConstLong cl = (ConstLong) longTable.get(lo);
     if (cl == null) {
       cl = new ConstLong(l);
@@ -209,7 +209,7 @@ public class ConstantPool implements VMConstants {
    */
   public ConstDouble addDouble (double d) {
     hashConstants();
-    Double dobj = new Double(d);
+    Double dobj = Double.valueOf(d);
     ConstDouble cd = (ConstDouble) doubleTable.get(dobj);
     if (cd == null) {
       cd = new ConstDouble(d);

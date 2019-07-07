@@ -109,7 +109,7 @@ public class PersistenceFieldElementImpl extends PersistenceMemberElementImpl
 	public void setPersistenceType (int type) throws ModelException
 	{
 		Integer old = new Integer(getPersistenceType());
-		Integer newType = new Integer(type);
+		Integer newType = Integer.valueOf(type);
 		
 		try
 		{

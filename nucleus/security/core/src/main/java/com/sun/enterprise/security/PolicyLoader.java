@@ -48,6 +48,8 @@ import static com.sun.enterprise.security.SecurityLoggerInfo.policyNotLoadingWar
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyProviderConfigOverrideMsg;
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyProviderConfigOverrideWarning;
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyReadingError;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -60,13 +62,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-//V3:Commented import com.sun.enterprise.config.serverbeans.ElementProperty;
-//V3:Commented import com.sun.enterprise.config.ConfigContext;
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
-//V3:Commented import com.sun.enterprise.server.ApplicationServer;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -81,8 +80,8 @@ import com.sun.enterprise.util.i18n.StringManager;
 @Singleton
 public class PolicyLoader {
     
-    private static Logger _logger = SecurityLoggerInfo.getLogger();
-    private static StringManager stringManager = StringManager.getManager(PolicyLoader.class);
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
+    private static final StringManager STRING_MANAGER = StringManager.getManager(PolicyLoader.class);
     
     private static final String POLICY_PROVIDER_14 = "javax.security.jacc.policy.provider";
     private static final String POLICY_PROVIDER_13 = "javax.security.jacc.auth.policy.provider";
@@ -99,21 +98,26 @@ public class PolicyLoader {
     private boolean isPolicyInstalled;
 
     /**
-     * Attempts to install the policy-provider. The policy-provider element in domain.xml is consulted for the class to use.
-     * Note that if the javax.security.jacc.policy.provider system property is set it will override the domain.xml
-     * configuration. This will normally not be the case in S1AS.
+     * Attempts to install the JACC policy-provider (authorization module) 
+     * 
+     * <p>
+     * The policy-provider element in domain.xml is consulted for the class to use.
+     * 
+     * <p>
+     * Note that if the <code>javax.security.jacc.policy.provider</code> system property is set it will override 
+     * the domain.xml configuration. This will normally not be the case in Payara.
      *
      * <P>
-     * The J2EE 1.3 property javax.security.jacc.auth.policy.provider is checked as a last resort. It should not be set in
-     * J2EE 1.4.
+     * The J2EE 1.3 property <code>javax.security.jacc.auth.policy.provider</code> is checked as a last resort. 
+     * It should not be set in J2EE 1.4.
      */
     public void loadPolicy() {
         if (isPolicyInstalled) {
-            _logger.fine("Policy already installed. Will not re-install.");
+            LOGGER.fine("Policy already installed. Will not re-install.");
             return;
         }
         
-        // Get config object
+        // Get configuration object for the JACC provider (which handles the policies)
         JaccProvider jaccProvider = getConfiguredJaccProvider();
         
         // Set config properties (see method comments)
@@ -121,78 +125,41 @@ public class PolicyLoader {
 
         boolean j2ee13 = false;
 
-        // Check if system property is set
-        String javaPolicy = System.getProperty(POLICY_PROVIDER_14);
+        // Get policy class name via the "normal" ways
+        String policyClassName = getConfiguredPolicyClassName(jaccProvider);
 
-        if (javaPolicy != null) {
-            // Inform user domain.xml is being ignored
-            _logger.log(INFO, policyProviderConfigOverrideMsg, new String[] { POLICY_PROVIDER_14, javaPolicy });
-        } else {
-            // Otherwise obtain JACC policy-provider from domain.xml
-            if (jaccProvider != null) {
-                javaPolicy = jaccProvider.getPolicyProvider();
-            }
-        }
-
-        if (javaPolicy == null) {
-            javaPolicy = System.getProperty(POLICY_PROVIDER_13);
-            if (javaPolicy != null) {
+        if (policyClassName == null) {
+            // Try legacy fallback (at some point we might want to stop supporting this)
+            policyClassName = System.getProperty(POLICY_PROVIDER_13);
+            if (policyClassName != null) {
                 // Warn user j2ee13 property is being used
                 j2ee13 = true;
-                _logger.log(WARNING, policyProviderConfigOverrideWarning, new String[] { POLICY_PROVIDER_13, javaPolicy });
+                LOGGER.log(WARNING, policyProviderConfigOverrideWarning, new String[] { POLICY_PROVIDER_13, policyClassName });
             }
         }
-
-        // Now install the policy provider if one was identified
-        if (javaPolicy != null) {
-
-            try {
-                _logger.log(INFO, SecurityLoggerInfo.policyLoading, javaPolicy);
-
-                ClassLoader loader = Thread.currentThread().getContextClassLoader();
-                Class<?> javaPolicyClass = loader.loadClass(javaPolicy);
-                Object obj = javaPolicyClass.newInstance();
-                
-                if (j2ee13) {
-                    // Use JDK 1.3 classes if j2ee1 3 property being used
-                    if (!(obj instanceof javax.security.auth.Policy)) {
-                        throw new RuntimeException(stringManager.getString("enterprise.security.plcyload.not13"));
-                    }
-                    javax.security.auth.Policy policy = (javax.security.auth.Policy) obj;
-                    javax.security.auth.Policy.setPolicy(policy);
-                    policy.refresh();
-
-                } else {
-                    // Otherwise use JDK 1.4 classes.
-                    if (!(obj instanceof java.security.Policy)) {
-                        throw new RuntimeException(stringManager.getString("enterprise.security.plcyload.not14"));
-                    }
-                    
-                    Policy policy = (java.security.Policy) obj;
-                    Policy.setPolicy(policy);
-                    
-                    // TODO: causing ClassCircularity error when SM ON and
-                    // deployment use library feature and ApplibClassLoader
-                    // it is likely a problem caused by the way classloading is done
-                    // in this case.
-                    if (System.getSecurityManager() == null) {
-                        policy.refresh();
-                    }
-                }
-
-            } catch (Exception e) {
-                _logger.log(SEVERE, policyInstallError, e.getLocalizedMessage());
-                throw new RuntimeException(e);
-            }
-            
-            // Success.
-            _logger.fine("Policy set to: " + javaPolicy);
-            isPolicyInstalled = true;
-
+        
+        if (policyClassName != null) {
+            // Now install the policy provider if one was identified
+            installPolicyFromClassName(policyClassName, j2ee13);
         } else {
             // No value for policy provider found
-            _logger.warning(policyNotLoadingWarning);
+            LOGGER.warning(policyNotLoadingWarning);
         }
+    }
+    
+    private String getConfiguredPolicyClassName(JaccProvider jaccProvider) {
+        // Check if system property is set
+        String policyClassName = System.getProperty(POLICY_PROVIDER_14);
+
+        if (policyClassName != null) {
+            // Inform user domain.xml is being ignored
+            LOGGER.log(INFO, policyProviderConfigOverrideMsg, new String[] { POLICY_PROVIDER_14, policyClassName });
+        } else if (jaccProvider != null) {
+            // Otherwise obtain JACC policy-provider from domain.xml
+            policyClassName = jaccProvider.getPolicyProvider();
+        }
+        
+        return policyClassName;
     }
 
     /**
@@ -207,10 +174,10 @@ public class PolicyLoader {
             jaccProvider = getJaccProviderByName(name);
             
             if (jaccProvider == null) {
-                _logger.log(WARNING, policyNoSuchName, name);
+                LOGGER.log(WARNING, policyNoSuchName, name);
             }
         } catch (Exception e) {
-            _logger.warning(policyReadingError);
+            LOGGER.warning(policyReadingError);
             jaccProvider = null;
         }
         
@@ -243,8 +210,8 @@ public class PolicyLoader {
      * POLICY_PROP_PREFIX. This is currently a workaround for bug 4846938. A cleaner interface should be adopted.
      *
      */
-    private void setPolicyConfigurationFactory(JaccProvider jacc) {
-        if (jacc == null) {
+    private void setPolicyConfigurationFactory(JaccProvider jaccProvider) {
+        if (jaccProvider == null) {
             return;
         }
         
@@ -253,25 +220,68 @@ public class PolicyLoader {
         String prop = System.getProperty(POLICY_CONF_FACTORY);
         if (prop != null) {
             // Warn user of override
-            _logger.log(WARNING, policyFactoryOverride, new String[] { POLICY_CONF_FACTORY, prop });
+            LOGGER.log(WARNING, policyFactoryOverride, new String[] { POLICY_CONF_FACTORY, prop });
 
         } else {
             // Use domain.xml value by setting the property to it
-            String factory = jacc.getPolicyConfigurationFactoryProvider();
+            String factory = jaccProvider.getPolicyConfigurationFactoryProvider();
             if (factory == null) {
-                _logger.log(WARNING, policyConfigFactoryNotDefined);
+                LOGGER.log(WARNING, policyConfigFactoryNotDefined);
             } else {
                 System.setProperty(POLICY_CONF_FACTORY, factory);
             }
         }
 
         // Next, make properties of this JACC provider available to provider
-        for (Property jaccProperty : jacc.getProperty()) {
+        for (Property jaccProperty : jaccProvider.getProperty()) {
             String name = POLICY_PROP_PREFIX + jaccProperty.getName();
             String value = jaccProperty.getValue();
-            _logger.finest("PolicyLoader set [" + name + "] to [" + value + "]");
+            LOGGER.log(FINEST, () -> "PolicyLoader set [" + name + "] to [" + value + "]");
             
             System.setProperty(name, value);
         }
+    }
+    
+    private void installPolicyFromClassName(String policyClassName, boolean j2ee13) {
+        try {
+            LOGGER.log(INFO, SecurityLoggerInfo.policyLoading, policyClassName);
+
+            Object policyInstance = loadClass(policyClassName);
+            installPolicy14(policyInstance);
+
+        } catch (Exception e) {
+            LOGGER.log(SEVERE, policyInstallError, e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
+        
+        // Success.
+        LOGGER.log(FINE, () -> "Policy set to: " + policyClassName);
+        isPolicyInstalled = true;
+    }
+    
+    private void installPolicy14(Object policyInstance) {
+        if (!(policyInstance instanceof java.security.Policy)) {
+            throw new RuntimeException(STRING_MANAGER.getString("enterprise.security.plcyload.not14"));
+        }
+        
+        Policy policy = (java.security.Policy) policyInstance;
+        Policy.setPolicy(policy);
+        
+        // TODO: causing ClassCircularity error when SM ON and deployment use library feature and 
+        // ApplibClassLoader
+        //
+        // It is likely a problem caused by the way class loading is done in this case.
+        if (System.getSecurityManager() == null) {
+            policy.refresh();
+        }
+    }
+    
+    
+    private Object loadClass(String policyClassName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return 
+            Thread.currentThread()
+                  .getContextClassLoader()
+                  .loadClass(policyClassName)
+                  .newInstance();
     }
 }

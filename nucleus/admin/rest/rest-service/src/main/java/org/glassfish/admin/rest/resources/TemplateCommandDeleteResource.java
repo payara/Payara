@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -72,7 +72,7 @@ import static org.glassfish.admin.rest.resources.TemplateExecCommand.localString
  */
 @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class TemplateCommandDeleteResource extends TemplateExecCommand {
-
+    
     public TemplateCommandDeleteResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName,  boolean b) {
         super(resourceName, commandName, commandMethod, commandAction, commandDisplayName, b);
     }
@@ -86,9 +86,8 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
-                    "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return executeCommandLegacyFormat(preprocessData(data));
@@ -100,9 +99,8 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
-                    "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return executeCommand(preprocessData(data));
@@ -118,9 +116,8 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
-                    "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return executeCommandAsSse(preprocessData(data));

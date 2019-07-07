@@ -90,7 +90,7 @@ public class SemaphoreImpl implements Semaphore {
         boolean debug = _logger.isLoggable(Logger.FINEST);
 
         if (debug) {
-            Object[] items = new Object[] {_owner, Thread.currentThread(),new Integer(_counter)};
+            Object[] items = new Object[] {_owner, Thread.currentThread(), _counter};
             _logger.finest("utility.semaphoreimpl.acquire",items); // NOI18N
         }
 
@@ -114,7 +114,7 @@ public class SemaphoreImpl implements Semaphore {
                 _counter++;
                 
                 if (debug) {
-                    Object[] items = new Object[] {_owner, Thread.currentThread(),new Integer(_counter)};
+                    Object[] items = new Object[] {_owner, Thread.currentThread(), _counter};
                     _logger.finest("utility.semaphoreimpl.gotlock",items); // NOI18N
                 }
             }
@@ -127,7 +127,7 @@ public class SemaphoreImpl implements Semaphore {
         boolean debug = _logger.isLoggable(Logger.FINEST);
         
         if (debug) {
-            Object[] items = new Object[] {_owner, Thread.currentThread(),new Integer(_counter)};
+            Object[] items = new Object[] {_owner, Thread.currentThread(), _counter};
             _logger.finest("utility.semaphoreimpl.release",items); // NOI18N
         }
         

@@ -64,7 +64,7 @@ public class MBeanConstructorInfoStringifier extends MBeanFeatureInfoStringifier
         final MBeanConstructorInfo constructor = (MBeanConstructorInfo) o;
 
         final String name = constructor.getName();
-        final int lastDot = name.lastIndexOf(".");
+        final int lastDot = name.lastIndexOf('.');
         final String abbreviatedName = name.substring(lastDot + 1, name.length());
 
         final String params = "(" +

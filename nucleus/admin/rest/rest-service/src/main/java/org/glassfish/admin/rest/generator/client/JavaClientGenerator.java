@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
 import java.io.BufferedInputStream;
@@ -71,7 +73,7 @@ import org.jvnet.hk2.config.ConfigModel;
 public class JavaClientGenerator extends ClientGenerator {
     private File baseDirectory;
     private Map<String, URI> artifacts;
-    private static String MSG_INSTALL =
+    private static final String MSG_INSTALL =
             "To install the artifacts to maven: " +
             "mvn install:install-file -DpomFile=pom.xml -Dfile=" + ARTIFACT_NAME + "-VERSION.jar -Dsources=" +
                     ARTIFACT_NAME + "-VERSION-sources.jar";
@@ -80,7 +82,7 @@ public class JavaClientGenerator extends ClientGenerator {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
         try {
-            System.out.println("Generating class in " + baseDirectory.getCanonicalPath());
+            LOGGER.log(Level.INFO, "Generating class in {0}", baseDirectory.getCanonicalPath());
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }

@@ -50,10 +50,11 @@ import java.util.logging.Logger;
 /**
  * Class that represents the state of a CircuitBreaker.
  * @author Andrew Pielage
+ * @author Jan Bernitt (2.0)
  */
 public class CircuitBreakerState {
 
-    private static final Logger LOGGER = Logger.getLogger(CircuitBreakerState.class.getName());
+    private static final Logger logger = Logger.getLogger(CircuitBreakerState.class.getName());
 
     public enum CircuitState {
         OPEN, CLOSED, HALF_OPEN
@@ -97,13 +98,13 @@ public class CircuitBreakerState {
 
     /**
      * Records a success or failure result to the CircuitBreaker.
-     * @param result True for a success, false for a failure
+     * @param success True for a success, false for a failure
      */
-    public void recordClosedResult(Boolean result) {
+    public void recordClosedOutcome(boolean success) {
         // If the queue is full, remove the oldest result and add
-        if (!this.closedResultsQueue.offer(result)) {
+        if (!this.closedResultsQueue.offer(success)) {
             this.closedResultsQueue.poll();
-            this.closedResultsQueue.offer(result);
+            this.closedResultsQueue.offer(success);
         }
     }
 
@@ -141,10 +142,10 @@ public class CircuitBreakerState {
      * @param failureThreshold The number of failures before the circuit breaker should open
      * @return True if the CircuitBreaker is over the failure threshold
      */
-    public boolean isOverFailureThreshold(long failureThreshold) {
+    public boolean isOverFailureThreshold(int requestVolumeThreshold, double failureRatio) {
         boolean over = false;
         int failures = 0;
-
+        int failureThreshold = (int) Math.round(requestVolumeThreshold * failureRatio);
         // Only check if the queue is full
         if (this.closedResultsQueue.remainingCapacity() == 0) {
             for (Boolean success : this.closedResultsQueue) {
@@ -158,7 +159,7 @@ public class CircuitBreakerState {
                 }
             }
         } else {
-            LOGGER.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
+            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
 
         return over;
@@ -170,8 +171,44 @@ public class CircuitBreakerState {
      */
     public long updateAndGet(CircuitState circuitState) {
         return this.currentStateTime.is(circuitState)
-            ? this.currentStateTime.update()
-            : this.allStateTimes.get(circuitState).nanos();
+                ? this.currentStateTime.update()
+                : this.allStateTimes.get(circuitState).nanos();
     }
 
+    public long nanosOpen() {
+        return updateAndGet(CircuitState.OPEN);
+    }
+
+    public long nanosHalfOpen() {
+        return updateAndGet(CircuitState.HALF_OPEN);
+    }
+
+    public long nanosClosed() {
+        return updateAndGet(CircuitState.CLOSED);
+    }
+
+    public void close() {
+        setCircuitState(CircuitState.CLOSED);
+        resetHalfOpenSuccessfulResultCounter();
+        resetResults();
+    }
+
+    public void open() {
+        setCircuitState(CircuitState.OPEN);
+        resetHalfOpenSuccessfulResultCounter();
+    }
+
+    public void halfOpen() {
+        logger.log(Level.FINE, "Setting CircuitBreaker state to half open");
+        setCircuitState(CircuitState.HALF_OPEN);
+    }
+
+    public boolean halfOpenSuccessfulClosedCircuit(int successThreshold) {
+        incrementHalfOpenSuccessfulResultCounter();
+        if (getHalfOpenSuccessFulResultCounter() == successThreshold) {
+            close();
+            return true;
+        }
+        return false;
+    }
 }

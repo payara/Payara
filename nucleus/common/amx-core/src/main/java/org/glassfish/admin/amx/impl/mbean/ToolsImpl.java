@@ -150,8 +150,8 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         if (pattern == null) {
             String temp = searchStringIn;
 
-            final boolean hasProps = temp.indexOf("=") >= 0;
-            final boolean hasDomain = temp.indexOf(":") >= 0;
+            final boolean hasProps = temp.indexOf('=') >= 0;
+            final boolean hasDomain = temp.indexOf(':') >= 0;
             final boolean isPattern = temp.endsWith(WILD_SUFFIX);
 
             if (!(hasProps || hasDomain || isPattern)) {

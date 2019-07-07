@@ -59,6 +59,13 @@ import javax.net.ssl.SSLServerSocketFactory;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Ssl;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.localization.LogMessages;
@@ -146,23 +153,26 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 //                }
                 // ssl protocol variants
                 if (Boolean.parseBoolean(ssl.getSsl2Enabled())) {
-                    tmpSSLArtifactsList.add("SSLv2");
+                    tmpSSLArtifactsList.add(SSL2);
                 }
                 if (Boolean.parseBoolean(ssl.getSsl3Enabled())) {
-                    tmpSSLArtifactsList.add("SSLv3");
+                    tmpSSLArtifactsList.add(SSL3);
                 }
                 if (Boolean.parseBoolean(ssl.getTlsEnabled())) {
-                    tmpSSLArtifactsList.add("TLSv1");
+                    tmpSSLArtifactsList.add(TLS1);
                 }
                 if (Boolean.parseBoolean(ssl.getTls11Enabled())) {
-                    tmpSSLArtifactsList.add("TLSv1.1");
+                    tmpSSLArtifactsList.add(TLS11);
                 }
                 if (Boolean.parseBoolean(ssl.getTls12Enabled())) {
-                    tmpSSLArtifactsList.add("TLSv1.2");
+                    tmpSSLArtifactsList.add(TLS12);
+                }
+                if (Boolean.parseBoolean(ssl.getTls13Enabled())) {
+                    tmpSSLArtifactsList.add(TLS13);
                 }
                 if (Boolean.parseBoolean(ssl.getSsl3Enabled())
                         || Boolean.parseBoolean(ssl.getTlsEnabled())) {
-                    tmpSSLArtifactsList.add("SSLv2Hello");
+                    tmpSSLArtifactsList.add(SSL2_HELLO);
                 }
                 if (tmpSSLArtifactsList.isEmpty()) {
                     logEmptyWarning(ssl, "WEB0307: All SSL protocol variants disabled for network-listener {0},"

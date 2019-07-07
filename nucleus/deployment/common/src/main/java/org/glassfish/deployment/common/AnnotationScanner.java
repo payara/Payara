@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
-
+//Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.deployment.common;
 
-import org.objectweb.asm.*;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
 
 import java.io.InputStream;
 import java.io.File;
@@ -56,8 +55,6 @@ import java.util.logging.Level;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class AnnotationScanner extends ClassVisitor {
 
@@ -73,7 +70,7 @@ public class AnnotationScanner extends ClassVisitor {
     private static final String FAILED_ANNOTATION_SCAN = "NCLS-DEPLOYMENT-00003";
 
     public AnnotationScanner() {
-        super(Opcodes.ASM7);
+        super(Opcodes.ASM5);
     }
 
     public void visit(int version,

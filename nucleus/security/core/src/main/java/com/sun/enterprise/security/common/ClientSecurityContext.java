@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 import java.security.Principal;
@@ -68,8 +68,8 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
     private static final boolean isPerThreadAuth = Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG);
 
     // Either the thread local or shared version will be used
-    private static ThreadLocal<ClientSecurityContext> localCsc = isPerThreadAuth ? new ThreadLocal<>() : null;
-    private static volatile ClientSecurityContext sharedCsc;
+    private static ThreadLocal<ClientSecurityContext> localSecurityContext = isPerThreadAuth ? new ThreadLocal<>() : null;
+    private static volatile ClientSecurityContext sharedSecurityContext;
 
     /**
      * This creates a new ClientSecurityContext object.
@@ -77,8 +77,8 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      * @param The name of the user.
      * @param The Credentials of the user.
      */
-    public ClientSecurityContext(String userName, Subject subject) {
-        this.initiator = new PrincipalImpl(userName);
+    public ClientSecurityContext(String username, Subject subject) {
+        this.callerPrincipal = new PrincipalImpl(username);
         this.subject = subject;
     }
 
@@ -92,10 +92,10 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      */
     public static ClientSecurityContext getCurrent() {
         if (isPerThreadAuth) {
-            return localCsc.get();
+            return localSecurityContext.get();
         }
 
-        return sharedCsc;
+        return sharedSecurityContext;
     }
 
     /**
@@ -103,11 +103,11 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      *
      * @param The Security Context that should be stored.
      */
-    public static void setCurrent(ClientSecurityContext sc) {
+    public static void setCurrent(ClientSecurityContext clientSecurityContext) {
         if (isPerThreadAuth) {
-            localCsc.set(sc);
+            localSecurityContext.set(clientSecurityContext);
         } else {
-            sharedCsc = sc;
+            sharedSecurityContext = clientSecurityContext;
         }
     }
 
@@ -119,7 +119,7 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      */
     @Override
     public Principal getCallerPrincipal() {
-        return initiator;
+        return callerPrincipal;
     }
 
     @Override
@@ -129,7 +129,7 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
 
     @Override
     public String toString() {
-        return "ClientSecurityContext[ " + "Initiator: " + initiator + "Subject " + subject + " ]";
+        return "ClientSecurityContext[ " + "Initiator: " + callerPrincipal + "Subject " + subject + " ]";
     }
 
     // added for CR:6620388

@@ -537,7 +537,7 @@ public class HostConfig
 
                 // Calculate the context path and make sure it is unique
                 String contextPath = "/" + files[i];
-                int period = contextPath.lastIndexOf(".");
+                int period = contextPath.lastIndexOf('.');
                 if (period >= 0)
                     contextPath = contextPath.substring(0, period);
 
@@ -879,7 +879,7 @@ public class HostConfig
                     } else if (dirLastModified > lastModified.longValue()) {
                         // The WAR has been modified: redeploy
                         String expandedDir = files[i];
-                        int period = expandedDir.lastIndexOf(".");
+                        int period = expandedDir.lastIndexOf('.');
                         if (period >= 0)
                             expandedDir = expandedDir.substring(0, period);
                         File expanded = new File(appBase, expandedDir);

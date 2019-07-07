@@ -37,27 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
  */
-
 package com.sun.enterprise.v3.admin.cluster;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.admin.CommandLock.LockType.NONE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
-
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -65,6 +63,8 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -73,43 +73,41 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
+
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 
 /**
- * AdminCommand to start the instance
- * server.
- * If this is DAS -- we call the instance
- * If this is an instance we start it
+ * AdminCommand to start the instance server.
+ * 
+ * <p>
+ * <ul>
+ *   <li>If this is DAS -- we call the instance
+ *   <li>If this is an instance we start it
+ * </ul>
  *
  * @author Carla Mott
  */
 @Service(name = "start-instance")
-@CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
+@CommandLock(NONE) // don't prevent _synchronize-files
 @PerLookup
 @I18n("start.instance.command")
 @RestEndpoints({
-    @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="start-instance", 
-        description="Start Instance",
-        params={
-            @RestParam(name="id", value="$parent")
+    @RestEndpoint(configBean = Server.class,
+        opType = POST, 
+        path = "start-instance", 
+        description = "Start Instance",
+        params = {
+            @RestParam(name = "id", value = "$parent")
         })
 })
 public class StartInstanceCommand implements AdminCommand {
-
-    @Inject
-    ServiceLocator habitat;
-
-    @Inject
-    private Nodes nodes;
-
-    @Inject
-    private ServerEnvironment env;
-
-    @Inject
-    private Servers servers;
 
     @Param(name = "instance_name", primary = true)
     private String instanceName;
@@ -129,6 +127,21 @@ public class StartInstanceCommand implements AdminCommand {
     @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "120")
     private int timeout;
+    
+    @Inject
+    private ServiceLocator serviceLocator;
+
+    @Inject
+    private Nodes nodes;
+
+    @Inject
+    private ServerEnvironment env;
+
+    @Inject
+    private Servers servers;
+    
+    @Inject
+    private PayaraExecutorService executor;
 
     private Logger logger;
 
@@ -139,28 +152,28 @@ public class StartInstanceCommand implements AdminCommand {
     private Server instance;
 
     private static final String NL = System.getProperty("line.separator");
-
-    @Inject
-    private PayaraExecutorService executor;
+    
 
     /**
      * restart-instance needs to try to start the instance from scratch if it is not
      * running.  We need to do some housekeeping first.
+     * 
+     * <p>
      * There is no clean way to do this through CommandRunner -- it is twisted together
      * with Grizzly parameters and so on.  So we short-circuit this way!
-     * do NOT make this public!!
+     * Do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(ServiceLocator habitat, String iname, boolean debug, ServerEnvironment env) {
-        this.instanceName = iname;
+    StartInstanceCommand(ServiceLocator serviceLocator, String instanceName, boolean debug, ServerEnvironment env) {
+        this.instanceName = instanceName;
         this.debug = debug;
-        this.habitat = habitat;
-        nodes = habitat.getService(Nodes.class);
+        this.serviceLocator = serviceLocator;
+        nodes = serviceLocator.getService(Nodes.class);
 
         // env:  neither getByType or getByContract works.  Not worth the effort
         //to find the correct magic incantation for HK2!
         this.env = env;
-        servers = habitat.getService(Servers.class);
+        servers = serviceLocator.getService(Servers.class);
     }
 
     /**
@@ -175,16 +188,17 @@ public class StartInstanceCommand implements AdminCommand {
         logger = ctx.getLogger();
         ActionReport report = ctx.getActionReport();
         String msg = "";
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        report.setActionExitCode(FAILURE);
 
-        if(!StringUtils.ok(instanceName)) {
+        if (!StringUtils.ok(instanceName)) {
             msg = Strings.get("start.instance.noInstanceName");
             logger.severe(msg);
             report.setMessage(msg);
             return;
         }
+        
         instance = servers.getServer(instanceName);
-        if(instance == null) {
+        if (instance == null) {
             msg = Strings.get("start.instance.noSuchInstance", instanceName);
             logger.severe(msg);
             report.setMessage(msg);
@@ -195,12 +209,12 @@ public class StartInstanceCommand implements AdminCommand {
             msg = Strings.get("start.instance.already.running", instanceName);
             logger.info(msg);
             report.setMessage(msg);
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setActionExitCode(SUCCESS);
             return;
         }
 
         noderef = instance.getNodeRef();
-        if(!StringUtils.ok(noderef)) {
+        if (!StringUtils.ok(noderef)) {
             msg = Strings.get("missingNodeRef", instanceName);
             logger.severe(msg);
             report.setMessage(msg);
@@ -218,28 +232,32 @@ public class StartInstanceCommand implements AdminCommand {
             return;
         }
 
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        if(env.isDas()) {
+        report.setActionExitCode(SUCCESS);
+        if (env.isDas()) {
             startInstance(ctx);
         } else {
-            msg = Strings.get("start.instance.notAnInstanceOrDas",
-                    env.getRuntimeType().toString());
+            msg = Strings.get("start.instance.notAnInstanceOrDas", env.getRuntimeType().toString());
             logger.severe(msg);
             report.setMessage(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
         }
 
-        if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+        if (report.getActionExitCode() == SUCCESS) {
             // Make sure instance is really up
-            if (!pollForLife(instance)){
+            if (!pollForLife(instance)) {
                 report.setMessage(Strings.get("start.instance.timeout", instanceName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setActionExitCode(FAILURE);
             }
         }
     }
 
     private void startInstance(AdminCommandContext ctx) {
-        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
+        if (node.getType().equals("DOCKER")) {
+            startDockerContainer(ctx);
+            return;
+        }
+
+        NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
 
@@ -255,6 +273,9 @@ public class StartInstanceCommand implements AdminCommand {
 
         command.add("--sync");
         command.add(sync);
+        
+        command.add("--timeout");
+        command.add(timeout + "");
       
         if (debug) {
             command.add("--debug");
@@ -273,19 +294,15 @@ public class StartInstanceCommand implements AdminCommand {
 
         // There is a problem on Windows waiting for IO to complete on a
         // child process which runs a long running grandchild. See IT 12777.
-        boolean waitForReaderThreads = true;
-        if (OS.isWindows()) {
-            waitForReaderThreads = false;
-        }
+        boolean waitForReaderThreads = !OS.isWindows();
 
         // Run the command on the node and handle errors.
         nodeUtils.runAdminCommandOnNode(node, command, ctx, firstErrorMessage, humanCommand, output, waitForReaderThreads);
 
         ActionReport report = ctx.getActionReport();
-        if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
+        if (report.getActionExitCode() == SUCCESS) {
             // If it was successful say so and display the command output
-            String msg = Strings.get("start.instance.success",
-                    instanceName, nodeHost);
+            String msg = Strings.get("start.instance.success", instanceName, nodeHost);
             if (!terse) {
                 msg = StringUtils.cat(NL, output.toString().trim(), msg);
             }
@@ -294,37 +311,51 @@ public class StartInstanceCommand implements AdminCommand {
 
     }
 
+    private void startDockerContainer(AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", node.getName());
+        parameterMap.add("instanceName", instanceName);
+
+        CommandRunner commandRunner = serviceLocator.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "_start-docker-container", adminCommandContext.getActionReport(), adminCommandContext.getSubject())
+                .parameters(parameterMap)
+                .execute();
+    }
+
     /**
      * Poll for the specified amount of time to check if the instance is running.
      * Returns whether the instance was started before the timeout.
      * 
      * @return true if the instance started up, or false otherwise.
      */
-    private boolean pollForLife(final Server instance) {
+    private boolean pollForLife(Server instance) {
 
         // Start a new thread to check when the instance has started
-        final CountDownLatch instanceTimeout = new CountDownLatch(1);
+        CountDownLatch instanceTimeout = new CountDownLatch(1);
         ScheduledFuture<?> instancePollFuture = executor.scheduleWithFixedDelay(() -> {
             if (instance.isRunning()) {
                 instanceTimeout.countDown();
             }
-        }, 500, 500, TimeUnit.MILLISECONDS);
+        }, 500, 500, MILLISECONDS);
 
         // If the timeout is reached, the instance isn't started so return false
         try {
-            instanceTimeout.await(timeout, TimeUnit.SECONDS);
+            instanceTimeout.await(timeout, SECONDS);
         } catch (InterruptedException e) {
             return false;
         } finally {
             instancePollFuture.cancel(true);
         }
+        
         return true;
     }
 
     private String makeCommandHuman(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();
 
-        // don't use file.separator since this is a local command
+        // Don't use file.separator since this is a local command
         // that may run on a different computer.  We don't necessarily know
         // what it is.
 

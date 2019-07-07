@@ -92,6 +92,9 @@ import com.sun.logging.LogDomains;
 
 /**
  * Security Deployer which generate and clean the security policies
+ * 
+ * <p>
+ * This contains many JACC life cycle methods which can/should be moved to the JACC package 
  *
  */
 @Service(name = "Security")
@@ -154,7 +157,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
 
                 Set<WebBundleDescriptor> webBundleDescriptors = app.getBundleDescriptors(WebBundleDescriptor.class);
                 linkPolicies(app, webBundleDescriptors);
-                commitEjbs(app);
+                commitEjbPolicies(app);
                 
                 if (webBundleDescriptors != null && !webBundleDescriptors.isEmpty()) {
                     // Register the WebSecurityComponentInvocationHandler
@@ -164,7 +167,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                     }
                 }
             } else if (AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT.equals(event.type())) {
-                commitPolicy((WebBundleDescriptor) event.hook());
+                commitWebPolicy((WebBundleDescriptor) event.hook());
             }
         }
     };
@@ -234,11 +237,6 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         return new MetaData(false, null, new Class[] { Application.class });
     }
     
-    
-    
-    // ### Private methods
-    
-
     /**
      * Translate Web Bundle Policy
      * 
@@ -262,6 +260,11 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
             throw new DeploymentException("Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), se);
         }
     }
+    
+    
+    
+    // ### Private methods
+ 
 
     /**
      * Puts Web Bundle Policy In Service, repeats translation is Descriptor indicate policy was changed by ContextListener.
@@ -269,18 +272,20 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @param webBundleDescriptor
      * @throws DeploymentException
      */
-    private void commitPolicy(WebBundleDescriptor webBundleDescriptor) throws DeploymentException {
+    private void commitWebPolicy(WebBundleDescriptor webBundleDescriptor) throws DeploymentException {
         try {
             if (webBundleDescriptor != null) {
                 if (webBundleDescriptor.isPolicyModified()) {
                     // redo policy translation for web module
                     loadPolicy(webBundleDescriptor, true);
                 }
-                String cid = SecurityUtil.getContextID(webBundleDescriptor);
-                websecurityProbeProvider.policyCreationStartedEvent(cid);
-                SecurityUtil.generatePolicyFile(cid);
-                websecurityProbeProvider.policyCreationEndedEvent(cid);
-                websecurityProbeProvider.policyCreationEvent(cid);
+                
+                String contextId = SecurityUtil.getContextID(webBundleDescriptor);
+                
+                websecurityProbeProvider.policyCreationStartedEvent(contextId);
+                SecurityUtil.generatePolicyFile(contextId);
+                websecurityProbeProvider.policyCreationEndedEvent(contextId);
+                websecurityProbeProvider.policyCreationEvent(contextId);
 
             }
         } catch (Exception se) {
@@ -295,15 +300,15 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * 
      * @param ejbs
      */
-    private void commitEjbs(Application app) throws DeploymentException {
-        Set<EjbBundleDescriptor> ejbDescriptors = app.getBundleDescriptors(EjbBundleDescriptor.class);
+    private void commitEjbPolicies(Application app) throws DeploymentException {
         try {
-            for (EjbBundleDescriptor ejbBD : ejbDescriptors) {
-                String pcid = SecurityUtil.getContextID(ejbBD);
-                ejbProbeProvider.policyCreationStartedEvent(pcid);
-                SecurityUtil.generatePolicyFile(pcid);
-                ejbProbeProvider.policyCreationEndedEvent(pcid);
-                ejbProbeProvider.policyCreationEvent(pcid);
+            for (EjbBundleDescriptor ejbBD : app.getBundleDescriptors(EjbBundleDescriptor.class)) {
+                String contextId = SecurityUtil.getContextID(ejbBD);
+                
+                ejbProbeProvider.policyCreationStartedEvent(contextId);
+                SecurityUtil.generatePolicyFile(contextId);
+                ejbProbeProvider.policyCreationEndedEvent(contextId);
+                ejbProbeProvider.policyCreationEvent(contextId);
 
             }
         } catch (Exception se) {
@@ -415,6 +420,30 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         return events;
     }
 
+    private void handleCNonceCacheBSInit(String appName, Set<WebBundleDescriptor> webDesc, boolean isHA) {
+        boolean hasDigest = false;
+        for (WebBundleDescriptor webBD : webDesc) {
+            LoginConfiguration lc = webBD.getLoginConfiguration();
+            if (lc != null && LoginConfiguration.DIGEST_AUTHENTICATION.equals(lc.getAuthenticationMethod())) {
+                hasDigest = true;
+                break;
+            }
+        }
+        if (!hasDigest) {
+            return;
+        }
+        // initialize the backing stores as well for cnonce cache.
+        if (isHaEnabled() && isHA) {
+            final String clusterName = haUtil.getClusterName();
+            final String instanceName = haUtil.getInstanceName();
+            if (cnonceCacheFactory != null) {
+                CNonceCache cache = cnonceCacheFactory.createCNonceCache(appName, clusterName, instanceName, HA_CNONCE_BS_NAME);
+                this.appCnonceMap.put(appName, cache);
+            }
+
+        }
+    }
+    
     private boolean isHaEnabled() {
         boolean haEnabled = false;
         // lazily init the required services instead of
@@ -438,29 +467,5 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         }
 
         return haEnabled;
-    }
-
-    private void handleCNonceCacheBSInit(String appName, Set<WebBundleDescriptor> webDesc, boolean isHA) {
-        boolean hasDigest = false;
-        for (WebBundleDescriptor webBD : webDesc) {
-            LoginConfiguration lc = webBD.getLoginConfiguration();
-            if (lc != null && LoginConfiguration.DIGEST_AUTHENTICATION.equals(lc.getAuthenticationMethod())) {
-                hasDigest = true;
-                break;
-            }
-        }
-        if (!hasDigest) {
-            return;
-        }
-        // initialize the backing stores as well for cnonce cache.
-        if (isHaEnabled() && isHA) {
-            final String clusterName = haUtil.getClusterName();
-            final String instanceName = haUtil.getInstanceName();
-            if (cnonceCacheFactory != null) {
-                CNonceCache cache = cnonceCacheFactory.createCNonceCache(appName, clusterName, instanceName, HA_CNONCE_BS_NAME);
-                this.appCnonceMap.put(appName, cache);
-            }
-
-        }
     }
 }

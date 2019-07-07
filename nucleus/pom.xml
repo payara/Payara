@@ -54,15 +54,16 @@
 
     <groupId>fish.payara</groupId>
     <artifactId>payara-nucleus-parent</artifactId>
-    <version>5.192-SNAPSHOT</version>
+    <version>5.193-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
+    <url>https://github.com/payara/Payara</url>
 
     <scm>
         <connection>scm:git:git@github.com:payara/payara.git</connection>
-        <url>scm:git:git@github.com:payara/payara.git</url>
+        <url>https://github.com/payara/Payara/tree/master</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.192-SNAPSHOT</tag>
+        <tag>payara-server-5.193-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -79,6 +80,15 @@
       </license>
     </licenses>
 
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
 
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
@@ -251,7 +261,8 @@
 
         <!-- Servlet -->
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.3.payara-p8</grizzly.version>
+        <grizzly.version>2.4.3.payara-p9</grizzly.version>
+
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.version>1.8</grizzly.npn.version>
         
@@ -260,9 +271,9 @@
         <microprofile-opentracing.version>1.3.1</microprofile-opentracing.version>
 
         <!-- JAX-RS -->
-        <jax-rs-api.spec.version>2.1</jax-rs-api.spec.version>
-        <jax-rs-api.impl.version>2.1</jax-rs-api.impl.version>
-        <jersey.version>2.27.payara-p15</jersey.version>
+        <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
+        <jax-rs-api.impl.version>2.1.5</jax-rs-api.impl.version>
+        <jersey.version>2.29.payara-p3</jersey.version>
 
         <!-- Bean Validation -->
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -281,7 +292,7 @@
         <javax.cache-api.version>1.1.0</javax.cache-api.version>
 
         <!-- JavaMail -->
-        <mail.version>1.6.2</mail.version>
+        <mail.version>1.6.3</mail.version>
 
         <management-api.version>1.1-rev-1</management-api.version>
 
@@ -289,18 +300,17 @@
 
 
         <!-- Other -->
-        <hk2.version>2.5.0.payara-p1</hk2.version>
-        <hk2.plugin.version>2.5.0.payara-p1</hk2.plugin.version>
 
+        <hk2.version>2.5.0-b61.payara-p3</hk2.version>
+        <hk2.plugin.version>2.5.0-b61.payara-p3</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <!-- 4.1.1-b001  -->
-        <glassfish-corba.version>4.1.1.payara-p1</glassfish-corba.version>
+        <glassfish-corba.version>4.1.1.payara-p3</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <saaj-api.version>1.4.0</saaj-api.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
-        <classmate.version>1.3.3</classmate.version>
+        <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.24.1-GA</javassist.version>
@@ -309,7 +319,7 @@
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.0.1</pfl.version>
+        <pfl.version>4.0.2.payara-p1</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
         <gmbal.version>4.0.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
@@ -317,27 +327,28 @@
         <commons-io.version>2.6</commons-io.version>
 
         <!-- Jackson is a high-performance JSON processor (parser, generator) -->
-        <jackson.version>2.9.8</jackson.version>
+        <jackson.version>2.9.9</jackson.version>
         <!-- SnakeYAML is required for the YAML conversion in Jackson -->
         <snakeyaml.version>1.24</snakeyaml.version>
 
-        <jsonp.version>1.1.4</jsonp.version>
+        <jsonp.version>1.1.5</jsonp.version>
 
         <mimepull.version>1.9.11</mimepull.version>
         
         <opentracing.version>0.31.0</opentracing.version>
 
+        <jline.version>3.11.0</jline.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
-        <org.apache.felix.main.version>6.0.1</org.apache.felix.main.version>
+        <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
         <org.apache.felix.webconsole.version>4.3.8</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.5.0</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
-        <org.apache.felix.gogo.runtime.version>1.1.0</org.apache.felix.gogo.runtime.version>
-        <org.apache.felix.gogo.shell.version>1.1.0</org.apache.felix.gogo.shell.version>
-        <org.apache.felix.gogo.command.version>1.0.2</org.apache.felix.gogo.command.version>
+        <org.apache.felix.gogo.runtime.version>1.1.2</org.apache.felix.gogo.runtime.version>
+        <org.apache.felix.gogo.shell.version>1.1.2</org.apache.felix.gogo.shell.version>
+        <org.apache.felix.gogo.command.version>1.1.0</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.6.4.payara-p1</org.apache.felix.fileinstall.version>
-        <org.apache.felix.configadmin.version>1.9.10</org.apache.felix.configadmin.version>
+        <org.apache.felix.configadmin.version>1.9.14</org.apache.felix.configadmin.version>
         <org.apache.felix.scr.version>2.1.14</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
@@ -349,7 +360,7 @@
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>7.0</asm.version>
         <ha-api.version>3.1.12</ha-api.version>
-        <hazelcast.version>3.11.1</hazelcast.version>
+        <hazelcast.version>3.12</hazelcast.version>
         <hazelcast.kubernetes.version>1.3.1</hazelcast.kubernetes.version>
         <smack.version>4.1.9</smack.version>
         <jxmpp.version>0.4.2</jxmpp.version>
@@ -357,12 +368,15 @@
         <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
         <guava.version>19.0</guava.version>
+        <jaxb-api.version>2.3.2</jaxb-api.version>
+        <jaxb-impl.version>2.3.2</jaxb-impl.version>
+
         <!-- Build -->
 
         <glassfishbuild.version>3.2.20.payara-p1</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.8</command-security-plugin.version>
+        <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
@@ -430,7 +444,6 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>${javase.version}</source>
                         <target>${javase.version}</target>
                         <excludes>
@@ -681,8 +694,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},1.9.0)</version>
-                                    <message>You need JDK8 (${jdk.version}) or JDK9</message>
+                                    <version>[${jdk.version},18.9)</version>
+                                    <message>You need JDK8 (${jdk.version}) or JDK11</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,3.2.1],[3.2.3,)</version>
@@ -977,8 +990,8 @@ Parent is ${project.parent}</echo>
 
             <!-- JAX-RS -->
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
                 <version>${jax-rs-api.impl.version}</version>
             </dependency>
             <dependency>
@@ -1028,13 +1041,13 @@ Parent is ${project.parent}</echo>
 
             <!-- JavaMail -->
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
                 <version>${mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
-                <artifactId>javax.mail</artifactId>
+                <artifactId>jakarta.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
 
@@ -1154,8 +1167,8 @@ Parent is ${project.parent}</echo>
                 <version>${org.apache.felix.fileinstall.version}</version>
             </dependency>
             <dependency>
-               <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
-               <artifactId>org.apache.felix.configadmin</artifactId>
+                <groupId>org.apache.felix</groupId> <!-- Implementation of the OSGi Configuration Admin Service Specification 1.5  -->
+                <artifactId>org.apache.felix.configadmin</artifactId>
                 <version>${org.apache.felix.configadmin.version}</version>
             </dependency>
             <dependency>
@@ -1295,12 +1308,18 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.5.2</version>
+                <version>6.14.3</version>
             </dependency>
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>1.32</version>
+                <version>1.40</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>2.1</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -1340,7 +1359,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.4</version>
+                <version>3.3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>
@@ -1349,14 +1368,19 @@ Parent is ${project.parent}</echo>
             </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
             <dependency>
-                <groupId>jline</groupId>
+                <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
-                <version>2.14.6</version>
+                <version>${jline.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
                 <version>1.13</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.hk2.external</groupId>
+                <artifactId>asm-repackaged</artifactId>
+                <version>${hk2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
@@ -1382,6 +1406,16 @@ Parent is ${project.parent}</echo>
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast-kubernetes</artifactId>
                 <version>${hazelcast.kubernetes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-osgi</artifactId>
+                <version>${jaxb-impl.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -1460,6 +1494,27 @@ Parent is ${project.parent}</echo>
                 </pluginManagement>
             </build>
         </profile>
+        
+        <profile>
+            <id>embed-source</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <profile>
             <id>release-phase2</id>
             <build>

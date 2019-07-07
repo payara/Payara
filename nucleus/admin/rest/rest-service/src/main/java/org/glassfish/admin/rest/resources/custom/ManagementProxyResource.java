@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -88,7 +88,7 @@ public class ManagementProxyResource {
     }
 
     private static class ManagementProxyImpl extends ProxyImpl {
-        private static int TARGET_INSTANCE_NAME_PATH_INDEX = 2; //pathSegments == { "domain", "proxy", "instanceName", ....}
+        private static final int TARGET_INSTANCE_NAME_PATH_INDEX = 2; //pathSegments == { "domain", "proxy", "instanceName", ....}
 
         @Override
         public UriBuilder constructTargetURLPath(UriInfo sourceUriInfo, URL responseURLReceivedFromTarget) {

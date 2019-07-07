@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -833,7 +833,8 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
      */
     private void validateJNDIRefs(DeploymentContext deploymentContext, Application application, AppResource resource, JNDINamespace namespace) {
         // In case lookup is not present, check if another resource with the same name exists
-        if (!resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
+        String jndiName = resource.getJndiName();
+        if (jndiName == null || !resource.hasLookup() && !namespace.find(resource.getName(), resource.getEnv())) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
                     new Object[]{resource.getName(), null, resource.getType()});
             throw new DeploymentException(localStrings.getLocalString("enterprise.deployment.util.resource.validation",
@@ -841,7 +842,6 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                     resource.getName(), null, resource.getType()));
         }
 
-        String jndiName = resource.getJndiName();
         JndiNameEnvironment env = resource.getEnv();
 
         if (isResourceInDomainXML(jndiName) || isDefaultResource(jndiName)) {
@@ -859,15 +859,13 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             String newName = convertModuleOrAppJNDIName(application, jndiName, resource.getEnv());
             if (namespace.find(newName, env)) {
                 return;
-            } else {
-                // try actual lookup
-                try {
-                    InitialContext ctx = new InitialContext();
-                    ctx.lookup(newName);
-                    return;
-                } catch(NamingException ne) {
-                    
-                }
+            }
+            // try actual lookup
+            try {
+                InitialContext ctx = new InitialContext();
+                ctx.lookup(newName);
+                return;
+            } catch(NamingException ne) {
                 
             }
         }

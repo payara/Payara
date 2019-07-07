@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor;
 
@@ -215,6 +215,9 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             if (LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "Discovering the XML ProbeProviders from lib/monitor");
             discoverXMLProviders();
+            if (spmd != null) {
+                spmd.updateAllStatsProviders();
+            }
         }
     }
 

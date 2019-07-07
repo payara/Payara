@@ -149,7 +149,7 @@ public class MBeanInterfaceGenerator
         String base = name;
         String extra = "";
 
-        final int idx = name.indexOf("[");
+        final int idx = name.indexOf('[');
         if ( idx > 0 )
         {
             base  = name.substring(0, idx);
@@ -202,7 +202,7 @@ public class MBeanInterfaceGenerator
 
     protected boolean isUnqualifiedType(String type)
     {
-        return (type.indexOf(".") < 0);
+        return (type.indexOf('.') < 0);
     }
 
     /**

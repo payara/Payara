@@ -49,15 +49,15 @@ package org.glassfish.admin.rest.results;
 public class Result {
 
     public Result() {
-        __isError = false;
-        __errorMessage = null;
+        isError = false;
+        errorMessage = null;
     }
 
     /**
      * Returns name of the resource, this result object is for.
      */
     public String getName() {
-        return __name;
+        return name;
     }
 
     /**
@@ -65,31 +65,31 @@ public class Result {
      * error message or otherwise.
      */
     public boolean isError() {
-        return __isError;
+        return isError;
     }
 
     /**
      * Returns error message in case of an error.
      */
     public String getErrorMessage() {
-        return __errorMessage;
+        return errorMessage;
     }
 
     /**
      * Sets status (error or success) of the response
      */
     public void setIsError(boolean isError) {
-        __isError = isError;
+        this.isError = isError;
     }
 
     /**
      * Sets error message of the response
      */
     public void setErrorMessage(String errorMessage) {
-        __errorMessage =  errorMessage;
+        this.errorMessage =  errorMessage;
     }
 
-    boolean __isError;
-    String __errorMessage;
-    String __name;
+    boolean isError;
+    String errorMessage;
+    String name;
 }

@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.microprofile</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.microprofile.openapi</groupId>
@@ -64,6 +64,11 @@
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${microprofile-openapi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.microprofile.common</groupId>
+            <artifactId>microprofile-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>

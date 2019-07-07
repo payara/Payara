@@ -821,7 +821,7 @@ public final class CGIServlet extends HttpServlet {
                 } else {
                     qs = req.getQueryString();
                 }
-                if (qs != null && qs.indexOf("=") == -1) {
+                if (qs != null && qs.indexOf('=') == -1) {
                     StringTokenizer qsTokens = new StringTokenizer(qs, "+");
                     while ( qsTokens.hasMoreTokens() ) {
                         cmdLineParameters.add(URLDecoder.decode(qsTokens.nextToken(),

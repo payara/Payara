@@ -91,7 +91,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
 
     /** Creates a new instance of xxxResource */
     public CollectionLeafResource() {
@@ -310,8 +310,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage =
-                        localStrings.getLocalString(successMsgKey,
-                            successMsg, new Object[] {attributeName});
+                        localStrings.getLocalString(successMsgKey, successMsg, attributeName);
                     return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
@@ -319,8 +318,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
             String message =
-                localStrings.getLocalString(operationForbiddenMsgKey,
-                    operationForbiddenMsg, new Object[] {uriInfo.getAbsolutePath()});
+                localStrings.getLocalString(operationForbiddenMsgKey, operationForbiddenMsg, uriInfo.getAbsolutePath());
             return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
 
         } catch (Exception e) {
@@ -342,39 +340,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack 
-    //"There's nothing more permanent than a temporary solution" - Russian Proverb
     protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
-        Map<String, String> results = new HashMap<String, String>();
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
-                results.put(key, entry.getValue());
-            } else {
-                options.append(sep).append(removeVersioning ? new JvmOption(key).option : key);
-
-                String value = entry.getValue();
-                
-                if (key != null && !key.trim().isEmpty() && key.startsWith("-D")) {    
-                    if (value == null) {
-                        value = "";
-                    } else if(value.contains("=")) {
-                        value = value.replaceAll("=", "");
-                    }
-                 
-                    if (key.endsWith("=")) {                   
-                        options.append(value);
-                    } else if(!key.contains("=")) {
-                        options.append("=").append(value);
-                    }
-                }
-                sep = ":";
-            }
-        }
-
-        results.put("id", options.toString());
+        Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
         }
@@ -391,10 +358,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
      * @return
      */
     protected String escapeOptionPart(String part) {
-        String changed = part
-                .replace("\\", "\\\\")
+        return part.replace("\\", "\\\\")
                 .replace(":", "\\:");
-        return changed;
     }
 
     // TODO: JvmOptions needs to have its own class, but the generator doesn't seem to support
@@ -407,7 +372,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
-            int index = option.indexOf("=");
+            int index = option.indexOf('=');
             if (index > -1) {
                 existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
             } else {

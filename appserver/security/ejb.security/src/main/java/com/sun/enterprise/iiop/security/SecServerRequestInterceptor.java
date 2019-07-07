@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
 
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -342,7 +343,8 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             for (int i = 0; i < certchain.length; i++) {
                 certchain[i] = new X509CertImpl(derval[i]);
                 if (logger.isLoggable(FINE)) {
-                    logger.log(FINE, "    " + certchain[i].getSubjectDN().getName());
+                    logger.log(FINE, "    " + certchain[i].getSubjectX500Principal()
+                            .getName(X500Principal.RFC2253, CertificateRealm.OID_MAP));
                 }
             }
             if (logger.isLoggable(FINE)) {
@@ -353,7 +355,8 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
              * "dummy".
              * 
              */
-            X509CertificateCredential cred = new X509CertificateCredential(certchain, certchain[0].getSubjectDN().getName(),
+            X509CertificateCredential cred = new X509CertificateCredential(certchain,
+                    certchain[0].getSubjectX500Principal().getName(X500Principal.RFC2253, CertificateRealm.OID_MAP),
                     "default");
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding X509CertificateCredential to subject's PublicCredentials");

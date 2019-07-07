@@ -585,10 +585,10 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             while (st.hasMoreTokens()) {
                 String sqlTraceListener = st.nextToken().trim();            
                 if(!sqlTraceListener.equals("")) {
-                    Class listenerClass = null;
+                    Class<?> listenerClass = null;
                     SQLTraceListener listener = null;
-                    Constructor[] constructors = null;
-                    Class[] parameterTypes = null;                    
+                    Constructor<?>[] constructors = null;
+                    Class<?>[] parameterTypes = null;                    
                     Object[] initargs = null;
                     //Load the listener class 
                     try {
@@ -600,33 +600,35 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                             _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_cnfe", sqlTraceListener);
                         }
                     }
-                    Class intf[] = listenerClass.getInterfaces();
-                    for (Class interfaceName : intf) {
-                        if (interfaceName.getName().equals("org.glassfish.api.jdbc.SQLTraceListener")) {
+                    if (listenerClass != null) {
+                        Class<?>[] intf = listenerClass.getInterfaces();
+                        for (Class<?> interfaceName : intf) {
+                            if (interfaceName.getName().equals("org.glassfish.api.jdbc.SQLTraceListener")) {
 
-                            try {
+                                try {
 
-                                constructors = listenerClass.getConstructors();
-                                for (Constructor constructor : constructors) {
-                                    parameterTypes = constructor.getParameterTypes();
-                                    //For now only the no argument constructors are allowed.
-                                    //TODO should this be documented?
-                                    if (parameterTypes != null && parameterTypes.length == 0) {
-                                        listener = (SQLTraceListener) constructor.newInstance(initargs);
+                                    constructors = listenerClass.getConstructors();
+                                    for (Constructor<?> constructor : constructors) {
+                                        parameterTypes = constructor.getParameterTypes();
+                                        //For now only the no argument constructors are allowed.
+                                        //TODO should this be documented?
+                                        if (parameterTypes != null && parameterTypes.length == 0) {
+                                            listener = (SQLTraceListener) constructor.newInstance(initargs);
+                                        }
                                     }
+                                } catch (InstantiationException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (IllegalAccessException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (IllegalArgumentException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (InvocationTargetException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (SecurityException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
                                 }
-                            } catch (InstantiationException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalAccessException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalArgumentException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (InvocationTargetException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (SecurityException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                sqlTraceDelegator.registerSQLTraceListener(listener);
                             }
-                            sqlTraceDelegator.registerSQLTraceListener(listener);
                         }
                     }
                 }
@@ -1200,7 +1202,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
     
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
-        double threshold = Double.valueOf(seconds);
+        double threshold = Double.parseDouble(seconds);
         if (threshold > 0) {
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
@@ -1432,7 +1434,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         boolean poolProperty = false;
         String statementWrappingString = getStatementWrapping();
         if (statementWrappingString != null)
-            poolProperty = Boolean.valueOf(statementWrappingString);
+            poolProperty = Boolean.parseBoolean(statementWrappingString);
 
         if (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_ON ||
                 (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_NOT_SET && poolProperty)) {
@@ -1563,7 +1565,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String stmtLeakReclaim = getStatementLeakReclaim();
         if (stmtLeakTimeout != null) {
             statementLeakTimeout = Integer.parseInt(stmtLeakTimeout) * 1000L;
-            statementLeakReclaim = Boolean.valueOf(stmtLeakReclaim);
+            statementLeakReclaim = Boolean.parseBoolean(stmtLeakReclaim);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "StatementLeakTimeout in seconds: "
                         + statementLeakTimeout + " & StatementLeakReclaim: "

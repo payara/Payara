@@ -37,15 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
+import static java.lang.ThreadLocal.withInitial;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVICE_STARTUP;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.UN_INITIALIZED;
 
+import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,14 +74,10 @@ public class InvocationManagerImpl implements InvocationManager {
     // don't need to be synchronized because each thread has its own ArrayList.
     private InheritableThreadLocal<InvocationArray<ComponentInvocation>> frames;
 
-    private final ThreadLocal<Stack<ApplicationEnvironment>> applicationEnvironments = new ThreadLocal<Stack<ApplicationEnvironment>>() {
-        @Override
-        protected Stack<ApplicationEnvironment> initialValue() {
-            return new Stack<ApplicationEnvironment>();
-        }
-    };
+    private final ThreadLocal<Stack<ApplicationEnvironment>> applicationEnvironments = withInitial(Stack<ApplicationEnvironment>::new);
+    private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ArrayDeque<Method>::new);
 
-    private Map<ComponentInvocationType, List<RegisteredComponentInvocationHandler>> regCompInvHandlerMap = new HashMap<ComponentInvocationType, List<RegisteredComponentInvocationHandler>>();
+    private Map<ComponentInvocationType, List<RegisteredComponentInvocationHandler>> regCompInvHandlerMap = new HashMap<>();
 
     private final ComponentInvocationHandler[] invHandlers;
 
@@ -226,8 +226,8 @@ public class InvocationManagerImpl implements InvocationManager {
      */
     @Override
     public boolean isInvocationStackEmpty() {
-        InvocationArray<ComponentInvocation> v = frames.get();
-        return v == null || v.size() == 0;
+        InvocationArray<ComponentInvocation> invocations = frames.get();
+        return invocations == null || invocations.size() == 0;
     }
 
     /**
@@ -238,13 +238,13 @@ public class InvocationManagerImpl implements InvocationManager {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
-        InvocationArray<ComponentInvocation> v = frames.get();
-        int size = v.size();
-        if (size == 0) {
+        InvocationArray<ComponentInvocation> invocations = frames.get();
+        int invocationsSize = invocations.size();
+        if (invocationsSize == 0) {
             return null;
         }
 
-        return (T) v.get(size - 1);
+        return (T) invocations.get(invocationsSize - 1);
     }
 
     /**
@@ -256,14 +256,13 @@ public class InvocationManagerImpl implements InvocationManager {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getPreviousInvocation() throws InvocationException {
-
-        InvocationArray<ComponentInvocation> v = frames.get();
-        int i = v.size();
-        if (i < 2) {
+        InvocationArray<ComponentInvocation> invocations = frames.get();
+        int invocationsSize = invocations.size();
+        if (invocationsSize < 2) {
             return null;
         }
 
-        return (T) v.get(i - 2);
+        return (T) invocations.get(invocationsSize - 2);
     }
 
     @Override
@@ -373,9 +372,7 @@ public class InvocationManagerImpl implements InvocationManager {
 
     @Override
     public void pushAppEnvironment(ApplicationEnvironment env) {
-        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
-
-        stack.push(env);
+        applicationEnvironments.get().push(env);
     }
 
     @Override
@@ -396,5 +393,20 @@ public class InvocationManagerImpl implements InvocationManager {
         if (!stack.isEmpty()) {
             stack.pop();
         }
+    }
+    
+    @Override
+    public void pushWebServiceMethod(Method method) {
+        webServiceMethods.get().push(method);
+    }
+    
+    @Override
+    public Method peekWebServiceMethod() {
+        return webServiceMethods.get().peek();
+    }
+    
+    @Override
+    public void popWebServiceMethod() {
+        webServiceMethods.get().pollFirst();
     }
 }

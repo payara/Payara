@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.x500.X500Principal;
 
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
@@ -86,7 +87,6 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
-import javax.security.auth.x500.X500Principal;
 
 /**
  * This class contains a collection of methods that are used by the Web and EJB containers
@@ -117,9 +117,13 @@ import javax.security.auth.x500.X500Principal;
  * @author Arjan Tijms (refactoring)
  *
  */
-public class WebAndEjbToJaasBridge {
+public final class WebAndEjbToJaasBridge {
     
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    
+    private WebAndEjbToJaasBridge() {
+        // No instances of this class
+    }
     
     /**
      * This method is just a convenience wrapper for <i>login(Subject, Class)</i> method. It will
@@ -165,32 +169,33 @@ public class WebAndEjbToJaasBridge {
      *   <li>X500Name - Retrieve user and realm and set security context.
      * </ul>
      *
-     * @param Subject the subject of the client
-     * @param Class the class of the credential packaged in the subject.
-     *
+     * @param subject the subject of the client
+     * @param credentialClass the class of the credential packaged in the subject.
+     * 
+     * @throws LoginException when login fails
      */
-    public static void login(Subject subject, Class<?> cls) throws LoginException {
+    public static void login(Subject subject, Class<?> credentialClass) {
         if (_logger.isLoggable(FINEST)) {
-            _logger.log(FINEST, "Processing login with credentials of type: " + cls.toString());
+            _logger.log(FINEST, "Processing login with credentials of type: " + credentialClass.toString());
         }
 
-        if (cls.equals(PasswordCredential.class)) {
+        if (credentialClass.equals(PasswordCredential.class)) {
             doPasswordLogin(subject);
 
-        } else if (cls.equals(X509CertificateCredential.class)) {
+        } else if (credentialClass.equals(X509CertificateCredential.class)) {
             doX509CertificateLogin(subject);
 
-        } else if (cls.equals(AnonCredential.class)) {
-            doAnonLogin();
+        } else if (credentialClass.equals(AnonCredential.class)) {
+            doAnonymousLogin();
 
-        } else if (cls.equals(GSSUPName.class)) {
+        } else if (credentialClass.equals(GSSUPName.class)) {
             doGSSUPLogin(subject);
 
-        } else if (cls.equals(X500Principal.class)) {
+        } else if (credentialClass.equals(X500Principal.class)) {
             doX500Login(subject, null);
 
         } else {
-            _logger.log(INFO, unknownCredentialError, cls.toString());
+            _logger.log(INFO, unknownCredentialError, credentialClass.toString());
             throw new LoginException("Unknown credential type, cannot login.");
         }
     }
@@ -198,42 +203,56 @@ public class WebAndEjbToJaasBridge {
     /**
      * A special case login for X500Name credentials. This is invoked for certificate login because the
      * containers extract the X.500 name from the X.509 certificate before calling into this class.
+     * 
+     * @throws LoginException when login fails
      *
      */
-    public static void doX500Login(Subject subject, String appModuleID) throws LoginException {
+    public static void doX500Login(Subject subject, String appModuleID) {
         _logger.fine("Processing X.500 name login.");
 
         String user = null;
         String realmName = null;
         try {
             X500Principal x500principal = getPublicCredentials(subject, X500Principal.class);
-            user = x500principal.getName();
+            if (x500principal == null) {
+                // Should never happen
+                return;
+            }
+
+            user = x500principal.getName(X500Principal.RFC2253, CertificateRealm.OID_MAP);
 
             // In the RI-inherited implementation this directly creates
-            // some credentials and sets the security context. This means
-            // that the certificate realm does not get an opportunity to
-            // process the request. While the realm will not do any
-            // authentication (already done by this point) it can choose
-            // to adjust the groups or principal name or other variables
-            // of the security context. Of course, bug 4646134 needs to be
-            // kept in mind at all times.
-
+            // some credentials and sets the security context. 
+            //
+            // This means that the certificate realm does not get an opportunity to
+            // process the request. While the realm will not do any authentication 
+            // (already done by this point) it can choose to adjust the groups or principal 
+            // name or other variables of the security context. 
+            //
+            // Of course, bug 4646134 needs to be kept in mind at all times, even though time has
+            // forgotten what 4646134 was.
+            
             Realm realm = Realm.getInstance(CertificateRealm.AUTH_TYPE);
 
-            if (realm instanceof CertificateRealm) { // should always be true
+            if (realm instanceof CertificateRealm) { // Should always be true
 
                 CertificateRealm certRealm = (CertificateRealm) realm;
                 String jaasCtx = certRealm.getJAASContext();
                 if (jaasCtx != null) {
                     // The subject has the certificate Credential.
-                    LoginContext lg = new LoginContext(jaasCtx, subject, new ServerLoginCallbackHandler(user, null, appModuleID));
-                    lg.login();
+                    new LoginContext(
+                            jaasCtx, subject, 
+                            new ServerLoginCallbackHandler(user, null, appModuleID))
+                        .login();
                 }
-                certRealm.authenticate(subject, x500principal);
+                
+                // The name that the cert realm decided to set as the caller principal name
+                user = certRealm.authenticate(subject, x500principal);
                 realmName = CertificateRealm.AUTH_TYPE;
 
                 auditAuthenticate(user, realmName, true);
             } else {
+                // Should never come here
                 _logger.warning(certLoginBadRealmError);
                 realmName = realm.getName();
                 setSecurityContext(user, subject, realmName);
@@ -278,8 +297,9 @@ public class WebAndEjbToJaasBridge {
      * This method is used for logging in a run As principal. It creates a JAAS subject whose credential
      * is to type GSSUPName. This is used primarily for runas
      *
+     * @throws LoginException if login fails 
      */
-    public static void loginPrincipal(String username, String realmName) throws LoginException {
+    public static void loginPrincipal(String username, String realmName) {
         if (realmName == null || realmName.length() == 0) {
             // No realm provided, assuming default
             realmName = Realm.getDefaultRealm();
@@ -316,8 +336,9 @@ public class WebAndEjbToJaasBridge {
     /**
      * This method logs out the user by clearing the security context.
      *
+     * @throws LoginException if logout fails
      */
-    public static void logout() throws LoginException {
+    public static void logout() {
         unsetSecurityContext();
     }
     
@@ -342,11 +363,11 @@ public class WebAndEjbToJaasBridge {
      *   <li>There is only one such credential present (actually, only the first one is relevant if more are present).
      * </ul>
      *
-     * @param s Subject to be authenticated.
+     * @param subject Subject to be authenticated.
      * @throws LoginException Thrown if the login fails.
      *
      */
-    private static void doPasswordLogin(Subject subject) throws LoginException {
+    private static void doPasswordLogin(Subject subject) {
         PasswordCredential passwordCredential = getPrivateCredentials(subject, PasswordCredential.class);
 
         String user = passwordCredential.getUser();
@@ -382,9 +403,11 @@ public class WebAndEjbToJaasBridge {
     /**
      * A special case login for handling X509CertificateCredential. This does not get triggered based on
      * current RI code. See X500Login.
+     * 
+     * @throws LoginException Thrown if the login fails.
      *
      */
-    private static void doX509CertificateLogin(Subject subject) throws LoginException {
+    private static void doX509CertificateLogin(Subject subject) {
         _logger.log(FINE, "Processing X509 certificate login.");
 
         String user = null;
@@ -408,9 +431,11 @@ public class WebAndEjbToJaasBridge {
 
     /**
      * A special case login for anonymous credentials (no login info).
+     * 
+     * @throws LoginException Thrown if the login fails.
      *
      */
-    private static void doAnonLogin() throws LoginException {
+    private static void doAnonymousLogin() {
         // Instance of anonymous credential login with guest
         SecurityContext.setUnauthenticatedContext();
         _logger.log(FINE, "Set anonymous security context.");
@@ -418,9 +443,10 @@ public class WebAndEjbToJaasBridge {
 
     /**
      * A special case login for GSSUPName credentials.
-     *
+     * 
+     * @throws LoginException Thrown if the login fails.
      */
-    private static void doGSSUPLogin(Subject s) throws LoginException {
+    private static void doGSSUPLogin(Subject s) {
         _logger.fine("Processing GSSUP login.");
 
         String user = null;
@@ -447,17 +473,16 @@ public class WebAndEjbToJaasBridge {
      * <P>
      * This method retains the RI assumption that only the first credential of the given type is used.
      *
+     * @throws LoginException Thrown if the login fails.
      */
-    private static <T> T getPublicCredentials(Subject subject, Class<T> cls) throws LoginException {
+    private static <T> T getPublicCredentials(Subject subject, Class<T> cls) {
         Set<T> credset = subject.getPublicCredentials(cls);
 
         Iterator<T> iter = credset.iterator();
 
         if (!iter.hasNext()) {
             String credentialType = cls.toString();
-            if (_logger.isLoggable(FINER)) {
-                _logger.finer("Expected public credentials of type : " + credentialType + " but none found.");
-            }
+            _logger.log(FINER, () -> "Expected public credentials of type : " + credentialType + " but none found.");
             throw new LoginException("Expected public credential of type: " + credentialType + " but none found.");
         }
 
@@ -477,8 +502,9 @@ public class WebAndEjbToJaasBridge {
      * <P>
      * This method retains the RI assumption that only the first credential of the given type is used.
      *
+     * @throws LoginException Thrown if the login fails.
      */
-    private static <T> T getPrivateCredentials(Subject subject, Class<T> cls) throws LoginException {
+    private static <T> T getPrivateCredentials(Subject subject, Class<T> cls) {
         Iterator<T> iter = privileged(() -> subject.getPrivateCredentials(cls)).iterator();
 
         if (!iter.hasNext()) {

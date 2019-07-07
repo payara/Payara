@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -63,14 +64,21 @@ public class HealthCheckServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(
-                HealthCheckService.class);
+
+        HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
         
         // If we couldn't find the HealthCheckService, throw an exception
         if (healthCheckService == null) {
             throw new ServletException("Could not find Health Check Service");
         }
-        
+        if (!healthCheckService.isEnabled()) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service is disabled");
+            return;
+        }
+        if (!request.isSecure() && healthCheckService.isSecurityEnabled()) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service security is enabled");
+            return;
+        }
         healthCheckService.performHealthChecks(response);
     }
 

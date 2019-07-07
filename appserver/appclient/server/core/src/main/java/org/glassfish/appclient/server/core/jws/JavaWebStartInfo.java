@@ -70,7 +70,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.appclient.server.core.AppClientDeployerHelper;
 import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.ExtensionFileManager.Extension;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.Content;
@@ -377,21 +376,17 @@ public class JavaWebStartInfo implements ConfigListener {
             JWSAdapterManager.userFriendlyContextRoot(acServerApp)});
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
     private void processExtensionReferences() throws IOException {
-        
+
         // TODO: needs to be expanded to handle signed library JARS, perhap signed by different certs
         final URI fileURI = URI.create("file:" + helper.appClientServerOriginalAnchor(dc).getRawSchemeSpecificPart());
-        Set<Extension> exts = extensionFileManager.findExtensionTransitiveClosure(
+        Set<ExtensionFileManager.Extension> exts = extensionFileManager.findExtensionTransitiveClosure(
                 new File(fileURI),
                 //new File(helper.appClientServerURI(dc)).getParentFile(),
                 dc.getSource().getManifest().getMainAttributes());
-        tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME, 
+        tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME,
                 jarElementsForExtensions(exts));
-        for (Extension e : exts) {
+        for (ExtensionFileManager.Extension e : exts) {
             final URI uri = URI.create(JWSAdapterManager.publicExtensionLookupURIText(e));
             final StaticContent newSystemContent = createSignedStaticContent(
                     e.getFile(),
@@ -405,10 +400,6 @@ public class JavaWebStartInfo implements ConfigListener {
 
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
     private String extensionName(final File f) throws IOException {
         JarFile jf = null;
         try {
@@ -424,10 +415,6 @@ public class JavaWebStartInfo implements ConfigListener {
         }
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
     private File signedFileForDomainFile(final File unsignedFile) {
 
         final File rootForSignedFilesInDomain = jwsAdapterManager.rootForSignedFilesInDomain();
@@ -436,26 +423,18 @@ public class JavaWebStartInfo implements ConfigListener {
         return new File(signedFileURI);
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
     private URI relativeURIToDomainFile(final File domainFile) {
         return serverEnv.getInstanceRoot().toURI().relativize(domainFile.toURI());
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
-    private String jarElementsForExtensions(final Set<Extension> exts) {
+    private String jarElementsForExtensions(final Set<ExtensionFileManager.Extension> exts) {
         final StringBuilder sb = new StringBuilder();
-        for (Extension e : exts) {
+        for (ExtensionFileManager.Extension e : exts) {
             sb.append("<jar href=\"").append(JWSAdapterManager.publicExtensionHref(e)).append("\"/>");
         }
         return sb.toString();
     }
-    
+
     private void stopJWSServices() throws EndpointRegistrationException {
         /*
          * Mark all this client's content as stopped so the Grizzly adapter

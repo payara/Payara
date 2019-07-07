@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+/* Portions Copyright [2019] [Payara Foundation and/or its affiliates] */
 
 #include "java.h"
 
 #define AWT_HEADLESS_OPTION "-Djava.awt.headless=true"
 #define CLASSPATH_OPTION "-classpath"
-#define ENDORSED_DIRS_OPTION "-Djava.endorsed.dirs="
 #define JAVA_IO_TMPDIR_OPTION "-Djava.io.tmpdir="
 #define MAX_HEAP_OPTION "-Xmx512m"
 #define STATE_OPTION "-DInstallFile="
@@ -569,10 +569,6 @@ main(int argc, char **argv)
     AddOption(s);
     s = NULL;
     
-
-    /* Set the "java.endorsed.dir" property to use the default XML parser */
-    /* TODO FIX AddOption(StrDup(ENDORSED_DIRS_OPTION)); */
-
     /* Set the "-Xmx" argument high enough so load the main class */
     AddOption(StrDup(MAX_HEAP_OPTION)); 
 

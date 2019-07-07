@@ -4398,7 +4398,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public boolean setBooleanField(int fieldNumber, boolean value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Boolean(value));
+        prepareSetField(fieldNumber, Boolean.valueOf(value));
         return value;
     }
 
@@ -4409,7 +4409,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public byte setByteField(int fieldNumber, byte value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Byte(value));
+        prepareSetField(fieldNumber, Byte.valueOf(value));
         return value;
     }
 
@@ -4420,7 +4420,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public short setShortField(int fieldNumber, short value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Short(value));
+        prepareSetField(fieldNumber, Short.valueOf(value));
         return value;
     }
 
@@ -4431,7 +4431,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public int setIntField(int fieldNumber, int value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Integer(value));
+        prepareSetField(fieldNumber, Integer.valueOf(value));
         return value;
     }
 
@@ -4442,7 +4442,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public long setLongField(int fieldNumber, long value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Long(value));
+        prepareSetField(fieldNumber, Long.valueOf(value));
         return value;
     }
 
@@ -4453,7 +4453,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public char setCharField(int fieldNumber, char value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Character(value));
+        prepareSetField(fieldNumber, Character.valueOf(value));
         return value;
     }
 
@@ -4464,7 +4464,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public float setFloatField(int fieldNumber, float value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Float(value));
+        prepareSetField(fieldNumber, Float.valueOf(value));
         return value;
     }
 
@@ -4475,7 +4475,7 @@ public class SQLStateManager implements Cloneable, StateManager, TestStateManage
 
     public double setDoubleField(int fieldNumber, double value) {
         assertNotPK(fieldNumber);
-        prepareSetField(fieldNumber, new Double(value));
+        prepareSetField(fieldNumber, Double.valueOf(value));
         return value;
     }
 

@@ -39,34 +39,18 @@
  */
 package fish.payara.ejb.rest.client;
 
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
-
 /**
  * This is the context factory that creates the context used for looking up and invoking
  * remote EJBs.
  * 
- * <p>
- * Clients wanting to use remote EJB in this way should set the property in the initial context
- * environment as follows:
- * 
- * <pre>
- * <code>
- *   Hashtable&lt;String, String&gt; environment = new Hashtable&lt;&gt;();
- *   environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.rest.client.RemoteEJBContextFactory");
- *    ...
- *   new InitialContext(environment);
- * <code>
- * </pre>
- * 
+ * <p><strong>This class is deprecated</strong> use {@code fish.payara.ejb.http.client.RemoteEJBContextFactory}
+ *
+ * @deprecated in favor of package {@code fish.payara.ejb.http.client}
  * @author Arjan Tijms
  * @since Payara 5.191
  */
 @Deprecated
-public class RemoteEJBContextFactory implements InitialContextFactory {
+public class RemoteEJBContextFactory extends fish.payara.ejb.http.client.RemoteEJBContextFactory {
     
     public static final String FISH_PAYARA_WITH_CONFIG = "fish.payara.withConfig";
     public static final String FISH_PAYARA_TRUST_STORE = "fish.payara.trustStore";
@@ -78,9 +62,4 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String FISH_PAYARA_EXECUTOR_SERVICE = "fish.payara.executorService";
     public static final String FISH_PAYARA_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
 
-    @Override
-    public Context getInitialContext(Hashtable<?, ?> environment) throws NamingException {
-        return new RemoteEJBContext(environment);
-    }
-    
 }

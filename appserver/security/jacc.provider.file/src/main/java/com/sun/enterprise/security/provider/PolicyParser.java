@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.provider;
 
 import java.io.*;
@@ -510,10 +510,11 @@ public class PolicyParser {
         match("}");
 
         try {
-            if (e.signedBy != null)
+            if (e.signedBy != null) {
                 e.signedBy = expand(e.signedBy);
-            if (e.codeBase != null) {
+            }
 
+            if (e.codeBase != null) {
                 // For backward compatibility with 1.4
                 if (e.codeBase.equals(OLD_EXTDIRS_EXPANSION)) {
                     e.codeBase = EXTDIRS_EXPANSION;
@@ -585,10 +586,6 @@ public class PolicyParser {
     }
 
     // package-private: used by PolicyFile for static policy
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
     static String[] parseExtDirs(String codebase, int start) {
 
         String s = System.getProperty(EXTDIRS_PROPERTY);

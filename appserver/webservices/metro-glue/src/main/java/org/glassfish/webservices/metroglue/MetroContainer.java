@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  *
  */
 package org.glassfish.webservices.metroglue;
@@ -47,6 +47,7 @@ import static com.sun.enterprise.util.SystemPropertyConstants.HOST_NAME_PROPERTY
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
+import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 import static org.glassfish.deployment.common.DeploymentProperties.SYSTEM_ALL;
 import static org.glassfish.webservices.metroglue.LogUtils.ENDPOINT_EVENT_DEPLOYED;
 import static org.glassfish.webservices.metroglue.LogUtils.ENDPOINT_EVENT_LISTENER_REGISTERED;
@@ -71,7 +72,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.Deployer;
@@ -138,12 +138,12 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     HazelcastCore hazelcastCore;
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Named(DEFAULT_INSTANCE_NAME)
     @Optional
     private AvailabilityService availabilityService;
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Named(DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
 
     @Override
@@ -349,14 +349,12 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
      */
     private String getHttpPort(boolean secure, String serverName, Config config) {
         try {
-            final String networkListeners = config.getHttpService().getVirtualServerByName(serverName).getNetworkListeners();
+            String networkListeners = config.getHttpService().getVirtualServerByName(serverName).getNetworkListeners();
             if (networkListeners == null || networkListeners.isEmpty()) {
                 return null;
             }
 
-            final String[] networkListenerNames = networkListeners.split(",");
-
-            for (String listenerName : networkListenerNames) {
+            for (String listenerName : networkListeners.split(",")) {
                 if (listenerName == null || listenerName.isEmpty()) {
                     continue;
                 }

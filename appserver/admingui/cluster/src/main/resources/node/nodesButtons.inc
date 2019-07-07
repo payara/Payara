@@ -93,6 +93,12 @@
             mapPut(map="#{pageSession.attrsMap}"  key="force" value="#{pageSession.valueMap['winForce']}");
 
         }
+        if ("#{pageSession.valueMap['type']}=DOCKER"){
+            setAttribute(key="attrsList" value={"nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});
+            setAttribute(key="endpoint" value="nodes/node/#{pageSession.nodeName}/update-node-docker");
+            gfr.prepareNodeCmd();
+            mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirDocker']}");
+        }
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" method="POST" attrs="#{pageSession.attrsMap}")
         prepareSuccessfulMsg();
         gf.redirect(page="#{request.contextPath}/cluster/#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
@@ -165,6 +171,12 @@
         }
         gfr.prepareNodeCmd();
         mapPut(map="#{pageSession.attrsMap}"  key="force" value="#{pageSession.valueMap['winForce']}");
+    }
+    if ("#{pageSession.valueMap['type']}=DOCKER"){
+        setAttribute(key="attrsList" value={"id", "nodehost", "nodedir", "dockerimage", "dockerport", "dockerpasswordfile", "usetls"});
+        setAttribute(key="endpoint" value="nodes/create-node-docker");
+        gfr.prepareNodeCmd();
+        mapPut(map="#{pageSession.attrsMap}", key="installdir" value="#{pageSession.valueMap['installdirDocker']}");
     }
     gf.restRequest( endpoint="#{sessionScope.REST_URL}/#{requestScope.endpoint}" attrs="#{pageSession.attrsMap}" method="POST" )
     gf.redirect(page="#{request.contextPath}/cluster/node/nodes.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
