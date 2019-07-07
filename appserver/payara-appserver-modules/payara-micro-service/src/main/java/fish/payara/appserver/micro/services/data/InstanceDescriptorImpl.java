@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2018 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -176,18 +176,10 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     /**
      * Overrides equals purely based on the UUID value
-     *
-     * @param obj
-     * @return
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result = false;
-        if (InstanceDescriptorImpl.class.isInstance(obj)) {
-            InstanceDescriptorImpl descriptor = (InstanceDescriptorImpl) obj;
-            result = this.memberUUID.equals(descriptor.memberUUID);
-        }
-        return result;
+        return obj instanceof InstanceDescriptorImpl && this.memberUUID.equals(((InstanceDescriptorImpl) obj).memberUUID);
     }
 
     /**

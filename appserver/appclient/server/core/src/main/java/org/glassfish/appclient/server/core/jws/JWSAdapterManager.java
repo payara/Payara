@@ -70,7 +70,6 @@ import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.appclient.server.core.AppClientDeployer;
 import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.ExtensionFileManager.Extension;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
@@ -188,7 +187,10 @@ public class JWSAdapterManager implements PostConstruct {
      * @param content
      */
     void addStaticSystemContent(final String lookupURI, StaticContent newContent) throws IOException {
-        systemAdapter().addContentIfAbsent(lookupURI, newContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(lookupURI, newContent);
+        }
     }
 
     private static String chooseAlias(final DeploymentContext dc) {
@@ -231,9 +233,12 @@ public class JWSAdapterManager implements PostConstruct {
 
     void addContentIfAbsent(final Map<String,StaticContent> staticContent,
             final Map<String,DynamicContent> dynamicContent) throws IOException {
-        systemAdapter().addContentIfAbsent(staticContent, dynamicContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(staticContent, dynamicContent);
+        }
     }
-    
+
     /**
      * Records the need for signed copies of the GlassFish system JARs for the
      * specified signing alias.
@@ -281,21 +286,6 @@ public class JWSAdapterManager implements PostConstruct {
             }
         }
 
-        /*
-         * Add the endorsed JARs to the system content.
-         */
-        final File endorsedDir = new File(modulesDir(), "endorsed");
-        for (File endorsedJar : endorsedDir.listFiles(new FileFilter(){
-
-                    @Override
-                    public boolean accept(File pathname) {
-                        return (pathname.isFile() && pathname.getName().endsWith(".jar"));
-                    }
-            })) {
-            result.put(systemPath(endorsedJar.toURI()),
-                    systemJarSignedContent(endorsedJar, signingAlias));
-            systemJARRelativeURIs.add(relativeSystemPath(endorsedJar.toURI()));
-        }
         return result;
     }
 
@@ -319,19 +309,11 @@ public class JWSAdapterManager implements PostConstruct {
         return new File(new File(installRootURI), "lib");
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
-    static String publicExtensionHref(final Extension ext) {
+    static String publicExtensionHref(final ExtensionFileManager.Extension ext) {
         return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
     }
 
-    /**
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
-     */
-    @Deprecated
-    static String publicExtensionLookupURIText(final Extension ext) {
+    static String publicExtensionLookupURIText(final ExtensionFileManager.Extension ext) {
         return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
                 ext.getExtDirectoryNumber() + "/" +
                 ext.getFile().getName();

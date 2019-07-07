@@ -172,7 +172,13 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         if (!fsfailure) {
             nodedir = theNode.getNodeDirAbsolute();
-            deleteInstanceFilesystem(ctx);
+
+            if (theNode.getType().equals("DOCKER")) {
+                deleteDockerContainer(ctx);
+            } else {
+                deleteInstanceFilesystem(ctx);
+            }
+
             report = ctx.getActionReport();
             if (report.getActionExitCode() != SUCCESS) {
                 fsfailure = true;
@@ -253,6 +259,28 @@ public class DeleteInstanceCommand implements AdminCommand {
         }
         
         report.setMessage(msg);
+    }
+
+    private void deleteDockerContainer(AdminCommandContext ctx) {
+        ActionReport actionReport = ctx.getActionReport();
+
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-docker-container",
+                actionReport, ctx.getSubject());
+
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("node", noderef);
+        commandParameters.add("DEFAULT", instanceName);
+        commandInvocation.parameters(commandParameters);
+        commandInvocation.execute();
+
+        if (actionReport.getActionExitCode() != SUCCESS) {
+            actionReport.setMessage(Strings.get("delete.docker.container.failure",
+                    instanceName, noderef, theNode.getNodeHost()));
+            return;
+        }
+
+        actionReport.setMessage(Strings.get("delete.docker.container.success",
+                instanceName, noderef, theNode.getNodeHost()));
     }
 
     private String makeCommandHuman(List<String> commands) {

@@ -40,10 +40,12 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import java.util.*;
+import java.util.Enumeration;
 
-import com.sun.enterprise.security.auth.realm.*;
-
+import com.sun.enterprise.security.auth.realm.BadRealmException;
+import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.Realm;
+import com.sun.enterprise.security.auth.realm.User;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.i18n.StringManager;
 
@@ -68,6 +70,7 @@ public abstract class BaseRealm extends Realm {
     public static final String JAAS_CONTEXT_PARAM = Realm.JAAS_CONTEXT_PARAM;
 
     protected static final StringManager sm = StringManager.getManager(Realm.class);
+    private static final String NOT_SUPPORTED = sm.getString("iasrealm.notsupported");
 
     /**
      * Returns names of all the users in this particular realm.
@@ -82,7 +85,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public Enumeration<String> getUserNames() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -100,7 +103,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public User getUser(String name) throws NoSuchUserException, BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -116,7 +119,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public Enumeration<String> getGroupNames() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -131,7 +134,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void refresh() throws BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -145,7 +148,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void addUser(String name, char[] password, String[] groupList) throws BadRealmException, IASSecurityException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -166,7 +169,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void removeUser(String name) throws NoSuchUserException, BadRealmException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**
@@ -193,7 +196,7 @@ public abstract class BaseRealm extends Realm {
      */
     @Override
     public void updateUser(String name, String newName, char[] password, String[] groups) throws NoSuchUserException, BadRealmException, IASSecurityException {
-        throw new BadRealmException(sm.getString("iasrealm.notsupported"));
+        throw new BadRealmException(NOT_SUPPORTED);
     }
 
     /**

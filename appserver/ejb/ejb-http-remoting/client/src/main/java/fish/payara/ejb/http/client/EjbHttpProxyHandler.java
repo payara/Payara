@@ -8,7 +8,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.Base64;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,15 +81,15 @@ class EjbHttpProxyHandler implements InvocationHandler {
         Map<String, Object> payload = new HashMap<>();
         payload.put("lookup", lookup);
         payload.put("method", method.getName());
-        payload.put("argTypes", method.getParameterTypes());
+        payload.put("argTypes", Arrays.stream(method.getParameterTypes()).map(Class::getName).toArray());
         payload.put("argValues", argValues == null? new Object[0] : argValues);
         
         if (jndiOptions.containsKey(SECURITY_PRINCIPAL)) {
-            payload.put(SECURITY_PRINCIPAL, base64Encode(jndiOptions.get(SECURITY_PRINCIPAL)));
+            payload.put(SECURITY_PRINCIPAL, Lookup.base64Encode(jndiOptions.get(SECURITY_PRINCIPAL)));
         }
         
         if (jndiOptions.containsKey(SECURITY_CREDENTIALS)) {
-            payload.put(SECURITY_CREDENTIALS, base64Encode(jndiOptions.get(SECURITY_CREDENTIALS)));
+            payload.put(SECURITY_CREDENTIALS, Lookup.base64Encode(jndiOptions.get(SECURITY_CREDENTIALS)));
         }
         
         // Payload wrapped as entity so it'll be encoded in JSON
@@ -137,10 +137,6 @@ class EjbHttpProxyHandler implements InvocationHandler {
         return responseGenericType;
     }
     
-    private static String base64Encode(Object input) {
-        return Base64.getEncoder().encodeToString(input.toString().getBytes());
-    }
-
     private static WebTarget addPathFromMethod(Method method, WebTarget target) {
         return target.path(method.getName());
     }

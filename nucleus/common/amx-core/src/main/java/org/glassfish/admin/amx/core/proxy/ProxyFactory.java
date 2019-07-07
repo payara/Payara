@@ -365,7 +365,7 @@ public final class ProxyFactory implements NotificationListener {
         final Descriptor d = info.getDescriptor();
 
         final String value = "" + d.getFieldValue(DESC_STD_IMMUTABLE_INFO);
-        return Boolean.valueOf(value);
+        return Boolean.parseBoolean(value);
     }
 
     /**

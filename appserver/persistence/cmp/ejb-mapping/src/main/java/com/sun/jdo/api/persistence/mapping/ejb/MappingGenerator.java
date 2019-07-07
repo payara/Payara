@@ -573,7 +573,7 @@ public class MappingGenerator {
         }
 
         private static boolean checkType(int jdbcType, Map jdbcTypes) {
-            return jdbcTypes.containsKey(new Integer(jdbcType));
+            return jdbcTypes.containsKey(Integer.valueOf(jdbcType));
         }
 
         /** Returns a collection of compatible jdbc types.
@@ -636,16 +636,16 @@ public class MappingGenerator {
 
         private static String getAttribute(int jdbcType) {
             if (isNumeric(jdbcType)) {
-                return (String)numericMap.get(new Integer(jdbcType));
+                return (String)numericMap.get(Integer.valueOf(jdbcType));
             }
             else if (isCharacter(jdbcType)) {
-                return (String)characterMap.get(new Integer(jdbcType));
+                return (String)characterMap.get(Integer.valueOf(jdbcType));
             }
             else if (isBlob(jdbcType)) {
-                return (String)blobMap.get(new Integer(jdbcType));
+                return (String)blobMap.get(Integer.valueOf(jdbcType));
             }
             else if (isTime(jdbcType)) {
-                return (String)timeMap.get(new Integer(jdbcType));
+                return (String)timeMap.get(Integer.valueOf(jdbcType));
             }
             return NONE_ATTRIBUTE;
         }

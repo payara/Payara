@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.listener;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.logging.LogDomains;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;

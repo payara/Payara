@@ -63,7 +63,7 @@ public class RAWriterAdapter extends Writer {
 
     private void initializeAutoFlush() {
         String autoFlushValue = System.getProperty("com.sun.enterprise.connectors.LogWriterAutoFlush", "true");
-        autoFlush = Boolean.valueOf(autoFlushValue);
+        autoFlush = Boolean.parseBoolean(autoFlushValue);
     }
 
     public void write(char cbuf[], int off, int len) {

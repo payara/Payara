@@ -233,7 +233,7 @@ public class VersioningService {
                         "Application {0} has no version registered",
                         untagged));  
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return VersioningUtils.matchExpression(allVersions, name);

@@ -621,10 +621,10 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         StringTokenizer stoken = new StringTokenizer(requestString == null ? "" : requestString, QUERY_STRING_SEPARATOR);
         while (stoken.hasMoreTokens()) {
             String token = stoken.nextToken();
-            if (token.indexOf("=") == -1)
+            if (token.indexOf('=') == -1)
                 continue;
-            String paramName = token.substring(0, token.indexOf("="));
-            String value = token.substring(token.indexOf("=") + 1);
+            String paramName = token.substring(0, token.indexOf('='));
+            String value = token.substring(token.indexOf('=') + 1);
 
             try {
                 value = URLDecoder.decode(value, "UTF-8");
@@ -658,10 +658,10 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         StringTokenizer stoken = new StringTokenizer(requestString == null ? "" : requestString, QUERY_STRING_SEPARATOR);
         while (stoken.hasMoreTokens()) {
             String token = stoken.nextToken();
-            if (token.indexOf("=") == -1)
+            if (token.indexOf('=') == -1)
                 continue;
-            String paramName = token.substring(0, token.indexOf("="));
-            String value = token.substring(token.indexOf("=") + 1);
+            String paramName = token.substring(0, token.indexOf('='));
+            String value = token.substring(token.indexOf('=') + 1);
             try {
                 value = URLDecoder.decode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -733,7 +733,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      * @return the scope for a command
      */
     private String getScope(String command) {
-        int ci = command.indexOf("/");
+        int ci = command.indexOf('/');
         return (ci != -1) ? command.substring(0, ci + 1) : null;
     }
 
@@ -746,7 +746,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      * for the above example
      */
     private String getCommandAfterScope(String command) {
-        int ci = command.indexOf("/");
+        int ci = command.indexOf('/');
         return (ci != -1) ? command = command.substring(ci + 1) : command;
 
     }

@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main.webservices</groupId>
     	<artifactId>webservices</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -54,32 +54,6 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Connector for GlassFish Web Services Container</name>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.glassfish.metro</groupId>
-                                    <artifactId>webservices-api-osgi</artifactId>
-                                    <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-                                    <version>${webservices.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build> 
 
     <dependencies>
         <dependency>

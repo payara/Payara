@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -71,26 +71,24 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  * <p>
  * This class builds a map of extension name to an
  * instance of the inner class Extension that records information about that
- * extension jar.  An Extension is created for every jar file in any of the 
- * directories specified by java.ext.dirs.  
+ * extension jar.  An Extension is created for every jar file in any of the
+ * directories specified by java.ext.dirs.
  * <p>
  * Later, a caller can use the findExtensionTransitiveClosure method, passing
  * a jar file manifest's main attributes and receiving back a List of Extension objects representing
- * all extension jars referenced directly or indirectly from that jar.  
- * 
+ * all extension jars referenced directly or indirectly from that jar.
+ *
  * @author tjquinn
- * @deprecated Since 5.184. Extension jars are not used for JDK9+
  */
 @Service
 @Singleton
-@Deprecated
 public class ExtensionFileManager implements PostConstruct {
-    
+
     /** the property name that points to extension directories */
     private static final String EXT_DIRS_PROPERTY_NAME = "java.ext.dirs";
-    
-    private Logger _logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
-                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
+
+    private Logger _logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER,
+            JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(
             message = "The following extensions or libraries are referenced from the manifest of {0} but were not found where indicated: {1}; ignoring and continuing",
@@ -127,7 +125,7 @@ public class ExtensionFileManager implements PostConstruct {
     /*
      *Returns the collection of extension
      *file info objects for the extension jars known to the app server.
-     *@return Map from extension name to 
+     *@return Map from extension name to
      *@throws IOException in case of error accessing a file as a jar file
      */
     public Map<ExtensionKey, Extension> getExtensionFileEntries() throws IOException {
@@ -149,12 +147,12 @@ public class ExtensionFileManager implements PostConstruct {
             while (stkn.hasMoreTokens()) {
                 String extensionDirPath = stkn.nextToken();
                 final File extDir = new File(extensionDirPath);
-            /*
-             * Add the extensions directory only if it falls within the app
-             * server directory.  Otherwise we might add
-             * Java-provided extensions and serve them to Java Web Start-launched
-             * clients, which we do not want.
-             */
+                /*
+                 * Add the extensions directory only if it falls within the app
+                 * server directory.  Otherwise we might add
+                 * Java-provided extensions and serve them to Java Web Start-launched
+                 * clients, which we do not want.
+                 */
                 final URI extDirURI = extDir.toURI();
                 if (!installRootURI.relativize(extDirURI).equals(extDirURI)) {
                     result.add(extDir);
@@ -163,46 +161,46 @@ public class ExtensionFileManager implements PostConstruct {
         }
         return result;
     }
-    
+
     /**
      * Constructs the collection of extension files known to the app server.
      * @param dirs the directories in which to search for extension jar files
      * @return Map<ExtensionKey,Extension> mapping the extension name and spec version to the extension jar entry
      * @throws IOException in case of errors processing jars in the extension directories
      */
-     private Map<ExtensionKey, Extension> buildExtensionFileEntries(Vector<File> dirs) throws IOException {
+    private Map<ExtensionKey, Extension> buildExtensionFileEntries(Vector<File> dirs) throws IOException {
 
         /*
          *For each extension directory, collect all jar files
-         *and add an entry (containing File and spec version string) for each 
+         *and add an entry (containing File and spec version string) for each
          *file into the data structure.
          */
-         Map<ExtensionKey,Extension> result = new HashMap<ExtensionKey,Extension>();
-         
-         for (int i = 0; i < dirs.size(); i++) {
+        Map<ExtensionKey,Extension> result = new HashMap<ExtensionKey,Extension>();
+
+        for (int i = 0; i < dirs.size(); i++) {
             addExtJarsFromDirectory(result, i, dirs.get(i));
         }
         return result;
-     }
-     
-     /**
-      *Create the collection of extension directories.
-      *@return Vector of File objects, one for each directory.
-      */
-     /**
-      * Adds entries for the extension files from one directory to the indicated Map.
-      * @param extensionFilesMap map of each extension name to its Extension
-      * @param extensionDirNumber the ordinal number of the directory being processed
-      * @param extDirPath the current directory being processed
-      * @throws IOException in case of error scanning for jar files
-      */
-     private void addExtJarsFromDirectory(Map<ExtensionKey, Extension> map, int extensionDirNumber, File extDir) throws IOException {
+    }
+
+    /**
+     *Create the collection of extension directories.
+     *@return Vector of File objects, one for each directory.
+     */
+    /**
+     * Adds entries for the extension files from one directory to the indicated Map.
+     * @param extensionFilesMap map of each extension name to its Extension
+     * @param extensionDirNumber the ordinal number of the directory being processed
+     * @param extDirPath the current directory being processed
+     * @throws IOException in case of error scanning for jar files
+     */
+    private void addExtJarsFromDirectory(Map<ExtensionKey, Extension> map, int extensionDirNumber, File extDir) throws IOException {
         File [] extJars = extDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar");
             }
-          });
+        });
         if (extJars != null) {
             for (File file : extJars) {
                 Extension entry = buildExtensionForJar(file, extensionDirNumber);
@@ -211,8 +209,8 @@ public class ExtensionFileManager implements PostConstruct {
                 }
             }
         }
-     }
-     
+    }
+
     /**
      * Creates an extension Extension for a jar file if the jar is in fact an extension.
      * @param jarFile a File object for the jar to use
@@ -261,11 +259,11 @@ public class ExtensionFileManager implements PostConstruct {
         Vector<File> filesToProcess = new Vector<File>();
 
         filesToProcess.addAll(getClassPathJars(mainAttrs));
-        
+
         Set<Extension> extensionsUsedByApp = getReferencedExtensions(mainAttrs);
         result.addAll(extensionsUsedByApp);
         filesToProcess.addAll(extensionsToFiles(extensionsUsedByApp));
-        
+
         /**
          *Do not use the for/each construct next because the loop may add
          *elements to the vector and for/each would throw a concurrent
@@ -281,7 +279,7 @@ public class ExtensionFileManager implements PostConstruct {
             if (absNextFile.exists() && absNextFile.isDirectory()) {
                 continue;
             }
-            
+
             try {
                 JarFile nextJarFile = new JarFile(absNextFile);
                 try {
@@ -316,7 +314,7 @@ public class ExtensionFileManager implements PostConstruct {
         }
         return result;
     }
-    
+
     /**
      *Returns a Set of Extensions that are referenced by the jar file whose
      *main attributes are passed.
@@ -333,7 +331,7 @@ public class ExtensionFileManager implements PostConstruct {
                 Extension extension = extensionFileInfo.get(key);
 
                 /*
-                 *Add this extension only if it does not already appear 
+                 *Add this extension only if it does not already appear
                  *in the result collection.  In that case, also add the
                  *file to the collection of files to be processed.
                  */
@@ -346,7 +344,7 @@ public class ExtensionFileManager implements PostConstruct {
         }
         return new HashSet<Extension>(result.values());
     }
-    
+
     /**
      *Returns the main attributes (if any) object from a jar file.
      *@param jarFile the JarFile of interest
@@ -355,14 +353,14 @@ public class ExtensionFileManager implements PostConstruct {
      */
     private Attributes getMainAttrs(JarFile jarFile) throws IOException {
         Attributes result = null;
-        
+
         Manifest mf = jarFile.getManifest();
         if (mf != null) {
             result = mf.getMainAttributes();
         }
         return result;
     }
-    
+
     /**
      *Returns the Files corresponding to the Class-Path entries (if any) in a
      *Jar file's main attributes.
@@ -391,7 +389,7 @@ public class ExtensionFileManager implements PostConstruct {
      */
     private ExtensionKey getDefinedExtensionKey(JarFile jarFile) throws IOException {
         ExtensionKey result = null;
-        
+
         Attributes mainAttrs = getMainAttrs(jarFile);
         if (mainAttrs != null) {
             String extName = mainAttrs.getValue(Attributes.Name.EXTENSION_NAME);
@@ -400,10 +398,10 @@ public class ExtensionFileManager implements PostConstruct {
                 result = new ExtensionKey(extName, specVersion);
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      *Returns the ExtensionKeys for the extension jars referenced by the specified main attributes
      *@param mainAttrs the main attributes from a jar file that may refer to extension jars
@@ -411,7 +409,7 @@ public class ExtensionFileManager implements PostConstruct {
      */
     private Set<ExtensionKey> getReferencedExtensionKeys(Attributes mainAttrs) {
         Set<ExtensionKey> result = new HashSet<ExtensionKey>();
-        
+
         if (mainAttrs != null) {
             String extensionList = mainAttrs.getValue(Attributes.Name.EXTENSION_LIST);
             if (extensionList != null) {
@@ -439,9 +437,9 @@ public class ExtensionFileManager implements PostConstruct {
      */
     public static class ExtensionKey {
         private String extensionName = null;
-        
+
         private String specificationVersion = null;
-        
+
         /**
          * Creates a new instance of ExtensionKey.
          * @param extensionName the extension name of interest (cannot be null)
@@ -452,7 +450,7 @@ public class ExtensionFileManager implements PostConstruct {
             this.extensionName = extensionName;
             this.specificationVersion = (specificationVersion != null) ? specificationVersion : "";
         }
-        
+
         @Override
         public boolean equals(Object other) {
             boolean result = false;
@@ -463,7 +461,7 @@ public class ExtensionFileManager implements PostConstruct {
                     if (other instanceof ExtensionKey) {
                         ExtensionKey otherEntryKey = (ExtensionKey) other;
                         result = extensionName.equals(otherEntryKey.extensionName) &&
-                                 specificationVersion.equals(otherEntryKey.specificationVersion);
+                                specificationVersion.equals(otherEntryKey.specificationVersion);
                     }
                 }
             }
@@ -477,34 +475,34 @@ public class ExtensionFileManager implements PostConstruct {
             result = 37 * result + specificationVersion.hashCode();
             return result;
         }
-        
+
         @Override
         public String toString() {
             return "Name=" + extensionName + ", spec version = " + specificationVersion;
         }
     }
-    
+
     /**
      *Records information about an extension jar file known to the app server.
      */
     public class Extension {
-        
+
         private ExtensionKey extensionKey;
-        
+
         private File file = null;
-        
+
         /** in case the same extension appears in more than one extension directory */
         private int extDirectoryNumber = -1;
-        
+
         public Extension(ExtensionKey extensionKey, File file, int extDirectoryNumber) {
             assert extensionKey != null : "extensionKey is null";
             assert file != null : "file is null";
-            
+
             this.extensionKey = extensionKey;
             this.file = file;
             this.extDirectoryNumber = extDirectoryNumber;
         }
-        
+
         @Override
         public boolean equals(Object other) {
             boolean result = false;
@@ -522,7 +520,7 @@ public class ExtensionFileManager implements PostConstruct {
             }
             return result;
         }
-        
+
         @Override
         public int hashCode() {
             int result = 17;
@@ -531,18 +529,19 @@ public class ExtensionFileManager implements PostConstruct {
             result = result * 37 + extDirectoryNumber;
             return result;
         }
-        
+
         public int getExtDirectoryNumber() {
             return extDirectoryNumber;
         }
-        
+
         public File getFile() {
             return file;
         }
-        
+
         @Override
         public String toString() {
             return extensionKey.toString() + ", file = " + file.getAbsolutePath() + ", in ext dir " + extDirectoryNumber + "(" + extensionFileDirs.get(extDirectoryNumber).getAbsolutePath();
         }
     }
 }
+

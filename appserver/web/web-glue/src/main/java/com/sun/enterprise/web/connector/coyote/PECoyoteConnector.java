@@ -61,14 +61,21 @@ import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import javax.management.Notification;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.lang.Object;
-import java.lang.String;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 public class PECoyoteConnector extends Connector {
 
@@ -1242,51 +1249,34 @@ public class PECoyoteConnector extends Connector {
         }
 
         // ssl protocol variants
-        StringBuilder sslProtocolsBuf = new StringBuilder();
-        boolean needComma = false;
+        List<String> sslProtocolsBuf = new ArrayList<>();
         if (Boolean.valueOf(sslConfig.getSsl2Enabled())) {
-            sslProtocolsBuf.append("SSLv2");
-            needComma = true;
+            sslProtocolsBuf.add(SSL2);
         }
         if (Boolean.valueOf(sslConfig.getSsl3Enabled())) {
-            if (needComma) {
-                sslProtocolsBuf.append(", ");
-            } else {
-                needComma = true;
-            }
-            sslProtocolsBuf.append("SSLv3");
+            sslProtocolsBuf.add(SSL3);
         }
         if (Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            if (needComma) {
-                sslProtocolsBuf.append(", ");
-            } else {
-                needComma = true;
-            }
-            sslProtocolsBuf.append("TLSv1");
+            sslProtocolsBuf.add(TLS1);
         }
         if (Boolean.valueOf(sslConfig.getTls11Enabled())) {
-            if (needComma) {
-                sslProtocolsBuf.append(", ");
-            } else {
-                needComma = true;
-            }
-            sslProtocolsBuf.append("TLSv1.1");
+            sslProtocolsBuf.add(TLS11);
         }
         if (Boolean.valueOf(sslConfig.getTls12Enabled())) {
-            if (needComma) {
-                sslProtocolsBuf.append(", ");
-            }
-            sslProtocolsBuf.append("TLSv1.2");
+            sslProtocolsBuf.add(TLS12);
         }
-        if (Boolean.valueOf(sslConfig.getSsl3Enabled()) ||
-                Boolean.valueOf(sslConfig.getTlsEnabled())) {
-            sslProtocolsBuf.append(", SSLv2Hello");
+        if (Boolean.valueOf(sslConfig.getTls13Enabled())) {
+            sslProtocolsBuf.add(TLS13);
+        }
+        if (Boolean.valueOf(sslConfig.getSsl3Enabled())
+                || Boolean.valueOf(sslConfig.getTlsEnabled())) {
+            sslProtocolsBuf.add(SSL2_HELLO);
         }
 
-        if (sslProtocolsBuf.length() == 0) {
+        if (sslProtocolsBuf.isEmpty()) {
             _logger.log(Level.WARNING, LogFacade.ALL_SSL_PROTOCOLS_DISABLED, listener.getName());
         } else {
-            setSslProtocols(sslProtocolsBuf.toString());
+            setSslProtocols(String.join(", ", sslProtocolsBuf));
         }
 
         // cert-nickname

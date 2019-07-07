@@ -55,9 +55,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.realm;
 
+import static java.util.logging.Level.FINE;
 import static org.apache.catalina.connector.Response.HTTP_RESPONSE_DATE_HEADER;
 
 import java.beans.PropertyChangeListener;
@@ -419,33 +420,36 @@ public abstract class RealmBase implements Lifecycle, Realm {
      * Return the Principal associated with the specified chain of X509 client certificates. If there is none, return
      * <code>null</code>.
      *
-     * @param certs Array of client certificates, with the first one in the array being the certificate of the client
+     * @param certificates Array of client certificates, with the first one in the array being the certificate of the client
      * itself.
      */
-    public Principal authenticate(X509Certificate certs[]) {
-
-        if ((certs == null) || (certs.length < 1))
-            return (null);
+    public Principal authenticate(X509Certificate certificates[]) {
+        if (certificates == null || certificates.length < 1) {
+            return null;
+        }
 
         // Check the validity of each certificate in the chain
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Authenticating client certificate chain");
+        if (log.isLoggable(FINE)) {
+            log.log(FINE, "Authenticating client certificate chain");
+        }
+        
         if (validate) {
-            for (int i = 0; i < certs.length; i++) {
-                if (log.isLoggable(Level.FINE))
-                    log.log(Level.FINE, "Checking validity for '" + certs[i].getSubjectDN().getName() + "'");
+            for (int i = 0; i < certificates.length; i++) {
+                if (log.isLoggable(FINE)) {
+                    log.log(FINE, "Checking validity for '" + certificates[i].getSubjectX500Principal().getName() + "'");
+                }
+                
                 try {
-                    certs[i].checkValidity();
+                    certificates[i].checkValidity();
                 } catch (Exception e) {
-                    if (log.isLoggable(Level.FINE))
-                        log.log(Level.FINE, "Validity exception", e);
+                    log.log(FINE, "Validity exception", e);
                     return (null);
                 }
             }
         }
 
         // Check the existence of the client Principal in our database
-        return (getPrincipal(certs[0].getSubjectDN().getName()));
+        return getPrincipal(certificates[0].getSubjectX500Principal().getName());
 
     }
 
@@ -701,8 +705,8 @@ public abstract class RealmBase implements Lifecycle, Realm {
                     String pattern = caseSensitiveMapping ? patterns[k] : patterns[k].toLowerCase(Locale.ENGLISH);
                     // END SJSWS 6324431
                     if (uri != null && pattern.startsWith("*.")) {
-                        int slash = uri.lastIndexOf("/");
-                        int dot = uri.lastIndexOf(".");
+                        int slash = uri.lastIndexOf('/');
+                        int dot = uri.lastIndexOf('.');
                         if (slash >= 0 && dot > slash && dot != uri.length() - 1 && uri.length() - dot == pattern.length() - 1) {
                             if (pattern.regionMatches(1, uri, dot, uri.length() - dot)) {
                                 matched = true;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.codegen;
 
@@ -58,6 +59,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import org.glassfish.api.admin.ServerEnvironment;
 
@@ -266,8 +268,8 @@ public class StaticRmiStubGenerator {
             return;
         }
 
-        if( toolsJarPath == null && !OS.isDarwin()) {
-            _logger.log(Level.INFO,  "[RMIC] tools.jar location was not found");
+        if (toolsJarPath == null && !OS.isDarwin() && JDK.getMajor() < 9) {
+            _logger.log(Level.INFO, "[RMIC] tools.jar location was not found");
             return;
         }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.model;
 
@@ -48,7 +48,6 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
@@ -57,7 +56,7 @@ import org.glassfish.admin.rest.utils.JsonUtil;
  */
 public class SseResponseBody extends ResponseBody {
 
-    private Map<String, List<String>> headers = new HashMap<String, List<String>>();
+    private final Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
     public SseResponseBody() {
         super();

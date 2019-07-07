@@ -127,7 +127,7 @@ public class SingletonLifeCycleManager {
 
         Application app = sessionDesc.getEjbBundleDescriptor().getApplication();
         if (fullyQualified) {
-            int indexOfHash = origName.indexOf("#");
+            int indexOfHash = origName.indexOf('#');
             String ejbName = origName.substring(indexOfHash + 1);
             String relativeJarPath = origName.substring(0, indexOfHash);
 

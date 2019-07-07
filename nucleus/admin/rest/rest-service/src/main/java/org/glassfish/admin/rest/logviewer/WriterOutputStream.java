@@ -75,13 +75,16 @@ public class WriterOutputStream extends OutputStream {
         this(out,DEFAULT_CHARSET);
     }
 
+    @Override
     public void write(int b) throws IOException {
-        if(buf.remaining()==0)
+        if(buf.remaining()==0) {
             decode(false);
+        }
         buf.put((byte)b);
     }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
         while(len>0) {
             if(buf.remaining()==0)
                 decode(false);
@@ -92,6 +95,7 @@ public class WriterOutputStream extends OutputStream {
         }
     }
 
+    @Override
     public void flush() throws IOException {
         decode(false);
         flushOutput();
@@ -103,6 +107,7 @@ public class WriterOutputStream extends OutputStream {
         out.clear();
     }
 
+    @Override
     public void close() throws IOException {
         decode(true);
         flushOutput();

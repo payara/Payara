@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,8 @@
 
 package fish.payara.microprofile.metrics.rest;
 
-import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
-import static fish.payara.microprofile.metrics.Constants.REGISTRY_NAMES;
+import static fish.payara.microprofile.metrics.MetricsConstants.EMPTY_STRING;
+import static fish.payara.microprofile.metrics.MetricsConstants.REGISTRY_NAMES;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
@@ -80,14 +80,15 @@ public class MetricsResource extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (!metricsService.isMetricsEnabled()) {
-            response.sendError(SC_FORBIDDEN, "MP Metrics is disabled");
+
+        if (!metricsService.isEnabled()) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service is disabled");
             return;
         }
-        if(!request.isSecure() && metricsService.isMetricsSecure()){
-            response.sendError(SC_FORBIDDEN, "MP Metrics security is enabled");
+        if (!request.isSecure() && (metricsService.isMetricsSecure()
+                || metricsService.isSecurityEnabled())) {
+            response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service security is enabled");
             return;
         }
         metricsService.reregisterMetadataConfig();

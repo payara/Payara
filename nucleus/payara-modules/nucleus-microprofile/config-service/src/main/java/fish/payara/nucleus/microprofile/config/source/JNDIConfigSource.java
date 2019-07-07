@@ -72,7 +72,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public Map<String, String> getProperties() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     @Override

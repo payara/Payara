@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.resources.custom;
 
@@ -81,8 +81,7 @@ public class StructuredLogViewerResource {
 
     @Path("lognames/")
     public LogNamesResource getLogNamesResource() {
-        LogNamesResource resource = injector.createAndInitialize(LogNamesResource.class);
-        return resource;
+        return injector.createAndInitialize(LogNamesResource.class);
     }
 
     @GET
@@ -164,7 +163,7 @@ public class StructuredLogViewerResource {
         
         LogRecordList records = new LogRecordList();
 
-	if (queryResult.size() > 0) {
+	if (!queryResult.isEmpty()) {
 	    final AttributeList fieldAttrs = (AttributeList) ((Attribute) queryResult.get(0)).getValue();
 	    String[] fieldHeaders = new String[fieldAttrs.size()];
 	    for (int i = 0; i < fieldHeaders.length; ++i) {
@@ -179,7 +178,6 @@ public class StructuredLogViewerResource {
 		List<Serializable> record = srcRecords.get(recordIdx);
 
 		assert (record.size() == fieldHeaders.length);
-		//Serializable[] fieldValues = new Serializable[fieldHeaders.length];
 
 		LogRecord rec = new LogRecord();
 		int fieldIdx = 0;

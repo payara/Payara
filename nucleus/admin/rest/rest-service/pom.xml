@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -59,8 +59,8 @@
     
     <dependencies>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         
         <dependency>
@@ -124,7 +124,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <version>${jsonp.version}</version>
         </dependency>
         <dependency>
@@ -155,12 +155,17 @@
         
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>asadmin-audit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
             <version>${jsonp.version}</version>
         </dependency>
         <dependency>

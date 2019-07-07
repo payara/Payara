@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.common;
 
+import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.util.StringUtils;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -63,7 +66,7 @@ public class PropsFileActionReporter extends ActionReporter {
 
     @Override
     public void setMessage(String message) {
-        super.setMessage(encodeEOL(message));
+        super.setMessage(ManifestUtils.encode(message));
     }
 
     @Override
@@ -94,7 +97,7 @@ public class PropsFileActionReporter extends ActionReporter {
                 String key = fixKey(entry.getKey().toString());
                 keys = (keys == null ? key : keys + ";" + key);
                 attr.putValue(key + "_name", entry.getKey().toString());
-                attr.putValue(key + "_value", encodeEOL(entry.getValue().toString()));
+                attr.putValue(key + "_value", ManifestUtils.encode(entry.getValue().toString()));
             }
 
             attr.putValue("keys", keys);
@@ -227,12 +230,7 @@ public class PropsFileActionReporter extends ActionReporter {
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
-    private static String encodeEOL(String m) {
-        if (m != null) {
-            m = m.replace("\n", EOL_MARKER).replace(System.getProperty("line.separator"), EOL_MARKER);
-        }
-        return m;
-    }
+
     private boolean useMainChildrenAttr = false;
     private Set<String> fixedNames = new TreeSet<String>();
     private static final int LONGEST = 62;

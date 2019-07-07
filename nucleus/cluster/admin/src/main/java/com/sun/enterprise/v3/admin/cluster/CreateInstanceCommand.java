@@ -235,7 +235,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
         // If nodehost is localhost and installdir is null and config node, update config node
         // so installdir is product root. see register-instance above
-        if (theNode.isLocal() && installDir == null) {
+        if (theNode.isLocal() && installDir == null && theNode.getType().equals("CONFIG")) {
             commandInvocation = commandRunner.getCommandInvocation("_update-node", report, context.getSubject());
             commandParameters = new ParameterMap();
             commandParameters.add("installdir", "${com.sun.aas.productRoot}");
@@ -244,7 +244,8 @@ public class CreateInstanceCommand implements AdminCommand {
             commandInvocation.parameters(commandParameters);
             commandInvocation.execute();
 
-            if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
                 // If we couldn't update domain.xml then stop!
                 return;
             }
@@ -255,8 +256,14 @@ public class CreateInstanceCommand implements AdminCommand {
             return;
         }
 
-        // Then go create the instance filesystem on the node
-        createInstanceFilesystem();
+        if (theNode.getType().equals("DOCKER")) {
+            report.appendMessage(
+                    "\n\nSuccessfully registered instance with DAS, now attempting to create Docker container...");
+            createDockerContainer();
+        } else {
+            // Then go create the instance filesystem on the node
+            createInstanceFilesystem();
+        }
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
@@ -293,8 +300,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
     /**
      * Returns the directory for the selected instance that is on the local system.
-     * 
-     * @param instanceName name of the instance
+     *
      * @return File for the local file system location of the instance directory
      * @throws IOException
      */
@@ -471,6 +477,25 @@ public class CreateInstanceCommand implements AdminCommand {
             // something went wrong with the nonlocal command don't continue but set status to warning
             // because config was updated correctly or we would not be here.
             report.setActionExitCode(WARNING);
+        }
+    }
+
+    private void createDockerContainer() {
+        ActionReport actionReport = ctx.getActionReport();
+        ActionReport subActionReport = actionReport.addSubActionsReport();
+
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", theNode.getName());
+        parameterMap.add("DEFAULT", instance);
+
+        commandRunner.getCommandInvocation("_create-docker-container", subActionReport, ctx.getSubject())
+                .parameters(parameterMap)
+                .execute();
+
+        if (subActionReport.getActionExitCode() != SUCCESS) {
+            // Something went wrong with one of the sub-commands, so let's make sure this top level command fails as well
+            actionReport.setActionExitCode(FAILURE);
         }
     }
 

@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affilates
  */
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
 import com.sun.enterprise.module.common_impl.Tokenizer;
 

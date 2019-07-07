@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
-
+//Portions Copyright [2016-2017] [Payara Foundation]
 package org.glassfish.admin.rest.generator;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -53,22 +52,24 @@ import java.util.logging.Level;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.MethodVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.Opcodes;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
 
 /**
  * @author Ludovic Champenois
  */
 public class ASMClassWriter implements ClassWriter, Opcodes {
-    private final static String INJECTOR_FIELD = "serviceLocator";
-    private final static String FORNAME_INJECTOR_TYPE = "Lorg/glassfish/hk2/api/ServiceLocator;";
-    private final static String INTERFACE_INJECTOR_TYPE = "org/glassfish/hk2/api/ServiceLocator";
-    private final static String CREATE_AND_INITIALIZE = "createAndInitialize";
-    private final static String CREATE_AND_INITIALIZE_SIG = "(Ljava/lang/Class;)Ljava/lang/Object;";
+    private static final String INJECTOR_FIELD = "serviceLocator";
+    private static final String FORNAME_INJECTOR_TYPE = "Lorg/glassfish/hk2/api/ServiceLocator;";
+    private static final String INTERFACE_INJECTOR_TYPE = "org/glassfish/hk2/api/ServiceLocator";
+    private static final String CREATE_AND_INITIALIZE = "createAndInitialize";
+    private static final String CREATE_AND_INITIALIZE_SIG = "(Ljava/lang/Class;)Ljava/lang/Object;";
+    
+    private static final String PATH_CLASS_NAME = "Ljavax/ws/rs/Path;";
 
-    private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
+    private org.glassfish.hk2.external.org.objectweb.asm.ClassWriter cw = new org.glassfish.hk2.external.org.objectweb.asm.ClassWriter(0);
     private String className;
     private ServiceLocator habitat;
     private final String generatedPath;
@@ -82,10 +83,10 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         this.generatedPath = generatedPath;
    //     this.baseClassName = baseClassName;
    //     this.resourcePath = resourcePath;
-        if (baseClassName.indexOf("TemplateCommand") != -1) { //constructor is created in createCommandResourceConstructor
+        if (baseClassName.contains("TemplateCommand")) { //constructor is created in createCommandResourceConstructor
             return;
         }
-        if (baseClassName.indexOf(".") != -1) {
+        if (baseClassName.indexOf('.') != -1) {
             baseClassName = baseClassName.replace('.', '/');
         } else {
             baseClassName = "org/glassfish/admin/rest/resources/" + baseClassName;
@@ -95,7 +96,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
         if (resourcePath != null) {
             RestLogging.restLogger.log(Level.FINE, "Creating resource with path {0} (1)", resourcePath);
-            AnnotationVisitor av0 = cw.visitAnnotation("Ljavax/ws/rs/Path;", true);
+            AnnotationVisitor av0 = cw.visitAnnotation(PATH_CLASS_NAME, true);
             av0.visit("value", "/" + resourcePath + "/");
             av0.visitEnd();
         }
@@ -121,7 +122,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "get" + resourceClassName, "()L" + completeName + ";", null, null);
 
         RestLogging.restLogger.log(Level.FINE, "Creating resource with path {0} (2)", mappingPath);
-        AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
+        AnnotationVisitor av0 = mv.visitAnnotation(PATH_CLASS_NAME, true);
         av0.visit("value", mappingPath + "/");
         av0.visitEnd();
 
@@ -197,7 +198,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "get" + commandResourceClassName, "()L" + generatedPath + commandResourceClassName + ";", null, null);
 
         RestLogging.restLogger.log(Level.FINE, "Creating resource with path {0} (3)", resourcePath);
-        AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
+        AnnotationVisitor av0 = mv.visitAnnotation(PATH_CLASS_NAME, true);
         av0.visit("value", resourcePath + "/");
         av0.visitEnd();
 
@@ -223,14 +224,18 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             String commandAction) {
 
         String baseClassName = "";
-        if (httpMethod.equals("GET")) {
-            baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandGetResource";
-        } else if (httpMethod.equals("DELETE")) {
-            baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandDeleteResource";
-        } else if (httpMethod.equals("POST")) {
-            baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandPostResource";
-        } else {
-            throw new GeneratorException("Invalid httpMethod specified: " + httpMethod);
+        switch (httpMethod) {
+            case "GET":
+                baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandGetResource";
+                break;
+            case "DELETE":
+                baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandDeleteResource";
+                break;
+            case "POST":
+                baseClassName = "org/glassfish/admin/rest/resources/TemplateCommandPostResource";
+                break;
+            default:
+                throw new GeneratorException("Invalid httpMethod specified: " + httpMethod);
         }
         boolean isget = (httpMethod.equals("GET"));
 
@@ -358,7 +363,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "()L"+ childClass + ";", null, null);
 
         RestLogging.restLogger.log(Level.FINE, "Creating resource with path {0} (4)", path);
-        AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
+        AnnotationVisitor av0 = mv.visitAnnotation(PATH_CLASS_NAME, true);
         av0.visit("value", path + "/");
         av0.visitEnd();
 
@@ -386,7 +391,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "get" + childResourceClassName , "(Ljava/lang/String;)L" + generatedPath + childResourceClassName + ";", null, null);
 
         RestLogging.restLogger.log(Level.FINE, "Creating resource with path {0} (5)", keyAttributeName);
-        AnnotationVisitor av0 = mv.visitAnnotation("Ljavax/ws/rs/Path;", true);
+        AnnotationVisitor av0 = mv.visitAnnotation(PATH_CLASS_NAME, true);
         av0.visit("value", "{" + keyAttributeName + "}/");
         av0.visitEnd();
 
@@ -473,6 +478,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedExceptionAction() {
 
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if (!clM.isAccessible()) {
                                 clM.setAccessible(true);
@@ -510,7 +516,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         // to decompile to figure out what is going on.  No need to make it even harder!
         clsName = clsName.replace('.', '/');
         clsName = clsName.replace('\\', '/'); // just in case Windows?  unlikely...
-        int index = clsName.lastIndexOf("/");
+        int index = clsName.lastIndexOf('/');
 
         if (index >= 0) {
             clsName = clsName.substring(index + 1);
@@ -531,7 +537,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             fos.write(classData);
             fos.flush();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (fos != null) {
                 try {

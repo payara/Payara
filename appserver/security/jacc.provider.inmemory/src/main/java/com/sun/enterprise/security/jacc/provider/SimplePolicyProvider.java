@@ -203,7 +203,7 @@ public class SimplePolicyProvider extends Policy {
             // Will enable permission caching of container, unless REUSE
             // property is set, and its value is not "true".
             String propValue = System.getProperty(REUSE);
-            boolean supportsReuse = propValue == null ? true : Boolean.valueOf(propValue);
+            boolean supportsReuse = propValue == null ? true : Boolean.parseBoolean(propValue);
             if (supportsReuse) {
                 if (PolicyContext.getHandlerKeys().contains(REUSE)) {
                     PolicyContext.getContext(REUSE);

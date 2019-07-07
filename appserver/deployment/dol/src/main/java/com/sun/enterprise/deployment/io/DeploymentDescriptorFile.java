@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.io;
 
@@ -128,68 +128,59 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
             // set the namespace awareness
             spf.setNamespaceAware(true);
             
-	    // turn validation on for deployment descriptor XML files
+	        // turn validation on for deployment descriptor XML files
             spf.setValidating(validating);
             if(!validating) {
                 spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             }
-	    // this feature is needed for backward compat with old DDs 
-	    // constructed by J2EE1.2 which used Java encoding names
-	    // such as ISO8859_1 etc.
-            
-            // this is a hack for a few days so people can continue runnning
-            // with crimson
-            if (spf.getClass().getName().indexOf("xerces")!=-1) {
-                spf.setFeature(
-                    "http://apache.org/xml/features/allow-java-encodings", true);
-            } else {
-                DOLUtils.getDefaultLogger().log(Level.WARNING, "modify your java command line to include the -Djava.endorsed.dirs option");
-            }
+
+	        //support for older charset names used in java.io and java.lang
+            spf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
 	    
-	    try {
+	        try {
                 if (!validating) {
                     // if we are not validating, let's not load the DTD
-                    if (getDeploymentDescriptorPath().indexOf(DescriptorConstants.WLS) != -1) {
+                    if (getDeploymentDescriptorPath().contains(DescriptorConstants.WLS)) {
                         // and let's only turn it off for weblogic*.xml for now
                         spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                     }
                 }
 
-		// Validation part 2a: set the schema language if necessary            
-		spf.setFeature("http://apache.org/xml/features/validation/schema",validating);		
-	    
-            	SAXParser sp = spf.newSAXParser();
-                
+                // Validation part 2a: set the schema language if necessary
+                spf.setFeature("http://apache.org/xml/features/validation/schema", validating);
+
+                SAXParser sp = spf.newSAXParser();
+
                 // put the default schema for this deployment file type
                 String path = getDefaultSchemaSource();
-                if (path!=null) {
-                    sp.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation",path);
+                if (path != null) {
+                    sp.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", path);
                 }
 
-		// Set Xerces feature to allow dynamic validation. This prevents
-		// SAX errors from being reported when no schemaLocation attr
-		// is seen for a DTD based (J2EE1.3) XML descriptor.
-		sp.getXMLReader().setFeature(
-		    "http://apache.org/xml/features/validation/dynamic", validating);
-		    
-		return sp;
-		
+                // Set Xerces feature to allow dynamic validation. This prevents
+                // SAX errors from being reported when no schemaLocation attr
+                // is seen for a DTD based (J2EE1.3) XML descriptor.
+                sp.getXMLReader().setFeature(
+                        "http://apache.org/xml/features/validation/dynamic", validating);
+
+                return sp;
+
             } catch (SAXNotRecognizedException x) {
                 // This can happen if the parser does not support JAXP 1.2
                 DOLUtils.getDefaultLogger().log(Level.SEVERE,
-                    "INFO: JAXP SAXParser property not recognized: "
-                    + SaxParserHandler.JAXP_SCHEMA_LANGUAGE);
-                 DOLUtils.getDefaultLogger().log(Level.SEVERE,
-                    "Check to see if parser conforms to JAXP 1.2 spec.");
+                        "INFO: JAXP SAXParser property not recognized: "
+                                + SaxParserHandler.JAXP_SCHEMA_LANGUAGE);
+                DOLUtils.getDefaultLogger().log(Level.SEVERE,
+                        "Check to see if parser conforms to JAXP 1.2 spec.");
 
-            }            
+            }
         } catch (Exception e) {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.saxParserError",
-                                new Object[]{e.getMessage()});
+                    new Object[]{e.getMessage()});
             DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", e);
 
         } finally {
-                Thread.currentThread().setContextClassLoader(currentLoader);
+            Thread.currentThread().setContextClassLoader(currentLoader);
         }
         return null;
     }

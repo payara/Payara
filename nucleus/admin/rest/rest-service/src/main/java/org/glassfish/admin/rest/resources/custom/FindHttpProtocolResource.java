@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -91,8 +91,6 @@ public class FindHttpProtocolResource {
         ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         ar.getTopMessagePart().getProps().put("protocol", p.getName());
 
-        ActionReportResult result = new ActionReportResult("find-http-protocol", ar, new OptionsResult());
-
-        return result;
+        return new ActionReportResult("find-http-protocol", ar, new OptionsResult());
     }
 }

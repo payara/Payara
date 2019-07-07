@@ -39,18 +39,19 @@
  */
 package fish.payara.ejb.invoke;
 
-import static javax.naming.Context.SECURITY_CREDENTIALS;
-import static javax.naming.Context.SECURITY_PRINCIPAL;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Base64;
-import java.util.List;
-import java.util.function.Supplier;
+import fish.payara.ejb.http.endpoint.EjbOverHttpResource;
 
-import javax.json.*;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationRegistry;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.naming.InitialContext;
@@ -60,123 +61,201 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationRegistry;
-
-import com.sun.enterprise.security.ee.auth.login.ProgrammaticLogin;
+import static javax.naming.Context.SECURITY_CREDENTIALS;
+import static javax.naming.Context.SECURITY_PRINCIPAL;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
+ * @deprecated Replaced by {@link EjbOverHttpResource}
  */
+@Deprecated
 @WebServlet("/ejb/*")
 public class InvokeEJBServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
+    private static final Logger logger = Logger.getLogger(InvokeEJBServlet.class.getName());
+
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.getWriter().append("Served at: ").append(request.getContextPath());
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        JsonObject requestPayload = readJsonObject(request.getReader());
 
-        final JsonObject requestPayload = readJsonObject(request.getReader());
-
+        String beanName = requestPayload.getString("lookup");
         if (request.getRequestURI().endsWith("lookup")) {
-            boolean success = excuteInAppContext(() -> {
-
-                try {
-                    response.getWriter().print(
-                            new InitialContext().lookup(requestPayload.getString("lookup"))
-                                                .getClass()
-                                                .getInterfaces()[0]
-                                                .getName());
-                    return true;
-                } catch (IOException | NamingException e) {
-                    // Ignore for now
-                }
-
-                return false;
-            });
-
-            if (!success) {
-                response.sendError(SC_INTERNAL_SERVER_ERROR, "Name " + requestPayload.getString("lookup") + " not found when doing initial lookup");
-            }
-
-            return;
-        }
-
-        // Convert JSON encoded method parameter type names to actually Class instances
-        Class<?>[] argTypes =
-            requestPayload.getJsonArray("argTypes").stream()
-                          .map(e -> toClass(e))
-                          .toArray(Class[]::new);
-
-        // Convert JSON encoded method parameter values to their object instances
-        List<JsonValue> jsonArgValues = requestPayload.getJsonArray("argValues");
-        Object[] argValues = new Object[argTypes.length];
-        for (int i = 0; i < jsonArgValues.size(); i++) {
-            argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
-        }
-
-        boolean success = excuteInAppContext(() -> {
             try {
-                // Obtain the target EJB that we're going to invoke
-                Object bean = new InitialContext().lookup(requestPayload.getString("lookup"));
-
-                // Authenticates the caller and if successful sets the security context
-                // *for the outgoing EJB call*. In other words, the security context for this
-                // Servlet will not be changed.
-                if (requestPayload.containsKey(SECURITY_PRINCIPAL)) {
-                    ProgrammaticLogin login = new ProgrammaticLogin();
-                    login.login(
-                        base64Decode(requestPayload.getString(SECURITY_PRINCIPAL)),
-                        base64Decode(requestPayload.getString(SECURITY_CREDENTIALS)),
-                        null, true);
-                }
-
-                // Actually invoke the target EJB
-                Object result =
-                    bean.getClass()
-                        .getMethod(requestPayload.getString("method"), argTypes)
-                        .invoke(bean, argValues);
-
-                response.setContentType(APPLICATION_JSON);
-                response.getWriter().print(result instanceof String? result : JsonbBuilder.create().toJson(result));
-
-                return true;
-
-            } catch (Exception e) {
-                e.printStackTrace();
+                response.getWriter().print(lookupBeanInterface(beanName));
+            } catch (NamingException ex) {
+                response.sendError(SC_INTERNAL_SERVER_ERROR,
+                        "Name " + beanName + " not found when doing initial lookup.");
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "EJB bean lookup failed.", ex);
+                response.sendError(SC_INTERNAL_SERVER_ERROR,
+                        "Error while looking up EJB with name " + beanName + ": " + ex.getMessage());
             }
-
-            return false;
-        });
-
-        if (!success) {
-            response.sendError(SC_INTERNAL_SERVER_ERROR, "Name " + requestPayload.getString("lookup") + " not found when invoking");
+        } else {
+            String methodName = requestPayload.getString("method");
+            JsonArray argTypeNames = requestPayload.getJsonArray("argTypes");
+            JsonArray argValuesJson = requestPayload.getJsonArray("argValues");
+            String principal = requestPayload.getString(SECURITY_PRINCIPAL, "");
+            String credentials = requestPayload.getString(SECURITY_CREDENTIALS, "");
+            try {
+                Invocation invocation = invokeBeanMethod(beanName, methodName, argTypeNames, argValuesJson, principal, credentials);
+                response.setContentType(APPLICATION_JSON);
+                if (invocation.result == null) {
+                    // JSON-B cannot marshall null
+                    response.getWriter().print("null");
+                } else {
+                    Type resultType = invocation.method.getGenericReturnType();
+                    response.getWriter().print(JsonbBuilder.create().toJson(invocation.result, resultType));
+                }
+            } catch (NamingException ex) {
+                response.sendError(SC_INTERNAL_SERVER_ERROR,
+                        "Name " + beanName + " not found when invoking method " + methodName);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "EJB bean method invocation failed.", ex);
+                response.sendError(SC_INTERNAL_SERVER_ERROR,
+                        "Error while invoking invoking method " + methodName + " on EJB with name " + beanName + ": "
+                                + ex.getMessage());
+            }
         }
     }
 
-    private JsonObject readJsonObject(Reader reader) {
+    private static JsonObject readJsonObject(Reader reader) {
         try (JsonReader jsonReader = Json.createReader(reader)) {
             return jsonReader.readObject();
         }
     }
 
-    private Class<?> toClass(JsonValue classNameValue) {
-        try {
-            String className = null;
-            if (classNameValue instanceof JsonString) {
-                className = ((JsonString) classNameValue).getString();
-            } else {
-                className = classNameValue.toString().replace("\"", "");
+    private static String lookupBeanInterface(String beanName) throws Exception {
+        return excuteInAppContext(beanName, bean -> {
+            int bangIndex = beanName.indexOf('!');
+            if (bangIndex > 0) {
+                return beanName.substring(bangIndex + 1);
             }
-            return Class.forName(className);
+            // there should only be one interface otherwise plain name would not be allowed (portable names at least)
+            // in fact, there can be some implementation-specific interfaces in the proxy as well
+            return bean.getClass().getInterfaces()[0].getName();
+        });
+    }
+
+    private static Invocation invokeBeanMethod(String beanName, String methodName, JsonArray argTypeNames,
+            JsonArray argValuesJson, String principal, String credentials) throws Exception {
+        return excuteInAppContext(beanName, bean -> {
+            // Authenticates the caller and if successful sets the security context
+            // *for the outgoing EJB call*. In other words, the security context for this
+            // Servlet will not be changed.
+            if (!principal.isEmpty()) {
+                new ProgrammaticLogin().login(base64Decode(principal), base64Decode(credentials), null, true);
+            }
+            // Actually invoke the target EJB
+            Invocation invocation = new Invocation(bean, methodName, argTypeNames);
+            invocation.setArgs(argValuesJson);
+            invocation.invoke();
+            return invocation;
+        });
+    }
+
+    static class Invocation {
+        private final Object bean;
+        private Type[] argTypes;
+        private Method method;
+        private Object[] argValues;
+        private Object result;
+
+        Invocation(Object bean, String methodName, JsonArray argTypes) throws NoSuchMethodException {
+            this.bean = bean;
+            Class<?>[] argTypeClasses = toClasses(argTypes);
+            // we look up the method in the interfaces, because proxy classes do not retain generic information
+            this.method = findBusinessMethodDeclaration(methodName, argTypeClasses);
+            this.argTypes = method.getGenericParameterTypes();
+        }
+
+        private Method findBusinessMethodDeclaration(String methodName, Class<?>[] argTypeClasses) throws NoSuchMethodException {
+            for (Class<?> intf : bean.getClass().getInterfaces()) {
+                try {
+                    return intf.getMethod(methodName, argTypeClasses);
+                } catch (NoSuchMethodException e) {
+                    // try further
+                }
+            }
+            throw new NoSuchMethodException("No method matching " + methodName + "(" + Arrays.toString(argTypeClasses) + ") found in business interface");
+        }
+
+        void setArgs(JsonArray argValues) {
+            this.argValues = toObjects(this.argTypes, argValues);
+        }
+
+        void invoke() throws InvocationTargetException, IllegalAccessException {
+            this.result = method.invoke(bean, argValues);
+        }
+    }
+
+    /**
+     * Convert JSON encoded method parameter type names to actually Class instances 
+     */
+    private static Class<?>[] toClasses(JsonArray classNames) {
+        return classNames.stream().map(e -> toClass(e)).toArray(Class[]::new);
+    }
+
+    private static Class<?> toClass(JsonValue classNameValue) {
+        try {
+            String className = classNameValue instanceof JsonString 
+                    ? ((JsonString) classNameValue).getString() 
+                    : classNameValue.toString().replace("\"", "");
+            switch (className) {
+                case "int":
+                    return int.class;
+                case "long":
+                    return long.class;
+                case "short":
+                    return short.class;
+                case "byte":
+                    return byte.class;
+                case "boolean":
+                    return boolean.class;
+                case "float":
+                    return float.class;
+                case "double":
+                    return double.class;
+                case "char":
+                    return char.class;
+                case "void":
+                    return void.class;
+                default:
+                    return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    private Object toObject(JsonValue objectValue, Class<?> type) {
+    /**
+     * Convert JSON encoded method parameter values to their object instances 
+     */
+    private static Object[] toObjects(Type[] argTypes, JsonArray jsonArgValues) {
+        Object[] argValues = new Object[argTypes.length];
+        for (int i = 0; i < jsonArgValues.size(); i++) {
+            argValues[i] =  toObject(jsonArgValues.get(i), argTypes[i]);
+        }
+        return argValues;
+    }
+
+    private static Object toObject(JsonValue objectValue, Type type) {
         try (Jsonb jsonb = JsonbBuilder.create()) {
             return jsonb.fromJson(objectValue.toString(), type);
         } catch (Exception e) {
@@ -185,36 +264,56 @@ public class InvokeEJBServlet extends HttpServlet {
         }
     }
 
-    private boolean excuteInAppContext(Supplier<Boolean> body) {
+    private static <T> T excuteInAppContext(String beanName, EjbOperation<T> operation) throws Exception {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
-
-        for (String applicationName : registry.getAllApplicationNames()) {
-            ClassLoader existingContextClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread currentThread = Thread.currentThread();
+        if (beanName.startsWith("java:global/")) {
+            String applicationName = beanName.substring(12, beanName.indexOf('/', 12));
+            ClassLoader existingContextClassLoader = currentThread.getContextClassLoader();
             try {
-
-                Thread.currentThread().setContextClassLoader(registry.get(applicationName).getAppClassLoader());
-
-                try {
-                    if (body.get()) {
-                        return true;
-                    }
-                } catch (Exception e) {
-                    // ignore
-                }
-
+                currentThread.setContextClassLoader(registry.get(applicationName).getAppClassLoader());
+                Object bean = new InitialContext().lookup(beanName);
+                return operation.execute(bean);
             } finally {
                 if (existingContextClassLoader != null) {
-                    Thread.currentThread().setContextClassLoader(existingContextClassLoader);
+                    currentThread.setContextClassLoader(existingContextClassLoader);
+                }
+            }
+        }
+        NamingException lastLookupError = null;
+        for (String applicationName : registry.getAllApplicationNames()) {
+            ClassLoader existingContextClassLoader = currentThread.getContextClassLoader();
+            try {
+                currentThread.setContextClassLoader(registry.get(applicationName).getAppClassLoader());
+                try {
+                    Object bean = new InitialContext().lookup(beanName);
+                    return operation.execute(bean);
+                } catch (NamingException ex) {
+                    lastLookupError = ex;
+                    // try next app
+                }
+            } finally {
+                if (existingContextClassLoader != null) {
+                    currentThread.setContextClassLoader(existingContextClassLoader);
                 }
             }
 
         }
-
-        return false;
+        if (lastLookupError != null) {
+            throw lastLookupError;
+        }
+        return null;
     }
 
     private static String base64Decode(String input) {
         return new String(Base64.getDecoder().decode(input));
     }
 
+    /**
+     * Needed because of the {@link Exception} thrown.
+     */
+    interface EjbOperation<T> {
+
+        T execute(Object bean) throws Exception;
+    }
 }

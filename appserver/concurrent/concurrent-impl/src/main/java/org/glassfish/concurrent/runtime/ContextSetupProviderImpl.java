@@ -236,7 +236,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
         
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && handle.getSpanContextMap() != null) {
             startConcurrentContextSpan(invocation, handle);
         }
         
@@ -250,24 +250,26 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
         Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-        
+
         SpanContext spanContext = tracer.extract(Format.Builtin.TEXT_MAP, new MapToTextMap(handle.getSpanContextMap()));
-        
+
         if (spanContext != null) {
             // Start a trace in the request tracing system
             SpanBuilder builder = tracer.buildSpan("executeConcurrentContext")
-                    .asChildOf(spanContext)
-                    .withTag("App Name", invocation.getAppName())
-                    .withTag("Component ID", invocation.getComponentId())
-                    .withTag("Module Name", invocation.getModuleName());
+                    .asChildOf(spanContext);
+            if (invocation != null) {
+                builder = builder.withTag("App Name", invocation.getAppName())
+                        .withTag("Component ID", invocation.getComponentId())
+                        .withTag("Module Name", invocation.getModuleName());
 
-            Object instance = invocation.getInstance();
-            if (instance != null) {
-                builder.withTag("Class Name", instance.getClass().getName());
+                Object instance = invocation.getInstance();
+                if (instance != null) {
+                    builder.withTag("Class Name", instance.getClass().getName());
+                }
             }
-            
+
             builder.withTag("Thread Name", Thread.currentThread().getName());
-            
+
             // Check for the presence of a propagated parent operation name
             try {
                 String operationName = ((RequestTraceSpanContext) spanContext).getBaggageItems().get("operation.name");
@@ -277,7 +279,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             } catch (ClassCastException cce) {
                 logger.log(Level.FINE, "ClassCastException caught converting Span Context", cce);
             }
-            
+
             builder.startActive(true);
         }
     }

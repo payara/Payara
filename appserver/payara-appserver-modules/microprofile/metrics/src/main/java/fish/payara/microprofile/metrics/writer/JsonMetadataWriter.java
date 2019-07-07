@@ -50,7 +50,7 @@
 
 package fish.payara.microprofile.metrics.writer;
 
-import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
+import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;

@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.util.logging.Level;
 import javax.ws.rs.core.MediaType;
@@ -79,7 +80,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         public ActionReport process(ActionReport report, EventOutput ec);
 
     }
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
+    private static final LocalStringManagerImpl STRINGS = new LocalStringManagerImpl(CommandResource.class);
 
     private final CommandRunner.CommandInvocation commandInvocation;
     private final ActionReportProcessor processor;
@@ -99,7 +100,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         } catch (Throwable thr) {
             RestLogging.restLogger.log(Level.WARNING, RestLogging.UNEXPECTED_EXCEPTION,
                     thr);
-            ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
+            ActionReport actionReport = new PropsFileActionReporter();
             actionReport.setFailureCause(thr);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             AdminCommandState acs = new AdminCommandStateImpl(AdminCommandState.State.COMPLETED, actionReport, true, "unknown");

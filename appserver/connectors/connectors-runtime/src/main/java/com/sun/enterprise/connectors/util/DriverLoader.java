@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -150,14 +150,8 @@ public class DriverLoader implements ConnectorConstants {
     public static Properties loadFile(File mappingFile) {
         Properties fileProperties = new Properties();
         if (mappingFile != null && mappingFile.exists()) {
-            try {
-
-                FileInputStream fis = new FileInputStream(mappingFile);
-                try {
-                    fileProperties.load(fis);
-                } finally {
-                    fis.close();
-                }
+            try (FileInputStream fis = new FileInputStream(mappingFile)) {
+                fileProperties.load(fis);
             } catch (IOException ioe) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("IO Exception during properties load : "
@@ -166,14 +160,14 @@ public class DriverLoader implements ConnectorConstants {
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("File not found : " + mappingFile.getAbsolutePath());
+                logger.fine("File not found : " + (mappingFile == null ? "null" : mappingFile.getAbsolutePath()));
             }
         }
         return fileProperties;
     }
 
 
-    private String getImplClassNameFromMapping(String dbVendor, String resType) {
+    private static String getImplClassNameFromMapping(String dbVendor, String resType) {
         File mappingFile = getResourceTypeFile(resType);
         Properties fileProperties = loadFile(mappingFile);
         return fileProperties.getProperty(dbVendor.toUpperCase(Locale.getDefault()));
@@ -351,13 +345,11 @@ public class DriverLoader implements ConnectorConstants {
     /**
      * Get the library locations corresponding to the ext directories mentioned
      * as part of the jvm-options.
-     * @deprecated Since 5.184 as Java extensions are not used for JDK9+
      */
-    @Deprecated
     private Vector getLibExtDirs() {
         String extDirStr = System.getProperty("java.ext.dirs");
         logger.log(Level.FINE, "lib/ext dirs : " + extDirStr);
-        
+
         Vector extDirs = new Vector();
         StringTokenizer st = new StringTokenizer(extDirStr, File.pathSeparator);
         while (st.hasMoreTokens()) {
@@ -367,7 +359,7 @@ public class DriverLoader implements ConnectorConstants {
             }
             extDirs.addElement(token);
         }
-       
+
         return extDirs;
     }
 
@@ -569,7 +561,7 @@ public class DriverLoader implements ConnectorConstants {
             }
         }
         if(isVendorSpecific) {
-            if(origDbVendor.endsWith(DATABASE_VENDOR_30)) {
+            if(origDbVendor != null && origDbVendor.endsWith(DATABASE_VENDOR_30)) {
                 if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30)) {
                     return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1;
                 }
@@ -584,9 +576,9 @@ public class DriverLoader implements ConnectorConstants {
         jarFileLocations.add(getLocation(SystemPropertyConstants.DERBY_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY));
-        Vector extLibDirs = getLibExtDirs();       
-        for(int i=0; i<extLibDirs.size(); i++) {
-            jarFileLocations.add(new File( (String) extLibDirs.elementAt(i) ));
+        Vector extLibDirs = getLibExtDirs();
+        for (int i = 0; i < extLibDirs.size(); i++) {
+            jarFileLocations.add(new File((String) extLibDirs.elementAt(i)));
         }
         return jarFileLocations;
     }

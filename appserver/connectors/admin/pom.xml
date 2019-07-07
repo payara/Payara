@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.connectors</groupId>
         <artifactId>connectors</artifactId>
-        <version>5.192-SNAPSHOT</version>
+        <version>5.193-SNAPSHOT</version>
     </parent>    
     <artifactId>connectors-admin</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -122,13 +122,22 @@
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.cluster</groupId>
+            <artifactId>cluster-cli</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

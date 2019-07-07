@@ -580,7 +580,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
 
                         if ("ignoreHiddenJarFiles".equals(propName)) {
-                            ignoreHiddenJarFiles = Boolean.valueOf(value);
+                            ignoreHiddenJarFiles = Boolean.parseBoolean(value);
                         } else {
                             Object[] params = { propName, value };
                             if (logger.isLoggable(Level.WARNING)) {
@@ -607,9 +607,9 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
 
                         if("useMyFaces".equalsIgnoreCase(propName)) {
-                            useBundledJSF = Boolean.valueOf(value);
+                            useBundledJSF = Boolean.parseBoolean(value);
                         } else if("useBundledJsf".equalsIgnoreCase(propName)) {
-                            useBundledJSF = Boolean.valueOf(value);
+                            useBundledJSF = Boolean.parseBoolean(value);
                         }
                     } else if ("version-identifier".equals(name)) {
                         versionIdentifier = parser.getElementText();

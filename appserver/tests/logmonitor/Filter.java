@@ -107,7 +107,7 @@ public class Filter {
                         st.nextToken();
                         String tempString = st.nextToken().trim();
                         if (tempString.contains(":")) {
-                            String id = tempString.substring(0, tempString.indexOf(":")).trim();
+                            String id = tempString.substring(0, tempString.indexOf(':')).trim();
                             //System.out.println("Ids=" + id);
                             if (id.length() < 10 && !id.contains(" ") && id.matches("[a-zA-Z0-9]*")) {
                                 myMessageIds.add(id);
@@ -149,7 +149,7 @@ public class Filter {
                         st.nextToken();
                         String tempString = st.nextToken().trim();
                         if (tempString.contains(":")) {
-                            String id = tempString.substring(0, tempString.indexOf(":")).trim();
+                            String id = tempString.substring(0, tempString.indexOf(':')).trim();
                             //System.out.println("Ids=" + id);
                             if (id.length() < 10 && !id.contains(" ") && id.matches("[a-zA-Z0-9]*")) {
                                 myMissingMessageIds.add(id);
