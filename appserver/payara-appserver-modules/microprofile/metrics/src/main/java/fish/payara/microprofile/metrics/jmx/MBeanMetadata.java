@@ -44,8 +44,11 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.KEY;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
+import java.util.ArrayList;
 import static java.util.Arrays.asList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Optional;
@@ -55,6 +58,7 @@ import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
@@ -92,6 +96,9 @@ public class MBeanMetadata implements Metadata {
     @XmlTransient
     private Boolean valid;
     
+    @XmlElementWrapper(name = "tags", nillable = true)
+    @XmlElement(name="tag")
+    private List<Tag> tags;
     
 
     private static final Set<String> SUPPORTED_UNITS
@@ -119,7 +126,7 @@ public class MBeanMetadata implements Metadata {
                     MetricUnits.PER_SECOND
             ));
 
-    public MBeanMetadata() {        
+    public MBeanMetadata() {
     }
     
     public MBeanMetadata(Metadata metadata) {
@@ -134,6 +141,7 @@ public class MBeanMetadata implements Metadata {
         this.description = description;
         this.type = typeRaw.toString();
         this.unit = unit;
+        tags = new ArrayList<>();
     }
 
     public String getMBean() {
@@ -157,6 +165,13 @@ public class MBeanMetadata implements Metadata {
             valid = validateMetadata();
         }
         return valid;
+    }
+    
+    List<Tag> getTags() {
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        return tags;
     }
     
     @Override
@@ -221,13 +236,21 @@ public class MBeanMetadata implements Metadata {
                             new String[]{keyword, metadata.getMBean()}
                     );
                     validationResult = false;
-                } else if (metadata.getMBean().contains(keyword) && !metadata.getName().contains(keyword)) {
-                    LOGGER.log(
-                            WARNING,
-                            "{0} placeholder not found in 'name' {1} property",
-                            new String[]{keyword, metadata.getName()}
-                    );
-                    validationResult = false;
+                } else if (metadata.getMBean().contains(keyword)) {
+                    boolean tagSpecifier = false;
+                    for (Tag tag: tags) {
+                        if (tag.getValue().contains(keyword)) {
+                            tagSpecifier = true;
+                        }
+                    }
+                    if (!(metadata.getName().contains(keyword) || tagSpecifier)) {
+                        LOGGER.log(
+                                WARNING,
+                                "{0} placeholder not found in 'name' {1} property or in tags",
+                                new String[]{keyword, metadata.getName()}
+                        );
+                        validationResult = false;
+                    }
                 }
             }
         }
@@ -242,6 +265,17 @@ public class MBeanMetadata implements Metadata {
     @Override
     public boolean isReusable() {
         return reusable;
+    }
+    
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+    
+    public void addTags(List<Tag> tags) {
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        tags.addAll(tags);
     }
 
 }

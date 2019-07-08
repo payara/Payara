@@ -137,7 +137,13 @@ holder.
             <description>Displays the uptime of the JVM in milliseconds.</description>
         </metadata>
         <metadata>
-            <name>gc.%s.total</name>
+            <name>gc.total</name>
+            <tags>
+                <tag>
+                    <name>name</name>
+                    <value>%s</value>
+                </tag>
+            </tags>
             <mbean>java.lang:type=GarbageCollector,name=%s/CollectionCount</mbean>
             <dynamic>false</dynamic>
             <type>counter</type>
@@ -146,7 +152,13 @@ holder.
             <description>Displays the total number of collections that have occurred. This attribute lists -1 if the collection count is undefined for this collector.</description>
         </metadata>
         <metadata>
-            <name>gc.%s.time</name>
+            <name>gc.time</name>
+            <tags>
+                <tag>
+                    <name>name</name>
+                    <value>%s</value>
+                </tag>
+            </tags>
             <mbean>java.lang:type=GarbageCollector,name=%s/CollectionTime</mbean>
             <dynamic>false</dynamic>
             <type>counter</type>
