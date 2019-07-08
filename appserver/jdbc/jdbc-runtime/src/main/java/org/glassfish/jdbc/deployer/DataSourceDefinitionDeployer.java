@@ -642,7 +642,9 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public String getSteadyPoolSize() {
             int minPoolSize = desc.getMinPoolSize();
-            if (minPoolSize == -1) {
+            if (minPoolSize <= -1) {
+                _logger.log(Level.WARNING, "Value of steadyPoolSize Given, {0}, was outside the bounds"
+                        + ", default value of 8 will be used - PLEASE UPDATE YPUR VALUE", minPoolSize);
                 minPoolSize = 8;
             }
             return String.valueOf(minPoolSize);
@@ -656,7 +658,9 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public String getMaxPoolSize() {
             int maxPoolSize = desc.getMaxPoolSize();
-            if (maxPoolSize == -1) {
+            if (maxPoolSize <= -1) {
+                _logger.log(Level.WARNING, "Value of maxPoolSize Given, {0}, was outside the bounds"
+                        + ", default value of 32 will be used - PLEASE UPDATE YPUR VALUE", maxPoolSize);
                 maxPoolSize = 32;
             }
             return String.valueOf(maxPoolSize);

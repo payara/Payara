@@ -47,6 +47,8 @@ import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * Implementation for Connection Pool validation.
@@ -69,17 +71,35 @@ public class JdbcConnectionPoolValidator
     public String getParsedVariable(String variableToRetrieve) {
         
         Properties systemProps = System.getProperties();
-        variableToRetrieve = variableToRetrieve.substring(2, variableToRetrieve.length() - 1);
+        String[] variableReference = variableToRetrieve.split("=");
         
-        if (systemProps.getProperty(variableToRetrieve) == null || systemProps.getProperty(variableToRetrieve).isEmpty()) {
-            //System property doesn't exist so try environment variables
-            if (System.getenv(variableToRetrieve) == null || System.getenv(variableToRetrieve).isEmpty()) {
-                //Environment variable doesn't exist so return false and log reasoning as error extension
-                return null;
-            }
-            return System.getenv(variableToRetrieve);
-        } 
-        return systemProps.getProperty(variableToRetrieve);  
+        switch(variableReference[0]) {
+            case "ENV":
+                //Check environment variables for requested value
+                if (System.getenv(variableReference[1]) != null && !System.getenv(variableReference[1]).isEmpty()) {
+                    return System.getenv(variableReference[1]);
+                }
+                break;
+            case "ALIAS":
+                //Check alias references for requested value
+                break;
+            case "MPCONFIG":
+                //Check microprofile config for requested value
+                Config config = ConfigProvider.getConfig();
+                if (config.getValue(variableReference[1], String.class) != null && !config.getValue(variableReference[1], String.class).isEmpty()) {
+                    return config.getValue(variableReference[1], String.class);
+                }
+                break;
+            default:
+                //We got a system variable as no split occured
+                if (systemProps.getProperty(variableReference[0]) != null && !systemProps.getProperty(variableReference[0]).isEmpty()) {
+                    return systemProps.getProperty(variableReference[0]);
+                }
+                break;
+        }
+        
+        //If this point is reached, the variable value could not be found
+        return null; 
     }
     
     @Override
@@ -99,14 +119,14 @@ public class JdbcConnectionPoolValidator
                 if (steadyPoolSize == null) {
                     steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
                 } else if(steadyPoolSize.startsWith("$")) {
-                    steadyPoolSize = getParsedVariable(steadyPoolSize);
+                    steadyPoolSize = getParsedVariable(steadyPoolSize.substring(2, steadyPoolSize.length() - 1));
                     if(steadyPoolSize == null) return false;
                 }
                 
                 if (maxPoolSize == null) {
                     maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
                 } else if(maxPoolSize.startsWith("$")) {
-                    maxPoolSize = getParsedVariable(maxPoolSize);
+                    maxPoolSize = getParsedVariable(maxPoolSize.substring(2, maxPoolSize.length() - 1));
                     if(maxPoolSize == null) return false;
                 }
                 
