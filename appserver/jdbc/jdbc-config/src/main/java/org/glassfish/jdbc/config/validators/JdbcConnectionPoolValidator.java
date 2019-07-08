@@ -80,9 +80,6 @@ public class JdbcConnectionPoolValidator
                     return System.getenv(variableReference[1]);
                 }
                 break;
-            case "ALIAS":
-                //Check alias references for requested value
-                break;
             case "MPCONFIG":
                 //Check microprofile config for requested value
                 Config config = ConfigProvider.getConfig();
