@@ -136,8 +136,8 @@
             <artifactId>javax.persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>javax.resource-api</artifactId>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>
