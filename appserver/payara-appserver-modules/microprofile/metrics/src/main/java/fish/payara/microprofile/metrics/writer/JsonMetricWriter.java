@@ -59,6 +59,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -73,8 +74,9 @@ import org.eclipse.microprofile.metrics.Timer;
 
 public class JsonMetricWriter extends JsonWriter {
     
-    // Dropwizard Histogram, Meter, or Timer Constants
+    // Dropwizard Histogram, Meter, Gauge or Timer Constants
     private static final String COUNT = "count";
+    private static final String CURRENT = "current";
     private static final String MEAN_RATE = "meanRate";
     private static final String ONE_MINUTE_RATE = "oneMinRate";
     private static final String FIVE_MINUTE_RATE = "fiveMinRate";
@@ -113,7 +115,7 @@ public class JsonMetricWriter extends JsonWriter {
             if (Counter.class.isInstance(metric)) {
                 payloadBuilder.add(metricIDString, ((Counter) metric).getCount());
             } else if (ConcurrentGauge.class.isInstance(metric)) {
-                payloadBuilder.add(metricIDString,  getJsonFromMap(getConcurrentGaugeNumbers((ConcurrentGauge) metric), tagsToStringSuffix(tagsSet)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getConcurrentGaugeNumbers((ConcurrentGauge) metric), tagsToStringSuffix(tagsSet));
             } else if (Gauge.class.isInstance(metric)) {
                 Number value;
                 Object gaugeValue;
@@ -130,11 +132,11 @@ public class JsonMetricWriter extends JsonWriter {
                 value = (Number) gaugeValue;
                 addValueToJsonObject(payloadBuilder, metricIDString, value);
             } else if (Histogram.class.isInstance(metric)) {
-                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getHistogramNumbers((Histogram) metric), tagsToStringSuffix(tagsSet)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getHistogramNumbers((Histogram) metric), tagsToStringSuffix(tagsSet));
             } else if (Meter.class.isInstance(metric)) {
-                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getMeterNumbers((Meter) metric), tagsToStringSuffix(tagsSet)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getMeterNumbers((Meter) metric), tagsToStringSuffix(tagsSet));
             } else if (Timer.class.isInstance(metric)) {
-                payloadBuilder.add(entry.getKey().getName(), getJsonFromMap(getTimerNumbers((Timer) metric), tagsToStringSuffix(tagsSet)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getTimerNumbers((Timer) metric), tagsToStringSuffix(tagsSet));
             } else {
                 LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
             }
@@ -144,7 +146,7 @@ public class JsonMetricWriter extends JsonWriter {
     
     private Map<String, Number> getConcurrentGaugeNumbers(ConcurrentGauge gauge) {
         Map<String, Number> results = new HashMap<>();
-        results.put(COUNT, gauge.getCount());
+        results.put(CURRENT, gauge.getCount());
         results.put(MIN, gauge.getMin());
         results.put(MAX, gauge.getMax());
         return results;
@@ -215,6 +217,23 @@ public class JsonMetricWriter extends JsonWriter {
         }
         
         return tags.toString();
+    }
+    
+    private JsonObjectBuilder addOrExtendMap(JsonObjectBuilder original, String key, Map<String, Number> values, String suffix) {
+        JsonObject built = original.build();
+        JsonObjectBuilder clone = Json.createObjectBuilder(built);
+
+        if (built.containsKey(key)) {
+            JsonObject current = built.getJsonObject(key);
+            JsonObjectBuilder extended = Json.createObjectBuilder(current);
+            JsonObjectBuilder newData = Json.createObjectBuilder(getJsonFromMap(values, suffix));
+            extended.addAll(newData);
+            clone.add(key, extended.build());
+        } else {
+            clone.add(key, getJsonFromMap(values, suffix));
+        }
+       
+        return clone;
     }
 
 }

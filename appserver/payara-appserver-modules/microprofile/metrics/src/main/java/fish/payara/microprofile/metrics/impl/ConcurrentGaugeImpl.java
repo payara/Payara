@@ -65,6 +65,7 @@ import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 
 /**
+ * Implementation of ConcurrentGauge from Microprofile Metrics
  * @see ConcurrentGauge
  * @since 5.193
  */
@@ -85,7 +86,9 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
      */
     @Override
     public void inc() {
-        lastCounts.put(Instant.now(), count.longValue());
+        if (count.longValue() > 0) {
+            lastCounts.put(Instant.now(), count.longValue());
+        }
         count.increment();
         clearOld();
     }
@@ -104,13 +107,11 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     public long getMax() {
         clearOld();
         long max = 0;
-        for (Long value : lastCounts.values()) {
-            if (value > max) {
-                max = value;
+        Instant nowMinStart = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+        for (Map.Entry<Instant, Long> momentCount: lastCounts.entrySet()) {
+            if (momentCount.getKey().isBefore(nowMinStart) && momentCount.getValue() > max) {
+                max = momentCount.getValue();
             }
-        }
-        if (count.sum() > max) {
-            max = count.sum();
         }
         return max;
     }
@@ -119,13 +120,17 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     public long getMin() {
         clearOld();
         long min = Long.MAX_VALUE;
-        for (Long value : lastCounts.values()) {
-            if (value < min) {
-                min = value;
-            }
+        // if it was not called in the last minute, then the value is 0
+        // but if it was called at least once in the last minute then the
+        //value is non-zero, even if it was 0 at some point duing that minute
+        if (lastCounts.isEmpty()) {
+            return 0;
         }
-        if (count.sum() < min) {
-            min = count.sum();
+        Instant nowMinStart = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+        for (Map.Entry<Instant, Long> momentCount: lastCounts.entrySet()) {
+            if (momentCount.getKey().isBefore(nowMinStart) && momentCount.getValue() < min) {
+                min = momentCount.getValue();
+            }
         }
         return min;
     }
@@ -137,8 +142,11 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
         clearOld();
     }
     
+    /**
+     * Removes counts that occured before the previous minute that finished
+     */
     private void clearOld() {
-        Instant currentTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+        Instant currentTime = Instant.now().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
         Iterator<Instant> guages = lastCounts.keySet().iterator();
         while (guages.hasNext()) {
             Instant guageTime = guages.next();
