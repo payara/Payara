@@ -169,7 +169,7 @@ public class PrometheusExporter {
     }
 
     public void exportHistogram(Histogram histogram, String name, String description, String tags, String unit) {
-        exportSampling(histogram, name, description, tags, unit);
+        exportSampling(histogram, name, description, tags, getConversionFactor(unit), getAppendUnit(unit));
     }
 
     public void exportMeter(Meter meter, String name, String description, String tags) {
@@ -179,7 +179,7 @@ public class PrometheusExporter {
 
     public void exportTimer(Timer timer, String name, String description, String tags, String unit) {
         exportMetered(timer, name, description, tags);
-        exportSampling(timer, name, description, tags, unit);
+        exportSampling(timer, name, description, tags, NANOSECOND_CONVERSION, getAppendUnit(unit));
     }
 
     private void exportCounting(Counting counting, String name, String description, String tags) {
@@ -193,7 +193,9 @@ public class PrometheusExporter {
         writeTypeValueLine(name + FIFTEEN_MIN_RATE + MetricUnits.PER_SECOND, GAUGE.toString(), metered.getFifteenMinuteRate(), tags);
     }
 
-    private void exportSampling(Sampling sampling, String name, String description, String tags, String unit) {
+    private void exportSampling(Sampling sampling, String name,
+            String description, String tags, Double conversionFactor,
+            String appendUnit) {
 
         double mean = sampling.getSnapshot().getMean();
         double max = sampling.getSnapshot().getMax();
@@ -207,7 +209,6 @@ public class PrometheusExporter {
         double percentile99th = sampling.getSnapshot().get99thPercentile();
         double percentile999th = sampling.getSnapshot().get999thPercentile();
 
-        Double conversionFactor = getConversionFactor(unit);
         if (!Double.isNaN(conversionFactor)) {
             mean *= conversionFactor;
             max *= conversionFactor;
@@ -222,7 +223,6 @@ public class PrometheusExporter {
             percentile999th *= conversionFactor;
         }
 
-        String appendUnit = getAppendUnit(unit);
         writeTypeValueLine(name + MEAN_SUFFIX, GAUGE.toString(), mean, tags, appendUnit);
         writeTypeValueLine(name + MAX_SUFFIX, GAUGE.toString(), max, tags, appendUnit);
         writeTypeValueLine(name + MIN_SUFFIX, GAUGE.toString(), min, tags, appendUnit);
@@ -323,13 +323,25 @@ public class PrometheusExporter {
         } else {
             switch (unit) {
                 case NANOSECONDS:
-                case MICROSECONDS:
-                case MILLISECONDS:
-                case SECONDS:
-                case MINUTES:
-                case HOURS:
-                case DAYS:
                     conversionFactor = NANOSECOND_CONVERSION;
+                    break;
+                case MICROSECONDS:
+                    conversionFactor = MICROSECOND_CONVERSION;
+                    break;
+                case MILLISECONDS:
+                    conversionFactor = MILLISECOND_CONVERSION;
+                    break;
+                case SECONDS:
+                    conversionFactor = SECOND_CONVERSION;
+                    break;
+                case MINUTES:
+                    conversionFactor = MINUTE_CONVERSION;
+                    break;
+                case HOURS:
+                    conversionFactor = HOUR_CONVERSION;
+                    break;
+                case DAYS:
+                    conversionFactor = DAY_CONVERSION;
                     break;
                 case PERCENT:
                     conversionFactor = Double.NaN;
