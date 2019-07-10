@@ -143,7 +143,7 @@ public class MetricsResource extends HttpServlet {
 
         switch (method) {
             case GET:
-                //pplication/json;q=0.1,text/plain;q=0.9
+                //application/json;q=0.1,text/plain;q=0.9
 
                 String[] acceptFormats = accept.split(",");
                 float qJsonValue = 0;
@@ -166,7 +166,7 @@ public class MetricsResource extends HttpServlet {
                     } // else { no other formats supported by Payara, ignored }
                 }
 
-                //if niether JSON or plain text are supported
+                //if neither JSON or plain text are supported
                 if (qJsonValue == 0 && qTextFormat == 0) {
                     response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
                 } else if (qJsonValue > qTextFormat) {

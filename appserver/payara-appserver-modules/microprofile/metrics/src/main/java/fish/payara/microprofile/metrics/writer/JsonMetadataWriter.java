@@ -108,7 +108,7 @@ public class JsonMetadataWriter extends JsonWriter {
         return payloadBuilder;
     }  
     
-    private JsonObject getJsonFromMetadata(Metadata metadata, Set<MetricID> metricIDs) {        
+    private JsonObject getJsonFromMetadata(Metadata metadata, Set<MetricID> metricIDs) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         payloadBuilder.add(NAME, sanitizeMetadata(metadata.getName()));
         payloadBuilder.add(DISPLAY_NAME, sanitizeMetadata(metadata.getDisplayName()));

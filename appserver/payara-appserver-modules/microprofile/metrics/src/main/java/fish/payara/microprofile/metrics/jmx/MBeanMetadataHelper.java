@@ -263,7 +263,6 @@ public class MBeanMetadataHelper {
                                 && !(compositeData.get(subAttribute) instanceof Number)) {
                             continue;
                         }
-                        //metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
                     }
                     MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadata.build());
                     newMbeanMetadata.addTags(metadata.getTags());

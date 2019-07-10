@@ -50,7 +50,6 @@
 
 package fish.payara.microprofile.metrics.writer;
 
-//import fish.payara.microprofile.metrics.Tag;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;

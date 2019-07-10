@@ -54,7 +54,6 @@
  */
 package fish.payara.microprofile.metrics.cdi;
 
-//import fish.payara.microprofile.metrics.Tag;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -223,14 +222,6 @@ public class MetricsHelper {
         } 
         return null;
     }
-    
-   /*public MetricID metricIDof(AnnotatedMember<?> member) {
-        if (member.isAnnotationPresent(Metric.class)) {
-            Metric metric = member.getAnnotation(Metric.class);
-            return new MetricID(metric.name(), tagsFromString(metric.tags()));
-        }        
-        return null;
-    }*/
     
     public static Tag[] tagsFromString(String[] stringtags) {
         Tag[] tags = new Tag[stringtags.length];

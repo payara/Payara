@@ -62,7 +62,7 @@ public class MBeanCounterImpl implements Counter {
      */
     @Override
     public void inc() {
-        throw new UnsupportedOperationException("Not supported - use getCount() to ge value from MBean directly.");
+        throw new UnsupportedOperationException("Not supported - use getCount() to get value from MBean directly.");
     }
 
     /**
@@ -71,7 +71,7 @@ public class MBeanCounterImpl implements Counter {
      */
     @Override
     public void inc(long n) {
-        throw new UnsupportedOperationException("Not supported - use getCount() to ge value from MBean directly.");
+        throw new UnsupportedOperationException("Not supported - use getCount() to get value from MBean directly.");
     }
 
     @Override
