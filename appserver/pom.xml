@@ -66,7 +66,7 @@
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
         <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+        <javax.ejb-api.version>3.2.2</javax.ejb-api.version>
 
         <!-- JSP -->
         <jsp-api.version>2.3.3</jsp-api.version>
