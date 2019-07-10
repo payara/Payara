@@ -66,7 +66,7 @@
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
         <!-- EJB -->
-        <javax.ejb-api.version>3.2</javax.ejb-api.version>
+        <javax.ejb-api.version>3.2.2</javax.ejb-api.version>
 
         <!-- JSP -->
         <jsp-api.version>2.3.3</jsp-api.version>
@@ -97,7 +97,7 @@
         <eclipselink.version>2.7.4.payara-p2</eclipselink.version>
 
         <!-- JTA -->
-        <javax.transaction-api.version>1.2.1</javax.transaction-api.version>
+        <jakarta.transaction-api.version>1.3.2</jakarta.transaction-api.version>
 
         <!-- Concurrency -->
         <concurrent-api.version>1.0</concurrent-api.version>
@@ -156,7 +156,7 @@
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
 
-        <javax.resource-api.version>1.7</javax.resource-api.version>
+        <jakarta.resource-api.version>1.7.3</jakarta.resource-api.version>
 
         <!-- Deployment API (JSR 88) (deprecated/pruned) -->
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
@@ -402,15 +402,15 @@
                         <!-- JTA -->
                         <spec>
                             <artifact>
-                                <groupId>javax.transaction</groupId>
-                                <artifactId>javax.transaction-api</artifactId>
-                                <version>${javax.transaction-api.version}</version>
+                                <groupId>jakarta.transaction</groupId>
+                                <artifactId>jakarta.transaction-api</artifactId>
+                                <version>${jakarta.transaction-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.transaction-api.version}</specVersion>
-                            <specImplVersion>${javax.transaction-api.version}</specImplVersion>
-                            <apiPackage>javax.transaction</apiPackage>
+                            <specVersion>${jakarta.transaction-api.version}</specVersion>
+                            <specImplVersion>${jakarta.transaction-api.version}</specImplVersion>
+                            <apiPackage>jakarta.transaction</apiPackage>
                         </spec>
 
                         <!-- BATCH -->
@@ -540,15 +540,15 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>javax.resource</groupId>
-                                <artifactId>javax.resource-api</artifactId>
-                                <version>${javax.resource-api.version}</version>
+                                <groupId>jakarta.resource</groupId>
+                                <artifactId>jakarta.resource-api</artifactId>
+                                <version>${jakarta.resource-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.resource-api.version}</specVersion>
-			                <specImplVersion>${javax.resource-api.version}</specImplVersion>
-                            <apiPackage>javax.resource</apiPackage>
+                            <specVersion>${jakarta.resource-api.version}</specVersion>
+			                <specImplVersion>${jakarta.resource-api.version}</specImplVersion>
+                            <apiPackage>jakarta.resource</apiPackage>
                         </spec>
                         <spec>
                             <artifact>
@@ -651,14 +651,14 @@
                 <version>${javax.interceptor-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>javax.transaction-api</artifactId>
-                <version>${javax.transaction-api.version}</version>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${jakarta.transaction-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.transaction.cdi</groupId>
-                <artifactId>javax.transaction.cdi-api</artifactId>
-                <version>${javax.transaction.cdi-api.version}</version>
+                <groupId>jakarta.transaction.cdi</groupId>
+                <artifactId>jakarta.transaction.cdi-api</artifactId>
+                <version>${jakarta.transaction.cdi-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.xml.rpc</groupId>
@@ -676,9 +676,9 @@
                 <version>${javax.inject.version}</version>
             </dependency>
     	    <dependency>
-                <groupId>javax.resource</groupId>
-    		        <artifactId>javax.resource-api</artifactId>
-    		        <version>${javax.resource-api.version}</version>
+                <groupId>jakarta.resource</groupId>
+    		        <artifactId>jakarta.resource-api</artifactId>
+    		        <version>${jakarta.resource-api.version}</version>
     	        </dependency>
             <dependency>
                 <groupId>javax.enterprise.deploy</groupId>
