@@ -72,6 +72,8 @@ import org.glassfish.internal.deployment.ApplicationInfoProvider;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PreDestroy;
 import org.xml.sax.SAXParseException;
@@ -252,7 +254,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         }
         DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
         Application application = null;
-        try {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.READ_DESCRIPTORS)) {
             // for these cases, the standard DD could contain the application
             // name for ear and module name for standalone module
             if (params.altdd != null || 
@@ -263,11 +266,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 archive.exists("META-INF/ra.xml")) {
                 String archiveType = context.getArchiveHandler().getArchiveType() ;
                 application = applicationFactory.createApplicationFromStandardDD(archive, archiveType);
-                DeploymentTracing tracing = null; 
-                tracing = context.getModuleMetaData(DeploymentTracing.class);
-                if (tracing != null) {
-                    tracing.addMark(DeploymentTracing.Mark.DOL_LOADED);
-                }
                 ApplicationHolder holder = new ApplicationHolder(application);
                 context.addModuleMetaData(holder);
 

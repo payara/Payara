@@ -120,8 +120,8 @@
         
         <!-- full profile api dependencies -->
         <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
             <optional>true</optional>
         </dependency>
         <!--
