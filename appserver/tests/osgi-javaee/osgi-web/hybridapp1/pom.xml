@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2018] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project>
     <modelVersion>4.0.0</modelVersion>
@@ -111,8 +111,8 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
