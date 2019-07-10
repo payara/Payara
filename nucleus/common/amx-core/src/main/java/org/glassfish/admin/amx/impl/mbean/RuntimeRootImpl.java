@@ -57,7 +57,6 @@ import javax.management.JMException;
 import javax.management.remote.JMXServiceURL;
 import org.glassfish.admin.amx.base.RuntimeRoot;
 import org.glassfish.admin.amx.base.ServerRuntime;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
@@ -65,7 +64,6 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.internal.data.ApplicationRegistry;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
@@ -74,7 +72,7 @@ import org.glassfish.external.amx.AMXGlassfish;
 
 import org.glassfish.api.admin.AdminCommandContext;
 import com.sun.enterprise.v3.admin.RestartDomainCommand;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import org.glassfish.api.admin.AdminCommand;
 import com.sun.enterprise.v3.admin.commands.JVMInformation;
 import java.util.Locale;

@@ -43,7 +43,7 @@ package org.glassfish.jdbc.admin.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 
 import java.util.List;

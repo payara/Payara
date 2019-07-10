@@ -80,7 +80,7 @@ import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 
 /**
  *

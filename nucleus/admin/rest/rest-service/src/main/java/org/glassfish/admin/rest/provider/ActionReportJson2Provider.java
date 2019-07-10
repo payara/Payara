@@ -42,7 +42,7 @@
 
 package org.glassfish.admin.rest.provider;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.JsonObject;

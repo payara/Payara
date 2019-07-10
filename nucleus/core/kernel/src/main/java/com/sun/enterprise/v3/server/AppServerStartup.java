@@ -50,7 +50,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;

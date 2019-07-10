@@ -42,7 +42,7 @@
 package org.glassfish.admin.rest.provider;
 
 import org.glassfish.api.ActionReport.ExitCode;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;

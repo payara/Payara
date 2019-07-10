@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.v3.admin.CommandRunnerImpl;
-import com.sun.enterprise.v3.common.XMLActionReporter;
+import com.sun.enterprise.admin.report.XMLActionReporter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

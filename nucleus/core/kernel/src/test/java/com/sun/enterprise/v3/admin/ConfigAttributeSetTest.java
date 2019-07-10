@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.enterprise.admin.report.HTMLActionReporter;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.ServiceLocator;

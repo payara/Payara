@@ -53,5 +53,6 @@ password="GlassFish"; resolution:="optional",\
                    com.sun.enterprise.util.cluster.windows.process; \
                    com.sun.enterprise.util.cluster; \
                    com.sun.enterprise.util.cluster.windows.io; \
+                   fish.payara.util.cluster;
                    version=${project.osgi.version}
 

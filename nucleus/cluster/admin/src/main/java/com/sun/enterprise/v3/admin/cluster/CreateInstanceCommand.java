@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import fish.payara.admin.cluster.PayaraServerNameGenerator;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

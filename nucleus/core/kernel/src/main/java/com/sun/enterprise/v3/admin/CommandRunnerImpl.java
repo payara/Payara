@@ -53,7 +53,7 @@ import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.common.XMLContentActionReporter;
+import com.sun.enterprise.admin.report.XMLContentActionReporter;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;

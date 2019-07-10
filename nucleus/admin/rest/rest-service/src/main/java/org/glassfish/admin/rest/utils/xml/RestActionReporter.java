@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest.utils.xml;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;

@@ -70,7 +70,7 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 
 
 public class CreateJavaMailResourceTest extends ConfigApiTest {

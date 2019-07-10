@@ -45,6 +45,8 @@
 
 package com.sun.enterprise.v3.common;
 
+import com.sun.enterprise.admin.report.ActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import org.glassfish.api.ActionReport;
 import org.junit.AfterClass;
 import org.junit.Before;

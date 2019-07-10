@@ -38,9 +38,9 @@
  * holder.
  */
 
-package fish.payara.admin.cluster;
+package fish.payara.util.cluster;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 import fish.payara.api.admin.config.NameGenerator;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -176,4 +176,6 @@ public class PayaraServerNameGenerator extends NameGenerator {
 
         return configNames;
     }
+
+
 }

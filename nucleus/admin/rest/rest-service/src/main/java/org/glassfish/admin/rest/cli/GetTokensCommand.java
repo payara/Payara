@@ -46,7 +46,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;

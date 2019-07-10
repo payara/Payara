@@ -40,7 +40,7 @@
  * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
 
-package com.sun.enterprise.v3.common;
+package com.sun.enterprise.admin.report;
 
 
 import com.sun.enterprise.util.LocalStringManagerImpl;

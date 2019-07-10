@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;

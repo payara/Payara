@@ -60,7 +60,7 @@ DynamicImport-Package: fish.payara.nucleus.requesttracing, \
                        fish.payara.nucleus.requesttracing.domain.execoptions, \
                        org.glassfish.flashlight.provider, \
                        com.sun.pkg.client, \
-		               org.glassfish.branding, \
+                       org.glassfish.branding, \
                        org.objectweb.asm;password=GlassFish, \
                        org.objectweb.asm.commons;password=GlassFish
 

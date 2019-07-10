@@ -41,7 +41,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;

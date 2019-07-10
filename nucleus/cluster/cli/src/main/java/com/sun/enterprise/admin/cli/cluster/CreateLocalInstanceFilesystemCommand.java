@@ -73,10 +73,10 @@ import com.sun.enterprise.util.net.NetUtils;
 public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true)
-    private String instanceName0;
+    protected String instanceName0;
 
     @Param(name = "dockerNode", defaultValue = "false", optional = true, alias = "dockernode")
-    private Boolean dockerNode;
+    protected Boolean dockerNode;
 
     String DASHost;
     int DASPort = -1;
@@ -120,7 +120,9 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!setDasDefaultsOnly) {
                 String nodeDirChildName = nodeDirChild != null ? nodeDirChild.getName() : "";
                 String nodeName = node != null ? node : nodeDirChildName;
-                logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
+                if (!programOpts.isExtraTerse()) {
+                    logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
+                }
             }
         }
 

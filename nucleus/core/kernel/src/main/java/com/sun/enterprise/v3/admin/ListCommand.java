@@ -59,7 +59,7 @@ import java.util.HashMap;
 
 import java.util.*;
 
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 

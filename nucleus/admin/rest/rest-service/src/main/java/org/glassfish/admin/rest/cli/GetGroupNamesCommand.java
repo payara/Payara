@@ -53,7 +53,7 @@ import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;

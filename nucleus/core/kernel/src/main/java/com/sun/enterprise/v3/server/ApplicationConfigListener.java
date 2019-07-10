@@ -50,7 +50,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.enterprise.admin.report.HTMLActionReporter;
 import java.beans.PropertyChangeEvent;
 import java.util.Calendar;
 import java.util.List;

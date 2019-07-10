@@ -52,8 +52,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.junit.Test;
 
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 
 public class AdminCommandContextTest {
 

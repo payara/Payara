@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.common;
+package com.sun.enterprise.admin.report;
 
 import java.io.OutputStream;
 import java.util.List;

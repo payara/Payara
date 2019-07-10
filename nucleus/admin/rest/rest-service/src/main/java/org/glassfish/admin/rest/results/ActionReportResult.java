@@ -41,7 +41,7 @@
 
 package org.glassfish.admin.rest.results;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import org.glassfish.admin.rest.resources.LeafResource;
 import org.glassfish.admin.rest.resources.LeafResource.LeafContent;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;

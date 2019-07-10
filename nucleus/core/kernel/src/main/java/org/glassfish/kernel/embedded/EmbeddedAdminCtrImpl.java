@@ -54,9 +54,8 @@ import org.glassfish.api.ActionReport;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Properties;
 
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import org.glassfish.internal.api.InternalSystemAdministrator;
 
 /**
