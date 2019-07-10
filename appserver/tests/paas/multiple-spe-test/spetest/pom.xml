@@ -109,7 +109,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.persistence</groupId>
+            <groupId>jakarta.persistence</groupId>
             <artifactId>persistence-api</artifactId>
             <version>1.0</version>
         </dependency>

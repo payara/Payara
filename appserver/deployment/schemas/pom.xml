@@ -94,7 +94,7 @@
                         </goals>
                         <!-- 
                             Extract orm*.xsd and persistence*.xsd into a 
-                            temp location from javax.persistence.jar. The files would be extracted as 
+                            temp location from jakarta.persistence.jar. The files would be extracted as 
                             javax/persistence/{file} under the location. It is not possible to specify 
                             to exclude javax/persistence prefix while extracting the file. The ant task 
                             below would copy the files under classes/glassfish/lib/schemas so that it 
@@ -104,7 +104,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.eclipse.persistence</groupId>
-                                    <artifactId>javax.persistence</artifactId>
+                                    <artifactId>jakarta.persistence</artifactId>
                                     <includes>javax/persistence/orm*.xsd,
                                         javax/persistence/persistence*.xsd
                                     </includes>

@@ -93,7 +93,7 @@
         <yasson.version>1.0.4.payara-p1</yasson.version>
 
         <!-- JPA -->
-        <javax-persistence-api.version>2.2.0</javax-persistence-api.version>
+        <javax-persistence-api.version>2.2.2</javax-persistence-api.version>
         <eclipselink.version>2.7.4.payara-p2</eclipselink.version>
 
         <!-- JTA -->
@@ -280,7 +280,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, jakarta.persistence.jar</excludes>
                     <specs>
 
                         <!-- JavaMail -->
@@ -732,7 +732,7 @@
             <!-- JPA -->
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>javax.persistence</artifactId>
+                <artifactId>jakarta.persistence</artifactId>
                 <version>${javax-persistence-api.version}</version>
             </dependency>
             <dependency>

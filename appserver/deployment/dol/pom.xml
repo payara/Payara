@@ -132,7 +132,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <artifactId>jakarta.persistence</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.resource</groupId>
