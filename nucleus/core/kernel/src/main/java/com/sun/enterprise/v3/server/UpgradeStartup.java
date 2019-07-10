@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.module.bootstrap.ModuleStartup;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
@@ -312,8 +312,6 @@ public class CreateInstanceCommand implements AdminCommand {
             }
         }
     }
-
-
 
     /**
      * Returns the directory for the selected instance that is on the local system.

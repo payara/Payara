@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;

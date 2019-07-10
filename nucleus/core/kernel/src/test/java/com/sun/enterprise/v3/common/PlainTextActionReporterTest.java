@@ -38,10 +38,7 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.common;
 

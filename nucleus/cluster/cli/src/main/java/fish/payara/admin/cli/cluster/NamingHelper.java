@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 /**
  * Helper class for naming instances from the CLI since CLI commands don't have a
- * {@link org.glassfish.api.ExecutionContext} to use with the {@link org.glassfish.embeddable.CommandRunner}
+ * {@link org.glassfish.api.ExecutionContext} to use with the {@link org.glassfish.api.admin.CommandRunner}
  *
  * @author Andrew Pielage
  */
