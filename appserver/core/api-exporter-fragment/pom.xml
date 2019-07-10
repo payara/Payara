@@ -243,8 +243,8 @@
                                     javax.swing.tree; \
                                     javax.swing.undo; \
                                     javax.tools; \
-                                    javax.transaction; javax.transaction.xa; \
-                                    javax.transaction.xa; \
+                                    javax.transation; javax.transation.xa; \
+                                    javax.transation.xa; \
                                     javax.validation; \
                                     javax.validation.bootstrap; \
                                     javax.validation.constraints; \

@@ -178,8 +178,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
