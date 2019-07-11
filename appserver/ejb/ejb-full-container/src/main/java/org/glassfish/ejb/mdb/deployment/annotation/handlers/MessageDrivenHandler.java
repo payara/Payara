@@ -160,7 +160,7 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
             } else if (acProp.propertyName().equals("PoolIdleTimeoutInSeconds")) {
                 initialiseBeanPoolDescriptor(ejbMsgBeanDesc);
                 ejbMsgBeanDesc.getIASEjbExtraDescriptors().getBeanPool().setPoolIdleTimeoutInSeconds(Integer.valueOf(envProp.getValue()));
-            }else if (acProp.propertyName().equals("SingletonBeanPool")) {
+            } else if (acProp.propertyName().equals("SingletonBeanPool")) {
                 NameValuePairDescriptor singletonProperty = new NameValuePairDescriptor();
                 singletonProperty.setName("singleton-bean-pool");
                 singletonProperty.setValue(envProp.getValue());
