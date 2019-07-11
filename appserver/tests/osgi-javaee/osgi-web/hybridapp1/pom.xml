@@ -117,7 +117,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.ejb</artifactId>
+            <artifactId>jakarta.ejb</artifactId>
             <version>3.0-Preview</version>
             <scope>provided</scope>
         </dependency>

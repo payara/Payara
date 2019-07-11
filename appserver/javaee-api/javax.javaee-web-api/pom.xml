@@ -173,8 +173,8 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.ejb</groupId>
-            <artifactId>javax.ejb-api</artifactId>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

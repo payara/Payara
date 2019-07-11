@@ -90,7 +90,7 @@
         </dependency>
         <!--dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.ejb</artifactId>
+            <artifactId>jakarta.ejb</artifactId>
             <version>3.1</version>
             <scope>provided</scope>
         </dependency-->
