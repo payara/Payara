@@ -249,8 +249,8 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>javax.ejb</groupId>
-                <artifactId>javax.ejb-api</artifactId>
+                <groupId>jakarta.ejb</groupId>
+                <artifactId>jakarta.ejb-api</artifactId>
                 <version>3.2-b01</version>
                 <scope>provided</scope>
             </dependency>

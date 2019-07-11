@@ -325,7 +325,7 @@
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar
-        javax.ejb.jar
+        jakarta.ejb.jar
         javax.enterprise.deploy-api.jar
         javax.jms-api.jar
         jakarta.mail.jar
