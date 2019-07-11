@@ -66,7 +66,7 @@
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
 
         <!-- EJB -->
-        <javax.ejb-api.version>3.2.2</javax.ejb-api.version>
+        <jakarta.ejb-api.version>3.2.5</jakarta.ejb-api.version>
 
         <!-- JSP -->
         <jsp-api.version>2.3.3</jsp-api.version>
@@ -514,15 +514,15 @@
                         <!-- EJB -->
                         <spec>
                             <artifact>
-                                <groupId>javax.ejb</groupId>
-                                <artifactId>javax.ejb-api</artifactId>
-                                <version>${javax.ejb-api.version}</version>
+                                <groupId>jakarta.ejb</groupId>
+                                <artifactId>jakarta.ejb-api</artifactId>
+                                <version>${jakarta.ejb-api.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${javax.ejb-api.version}</specVersion>
-			                <specImplVersion>${javax.ejb-api.version}</specImplVersion>
-                            <apiPackage>javax.ejb</apiPackage>
+                            <specVersion>${jakarta.ejb-api.version}</specVersion>
+			                <specImplVersion>${jakarta.ejb-api.version}</specImplVersion>
+                            <apiPackage>jakarta.ejb</apiPackage>
                         </spec>
 
                         <!-- Interceptor -->
@@ -641,9 +641,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>javax.ejb</groupId>
-                <artifactId>javax.ejb-api</artifactId>
-                <version>${javax.ejb-api.version}</version>
+                <groupId>jakarta.ejb</groupId>
+                <artifactId>jakarta.ejb-api</artifactId>
+                <version>${jakarta.ejb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.interceptor</groupId>

@@ -721,7 +721,7 @@
                         <configuration>
                             <resolutionFuzziness>groupId</resolutionFuzziness>
                             <includes>
-                                <include>javax.ejb</include>
+                                <include>jakarta.ejb</include>
                                 <include>jakarta.transaction</include>
                                 <include>javax.resource</include>
                                 <include>javax.enterprise.concurrent</include>
