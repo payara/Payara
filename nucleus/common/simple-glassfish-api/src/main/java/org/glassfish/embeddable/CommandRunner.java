@@ -103,6 +103,4 @@ public interface CommandRunner {
      * @param terse true to get concise output, false otherwise.
      */
     void setTerse(boolean terse);
-
-    void setExtraTerse(boolean extraTerse);
 }

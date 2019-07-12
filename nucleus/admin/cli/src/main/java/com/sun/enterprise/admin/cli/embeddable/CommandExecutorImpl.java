@@ -87,7 +87,6 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     private EmbeddedSystemAdministrator embeddedSystemAdministrator;
 
     private boolean terse;
-    private boolean extraTerse;
 
     private Logger logger = Logger.getAnonymousLogger();
 
@@ -118,11 +117,9 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         ParameterMap options = parser.getOptions();
         operands = parser.getOperands();
         options.set("DEFAULT", operands);
-        // if command has a "terse" or "extraterse" option, set it in options
+        // if command has a "terse" option, set it in options
         if (commandModel.getModelFor("terse") != null)
             options.set("terse", Boolean.toString(terse));
-        if (commandModel.getModelFor("extraterse") != null)
-            options.set("extraterse", Boolean.toString(extraTerse));
 
         // Read the passwords from the password file and set it in command options.
         if (globalOptions.size() > 0) {
@@ -139,19 +136,25 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
                     }
                 }
             }
+
+            // We also need to set autoname and extraterse if required by the command
+            String autoname = globalOptions.getOne(ProgramOptions.AUTONAME);
+            if (autoname != null && Boolean.parseBoolean(autoname)) {
+                options.set("autoname", autoname);
+            }
+
+            String extraterse = globalOptions.getOne(ProgramOptions.EXTRATERSE);
+            if (extraterse != null && Boolean.parseBoolean(extraterse)) {
+                options.set("extraterse", extraterse);
+            }
         }
-        
+
         return options;
     }
 
     @Override
     public void setTerse(boolean terse) {
         this.terse = terse;
-    }
-
-    @Override
-    public void setExtraTerse(boolean extraTerse) {
-        this.extraTerse = extraTerse;
     }
 
     /**
