@@ -78,6 +78,11 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
     @Param(name = "dockerNode", defaultValue = "false", optional = true, alias = "dockernode")
     protected Boolean dockerNode;
 
+    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Technically deprecated syntax
+    @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
+    protected boolean extraTerse;
+
     String DASHost;
     int DASPort = -1;
     String DASProtocol;
@@ -120,7 +125,7 @@ public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
             if (!setDasDefaultsOnly) {
                 String nodeDirChildName = nodeDirChild != null ? nodeDirChild.getName() : "";
                 String nodeName = node != null ? node : nodeDirChildName;
-                if (!programOpts.isExtraTerse()) {
+                if (!programOpts.isExtraTerse() || extraTerse) {
                     logger.info(Strings.get("Instance.existingDasPropertiesWarning", programOpts.getHost(), "" + programOpts.getPort(), nodeName));
                 }
             }

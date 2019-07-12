@@ -1036,6 +1036,9 @@ public abstract class CLICommand implements PostConstruct {
         if (commandModel.getModelFor("extraterse") != null){
             options.set("extraterse", Boolean.toString(programOpts.isExtraTerse()));
         }
+        if (commandModel.getModelFor("autoname") != null) {
+            options.set("autoname", Boolean.toString(programOpts.isAutoName()));
+        }
         // initialize the injector.
         InjectionResolver<Param> injector = new MapInjectionResolver(commandModel, options);
 

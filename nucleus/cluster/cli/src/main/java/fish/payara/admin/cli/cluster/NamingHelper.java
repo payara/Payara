@@ -89,7 +89,7 @@ public class NamingHelper {
                 List<String> splitReturnOutput = Arrays.asList(returnOutput.split("\n"));
                 splitReturnOutput.forEach(dottedConfig -> {
                     if (!dottedConfig.contains("system-property")) {
-                        // Strip everything before "=" and the trailing "/r"
+                        // Strip everything before "=" and the trailing "\r"
                         String name = dottedConfig.substring(dottedConfig.indexOf("=") + 1).replace("\r", "");
                         if (!names.contains(name)) {
                             names.add(name);

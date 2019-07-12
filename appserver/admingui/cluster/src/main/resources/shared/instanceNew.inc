@@ -51,11 +51,19 @@
             <sun:button id="newButton" text="$resource{i18n.button.OK}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                setAttribute(key="nameToCheck" value="#{pageSession.name}");
-                gfj.checkNameExist();
+                if (!#{pageSession.autoNameSelected}) {
+                    setAttribute(key="nameToCheck" value="#{pageSession.name}");
+                    gfj.checkNameExist();
+                }
+
                 createMap(result="#{requestScope.attrs}")
                 mapPut(map="#{requestScope.attrs}" key="name"  value="#{pageSession.name}" )
                 mapPut(map="#{requestScope.attrs}" key="node"  value="#{pageSession.node}" )
+
+                if (#{pageSession.autoNameSelected}) {
+                    mapPut(map="#{requestScope.attrs}" key="autoname"  value="true" )
+                }
+
                 if (#{forStandalone}){
                     if ('#{configOptionGrp}=copy'){
                         if ("! (#{pageSession.config}=default-config)"){
@@ -115,6 +123,10 @@
 
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.instanceName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" required="#{true}" />
+            </sun:property>
+
+            <sun:property id="AutoNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.autoName}" >
+                <sun:checkbox id="AutoName" selected="#{pageSession.autoNameSelected}" selectedValue="#{true}" />
             </sun:property>
 
             <sun:property id="avaliableDeploymentGroups" visible="#{pageSession.showDeploymentGroupSection}" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
