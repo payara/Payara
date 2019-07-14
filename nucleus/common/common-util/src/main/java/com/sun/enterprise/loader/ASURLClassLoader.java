@@ -900,7 +900,11 @@ public class ASURLClassLoader
          */
         protected void finalize() throws IOException {
             reallyClose();
-            super.finalize();
+            try {
+                super.finalize();
+            } catch (Throwable t ) {
+                throw new IOException(t);
+            }
         }
     }
 
