@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -60,7 +61,6 @@ import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Vector;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.jar.Attributes;
@@ -89,7 +89,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
 
     public static final Attributes.Name GLASSFISH_ANCHOR_DIR =
             new Attributes.Name("GlassFish-Anchor");
-    
+
     private String mainClassNameToRun = null;
 
     /**
@@ -227,7 +227,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      * @param entriesToSkip the files to not write from the original archive
      */
     @Override
-    protected void writeContents(ReadableArchive in, WritableArchive out, Vector entriesToSkip)
+    protected void writeContents(ReadableArchive in, WritableArchive out, List<String> entriesToSkip)
             throws IOException {
 
         // prepare the manifest file to add the main class entry
@@ -235,8 +235,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
             manifest = new Manifest();
         }
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, MANIFEST_VERSION_VALUE);
-        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
-                ((ApplicationClientDescriptor) getDescriptor()).getMainClassName());
+        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, getDescriptor().getMainClassName());
 
         super.writeContents(in, out, entriesToSkip);
     }

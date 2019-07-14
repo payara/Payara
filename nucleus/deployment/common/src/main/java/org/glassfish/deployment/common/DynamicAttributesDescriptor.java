@@ -43,6 +43,7 @@ package org.glassfish.deployment.common;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is a value holder for dynamic attributes. Dynamic attributes
@@ -62,7 +63,7 @@ public class DynamicAttributesDescriptor extends Observable implements Serializa
 
     public Map getExtraAttributes() {
 	if (dynamicAttributes == null) {
-	    dynamicAttributes = new Hashtable();
+	    dynamicAttributes = new ConcurrentHashMap();
 	}
 	return dynamicAttributes;
     }
@@ -76,9 +77,9 @@ public class DynamicAttributesDescriptor extends Observable implements Serializa
         if (value==null) {
             return;
         }
-	if (dynamicAttributes == null) {
-	    dynamicAttributes = new Hashtable();
-	}
+        if (dynamicAttributes == null) {
+            dynamicAttributes = new ConcurrentHashMap();
+        }
         dynamicAttributes.put(name, value);
         changed();
     }

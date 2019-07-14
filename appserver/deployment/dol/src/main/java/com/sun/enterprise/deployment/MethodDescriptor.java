@@ -96,6 +96,21 @@ public final class MethodDescriptor extends Descriptor {
     private final int XML_JAVA_FORMAT = 0;
     private boolean isExact = false;
 
+    private static final Map<String, String> JAVA_PRIMITIVES_TYPES;
+
+    static {
+        final Map<String, String> primitives = new HashMap<>();
+        primitives.put("char", "C");
+        primitives.put("byte", "B");
+        primitives.put("double", "D");
+        primitives.put("float", "F");
+        primitives.put("int", "I");
+        primitives.put("long", "J");
+        primitives.put("short", "S");
+        primitives.put("boolean", "Z");
+        JAVA_PRIMITIVES_TYPES = Collections.unmodifiableMap(primitives);
+    }
+
     /**
      * Constructs a method descriptor corresponding to methods on the ejb class defined by the ejbClassSymbol (or home and
      * remote if null) with the same name (or all if ALL_METHODS) and paramater list (or just all by name of this is null).
@@ -399,8 +414,8 @@ public final class MethodDescriptor extends Descriptor {
      * Performs a conversion from the style1 style2 and style3 (no interface symbol) to method descriptors of style3 with an
      * interface symbol.
      */
-    public Vector doStyleConversion(EjbDescriptor ejbDescriptor, Collection allMethods) { // must be exact methods
-        Vector v = new Vector();
+    public List<MethodDescriptor> doStyleConversion(EjbDescriptor ejbDescriptor, Collection allMethods) { // must be exact methods
+        List<MethodDescriptor> v = new ArrayList<>();
         if (getStyle() == 1) { // STYLE 1
             for (Iterator itr = allMethods.iterator(); itr.hasNext();) {
                 MethodDescriptor next = (MethodDescriptor) itr.next();
@@ -416,9 +431,9 @@ public final class MethodDescriptor extends Descriptor {
                     next.setDescription(this.getDescription());
                 }
                 if (getEjbClassSymbol() == null) {
-                    v.addElement(next);
+                    v.add(next);
                 } else if (this.getEjbClassSymbol().equals(next.getEjbClassSymbol())) {
-                    v.addElement(next);
+                    v.add(next);
                 }
 
             }
@@ -428,7 +443,7 @@ public final class MethodDescriptor extends Descriptor {
             if (getEjbClassSymbol() == null) {
                 v.addAll(this.getMethodDescriptorsOfNameAndParameters(this.getName(), this.getParameterClassNames(), allMethods));
             } else {
-                v.addElement(this); // this must be exact
+                v.add(this); // this must be exact
             }
         }
         return v;
@@ -675,22 +690,9 @@ public final class MethodDescriptor extends Descriptor {
      *
      * @return the mapping with the java primitive type identifier as keys
      */
-    public synchronized static Map getJavaPrimitiveTypes() {
-        if (javaPrimitivesTypes == null) {
-            javaPrimitivesTypes = new Hashtable();
-            javaPrimitivesTypes.put("char", "C");
-            javaPrimitivesTypes.put("byte", "B");
-            javaPrimitivesTypes.put("double", "D");
-            javaPrimitivesTypes.put("float", "F");
-            javaPrimitivesTypes.put("int", "I");
-            javaPrimitivesTypes.put("long", "J");
-            javaPrimitivesTypes.put("short", "S");
-            javaPrimitivesTypes.put("boolean", "Z");
-        }
-        return javaPrimitivesTypes;
+    public static Map<String, String> getJavaPrimitiveTypes() {
+        return JAVA_PRIMITIVES_TYPES;
     }
-
-    private static Map javaPrimitivesTypes;
 
     // Convert arrays from [[[I form to int[][][] form.
     public static String fixParamClassName(String param) {

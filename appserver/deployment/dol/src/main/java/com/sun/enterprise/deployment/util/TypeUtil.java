@@ -58,18 +58,19 @@ public class TypeUtil {
     };
 
     // Map of primitive class name and its associated Class object
-    private static Hashtable primitiveClasses_;
+    private static final Map<String, Class<?>> primitiveClasses_;
 
     static {
-        primitiveClasses_ = new Hashtable();
-        primitiveClasses_.put(Character.TYPE.getName(), Character.TYPE);
-        primitiveClasses_.put(Boolean.TYPE.getName(), Boolean.TYPE);
-        primitiveClasses_.put(Byte.TYPE.getName(), Byte.TYPE);
-        primitiveClasses_.put(Integer.TYPE.getName(), Integer.TYPE);
-        primitiveClasses_.put(Long.TYPE.getName(), Long.TYPE);
-        primitiveClasses_.put(Short.TYPE.getName(), Short.TYPE);
-        primitiveClasses_.put(Float.TYPE.getName(), Float.TYPE);
-        primitiveClasses_.put(Double.TYPE.getName(), Double.TYPE);
+        final Map<String, Class<?>> primitives = new HashMap<>();
+        primitives.put(Character.TYPE.getName(), Character.TYPE);
+        primitives.put(Boolean.TYPE.getName(), Boolean.TYPE);
+        primitives.put(Byte.TYPE.getName(), Byte.TYPE);
+        primitives.put(Integer.TYPE.getName(), Integer.TYPE);
+        primitives.put(Long.TYPE.getName(), Long.TYPE);
+        primitives.put(Short.TYPE.getName(), Short.TYPE);
+        primitives.put(Float.TYPE.getName(), Float.TYPE);
+        primitives.put(Double.TYPE.getName(), Double.TYPE);
+        primitiveClasses_ = Collections.unmodifiableMap(primitives);
     }
 
     /**
@@ -201,7 +202,7 @@ public class TypeUtil {
 	int length = msg.length();
 	int lengthLeft = length;
 	boolean breakFound = true;
-	Vector v = new Vector();
+	List<String> v = new ArrayList<>();
 	int nextNewline = msg.indexOf("\n");
 
 	while (lengthLeft > width || nextNewline != -1) {
@@ -227,7 +228,7 @@ public class TypeUtil {
 
 	    // Save the substring and adjust indexes.
 	    String substr = msg.substring(lastBreak, nextBreak);
-	    v.addElement(substr);
+	    v.add(substr);
 	    lengthLeft -= substr.length();
 
 	    lastBreak = nextBreak;
@@ -238,10 +239,8 @@ public class TypeUtil {
 	    nextNewline = msg.indexOf("\n", lastBreak);
 	}
 
-	v.addElement(msg.substring(lastBreak));
-	String[] lines = new String[v.size()];
-	v.copyInto(lines);
-	return lines;
+	v.add(msg.substring(lastBreak));
+	return v.toArray(new String[]{});
     }
 
 

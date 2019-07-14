@@ -43,22 +43,7 @@ package com.sun.enterprise.deployment;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -120,13 +105,20 @@ public class Application extends CommonResourceBundleDescriptor
     private static final String PERSISTENCE_UNIT_NAME_SEPARATOR = "#";
     private static final String ROLLING_UPGRADES_ID_DELIMITER = System.getProperty("org.jboss.weld.clustering.rollingUpgradesIdDelimiter", "..");
 
+    private static final ServiceLocator DEFAULT_HABITAT = Globals.getDefaultHabitat();
+
+    // Create logger object per Java SDK 1.4 to log messages
+    // introduced Santanu De, Sun Microsystems, March 2002
+
+    private static final Logger DEFAULT_LOGGER = DOLUtils.getDefaultLogger();
+
     /**
      * Store generated XML dir to be able to get the generated WSDL
      */
     private String generatedXMLDir;
 
     // Set of modules in this application
-    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<ModuleDescriptor<BundleDescriptor>>();
+    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<>();
 
     // True if unique id has been set.  Allows callers to avoid
     // applying unique ids to subcomponents multiple times.
@@ -150,14 +142,6 @@ public class Application extends CommonResourceBundleDescriptor
      * value or pass by reference
      */
     private Boolean passByReference = null;
-
-    // use a String object as lock so it can be serialized as part
-    // of the Application object
-    private String cmpDescriptorsLock = "cmp descriptors lock";
-
-    // flag to indicate that the memory representation of this application
-    // is not in sync with the disk representation
-    private boolean isDirty;
 
     // data structure to map roles to users and groups
     private transient SecurityRoleMapper roleMapper;
@@ -196,31 +180,19 @@ public class Application extends CommonResourceBundleDescriptor
 
     // Physical entity manager factory corresponding to the unit name of
     // each application-level persistence unit.  Only available at runtime.
-    private transient Map<String, EntityManagerFactory> entityManagerFactories =
-            new HashMap<String, EntityManagerFactory>();
+    private transient Map<String, EntityManagerFactory> entityManagerFactories = new HashMap<>();
 
-    private Set<String> entityManagerFactoryUnitNames =
-            new HashSet<String>();
+    private Set<String> entityManagerFactoryUnitNames = new HashSet<>();
 
     // the jndi environment entries
-    private Set<EnvironmentProperty> environmentProperties =
-            new HashSet<EnvironmentProperty>();
-    private Set<EjbReference> ejbReferences =
-            new HashSet<EjbReference>();
-    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences =
-            new HashSet<ResourceEnvReferenceDescriptor>();
-    private Set<MessageDestinationReferenceDescriptor> messageDestReferences =
-            new HashSet<MessageDestinationReferenceDescriptor>();
-    private Set<ResourceReferenceDescriptor> resourceReferences =
-            new HashSet<ResourceReferenceDescriptor>();
-    private Set<ServiceReferenceDescriptor> serviceReferences =
-            new HashSet<ServiceReferenceDescriptor>();
-    private Set<EntityManagerFactoryReferenceDescriptor>
-            entityManagerFactoryReferences =
-            new HashSet<EntityManagerFactoryReferenceDescriptor>();
-    private Set<EntityManagerReferenceDescriptor>
-            entityManagerReferences =
-            new HashSet<EntityManagerReferenceDescriptor>();
+    private Set<EnvironmentProperty> environmentProperties = new HashSet<>();
+    private Set<EjbReference> ejbReferences = new HashSet<>();
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences = new HashSet<>();
+    private Set<MessageDestinationReferenceDescriptor> messageDestReferences = new HashSet<>();
+    private Set<ResourceReferenceDescriptor> resourceReferences = new HashSet<>();
+    private Set<ServiceReferenceDescriptor> serviceReferences = new HashSet<>();
+    private Set<EntityManagerFactoryReferenceDescriptor> entityManagerFactoryReferences = new HashSet<>();
+    private Set<EntityManagerReferenceDescriptor> entityManagerReferences = new HashSet<>();
 
     // for i18N
     private static LocalStringManagerImpl localStrings =
@@ -230,29 +202,20 @@ public class Application extends CommonResourceBundleDescriptor
 
     private String libraryDirectory;
 
-    private List<SecurityRoleMapping> roleMaps = new ArrayList<SecurityRoleMapping>();
-    private List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<SecurityRoleAssignment>();
+    private List<SecurityRoleMapping> roleMaps = new ArrayList<>();
+    private List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<>();
 
     private boolean loadedFromApplicationXml = true;
 
-    private Set<String> resourceAdapters = new HashSet<String>();
+    private Set<String> resourceAdapters = new HashSet<>();
 
-    private Set<ApplicationParam> applicationParams =
-            new HashSet<ApplicationParam>();
-
-    private static final ServiceLocator habitat = Globals.getDefaultHabitat();
+    private Set<ApplicationParam> applicationParams = new HashSet<>();
 
     private Application() {
         super("", localStrings.getLocalString(
                 "enterprise.deployment.application.description",
                 "Application description"));
     }
-
-    // Create logger object per Java SDK 1.4 to log messages
-    // introduced Santanu De, Sun Microsystems, March 2002
-
-    static Logger _logger = DOLUtils.getDefaultLogger();
-
 
     /**
      * @return the default version of the deployment descriptor
@@ -307,9 +270,9 @@ public class Application extends CommonResourceBundleDescriptor
 
     public static Application createApplication() {
         // create a new empty application
-        Application retVal = habitat.create(Application.class);
-        habitat.inject(retVal);
-        habitat.postConstruct(retVal);
+        Application retVal = DEFAULT_HABITAT.create(Application.class);
+        DEFAULT_HABITAT.inject(retVal);
+        DEFAULT_HABITAT.postConstruct(retVal);
 
         return retVal; // new Application();
     }
@@ -1066,7 +1029,7 @@ public class Application extends CommonResourceBundleDescriptor
             URI resolvedUri = originUri.resolve(relativeTargetUri);
             targetUri = resolvedUri.getPath();
         } catch (URISyntaxException use) {
-            _logger.log(Level.FINE, "origin " + origin + " has invalid syntax",
+            DEFAULT_LOGGER.log(Level.FINE, "origin " + origin + " has invalid syntax",
                     use);
         }
 
@@ -1355,14 +1318,17 @@ public class Application extends CommonResourceBundleDescriptor
 
     /**
      * Return the Vector of ejb deployment objects.
+     *
+     * Making this method return a list results in:
+     * java.lang.NoSuchMethodError: com.sun.enterprise.deployment.Application.getEjbDescriptors()Ljava/util/Vector;
+     * 	at org.glassfish.osgiejb.OSGiEJBDeployer$EJBTracker.removedService(OSGiEJBDeployer.java:236)
      */
     public Vector<EjbDescriptor> getEjbDescriptors() {
-        Vector<EjbDescriptor> ejbDescriptors = new Vector<EjbDescriptor>();
+        List<EjbDescriptor> ejbDescriptors = new ArrayList<>();
         for (EjbBundleDescriptor ejbBundleDescriptor : getBundleDescriptors(EjbBundleDescriptor.class)) {
             ejbDescriptors.addAll(ejbBundleDescriptor.getEjbs());
         }
-
-        return ejbDescriptors;
+        return new Vector<>(ejbDescriptors);
     }
 
     // START OF IASRI 4718761 - pass-by-ref need to compare DD from previous
@@ -1375,9 +1341,8 @@ public class Application extends CommonResourceBundleDescriptor
      * @return all ejb descriptors in ordered form
      */
     public EjbDescriptor[] getSortedEjbDescriptors() {
-        Vector ejbDesc = getEjbDescriptors();
-        EjbDescriptor[] descs = (EjbDescriptor[]) ejbDesc.toArray(
-                new EjbDescriptor[ejbDesc.size()]);
+        List<EjbDescriptor> ejbDesc = getEjbDescriptors();
+        EjbDescriptor[] descs = ejbDesc.toArray(new EjbDescriptor[]{});
 
         // The sorting algorithm used by this api is a modified mergesort.
         // This algorithm offers guaranteed n*log(n) performance, and
@@ -1386,17 +1351,11 @@ public class Application extends CommonResourceBundleDescriptor
         // since ejb name is only unique within a module, add the module uri
         // as the additional piece of information for comparison
         Arrays.sort(descs,
-                new Comparator() {
-                    @Override
-                    public int compare(Object o1, Object o2) {
-                        EjbDescriptor desc1 = (EjbDescriptor) o1;
-                        EjbDescriptor desc2 = (EjbDescriptor) o2;
-                        String moduleUri1 = desc1.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-                        String moduleUri2 = desc2.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-                        return (moduleUri1 + desc1.getName()).compareTo(
-                                moduleUri2 + desc2.getName());
-                    }
-                }
+            (desc1, desc2) -> {
+                String moduleUri1 = desc1.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+                String moduleUri2 = desc2.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+                return (moduleUri1 + desc1.getName()).compareTo(moduleUri2 + desc2.getName());
+            }
         );
 
         return descs;
@@ -1441,26 +1400,26 @@ public class Application extends CommonResourceBundleDescriptor
      * @param id unique id for this application
      */
     public void setUniqueId(long id) {
-        _logger.log(Level.FINE, "[Application] " + getName() + " , uid: " + id);
+        DEFAULT_LOGGER.log(Level.FINE, "[Application] " + getName() + " , uid: " + id);
         this.uniqueId = id;
 
         EjbDescriptor[] descs = getSortedEjbDescriptors();
 
         Set<Long> uniqueIds = new TreeSet<>();
-        for (int i = 0; i < descs.length; i++) {
+        for (EjbDescriptor desc : descs) {
             // Maximum of 2^16 beans max per application
-            String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+            String module = desc.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
             long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst(Pattern.quote(ROLLING_UPGRADES_ID_DELIMITER) + ".*$", "")
-                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65536);
+                    + desc.getName()).getBytes()).getLeastSignificantBits() % 65536);
             // in case of an id collision, increment until find empty slot
-            while(uniqueIds.contains(uid)) {
+            while (uniqueIds.contains(uid)) {
                 uid = ++uid % 65536;
             }
             uniqueIds.add(uid);
-            descs[i].setUniqueId((id | uid));
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
-                        descs[i].getUniqueId());
+            desc.setUniqueId((id | uid));
+            if (DEFAULT_LOGGER.isLoggable(Level.FINE)) {
+                DEFAULT_LOGGER.log(Level.FINE, "Ejb  " + module + ":" + desc.getName() + " id = " +
+                        desc.getUniqueId());
             }
         }
 
@@ -1509,7 +1468,7 @@ public class Application extends CommonResourceBundleDescriptor
         boolean passByReference = false;
 
         if (this.isPassByReferenceDefined()) {
-            passByReference = this.passByReference.booleanValue();
+            passByReference = this.passByReference;
         }
         return passByReference;
     }
@@ -1548,10 +1507,8 @@ public class Application extends CommonResourceBundleDescriptor
      * AppCLient JAR).
      * @return
      */
-    public Set getArchivableDescriptors() {
-        Set archivableDescriptors = new OrderedSet();
-        archivableDescriptors.addAll(getBundleDescriptors());
-        return archivableDescriptors;
+    public Set<BundleDescriptor> getArchivableDescriptors() {
+        return new OrderedSet<>(getBundleDescriptors());
     }
 
     /**
@@ -1581,7 +1538,7 @@ public class Application extends CommonResourceBundleDescriptor
     public SecurityRoleMapper getRoleMapper() {
         if (this.roleMapper == null) {
             if (securityRoleMapperFactory == null) {
-                _logger.log(Level.FINE, "SecurityRoleMapperFactory NOT set.");
+                DEFAULT_LOGGER.log(Level.FINE, "SecurityRoleMapperFactory NOT set.");
             } else {
                 this.roleMapper = securityRoleMapperFactory.getRoleMapper(this.getName());
             }
@@ -1609,7 +1566,7 @@ public class Application extends CommonResourceBundleDescriptor
      * @return
      */
     public boolean isDirty() {
-        return this.isDirty;
+        return false;
     }
 
     /**
@@ -1643,8 +1600,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
-        for (Iterator itr = descSet.iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+        for (Object obj : descSet) {
             if (obj instanceof Descriptor)
                 ((Descriptor) obj).print(sbuf);
             else

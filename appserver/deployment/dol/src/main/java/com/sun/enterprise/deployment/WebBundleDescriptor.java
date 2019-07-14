@@ -93,7 +93,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Collection getNamedDescriptors();
 
-    public abstract Vector<NamedReferencePair> getNamedReferencePairs();
+    public abstract List<NamedReferencePair> getNamedReferencePairs();
 
     public abstract String getContextRoot();
 
@@ -373,9 +373,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract WebComponentDescriptor[] getWebComponentByImplName(String name);
 
-    public abstract Vector<ServletFilter> getServletFilters();
+    public abstract List<ServletFilter> getServletFilters();
 
-    public abstract Vector<ServletFilter> getServletFilterDescriptors();
+    public abstract List<ServletFilter> getServletFilterDescriptors();
 
     public abstract void addServletFilter(ServletFilter ref);
 
@@ -383,9 +383,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract void combineServletFilters(WebBundleDescriptor webBundleDescriptor);
 
-    public abstract Vector<ServletFilterMapping> getServletFilterMappings();
+    public abstract List<ServletFilterMapping> getServletFilterMappings();
 
-    public abstract Vector<ServletFilterMapping> getServletFilterMappingDescriptors();
+    public abstract List<ServletFilterMapping> getServletFilterMappingDescriptors();
 
     public abstract void addServletFilterMapping(ServletFilterMapping ref);
 
@@ -395,9 +395,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract void combineServletFilterMappings(WebBundleDescriptor webBundleDescriptor);
 
-    public abstract Vector<AppListenerDescriptor> getAppListeners();
+    public abstract List<AppListenerDescriptor> getAppListeners();
 
-    public abstract Vector<AppListenerDescriptor> getAppListenerDescriptors();
+    public abstract List<AppListenerDescriptor> getAppListenerDescriptors();
 
     public abstract void setAppListeners(Collection<? extends AppListenerDescriptor> c);
 
@@ -420,9 +420,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     @Override
     public abstract boolean hasWebServiceClients();
 
-    protected abstract boolean removeVectorItem(Vector<? extends Object> list, Object ref);
+    protected abstract boolean removeVectorItem(List<? extends Object> list, Object ref);
 
-    protected abstract void moveVectorItem(Vector list, Object ref, int rpos);
+    protected abstract void moveVectorItem(List list, Object ref, int rpos);
 
     public abstract void putJarNameWebFragmentNamePair(String jarName, String webFragName);
 

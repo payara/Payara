@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.io.runtime;
 
@@ -49,9 +50,10 @@ import com.sun.enterprise.deployment.node.ws.WLWebServicesDescriptorNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 
-import java.util.Vector;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class is responsible for handling the WebLogic webservices deployment descriptor.
@@ -79,12 +81,8 @@ public class WLSWebServicesDeploymentDescriptorFile extends ConfigurationDeploym
         return descriptorPath;
     }
 
-    public static Vector getAllDescriptorPaths() {
-        Vector allDescPaths = new Vector();
-        allDescPaths.add(WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY);
-        allDescPaths.add(WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY);
-
-        return allDescPaths;
+    public static List<String> getAllDescriptorPaths() {
+        return Arrays.asList(WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY, WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class WLSWebServicesDeploymentDescriptorFile extends ConfigurationDeploym
             }
         }
     }
-    
+
   /**
    * Return whether this configuration file can be validated.
    * @return whether this configuration file can be validated.

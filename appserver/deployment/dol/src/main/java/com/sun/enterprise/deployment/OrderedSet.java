@@ -37,20 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 /**
- * I am an ordered collection that does not allow duplicates.
+ * It is an collection that does not allow duplicates and implements the Set interface.
  *
  * @author Danny Coward
  */
-
-public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by srini - can we instead change the usage to be TreeSet based?
+public class OrderedSet<T> extends LinkedList<T> implements Set<T> {
 
     /**
      * Construct an empty collection.
@@ -91,5 +89,5 @@ public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by sri
             }
 	    }
 	    return setChanged;
-	}	
+	}
 }

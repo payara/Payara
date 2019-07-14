@@ -158,8 +158,8 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     /**
     * Return the set of named reference pairs I reference.
     */
-    public Vector<NamedReferencePair> getNamedReferencePairs() {
-	return super.getNamedReferencePairsFrom(this);
+    public List<NamedReferencePair> getNamedReferencePairs() {
+	    return super.getNamedReferencePairsFrom(this);
     }
 
     /**
@@ -167,9 +167,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
     public Set getEnvironmentProperties() {
 	if (this.environmentProperties == null) {
-	    this.environmentProperties = new OrderedSet();
+	    this.environmentProperties = new OrderedSet<>();
 	}
-	return this.environmentProperties = new OrderedSet(this.environmentProperties);
+	return this.environmentProperties = new OrderedSet<>(this.environmentProperties);
     }
 
     /**

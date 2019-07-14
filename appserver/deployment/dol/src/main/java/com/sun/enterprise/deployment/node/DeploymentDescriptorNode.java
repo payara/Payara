@@ -62,6 +62,7 @@ import static java.util.logging.Level.WARNING;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.glassfish.config.support.TranslatedConfigView;
 
@@ -89,13 +90,13 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     // Handlers is the list of XMLNodes registered for handling sub xml tags of the current
     // XMLNode
-    protected Hashtable<String, Class> handlers;
+    protected Map<String, Class> handlers;
 
     // List of add methods declared on the descriptor class to add sub descriptors extracted
     // by the handlers registered above. The key for the table is the xml root tag for the
     // descriptor to be added, the value is the method name to add such descriptor to the
     // current descriptor.
-    private Hashtable addMethods;
+    private Map<String, String> addMethods;
 
     // Each node is associated with a XML tag it is handling
     private XMLElement xmlTag;
@@ -129,7 +130,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         if (abstractDescriptor == null) {
             abstractDescriptor = createDescriptor();
         }
-        
+
         return (T) abstractDescriptor;
     }
 
@@ -147,13 +148,13 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             DOLUtils.getDefaultLogger().log(SEVERE, "enterprise.deployment.backend.addDescriptorFailure", new Object[] { descriptor, toString() });
             throw new RuntimeException("Cannot add " + descriptor + " to " + toString());
         }
-        
+
         getParentNode().addDescriptor(descriptor);
     }
 
     /**
      * Adds a new DOL descriptor instance to the descriptor associated with this XMLNode
-     * 
+     *
      * @param node the sub-node adding the descriptor;
      */
     protected void addNodeDescriptor(DeploymentDescriptorNode node) {
@@ -164,7 +165,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             addDescriptor(node.getDescriptor());
             return;
         }
-        
+
         String xmlRootTag = node.getXMLRootTag().getQName();
         if (addMethods != null && addMethods.containsKey(xmlRootTag)) {
             try {
@@ -229,21 +230,20 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * register a new XMLNode handler for a particular XML tag.
-     * 
+     *
      * @param element XMLElement is the XML tag this XMLNode will handle
      * @param handler the class implemenenting the XMLNode interface
      */
     protected void registerElementHandler(XMLElement element, Class handler) {
         if (handlers == null) {
-            handlers = new Hashtable<String, Class>();
+            handlers = new ConcurrentHashMap<>();
         }
-        
         handlers.put(element.getQName(), handler);
     }
 
     /**
      * register a new XMLNode handler for a particular XML tag.
-     * 
+     *
      * @param element XMLElement is the XML tag this XMLNode will handle
      * @param handler the class implemenenting the XMLNode interface
      * @param addMethodName is the method name for adding the descriptor extracted by the handler node to the current
@@ -251,9 +251,8 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      */
     public void registerElementHandler(XMLElement element, Class handler, String addMethodName) {
         registerElementHandler(element, handler);
-        
         if (addMethods == null) {
-            addMethods = new Hashtable();
+            addMethods = new ConcurrentHashMap<>();
         }
         addMethods.put(element.getQName(), addMethodName);
     }
@@ -280,17 +279,17 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { this, "No handler registered" });
             return null;
         }
-        
+
         Class c = handlers.get(element.getQName());
         if (c == null) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), "No handler registered" });
             return null;
         }
-        
+
         if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
             DOLUtils.getDefaultLogger().finer("New Handler requested for " + c);
         }
-        
+
         DeploymentDescriptorNode node;
         try {
             node = (DeploymentDescriptorNode) c.newInstance();
@@ -301,9 +300,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", e);
             return null;
         }
-        
+
         return node;
-    
+
     }
 
     private Class getExtensionHandler(final XMLElement element) {
@@ -358,7 +357,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * receives notification of the end of an XML element by the Parser
-     * 
+     *
      * @param element the xml tag identification
      * @return true if this node is done processing the XML sub tree
      */
@@ -389,11 +388,10 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         // Let's iterator over all the statically registered handlers to
         // find one which is responsible for handling the XML tag.
         if (handlers != null) {
-            for (Enumeration handlersIterator = handlers.keys(); handlersIterator.hasMoreElements();) {
-                String subElement = (String) handlersIterator.nextElement();
-                if (element.getQName().equals(subElement)) {
+            for (Map.Entry<String, Class> entry : handlers.entrySet()) {
+                if (element.getQName().equals(entry.getKey())) {
                     // record element to node mapping for runtime nodes
-                    recordNodeMapping(element.getQName(), handlers.get(subElement));
+                    recordNodeMapping(element.getQName(), entry.getValue());
                     return false;
                 }
             }
@@ -427,7 +425,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * receives notification of the value for a particular tag
-     * 
+     *
      * @param element the xml element
      * @param value it's associated value
      */
@@ -482,7 +480,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to method name on the descriptor
      * class for setting the element value.
-     * 
+     *
      * @return the map with the element name as a key, the setter method as a value
      */
     protected Map<String, String> getDispatchTable() {
@@ -494,7 +492,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * call a setter method on a descriptor with a new value
-     * 
+     *
      * @param target the descriptor to use
      * @param methodName the setter method to invoke
      * @param value the new value for the field in the descriptor
@@ -647,7 +645,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * <p>
-     * 
+     *
      * @return the Document for the given node
      * </p>
      */
@@ -663,7 +661,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * <p>
      * Append a new element child to the current node
      * </p>
-     * 
+     *
      * @param parent is the parent node for the new child element
      * @param elementName is new element tag name
      * @return the newly created child node
@@ -678,7 +676,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * <p>
      * Append a new text child
      * </p>
-     * 
+     *
      * @param parent for the new child element
      * @param elementName is the new element tag name
      * @param text the text for the new element
@@ -698,7 +696,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * <p>
      * Append a new text child
      * </p>
-     * 
+     *
      * @param parent for the new child element
      * @param elementName is the new element tag name
      * @param value the int value for the new element
@@ -712,7 +710,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * <p>
      * Append a new text child even if text is empty
      * </p>
-     * 
+     *
      * @param parent for the new child element
      * @param elementName is the new element tag name
      * @param text the text for the new element
@@ -731,7 +729,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * <p>
      * Append a new attribute to an element
      * </p>
-     * 
+     *
      * @param parent for the new child element
      * @param elementName is the new element tag name
      * @param text the text for the new element
@@ -746,7 +744,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
 
     /**
      * Set a namespace attribute on an element.
-     * 
+     *
      * @param element on which to set attribute
      * @param prefix raw prefix (without "xmlns:")
      * @param namespaceURI namespace URI to which prefix is mapped.

@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
-import java.util.Vector;
+import java.util.List;
 
 import org.glassfish.deployment.common.Descriptor;
 
 //Created by IntelliJ IDEA.
 /**
- * Class for holding JNDI information of a resource for comparison puporses
+ * Class for holding JNDI information of a resource for comparison purposes
  * @author: naman
  * @since: 24/5/12 11:23 AM
  * @see org.glassfish.resources.api.JavaEEResource
@@ -57,10 +58,10 @@ public class CommonResourceValidator {
 
     private String jndiName;
 
-    private Vector scope;
+    private List<String> scope;
 
 
-    public CommonResourceValidator(Descriptor descriptor,String jndiName, Vector scope) {
+    public CommonResourceValidator(Descriptor descriptor,String jndiName, List<String> scope) {
         this.setDescriptor(descriptor);
         this.setJndiName(jndiName);
         this.setScope(scope);
@@ -82,11 +83,11 @@ public class CommonResourceValidator {
         this.jndiName = jndiName;
     }
 
-    public Vector getScope() {
+    public List<String> getScope() {
         return scope;
     }
 
-    public void setScope(Vector scope) {
+    public void setScope(List<String> scope) {
         this.scope = scope;
     }
 }

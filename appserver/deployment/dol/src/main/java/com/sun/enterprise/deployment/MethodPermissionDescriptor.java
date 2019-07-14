@@ -47,9 +47,7 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * This class defines a method permission information in the assembly
@@ -60,49 +58,42 @@ import java.util.Vector;
  */
 public class MethodPermissionDescriptor extends DescribableDescriptor {
 
-    Vector methods = new Vector();
-    Vector mps = new Vector() ;
+    private List<MethodDescriptor> methodDescriptors = new ArrayList<>();
+    private List<MethodPermission> methodPermissions = new ArrayList<>();
 
     /** Creates new MethodPermissionDescriptor */
     public MethodPermissionDescriptor() {
     }
 
     public void addMethod(MethodDescriptor aMethod) {
-        methods.add(aMethod);
+        methodDescriptors.add(aMethod);
     }
 
-    public void addMethods(Collection methods) {
-        this.methods.addAll(methods);
+    public void addMethods(Collection<MethodDescriptor> methods) {
+        this.methodDescriptors.addAll(methods);
     }
 
     public void addMethodPermission(MethodPermission mp) {
-        mps.add(mp);
+        methodPermissions.add(mp);
     }
 
     public MethodDescriptor[] getMethods() {
-        MethodDescriptor[] array = new MethodDescriptor[methods.size()];
-        methods.copyInto(array);
-        return array;
+        return methodDescriptors.toArray(new MethodDescriptor[]{});
     }
 
     public MethodPermission[] getMethodPermissions() {
-        MethodPermission[] array = new MethodPermission[mps.size()];
-        mps.copyInto(array);
-        return array;
+        return methodPermissions.toArray(new MethodPermission[]{});
     }
 
-    public void print(StringBuilder toStringBuilder) {
-        StringBuilder buffer = toStringBuilder;
-        buffer.append("Method Permission " + (getDescription()==null?"":getDescription()) );
+    public void print(StringBuilder buffer) {
+        buffer.append("Method Permission ").append(getDescription() == null ? "" : getDescription());
         buffer.append("\nFor the following Permissions ");
-        for (Iterator mpsIterator = mps.iterator();mpsIterator.hasNext();) {
-            MethodPermission mp = (MethodPermission) mpsIterator.next();
+        for (MethodPermission mp : methodPermissions) {
             mp.print(buffer);
             buffer.append("\n");
         }
-        buffer.append("\nFor the following ").append(methods.size()).append(" methods\n");
-        for (Iterator methodsIterator = methods.iterator();methodsIterator.hasNext();) {
-            MethodDescriptor md = (MethodDescriptor) methodsIterator.next();
+        buffer.append("\nFor the following ").append(methodDescriptors.size()).append(" methods\n");
+        for (MethodDescriptor md : methodDescriptors) {
             md.print(buffer);
             buffer.append("\n");
         }

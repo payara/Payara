@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.List;
+import java.util.Map;
 
 public interface ArchiveOperationListener {
 
     /* called when Archivist has added the specified (entry,file) pairs */
-    public void addArchiveEntries(Object source, Hashtable entries);
+    void addArchiveEntries(Object source, Map entries);
 
     /* called when Archivist has remove the specified entries */
-    public void removeArchiveEntries(Object source, Vector entries);
+    void removeArchiveEntries(Object source, List entries);
 
 }

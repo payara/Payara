@@ -58,7 +58,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 import java.util.logging.Level;
 
 
@@ -98,7 +98,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     public void process(ReadableArchive readableArchive, WebBundleDescriptor webBundleDesc,
             ClassLoader classLoader, Parser parser) throws IOException {
 
-        this.archiveFile =  new File(readableArchive.getURI()); 
+        this.archiveFile =  new File(readableArchive.getURI());
         this.classLoader = classLoader;
         setParser(parser);
 
@@ -120,7 +120,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         }
 
         File webinf = new File(archiveFile, "WEB-INF");
-        
+
         if (webBundleDesc instanceof WebFragmentDescriptor) {
             WebFragmentDescriptor webFragmentDesc = (WebFragmentDescriptor)webBundleDesc;
             File lib = new File(webinf, "lib");
@@ -138,7 +138,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         } else {
             File classes = new File(webinf, "classes");
             if (classes.exists()) {
-                addScanDirectory(classes);   
+                addScanDirectory(classes);
             }
         }
         scanXmlDefinedClassesIfNecessary(webBundleDesc);
@@ -149,7 +149,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     // We will also scan any servlets/filters/listeners classes specified
     // in web.xml additionally if those classes are not resided in the wars.
     private void scanXmlDefinedClassesIfNecessary(
-            WebBundleDescriptor webBundleDesc) 
+            WebBundleDescriptor webBundleDesc)
             throws IOException {
 
         ClassLoader commonCL = clh.getCommonClassLoader();
@@ -167,19 +167,16 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
             }
         }
 
-        Vector servletFilters = webBundleDesc.getServletFilters();
-        for (int i = 0; i < servletFilters.size(); i++) {
-            ServletFilter filter = (ServletFilter)servletFilters.elementAt(i);
+        List<ServletFilter> servletFilters = webBundleDesc.getServletFilters();
+        for (ServletFilter filter : servletFilters) {
             String filterName = filter.getClassName();
             if (isScan(filterName, commonCL)) {
                 addScanClassName(filter.getClassName());
             }
         }
 
-        Vector listeners = webBundleDesc.getAppListenerDescriptors();
-        for (int j = 0; j < listeners.size(); j++) {
-            AppListenerDescriptor listenerDesc =
-                (AppListenerDescriptor) listeners.elementAt(j);
+        List<AppListenerDescriptor> listeners = webBundleDesc.getAppListenerDescriptors();
+        for (AppListenerDescriptor listenerDesc : listeners) {
             String listenerName = listenerDesc.getListener();
             if (isScan(listenerName, commonCL)) {
                 addScanClassName(listenerDesc.getListener());
@@ -192,10 +189,10 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
      * @param className
      * @param commonCL
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     private boolean isScan(String className, ClassLoader commonCL) throws IOException {
         return commonCL.getResource(className.replace(".", "/") + ".class") != null;
     }
 }
- 
+

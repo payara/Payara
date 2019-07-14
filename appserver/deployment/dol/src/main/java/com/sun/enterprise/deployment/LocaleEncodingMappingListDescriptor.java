@@ -73,14 +73,14 @@ public class LocaleEncodingMappingListDescriptor extends Descriptor {
     }
 
     public Set<LocaleEncodingMappingDescriptor> getLocaleEncodingMappingSet() {
-	if(list == null) {
-	    list = new HashSet<LocaleEncodingMappingDescriptor>();
-	}
-	return list;
+        if(list == null) {
+            list = new HashSet<>();
+        }
+        return list;
     }
 
     public Enumeration getLocaleEncodingMappings() {
-	return (new Vector(this.getLocaleEncodingMappingSet())).elements();
+    	return Collections.enumeration(this.getLocaleEncodingMappingSet());
     }
 
     public void addLocaleEncodingMapping(LocaleEncodingMappingDescriptor desc) {

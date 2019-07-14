@@ -37,38 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.web;
 
 import java.util.Collection;
-import java.util.Vector;
+import java.util.List;
 
 /** Servlet filter objects */
 public interface ServletFilter {
 
-    public void setName(String name);
-    public String getName();
+    void setName(String name);
+    String getName();
 
-    public void setDisplayName(String name);
-    public String getDisplayName();
+    void setDisplayName(String name);
+    String getDisplayName();
 
-    public void setDescription(String description);
-    public String getDescription();
+    void setDescription(String description);
+    String getDescription();
 
-    public void setClassName(String name);
-    public String getClassName();
+    void setClassName(String name);
+    String getClassName();
 
-    public void setInitializationParameters(Collection<InitializationParameter> c);
-    public Vector getInitializationParameters();
-    public void addInitializationParameter(InitializationParameter ref);
-    public void removeInitializationParameter(InitializationParameter ref);
+    void setInitializationParameters(Collection<InitializationParameter> c);
+    List<InitializationParameter> getInitializationParameters();
+    void addInitializationParameter(InitializationParameter ref);
+    void removeInitializationParameter(InitializationParameter ref);
 
-    public void setLargeIconUri(String largeIconUri);
-    public String getLargeIconUri();
+    void setLargeIconUri(String largeIconUri);
+    String getLargeIconUri();
 
-    public void setSmallIconUri(String smallIconUri);
-    public String getSmallIconUri();
+    void setSmallIconUri(String smallIconUri);
+    String getSmallIconUri();
 
-    public void setAsyncSupported(Boolean asyncSupported);
-    public Boolean isAsyncSupported();
+    void setAsyncSupported(Boolean asyncSupported);
+    Boolean isAsyncSupported();
 }

@@ -40,10 +40,7 @@
 
 package org.glassfish.ejb.deployment.descriptor.runtime;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -74,7 +71,7 @@ public class PrefetchDisabledDescriptor extends Descriptor {
     public ArrayList getConvertedMethodDescs() {
        if (convertedMethodDescs.isEmpty()) {
            convertStylePrefetchDisabledMethods();
-       } 
+       }
        return convertedMethodDescs;
     }
 
@@ -89,7 +86,7 @@ public class PrefetchDisabledDescriptor extends Descriptor {
 
     /**
      * Setter for ejbDescriptors
-     * @param ejbDescriptors New value of ejbDescriptor.
+     * @param ejbDescriptor New value of ejbDescriptor.
      */
     public void setEjbDescriptor(
         EjbDescriptor ejbDescriptor) {
@@ -99,7 +96,7 @@ public class PrefetchDisabledDescriptor extends Descriptor {
 
     /**
      * Setter for method
-     * @param MethodDescriptor New value of MethodDescriptor to add.
+     * @param methodDesc New value of MethodDescriptor to add.
      */
     public void addMethodDescriptor(MethodDescriptor methodDesc) {
         methodDescs.add(methodDesc);
@@ -109,15 +106,15 @@ public class PrefetchDisabledDescriptor extends Descriptor {
         Set allMethods = ejbDescriptor.getMethodDescriptors();
         for (Iterator mdItr = methodDescs.iterator(); mdItr.hasNext();) {
             MethodDescriptor methodDesc = (MethodDescriptor) mdItr.next();
- 
+
             // the ejb-name element defined in the method element will
-            // be always ignored and overriden by the one defined in 
+            // be always ignored and overriden by the one defined in
             // ejb element
             methodDesc.setEjbName(ejbDescriptor.getName());
 
             // Convert to style 3 method descriptors
-            Vector mds = methodDesc.doStyleConversion(ejbDescriptor, allMethods);
-            convertedMethodDescs.addAll(mds); 
+            List<MethodDescriptor> mds = methodDesc.doStyleConversion(ejbDescriptor, allMethods);
+            convertedMethodDescs.addAll(mds);
         }
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.util;
@@ -47,14 +47,16 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Classloader to load classes within a file or web archive
  */
 public class FileClassLoader extends ClassLoader {
-    String codebase;
-    Hashtable cache = new Hashtable();
+
+    private String codebase;
+    private Map<String, Class> cache = new HashMap<>();
 
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(FileClassLoader.class);
@@ -64,72 +66,56 @@ public class FileClassLoader extends ClassLoader {
 	this.codebase = codebase;
     }
 
-    private byte[] loadClassData(String name)
-	throws IOException
+    private byte[] loadClassData(String name) throws IOException
     {
         // load the class data from the codebase
-	String sep = System.getProperty("file.separator");
-	String c = name.replace('.', sep.charAt(0)) + ".class";
-	File file = new File(codebase + sep + c);
-	if (!file.exists()) {
-	    File wf = new File(codebase + sep + "WEB-INF" + sep + "classes" + sep + c);
-	    if (wf.exists()) {
-		file = wf;
-	    }
-	}
-	FileInputStream fis = null;
-        byte[] buf = null;
-        try {
-          fis = new FileInputStream(file);
-          int avail = fis.available();
-          buf = new byte[avail];
-          fis.read(buf);
-        } finally {
-          if (fis != null)
-            fis.close();
+        String sep = System.getProperty("file.separator");
+        String c = name.replace('.', sep.charAt(0)) + ".class";
+        File file = new File(codebase + sep + c);
+        if (!file.exists()) {
+            File wf = new File(codebase + sep + "WEB-INF" + sep + "classes" + sep + c);
+            if (wf.exists()) {
+                file = wf;
+            }
         }
-	return buf;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            int avail = fis.available();
+            byte[] buf = new byte[avail];
+            fis.read(buf);
+	        return buf;
+        }
     }
-    
+
     String getClassName(File f) throws IOException, ClassFormatError {
-	FileInputStream fis = null;
-        byte[] buf = null;
-        int avail = 0;
-        try {
-          fis = new FileInputStream(f);
-          avail = fis.available();
-          buf = new byte[avail];
-          fis.read(buf);
-        } finally {
-          if (fis != null)
-            fis.close();
+        try (FileInputStream fis = new FileInputStream(f)) {
+            int avail = fis.available();
+            byte[] buf = new byte[avail];
+            fis.read(buf);
+            Class c = super.defineClass(null, buf, 0, avail);
+            return c.getName();
         }
-	Class c = super.defineClass(null, buf, 0, avail);
-	return c.getName();
     }
 
     /**
-     * @return 
+     * @return
      * @exception ClassNotFoundException if class load fails
      */
     @Override
-    public synchronized Class loadClass(String name, boolean resolve) 
-	throws ClassNotFoundException
+    public synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException
     {
-        Class c = (Class)cache.get(name);
+        Class c = cache.get(name);
         if (c == null) {
-	    try { 
-                byte data[] = loadClassData(name);
-                c = defineClass(null,data, 0, data.length);
+            try {
+                byte[] data = loadClassData(name);
+                c = defineClass(null, data, 0, data.length);
                 if( !name.equals(c.getName()) ) {
                     throw new ClassNotFoundException(localStrings.getLocalString("classloader.wrongpackage", "", new Object[] { name, c.getName() }));
                 }
-	    }
-	    catch ( Exception ex ) {
-		// Try to use default classloader. If this fails, 
-		// then a ClassNotFoundException is thrown.
-		c = Class.forName(name);
-	    }
+            } catch ( Exception ex ) {
+                // Try to use default classloader. If this fails,
+                // then a ClassNotFoundException is thrown.
+                c = Class.forName(name);
+            }
             cache.put(name, c);
         }
         if (resolve)

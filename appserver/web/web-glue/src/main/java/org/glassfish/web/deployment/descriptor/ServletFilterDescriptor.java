@@ -45,8 +45,9 @@ import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.deployment.common.Descriptor;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Deployment object representing the servlet filter spec
@@ -67,7 +68,7 @@ public class ServletFilterDescriptor
     private String filterName = "";
 
     /** initialization parameters */
-    private Vector<InitializationParameter> initParms = new Vector<InitializationParameter>();
+    private List<InitializationParameter> initParms = new ArrayList<>();
 
     /** async supported */
     private Boolean asyncSupported = null;
@@ -143,29 +144,29 @@ public class ServletFilterDescriptor
 
     /* set initialization parameters */
     public void setInitializationParameters(Collection<InitializationParameter> c) {
-	this.initParms.clear();
-	this.initParms.addAll(c);
+        this.initParms.clear();
+        this.initParms.addAll(c);
     }
 
     /* get initialization parameters */
     @SuppressWarnings("unchecked")
-    public Vector<InitializationParameter> getInitializationParameters() {
-	return (Vector<InitializationParameter>)this.initParms.clone();
+    public List<InitializationParameter> getInitializationParameters() {
+	    return new ArrayList<>(this.initParms);
     }
 
     /* add a single initialization parameter */
     public void addInitializationParameter(InitializationParameter ref) {
-	this.initParms.addElement(ref);
+	this.initParms.add(ref);
     }
-    
+
     /* add a single initialization parameter */
     public void addInitializationParameter(EnvironmentProperty ref) {
-	addInitializationParameter((InitializationParameter) ref);
-    }    
+        addInitializationParameter((InitializationParameter) ref);
+    }
 
     /* remove a single initialization parameter */
     public void removeInitializationParameter(InitializationParameter ref) {
-	this.initParms.removeElement(ref);
+	this.initParms.remove(ref);
     }
 
     /* set asyncSupported */

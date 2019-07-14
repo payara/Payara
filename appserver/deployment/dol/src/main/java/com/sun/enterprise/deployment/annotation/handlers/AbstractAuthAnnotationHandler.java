@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -72,7 +73,7 @@ import org.glassfish.apf.HandlerProcessingResult;
  *     protected void processEjbMethodSecurity(Annotaton authAnnotation,
  *          MethodDescriptor md, EjbDescriptor ejbDesc);
  *     protected Classlt;? extends Annotaion&gt;[] relatedAnnotationClasses();
- *      
+ *
  * @author Shing Wai Chan
  */
 abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHandler
@@ -102,7 +103,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
         Annotation authAnnotation = ainfo.getAnnotation();
         for (EjbContext ejbContext : ejbContexts) {
             EjbDescriptor ejbDesc = ejbContext.getDescriptor();
-                
+
             if (ElementType.TYPE.equals(ainfo.getElementType())) {
                 // postpone the processing at the end
                 ejbContext.addPostProcessInfo(ainfo, this);
@@ -236,7 +237,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
         if (ejbDesc.isLocalBean()) {
             methodAlls.add(
                     new MethodDescriptor(MethodDescriptor.ALL_METHODS,
-                    "", MethodDescriptor.EJB_LOCAL));    
+                    "", MethodDescriptor.EJB_LOCAL));
         }
 
         if (ejbDesc.hasWebServiceEndpointInterface()) {
@@ -262,9 +263,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
                 List mdObjs = (List)mdObjsObj;
                 for (Object mdObj : mdObjs) {
                     MethodDescriptor md = (MethodDescriptor)mdObj;
-                    for (Object style3MdObj :
-                            md.doStyleConversion(ejbDesc, allMethods)) {
-                        MethodDescriptor style3Md = (MethodDescriptor)style3MdObj;
+                    for (MethodDescriptor style3Md : md.doStyleConversion(ejbDesc, allMethods)) {
                         if (methodDesc.equals(style3Md)) {
                             return true;
                         }
@@ -279,22 +278,17 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      * This method checks whether annotations are compatible.
      * One cannot have two or more of the @DenyAll, @PermitAll, @RoleAllowed.
      *
-     * @param ainfo
+     * @param aInfo Annotation information
      * @return validity
      */
-    private boolean validateAccessControlAnnotations(AnnotationInfo ainfo)
+    private boolean validateAccessControlAnnotations(AnnotationInfo aInfo)
             throws AnnotationProcessorException {
 
-        boolean validity = true;
-        AnnotatedElement ae = (AnnotatedElement)ainfo.getAnnotatedElement();
+        AnnotatedElement ae = aInfo.getAnnotatedElement();
 
-        int count = 0;
-        boolean hasDenyAll = false;
-
-        count += (ae.isAnnotationPresent(RolesAllowed.class)? 1 : 0);
+        int count = (ae.isAnnotationPresent(RolesAllowed.class) ? 1 : 0);
         if (ae.isAnnotationPresent(DenyAll.class)) {
             count += 1;
-            hasDenyAll = true;
         }
 
         // continue the checking if not already more than one
@@ -303,13 +297,13 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
         }
 
         if (count > 1) {
-            log(Level.SEVERE, ainfo,
+            log(Level.SEVERE, aInfo,
                 localStrings.getLocalString(
                 "enterprise.deployment.annotation.handlers.morethanoneauthannotation",
                 "One cannot have more than one of @RolesAllowed, @PermitAll, @DenyAll in the same AnnotatedElement."));
-            validity = false;
+            return false;
         }
 
-        return validity;
+        return true;
     }
 }

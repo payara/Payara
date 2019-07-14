@@ -37,21 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016 - 2019] [Payara Foundation]
 
 package com.sun.enterprise.deployment.util;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.*;
-import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
@@ -63,23 +51,28 @@ import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.*;
+import java.util.logging.Level;
+
 /**
- * This class is responsible for validating the loaded DOL classes and 
- * transform some of the raw XML information into refined values used 
+ * This class is responsible for validating the loaded DOL classes and
+ * transform some of the raw XML information into refined values used
  * by the DOL runtime
  *
  * @author Jerome Dochez
  */
 @Service(name="application_deploy")
-public class ApplicationValidator extends ComponentValidator 
+public class ApplicationValidator extends ComponentValidator
     implements ApplicationVisitor, ManagedBeanVisitor {
 
 
     /** Used to store all descriptor details for validation purpose */
-    private HashMap<String, CommonResourceValidator> allResourceDescriptors = new HashMap<String, CommonResourceValidator>();
+    private Map<String, CommonResourceValidator> allResourceDescriptors = new HashMap<>();
 
     /** Used to store keys and descriptor names for validation purpose */
-    private HashMap<String, Vector> validNameSpaceDetails = new HashMap<String, Vector>();
+    private Map<String, List<String>> validNameSpaceDetails = new HashMap<>();
 
     private final String APPCLIENT_KEYS = "APPCLIENT_KEYS";
     private final String EJBBUNDLE_KEYS = "EJBBUNDLE_KEYS";
@@ -99,7 +92,7 @@ public class ApplicationValidator extends ComponentValidator
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ApplicationValidator.class);
-    
+
     @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
@@ -113,7 +106,7 @@ public class ApplicationValidator extends ComponentValidator
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
                         "Application validation fails for given application {0} for jndi-name {1}",application.getAppName(),inValidJndiName));
             }
-            
+
             //valdiate env entries
             validateEnvEntries(application);
 
@@ -152,7 +145,7 @@ public class ApplicationValidator extends ComponentValidator
                     next.validate();
                 }
             }
-            
+
             super.accept(descriptor);
         } else {
             super.accept(descriptor);
@@ -167,8 +160,8 @@ public class ApplicationValidator extends ComponentValidator
     public void accept(Application application) {
         this.application = application;
         if (application.getBundleDescriptors().size() == 0) {
-            throw new IllegalArgumentException("Application [" + 
-                application.getRegistrationName() + 
+            throw new IllegalArgumentException("Application [" +
+                application.getRegistrationName() +
                 "] contains no valid components");
         }
 
@@ -192,7 +185,7 @@ public class ApplicationValidator extends ComponentValidator
                 if (conflicted.contains(module2)) {
                     continue;
                 }
-                if ( !module.equals(module2) && 
+                if ( !module.equals(module2) &&
                     module.getModuleName().equals(module2.getModuleName())) {
                     conflicted.add(module2);
                     foundConflictedModule = true;
@@ -203,10 +196,10 @@ public class ApplicationValidator extends ComponentValidator
             }
         }
 
-        // append the conflicted module names with their module type to 
+        // append the conflicted module names with their module type to
         // make the names unique
         for (ModuleDescriptor cModule : conflicted) {
-            cModule.setModuleName(cModule.getModuleName() + 
+            cModule.setModuleName(cModule.getModuleName() +
                 cModule.getModuleType().toString());
         }
     }
@@ -238,7 +231,7 @@ public class ApplicationValidator extends ComponentValidator
     @Override
     public void accept(ManagedBeanDescriptor managedBean) {
         this.bundleDescriptor = managedBean.getBundle();
-        this.application = bundleDescriptor.getApplication(); 
+        this.application = bundleDescriptor.getApplication();
 
         for (Iterator itr = managedBean.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
             EjbReference aRef = (EjbReference) itr.next();
@@ -264,16 +257,16 @@ public class ApplicationValidator extends ComponentValidator
         }
 
         Set serviceRefs = managedBean.getServiceReferenceDescriptors();
-        for (Iterator itr = serviceRefs.iterator(); itr.hasNext();) {
-            accept((ServiceReferenceDescriptor) itr.next());
+        for (Object serviceRef : serviceRefs) {
+            accept((ServiceReferenceDescriptor) serviceRef);
         }
     }
 
     @Override
     protected Collection<EjbDescriptor> getEjbDescriptors() {
-        if (application!=null) 
+        if (application!=null)
             return application.getEjbDescriptors();
-        return new HashSet<EjbDescriptor>();
+        return new HashSet<>();
     }
 
     @Override
@@ -317,13 +310,13 @@ public class ApplicationValidator extends ComponentValidator
      * name and web bundle name always returns the same name if not specified.
      * So my validation fails so to avoid the same appending difference prefix
      * with each module name.
-     * 
+     *
      * For two ejb-jar.xml in two different modules as part of the ear, they
      * must have unique module names (this is per spec requirement), so the
      * module scoped resources just needs to be unique within their modules. So
      * in that case all bundle name must be unique so appending extra string is
      * not fail anything.
-     * 
+     *
      * It is used for internal reference only.
      */
     final String APP_LEVEL = "AppLevel:";
@@ -351,8 +344,8 @@ public class ApplicationValidator extends ComponentValidator
     }
 
     // Reads resource definition descriptor at application level
-    CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
-    Vector appLevel = new Vector();
+    CommonResourceBundleDescriptor commonResourceBundleDescriptor = application;
+    List<String> appLevel = new ArrayList<>();
     if (commonResourceBundleDescriptor != null) {
       Set<ResourceDescriptor> resourceDescriptors = commonResourceBundleDescriptor
           .getAllResourcesDescriptors();
@@ -367,7 +360,7 @@ public class ApplicationValidator extends ComponentValidator
     // Reads resource definition descriptor at application-client level
     Set<ApplicationClientDescriptor> appClientDescs = application
         .getBundleDescriptors(ApplicationClientDescriptor.class);
-    Vector appClientLevel = new Vector();
+    List<String> appClientLevel = new ArrayList<>();
     for (ApplicationClientDescriptor acd : appClientDescs) {
       Set<ResourceDescriptor> resourceDescriptors = acd
           .getAllResourcesDescriptors(ApplicationClientDescriptor.class);
@@ -383,7 +376,7 @@ public class ApplicationValidator extends ComponentValidator
 
     Set<ConnectorDescriptor> connectorDescs = application
         .getBundleDescriptors(ConnectorDescriptor.class);
-    Vector cdLevel = new Vector();
+    List<String> cdLevel = new ArrayList<>();
     for (ConnectorDescriptor cd : connectorDescs) {
       Set<ResourceDescriptor> resourceDescriptors = cd
           .getAllResourcesDescriptors(ApplicationClientDescriptor.class);
@@ -398,8 +391,8 @@ public class ApplicationValidator extends ComponentValidator
     // Reads resource definition descriptor at ejb-bundle level
     Set<EjbBundleDescriptor> ejbBundleDescs = application
         .getBundleDescriptors(EjbBundleDescriptor.class);
-    Vector ebdLevel = new Vector();
-    Vector edLevel = new Vector();
+    List<String> ebdLevel = new ArrayList<>();
+    List<String> edLevel = new ArrayList<>();
     for (EjbBundleDescriptor ebd : ejbBundleDescs) {
       Set<ResourceDescriptor> resourceDescriptors = ebd
           .getAllResourcesDescriptors();
@@ -409,17 +402,16 @@ public class ApplicationValidator extends ComponentValidator
       }
       ebdLevel.add(EJBBUNDLE_LEVEL + ebd.getName());
 
-      // Reads resource definition descriptor at ejb level
-      Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
-      for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
-        EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-        resourceDescriptors = ejbDescriptor.getAllResourcesDescriptors();
-        if (findExistingDescriptors(resourceDescriptors,
-            EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName())) {
-          return false;
+        // Reads resource definition descriptor at ejb level
+        Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
+        for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
+            resourceDescriptors = ejbDescriptor.getAllResourcesDescriptors();
+            if (findExistingDescriptors(resourceDescriptors,
+                    EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName())) {
+                return false;
+            }
+            edLevel.add(EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName());
         }
-        edLevel.add(EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName());
-      }
     }
     validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
     validNameSpaceDetails.put(EJB_KEYS, edLevel);
@@ -428,7 +420,7 @@ public class ApplicationValidator extends ComponentValidator
 
     Set<WebBundleDescriptor> webBundleDescs = application
         .getBundleDescriptors(WebBundleDescriptor.class);
-    Vector wbdLevel = new Vector();
+    List<String> wbdLevel = new ArrayList<>();
     for (WebBundleDescriptor wbd : webBundleDescs) {
       Set<ResourceDescriptor> resourceDescriptors = wbd
           .getAllResourcesDescriptors();
@@ -462,10 +454,6 @@ public class ApplicationValidator extends ComponentValidator
           acrd.setResourceAdapter(application.getName()
               + acrd.getResourceAdapter());
 
-        } else if (poundIndex < 0) {
-          // the resource adapter name do not contains # symbol, it is a
-          // standalone resource adapter
-
         } else if (poundIndex > 0) {
           // the resource adapter name is of the format "xx#xxx", this is an
           // invalid name
@@ -496,7 +484,7 @@ public class ApplicationValidator extends ComponentValidator
     // validate env entries on resource definition descriptor at application
     // level
     envValidator.validateEnvEntries(application);
-    
+
     // validate env entries at application-client level
       Set<ApplicationClientDescriptor> appClientDescs = application
           .getBundleDescriptors(ApplicationClientDescriptor.class);
@@ -510,8 +498,7 @@ public class ApplicationValidator extends ComponentValidator
       for (EjbBundleDescriptor ebd : ejbBundleDescs) {
         // Reads resource definition descriptor at ejb level
         Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
-        for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
-          EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+        for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
           envValidator.validateEnvEntries(ejbDescriptor);
         }
       }
@@ -524,16 +511,15 @@ public class ApplicationValidator extends ComponentValidator
       }
 
   }
-    
+
     /**
      * * Method to validate MSD is unique or not
-     * @param mailSessionDescriptors
+     * @param descriptors Resource descriptors
      * @param scope
      * @return
      */
     private boolean findExistingDescriptors(Set<ResourceDescriptor> descriptors, String scope) {
-        for (Iterator itr = descriptors.iterator(); itr.hasNext(); ) {
-            ResourceDescriptor descriptor = (ResourceDescriptor) itr.next();
+        for (ResourceDescriptor descriptor : descriptors) {
             if (isExistsDescriptor(descriptor.getName(), descriptor, scope)) {
                 return true;
             }
@@ -597,14 +583,14 @@ public class ApplicationValidator extends ComponentValidator
                 }
 
                 @SuppressWarnings("unchecked")
-                Vector<String> vectorScope = commonResourceValidator.getScope();
+                List<String> vectorScope = commonResourceValidator.getScope();
                 if (vectorScope != null) {
                     vectorScope.add(scope);
                 }
                 commonResourceValidator.setScope(vectorScope);
                 allResourceDescriptors.put(name, commonResourceValidator);
             } else {
-                Vector<String> vectorScope = new Vector<>();
+                List<String> vectorScope = new ArrayList<>();
                 vectorScope.add(scope);
                 allResourceDescriptors.put(name, new CommonResourceValidator(descriptor, name, vectorScope));
             }
@@ -618,30 +604,29 @@ public class ApplicationValidator extends ComponentValidator
      */
     private boolean compareDescriptors() {
 
-        Vector appVectorName = validNameSpaceDetails.get(APP_KEYS);
-        Vector ebdVectorName = validNameSpaceDetails.get(EJBBUNDLE_KEYS);
+        List<String> appVectorName = validNameSpaceDetails.get(APP_KEYS);
+        List<String> ebdVectorName = validNameSpaceDetails.get(EJBBUNDLE_KEYS);
 
-        for (String key : allResourceDescriptors.keySet()) {
-            CommonResourceValidator commonResourceValidator = allResourceDescriptors.get(key);
-            Vector scopeVector = commonResourceValidator.getScope();
+        for (Map.Entry<String, CommonResourceValidator> entry : allResourceDescriptors.entrySet()) {
+            CommonResourceValidator commonResourceValidator = entry.getValue();
+            List<String> scopeVector = commonResourceValidator.getScope();
             String jndiName = commonResourceValidator.getJndiName();
 
             if (jndiName.contains(JNDI_COMP)) {
-                for (int i = 0; i < scopeVector.size(); i++) {
-                    String scope = (String) scopeVector.get(i);
-                    for (int j = 0; j < appVectorName.size(); j++) {
-                        if (scope.equals(appVectorName.get(j))) {
+                for (String scope : scopeVector) {
+                    for (String app : appVectorName) {
+                        if (scope.equals(app)) {
                             inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
-                                new Object[] { jndiName });
+                                    new Object[]{jndiName});
                             return false;
                         }
                     }
-                    for (int j = 0; j < ebdVectorName.size(); j++) {
-                        if (scope.equals(ebdVectorName.get(j))) {
+                    for (String ebd : ebdVectorName) {
+                        if (scope.equals(ebd)) {
                             inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
-                                new Object[] { jndiName });
+                                    new Object[]{jndiName});
                             return false;
                         }
                     }
@@ -649,13 +634,12 @@ public class ApplicationValidator extends ComponentValidator
             }
 
             if (jndiName.contains(JNDI_MODULE)) {
-                for (int i = 0; i < scopeVector.size(); i++) {
-                    String scope = (String) scopeVector.get(i);
-                    for (int j = 0; j < appVectorName.size(); j++) {
-                        if (scope.equals(appVectorName.get(j))) {
+                for (String scope : scopeVector) {
+                    for (String app : appVectorName) {
+                        if (scope.equals(app)) {
                             inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
-                                new Object[] { jndiName });
+                                    new Object[]{jndiName});
                             return false;
                         }
                     }
@@ -678,13 +662,16 @@ public class ApplicationValidator extends ComponentValidator
                     }
                 } else {
                     try {
-                            boolean selfDefining = ((commonResourceValidator.getDescriptor() instanceof JMSDestinationDefinitionDescriptor) || (commonResourceValidator.getDescriptor() instanceof DataSourceDefinitionDescriptor));
-                            if (!selfDefining) {
-                                InitialContext ic = new InitialContext();
-                                Object lookup = ic.lookup(jndiName);
-                                if (lookup != null) {
-                                    return false;
-                                }
+                        boolean selfDefining = (
+                            (commonResourceValidator.getDescriptor() instanceof JMSDestinationDefinitionDescriptor)
+                                || (commonResourceValidator.getDescriptor() instanceof DataSourceDefinitionDescriptor)
+                        );
+                        if (!selfDefining) {
+                            InitialContext ic = new InitialContext();
+                            Object lookup = ic.lookup(jndiName);
+                            if (lookup != null) {
+                                return false;
+                            }
                         }
                     } catch (NamingException e) {
                         inValidJndiName = jndiName;
@@ -704,15 +691,15 @@ public class ApplicationValidator extends ComponentValidator
      * @param myVector
      * @return
      */
-    private boolean compareVectorForApp(Vector myVector,String jndiName) {
+    private boolean compareVectorForApp(List<String> myVector,String jndiName) {
 
         for (int j = 0; j < myVector.size(); j++) {
-            String firstElement = (String) myVector.get(j);
+            String firstElement = myVector.get(j);
             if (firstElement.contains("#")) {
                 firstElement = firstElement.substring(0, firstElement.indexOf('#'));
             }
             for (int i = j+1; i < myVector.size(); i++) {
-                String otherElements = (String) myVector.get(i);
+                String otherElements = myVector.get(i);
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(0, otherElements.indexOf('#'));
                 }
@@ -735,24 +722,24 @@ public class ApplicationValidator extends ComponentValidator
      * @param myVector
      * @return
      */
-    private boolean compareVectorForModule(Vector myVector,String jndiName) {
+    private boolean compareVectorForModule(List<String> myVector,String jndiName) {
 
         if (!compareVectorForApp(myVector,jndiName)) {
             return false;
         }
 
         for (int j = 0; j < myVector.size(); j++) {
-            String firstElement = (String) myVector.firstElement();
+            String firstElement = myVector.get(j);
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.indexOf('#') + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.indexOf('#') + 1);
             }
             if (firstElement.contains("#")) {
                 firstElement = firstElement.substring(0, firstElement.indexOf('#'));
             }
             for (int i = j+1; i < myVector.size(); i++) {
-                String otherElements = (String) myVector.get(i);
+                String otherElements = myVector.get(i);
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.indexOf('#') + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.indexOf('#') + 1);
                 }
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(0, otherElements.indexOf('#'));
@@ -772,27 +759,27 @@ public class ApplicationValidator extends ComponentValidator
      * @param myVector
      * @return
      */
-    private boolean compareVectorForComp(Vector myVector,String jndiName) {
+    private boolean compareVectorForComp(List<String> myVector,String jndiName) {
 
         if (!compareVectorForModule(myVector,jndiName)) {
             return false;
         }
 
         for (int j = 0; j < myVector.size(); j++) {
-            String firstElement = (String) myVector.firstElement();
+            String firstElement = myVector.get(j);
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1);
             }
             if (firstElement.contains("#")) {
-                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1, firstElement.length());
+                firstElement = firstElement.substring(firstElement.lastIndexOf('#') + 1);
             }
             for (int i = j+1; i < myVector.size(); i++) {
-                String otherElements = (String) myVector.get(i);
+                String otherElements = myVector.get(i);
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1);
                 }
                 if (otherElements.contains("#")) {
-                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1, otherElements.length());
+                    otherElements = otherElements.substring(otherElements.lastIndexOf('#') + 1);
                 }
                 if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;

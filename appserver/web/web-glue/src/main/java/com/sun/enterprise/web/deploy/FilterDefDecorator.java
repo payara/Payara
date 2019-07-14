@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.apache.catalina.deploy.FilterDef;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -61,17 +62,15 @@ public class FilterDefDecorator extends FilterDef {
      * parameter name.
      */
     private Map parameters = null;
-                                    
+
     private ServletFilter decoree;
-    
+
     public FilterDefDecorator(ServletFilter decoree){
         this.decoree = decoree;
-        Vector initParams = decoree.getInitializationParameters();
-        InitializationParameter initParam; 
-        for (int i=0; i < initParams.size(); i++){
-           initParam = (InitializationParameter)initParams.get(i);
-           addInitParameter( initParam.getName(),initParam.getValue() );
-        }  
+        List<InitializationParameter> initParams = decoree.getInitializationParameters();
+        for (InitializationParameter initParam : initParams) {
+            addInitParameter(initParam.getName(), initParam.getValue());
+        }
     }
 
 
@@ -86,7 +85,7 @@ public class FilterDefDecorator extends FilterDef {
     public String getDisplayName() {
         return decoree.getDisplayName();
     }
-  
+
     public String getFilterClassName() {
         String className = decoree.getClassName();
         if (null == className || className.isEmpty()) {
@@ -115,6 +114,6 @@ public class FilterDefDecorator extends FilterDef {
 
     public boolean isAsyncSupported() {
         return decoree.isAsyncSupported();
-    }   
+    }
 
 }

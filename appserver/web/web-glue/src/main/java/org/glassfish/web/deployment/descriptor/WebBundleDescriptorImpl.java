@@ -83,7 +83,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private Set<MimeMapping> mimeMappings;
     private Set<String> welcomeFiles;
     private Set<ErrorPageDescriptor> errorPageDescriptors;
-    private Vector<AppListenerDescriptor> appListenerDescriptors;
+    private List<AppListenerDescriptor> appListenerDescriptors;
     private Set<ContextParameter> contextParameters;
     private Set<EjbReference> ejbReferences;
     private Set<ResourceReferenceDescriptor> resourceReferences;
@@ -116,8 +116,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private LocaleEncodingMappingListDescriptor localeEncodingMappingListDesc = null;
     private JspConfigDescriptorImpl jspConfigDescriptor = null;
 
-    private Vector<ServletFilter> servletFilters = null;
-    private Vector<ServletFilterMapping> servletFilterMappings = null;
+    private List<ServletFilter> servletFilters = null;
+    private List<ServletFilterMapping> servletFilterMappings = null;
 
     private AbsoluteOrderingDescriptor absOrdering = null;
 
@@ -337,7 +337,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return
      */
     @Override
-    public Vector<NamedReferencePair> getNamedReferencePairs() {
+    public List<NamedReferencePair> getNamedReferencePairs() {
         return super.getNamedReferencePairsFrom(this);
     }
 
@@ -1910,23 +1910,23 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     */
 
     /**
-     * @return a Vector of servlet filters that I have.
+     * @return a list of servlet filters that I have.
      */
     @Override
-    public Vector<ServletFilter> getServletFilters() {
+    public List<ServletFilter> getServletFilters() {
         if (servletFilters == null) {
-            servletFilters = new Vector<ServletFilter>();
+            servletFilters = new ArrayList<>();
         }
         return servletFilters;
     }
 
     /**
-     * @return a Vector of servlet filters that I have.
+     * @return a list of servlet filters that I have.
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Vector<ServletFilter> getServletFilterDescriptors() {
-        return (Vector<ServletFilter>) getServletFilters().clone();
+    public List<ServletFilter> getServletFilterDescriptors() {
+        return new ArrayList<>(getServletFilters());
     }
 
     /**
@@ -1945,7 +1945,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         if (!found) {
-            getServletFilters().addElement(ref);
+            getServletFilters().add(ref);
         }
     }
 
@@ -2007,25 +2007,25 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     */
 
     /**
-     * Return a Vector of servlet filters that I have.
+     * Return a list of servlet filters that I have.
      * @return
      */
     @Override
-    public Vector<ServletFilterMapping> getServletFilterMappings() {
+    public List<ServletFilterMapping> getServletFilterMappings() {
         if (servletFilterMappings == null) {
-            servletFilterMappings = new Vector<ServletFilterMapping>();
+            servletFilterMappings = new ArrayList<>();
         }
         return servletFilterMappings;
     }
 
     /**
-     * Return a Vector of servlet filter mappings that I have.
+     * Return a list of servlet filter mappings that I have.
      * @return
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Vector<ServletFilterMapping> getServletFilterMappingDescriptors() {
-        return (Vector<ServletFilterMapping>) getServletFilterMappings().clone();
+    public List<ServletFilterMapping> getServletFilterMappingDescriptors() {
+        return new ArrayList<>(getServletFilterMappings());
     }
 
     /**
@@ -2035,7 +2035,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void addServletFilterMapping(ServletFilterMapping ref) {
         if (!getServletFilterMappings().contains(ref)) {
-            getServletFilterMappings().addElement(ref);
+            getServletFilterMappings().add(ref);
         }
     }
 
@@ -2069,7 +2069,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     @Override
     protected void combineServletFilterMappings(WebBundleDescriptor webBundleDescriptor) {
-        Map<String, ServletFilterMappingInfo> map = new HashMap<String, ServletFilterMappingInfo>();
+        Map<String, ServletFilterMappingInfo> map = new HashMap<>();
         for (ServletFilterMapping sfMapping : getServletFilterMappings()) {
             ServletFilterMappingInfo sfmInfo = map.get(sfMapping.getName());
             if (sfmInfo == null) {
@@ -2106,17 +2106,17 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     */
 
     @Override
-    public Vector<AppListenerDescriptor> getAppListeners() {
+    public List<AppListenerDescriptor> getAppListeners() {
         if (appListenerDescriptors == null) {
-            appListenerDescriptors = new Vector<AppListenerDescriptor>();
+            appListenerDescriptors = new ArrayList<>();
         }
         return appListenerDescriptors;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Vector<AppListenerDescriptor> getAppListenerDescriptors() {
-        return (Vector<AppListenerDescriptor>) getAppListeners().clone();
+    public List<AppListenerDescriptor> getAppListenerDescriptors() {
+        return new ArrayList<>(getAppListeners());
     }
 
     @Override
@@ -2128,7 +2128,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void addAppListenerDescriptor(AppListenerDescriptor ref) {
         if (!getAppListeners().contains(ref)) {
-            getAppListeners().addElement(ref);
+            getAppListeners().add(ref);
         }
     }
 
@@ -2217,7 +2217,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * @return
      */
     @Override
-    protected boolean removeVectorItem(Vector<? extends Object> list, Object ref) {
+    protected boolean removeVectorItem(List<? extends Object> list, Object ref) {
         for (Iterator<? extends Object> i = list.iterator(); i.hasNext();) {
             if (ref == i.next()) {
                 i.remove();
@@ -2235,14 +2235,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      */
     @SuppressWarnings("unchecked")
     @Override
-    protected void moveVectorItem(Vector list, Object ref, int rpos) {
+    protected void moveVectorItem(List list, Object ref, int rpos) {
 
         /* get current position of ref */
         // 'indexOf' is not used because it is base on 'equals()' which may
         // not be unique.
         int size = list.size(), old_pos = size - 1;
         for (; old_pos >= 0; old_pos--) {
-            if (ref == list.elementAt(old_pos)) {
+            if (ref == list.get(old_pos)) {
                 break;
             }
         }
@@ -2264,8 +2264,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         /* move it */
-        list.removeElementAt(old_pos);
-        list.insertElementAt(ref, new_pos);
+        list.remove(old_pos);
+        list.add(new_pos, ref);
 
 
     }

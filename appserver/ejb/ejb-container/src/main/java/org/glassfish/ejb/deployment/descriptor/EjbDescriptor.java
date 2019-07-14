@@ -1315,8 +1315,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
             MethodDescriptor md = (MethodDescriptor) e.nextElement();
             if (md.getStyle() == requestedStyleForConversion) {
                 ContainerTransaction ct = (ContainerTransaction) getMethodContainerTransactions().get(md);
-                for (Enumeration mds = md.doStyleConversion(this, transactionMethods).elements(); mds.hasMoreElements();) {
-                    MethodDescriptor next = (MethodDescriptor) mds.nextElement();
+                for (MethodDescriptor next : md.doStyleConversion(this, transactionMethods)) {
                     convertedMethods.put(next, new ContainerTransaction(ct));
                 }
             }
@@ -1571,10 +1570,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
             Set newPermissions = (Set) styledMethodDescriptors.get(styledMd);
 
             // Convert to style 3 method descriptors
-            Vector mds = styledMd.doStyleConversion(this, allMethods);
-            for (Iterator mdItr = mds.iterator(); mdItr.hasNext();) {
-                MethodDescriptor md = (MethodDescriptor) mdItr.next();
-
+            List<MethodDescriptor> mds = styledMd.doStyleConversion(this, allMethods);
+            for (MethodDescriptor md : mds) {
                 // remove it from the list of unpermissioned methods.
                 // it will be used at the end to set all remaining methods
                 // with the unchecked method permission
@@ -1582,8 +1579,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
                 // iterator over the new set of method permissions for that
                 // method descriptor and update the table
-                for (Iterator newPermissionsItr = newPermissions.iterator(); newPermissionsItr.hasNext();) {
-                    MethodPermission newMp = (MethodPermission) newPermissionsItr.next();
+                for (Object newPermission : newPermissions) {
+                    MethodPermission newMp = (MethodPermission) newPermission;
                     updateMethodPermissionForMethod(newMp, md);
                 }
             }
@@ -2691,8 +2688,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         for (Enumeration e = transactions.keys(); e.hasMoreElements();) {
             MethodDescriptor md = (MethodDescriptor) e.nextElement();
             ContainerTransaction ct = (ContainerTransaction) transactions.get(md);
-            for (Enumeration mds = md.doStyleConversion(this, transactionMethods).elements(); mds.hasMoreElements();) {
-                MethodDescriptor next = (MethodDescriptor) mds.nextElement();
+            for (MethodDescriptor next : md.doStyleConversion(this, transactionMethods)) {
                 convertedTransactions.put(next, new ContainerTransaction(ct));
             }
         }

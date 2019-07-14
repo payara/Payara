@@ -492,11 +492,11 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * from any of the strings in the vector of String names.
      *
      * @param trialName  the suggested name
-     * @param v The Vector of String objects none of which will be the same as the return
+     * @param v The list of String objects none of which will be the same as the return
      * @param index the index in the vector
      * @return the unique String
      */
-    private static String uniquifyString(String trialName, Vector<String> v, int index) {
+    private static String uniquifyString(String trialName, List<String> v, int index) {
         for (String next : v) {
             if (next.equals(trialName)) {
                 index++;
@@ -511,10 +511,10 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * from any of the strings in the vector of String names.
      *
      * @param trialName  the suggested name
-     * @param otherNames The Vector of String objects none of which will be the same as the return
+     * @param otherNames The list of String objects none of which will be the same as the return
      * @return the unique String
      */
-    public static String createUniqueFilenameAmongst(String trialName, Vector<String> otherNames) {
+    public static String createUniqueFilenameAmongst(String trialName, List<String> otherNames) {
 
         /* extract file.ext */
         int p = trialName.lastIndexOf('.');
@@ -525,9 +525,8 @@ public class Descriptor extends DynamicAttributesDescriptor {
         String file = trialName.substring(0, p);
 
         /* get list of filenames less extension */
-        Vector<String> nameList = new Vector<String>();
-        for (Enumeration e = otherNames.elements(); e.hasMoreElements();) {
-            String name = e.nextElement().toString();
+        List<String> nameList = new ArrayList<>();
+        for (String name : otherNames) {
             if (name.endsWith(ext)) {
                 nameList.add(name.substring(0, name.length() - ext.length()));
             }
@@ -542,10 +541,10 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * from any of the strings in the vector of String names.
      *
      * @param trialName  the suggested name
-     * @param otherNames The Vector of String objects none of which will be the same as the return
+     * @param otherNames The list of String objects none of which will be the same as the return
      * @return the unique String
      */
-    public static String createUniqueNameAmongst(String trialName, Vector<String> otherNames) {
+    public static String createUniqueNameAmongst(String trialName, List<String> otherNames) {
         return uniquifyString(trialName, otherNames, 0);
     }
 
@@ -558,9 +557,9 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * @return the unique String
      */
     public static String createUniqueNameAmongstNamedDescriptors(String trialName, Set<? extends Descriptor> descriptors) {
-        Vector<String> v = new Vector<String>();
+        List<String> v = new ArrayList<>();
         for (Descriptor next : descriptors) {
-            v.addElement(next.getName());
+            v.add(next.getName());
         }
         return createUniqueNameAmongst(trialName, v);
     }
@@ -569,7 +568,7 @@ public class Descriptor extends DynamicAttributesDescriptor {
      * @return an iterator on the deployment-extension
      */
     public Iterator getDeploymentExtensions() {
-        Vector extensions = (Vector) getExtraAttribute("deployment-extension");
+        List extensions = (List) getExtraAttribute("deployment-extension");
         if (extensions != null) {
             return extensions.iterator();
         }

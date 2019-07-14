@@ -40,10 +40,7 @@
 
 package org.glassfish.ejb.deployment.descriptor.runtime;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -74,7 +71,7 @@ public class FlushAtEndOfMethodDescriptor extends Descriptor {
     public ArrayList getConvertedMethodDescs() {
        if (convertedMethodDescs.isEmpty()) {
            convertStyleFlushedMethods();
-       } 
+       }
        return convertedMethodDescs;
     }
 
@@ -109,15 +106,15 @@ public class FlushAtEndOfMethodDescriptor extends Descriptor {
         Set allMethods = ejbDescriptor.getMethodDescriptors();
         for (Iterator mdItr = methodDescs.iterator(); mdItr.hasNext();) {
             MethodDescriptor methodDesc = (MethodDescriptor) mdItr.next();
- 
+
             // the ejb-name element defined in the method element will
-            // be always ignored and overriden by the one defined in 
+            // be always ignored and overriden by the one defined in
             // ejb element
             methodDesc.setEjbName(ejbDescriptor.getName());
 
             // Convert to style 3 method descriptors
-            Vector mds = methodDesc.doStyleConversion(ejbDescriptor, allMethods);
-            convertedMethodDescs.addAll(mds); 
+            List<MethodDescriptor> mds = methodDesc.doStyleConversion(ejbDescriptor, allMethods);
+            convertedMethodDescs.addAll(mds);
         }
     }
 
