@@ -118,7 +118,7 @@ public class Application extends CommonResourceBundleDescriptor
     private String generatedXMLDir;
 
     // Set of modules in this application
-    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<>();
+    private Set<ModuleDescriptor<BundleDescriptor>> modules = new HashSet<>();
 
     // True if unique id has been set.  Allows callers to avoid
     // applying unique ids to subcomponents multiple times.
@@ -1228,7 +1228,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (type == null) {
             return null;
         }
-        Set<T> bundleSet = new OrderedSet<T>();
+        Set<T> bundleSet = new HashSet<>();
         for (ModuleDescriptor aModule : getModules()) {
             try {
                 T descriptor = type.cast(aModule.getDescriptor());
@@ -1255,7 +1255,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (bundleType == null) {
             return Collections.emptySet();
         }
-        Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
+        Set<BundleDescriptor> bundleSet = new HashSet<>();
         for (ModuleDescriptor aModule : getModules()) {
             if (aModule.getDescriptor().getModuleType()== bundleType) {
                 bundleSet.add((BundleDescriptor)aModule.getDescriptor());
@@ -1277,7 +1277,7 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the set of bundle descriptors
      */
     public Set<BundleDescriptor> getBundleDescriptors() {
-        Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
+        Set<BundleDescriptor> bundleSet = new HashSet<>();
         for (ModuleDescriptor<BundleDescriptor> aModule :  getModules()) {
             BundleDescriptor bundleDesc = aModule.getDescriptor();
             if (bundleDesc != null) {
@@ -1508,7 +1508,7 @@ public class Application extends CommonResourceBundleDescriptor
      * @return
      */
     public Set<BundleDescriptor> getArchivableDescriptors() {
-        return new OrderedSet<>(getBundleDescriptors());
+        return new HashSet<>(getBundleDescriptors());
     }
 
     /**

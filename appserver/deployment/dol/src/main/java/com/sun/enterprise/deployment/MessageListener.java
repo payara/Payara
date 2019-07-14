@@ -42,18 +42,19 @@
 
 import org.glassfish.deployment.common.Descriptor;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
  * connector1.5
- * <!ELEMENT messagelistener (messagelistener-type, 
+ * <!ELEMENT messagelistener (messagelistener-type,
  *           activationspec)>
  *
  * @author Sheetal Vartak
  */
 public class MessageListener extends Descriptor {
 
-    
+
     private String msgListenerType;
     private String activationSpecClass;
     private Set configProperties;
@@ -61,11 +62,11 @@ public class MessageListener extends Descriptor {
 
     //default constructor
     public MessageListener() {
-	this.configProperties = new OrderedSet();
-	this.requiredConfigProperties = new OrderedSet();
+	this.configProperties = new HashSet();
+	this.requiredConfigProperties = new HashSet();
     }
 
-   
+
 
     public String getMessageListenerType() {
 	return msgListenerType;
@@ -83,20 +84,20 @@ public class MessageListener extends Descriptor {
 	this.activationSpecClass = activationSpecClass;
     }
 
-     
+
     /** add a connector-configProperty to the set
      */
     public void addConfigProperty(ConnectorConfigProperty configProperty) {
 	this.configProperties.add(configProperty);
     }
-    
+
     /** remove a connector-configProperty from the set
-     */ 
+     */
     public void removeConfigProperty(ConnectorConfigProperty configProperty) {
 	this.configProperties.remove(configProperty);
     }
 
-    /** Set of ConnectorConfigProperty 
+    /** Set of ConnectorConfigProperty
      */
     public Set getConfigProperties() {
         return configProperties;
@@ -130,5 +131,5 @@ public class MessageListener extends Descriptor {
     //FIXME.  No longer valid.  Use messagelistener-type instead of name
     public void setMessageListenerName(String msgListenerName) {
         throw new UnsupportedOperationException();
-    }    
+    }
   }

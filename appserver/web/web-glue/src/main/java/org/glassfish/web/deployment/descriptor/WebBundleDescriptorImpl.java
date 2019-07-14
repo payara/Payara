@@ -407,7 +407,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<WebComponentDescriptor> getWebComponentDescriptors() {
         if (webComponentDescriptors == null) {
-            webComponentDescriptors = new OrderedSet<WebComponentDescriptor>();
+            webComponentDescriptors = new HashSet<>();
         }
         return webComponentDescriptors;
     }
@@ -539,7 +539,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if (serviceReferences == null) {
-            serviceReferences = new OrderedSet<ServiceReferenceDescriptor>();
+            serviceReferences = new HashSet<>();
         }
         return serviceReferences;
     }
@@ -614,7 +614,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
         if (resourceEnvRefReferences == null) {
-            resourceEnvRefReferences = new OrderedSet<ResourceEnvReferenceDescriptor>();
+            resourceEnvRefReferences = new HashSet<>();
         }
         return resourceEnvRefReferences;
     }
@@ -810,7 +810,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<String> getWelcomeFilesSet() {
         if (welcomeFiles == null) {
-            welcomeFiles = new OrderedSet<String>();
+            welcomeFiles = new HashSet<>();
         }
         return welcomeFiles;
     }
@@ -899,7 +899,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<ContextParameter> getContextParametersSet() {
         if (contextParameters == null) {
-            contextParameters = new OrderedSet<ContextParameter>();
+            contextParameters = new HashSet<>();
         }
         return contextParameters;
     }
@@ -973,7 +973,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<EjbReference> getEjbReferenceDescriptors() {
         if (ejbReferences == null) {
-            ejbReferences = new OrderedSet<EjbReference>();
+            ejbReferences = new HashSet<>();
         }
         return ejbReferences;
     }
@@ -1043,7 +1043,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
         if (resourceReferences == null) {
-            resourceReferences = new OrderedSet<ResourceReferenceDescriptor>();
+            resourceReferences = new HashSet<>();
         }
         return resourceReferences;
     }
@@ -1317,7 +1317,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         if (messageDestReferences == null) {
-            messageDestReferences = new OrderedSet<MessageDestinationReferenceDescriptor>();
+            messageDestReferences = new HashSet<>();
         }
         return messageDestReferences;
     }
@@ -1722,7 +1722,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public Set<EnvironmentEntry> getEnvironmentEntrySet() {
         if (environmentEntries == null) {
-            environmentEntries = new OrderedSet<EnvironmentEntry>();
+            environmentEntries = new HashSet<>();
         }
         return environmentEntries;
     }

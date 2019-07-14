@@ -41,10 +41,10 @@
 
 package org.glassfish.web.deployment.descriptor;
 
-import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -70,7 +70,7 @@ public class JspGroupDescriptor extends Descriptor
      */
     public Set<String> getUrlPatterns() {
         if (this.urlPatterns == null) {
-            this.urlPatterns = new OrderedSet<String>();
+            this.urlPatterns = new HashSet<>();
         }
         return this.urlPatterns;
     }
@@ -96,7 +96,7 @@ public class JspGroupDescriptor extends Descriptor
      */
     public Set<String> getIncludePreludes() {
         if (this.includePreludes == null) {
-            this.includePreludes = new OrderedSet<String>();
+            this.includePreludes = new HashSet<>();
         }
         return this.includePreludes;
     }
@@ -122,7 +122,7 @@ public class JspGroupDescriptor extends Descriptor
      */
     public Set<String> getIncludeCodas() {
         if (this.includeCodas == null) {
-            this.includeCodas = new OrderedSet<String>();
+            this.includeCodas = new HashSet<>();
         }
         return this.includeCodas;
     }

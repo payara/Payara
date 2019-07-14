@@ -135,9 +135,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
 
     private Set roleReferences = new HashSet();
     private EjbBundleDescriptorImpl bundleDescriptor;
-    // private EjbIORConfigurationDescriptor iorConfigDescriptor = new EjbIORConfigurationDescriptor();
-    private Set<EjbIORConfigurationDescriptor> iorConfigDescriptors = new OrderedSet<EjbIORConfigurationDescriptor>();
-    // private Set methodDescriptors = new HashSet();
+    private Set<EjbIORConfigurationDescriptor> iorConfigDescriptors = new HashSet<>();
     private String ejbClassName;
 
     // EjbRefs from all components in this app who point to me

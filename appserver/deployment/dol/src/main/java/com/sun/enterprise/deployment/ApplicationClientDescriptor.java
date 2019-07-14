@@ -167,9 +167,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
     public Set getEnvironmentProperties() {
 	if (this.environmentProperties == null) {
-	    this.environmentProperties = new OrderedSet<>();
+	    this.environmentProperties = new HashSet();
 	}
-	return this.environmentProperties = new OrderedSet<>(this.environmentProperties);
+	return this.environmentProperties = new HashSet(this.environmentProperties);
     }
 
     /**
@@ -213,9 +213,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
     public Set getEjbReferenceDescriptors() {
 	if (this.ejbReferences == null) {
-	    this.ejbReferences = new OrderedSet();
+	    this.ejbReferences = new HashSet();
 	}
-	return this.ejbReferences = new OrderedSet(this.ejbReferences);
+	return this.ejbReferences = new HashSet(this.ejbReferences);
     }
 
     /**
@@ -303,9 +303,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 
     public Set getServiceReferenceDescriptors() {
         if( this.serviceReferences == null ) {
-            this.serviceReferences = new OrderedSet();
+            this.serviceReferences = new HashSet();
         }
-        return this.serviceReferences = new OrderedSet(this.serviceReferences);
+        return this.serviceReferences = new HashSet(this.serviceReferences);
     }
 
     public void addServiceReferenceDescriptor(ServiceReferenceDescriptor
@@ -342,10 +342,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 
     public Set getMessageDestinationReferenceDescriptors() {
         if( this.messageDestReferences == null ) {
-            this.messageDestReferences = new OrderedSet();
+            this.messageDestReferences = new HashSet();
         }
         return this.messageDestReferences =
-            new OrderedSet(this.messageDestReferences);
+            new HashSet(this.messageDestReferences);
     }
 
     public void addMessageDestinationReferenceDescriptor
@@ -388,9 +388,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 	*/
     public Set getResourceEnvReferenceDescriptors() {
 	if (this.resourceEnvReferences == null) {
-	    this.resourceEnvReferences = new OrderedSet();
+	    this.resourceEnvReferences = new HashSet();
 	}
-	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
+	return this.resourceEnvReferences = new HashSet(this.resourceEnvReferences);
     }
 
     public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
@@ -518,9 +518,9 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     */
     public Set getResourceReferenceDescriptors() {
 	if (this.resourceReferences == null) {
-	    this.resourceReferences = new OrderedSet();
+	    this.resourceReferences = new HashSet();
 	}
-	return this.resourceReferences = new OrderedSet(this.resourceReferences);
+	return this.resourceReferences = new HashSet(this.resourceReferences);
     }
 
     /**

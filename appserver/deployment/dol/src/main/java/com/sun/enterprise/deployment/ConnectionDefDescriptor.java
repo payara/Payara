@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -56,7 +57,7 @@ import java.util.Set;
  */
 public class ConnectionDefDescriptor extends Descriptor
 {
-    
+
     private String managedConnectionFactoryImpl = "";
     private Set configProperties;
     private String connectionIntf = "";
@@ -64,36 +65,36 @@ public class ConnectionDefDescriptor extends Descriptor
     private String connectionfactoryImpl = "";
     private String connectionfactoryIntf = "";
 
-    public ConnectionDefDescriptor () 
+    public ConnectionDefDescriptor ()
     {
-        configProperties    = new OrderedSet();
+        configProperties    = new HashSet();
     }
 
-    /** 
+    /**
      * Gets the value of ManagedconnectionFactoryImpl
      */
-    public String getManagedConnectionFactoryImpl() 
+    public String getManagedConnectionFactoryImpl()
     {
         return managedConnectionFactoryImpl;
     }
-    
-    /** 
+
+    /**
      * Sets the value of ManagedconnectionFactoryImpl
      */
-    public void setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl) 
+    public void setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl)
     {
         this.managedConnectionFactoryImpl = managedConnectionFactoryImpl;
     }
 
-    /** 
+    /**
      * Set of ConnectorConfigProperty
      */
-    public Set getConfigProperties() 
+    public Set getConfigProperties()
     {
         return configProperties;
     }
-      
-    /** 
+
+    /**
      * Add a configProperty to the set
      */
     public void addConfigProperty(ConnectorConfigProperty configProperty)
@@ -101,14 +102,14 @@ public class ConnectionDefDescriptor extends Descriptor
 	configProperties.add(configProperty);
     }
 
-    /** 
+    /**
      * Add a configProperty to the set
-     */ 
+     */
     public void removeConfigProperty(ConnectorConfigProperty configProperty)
     {
 	configProperties.remove(configProperty);
     }
-    
+
     /**
      * Get connection factory impl
      */
@@ -117,10 +118,10 @@ public class ConnectionDefDescriptor extends Descriptor
         return connectionfactoryImpl;
     }
 
-    /** 
-     * set connection factory impl 
+    /**
+     * set connection factory impl
      */
-    public void setConnectionFactoryImpl(String cf) 
+    public void setConnectionFactoryImpl(String cf)
     {
 	connectionfactoryImpl = cf;
     }
@@ -133,10 +134,10 @@ public class ConnectionDefDescriptor extends Descriptor
         return connectionfactoryIntf;
     }
 
-    /** 
+    /**
      * set connection factory intf
      */
-    public void setConnectionFactoryIntf(String cf) 
+    public void setConnectionFactoryIntf(String cf)
     {
 	connectionfactoryIntf = cf;
     }
@@ -149,10 +150,10 @@ public class ConnectionDefDescriptor extends Descriptor
         return connectionIntf;
     }
 
-    /** 
+    /**
      * set connection intf
      */
-    public void setConnectionIntf(String con) 
+    public void setConnectionIntf(String con)
     {
 	connectionIntf = con;
     }
@@ -165,10 +166,10 @@ public class ConnectionDefDescriptor extends Descriptor
         return connectionImpl;
     }
 
-    /** 
+    /**
      * set connection intf
      */
-    public void setConnectionImpl(String con) 
+    public void setConnectionImpl(String con)
     {
 	connectionImpl = con;
     }

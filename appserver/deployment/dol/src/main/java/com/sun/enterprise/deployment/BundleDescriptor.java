@@ -349,7 +349,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      */
     public Set<Role> getRoles() {
         if (roles == null) {
-            roles = new OrderedSet<Role>();
+            roles = new HashSet<>();
         }
         if (application != null) {
             roles.addAll(application.getAppRoles());

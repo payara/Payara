@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -59,25 +60,25 @@ public class InboundResourceAdapter extends Descriptor
 {
     private Set messageListeners;
 
-    public InboundResourceAdapter () 
+    public InboundResourceAdapter ()
     {
-        messageListeners = new OrderedSet();
+        messageListeners = new HashSet();
     }
-    
+
     public Set
     getMessageListeners()
     {
         return messageListeners;
     }
-    
+
     public void
     addMessageListener (MessageListener listener)
     {
         messageListeners.add(listener);
     }
 
-    public void 
-    removeMessageListener (MessageListener listener) 
+    public void
+    removeMessageListener (MessageListener listener)
     {
 	messageListeners.remove(listener);
     }

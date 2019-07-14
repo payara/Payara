@@ -150,7 +150,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     @Override
     public Set<InitializationParameter> getInitializationParameterSet() {
         if (initializationParameters == null) {
-            initializationParameters = new OrderedSet<>();
+            initializationParameters = new HashSet<>();
         }
 
         return initializationParameters;
@@ -213,7 +213,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     @Override
     public Set<String> getUrlPatternsSet() {
         if (urlPatterns == null) {
-            urlPatterns = new OrderedSet<String>() {
+            urlPatterns = new HashSet<String>() {
                 /**
                  *
                  */
@@ -346,7 +346,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     @Override
     public Set<SecurityRoleReference> getSecurityRoleReferenceSet() {
         if (securityRoleReferences == null) {
-            securityRoleReferences = new OrderedSet<>();
+            securityRoleReferences = new HashSet<>();
         }
 
         return securityRoleReferences;

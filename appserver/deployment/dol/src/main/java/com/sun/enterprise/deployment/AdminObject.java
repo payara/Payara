@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -51,23 +52,23 @@ import java.util.Set;
  * @author Sheetal Vartak
  */
 public class AdminObject extends Descriptor {
-    
+
     private String theInterface;
     private String theClass;
-    private Set configProperties;
+    private Set<ConnectorConfigProperty> configProperties;
 
     public AdminObject () {
-        this.configProperties = new OrderedSet();
+        this.configProperties = new HashSet<>();
     }
-    
+
     public AdminObject (String theInterface, String theClass)
     {
         this.theInterface = theInterface;
         this.theClass = theClass;
-        this.configProperties = new OrderedSet();
+        this.configProperties = new HashSet<>();
     }
-    
-    public String getAdminObjectInterface() 
+
+    public String getAdminObjectInterface()
     {
         return this.theInterface;
     }
@@ -85,15 +86,15 @@ public class AdminObject extends Descriptor {
 	this.theClass = cl;
     }
 
-    /** 
-     * Set of EnvironmentProperty 
+    /**
+     * Set of EnvironmentProperty
      */
-    public Set getConfigProperties() 
+    public Set<ConnectorConfigProperty> getConfigProperties()
     {
         return configProperties;
     }
-      
-    /** 
+
+    /**
      * Add a configProperty to the set
      */
     public void addConfigProperty(ConnectorConfigProperty configProperty)
@@ -101,12 +102,12 @@ public class AdminObject extends Descriptor {
 	configProperties.add(configProperty);
     }
 
-    /** 
+    /**
      * Add a configProperty to the set
-     */ 
+     */
     public void removeConfigProperty(ConnectorConfigProperty configProperty)
     {
-	configProperties.remove(configProperty);
+	    configProperties.remove(configProperty);
     }
-     
+
 }

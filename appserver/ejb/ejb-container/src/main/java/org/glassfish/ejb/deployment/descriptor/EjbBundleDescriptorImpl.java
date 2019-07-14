@@ -684,7 +684,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
      */
     @Override
     public Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors() {
-        Set<ServiceReferenceDescriptor> serviceRefs = new OrderedSet<ServiceReferenceDescriptor>();
+        Set<ServiceReferenceDescriptor> serviceRefs = new HashSet<>();
         for (EjbDescriptor next : getEjbs()) {
             serviceRefs.addAll(next.getServiceReferenceDescriptors());
         }

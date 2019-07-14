@@ -124,19 +124,19 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     private transient Set<String> configPropertyProcessedClasses;
 
     public ConnectorDescriptor() {
-        this.configProperties = new OrderedSet();
-	this.authMechanisms = new OrderedSet();
-	this.securityPermissions = new OrderedSet();
-	this.adminObjects = new OrderedSet();
-    this.requiredWorkContexts = new OrderedSet();
+        this.configProperties = new HashSet();
+	this.authMechanisms = new HashSet();
+	this.securityPermissions = new HashSet();
+	this.adminObjects = new HashSet();
+    this.requiredWorkContexts = new HashSet();
 
         //FIXME.  need to remove the following
-	this.messageListeners = new OrderedSet();
+	this.messageListeners = new HashSet();
 
-    this.connectorAnnotations = new OrderedSet<AnnotationInfo>();
+    this.connectorAnnotations = new HashSet<AnnotationInfo>();
     this.configPropertyAnnotations = new HashMap<String, Set<AnnotationInfo>>();
     this.configPropertyProcessedClasses = new HashSet<String>();
-    this.defaultResourceNames = new OrderedSet<String>();
+    this.defaultResourceNames = new HashSet<String>();
     }
 
 
@@ -336,7 +336,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
      * if none
      */
     public Set getServiceReferenceDescriptors() {
-        return new OrderedSet();
+        return new HashSet();
     }
 
     /**
@@ -346,7 +346,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     public Set getSecurityPermissions()
     {
         if (securityPermissions == null) {
-            securityPermissions = new OrderedSet();
+            securityPermissions = new HashSet();
         }
         return securityPermissions;
     }

@@ -41,10 +41,10 @@
 
 package org.glassfish.ejb.deployment.descriptor;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
 /**
@@ -60,11 +60,11 @@ public final class ActivationConfigDescriptor extends Descriptor {
 
     public ActivationConfigDescriptor()
     {
-        activationConfig = new OrderedSet<EnvironmentProperty>();
+        activationConfig = new HashSet<>();
     }
 
     public ActivationConfigDescriptor(ActivationConfigDescriptor other) {
-        activationConfig = new OrderedSet<EnvironmentProperty>(other.activationConfig);
+        activationConfig = new HashSet<>(other.activationConfig);
      }
 
     @Override
