@@ -263,6 +263,7 @@ public class ProgramOptions {
         putEnv(env, AUTHTOKEN);
         putEnv(env, AUXINPUT);
         putEnv(env, EXTRATERSE);
+        putEnv(env, AUTONAME);
         // XXX - HELP?
     }
 
