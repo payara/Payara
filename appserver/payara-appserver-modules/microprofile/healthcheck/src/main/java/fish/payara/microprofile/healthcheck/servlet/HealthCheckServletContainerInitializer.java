@@ -57,7 +57,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.NONE;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
@@ -101,7 +101,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             reg.addMapping("/" + configuration.getEndpoint());
             if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
                 String[] roles = configuration.getRoles().split(",");
-                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(NONE, roles)));
+                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
                 ctx.declareRoles(roles);
             }
         }

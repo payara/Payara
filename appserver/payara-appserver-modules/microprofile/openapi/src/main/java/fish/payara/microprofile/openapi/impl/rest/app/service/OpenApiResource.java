@@ -78,12 +78,6 @@ public class OpenApiResource {
             return Response.status(FORBIDDEN).build();
         }
 
-        // If security is enabled then http request not allowed
-        if (!request.isSecure() && openApiService.isSecurityEnabled()) {
-            response.sendError(FORBIDDEN.getStatusCode(), "MicroProfile OpenAPI Service security is enabled.");
-            return Response.status(FORBIDDEN).build();
-        }
-
         // Get the OpenAPI document
         OpenAPI document = null;
         try {

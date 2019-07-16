@@ -75,10 +75,6 @@ public class HealthCheckServlet extends HttpServlet {
             response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service is disabled");
             return;
         }
-        if (!request.isSecure() && healthCheckService.isSecurityEnabled()) {
-            response.sendError(SC_FORBIDDEN, "MicroProfile Health Check Service security is enabled");
-            return;
-        }
         healthCheckService.performHealthChecks(response);
     }
 
