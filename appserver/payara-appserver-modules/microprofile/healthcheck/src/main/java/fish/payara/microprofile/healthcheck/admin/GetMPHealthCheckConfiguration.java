@@ -79,7 +79,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetMPHealthCheckConfiguration implements AdminCommand {
 
-    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "Security Enabled"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "Security Enabled", "Roles"};
 
     @Inject
     private Target targetUtil;
@@ -105,7 +105,8 @@ public class GetMPHealthCheckConfiguration implements AdminCommand {
             healthCheckConfiguration.getEnabled(),
             healthCheckConfiguration.getEndpoint(),
             healthCheckConfiguration.getVirtualServers(),
-            healthCheckConfiguration.getSecurityEnabled()
+            healthCheckConfiguration.getSecurityEnabled(),
+            healthCheckConfiguration.getRoles()
         };
         columnFormatter.addRow(outputValues);
 
@@ -116,6 +117,7 @@ public class GetMPHealthCheckConfiguration implements AdminCommand {
         extraPropertiesMap.put("endpoint", healthCheckConfiguration.getEndpoint());
         extraPropertiesMap.put("virtualServers", healthCheckConfiguration.getVirtualServers());
         extraPropertiesMap.put("securityenabled", healthCheckConfiguration.getSecurityEnabled());
+        extraPropertiesMap.put("roles", healthCheckConfiguration.getRoles());
 
         Properties extraProperties = new Properties();
         extraProperties.put("microprofileHealthCheckConfiguration", extraPropertiesMap);

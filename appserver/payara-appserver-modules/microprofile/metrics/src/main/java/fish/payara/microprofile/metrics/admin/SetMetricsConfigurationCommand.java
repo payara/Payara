@@ -106,9 +106,6 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "virtualServers", optional = true)
     private String virtualServers;
 
-    @Param(optional = true, alias = "securityenabled")
-    private Boolean securityEnabled;
-
     @Inject
     private Domain domain;
 
@@ -120,15 +117,18 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
 
-        // Create the default user if it doesn't exist
-        ActionReport checkUserReport = actionReport.addSubActionsReport();
-        ActionReport createUserReport = actionReport.addSubActionsReport();
-        if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
-            createDefaultMicroprofileUser(createUserReport, subject);
-        }
-        if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+        if (Boolean.TRUE.equals(securityEnabled)
+                || Boolean.parseBoolean(metricsConfiguration.getSecurityEnabled())) {
+            // Create the default user if it doesn't exist
+            ActionReport checkUserReport = actionReport.addSubActionsReport();
+            ActionReport createUserReport = actionReport.addSubActionsReport();
+            if (!defaultMicroprofileUserExists(checkUserReport, subject) && !checkUserReport.hasFailures()) {
+                createDefaultMicroprofileUser(createUserReport, subject);
+            }
+            if (checkUserReport.hasFailures() || createUserReport.hasFailures()) {
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
         }
 
         try {
@@ -166,6 +166,10 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                 }
                 if (securityEnabled != null) {
                     configProxy.setSecurityEnabled(securityEnabled.toString());
+                    restart = true;
+                }
+                if (roles != null) {
+                    configProxy.setRoles(roles);
                     restart = true;
                 }
 
