@@ -10,7 +10,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.glassfish.internal.api.Globals;
+
 import fish.payara.monitoring.collect.ConsumerDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -20,14 +24,12 @@ public class MonitoringConsoleResouce {
     @GET
     @Path("/points")
     public Map<String, Long> getPoints(@QueryParam("t") long timestamp) {
-        //HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
         Map<String, Long> res = new HashMap<>();
-//        List<MonitoringDataSource> sources = .getAllServices(MonitoringDataSource.class);
-//        MonitoringDataCollector collector = new ConsumerDataCollector((key, value) -> res.put(key.toString(), value));
-//        for (MonitoringDataSource source : sources) {
-//            source.collect(collector);
-//        }
-        //res.put("enabled", healthCheckService.isEnabled() ? 1L : 0L);
+        List<MonitoringDataSource> sources = Globals.getDefaultBaseServiceLocator().getAllServices(MonitoringDataSource.class);
+        MonitoringDataCollector collector = new ConsumerDataCollector((key, value) -> res.put(key.toString(), value));
+        for (MonitoringDataSource source : sources) {
+            source.collect(collector);
+        }
         return res;
     }
 }
