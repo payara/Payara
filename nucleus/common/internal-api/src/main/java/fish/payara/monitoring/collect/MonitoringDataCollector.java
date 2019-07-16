@@ -41,12 +41,33 @@ public interface MonitoringDataCollector {
      * Helper methods for convenience and consistent tagging.
      */
 
+    default MonitoringDataCollector collectNonZero(CharSequence key, long value) {
+        if (value != 0L) {
+            collect(key, value);
+        }
+        return this;
+    }
+
     default MonitoringDataCollector collect(CharSequence key, double value) {
         return collect(key, Math.round(value * 10000L));
     }
 
     default MonitoringDataCollector collect(CharSequence key, boolean value) {
         return collect(key, value ? 1L : 0L);
+    }
+
+    default <V> MonitoringDataCollector collectObject(V obj, BiConsumer<MonitoringDataCollector, V> collect) {
+        collect.accept(this, obj);
+        return this;
+    }
+
+    default <K extends CharSequence, V> MonitoringDataCollector collectAll(Map<K, V> entries,
+            BiConsumer<MonitoringDataCollector, V> collect) {
+        collectNonZero("size", entries.size());
+        for (Entry<K,V> entry : entries.entrySet()) {
+            collect.accept(entity(entry.getKey()), entry.getValue());
+        }
+        return this;
     }
 
     default MonitoringDataCollector app(CharSequence appName) {
@@ -79,11 +100,4 @@ public interface MonitoringDataCollector {
         return tag("entity", entity);
     }
 
-    default <K extends CharSequence, V> MonitoringDataCollector collectAll(Map<K, V> entries,
-            BiConsumer<MonitoringDataCollector, V> collect) {
-        for (Entry<K,V> entry : entries.entrySet()) {
-            collect.accept(entity(entry.getKey()), entry.getValue());
-        }
-        return this;
-    }
 }

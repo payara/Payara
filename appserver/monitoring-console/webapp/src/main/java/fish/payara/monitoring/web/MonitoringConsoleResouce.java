@@ -1,8 +1,8 @@
 package fish.payara.monitoring.web;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,7 +24,7 @@ public class MonitoringConsoleResouce {
     @GET
     @Path("/points")
     public Map<String, Long> getPoints(@QueryParam("t") long timestamp) {
-        Map<String, Long> res = new HashMap<>();
+        Map<String, Long> res = new TreeMap<>();
         List<MonitoringDataSource> sources = Globals.getDefaultBaseServiceLocator().getAllServices(MonitoringDataSource.class);
         MonitoringDataCollector collector = new SinkDataCollector((key, value) -> res.put(key.toString(), value));
         for (MonitoringDataSource source : sources) {

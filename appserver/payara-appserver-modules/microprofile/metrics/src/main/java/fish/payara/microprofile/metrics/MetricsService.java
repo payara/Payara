@@ -52,12 +52,17 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Counting;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Meter;
+import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Sampling;
+import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -136,7 +141,7 @@ public class MetricsService implements EventListener, MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector rootCollector) {
-        MonitoringDataCollector metricsCollector = rootCollector.in("metrics");
+        MonitoringDataCollector metricsCollector = rootCollector.in("metric");
         if (metricsEnabled != null) {
             metricsCollector.collect("enabled", metricsEnabled);
         }
@@ -147,53 +152,67 @@ public class MetricsService implements EventListener, MonitoringDataSource {
             MonitoringDataCollector appCollector = metricsCollector.app(registry.getKey());
 
             // counters
-            SortedMap<String, Counter> counters = registry.getValue().getCounters();
             appCollector.type("counter")
-                .collect("counters", counters.size())
-                .collectAll(counters,
-                    (collector, counter) -> collector.collect("count", counter.getCount()));
+                .collectAll(registry.getValue().getCounters(), (collector, counter) -> collector
+                    .collectObject(counter, MetricsService::collectCounting));
 
             // gauges
-            SortedMap<String, Gauge> gauges = registry.getValue().getGauges();
-            appCollector.type("gauges")
-                .collect("gauges", gauges.size())
-                .collectAll(gauges, (collector, gauge) -> {
+            appCollector.type("gauge")
+                .collectAll(registry.getValue().getGauges(), (collector, gauge) -> {
                     Object value = gauge.getValue();
-                    if (value instanceof Number) {
+                    if (value instanceof Float || value instanceof Double) {
+                        collector.collect("value", ((Number) value).doubleValue());
+                    } else if (value instanceof Number) {
                         collector.collect("value", ((Number) value).longValue());
                     }
             });
 
             // histograms
-            SortedMap<String, Histogram> histograms = registry.getValue().getHistograms();
             appCollector.type("histogram")
-                .collect("histograms", histograms.size())
-                .collectAll(histograms,
-                    (collector, histogram) -> collector.collect("count", histogram.getCount()));
+                .collectAll(registry.getValue().getHistograms(), (collector, histogram) -> collector
+                    .collectObject(histogram, MetricsService::collectSampling)
+                    .collectObject(histogram, MetricsService::collectCounting));
 
             // meters
-            SortedMap<String, Meter> meters = registry.getValue().getMeters();
-            appCollector.collect("meters", meters.size());
             appCollector.type("meter")
-                .collect("meters", meters.size())
-                .collectAll(meters, (collector, meter) -> collector
-                    .collect("count", meter.getCount())
-                    .collect("fifteenMinuteRate", meter.getFifteenMinuteRate())
-                    .collect("fiveMinuteRate", meter.getFiveMinuteRate())
-                    .collect("oneMinuteRate", meter.getOneMinuteRate())
-                    .collect("meanRate", meter.getMeanRate()));
+                .collectAll(registry.getValue().getMeters(), MetricsService::collectMetered);
 
             // timers
-            SortedMap<String, Timer> timers = registry.getValue().getTimers();
             appCollector.type("timer")
-                .collect("timers", counters.size())
-                .collectAll(timers, (collector, timer) -> collector
-                        .collect("count", timer.getCount())
-                        .collect("fifteenMinuteRate", timer.getFifteenMinuteRate())
-                        .collect("fiveMinuteRate", timer.getFiveMinuteRate())
-                        .collect("oneMinuteRate", timer.getOneMinuteRate())
-                        .collect("meanRate", timer.getMeanRate()));
+                .collectAll(registry.getValue().getTimers(), (collector, timer) -> collector
+                    .collectObject(timer, MetricsService::collectMetered)
+                    .collectObject(timer, MetricsService::collectSampling));
         }
+    }
+
+    private static void collectCounting(MonitoringDataCollector collector, Counting obj) {
+        collector.collect("count", obj.getCount());
+    }
+
+    private static void collectSampling(MonitoringDataCollector collector, Sampling obj) {
+        Snapshot snapshot = obj.getSnapshot();
+        collector
+            .collect("min", snapshot.getMin())
+            .collect("max", snapshot.getMax())
+            .collect("mean", snapshot.getMean())
+            .collect("median", snapshot.getMedian())
+            .collect("stdDev", snapshot.getStdDev())
+            .collect("75thPercentile", snapshot.get75thPercentile())
+            .collect("95thPercentile", snapshot.get95thPercentile())
+            .collect("95thPercentile", snapshot.get95thPercentile())
+            .collect("98thPercentile", snapshot.get98thPercentile())
+            .collect("99thPercentile", snapshot.get99thPercentile())
+            .collect("999thPercentile", snapshot.get999thPercentile());
+    }
+
+    private static void collectMetered(MonitoringDataCollector collector, Metered obj) {
+        collectCounting(collector, obj);
+        collector
+            .collect("count", obj.getCount())
+            .collect("fifteenMinuteRate", obj.getFifteenMinuteRate())
+            .collect("fiveMinuteRate", obj.getFiveMinuteRate())
+            .collect("oneMinuteRate", obj.getOneMinuteRate())
+            .collect("meanRate", obj.getMeanRate());
     }
 
     private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
