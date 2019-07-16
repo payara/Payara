@@ -54,13 +54,28 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.*;
-import org.glassfish.api.deployment.archive.*;
+import org.glassfish.api.deployment.ApplicationMetaDataProvider;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.MetaData;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.CompositeHandler;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.virtualization.VirtualizationEnv;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.common.ApplicationConfigInfo;
+import org.glassfish.deployment.common.ClientJarWriter;
+import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentException;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
@@ -74,7 +89,13 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
 import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.data.*;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ContainerRegistry;
+import org.glassfish.internal.data.EngineInfo;
+import org.glassfish.internal.data.EngineRef;
+import org.glassfish.internal.data.ModuleInfo;
+import org.glassfish.internal.data.ProgressTracker;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
@@ -87,17 +108,33 @@ import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.RetryableException;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.beans.PropertyVetoException;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -814,7 +851,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Keyed Deployer " + deployer.getClass());
             }
-            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getContainer().getName(), DeploymentTracing.AppStage.PREPARE);
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
             loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
             span.close();
         }
@@ -828,7 +865,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             final MetaData metadata = deployer.getMetaData();
             EngineInfo engineInfo = containerInfosByDeployers.get(deployer);
             String containerName = engineInfo == null ? "unknown" : engineInfo.getContainer().getName();
-            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, containerName, DeploymentTracing.AppStage.LOAD_METADATA)) {
+            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD_METADATA)) {
                 if (metadata!=null) {
                     if (metadata.provides()==null || metadata.provides().length==0) {
                         deployer.loadMetaData(null, context);
@@ -859,7 +896,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final ActionReport report = context.getActionReport();
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
 
-        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getContainer().getName(), DeploymentTracing.AppStage.PREPARE, "Deployer"))
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE, "Deployer"))
         {
             Deployer deployer = engineInfo.getDeployer();
             if (deployer == null) {
@@ -885,7 +922,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
 
         // start all the containers associated with sniffers.
-        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, containerName, DeploymentTracing.AppStage.PREPARE)) {
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, sniffer.getModuleType(), DeploymentTracing.AppStage.PREPARE)) {
             EngineInfo engineInfo = containerRegistry.getContainer(containerName);
             if (engineInfo == null) {
                 // need to synchronize on the registry to not end up starting the same container from
