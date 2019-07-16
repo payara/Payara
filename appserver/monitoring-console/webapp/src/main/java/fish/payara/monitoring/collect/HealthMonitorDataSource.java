@@ -1,18 +1,14 @@
 package fish.payara.monitoring.collect;
 
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-@Service(name = "health-monitor-data-collector")
-@RunLevel(StartupRunLevel.VAL)
 public class HealthMonitorDataSource implements MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        // TODO Auto-generated method stub
-        
+//        MonitoringDataCollector nsCollector = collector.in("health-check");
+//        nsCollector.collect("size", healthChecks.size());
+//        for (Entry<String, Set<HealthCheck>> entry : healthChecks.entrySet()) {
+//            nsCollector.tag("entry", entry.getKey()).collect("size", entry.getValue().size());
+//        }
     }
-
 
 }
