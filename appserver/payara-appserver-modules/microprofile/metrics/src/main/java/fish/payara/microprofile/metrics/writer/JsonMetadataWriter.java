@@ -54,14 +54,11 @@ import static fish.payara.microprofile.metrics.Constants.EMPTY_STRING;
 import fish.payara.microprofile.metrics.exception.NoSuchMetricException;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -110,11 +107,11 @@ public class JsonMetadataWriter extends JsonWriter {
     
     private JsonObject getJsonFromMetadata(Metadata metadata, Set<MetricID> metricIDs) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
-        payloadBuilder.add(NAME, sanitizeMetadata(metadata.getName()));
-        payloadBuilder.add(DISPLAY_NAME, sanitizeMetadata(metadata.getDisplayName()));
-        payloadBuilder.add(DESCRIPTION, sanitizeMetadata(metadata.getDescription()));
-        payloadBuilder.add(TYPE, sanitizeMetadata(metadata.getType()));
-        payloadBuilder.add(UNIT, sanitizeMetadata(metadata.getUnit()));
+        payloadBuilder.add(NAME, sanitiseMetadata(metadata.getName()));
+        payloadBuilder.add(DISPLAY_NAME, sanitiseMetadata(metadata.getDisplayName()));
+        payloadBuilder.add(DESCRIPTION, sanitiseMetadata(metadata.getDescription()));
+        payloadBuilder.add(TYPE, sanitiseMetadata(metadata.getType()));
+        payloadBuilder.add(UNIT, sanitiseMetadata(metadata.getUnit()));
         JsonArrayBuilder allTagsBuilder = Json.createArrayBuilder();
         for (MetricID id: metricIDs) {
             JsonArrayBuilder tagBuilder = Json.createArrayBuilder();
@@ -127,7 +124,7 @@ public class JsonMetadataWriter extends JsonWriter {
         return payloadBuilder.build();
     }
 
-    private String sanitizeMetadata(String s) {
+    private String sanitiseMetadata(String s) {
         if (s == null || s.trim().isEmpty()) {
             return EMPTY_STRING;
         } else {
@@ -135,7 +132,7 @@ public class JsonMetadataWriter extends JsonWriter {
         }
     }
     
-    private String sanitizeMetadata(Optional<String> string) {
+    private String sanitiseMetadata(Optional<String> string) {
         String held = string.orElse(EMPTY_STRING);
         if (held.trim().isEmpty()) {
             held = EMPTY_STRING;

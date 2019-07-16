@@ -103,7 +103,7 @@ public class MetricProducer {
 
     @Produces
     private <T> Gauge<T> gauge(InjectionPoint ip) {
-        return () -> (T) registry.getGauges().get(helper.metricIDof(ip)).getValue();
+        return () -> (T) registry.getGauges().get(helper.metricIDOf(ip)).getValue();
     }
 
     @Produces

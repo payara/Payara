@@ -200,18 +200,18 @@ public class MetricsHelper {
         return builder;
     }
     
-    public MetricID metricIDof(InjectionPoint ip) {
+    public MetricID metricIDOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
         if (annotated instanceof AnnotatedMember) {
-            return metricIDof((AnnotatedMember<?>) annotated, ip.getMember().getDeclaringClass());
+            return metricIDOf((AnnotatedMember<?>) annotated, ip.getMember().getDeclaringClass());
         } else if (annotated instanceof AnnotatedParameter) {
-            return metricIDof((AnnotatedParameter<?>) annotated, ip.getMember().getDeclaringClass());
+            return metricIDOf((AnnotatedParameter<?>) annotated, ip.getMember().getDeclaringClass());
         } else {
             throw new IllegalArgumentException("Unable to retrieve metric name for injection point [" + ip + "], only members and parameters are supported");
         }
     }
     
-    public MetricID metricIDof(Annotated member, Class baseClass) {
+    public MetricID metricIDOf(Annotated member, Class baseClass) {
         if (member.isAnnotationPresent(Metric.class)) {
             Metric metric = member.getAnnotation(Metric.class);
             if (metric.absolute()) {

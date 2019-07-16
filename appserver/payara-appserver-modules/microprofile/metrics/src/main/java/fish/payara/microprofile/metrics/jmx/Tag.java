@@ -48,8 +48,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- *
- * @author jonathan
+ * Tag of name/value pair, used for XML unmarshalling
+ * @author jonathan coustick
+ * @see org.eclipse.microprofile.metrics.Tag
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType
