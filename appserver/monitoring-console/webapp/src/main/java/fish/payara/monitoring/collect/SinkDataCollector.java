@@ -1,6 +1,6 @@
 package fish.payara.monitoring.collect;
 
-public class ConsumerDataCollector implements MonitoringDataCollector {
+public class SinkDataCollector implements MonitoringDataCollector {
 
     private static final char TAG_SEPARATOR = ' ';
     private static final char TAG_ASSIGN = '=';
@@ -8,11 +8,11 @@ public class ConsumerDataCollector implements MonitoringDataCollector {
     private final MonitoringDataSink sink;
     private final StringBuilder tags;
 
-    public ConsumerDataCollector(MonitoringDataSink sink) {
+    public SinkDataCollector(MonitoringDataSink sink) {
         this(sink, new StringBuilder());
     }
 
-    public ConsumerDataCollector(MonitoringDataSink sink, StringBuilder fullKey) {
+    public SinkDataCollector(MonitoringDataSink sink, StringBuilder fullKey) {
         this.sink = sink;
         this.tags = fullKey;
     }
@@ -32,11 +32,19 @@ public class ConsumerDataCollector implements MonitoringDataCollector {
     @Override
     public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
         StringBuilder tagged = new StringBuilder(tags);
-        if (tagged.length() > 0) {
+        int nameIndex = indexOf(name);
+        if (nameIndex > 0) {
+            tagged.setLength(nameIndex);
+        } else if (tagged.length() > 0) {
             tagged.append(TAG_SEPARATOR);
         }
         tagged.append(name).append(TAG_ASSIGN).append(value);
-        return new ConsumerDataCollector(sink, tagged);
+        return new SinkDataCollector(sink, tagged);
+    }
+
+    private int indexOf(CharSequence name) {
+        String tag = name.toString();
+        return tags.indexOf(tag + TAG_ASSIGN) == 0 ? 0 : tags.indexOf(TAG_SEPARATOR + tag + TAG_ASSIGN);
     }
 
     private void accept(long value) {

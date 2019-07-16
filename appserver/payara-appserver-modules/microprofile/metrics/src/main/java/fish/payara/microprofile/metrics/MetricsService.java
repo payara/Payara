@@ -47,10 +47,18 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadata;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
+
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -72,6 +80,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -80,7 +89,7 @@ import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsService implements EventListener {
+public class MetricsService implements EventListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
@@ -122,6 +131,68 @@ public class MetricsService implements EventListener {
             payaraExecutor.submit(() -> {
                 bootstrap();
             });
+        }
+    }
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        MonitoringDataCollector metricsCollector = rootCollector.in("metrics");
+        if (metricsEnabled != null) {
+            metricsCollector.collect("enabled", metricsEnabled);
+        }
+        if (metricsSecure != null) {
+            metricsCollector.collect("secure", metricsSecure);
+        }
+        for (Entry<String, MetricRegistry> registry : REGISTRIES.entrySet()) {
+            MonitoringDataCollector appCollector = metricsCollector.app(registry.getKey());
+
+            // counters
+            SortedMap<String, Counter> counters = registry.getValue().getCounters();
+            appCollector.type("counter")
+                .collect("counters", counters.size())
+                .collectAll(counters,
+                    (collector, counter) -> collector.collect("count", counter.getCount()));
+
+            // gauges
+            SortedMap<String, Gauge> gauges = registry.getValue().getGauges();
+            appCollector.type("gauges")
+                .collect("gauges", gauges.size())
+                .collectAll(gauges, (collector, gauge) -> {
+                    Object value = gauge.getValue();
+                    if (value instanceof Number) {
+                        collector.collect("value", ((Number) value).longValue());
+                    }
+            });
+
+            // histograms
+            SortedMap<String, Histogram> histograms = registry.getValue().getHistograms();
+            appCollector.type("histogram")
+                .collect("histograms", histograms.size())
+                .collectAll(histograms,
+                    (collector, histogram) -> collector.collect("count", histogram.getCount()));
+
+            // meters
+            SortedMap<String, Meter> meters = registry.getValue().getMeters();
+            appCollector.collect("meters", meters.size());
+            appCollector.type("meter")
+                .collect("meters", meters.size())
+                .collectAll(meters, (collector, meter) -> collector
+                    .collect("count", meter.getCount())
+                    .collect("fifteenMinuteRate", meter.getFifteenMinuteRate())
+                    .collect("fiveMinuteRate", meter.getFiveMinuteRate())
+                    .collect("oneMinuteRate", meter.getOneMinuteRate())
+                    .collect("meanRate", meter.getMeanRate()));
+
+            // timers
+            SortedMap<String, Timer> timers = registry.getValue().getTimers();
+            appCollector.type("timer")
+                .collect("timers", counters.size())
+                .collectAll(timers, (collector, timer) -> collector
+                        .collect("count", timer.getCount())
+                        .collect("fifteenMinuteRate", timer.getFifteenMinuteRate())
+                        .collect("fiveMinuteRate", timer.getFiveMinuteRate())
+                        .collect("oneMinuteRate", timer.getOneMinuteRate())
+                        .collect("meanRate", timer.getMeanRate()));
         }
     }
 
