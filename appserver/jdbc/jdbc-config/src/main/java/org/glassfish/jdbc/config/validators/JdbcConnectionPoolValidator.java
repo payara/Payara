@@ -69,8 +69,7 @@ public class JdbcConnectionPoolValidator
     }
 
     public String getParsedVariable(String variableToRetrieve) {
-        
-        Properties systemProps = System.getProperties();
+
         String[] variableReference = variableToRetrieve.split("=");
         
         switch(variableReference[0]) {
@@ -89,8 +88,8 @@ public class JdbcConnectionPoolValidator
                 break;
             default:
                 //We got a system variable as no split occured
-                if (systemProps.getProperty(variableReference[0]) != null && !systemProps.getProperty(variableReference[0]).isEmpty()) {
-                    return systemProps.getProperty(variableReference[0]);
+                if (System.getProperty(variableReference[0]) != null && !System.getProperty(variableReference[0]).isEmpty()) {
+                    return System.getProperty(variableReference[0]);
                 }
                 break;
         }
@@ -129,8 +128,13 @@ public class JdbcConnectionPoolValidator
                 
                 //By this point it should be the case that the value is always castable
                 //to an integer
-                maxPoolSizeValue = Integer.parseInt(maxPoolSize);
-                steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
+                try {
+                    maxPoolSizeValue = Integer.parseInt(maxPoolSize);
+                    steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
+                } catch(NumberFormatException nfe) {
+                    System.out.println("Exception occured whilst parsing value to int: \n - " + nfe.getMessage());
+                    return false;
+                }
                 
                 if (maxPoolSizeValue < steadyPoolSizeValue) {
                     //max pool size fault
