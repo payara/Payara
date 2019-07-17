@@ -70,6 +70,13 @@ public interface MonitoringDataCollector {
         return this;
     }
 
+    default <V> MonitoringDataCollector collectObjects(Collection<V> entries, BiConsumer<MonitoringDataCollector, V> collect) {
+        for (V entry : entries) {
+            collect.accept(this, entry);
+        }
+        return this;
+    }
+
     default <K extends CharSequence, V> MonitoringDataCollector collectAll(Map<K, V> entries,
             BiConsumer<MonitoringDataCollector, V> collect) {
         collectNonZero("size", entries.size());
