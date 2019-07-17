@@ -32,6 +32,7 @@ public class MonitoringConsoleResouce {
                 source.collect(collector);
             } catch (RuntimeException e) {
                 // ignore and continue with next
+                e.printStackTrace(); //TODO remove later
             }
         }
         return res;
