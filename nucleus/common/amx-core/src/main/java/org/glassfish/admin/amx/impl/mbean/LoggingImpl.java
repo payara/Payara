@@ -67,7 +67,6 @@ import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
 import static org.glassfish.admin.amx.logging.LogFileAccess.*;
 import static org.glassfish.admin.amx.logging.LogRecordEmitter.*;
 
-//import com.sun.enterprise.server.logging.LoggingImplHook;
 /**
  * Implementation of {@link Logging}. <p> The following is a GlassFish V2
  * comment, and needs work for v3:<br> AMX Logging MBean is hooked directly into
@@ -75,14 +74,13 @@ import static org.glassfish.admin.amx.logging.LogRecordEmitter.*;
  * com.sun.enterprise.server.logging.FileandSyslogHandler which uses
  * com.sun.enterprise.server.logging.AMXLoggingHook to instantiate and call an
  * instance of LoggingImpl.
+ * @deprecated from Payara 5.193 as does not appear to be used
  */
 public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ LoggingImplHook
 {
 
     private final Map<Level, String> mLevelToNotificationTypeMap;
     private final Map<String, NotificationBuilder> mNotificationTypeToNotificationBuilderMap;
-    private static final String SERVER_LOG_NAME = "server.log";
-    private static final String ACCESS_LOG_NAME = "access.log";
     private final LoggingConfigImpl loggingConfig;
     private final GFFileHandler gfFileHandler;
     private final LogFilter logFilter;
@@ -90,7 +88,8 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     private final Logger logger;
     private final ServiceLocator mHabitat;
     final String FILE_SEP;
-    private final String mServerName;
+    
+    private static MBeanNotificationInfo[] SELF_NOTIFICATION_INFOS = null;
 
     /**
      * Used internally to get the Logging ObjectName for a particular server
@@ -111,7 +110,6 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
     public LoggingImpl(final ObjectName parent, final String serverName) {
         super(parent, Logging.class);
 
-        mServerName = serverName;
         FILE_SEP = System.getProperty("file.separator");
 
         mLevelToNotificationTypeMap = initLevelToNotificationTypeMap();
@@ -125,29 +123,6 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         logger = Logger.getAnonymousLogger();
 
     }
-    /**
-     * Hook for subclass to modify anything in MBeanInfo.
-     *
-     * @Override
-     */
-    /*
-     @Override
-     protected MBeanInfo
-     postRegisterModifyMBeanInfo( final MBeanInfo info )
-     {
-     final MBeanOperationInfo[]  ops = info.getOperations();
-	    
-     final int   idx = JMXUtil.findMBeanOperationInfo( info, "queryServerLog", null);
-	    
-     final MBeanOperationInfo    op  = ops[idx];
-     ops[idx]    = new MBeanOperationInfo( op.getName(), op.getDescription(),
-     op.getSignature(), Map.class.getName(),
-     MBeanOperationInfo.INFO );
-	    
-     return JMXUtil.newMBeanInfo( info, ops );
-     }
-     */
-    private static MBeanNotificationInfo[] SELF_NOTIFICATION_INFOS = null;
 
     /**
      * getMBeanInfo() can be called frequently. By making this static, we avoid
@@ -164,6 +139,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         return (SELF_NOTIFICATION_INFOS);
     }
 
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         final MBeanNotificationInfo[] superInfos = super.getNotificationInfo();
 
@@ -173,11 +149,8 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         return all;
     }
 
-    /**
-     * FIXME
-     */
     private void unimplemented() {
-        throw new RuntimeException("Not implemented.");
+        throw new UnsupportedOperationException("Not implemented.");
     }
 
     public void setModuleLogLevel(
@@ -206,8 +179,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public Map<String, String> getLoggingProperties() {
         try {
-            Map<String, String> props = loggingConfig.getLoggingProperties();
-            return props;
+            return loggingConfig.getLoggingProperties();
         } catch (java.io.IOException e) {
             logger.log(Level.WARNING, "Can not get module log level");
             return null;
@@ -284,13 +256,16 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public synchronized void rotateLogFile(final String key) {
 
-        if (ACCESS_KEY.equals(key)) {
-            throw new IllegalArgumentException("not supported: " + key);
-            //getLogMBean().rotateAccessLog();
-        } else if (SERVER_KEY.equals(key)) {
-            gfFileHandler.rotate();
-        } else {
+        if (null == key) {
             throw new IllegalArgumentException("" + key);
+        } else switch (key) {
+            case ACCESS_KEY:
+                throw new IllegalArgumentException("not supported: " + key);
+            case SERVER_KEY:
+                gfFileHandler.rotate();
+                break;
+            default:
+                throw new IllegalArgumentException("" + key);
         }
     }
 
@@ -355,10 +330,9 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             Set<String> modules,
             List<Attribute> nameValuePairs,
             String anySearch) {
-        final List<Serializable[]> result = queryServerLogInternal(
+        return queryServerLogInternal(
                 name, startIndex, searchForward, maximumNumberOfResults,
                 fromTime, toTime, logLevel, modules, nameValuePairs, anySearch);
-        return result;
     }
 
     private List<Serializable[]> queryServerLogInternal(
@@ -394,24 +368,25 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
             sortAscending = false;
         }
 
-        final AttributeList result = logFilter.getLogRecordsUsingQuery(actualName,
-                Long.valueOf(startIndex),
+        final AttributeList result = logFilter.getLogRecordsUsingQuery(actualName, startIndex,
                 searchForward, sortAscending,
                 maximumNumberOfResults,
-                fromTime == null ? null
-                : new Date(fromTime),
-                toTime == null ? null
-                : new Date(toTime),
+                fromTime == null ? null : new Date(fromTime),
+                toTime == null ? null : new Date(toTime),
                 logLevel, false, moduleList, props, anySearch);
 
 
         return convertQueryResult(result);
     }
 
+    /**
+     * This method will always throw an exception
+     * @throws UnsupportedOperationException
+     */
     public Map<String, Number>[] getErrorInfo() {
-        unimplemented();
+        unimplemented();//throws UnsupportedOperationException
 
-        final List<Map<String, Object>> infos = null; //getLogMBean().getErrorInformation();
+        final List<Map<String, Object>> infos = null;
 
         final Map<String, Number>[] results = TypeCast.asArray(new HashMap[infos.size()]);
 
@@ -434,7 +409,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
         return results;
     }
-    private static final Integer INTEGER_0 = Integer.valueOf(0);
+    private static final Integer INTEGER_0 = 0;
     private static final Map<String, Integer> EMPTY_ERROR_DISTRIBUTION_MAP =
             Collections.emptyMap();
     private static final Set<String> LEGAL_DISTRIBUTION_LEVELS =
@@ -448,8 +423,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
         unimplemented();
 
-        Map<String, Integer> result =
-                null; //getLogMBean().getErrorDistribution( timestamp, Level.parse( level ) );
+        Map<String, Integer> result = null;
 
         // query may return null instead of an empty Map
         if (result != null) {
@@ -469,47 +443,26 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public void setKeepErrorStatisticsForIntervals(final int num) {
         unimplemented();
-        //getLogMBean().setKeepErrorStatisticsForIntervals( num );
     }
 
     public int getKeepErrorStatisticsForIntervals() {
         return 0;
-        /*
-         unimplemented();
-         return getLogMBean().getKeepErrorStatisticsForIntervals();
-         */
     }
 
     public void setErrorStatisticsIntervalMinutes(final long minutes) {
         unimplemented();
-        //getLogMBean().setErrorStatisticsIntervalDuration( minutes );
     }
 
     public long getErrorStatisticsIntervalMinutes() {
         return 0;
-        /*
-         unimplemented();
-         return getLogMBean().getErrorStatisticsIntervalDuration();
-         */
     }
 
     public String[] getLoggerNames() {
         return EMPTY_STRING_ARRAY;
-        /*unimplemented();
-         final List<String>  names   =
-         TypeCast.checkList( getLogMBean().getLoggerNames(), String.class );
-	    
-         return names.toArray( EMPTY_STRING_ARRAY ); */
     }
 
     public String[] getLoggerNamesUnder(final String loggerName) {
         unimplemented();
-        /*
-         final List<String>  names   = TypeCast.checkList(
-         getLogMBean().getLoggerNamesUnder( loggerName ), String.class );
-	    
-         return names.toArray( EMPTY_STRING_ARRAY );
-         */
         return null;
     }
 
@@ -541,7 +494,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
     public String getDiagnosticURI(final String messageID) {
         unimplemented();
-        return null; //getLogMBean().getDiagnosticURIForMessageId( messageID );
+        return null;
     }
     private static final Object[] LEVELS_AND_NOTIF_TYPES = new Object[]{
         Level.SEVERE, LOG_RECORD_SEVERE_NOTIFICATION_TYPE,
@@ -568,6 +521,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
         return mLevelToNotificationTypeMap.get(level);
     }
 
+    @Override
     protected void preRegisterDone()
             throws Exception {
         initNotificationTypeToNotificationBuilderMap(getObjectName());
@@ -624,10 +578,7 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
      * Internal use only, called by
      * com.sun.enterprise.server.logging.AMXLoggingHook.
      */
-    public void privateLoggingHook(
-            final LogRecord logRecord,
-            final Formatter formatter) {
-        //debug( "LoggingImpl.privateLoggingHook: " + formatter.format( logRecord ) );
+    public void privateLoggingHook(final LogRecord logRecord, final Formatter formatter) {
 
         if (logRecord.getThreadID() == mMyThreadID) {
             debug("privateLoggingHook: recusive call!!!");
@@ -657,8 +608,6 @@ public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ Log
 
                     debug("privateLoggingHook: sending: " + notif);
                     sendNotification(notif);
-                } else {
-                    // debug( "privateLogHook: no listeners for level " + level );
                 }
             } finally {
                 mMyThreadID = -1;

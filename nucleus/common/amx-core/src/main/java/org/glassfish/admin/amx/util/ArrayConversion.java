@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -160,21 +161,19 @@ public final class ArrayConversion
     public static <T> Set<T> toSet(T[] array)
     {
         Set<T> theSet;
-        if (array.length == 0)
-        {
-            theSet = Collections.emptySet();
-        }
-        else if (array.length == 1)
-        {
-            theSet = Collections.singleton(array[ 0]);
-        }
-        else
-        {
-            theSet = new HashSet<T>();
-            for (int i = 0; i < array.length; ++i)
-            {
-                theSet.add(array[i]);
-            }
+        switch (array.length) {
+            case 0:
+                theSet = Collections.emptySet();
+                break;
+            case 1:
+                theSet = Collections.singleton(array[ 0]);
+                break;
+            default:
+                theSet = new HashSet<T>();
+                for (int i = 0; i < array.length; ++i)
+                {
+                    theSet.add(array[i]);
+                }   break;
         }
         return (theSet);
     }

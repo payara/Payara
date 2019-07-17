@@ -57,8 +57,6 @@ import java.util.*;
 public class ToolsImpl extends AMXImplBase // implements Tools
 {
 
-    private static final String NL = StringUtil.NEWLINE();
-
     public ToolsImpl(final ObjectName parent) {
         super(parent, Tools.class);
     }
@@ -70,8 +68,8 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         }
         return null;
     }
-    static private final String WILD_SUFFIX = ",*";
-    static private final String WILD_ALL = "*";
+    private static final String WILD_SUFFIX = ",*";
+    private static final String WILD_ALL = "*";
 
     public String getInfo() {
         return info("*");
@@ -112,8 +110,8 @@ public class ToolsImpl extends AMXImplBase // implements Tools
 
         final StringBuilder buf = new StringBuilder();
 
-        if (objectNames.size() != 0) {
-            final String NL = StringUtil.NEWLINE();
+        if (!objectNames.isEmpty()) {
+            final String NL = StringUtil.LS;
             for (final ObjectName objectName : objectNames) {
                 final MBeanInfo mbeanInfo = getProxyFactory().getMBeanInfo(objectName);
                 if (mbeanInfo == null) {
@@ -222,39 +220,3 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

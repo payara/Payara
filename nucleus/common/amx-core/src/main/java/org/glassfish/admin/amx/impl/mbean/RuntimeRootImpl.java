@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.mbean;
 
@@ -57,7 +58,6 @@ import javax.management.JMException;
 import javax.management.remote.JMXServiceURL;
 import org.glassfish.admin.amx.base.RuntimeRoot;
 import org.glassfish.admin.amx.base.ServerRuntime;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
@@ -65,7 +65,6 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.internal.data.ApplicationRegistry;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
@@ -154,9 +153,7 @@ public final class RuntimeRootImpl extends AMXImplBase
 
     private NetworkConfig networkConfig()
     {
-        final NetworkConfig config = InjectedValues.getInstance().getHabitat().getService(
-        		NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        return config;
+        return InjectedValues.getInstance().getHabitat().getService(NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
 
     private static final String ADMIN_LISTENER_NAME = "admin-listener";
@@ -165,8 +162,7 @@ public final class RuntimeRootImpl extends AMXImplBase
     {
         final NetworkConfig network = networkConfig();
 
-        final NetworkListener listener = network.getNetworkListener(ADMIN_LISTENER_NAME);
-        return listener;
+        return network.getNetworkListener(ADMIN_LISTENER_NAME);
     }
 
     private int getRESTPort()
@@ -190,31 +186,23 @@ public final class RuntimeRootImpl extends AMXImplBase
     }
 
 
-    public String executeREST(final String cmd)
-    {
+    public String executeREST(final String cmd) {
         String result = null;
 
         HttpURLConnection conn = null;
-        try
-        {
+        try {
             final String url = getRESTBaseURL() + cmd;
 
             final URL invoke = new URL(url);
-            //System.out.println( "Opening connection to: " + invoke );
             conn = (HttpURLConnection) invoke.openConnection();
 
             final InputStream is = conn.getInputStream();
             result = toString(is);
             is.close();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             result = ExceptionUtil.toString(e);
-        }
-        finally
-        {
-            if (conn != null)
-            {
+        } finally {
+            if (conn != null) {
                 conn.disconnect();
             }
         }
@@ -261,37 +249,35 @@ public final class RuntimeRootImpl extends AMXImplBase
         final String NL = StringUtil.LS;
         final String target = "das";
         String result = "FAILED";
-        if ("summary".equals(type))
-        {
-            result = info.getSummary(target);
-        }
-        else if ("memory".equals(type))
-        {
-            result = info.getMemoryInformation(target);
-        }
-        else if ("thread".equals(type))
-        {
-            result = info.getThreadDump(target);
-        }
-        else if ("class".equals(type))
-        {
-            result = info.getClassInformation(target);
-        }
-        else if ("log".equals(type))
-        {
-            result = info.getLogInformation(target);
-        }
-        else if ("all".equals(type))
-        {
-            result = "SUMMARY" + NL + NL + getJVMReport("summary") + NL + NL +
-                     "MEMORY" + NL + NL + getJVMReport("memory") + NL + NL +
-                     "THREADS" + NL + NL + getJVMReport("thread") + NL + NL +
-                     "CLASSES" + NL + NL + getJVMReport("class") + NL + NL +
-                     "LOGGING" + NL + NL + getJVMReport("log");
-        }
-        else
+        if (null == type)
         {
             throw new IllegalArgumentException("Unsupported JVM report type: " + type);
+        }
+        else switch (type) {
+            case "summary":
+                result = info.getSummary(target);
+                break;
+            case "memory":
+                result = info.getMemoryInformation(target);
+                break;
+            case "thread":
+                result = info.getThreadDump(target);
+                break;
+            case "class":
+                result = info.getClassInformation(target);
+                break;
+            case "log":
+                result = info.getLogInformation(target);
+                break;
+            case "all":
+                result = "SUMMARY" + NL + NL + getJVMReport("summary") + NL + NL +
+                        "MEMORY" + NL + NL + getJVMReport("memory") + NL + NL +
+                        "THREADS" + NL + NL + getJVMReport("thread") + NL + NL +
+                        "CLASSES" + NL + NL + getJVMReport("class") + NL + NL +
+                        "LOGGING" + NL + NL + getJVMReport("log");
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported JVM report type: " + type);
         }
 
         if (result != null)
@@ -316,7 +302,6 @@ public final class RuntimeRootImpl extends AMXImplBase
                 if( opt.startsWith(prefix) )
                 {
                     final String value = opt.substring( prefix.length() ).toLowerCase(Locale.ENGLISH);
-                    //System.out.println( "RuntimeRootImpl.isRunningInDebugMode(): found: " + prefix + value );
                     inDebugMode = Boolean.parseBoolean(value);
                     break;
                 }
@@ -325,28 +310,3 @@ public final class RuntimeRootImpl extends AMXImplBase
         return inDebugMode;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

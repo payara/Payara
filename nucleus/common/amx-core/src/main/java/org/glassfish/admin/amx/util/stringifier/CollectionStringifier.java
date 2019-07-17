@@ -37,58 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.stringifier;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-public class CollectionStringifier implements Stringifier
-{
-	public final static CollectionStringifier DEFAULT = new CollectionStringifier( "," );
+/**
+ * Creates a String representation of an {@link Collection}
+ * @see Object#toString() 
+ */
+public class CollectionStringifier implements Stringifier {
+    public static final CollectionStringifier DEFAULT = new CollectionStringifier( "," );
 	
-	public final String			mDelim;
-	public final Stringifier	mElementStringifier;
-	
-		public 
-	CollectionStringifier( String delim )
-	{
-		this( delim, SmartStringifier.DEFAULT );
-	}
-	
-		public 
-	CollectionStringifier( Stringifier elementStringifier )
-	{
-		this( ",", elementStringifier );
-	}
-	
-		public 
-	CollectionStringifier( String delim, Stringifier elementStringifier )
-	{
-		mDelim				= delim;
-		mElementStringifier	= elementStringifier;
-	}
-	
-		public String
-	stringify( Object o )
-	{
-		final Collection	c		= (Collection)o;
-		final Iterator		iter	= c.iterator();
-		
-		String	result	= IteratorStringifier.DEFAULT.stringify( iter, mDelim, mElementStringifier);
-		
-		return( result );
-	}
-	
-	
-		public static String
-	toString( final Object o, final String delim )
-	{
-		final Collection	c		= (Collection)o;
-		final Iterator		iter	= c.iterator();
-		
-		String	result	= IteratorStringifier.DEFAULT.stringify( iter, delim );
-		
-		return( result );
-	}
+    public final String			mDelim;
+    public final Stringifier	mElementStringifier;
+
+    public CollectionStringifier(String delim) {
+        this(delim, SmartStringifier.DEFAULT);
+    }
+
+    public CollectionStringifier(Stringifier elementStringifier) {
+        this(",", elementStringifier);
+    }
+
+    public CollectionStringifier(String delim, Stringifier elementStringifier) {
+        mDelim = delim;
+        mElementStringifier = elementStringifier;
+    }
+
+    @Override
+    public String stringify(Object o) {
+        final Collection c = (Collection) o;
+        final Iterator iter = c.iterator();
+
+        String result = IteratorStringifier.DEFAULT.stringify(iter, mDelim, mElementStringifier);
+
+        return (result);
+    }
+
+    public static String toString(final Object o, final String delim) {
+        final Collection c = (Collection) o;
+        final Iterator iter = c.iterator();
+
+        String result = IteratorStringifier.stringify(iter, delim);
+
+        return (result);
+    }
 }

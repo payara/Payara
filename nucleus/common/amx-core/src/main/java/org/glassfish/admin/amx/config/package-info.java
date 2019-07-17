@@ -47,6 +47,3 @@ package org.glassfish.admin.amx.config;
 
 import org.glassfish.external.arc.Taxonomy;
 import org.glassfish.external.arc.Stability;
-
-
-

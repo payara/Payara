@@ -133,9 +133,3 @@ public interface LogQueryEntry
      */
     public String   getThreadID();
 }
-
-
-
-
-
-

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018] [Payara Foundation]
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util;
 
@@ -80,41 +80,37 @@ public final class MapUtil
     /**
     Create a new Map consisting of a single key/value pair.
      */
-    public static <V> Map<String, V> newMap(
-            final String key,
-            final V value)
-    {
-        final Map<String, V> m = new HashMap<>();
+    public static <V> Map<String, V> newMap(final String key, final V value) {
+        final Map<String, V> map = new HashMap<>();
 
-        m.put(key, value);
+        map.put(key, value);
 
-        return (m);
+        return (map);
     }
 
     /**
-    Create a new Map consisting of a single key/value pair.
+     * Create a new Map combined all entries of two other maps.
+     * If a key is is both maps then the value in map2 will be used.
      */
-    public static <K, V> Map<K, V> newMap(
-            final Map<K, V> m1,
-            final Map<K, V> m2)
+    public static <K, V> Map<K, V> newMap(final Map<K, V> m1, final Map<K, V> m2)
     {
-        final Map<K, V> m = new HashMap<>();
+        final Map<K, V> newMap = new HashMap<>();
 
         if (m1 != null)
         {
-            m.putAll(m1);
+            newMap.putAll(m1);
         }
         if (m2 != null)
         {
-            m.putAll(m2);
+            newMap.putAll(m2);
         }
 
-        return (m);
+        return (newMap);
     }
 
     public static <K, V> Map<K, V> toMap(final Object[] params, final Class<K> keyClass, final Class<V> valueClass)
     {
-        final Map<K, V> m = new HashMap<>();
+        final Map<K, V> map = new HashMap<>();
 
         for (int i = 0; i < params.length; i += 2)
         {
@@ -135,9 +131,9 @@ public final class MapUtil
                 throw new IllegalArgumentException("Value of class " + value.getClass().getName() + " not assignable to " + valueClass.getName());
             }
 
-            m.put(keyClass.cast(key), valueClass.cast(value));
+            map.put(keyClass.cast(key), valueClass.cast(value));
         }
-        return m;
+        return map;
     }
 
     /**
@@ -174,49 +170,43 @@ public final class MapUtil
             throw new IllegalArgumentException("mappings must have even length");
         }
 
-        final Map<String, String> m = new HashMap<>();
+        final Map<String, String> map = new HashMap<>();
 
         for (int i = 0; i < mappings.length; i += 2)
         {
-            m.put(mappings[i], mappings[i + 1]);
+            map.put(mappings[i], mappings[i + 1]);
         }
 
-        return (m);
+        return (map);
     }
 
     /**
     Remove all entries keyed by 'keys'
      */
-    public static <T> void removeAll(
-            final Map<T, ?> m,
-            final T[] keys)
-    {
+    public static <T> void removeAll(final Map<T, ?> map, final T[] keys) {
         for (T key : keys) {
-            m.remove(key);
+            map.remove(key);
         }
     }
 
-    public static boolean mapsEqual(
-            final Map<?, ?> m1,
-            final Map<?, ?> m2)
-    {
-        if (m1 == m2)
+    public static boolean mapsEqual(final Map<?, ?> map1, final Map<?, ?> map2) {
+        if (map1 == map2)
         {
             return (true);
         }
 
         boolean equal = false;
 
-        if (m1.size() == m2.size() &&
-            m1.keySet().equals(m2.keySet()))
+        if (map1.size() == map2.size() &&
+            map1.keySet().equals(map2.keySet()))
         {
             equal = true;
 
-            for (final Map.Entry<?,?> me : m1.entrySet())
+            for (final Map.Entry<?,?> me : map1.entrySet())
             {
                 final Object key = me.getKey();
                 final Object value1 = me.getValue();
-                final Object value2 = m2.get(key);
+                final Object value2 = map2.get(key);
 
                 if (!CompareUtil.objectsEqual(value1, value2))
                 {
@@ -229,11 +219,16 @@ public final class MapUtil
         return (equal);
     }
 
-    public static <K, V> Map<K, V> newMapNoNullValues(final Map<K, V> m)
-    {
+    /**
+     * Creates a new map with all the old key/value pairs unless the value
+     * was null
+     * @param map the old map to convert
+     * @return a new map with no null values
+     */
+    public static <K, V> Map<K, V> newMapNoNullValues(final Map<K, V> map) {
         final Map<K, V> result = new HashMap<>();
 
-        for (final Map.Entry<K, V> me : m.entrySet())
+        for (final Map.Entry<K, V> me : map.entrySet())
         {
             final V value = me.getValue();
 
@@ -251,19 +246,19 @@ public final class MapUtil
         return (toString(m, ","));
     }
 
-    public static String toString(final Map<?, ?> m, final String separator)
+    public static String toString(final Map<?, ?> map, final String separator)
     {
-        if (m == null)
+        if (map == null)
         {
             return ("null");
         }
 
         final StringBuilder buf = new StringBuilder();
 
-        final String[] keyStrings = getKeyStrings(m);
+        final String[] keyStrings = getKeyStrings(map);
         for (final String key : keyStrings)
         {
-            final Object value = m.get(key);
+            final Object value = map.get(key);
 
             buf.append(key);
             buf.append("=");
@@ -279,11 +274,13 @@ public final class MapUtil
         return (buf.toString());
     }
 
-    public static <K> Set<K> getNullValueKeys(final Map<K, ?> m)
-    {
+    /**
+     * Gets all keys which map to a null value
+     */
+    public static <K> Set<K> getNullValueKeys(final Map<K, ?> map) {
         final Set<K> s = new HashSet<>();
 
-        for (final Map.Entry<K, ?> me : m.entrySet())
+        for (final Map.Entry<K, ?> me : map.entrySet())
         {
             if (me.getValue() == null)
             {
@@ -298,45 +295,48 @@ public final class MapUtil
         return TypeCast.checkMap(props, kClass, vClass);
     }
 
-    public static <K> void removeAll(final Map<K, ?> m, final Set<K> s)
-    {
-        for (final K key : s)
+    /**
+     * Removes all keys in a set from a map
+     * @param map the map to remove keys from
+     * @param keySet a set of keys to remove
+     */
+    public static <K> void removeAll(final Map<K, ?> map, final Set<K> keySet) {
+        for (final K key : keySet)
         {
-            m.remove(key);
+            map.remove(key);
         }
     }
 
     /**
     @return true if non-null Map and all keys and values are of type java.lang.String
      */
-    public static boolean isAllStrings(final Map<?, ?> m)
-    {
-        return m != null && CollectionUtil.isAllStrings(m.keySet()) &&
-               CollectionUtil.isAllStrings(m.values());
+    public static boolean isAllStrings(final Map<?, ?> map) {
+        return map != null && CollectionUtil.isAllStrings(map.keySet()) &&
+               CollectionUtil.isAllStrings(map.values());
     }
 
     /**
     Convert an arbitrary Map to one whose keys and values
     are both of type String.
      */
-    public static Map<String, String> toStringStringMap(final Map<?, ?> m)
+    public static Map<String, String> toStringStringMap(final Map<?, ?> map)
     {
-        if (m == null)
+        if (map == null)
         {
             return null;
         }
 
         Map<String, String> result;
 
-        if (isAllStrings(m))
+        if (isAllStrings(map))
         {
-            result = TypeCast.asMap(m);
+            result = TypeCast.asMap(map);
         }
         else
         {
             result = new HashMap<>();
 
-            for (final Map.Entry<?, ?> me : m.entrySet())
+            for (final Map.Entry<?, ?> me : map.entrySet())
             {
                 final Object key = me.getKey();
                 final Object value = me.getValue();
@@ -356,14 +356,3 @@ public final class MapUtil
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

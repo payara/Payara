@@ -77,9 +77,3 @@ public final class AMXConfigTest {
         _testConvertName( "IsConnectionValidationRequired", "is-connection-validation-required" );
     }
 }
-
-
-
-
-
-
