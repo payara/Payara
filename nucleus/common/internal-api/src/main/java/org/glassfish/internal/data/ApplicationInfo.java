@@ -321,7 +321,7 @@ public class ApplicationInfo extends ModuleInfo {
         span.close();
 
         if (events!=null) {
-            span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.LOAD_EVENTS);
+            span = tracing.startSpan(TraceContext.Level.APPLICATION, name, DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_LOADED.type());
             events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_LOADED, this), false);
             span.close();
         }

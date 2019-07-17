@@ -261,7 +261,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Override
     public ApplicationDeployment prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        DeploymentSpan eventSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.DEPLOYMENT_START.type());
         events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
+        eventSpan.close();
+
         currentDeploymentContext.get().push(context);
         final ActionReport report = context.getActionReport();
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
@@ -328,9 +333,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         };
 
-        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
         try (DeploymentSpan topSpan = tracing.startSpan(DeploymentTracing.AppStage.PREPARE);
-             SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE, "detail")) {
+             SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE, "ArchiveMetadata")) {
             if (commandParams.origin == OpsParams.Origin.deploy
                     && appRegistry.get(appName) != null) {
                 report.setMessage(localStrings.getLocalString("appnamenotunique", "Application name {0} is already in use. Please pick a different name.", appName));
@@ -360,7 +364,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.addTransientAppMetaData(ExtendedDeploymentContext.TRACKER, tracker);
             context.setPhase(DeploymentContextImpl.Phase.PREPARE);
 
-            span.start("Archive Handler");
+            span.start("ArchiveHandler");
             ArchiveHandler handler = context.getArchiveHandler();
             if (handler == null) {
                 handler = getArchiveHandler(context.getSource(),
@@ -392,22 +396,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 }
             }
 
-            span.start(DeploymentTracing.AppStage.PREPARE, "Sniffers");
+            span.start(DeploymentTracing.AppStage.PREPARE, "Sniffer");
 
             sniffers = getSniffers(handler, sniffers, context);
 
-            span.start(DeploymentTracing.AppStage.PREPARE, "Classloader Hierarchy");
+            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
 
             ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
 
-            span.start(DeploymentTracing.AppStage.PREPARE, "Classloader");
+            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoader");
 
             context.createDeploymentClassLoader(clh, handler);
+
             events.send(new Event<DeploymentContext>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
 
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
 
-            span.close();
+            span.start(DeploymentTracing.AppStage.PREPARE, "Container");
 
             List<EngineInfo> sortedEngineInfos
                     = setupContainerInfos(handler, sniffers, context);
@@ -454,13 +459,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             events.send(new Event<DeploymentContext>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
 
-            tracing.addApplicationMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-
             // this is a first time deployment as opposed as load following an unload event,
             // we need to create the application info
             // todo : we should come up with a general Composite API solution
             ModuleInfo moduleInfo = null;
-            try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.PREPARE_MODULES)){
+            try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.PREPARE, "Module")){
                 moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
                 // Now that the prepare phase is done, any artifacts
                 // should be available.  Go ahead and create the
@@ -478,7 +481,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
-            span.start(DeploymentTracing.AppStage.PREPARE, "Notifying");
+            span.start(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_PREPARED.type());
 
             // the deployer did not take care of populating the application info, this
             // is not a composite module.
@@ -557,15 +560,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         appRegistry.removeTransient(appInfo.getName());
         final ActionReport report = context.getActionReport();
         ProgressTracker tracker = context.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
         // now were falling back into the mainstream loading/starting sequence, at this
         // time the containers are set up, all the modules have been prepared in their
         // associated engines and the application info is created and registered
         if (loadOnCurrentInstance(context)) {
-            try {
+            try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.INITIALIZE)){
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
                 appInfo.getModuleInfos().forEach(moduleInfo -> moduleInfo.getEngineRefs()
                         .forEach(engineRef -> tracker.add("initialized", EngineRef.class, engineRef)));
+                span.start(DeploymentTracing.AppStage.START);
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
@@ -793,6 +798,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         List<EngineInfo> sortedEngineInfos = new ArrayList<EngineInfo>();
 
+        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
         Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<Class, ApplicationMetaDataProvider>();
         for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
             if (provider.getMetaData()!=null) {
@@ -865,7 +871,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             final MetaData metadata = deployer.getMetaData();
             EngineInfo engineInfo = containerInfosByDeployers.get(deployer);
             String containerName = engineInfo == null ? "unknown" : engineInfo.getContainer().getName();
-            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.LOAD_METADATA)) {
+            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE, "MetaData")) {
                 if (metadata!=null) {
                     if (metadata.provides()==null || metadata.provides().length==0) {
                         deployer.loadMetaData(null, context);
@@ -986,7 +992,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                         addRecursively(providers, typeByProvider, provider);
                         for (ApplicationMetaDataProvider p : providers) {
-                            try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CONTAINER_START, required.getName())) {
+                            // this actually loads all descriptors of the app.
+                            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.APPLICATION, null, DeploymentTracing.AppStage.LOAD, "DeploymentDescriptor")) {
                                 dc.addModuleMetaData(p.load(dc));
                             }
                         }
@@ -1041,7 +1048,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
 
         if (events!=null) {
-            DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, moduleName, DeploymentTracing.AppStage.PREPARE_EVENTS);
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, moduleName, DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_PREPARED.type());
             events.send(new Event<DeploymentContext>(Deployment.MODULE_PREPARED, context), false);
             span.close();;
         }

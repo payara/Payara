@@ -287,7 +287,7 @@ public class ModuleInfo {
             }
             started=true;
             if (events!=null) {
-                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.START_EVENTS, "Module");
+                DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_STARTED.type());
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STARTED, this), false);
                 innerSpan.close();
             }

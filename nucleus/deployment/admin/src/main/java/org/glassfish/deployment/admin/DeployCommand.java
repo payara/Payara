@@ -259,7 +259,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             deployment.validateSpecifiedTarget(target);
 
-            span.start(DeploymentTracing.AppStage.INIT_ARCHIVE_HANDLER);
+            span.start(DeploymentTracing.AppStage.OPENING_ARCHIVE, "ArchiveHandler");
 
             archiveHandler = deployment.getArchiveHandler(archive, type);
 
@@ -268,7 +268,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 return false;
             }
 
-            span.start(DeploymentTracing.AppStage.CREATE_DEPLOY_CONTEXT, "Initial");
+            span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
 
             // create an initial  context
             initialContext = new DeploymentContextImpl(report, archive, this, env);
@@ -278,6 +278,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             span.finish();
 
+            span.start(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.INITIAL_CONTEXT_CREATED.type());
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
 
             span.start(DeploymentTracing.AppStage.DETERMINE_APP_NAME);
@@ -414,7 +415,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             // clean up any left over repository files
             if (!keepreposdir.booleanValue()) {
-                span.start(DeploymentTracing.AppStage.CLEANUP, "Repository Files");
+                span.start(DeploymentTracing.AppStage.CLEANUP, "applications");
                 final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
                 if (reposDir.exists()) {
                     for (int i = 0; i < domain.getApplications().getApplications().size(); i++) {
@@ -467,7 +468,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
             }
 
-            span.start(DeploymentTracing.AppStage.CREATE_DEPLOY_CONTEXT, "Full");
+            span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Full");
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
@@ -497,11 +498,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 validateDeploymentProperties(properties, deploymentContext);
             }
 
-            span.start(DeploymentTracing.AppStage.CLEANUP, "Generated files");
+            span.start(DeploymentTracing.AppStage.CLEANUP, "generated");
             // clean up any generated files
             deploymentContext.clean();
 
-            span.start(DeploymentTracing.AppStage.DEPLOY);
+            span.start(DeploymentTracing.AppStage.PREPARE, "ServerConfig");
             Properties appProps = deploymentContext.getAppProps();
             /*
              * If the app's location is within the domain's directory then
@@ -537,7 +538,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if(!loadOnly) {
-                span.start(DeploymentTracing.AppStage.INITIALIZE);
+                // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
             ApplicationInfo appInfo = deplResult.appInfo;

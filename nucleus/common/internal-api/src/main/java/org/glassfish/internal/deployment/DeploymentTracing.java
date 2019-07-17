@@ -88,16 +88,100 @@ public class DeploymentTracing {
 
     }
 
+    /**
+     * Various stages that are tracked in StructuredDeploymentTracing. The stages can carry additional information -
+     * a component.
+     */
     public enum AppStage {
+        /**
+         * Activities related to reading contents of application archive. Component refers to type of service being
+         * looked up in the server.
+         */
         OPENING_ARCHIVE,
-        VALIDATE_TARGET,
-        INIT_ARCHIVE_HANDLER,
-        CREATE_DEPLOY_CONTEXT,
-        DETERMINE_APP_NAME,
-        PROVIDE_APPINFO,
-        READ_DESCRIPTORS, CLEANUP, SWITCH_VERSIONS, DEPLOY, PREPARE, INITIALIZE, REGISTRATION, CLASS_SCANNING, CONTAINER_START,
-        LOAD_METADATA, CREATE_CLASSLOADER, PREPARE_MODULES, LOAD, PREPARE_EVENTS, LOAD_EVENTS, START, START_EVENTS;
 
+        /**
+         * Validate whether deployment is fit for specified target. Component {@code command} validates correctness of the command
+         * parameter, component {@code registry} validates possibility of deployment to target instance(s).
+         */
+
+        VALIDATE_TARGET,
+
+        /**
+         * Creation of deployment context. Deployment context aggregates all information on a deployment process, and
+         * there are two phases with two distinct contexts - initial and full.
+         */
+        CREATE_DEPLOYMENT_CONTEXT,
+
+        /**
+         * Processing of event hooks. During deployment, the process exposes several extensions points by means of event
+         * bus. The component of this span lists {@code EventTypes.name} of the event being sent and synchronously processed
+         * by respective hooks.
+         */
+        PROCESS_EVENTS,
+
+        /**
+         * Determine name of an app. App name is looked up in variety of descriptors and algorithms defined by the specifications.
+         * Component distinguishes these parts of determination.
+         */
+        DETERMINE_APP_NAME,
+
+
+        /**
+         * Cleanup deletes data of inactive application. Is can also cause surprising delayes due to filesystem locks
+         * (usually on Windows). Components hints on server subdirectory being cleaned (applications or generated).
+         */
+        CLEANUP,
+
+        /**
+         * Coordinate version switch. Version switching involves disabling previous version of application on the target,
+         * and that can take substantial time
+         */
+        SWITCH_VERSIONS,
+
+        /**
+         * Preparation of server components that will handle the application and validation of application.
+         * Context of the event points at container being prepared, and component at type of server component in preparation.
+         * An example of preparation step is EclipseLink's class weaving.
+         */
+        PREPARE,
+
+        /**
+         * Final step before starting an application.
+         * Good example of initialization step is starting up EJB Timer Service when needed.
+         */
+        INITIALIZE,
+
+        /**
+         * Starting application. This is where application code gets first executed, all of the application-defined
+         * components declared to run at startup are run.
+         */
+        START,
+
+        /**
+         * Update domain configuration with information on new application.
+         */
+        REGISTRATION,
+
+        /**
+         * Collect information on annotated types.
+         */
+        CLASS_SCANNING,
+
+        /**
+         * First start of a subsystem handling specific container.
+         */
+        CONTAINER_START,
+
+        /**
+         * Creation of application classloader. This is usually followed by making this classloader a context classloader
+         * for deploying thread.
+         */
+        CREATE_CLASSLOADER,
+
+        /**
+         * Load the application code and prepare runtime structures.
+         */
+        LOAD,
     }
 
     public enum ModuleMark {
