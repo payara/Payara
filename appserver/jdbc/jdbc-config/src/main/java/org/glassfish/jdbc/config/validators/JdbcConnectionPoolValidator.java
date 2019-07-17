@@ -71,25 +71,28 @@ public class JdbcConnectionPoolValidator
     public String getParsedVariable(String variableToRetrieve) {
 
         String[] variableReference = variableToRetrieve.split("=");
-        
-        switch(variableReference[0]) {
+
+        if (variableReference.length == 1) {
+            //We got a system variable as no split occured
+            return System.getProperty(variableReference[0]);
+        }
+
+        String variableToFind = variableReference[1];
+
+        switch (variableReference[0]) {
             case "ENV":
                 //Check environment variables for requested value
-                if (System.getenv(variableReference[1]) != null && !System.getenv(variableReference[1]).isEmpty()) {
-                    return System.getenv(variableReference[1]);
+                String varValue = System.getenv(variableToFind);
+                if (varValue != null && !varValue.isEmpty()) {
+                    return varValue;
                 }
                 break;
             case "MPCONFIG":
                 //Check microprofile config for requested value
                 Config config = ConfigProvider.getConfig();
-                if (config.getValue(variableReference[1], String.class) != null && !config.getValue(variableReference[1], String.class).isEmpty()) {
-                    return config.getValue(variableReference[1], String.class);
-                }
-                break;
-            default:
-                //We got a system variable as no split occured
-                if (System.getProperty(variableReference[0]) != null && !System.getProperty(variableReference[0]).isEmpty()) {
-                    return System.getProperty(variableReference[0]);
+                varValue = config.getValue(variableToFind, String.class);
+                if (varValue != null && !varValue.isEmpty()) {
+                    return varValue;
                 }
                 break;
         }
@@ -126,8 +129,6 @@ public class JdbcConnectionPoolValidator
                     if(maxPoolSize == null) return false;
                 }
                 
-                //By this point it should be the case that the value is always castable
-                //to an integer
                 try {
                     maxPoolSizeValue = Integer.parseInt(maxPoolSize);
                     steadyPoolSizeValue = Integer.parseInt(steadyPoolSize);
@@ -136,8 +137,10 @@ public class JdbcConnectionPoolValidator
                     return false;
                 }
                 
-                if (maxPoolSizeValue < steadyPoolSizeValue) {
-                    //max pool size fault
+                if (maxPoolSizeValue < steadyPoolSizeValue 
+                        || steadyPoolSizeValue <= 0 
+                        || maxPoolSizeValue <= 0) {
+                    //Value(s) are invalid so return error
                     return false;
                 }
             }
