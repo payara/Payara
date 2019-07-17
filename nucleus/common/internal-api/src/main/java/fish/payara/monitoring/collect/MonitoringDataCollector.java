@@ -1,5 +1,7 @@
 package fish.payara.monitoring.collect;
 
+import java.time.Instant;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
@@ -54,6 +56,13 @@ public interface MonitoringDataCollector {
 
     default MonitoringDataCollector collect(CharSequence key, boolean value) {
         return collect(key, value ? 1L : 0L);
+    }
+
+    default MonitoringDataCollector collect(CharSequence key, Instant value) {
+        if (value != null) {
+            return collect(key, value.toEpochMilli());
+        }
+        return this;
     }
 
     default <V> MonitoringDataCollector collectObject(V obj, BiConsumer<MonitoringDataCollector, V> collect) {

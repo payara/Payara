@@ -28,7 +28,11 @@ public class MonitoringConsoleResouce {
         List<MonitoringDataSource> sources = Globals.getDefaultBaseServiceLocator().getAllServices(MonitoringDataSource.class);
         MonitoringDataCollector collector = new SinkDataCollector((key, value) -> res.put(key.toString(), value));
         for (MonitoringDataSource source : sources) {
-            source.collect(collector);
+            try {
+                source.collect(collector);
+            } catch (RuntimeException e) {
+                // ignore and continue with next
+            }
         }
         return res;
     }
