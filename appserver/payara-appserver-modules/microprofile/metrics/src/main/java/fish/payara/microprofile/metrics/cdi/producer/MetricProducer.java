@@ -41,8 +41,6 @@
 package fish.payara.microprofile.metrics.cdi.producer;
 
 import fish.payara.microprofile.metrics.cdi.MetricsHelper;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -68,8 +66,6 @@ public class MetricProducer {
 
     @Inject
     private MetricsHelper helper;
-    
-    private static final Logger LOGGER = Logger.getLogger("MP-METRICS");
 
     @Produces
     private Counter counter(InjectionPoint ip) {

@@ -57,7 +57,6 @@ public class ConcurrentGuageInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        System.out.println("Interceptor registry : " + registry.toString());
         MetricID metricID = resolver.concurrentGauge(bean.getBeanClass(), element).metricID();
         ConcurrentGaugeImpl counter = (ConcurrentGaugeImpl) registry.getMetrics().get(metricID);
         if (counter == null) {

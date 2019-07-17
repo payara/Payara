@@ -98,7 +98,7 @@ public class MBeanMetadata implements Metadata {
     
     @XmlElementWrapper(name = "tags", nillable = true)
     @XmlElement(name="tag")
-    private List<Tag> tags;
+    private List<XmlTag> tags;
     
 
     private static final Set<String> SUPPORTED_UNITS
@@ -167,7 +167,7 @@ public class MBeanMetadata implements Metadata {
         return valid;
     }
     
-    List<Tag> getTags() {
+    List<XmlTag> getTags() {
         if (tags == null) {
             tags = new ArrayList<>();
         }
@@ -238,7 +238,7 @@ public class MBeanMetadata implements Metadata {
                     validationResult = false;
                 } else if (metadata.getMBean().contains(keyword)) {
                     boolean tagSpecifier = false;
-                    for (Tag tag: tags) {
+                    for (XmlTag tag: tags) {
                         if (tag.getValue().contains(keyword)) {
                             tagSpecifier = true;
                         }
@@ -267,11 +267,11 @@ public class MBeanMetadata implements Metadata {
         return reusable;
     }
     
-    public void setTags(List<Tag> tags) {
+    public void setTags(List<XmlTag> tags) {
         this.tags = tags;
     }
     
-    public void addTags(List<Tag> tags) {
+    public void addTags(List<XmlTag> tags) {
         if (tags == null) {
             tags = new ArrayList<>();
         }

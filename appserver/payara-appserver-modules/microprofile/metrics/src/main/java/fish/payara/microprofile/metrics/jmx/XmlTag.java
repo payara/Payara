@@ -54,16 +54,16 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType
-public class Tag {
+public class XmlTag {
 
         @XmlElement
         private String name;
         @XmlElement
         private String value;
         
-        public Tag() { }
+        public XmlTag() { }
 
-        public Tag(String tagName, String tagValue) throws IllegalArgumentException {
+        public XmlTag(String tagName, String tagValue) {
             this.name = tagName;
             this.value = tagValue;
         }

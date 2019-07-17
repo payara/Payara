@@ -58,7 +58,7 @@ public class MeteredInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricID metricID = resolver.metered(bean.getBeanClass(), element).metricID();
-        Meter meter = (Meter) registry.getMetrics().get(metricID);
+        Meter meter = registry.getMeters().get(metricID);
         if (meter == null) {
             throw new IllegalStateException("No meter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }

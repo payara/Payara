@@ -205,61 +205,62 @@ public class MetricsResolver {
 
   public <T extends Annotation> Metadata getMetadata(String name, T annotation) {
         MetadataBuilder metadataBuilder = Metadata.builder();
-        metadataBuilder.withName(name);
+        metadataBuilder = metadataBuilder.withName(name);
         String[] tags;
         if (Counted.class.isInstance(annotation)) {
             Counted counted = (Counted) annotation;
-            metadataBuilder.withDisplayName(counted.displayName());
-            metadataBuilder.withDescription(counted.description());
-            metadataBuilder.withType(COUNTER);
-            metadataBuilder.withUnit(counted.unit());
+            metadataBuilder = metadataBuilder.withDisplayName(counted.displayName())
+                .withDescription(counted.description())
+                .withType(COUNTER)
+                .withUnit(counted.unit());
             if (counted.reusable()) {
-                metadataBuilder.reusable();
+                metadataBuilder = metadataBuilder.reusable();
             } else {
-                metadataBuilder.notReusable();
+                metadataBuilder = metadataBuilder.notReusable();
             }
             tags = counted.tags();
         } else if (ConcurrentGauge.class.isInstance(annotation)) {
             ConcurrentGauge gauge = (ConcurrentGauge) annotation;
-            metadataBuilder.withDisplayName(gauge.displayName());
-            metadataBuilder.withDescription(gauge.description());
-            metadataBuilder.withType(MetricType.CONCURRENT_GAUGE);
-            metadataBuilder.withUnit(gauge.unit());
+            metadataBuilder = metadataBuilder.withDisplayName(gauge.displayName())
+                .withDescription(gauge.description())
+                .withType(MetricType.CONCURRENT_GAUGE)
+                .withUnit(gauge.unit());
             if (gauge.reusable()) {
-                metadataBuilder.reusable();
+                metadataBuilder = metadataBuilder.reusable();
             } else {
-                metadataBuilder.notReusable();
+                metadataBuilder = metadataBuilder.notReusable();
             }
             tags = gauge.tags();
         } else if (Gauge.class.isInstance(annotation)) {
             Gauge gauge = (Gauge) annotation;
-            metadataBuilder.withDisplayName(gauge.displayName());
-            metadataBuilder.withDescription(gauge.description());
-            metadataBuilder.withType(GAUGE);
-            metadataBuilder.withUnit(gauge.unit());
+            metadataBuilder = metadataBuilder.withDisplayName(gauge.displayName())
+                .withDescription(gauge.description())
+                .withType(GAUGE)
+                .withUnit(gauge.unit())
+                .notReusable();
             tags = gauge.tags();
         } else if (Metered.class.isInstance(annotation)) {
             Metered metered = (Metered) annotation;
-            metadataBuilder.withDisplayName(metered.displayName());
-            metadataBuilder.withDescription(metered.description());
-            metadataBuilder.withType(METERED);
-            metadataBuilder.withUnit(metered.unit());
+            metadataBuilder = metadataBuilder.withDisplayName(metered.displayName())
+                .withDescription(metered.description())
+                .withType(METERED)
+                .withUnit(metered.unit());
             if (metered.reusable()) {
-                metadataBuilder.reusable();
+                metadataBuilder = metadataBuilder.reusable();
             } else {
-                metadataBuilder.notReusable();
+                metadataBuilder = metadataBuilder.notReusable();
             }
             tags = metered.tags();
         } else if (Timed.class.isInstance(annotation)) {
             Timed timed = (Timed) annotation;
-            metadataBuilder.withDisplayName(timed.displayName());
-            metadataBuilder.withDescription(timed.description());
-            metadataBuilder.withType(TIMER);
-            metadataBuilder.withUnit(timed.unit());
+            metadataBuilder.withDisplayName(timed.displayName())
+                .withDescription(timed.description())
+                .withType(TIMER)
+                .withUnit(timed.unit());
             if (timed.reusable()) {
-                metadataBuilder.reusable();
+                metadataBuilder = metadataBuilder.reusable();
             } else {
-                metadataBuilder.notReusable();
+                metadataBuilder = metadataBuilder.notReusable();
             }
             tags = timed.tags();
         } else {

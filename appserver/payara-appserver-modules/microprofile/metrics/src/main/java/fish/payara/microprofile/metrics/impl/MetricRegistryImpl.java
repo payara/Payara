@@ -49,6 +49,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import static java.util.stream.Collectors.toMap;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -77,8 +78,8 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
 
-    private final Map<MetricID, Metric> metricMap;
-    private final Map<String, Metadata> metadataMap;
+    private final ConcurrentMap<MetricID, Metric> metricMap;
+    private final ConcurrentMap<String, Metadata> metadataMap;
 
     public MetricRegistryImpl() {
         this.metricMap = new ConcurrentHashMap<>();
@@ -206,7 +207,7 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public Map<MetricID, Metric> getMetrics() {
-        return new HashMap<>(metricMap);
+        return Collections.unmodifiableMap(metricMap);
     }
 
     @Override
@@ -216,14 +217,15 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     @Override
     public boolean remove(String name) {
+        boolean removedAny = false;
         for (MetricID metricID : metricMap.keySet()) {
             if (metricID.getName().equals(name)) {
                 metricMap.remove(metricID);
+                removedAny = true;
             }
         }
-        final Metric metric = metricMap.remove(new MetricID(name));
         metadataMap.remove(name);
-        return metric != null;
+        return removedAny;
     }
 
     @Override
@@ -238,7 +240,6 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
     
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag[] tags) {
-        //Metric existing = metricMap.get(new MetricID(name, tags));
         Metadata existingMetadata = metadataMap.get(name);
         if (existingMetadata != null) {
             if (existingMetadata.getTypeRaw().equals(metricType)) {
@@ -293,11 +294,6 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public <T extends Metric> T register(String name, T metric) throws IllegalArgumentException {
         return register(Metadata.builder().withName(name).withType(MetricType.from(metric.getClass())).build(), metric);
-    }
-
-    @Deprecated
-    public <T extends Metric> T register(String name, T metric, Metadata metadata) throws IllegalArgumentException {
-        return register(Metadata.builder(metadata).withName(name).build(), metric);
     }
 
     @Override

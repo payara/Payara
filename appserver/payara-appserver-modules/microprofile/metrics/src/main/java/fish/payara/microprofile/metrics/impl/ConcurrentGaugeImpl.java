@@ -90,7 +90,6 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
             lastCounts.put(Instant.now(), count.longValue());
         }
         count.increment();
-        clearOld();
     }
 
     /**
@@ -139,18 +138,17 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
     public void dec() {
         lastCounts.put(Instant.now(), count.longValue());
         count.decrement();
-        clearOld();
     }
     
     /**
      * Removes counts that occured before the previous minute that finished
      */
     private void clearOld() {
-        Instant currentTime = Instant.now().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
+        Instant previousMinute = Instant.now().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
         Iterator<Instant> guages = lastCounts.keySet().iterator();
         while (guages.hasNext()) {
             Instant guageTime = guages.next();
-            if (guageTime.isBefore(currentTime)) {
+            if (guageTime.isBefore(previousMinute)) {
                 lastCounts.remove(guageTime);
             }
         }

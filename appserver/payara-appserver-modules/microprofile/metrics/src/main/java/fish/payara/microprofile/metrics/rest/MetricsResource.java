@@ -70,6 +70,8 @@ import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
     
+    private static final String APPLICATION_WILDCARD = "application/*";
+    
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
      * methods.
@@ -156,7 +158,7 @@ public class MetricsResource extends HttpServlet {
                         } else {
                             qTextFormat = 1;
                         }
-                    } else if (format.contains(APPLICATION_JSON) || format.contains("application/*")) {
+                    } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
                         String[] splitJsonFormat = format.split(";");
                         if (splitJsonFormat.length == 2) {
                             qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
@@ -176,7 +178,7 @@ public class MetricsResource extends HttpServlet {
                 }
                 break;
             case OPTIONS:
-                if (accept.contains(APPLICATION_JSON)) {
+                if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
                     outputWriter = new JsonMetadataWriter(writer);
                 } else {
                     response.sendError(
