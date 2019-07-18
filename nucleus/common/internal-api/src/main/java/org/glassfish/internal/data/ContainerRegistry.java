@@ -112,7 +112,7 @@ public class ContainerRegistry implements MonitoringDataSource {
     private static void collectContainer(MonitoringDataCollector collector, EngineInfo<?, ?> container) {
         MetaData metaData = container.getDeployer().getMetaData();
         collector
-            .collect("provides", metaData.provides().length)
-            .collect("requires", metaData.requires().length);
+            .collectNonZero("provides", metaData.provides().length)
+            .collectNonZero("requires", metaData.requires().length);
     }
 }

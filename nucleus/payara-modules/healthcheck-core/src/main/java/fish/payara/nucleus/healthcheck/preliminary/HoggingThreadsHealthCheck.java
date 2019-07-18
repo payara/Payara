@@ -41,6 +41,8 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckHoggingThreadsExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
@@ -53,8 +55,13 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 
@@ -63,10 +70,22 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-threads")
 @RunLevel(StartupRunLevel.VAL)
-public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions,
-        HoggingThreadsChecker> {
+public class HoggingThreadsHealthCheck
+        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker>
+        implements MonitoringDataSource {
 
-    private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
+    private final Map<Long, ThreadTimes> threadTimes = new ConcurrentHashMap<>();
+    private final AtomicInteger hoggingThreads = new AtomicInteger();
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (!isInProgress() && getOptions().isEnabled()) {
+            collector.in("health-check").type("checker").entity("HOGT")
+                .collect("checksDone", getChecksDone())
+                .collectNonZero("checksFailed", getChecksFailed())
+                .collectNonZero("hoggingThreads", hoggingThreads.get());
+        }
+    }
 
     @PostConstruct
     void postConstruct() {
@@ -87,10 +106,8 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
     }
 
     @Override
-    public HealthCheckResult doCheck() {
-        if (!getOptions().isEnabled()) {
-            return null;
-        }
+    protected HealthCheckResult doCheckInternal() {
+        hoggingThreads.set(0);
         HealthCheckResult result = new HealthCheckResult();
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
@@ -137,6 +154,7 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
                         times.setInitialStartUserTime(System.nanoTime());
                     }
                     if (times.getRetryCount() >= options.getRetryCount()) {
+                        hoggingThreads.incrementAndGet();
                         result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
                                 "Thread with <id-name>: " + id + "-" + times.getName() +
                                         " is a hogging thread for the last " +

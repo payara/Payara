@@ -90,7 +90,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     @Inject
     ApplicationRegistry applicationRegistry;
-    
+
     @Inject
     MetricsHealthCheckConfiguration configuration;
 
@@ -102,19 +102,20 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        MonitoringDataCollector nsCollector = collector.in("health-check");
-        nsCollector.collect("size", healthChecks.size());
+        MonitoringDataCollector nsCollector = collector.in("health-check").type("check")
+                .collect("size", healthChecks.size())
+                .collect("enabled", isEnabled())
+                .collect("securityEnabled", isSecurityEnabled());
         for (java.util.Map.Entry<String, Set<HealthCheck>> entry : healthChecks.entrySet()) {
-            nsCollector.tag("entry", entry.getKey()).collect("size", entry.getValue().size());
+            nsCollector.app(entry.getKey()).collect("size", entry.getValue().size());
         }
     }
-    
+
     @PostConstruct
     public void postConstruct() {
         if (events == null) {
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
-
         events.register(this);
     }
 

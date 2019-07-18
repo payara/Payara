@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
@@ -66,12 +68,27 @@ import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
  */
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
-public class GarbageCollectorHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker> {
+public class GarbageCollectorHealthCheck
+        extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, GarbageCollectorChecker>
+        implements MonitoringDataSource {
 
-    private long youngLastCollectionCount;
-    private long youngLastCollectionTime;
-    private long oldLastCollectionCount;
-    private long oldLastCollectionTime;
+    private volatile long youngLastCollectionCount;
+    private volatile long youngLastCollectionTime;
+    private volatile long oldLastCollectionCount;
+    private volatile long oldLastCollectionTime;
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (!isInProgress() && getOptions().isEnabled()) {
+            collector.in("health-check").type("checker").entity("GBGC")
+                .collect("checksDone", getChecksDone())
+                .collectNonZero("checksFailed", getChecksFailed())
+                .collectNonZero("youngLastCollectionCount", youngLastCollectionCount)
+                .collectNonZero("youngLastCollectionTime", youngLastCollectionTime)
+                .collectNonZero("oldLastCollectionCount", oldLastCollectionCount)
+                .collectNonZero("oldLastCollectionTime", oldLastCollectionTime);
+        }
+    }
 
     @PostConstruct
     void postConstruct() {
@@ -89,7 +106,7 @@ public class GarbageCollectorHealthCheck extends BaseThresholdHealthCheck<Health
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
 
         List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();

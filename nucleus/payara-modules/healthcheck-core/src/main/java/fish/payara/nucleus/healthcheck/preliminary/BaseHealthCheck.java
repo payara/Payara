@@ -40,10 +40,13 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.entity.ThreadTimes;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.domain.EventSource;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
@@ -59,6 +62,8 @@ import javax.inject.Named;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
@@ -91,8 +96,39 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     protected O options;
     protected Class<C> checkerType;
 
-    public abstract HealthCheckResult doCheck();
+    private final AtomicInteger checksDone = new AtomicInteger();
+    private final AtomicInteger checksFailed = new AtomicInteger();
+    private final AtomicBoolean inProcess = new AtomicBoolean(false);
+
+    public final HealthCheckResult doCheck() {
+        if (!getOptions().isEnabled() || inProcess.compareAndSet(false, true)) {
+            return null;
+        }
+        try {
+            return doCheckInternal();
+        } catch (Exception ex) {
+            checksFailed.incrementAndGet();
+            throw ex;
+        } finally {
+            inProcess.set(false);
+            checksDone.incrementAndGet();
+        }
+    }
+
+    protected abstract HealthCheckResult doCheckInternal();
     public abstract O constructOptions(C c);
+
+    public boolean isInProgress() {
+        return inProcess.get();
+    }
+
+    public int getChecksDone() {
+        return checksDone.get();
+    }
+
+    public int getChecksFailed() {
+        return checksFailed.get();
+    }
 
     protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
         this.checkerType = checkerType;
@@ -247,5 +283,14 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
             healthCheckEventStore.addTrace(new Date().getTime(), level, subject, message,
                     new Object[]{name, checkResult.getEntries().toString()});
         }
+    }
+
+    static void collectThreadTimes(MonitoringDataCollector collector, ThreadTimes times) {
+        collector.tag("thread", "ID:"+times.getId())
+            .collect("retryCount", times.getRetryCount())
+            .collect("startCpuTime", times.getStartCpuTime())
+            .collect("endCpuTime", times.getEndCpuTime())
+            .collect("startUserTime", times.getStartUserTime())
+            .collect("endUserTime", times.getEndUserTime());
     }
 }

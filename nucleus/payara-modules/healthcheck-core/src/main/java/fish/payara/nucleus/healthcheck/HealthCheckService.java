@@ -39,6 +39,9 @@
 package fish.payara.nucleus.healthcheck;
 
 import com.sun.enterprise.config.serverbeans.Config;
+
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
@@ -75,7 +78,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,10 +87,9 @@ import java.util.logging.Logger;
  */
 @Service(name = "healthcheck-core")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener, ConfigListener {
+public class HealthCheckService implements EventListener, ConfigListener, MonitoringDataSource {
 
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
-    private static final String PREFIX = "healthcheck-service-";
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -120,7 +121,6 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private PayaraExecutorService executor;
 
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
     private Map<String, HealthCheckTask> registeredTasks = new HashMap<>();
     private boolean enabled;
     private boolean historicalTraceEnabled;
@@ -128,6 +128,31 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private Long historicalTraceStoreTimeout;
     private ScheduledFuture<?> historicalTraceTask;
     private Set<ScheduledFuture<?>> scheduledCheckers;
+
+    @Override
+    public void collect(MonitoringDataCollector rootCollector) {
+        rootCollector.in("health-check")
+            .collect("enabled", enabled)
+            .collect("historicalTraceEnabled", historicalTraceEnabled)
+            .collect("historicalTraceStoreSize", historicalTraceStoreSize)
+            .collect("notifiers", notifierExecutionOptionsList.size())
+            .collect("checkers", scheduledCheckers.size())
+            .type("checker").collectAll(registeredTasks, HealthCheckService::collectTask)
+            .type("notifier").collectObjects(notifierExecutionOptionsList, HealthCheckService::collectNotifierOption);
+    }
+
+    private static void collectTask(MonitoringDataCollector collector, HealthCheckTask task) {
+        HealthCheckExecutionOptions options = task.getCheck().getOptions();
+        collector
+            .collect("enabled", options.isEnabled())
+            .collectNonZero("time", options.getUnit().toMillis(options.getTime()));
+    }
+
+    private static void collectNotifierOption(MonitoringDataCollector collector, NotifierExecutionOptions options) {
+        collector.entity(options.getNotifierType().name())
+            .collect("enabled", options.isEnabled())
+            .collect("noisy", options.isNoisy());
+    }
 
     @Override
     public void event(Event event) {

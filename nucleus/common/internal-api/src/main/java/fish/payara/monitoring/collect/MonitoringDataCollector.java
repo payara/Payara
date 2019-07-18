@@ -43,6 +43,9 @@ public interface MonitoringDataCollector {
      * Helper methods for convenience and consistent tagging.
      */
 
+    /**
+     * Same as {@link #collect(CharSequence, long)} except that zero value are ignored and not collected.
+     */
     default MonitoringDataCollector collectNonZero(CharSequence key, long value) {
         if (value != 0L) {
             collect(key, value);
@@ -50,14 +53,34 @@ public interface MonitoringDataCollector {
         return this;
     }
 
+    /**
+     * Similar to {@link #collect(CharSequence, long)}. Double values are converted to long by multiplying with 10K
+     * effectively offering a precision of 4 fraction digits when converting back to FP number later on.
+     */
     default MonitoringDataCollector collect(CharSequence key, double value) {
         return collect(key, Math.round(value * 10000L));
     }
 
+    /**
+     * Similar to {@link #collect(CharSequence, long)}, true becomes 1L, false zero. 
+     */
     default MonitoringDataCollector collect(CharSequence key, boolean value) {
         return collect(key, value ? 1L : 0L);
     }
 
+    default MonitoringDataCollector collect(CharSequence key, Number value) {
+        if (value != null) {
+            if (value instanceof Double || value instanceof Float) {
+                return collect(key, value.doubleValue());
+            }
+            return collect(key, value.longValue());
+        }
+        return this;
+    }
+
+    /**
+     * Same as calling {@link #collect(CharSequence, long)} with a non null value and {@link Instant#toEpochMilli()}.
+     */
     default MonitoringDataCollector collect(CharSequence key, Instant value) {
         if (value != null) {
             return collect(key, value.toEpochMilli());
