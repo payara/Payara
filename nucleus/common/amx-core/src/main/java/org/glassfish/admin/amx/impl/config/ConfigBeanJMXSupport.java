@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.management.Descriptor;
 import javax.management.MBeanAttributeInfo;
@@ -1158,11 +1159,11 @@ class ConfigBeanJMXSupport
             if (Number.class.isAssignableFrom(inferDataType()))
             {
                 final String attrName = attrName();
-                for (final String key : UNITS_SUFFIXES.keySet())
+                for (final Entry<String, String> entry : UNITS_SUFFIXES.entrySet())
                 {
-                    if (attrName.endsWith(key))
+                    if (attrName.endsWith(entry.getKey()))
                     {
-                        return UNITS_SUFFIXES.get(key);
+                        return entry.getValue();
                     }
                 }
                 return Units.COUNT;

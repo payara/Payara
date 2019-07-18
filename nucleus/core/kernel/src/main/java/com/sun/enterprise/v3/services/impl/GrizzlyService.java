@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -372,13 +373,14 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 GrizzlyProxy grizzlyProxy = (GrizzlyProxy)newNetworkProxy;
                 GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener)grizzlyProxy.getUnderlyingListener();
                 if (!filterToProbeMapping.isEmpty()) {
-                    for (Class<? extends HttpCodecFilter> aClass : filterToProbeMapping.keySet()) {
+                    for (Entry<Class<? extends HttpCodecFilter>, List<HttpProbe>> entry : filterToProbeMapping.entrySet()) {
+                        Class<? extends HttpCodecFilter> aClass = entry.getKey();
                         List<? extends HttpCodecFilter> filters = grizzlyListener.getFilters(aClass);
                         if (filters != null && !filters.isEmpty()) {
                             if (filters.size() != 1) {
                                 throw new IllegalStateException();
                             }
-                            final List<HttpProbe> probes = filterToProbeMapping.get(aClass);
+                            final List<HttpProbe> probes = entry.getValue();
                             filters.get(0).getMonitoringConfig().addProbes(probes.toArray(new HttpProbe[probes.size()]));
                         }
                     }
