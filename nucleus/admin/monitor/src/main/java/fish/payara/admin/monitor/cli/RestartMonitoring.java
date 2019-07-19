@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -133,8 +134,9 @@ public class RestartMonitoring implements AdminCommand {
     *to change the value of the monitoring modules config. The changes take affect immedietly after a succesful transaction.
     */
     private void setModules(Map<String, String> modules){
-        for (String module : modules.keySet()) {
-            String moduleLevel = modules.get(module);
+        for (Entry<String, String> entry : modules.entrySet()) {
+            String module = entry.getKey();
+            String moduleLevel = entry.getValue();
             try {
                 ConfigSupport.apply((final MonitoringService monitoringServiceProxy) -> {
                     monitoringServiceProxy.setMonitoringLevel(module, moduleLevel);

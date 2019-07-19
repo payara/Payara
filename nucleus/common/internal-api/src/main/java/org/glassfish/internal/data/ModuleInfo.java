@@ -55,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -147,9 +148,9 @@ public class ModuleInfo {
     }
 
     public Object getMetaData(String className) {
-        for (Class c : metaData.keySet()) {
-            if (c.getName().equals(className)) {
-                return metaData.get(c);
+        for (Entry<Class<? extends Object>, Object> entry : metaData.entrySet()) {
+            if (entry.getKey().getName().equals(className)) {
+                return entry.getValue();
             }
         }
         return null;

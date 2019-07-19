@@ -75,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -962,9 +963,10 @@ public class WebModule extends PwcWebModule implements Context {
 
         // Check if given path starts with any of the ad-hoc subtree paths
         if (servletInfo == null && path != null && hasAdHocSubtrees()) {
-            for(String adHocSubtree : adHocSubtrees.keySet()) {
+            for (Entry<String,AdHocServletInfo> entry : adHocSubtrees.entrySet()) {
+                String adHocSubtree = entry.getKey();
                 if(path.startsWith(adHocSubtree)) {
-                    servletInfo = adHocSubtrees.get(adHocSubtree);
+                    servletInfo = entry.getValue();
                     break;
                 }
             }

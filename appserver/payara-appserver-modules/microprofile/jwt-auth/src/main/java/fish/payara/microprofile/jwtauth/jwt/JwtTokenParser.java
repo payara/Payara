@@ -51,6 +51,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -151,8 +152,9 @@ public class JwtTokenParser {
         if(this.enableNamespacedClaims){
             final String namespace = customNamespace.orElse(DEFAULT_NAMESPACE);
             Map<String, JsonValue> processedClaims = new HashMap<>(currentClaims.size());
-            for(String claimName : currentClaims.keySet()){
-                JsonValue value = currentClaims.get(claimName);
+            for (Entry<String, JsonValue> entry : currentClaims.entrySet()) {
+                String claimName = entry.getKey();
+                JsonValue value = entry.getValue();
                 if(claimName.startsWith(namespace)){
                     claimName = claimName.substring(namespace.length());
                 }
