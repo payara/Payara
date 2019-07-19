@@ -91,8 +91,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.ejb</groupId>
-            <artifactId>javax.ejb-api</artifactId>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.corba</groupId>
