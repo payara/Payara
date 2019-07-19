@@ -68,6 +68,13 @@ public interface MonitoringDataCollector {
         return collect(key, value ? 1L : 0L);
     }
 
+    /**
+     * Similar to {@link #collect(CharSequence, long)}, the char simply becomes a number
+     */
+    default MonitoringDataCollector collect(CharSequence key, char value) {
+        return collect(key, (long) value);
+    }
+
     default MonitoringDataCollector collect(CharSequence key, Number value) {
         if (value != null) {
             if (value instanceof Double || value instanceof Float) {
