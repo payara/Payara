@@ -71,6 +71,7 @@ import javax.interceptor.AroundConstruct;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
 import org.eclipse.microprofile.metrics.annotation.Metered;
@@ -123,24 +124,32 @@ public class MetricsInterceptor {
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target) {
         MetricsResolver.Of<Counted> counted = resolver.counted(bean, element);
         if (counted.isPresent()) {
-            registry.counter(counted.metadata());
+            registry.counter(counted.metadata(), counted.tags());
+        }
+        
+        MetricsResolver.Of<ConcurrentGauge> concurrent = resolver.concurrentGauge(bean, element);
+        if (concurrent.isPresent()) {
+            registry.concurrentGauge(concurrent.metadata(), concurrent.tags());
         }
 
         MetricsResolver.Of<Metered> metered = resolver.metered(bean, element);
         if (metered.isPresent()) {
-            registry.meter(metered.metadata());
+            registry.meter(metered.metadata(), metered.tags());
         }
 
         MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
         if (timed.isPresent()) {
-            registry.timer(timed.metadata());
+            registry.timer(timed.metadata(), timed.tags());
         }
 
         if (element instanceof Method
                 && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
             MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
             if (gauge.isPresent()) {
-                registry.register(gauge.metadata(), new GaugeImpl((Method) element, target));
+                org.eclipse.microprofile.metrics.Gauge existingGuage = registry.getGauges().get(gauge.metricID());
+                if (existingGuage == null) {
+                    registry.register(gauge.metadata(), new GaugeImpl((Method) element, target), gauge.tags());
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,23 +44,28 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.ATTRIBUTE
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.KEY;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
+import java.util.ArrayList;
 import static java.util.Arrays.asList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import java.util.Optional;
 import java.util.Set;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class MBeanMetadata extends Metadata {
+public class MBeanMetadata implements Metadata {
 
     private static final Logger LOGGER = Logger.getLogger(MBeanMetadata.class.getName());
 
@@ -69,9 +74,32 @@ public class MBeanMetadata extends Metadata {
 
     @XmlElement
     private boolean dynamic = true;
+    
+    @XmlElement
+    private String name;
+    
+    @XmlElement
+    private String displayName;
+    
+    @XmlElement
+    private String description;
+    
+    @XmlElement
+    private String unit;
+    
+    @XmlElement
+    private String type;
+    
+    @XmlElement
+    private boolean reusable;
 
     @XmlTransient
     private Boolean valid;
+    
+    @XmlElementWrapper(name = "tags", nillable = true)
+    @XmlElement(name="tag")
+    private List<XmlTag> tags;
+    
 
     private static final Set<String> SUPPORTED_UNITS
             = new HashSet<>(asList(
@@ -99,12 +127,21 @@ public class MBeanMetadata extends Metadata {
             ));
 
     public MBeanMetadata() {
-        super(null, MetricType.INVALID);
+    }
+    
+    public MBeanMetadata(Metadata metadata) {
+        this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().get(), metadata.getTypeRaw(), metadata.getUnit().get());
+        
     }
 
     public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
-        super(name, displayName, description, typeRaw, unit);
         this.mBean = mBean;
+        this.name = name;
+        this.displayName = displayName;
+        this.description = description;
+        this.type = typeRaw.toString();
+        this.unit = unit;
+        tags = new ArrayList<>();
     }
 
     public String getMBean() {
@@ -123,25 +160,49 @@ public class MBeanMetadata extends Metadata {
         this.dynamic = dynamic;
     }
 
-    @Override
-    public String getUnit() {
-        if (isNull(super.getUnit())) {
-            setUnit(MetricUnits.NONE);
-        }
-        return super.getUnit();
-    }
-
-    public void setUnit(String unit) {
-        if (SUPPORTED_UNITS.contains(unit)) {
-            super.setUnit(unit);
-        }
-    }
-
     public boolean isValid() {
         if (valid == null) {
             valid = validateMetadata();
         }
         return valid;
+    }
+    
+    List<XmlTag> getTags() {
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        return tags;
+    }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    @Override
+    public Optional<String> getUnit() {
+        if (unit.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(unit);
+    }
+    
+    @Override
+    public Optional<String> getDescription() {
+        if (description.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(description);
+    }
+    
+    @Override
+    public String getType() {
+        return type;
     }
 
     private boolean validateMetadata() {
@@ -149,7 +210,7 @@ public class MBeanMetadata extends Metadata {
         MBeanMetadata metadata = this;
 
         if (isNull(metadata.getName())) {
-            LOGGER.log(WARNING, "'name' property not defined in {0} mbean metadata", metadata.getMBean());
+            LOGGER.log(WARNING, "'name' property not defined in " + metadata.getMBean() + " mbean metadata", new Exception());
             validationResult = false;
         }
         if (isNull(metadata.getMBean())) {
@@ -158,6 +219,12 @@ public class MBeanMetadata extends Metadata {
         }
         if (isNull(metadata.getType())) {
             LOGGER.log(WARNING, "'type' property not defined in {0} metadata", metadata.getName());
+            validationResult = false;
+        }
+        try {
+            MetricType.from(type);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(WARNING, "'type' property is not valid in {0} metadata", metadata.getName());
             validationResult = false;
         }
         if (nonNull(metadata.getName()) && nonNull(metadata.getMBean())) {
@@ -169,17 +236,46 @@ public class MBeanMetadata extends Metadata {
                             new String[]{keyword, metadata.getMBean()}
                     );
                     validationResult = false;
-                } else if (metadata.getMBean().contains(keyword) && !metadata.getName().contains(keyword)) {
-                    LOGGER.log(
-                            WARNING,
-                            "{0} placeholder not found in 'name' {1} property",
-                            new String[]{keyword, metadata.getName()}
-                    );
-                    validationResult = false;
+                } else if (metadata.getMBean().contains(keyword)) {
+                    boolean tagSpecifier = false;
+                    for (XmlTag tag: tags) {
+                        if (tag.getValue().contains(keyword)) {
+                            tagSpecifier = true;
+                        }
+                    }
+                    if (!(metadata.getName().contains(keyword) || tagSpecifier)) {
+                        LOGGER.log(
+                                WARNING,
+                                "{0} placeholder not found in 'name' {1} property or in tags",
+                                new String[]{keyword, metadata.getName()}
+                        );
+                        validationResult = false;
+                    }
                 }
             }
         }
         return validationResult;
+    }
+
+    @Override
+    public MetricType getTypeRaw() {
+        return MetricType.from(type);
+    }
+
+    @Override
+    public boolean isReusable() {
+        return reusable;
+    }
+    
+    public void setTags(List<XmlTag> tags) {
+        this.tags = tags;
+    }
+    
+    public void addTags(List<XmlTag> tags) {
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        tags.addAll(tags);
     }
 
 }

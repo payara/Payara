@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,22 +55,28 @@ import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metered;
 import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Timer;
 
 public class JsonMetricWriter extends JsonWriter {
     
-    // Dropwizard Histogram, Meter, or Timer Constants
+    // Dropwizard Histogram, Meter, Gauge or Timer Constants
     private static final String COUNT = "count";
+    private static final String CURRENT = "current";
     private static final String MEAN_RATE = "meanRate";
     private static final String ONE_MINUTE_RATE = "oneMinRate";
     private static final String FIVE_MINUTE_RATE = "fiveMinRate";
@@ -100,13 +106,16 @@ public class JsonMetricWriter extends JsonWriter {
         return getJsonFromMetrics(service.getMetricsAsMap(registryName, metricName));
     }
 
-    private JsonObjectBuilder getJsonFromMetrics(Map<String, Metric> metricMap) {
+    private JsonObjectBuilder getJsonFromMetrics(Map<MetricID, Metric> metricMap) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
-        for (Map.Entry<String, Metric> entry : metricMap.entrySet()) {
-            String metricName = entry.getKey();
+        for (Map.Entry<MetricID, Metric> entry : metricMap.entrySet()) {
+            String metricIDString = metricIDTranslation(entry.getKey());
+            Set<Entry<String, String>> tagsSet = entry.getKey().getTags().entrySet();
             Metric metric = entry.getValue();
             if (Counter.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, ((Counter) metric).getCount());
+                payloadBuilder.add(metricIDString, ((Counter) metric).getCount());
+            } else if (ConcurrentGauge.class.isInstance(metric)) {
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getConcurrentGaugeNumbers((ConcurrentGauge) metric), tagsToStringSuffix(tagsSet));
             } else if (Gauge.class.isInstance(metric)) {
                 Number value;
                 Object gaugeValue;
@@ -117,22 +126,30 @@ public class JsonMetricWriter extends JsonWriter {
                     continue;
                 }
                 if (!Number.class.isInstance(gaugeValue)) {
-                    LOGGER.log(Level.FINER, "Skipping JSON output for Gauge: {0} of type {1}", new Object[]{metricName, gaugeValue.getClass()});
+                    LOGGER.log(Level.FINER, "Skipping JSON output for Gauge: {0} of type {1}", new Object[]{metricIDString, gaugeValue.getClass()});
                     continue;
                 }
                 value = (Number) gaugeValue;
-                addValueToJsonObject(payloadBuilder, metricName, value);
+                addValueToJsonObject(payloadBuilder, metricIDString, value);
             } else if (Histogram.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getHistogramNumbers((Histogram) metric)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getHistogramNumbers((Histogram) metric), tagsToStringSuffix(tagsSet));
             } else if (Meter.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getMeterNumbers((Meter) metric)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getMeterNumbers((Meter) metric), tagsToStringSuffix(tagsSet));
             } else if (Timer.class.isInstance(metric)) {
-                payloadBuilder.add(metricName, getJsonFromMap(getTimerNumbers((Timer) metric)));
+                payloadBuilder = addOrExtendMap(payloadBuilder, entry.getKey().getName(), getTimerNumbers((Timer) metric), tagsToStringSuffix(tagsSet));
             } else {
-                LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricName});
+                LOGGER.log(Level.WARNING, "Metric type '{0} for {1} is invalid", new Object[]{metric.getClass(), metricIDString});
             }
         }
         return payloadBuilder;
+    }
+    
+    private Map<String, Number> getConcurrentGaugeNumbers(ConcurrentGauge gauge) {
+        Map<String, Number> results = new HashMap<>();
+        results.put(CURRENT, gauge.getCount());
+        results.put(MIN, gauge.getMin());
+        results.put(MAX, gauge.getMax());
+        return results;
     }
     
     private Map<String, Number> getTimerNumbers(Timer timer) {
@@ -178,6 +195,45 @@ public class JsonMetricWriter extends JsonWriter {
         results.put(PERCENTILE_99TH, snapshot.get99thPercentile());
         results.put(PERCENTILE_999TH, snapshot.get999thPercentile());
         return results;
+    }
+    
+    /**
+     * Converts a {@link MetricID} into the format required by spec
+     * @param metricID
+     * @return
+     * @see Section 3.1.1 of MP Metrics 2.0 Specification
+     */
+    private String metricIDTranslation(MetricID metricID) {
+        StringBuilder jsonKey = new StringBuilder(metricID.getName());
+        jsonKey.append(tagsToStringSuffix(metricID.getTags().entrySet()));
+        return jsonKey.toString();
+    }
+    
+    private String tagsToStringSuffix(Set<Entry<String, String>> tagsSet) {
+        StringBuilder tags = new StringBuilder();
+        for (Entry<String,String> tag: tagsSet) {
+            tags.append(';').append(tag.getKey());
+            tags.append('=').append(tag.getValue().replace(';', '_'));
+        }
+        
+        return tags.toString();
+    }
+    
+    private JsonObjectBuilder addOrExtendMap(JsonObjectBuilder original, String key, Map<String, Number> values, String suffix) {
+        JsonObject built = original.build();
+        JsonObjectBuilder clone = Json.createObjectBuilder(built);
+
+        if (built.containsKey(key)) {
+            JsonObject current = built.getJsonObject(key);
+            JsonObjectBuilder extended = Json.createObjectBuilder(current);
+            JsonObjectBuilder newData = Json.createObjectBuilder(getJsonFromMap(values, suffix));
+            extended.addAll(newData);
+            clone.add(key, extended.build());
+        } else {
+            clone.add(key, getJsonFromMap(values, suffix));
+        }
+       
+        return clone;
     }
 
 }

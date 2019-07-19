@@ -38,35 +38,25 @@
  *     holder.
  */
 
-package fish.payara.microprofile.metrics.cdi.interceptor;
+package fish.payara.microprofile.metrics.jmx;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Member;
-import javax.annotation.Priority;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.metrics.Meter;
-import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.Gauge;
 
-@Metered
-@Interceptor
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public class MeteredInterceptor extends AbstractInterceptor {
+/**
+ * Implementation of a gauge based off an MBean.
+ * @author jonathan coustick
+ * @since 5.193
+ */
+public class MBeanGuageImpl implements Gauge<Long> {
 
-    @Override
-    protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
-            throws Exception {
-        MetricID metricID = resolver.metered(bean.getBeanClass(), element).metricID();
-        Meter meter = registry.getMeters().get(metricID);
-        if (meter == null) {
-            throw new IllegalStateException("No meter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
-        }
-        try {
-            return context.proceed();
-        } finally {
-            meter.mark();
-        }
+    private final MBeanExpression mBean;
+
+    public MBeanGuageImpl(MBeanExpression mBean) {
+        this.mBean = mBean;
     }
 
+    @Override
+    public Long getValue() {      
+        return mBean.getNumberValue().longValue();
+    }
 }

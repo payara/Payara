@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.jmx;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import static java.util.Objects.nonNull;
 import java.util.Set;
 import static java.util.logging.Level.INFO;
@@ -51,14 +50,15 @@ import java.util.logging.Logger;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
-import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetadataBuilder;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import static org.eclipse.microprofile.metrics.MetricType.COUNTER;
 import static org.eclipse.microprofile.metrics.MetricType.GAUGE;
 import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
@@ -85,7 +85,7 @@ public class MBeanMetadataHelper {
      * @return the list of unresolved MBean Metadata
      */
     public List<MBeanMetadata> registerMetadata(MetricRegistry metricRegistry,
-            List<MBeanMetadata> metadataList, Map<String, String> globalTags, boolean isRetry) {
+            List<MBeanMetadata> metadataList, boolean isRetry) {
 
         if (!metricRegistry.getMetadata().isEmpty() && !isRetry) {
             metricRegistry.removeMatching(MetricFilter.ALL);
@@ -97,7 +97,6 @@ public class MBeanMetadataHelper {
                 if (metricRegistry.getNames().contains(beanMetadata.getName())) {
                     continue;
                 }
-                beanMetadata.getTags().putAll(globalTags);
                 Metric type;
                 MBeanExpression mBeanExpression = new MBeanExpression(beanMetadata.getMBean());
                 switch (beanMetadata.getTypeRaw()) {
@@ -105,12 +104,16 @@ public class MBeanMetadataHelper {
                         type = new MBeanCounterImpl(mBeanExpression);
                         break;
                     case GAUGE:
-                        type = (Gauge<Number>) mBeanExpression::getNumberValue;
+                        type = new MBeanGuageImpl(mBeanExpression);
                         break;
                     default:
                         throw new IllegalStateException("Unsupported type : " + beanMetadata);
                 }
-                metricRegistry.register(beanMetadata, type);
+                List<Tag> tags = new ArrayList<>();
+                for (fish.payara.microprofile.metrics.jmx.XmlTag tag : beanMetadata.getTags()){
+                    tags.add(new Tag(tag.getName(), tag.getValue()));
+                }
+                metricRegistry.register(beanMetadata, type, tags.toArray(new Tag[tags.size()]));
             } catch (IllegalArgumentException ex) {
                 LOGGER.log(WARNING, ex.getMessage(), ex);
             }
@@ -240,27 +243,30 @@ public class MBeanMetadataHelper {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
                 if (obj instanceof CompositeDataSupport) {
                     CompositeDataSupport compositeData = (CompositeDataSupport) obj;
+                    MetadataBuilder newMetadataBuilder = Metadata.builder(metadata);
                     for (String subAttrResolvedName : compositeData.getCompositeType().keySet()) {
                         subAttribute = subAttrResolvedName;
                         if ("description".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && metadata.getDescription() == null) {
-                            metadata.setDescription((String) compositeData.get(subAttribute));
+                            newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && metadata.getDisplayName() == null) {
-                            metadata.setDisplayName((String) compositeData.get(subAttribute));
+                            newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
                                 && MetricUnits.NONE.equals(metadata.getUnit())) {
-                            metadata.setUnit((String) compositeData.get(subAttribute));
+                            newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
                         }
                         if (compositeData.get(subAttribute) != null
                                 && !(compositeData.get(subAttribute) instanceof Number)) {
                             continue;
                         }
-                        metadataList.add(createMetadata(metadata, exp, key, attribute, subAttribute));
                     }
+                    MBeanMetadata newMbeanMetadata = new MBeanMetadata(newMetadataBuilder.build());
+                    newMbeanMetadata.addTags(metadata.getTags());
+                    metadataList.add(createMetadata(newMbeanMetadata, exp, key, attribute, subAttribute));
                 }
             } else if (isDynamicAttribute) {
                 Object obj = mBeanExpression.querySubAttributes(objName, attribute);
@@ -293,8 +299,7 @@ public class MBeanMetadataHelper {
             builder.append(SUB_ATTRIBUTE_SEPARATOR);
             builder.append(subAttribute);
         }
-        return new MBeanMetadata(
-                builder.toString(),
+        MBeanMetadata newMetaData =  new MBeanMetadata(builder.toString(),
                 formatMetadata(
                         metadata.getName(),
                         key,
@@ -308,14 +313,21 @@ public class MBeanMetadataHelper {
                         subAttribute
                 ),
                 formatMetadata(
-                        nonNull(metadata.getDescription()) ? metadata.getDescription() : metadata.getName(),
+                        metadata.getDescription().isPresent() ? metadata.getDescription().get() : metadata.getName(),
                         key,
                         attribute,
                         subAttribute
                 ),
                 metadata.getTypeRaw(),
-                metadata.getUnit()
+                metadata.getUnit().orElse(null)
         );
+        for (fish.payara.microprofile.metrics.jmx.XmlTag oldTag: metadata.getTags()) {
+            fish.payara.microprofile.metrics.jmx.XmlTag newTag = new fish.payara.microprofile.metrics.jmx.XmlTag();
+            newTag.setName(formatMetadata(oldTag.getName(), key, attribute, subAttribute));
+            newTag.setValue(formatMetadata(oldTag.getValue(), key, attribute, subAttribute));
+            newMetaData.getTags().add(newTag);
+        }
+        return newMetaData;
     }
 
     private String formatMetadata(

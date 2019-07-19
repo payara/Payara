@@ -45,27 +45,28 @@ import java.lang.reflect.Member;
 import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 
-@Metered
+@ConcurrentGauge
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public class MeteredInterceptor extends AbstractInterceptor {
+public class ConcurrentGuageInterceptor extends AbstractInterceptor {
 
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        MetricID metricID = resolver.metered(bean.getBeanClass(), element).metricID();
-        Meter meter = registry.getMeters().get(metricID);
-        if (meter == null) {
-            throw new IllegalStateException("No meter with name [" + metricID.getName() + "] found in registry [" + registry + "]");
+        MetricID metricID = resolver.concurrentGauge(bean.getBeanClass(), element).metricID();
+        org.eclipse.microprofile.metrics.ConcurrentGauge counter = registry.getConcurrentGauges().get(metricID);
+        if (counter == null) {
+            throw new IllegalStateException("No concurrent gauge with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }
+
+        counter.inc();
         try {
             return context.proceed();
         } finally {
-            meter.mark();
+            counter.dec();
         }
     }
 

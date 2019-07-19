@@ -138,10 +138,10 @@ public abstract class JsonWriter implements MetricsWriter {
         }
     }
 
-    protected JsonObject getJsonFromMap(Map<String, Number> map) {
+    protected JsonObject getJsonFromMap(Map<String, Number> map, String keySuffix) {
         JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
         for (Map.Entry<String, Number> entry : map.entrySet()) {
-            addValueToJsonObject(payloadBuilder, entry.getKey(), entry.getValue());
+            addValueToJsonObject(payloadBuilder, entry.getKey() + keySuffix, entry.getValue());
         }
         return payloadBuilder.build();
     }
