@@ -40,7 +40,6 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import fish.payara.microprofile.metrics.impl.ConcurrentGaugeImpl;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import javax.annotation.Priority;
@@ -58,7 +57,7 @@ public class ConcurrentGuageInterceptor extends AbstractInterceptor {
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
         MetricID metricID = resolver.concurrentGauge(bean.getBeanClass(), element).metricID();
-        ConcurrentGaugeImpl counter = (ConcurrentGaugeImpl) registry.getMetrics().get(metricID);
+        org.eclipse.microprofile.metrics.ConcurrentGauge counter = registry.getConcurrentGauges().get(metricID);
         if (counter == null) {
             throw new IllegalStateException("No concurrent gauge with name [" + metricID.getName() + "] found in registry [" + registry + "]");
         }

@@ -37,20 +37,6 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  *
- * *****************************************************************************
- * Copyright 2010-2013 Coda Hale and Yammer, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package fish.payara.microprofile.metrics.impl;
@@ -73,6 +59,10 @@ import org.eclipse.microprofile.metrics.ConcurrentGauge;
 public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     private final LongAdder count = new LongAdder();
+    /**
+     * Last point for which clearOld() has been run
+     */
+    private Instant lastInstant = Instant.now();
     
     /**
      * A map containing all the values that the count of the gauge has been at in the last minute.
@@ -80,12 +70,13 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
      * before it changed
      */
     private Map<Instant, Long> lastCounts = new ConcurrentHashMap<>();
-
+    
     /**
      * Increment the counter by one.
      */
     @Override
     public void inc() {
+        clearOld();
         if (count.longValue() > 0) {
             lastCounts.put(Instant.now(), count.longValue());
         }
@@ -136,6 +127,7 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
 
     @Override
     public void dec() {
+        clearOld();
         lastCounts.put(Instant.now(), count.longValue());
         count.decrement();
     }
@@ -145,6 +137,10 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
      */
     private void clearOld() {
         Instant previousMinute = Instant.now().truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
+        if (previousMinute.equals(lastInstant)) {
+            //already called in this minute
+            return;
+        }
         Iterator<Instant> guages = lastCounts.keySet().iterator();
         while (guages.hasNext()) {
             Instant guageTime = guages.next();
@@ -152,5 +148,6 @@ public class ConcurrentGaugeImpl implements ConcurrentGauge {
                 lastCounts.remove(guageTime);
             }
         }
+        lastInstant = previousMinute;
     }
 }

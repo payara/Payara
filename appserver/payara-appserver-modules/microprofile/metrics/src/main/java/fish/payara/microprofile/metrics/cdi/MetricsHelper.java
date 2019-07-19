@@ -81,26 +81,6 @@ import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @ApplicationScoped
 public class MetricsHelper {
-    
-    @ConfigProperty(name="mp.metrics.tags")
-    String globalTags;
-
-    public String getGlobalTagsString() {
-        return globalTags;
-    }
-
-    public List<Tag> getGlobalTags() {
-        return convertToTags(getGlobalTagsString());
-    }
-
-    private static List<Tag> convertToTags(String tagsString) {
-        List<Tag> tags = Collections.emptyList();
-        if (tagsString != null) {
-            String[] singleTags = tagsString.split(",");
-            tags = Arrays.asList(tagsFromString(singleTags));
-        }
-        return tags;
-    }
 
     public String metricNameOf(InjectionPoint ip) {
         Annotated annotated = ip.getAnnotated();
