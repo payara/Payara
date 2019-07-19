@@ -33,7 +33,7 @@ public class SinkDataCollector implements MonitoringDataCollector {
     public MonitoringDataCollector tag(CharSequence name, CharSequence value) {
         StringBuilder tagged = new StringBuilder(tags);
         int nameIndex = indexOf(name);
-        if (nameIndex > 0) {
+        if (nameIndex >= 0) {
             tagged.setLength(nameIndex);
         } else if (tagged.length() > 0) {
             tagged.append(TAG_SEPARATOR);
@@ -44,7 +44,11 @@ public class SinkDataCollector implements MonitoringDataCollector {
 
     private int indexOf(CharSequence name) {
         String tag = name.toString();
-        return tags.indexOf(tag + TAG_ASSIGN) == 0 ? 0 : tags.indexOf(TAG_SEPARATOR + tag + TAG_ASSIGN);
+        if (tags.indexOf(tag + TAG_ASSIGN) == 0) {
+            return 0;
+        }
+        int idx = tags.indexOf(TAG_SEPARATOR + tag + TAG_ASSIGN);
+        return idx < 0 ? idx : idx + 1;
     }
 
     private void accept(long value) {

@@ -105,7 +105,7 @@ public class ContainerRegistry implements MonitoringDataSource {
 
     @Override
     public void collect(MonitoringDataCollector collector) {
-        collector.in("containers")
+        collector.in("container")
             .collectAll(containers, ContainerRegistry::collectContainer);
     }
 

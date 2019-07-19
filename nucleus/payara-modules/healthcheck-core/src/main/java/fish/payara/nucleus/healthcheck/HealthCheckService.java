@@ -145,7 +145,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         HealthCheckExecutionOptions options = task.getCheck().getOptions();
         collector
             .collect("enabled", options.isEnabled())
-            .collectNonZero("time", options.getUnit().toMillis(options.getTime()));
+            .collectNonZero("interval", options.getUnit().toMillis(options.getTime()));
     }
 
     private static void collectNotifierOption(MonitoringDataCollector collector, NotifierExecutionOptions options) {

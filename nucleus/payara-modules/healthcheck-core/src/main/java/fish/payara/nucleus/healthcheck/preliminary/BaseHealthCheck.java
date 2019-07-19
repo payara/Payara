@@ -284,13 +284,4 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
                     new Object[]{name, checkResult.getEntries().toString()});
         }
     }
-
-    static void collectThreadTimes(MonitoringDataCollector collector, ThreadTimes times) {
-        collector.tag("thread", "ID:"+times.getId())
-            .collect("retryCount", times.getRetryCount())
-            .collect("startCpuTime", times.getStartCpuTime())
-            .collect("endCpuTime", times.getEndCpuTime())
-            .collect("startUserTime", times.getStartUserTime())
-            .collect("endUserTime", times.getEndUserTime());
-    }
 }
